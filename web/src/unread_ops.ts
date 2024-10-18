@@ -3,14 +3,14 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import render_confirm_mark_all_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.hbs";
+import render_confirm_mark_messages_as_read from "../templates/confirm_dialog/confirm_mark_messages_as_read.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as desktop_notifications from "./desktop_notifications";
 import * as dialog_widget from "./dialog_widget";
-import {$t_html} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
@@ -22,9 +22,11 @@ import * as overlays from "./overlays";
 import * as people from "./people";
 import * as recent_view_ui from "./recent_view_ui";
 import type {NarrowTerm} from "./state_data";
+import * as stream_data from "./stream_data";
 import * as ui_report from "./ui_report";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
+import {is_topic_muted} from "./user_topics";
 
 let loading_indicator_displayed = false;
 
@@ -48,17 +50,108 @@ export function is_window_focused(): boolean {
     return window_focused;
 }
 
-export function confirm_mark_all_as_read(): void {
-    const html_body = render_confirm_mark_all_as_read();
+export function confirm_mark_messages_as_read(): void {
+    const html_body = render_confirm_mark_messages_as_read();
 
     const modal_id = confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Mark all messages as read?"}),
+        html_heading: $t_html({defaultMessage: "Choose messages to mark as read"}),
         html_body,
         on_click() {
-            mark_all_as_read(modal_id);
+            mark_messages_as_read(modal_id);
         },
         loading_spinner: true,
     });
+
+    const default_messages_count = get_messages_count("topics_not_followed");
+
+    $("#message_count").text(
+        $t(
+            {
+                defaultMessage:
+                    "{count, plural, one {# message} other {# messages}} will be marked as read.",
+            },
+            {count: default_messages_count},
+        ),
+    );
+
+    $("#mark_as_read_option").on("change", function () {
+        const selected_option = String($(this).val());
+        const messages_count = get_messages_count(selected_option);
+
+        $("#message_count").text(
+            $t(
+                {
+                    defaultMessage:
+                        "{count, plural, one {# message} other {# messages}} will be marked as read.",
+                },
+                {count: messages_count},
+            ),
+        );
+    });
+}
+
+function get_messages_count(selected_option: string): number {
+    switch (selected_option) {
+        case "all_messages":
+            return unread.get_unread_message_count();
+
+        case "muted_topics":
+            return unread.get_unread_message_count() - unread.get_counts().home_unread_messages;
+
+        // Default case handles count for "topics_not_followed".
+        default:
+            return (
+                unread.get_unread_message_count() -
+                unread.get_counts().followed_topic_unread_messages_count -
+                unread.get_counts().direct_message_count
+            );
+    }
+}
+
+export function mark_messages_as_read(modal_id?: string): void {
+    const selected_option = $("#mark_as_read_option").val();
+
+    if (selected_option === "all_messages") {
+        mark_all_as_read(modal_id);
+    }
+
+    if (selected_option === "muted_topics") {
+        const all_unread_topics = unread.get_unread_topics();
+        const topic_counts = all_unread_topics.topic_counts;
+
+        let muted_topics_count = 0;
+
+        for (const [stream_id, topics] of topic_counts) {
+            const stream_name = stream_data.get_stream_name_from_id(stream_id);
+            for (const [topic_name] of topics) {
+                if (is_topic_muted(stream_id, topic_name)) {
+                    muted_topics_count += 1;
+                    bulk_update_read_flags_for_narrow(
+                        [
+                            {operator: "stream", operand: stream_name},
+                            {operator: "topic", operand: topic_name},
+                        ],
+                        "add",
+                        {},
+                        modal_id,
+                    );
+                }
+            }
+        }
+
+        if (muted_topics_count === 0) {
+            bulk_update_read_flags_for_narrow([], "add", {}, modal_id);
+        }
+    }
+
+    if (selected_option === "topics_not_followed") {
+        const narrow_options: NarrowTerm[] = [{operator: "is", operand: "unread", negated: false}];
+        narrow_options.push(
+            {operator: "is", operand: "followed", negated: true},
+            {operator: "is", operand: "dm", negated: true},
+        );
+        bulk_update_read_flags_for_narrow(narrow_options, "add", {}, modal_id);
+    }
 }
 
 const update_flags_for_narrow_response_schema = z.object({
