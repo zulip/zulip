@@ -149,6 +149,15 @@ class DirectMessageGroup(models.Model):
         db_table = "zerver_huddle"
 
 
+def check_direct_message_group_exists(id_list: list[int]) -> bool:
+    direct_message_group_hash = get_direct_message_group_hash(id_list)
+    direct_message_group_exists = DirectMessageGroup.objects.filter(
+        huddle_hash=direct_message_group_hash
+    ).exists()
+
+    return direct_message_group_exists
+
+
 def get_direct_message_group_hash(id_list: list[int]) -> str:
     id_list = sorted(set(id_list))
     hash_key = ",".join(str(x) for x in id_list)
