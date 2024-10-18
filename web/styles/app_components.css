@@ -433,7 +433,6 @@ input.settings_text_input {
         padding-left: 4px;
         color: var(--color-text-clear-search-button);
         text-shadow: none;
-        outline: none !important;
         box-shadow: none;
         z-index: 5;
     }
