@@ -34,11 +34,13 @@
             </button>
         </span>
         {{else}}
+        {{#unless is_deleted}}
         <span>
             <button class="button rounded reactivate_user_button">
                 {{t 'Reactivate user' }}
             </button>
         </span>
+        {{/unless}}
         {{/if}}
     </div>
 </div>

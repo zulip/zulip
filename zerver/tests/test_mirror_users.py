@@ -170,6 +170,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
             self.assertEqual(kwargs["email"], email)
             self.assertEqual(kwargs["active"], False)
             self.assertEqual(kwargs["is_mirror_dummy"], True)
+            self.assertEqual(kwargs["is_deleted"], False)
             # We create an actual user here to simulate a race.
             # We use the minimal, un-mocked function.
             kwargs["bot_type"] = None
