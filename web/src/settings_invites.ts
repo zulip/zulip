@@ -8,6 +8,7 @@ import render_admin_invites_list from "../templates/settings/admin_invites_list.
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
+import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
@@ -154,19 +155,19 @@ function do_revoke_invite({
 }): void {
     const modal_invite_id = $(".dialog_submit_button").attr("data-invite-id");
     const modal_is_multiuse = $(".dialog_submit_button").attr("data-is-multiuse");
-    const $revoke_button = $row.find("button.revoke");
 
     if (modal_invite_id !== invite_id || modal_is_multiuse !== is_multiuse) {
         blueslip.error("Invite revoking canceled due to non-matching fields.");
         ui_report.client_error(
             $t_html({
-                defaultMessage: "Resending encountered an error. Please reload and try again.",
+                defaultMessage: "Error: Could not revoke invitation.",
             }),
-            $("#home-error"),
+            $("#revoke_invite_modal #dialog_error"),
         );
+        dialog_widget.hide_dialog_spinner();
+        return;
     }
 
-    $revoke_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
     let url = "/json/invites/" + invite_id;
 
     if (modal_is_multiuse === "true") {
@@ -175,9 +176,18 @@ function do_revoke_invite({
     void channel.del({
         url,
         error(xhr) {
-            ui_report.generic_row_button_error(xhr, $revoke_button);
+            dialog_widget.hide_dialog_spinner();
+            ui_report.error(
+                $t_html({
+                    defaultMessage: "Failed",
+                }),
+                xhr,
+                $("#dialog_error"),
+            );
         },
         success() {
+            dialog_widget.hide_dialog_spinner();
+            dialog_widget.close();
             $row.remove();
         },
     });
@@ -191,19 +201,30 @@ function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}):
         blueslip.error("Invite resending canceled due to non-matching fields.");
         ui_report.client_error(
             $t_html({
-                defaultMessage: "Resending encountered an error. Please reload and try again.",
+                defaultMessage: "Error: Could not resend invitation.",
             }),
-            $("#home-error"),
+            $("#resend_invite_modal #dialog_error"),
         );
+        dialog_widget.hide_dialog_spinner();
+        return;
     }
 
-    $resend_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
     void channel.post({
         url: "/json/invites/" + invite_id + "/resend",
         error(xhr) {
-            ui_report.generic_row_button_error(xhr, $resend_button);
+            dialog_widget.hide_dialog_spinner();
+            ui_report.error(
+                $t_html({
+                    defaultMessage: "Failed",
+                }),
+                xhr,
+                $("#dialog_error"),
+            );
         },
         success() {
+            dialog_widget.hide_dialog_spinner();
+            dialog_widget.close();
+            $resend_button.prop("disabled", true);
             $resend_button.text($t({defaultMessage: "Sent!"}));
             $resend_button.removeClass("resend btn-warning").addClass("sea-green");
         },
@@ -259,6 +280,9 @@ export function on_load_success(
                 ? $t_html({defaultMessage: "Revoke invitation link"})
                 : $t_html({defaultMessage: "Revoke invitation to {email}"}, {email}),
             html_body,
+            id: "revoke_invite_modal",
+            close_on_submit: false,
+            loading_spinner: true,
             on_click() {
                 do_revoke_invite({$row, invite_id, is_multiuse});
             },
@@ -282,6 +306,9 @@ export function on_load_success(
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Resend invitation?"}),
             html_body,
+            id: "resend_invite_modal",
+            close_on_submit: false,
+            loading_spinner: true,
             on_click() {
                 do_resend_invite({$row, invite_id});
             },
