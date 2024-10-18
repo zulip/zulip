@@ -300,6 +300,10 @@ the end of your commit message:
 
     Co-authored-by: Greg Price <greg@zulip.com>
 
+You should always give credit where credit is due. See our [guide on continuing
+unfinished work](../contributing/continuing-unfinished-work.md) for step-by-step
+guidance on continuing work someone else has started.
+
 You can also add other notes, such as `Reported-by:`, `Debugged-by:`, or
 `Suggested-by:`, but we don't typically do so.
 
