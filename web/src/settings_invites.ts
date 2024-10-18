@@ -155,7 +155,6 @@ function do_revoke_invite({
 }): void {
     const modal_invite_id = $(".dialog_submit_button").attr("data-invite-id");
     const modal_is_multiuse = $(".dialog_submit_button").attr("data-is-multiuse");
-    const $revoke_button = $row.find("button.revoke");
 
     if (modal_invite_id !== invite_id || modal_is_multiuse !== is_multiuse) {
         blueslip.error("Invite revoking canceled due to non-matching fields.");
@@ -165,10 +164,10 @@ function do_revoke_invite({
             }),
             $("#revoke_invite_modal #dialog_error"),
         );
+        dialog_widget.hide_dialog_spinner();
         return;
     }
 
-    $revoke_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
     let url = "/json/invites/" + invite_id;
 
     if (modal_is_multiuse === "true") {
@@ -177,10 +176,17 @@ function do_revoke_invite({
     void channel.del({
         url,
         error(xhr) {
-            dialog_widget.close();
-            ui_report.generic_row_button_error(xhr, $revoke_button);
+            dialog_widget.hide_dialog_spinner();
+            ui_report.error(
+                $t_html({
+                    defaultMessage: "Failed",
+                }),
+                xhr,
+                $("#dialog_error"),
+            );
         },
         success() {
+            dialog_widget.hide_dialog_spinner();
             dialog_widget.close();
             $row.remove();
         },
@@ -199,18 +205,26 @@ function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}):
             }),
             $("#resend_invite_modal #dialog_error"),
         );
+        dialog_widget.hide_dialog_spinner();
         return;
     }
 
-    $resend_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
     void channel.post({
         url: "/json/invites/" + invite_id + "/resend",
         error(xhr) {
-            dialog_widget.close();
-            ui_report.generic_row_button_error(xhr, $resend_button);
+            dialog_widget.hide_dialog_spinner();
+            ui_report.error(
+                $t_html({
+                    defaultMessage: "Failed",
+                }),
+                xhr,
+                $("#dialog_error"),
+            );
         },
         success() {
+            dialog_widget.hide_dialog_spinner();
             dialog_widget.close();
+            $resend_button.prop("disabled", true);
             $resend_button.text($t({defaultMessage: "Sent!"}));
             $resend_button.removeClass("resend btn-warning").addClass("sea-green");
         },
@@ -268,6 +282,7 @@ export function on_load_success(
             html_body,
             id: "revoke_invite_modal",
             close_on_submit: false,
+            loading_spinner: true,
             on_click() {
                 do_revoke_invite({$row, invite_id, is_multiuse});
             },
@@ -293,6 +308,7 @@ export function on_load_success(
             html_body,
             id: "resend_invite_modal",
             close_on_submit: false,
+            loading_spinner: true,
             on_click() {
                 do_resend_invite({$row, invite_id});
             },
