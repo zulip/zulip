@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import render_confirm_mark_all_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.hbs";
+import render_confirm_mark_all_as_unread from "../templates/confirm_dialog/confirm_mark_as_unread_from_here.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
@@ -18,6 +19,7 @@ import type {Message} from "./message_store";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import * as modals from "./modals";
+import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as recent_view_ui from "./recent_view_ui";
@@ -264,31 +266,71 @@ export function mark_as_unread_from_here(
     }
     message_lists.current.prevent_reading();
 
-    // If we have already fully fetched the current view, we can
-    // send the server the set of IDs to update, rather than
-    // updating on the basis of the narrow.
-    let message_ids_to_update;
-    if (message_lists.current.data.fetch_status.has_found_newest()) {
-        message_ids_to_update = message_lists.current
-            .all_messages()
-            .filter(
-                (msg) =>
-                    (include_anchor && msg.id >= message_id) ||
-                    (!include_anchor && msg.id > message_id),
-            )
-            .map((msg) => msg.id);
+    const rounding_factor = 25;
+    const threshold_fetched = 50;
+    const threshold_unfetched = 10;
+    const is_all_fetched = message_lists.current.data.fetch_status.has_found_newest();
+    const is_in_interleaved_view = !narrow_state.narrowed_by_reply();
+    let message_ids_to_update: number[] | undefined;
+
+    function do_mark_unread(): void {
+        // If we have already fully fetched the current view, we can
+        // send the server the set of IDs to update, rather than
+        // updating on the basis of the narrow.
+        if (message_ids_to_update !== undefined && message_ids_to_update.length < 200) {
+            do_mark_unread_by_ids(message_ids_to_update);
+        } else {
+            do_mark_unread_by_narrow(
+                message_id,
+                include_anchor,
+                messages_marked_unread_till_now,
+                num_after,
+                narrow!,
+            );
+        }
     }
 
-    if (message_ids_to_update !== undefined && message_ids_to_update.length < 200) {
-        do_mark_unread_by_ids(message_ids_to_update);
+    if (!is_all_fetched && !is_in_interleaved_view) {
+        do_mark_unread();
+        return;
+    }
+
+    const min_message_ids_to_update = message_lists.current
+        .all_messages()
+        .filter(
+            (msg) =>
+                (include_anchor && msg.id >= message_id) ||
+                (!include_anchor && msg.id > message_id),
+        )
+        .map((msg) => msg.id);
+    message_ids_to_update = is_all_fetched ? min_message_ids_to_update : undefined;
+
+    if (
+        !is_in_interleaved_view ||
+        (message_ids_to_update !== undefined && message_ids_to_update.length < threshold_fetched)
+    ) {
+        do_mark_unread();
     } else {
-        do_mark_unread_by_narrow(
-            message_id,
-            include_anchor,
-            messages_marked_unread_till_now,
-            num_after,
-            narrow,
-        );
+        const message_count = min_message_ids_to_update.length;
+        let display_count: string;
+
+        if (is_all_fetched) {
+            display_count = message_count.toString();
+        } else if (message_count < threshold_unfetched) {
+            display_count = "fewer-than-threshold";
+        } else if (message_count < rounding_factor) {
+            display_count = message_count.toString() + "+";
+        } else {
+            display_count = `${Math.floor(message_count / rounding_factor) * rounding_factor}+`;
+        }
+
+        confirm_dialog.launch({
+            html_heading: $t_html({defaultMessage: "Mark messages as unread?"}),
+            html_body: render_confirm_mark_all_as_unread({N: display_count}),
+            on_click() {
+                do_mark_unread();
+            },
+        });
     }
 }
 
