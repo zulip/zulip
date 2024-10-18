@@ -650,7 +650,7 @@ class StripeTestCase(ZulipTestCase):
                 license_management="automatic",
             )
 
-        remote_server_plan_start_date = kwargs.get("remote_server_plan_start_date", None)
+        remote_server_plan_start_date = kwargs.get("remote_server_plan_start_date")
         if remote_server_plan_start_date:
             params.update(
                 remote_server_plan_start_date=remote_server_plan_start_date,
