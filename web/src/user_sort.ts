@@ -1,4 +1,5 @@
 import type {User} from "./people";
+import type {BotInfo} from "./settings_users";
 
 export function compare_a_b(a: number | string, b: number | string): number {
     if (a > b) {
@@ -29,7 +30,7 @@ export function sort_email(a: User, b: User): number {
     return compare_a_b(email_a.toLowerCase(), email_b.toLowerCase());
 }
 
-export function sort_role(a: User, b: User): number {
+export function sort_role(a: User | BotInfo, b: User | BotInfo): number {
     return compare_a_b(a.role, b.role);
 }
 
