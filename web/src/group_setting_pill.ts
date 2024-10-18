@@ -118,6 +118,7 @@ export function generate_pill_html(item: GroupSettingPill): string {
         return render_input_pill({
             display_value: get_display_value_from_item(item),
             group_id: item.group_id,
+            disabled: item.disabled ?? false,
         });
     }
     assert(item.type === "user");

@@ -15,6 +15,7 @@ export type UserGroupPill = {
     type: "user_group";
     group_id: number;
     group_name: string;
+    disabled?: boolean;
 };
 
 type UserGroupPillWidget = InputPillContainer<UserGroupPill>;
@@ -84,11 +85,13 @@ function get_group_members(user_group: UserGroup): number[] {
 export function append_user_group(
     group: UserGroup,
     pill_widget: CombinedPillContainer | GroupSettingPillContainer,
+    disabled = false,
 ): void {
     pill_widget.appendValidatedData({
         type: "user_group",
         group_id: group.id,
         group_name: group.name,
+        disabled,
     });
     pill_widget.clear_text();
 }

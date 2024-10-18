@@ -29,6 +29,7 @@ export type UserPill = {
     deactivated?: boolean;
     status_emoji_info?: (EmojiRenderingDetails & {emoji_alt_code?: boolean}) | undefined; // TODO: Move this in user_status.js
     should_add_guest_user_indicator?: boolean;
+    disabled?: boolean;
 };
 
 export type UserPillWidget = InputPillContainer<UserPill>;
@@ -106,6 +107,7 @@ export function get_email_from_item(item: UserPill): string {
 export function append_person(opts: {
     person: User;
     pill_widget: UserPillWidget | CombinedPillContainer | GroupSettingPillContainer;
+    disabled?: boolean;
 }): void {
     const person = opts.person;
     const pill_widget = opts.pill_widget;
@@ -120,6 +122,7 @@ export function append_person(opts: {
         img_src: avatar_url,
         status_emoji_info,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(person.user_id),
+        disabled: opts.disabled ?? false,
     };
 
     pill_widget.appendValidatedData(pill_data);
@@ -179,11 +182,13 @@ export function filter_taken_users(
 export function append_user(
     user: User,
     pills: UserPillWidget | CombinedPillContainer | GroupSettingPillContainer,
+    disabled = false,
 ): void {
     if (user) {
         append_person({
             pill_widget: pills,
             person: user,
+            disabled,
         });
     } else {
         blueslip.warn("Undefined user in function append_user");
@@ -212,6 +217,7 @@ export function generate_pill_html(item: UserPill, show_user_status_emoji = fals
         img_src: item.img_src,
         has_status,
         status_emoji_info,
+        disabled: item.disabled ?? false,
     });
 }
 

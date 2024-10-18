@@ -73,6 +73,7 @@ const testers_pill = {
     group_id: testers.id,
     group_name: testers.name,
     type: "user_group",
+    disabled: false,
 };
 const everyone_pill = {
     group_id: everyone.id,
