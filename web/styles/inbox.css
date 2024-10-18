@@ -74,7 +74,7 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                border-radius: 2px;
+                border-radius: 4px;
                 cursor: pointer;
                 font-size: 16px;
                 color: var(--color-icons-inbox);
@@ -83,19 +83,24 @@
                 padding: 5px;
                 margin: 0;
                 /* = -Width of the button. */
-                margin-right: -28px;
                 position: relative;
-                top: 0;
-                right: 30px;
-
-                &:focus {
-                    outline: none;
-                }
+                top: 1px;
+                right: 28px;
+                height: 100%;
+                box-sizing: border-box;
+                outline: none;
 
                 &:hover,
-                &:focus-visible {
+                &:focus {
+                    outline: none;
                     opacity: 1;
                     background-color: var(--color-background-icon-close-hover);
+                }
+
+                &:focus-visible {
+                    opacity: 1;
+                    outline: 2px solid var(--color-outline-focus);
+                    outline-offset: -3px;
                 }
 
                 &:active {
@@ -533,6 +538,7 @@
     border: 1px solid var(--color-border-inbox-search);
     background-color: var(--color-background-inbox-search);
     gap: 5px;
+    width: 100%;
 
     &:hover {
         background-color: var(--color-background-inbox-search-hover);
