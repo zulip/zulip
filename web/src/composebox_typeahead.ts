@@ -10,7 +10,7 @@ import {MAX_ITEMS, Typeahead} from "./bootstrap_typeahead";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
 import * as compose_pm_pill from "./compose_pm_pill";
-import { update_compose_for_message_type , update_placeholder_text } from "./compose_recipient";
+import {update_compose_for_message_type, update_placeholder_text} from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
@@ -1338,51 +1338,54 @@ export function initialize({
     };
     new Typeahead(stream_message_typeahead_input, {
         source(): string[] {
-           
             const topics = topics_seen_for(compose_state.stream_id());
-            const topic_input = stream_message_typeahead_input.$element.val()?.toString() || "";
-    
+            const topic_input = stream_message_typeahead_input.$element.val()?.toString() ?? "";
+
             let dm_option: string[] = [];
             if (topic_input.length >= 3) {
-                const matched_users = people.get_realm_users().filter((user) =>
-                    user.full_name.toLowerCase().startsWith(topic_input.toLowerCase())
-                );
-    
+                const matched_users = people
+                    .get_realm_users()
+                    .filter((user) =>
+                        user.full_name.toLowerCase().startsWith(topic_input.toLowerCase()),
+                    );
+
                 if (matched_users.length > 0) {
                     dm_option = [`Switch to DM with ${matched_users[0]?.full_name}`];
                 }
             }
-    
-            return dm_option.concat(topics);
+
+            return [...dm_option, ...topics];
         },
         updater(item: string): string | undefined {
             if (item.startsWith("Switch to DM with")) {
-                const user_name = item.replace("Switch to DM with ", "").trim(); 
-                const matched_user = people.get_realm_users().find((user) =>
-                    user.full_name.trim().toLowerCase() === user_name.toLowerCase()
-                );
-        
+                const user_name = item.replace("Switch to DM with ", "").trim();
+                const matched_user = people
+                    .get_realm_users()
+                    .find(
+                        (user) => user.full_name.trim().toLowerCase() === user_name.toLowerCase(),
+                    );
+
                 if (matched_user) {
                     compose_state.set_message_type("private");
-                    update_compose_for_message_type({ 
-                        message_type: "private", 
+                    update_compose_for_message_type({
+                        message_type: "private",
                         trigger: "typeahead",
-                        private_message_recipient: matched_user.email, 
+                        private_message_recipient: matched_user.email,
                     });
-                    $("#compose_recipient_box").hide(); 
-                    $("#compose-direct-recipient").show();  
-                    $("#stream_toggle").removeClass("active");  
-                    $("#private_message_toggle").addClass("active");  
+                    $("#compose_recipient_box").hide();
+                    $("#compose-direct-recipient").show();
+                    $("#stream_toggle").removeClass("active");
+                    $("#private_message_toggle").addClass("active");
                     $("#compose-recipient").addClass("compose-recipient-direct-selected");
-        
+
                     compose_pm_pill.clear();
                     compose_pm_pill.set_from_typeahead(matched_user);
-                    update_placeholder_text();  
-        
+                    update_placeholder_text();
+
                     return undefined; // Explicitly return undefined when switching to DM
                 }
-            } 
-            
+            }
+
             return item; // Return the item if it doesn't match the DM option
         },
         items: max_num_items,
