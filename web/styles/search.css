@@ -50,8 +50,14 @@
         }
 
         &:focus-visible {
+            opacity: 1;
             outline: 2px solid var(--color-outline-focus);
             outline-offset: -3px;
+        }
+
+        &:active {
+            opacity: 1;
+            transform: scale(0.9);
         }
 
         &:disabled {
