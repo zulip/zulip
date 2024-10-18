@@ -10,6 +10,7 @@ import {MAX_ITEMS, Typeahead} from "./bootstrap_typeahead";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
 import * as compose_pm_pill from "./compose_pm_pill";
+import { update_compose_for_message_type , update_placeholder_text } from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
@@ -42,8 +43,6 @@ import * as user_pill from "./user_pill";
 import type {UserPillData} from "./user_pill";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
-import { update_placeholder_text } from "./compose_recipient";
-import { update_compose_for_message_type } from "./compose_recipient";
 // **********************************
 // AN IMPORTANT NOTE ABOUT TYPEAHEADS
 // **********************************
@@ -1375,19 +1374,17 @@ export function initialize({
                     $("#stream_toggle").removeClass("active");  
                     $("#private_message_toggle").addClass("active");  
                     $("#compose-recipient").addClass("compose-recipient-direct-selected");
-
+        
                     compose_pm_pill.clear();
                     compose_pm_pill.set_from_typeahead(matched_user);
-        
                     update_placeholder_text();  
         
+                    return undefined; // Explicitly return undefined when switching to DM
                 }
-            } else {    
-                return item; 
-            }
+            } 
+            
+            return item; // Return the item if it doesn't match the DM option
         },
-        
-        
         items: max_num_items,
         highlighter_html(item: string): string {
             return typeahead_helper.render_typeahead_item({primary: item});
