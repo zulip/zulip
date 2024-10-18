@@ -34,6 +34,7 @@ const information_density = mock_esm("../src/information_density");
 const linkifiers = mock_esm("../src/linkifiers");
 const message_events = mock_esm("../src/message_events", {
     update_views_filtered_on_message_property: noop,
+    update_current_view_for_topic_visibility: noop,
 });
 const message_lists = mock_esm("../src/message_lists");
 const user_topics_ui = mock_esm("../src/user_topics_ui");

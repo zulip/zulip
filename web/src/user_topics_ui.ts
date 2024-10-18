@@ -33,7 +33,10 @@ function should_add_topic_update_delay(visibility_policy: number): boolean | und
     return is_topic_muted && is_relevant_popover_open && !is_inbox_view && !is_topic_narrow;
 }
 
-export function handle_topic_updates(user_topic_event: ServerUserTopic): void {
+export function handle_topic_updates(
+    user_topic_event: ServerUserTopic,
+    refreshed_current_narrow = false,
+): void {
     // Update the UI after changes in topic visibility policies.
     user_topics.set_user_topic(user_topic_event);
 
@@ -41,11 +44,14 @@ export function handle_topic_updates(user_topic_event: ServerUserTopic): void {
         () => {
             stream_list.update_streams_sidebar();
             unread_ui.update_unread_counts();
-            message_lists.current?.update_muting_and_rerender();
             recent_view_ui.update_topic_visibility_policy(
                 user_topic_event.stream_id,
                 user_topic_event.topic_name,
             );
+
+            if (!refreshed_current_narrow) {
+                message_lists.current?.update_muting_and_rerender();
+            }
         },
         should_add_topic_update_delay(user_topic_event.visibility_policy) ? 500 : 0,
     );
