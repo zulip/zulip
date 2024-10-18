@@ -127,12 +127,10 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
     };
 
     const muted_banner = {
-        title: $t({defaultMessage: "This feed is empty,"}),
-        html: page_params.is_spectator
-            ? ""
-            : $t_html({
-                  defaultMessage: "because you have muted all the topics in this channel.",
-              }),
+        title: $t({
+            defaultMessage:
+                "This feed is empty, because you have muted all the topics in this channel.",
+        }),
     };
 
     const default_banner_for_multiple_filters = $t({defaultMessage: "No search results."});

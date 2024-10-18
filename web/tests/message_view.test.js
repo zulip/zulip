@@ -625,8 +625,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: This feed is empty,",
-            "translated HTML: because you have muted all the topics in this channel.",
+            "translated: This feed is empty, because you have muted all the topics in this channel.",
         ),
     );
 
