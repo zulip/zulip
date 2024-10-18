@@ -284,7 +284,7 @@ def build_custom_emoji(
     # Map emoji file_id to emoji file data
     emoji_file_data = {}
     for emoji_file in custom_emoji_data["file"]:
-        emoji_file_data[emoji_file["_id"]] = {"filename": emoji_file["filename"], "chunks": []}
+        emoji_file_data[str(emoji_file["_id"])] = {"filename": emoji_file["filename"], "chunks": []}
     for emoji_chunk in custom_emoji_data["chunk"]:
         emoji_file_data[emoji_chunk["files_id"]]["chunks"].append(emoji_chunk["data"])
 
