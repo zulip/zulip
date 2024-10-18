@@ -75,11 +75,11 @@
     .user-profile-manage-own-edit-button,
     .user-profile-manage-others-edit-button,
     .user-profile-manage-own-copy-link-button {
-        color: hsl(200deg 100% 50%);
+        color: var(--color-user-profile-manage-button);
         cursor: pointer;
 
         &:hover {
-            color: hsl(200deg 100% 25%);
+            color: var(--color-user-profile-manage-button-hover);
         }
     }
 }
@@ -93,7 +93,7 @@
     border: 0;
 
     &:hover {
-        background: hsl(0deg 0% 90%);
+        background: var(--color-modal-close-hover-bg);
     }
 }
 
@@ -107,7 +107,7 @@
     line-height: 1.5;
 
     &.simplebar-scrollable-y + .modal__footer {
-        border-top: 1px solid hsl(0deg 0% 87%);
+        border-top: 1px solid var(--color-modal-footer-border);
     }
 }
 
@@ -256,12 +256,12 @@
             line-height: 26px;
 
             &:hover {
-                background-color: hsl(0deg 0% 0% / 5%);
+                background-color: var(--color-read-receipts-item-hover);
             }
 
             &:active,
             &:focus {
-                background-color: hsl(0deg 0% 0% / 10%);
+                background-color: var(--color-read-receipts-item-active-focus);
                 outline: none;
             }
         }
