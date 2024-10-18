@@ -265,6 +265,26 @@
         display: grid;
         grid-template-columns: 1fr;
         align-items: stretch;
+        border-radius: 3px;
+        border: 1px solid var(--color-border-dropdown-widget-button);
+        background-color: var(--color-compose-box-background);
+
+        #private_message_recipient {
+            visibility: hidden;
+        }
+
+        /* Give the recipient box, a `<div>`, the
+           correct styles when focus is in the
+           #stream_message_recipient_topic `<input>` */
+        &:focus-within,
+        &:hover,
+        &:not(:has(> .pill-container > .pill:first-child)) {
+            background-color: var(--color-background-dropdown-widget-button);
+
+            #private_message_recipient {
+                visibility: visible;
+            }
+        }
     }
 
     .message_header {
@@ -903,16 +923,30 @@ textarea.new_message_textarea {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: stretch;
     flex: 1 1 0;
-    border: 1px solid hsl(0deg 0% 0% / 20%);
+    border: 1px solid var(--color-border-dropdown-widget-button);
     border-radius: 3px;
     transition: border 0.2s ease;
-    background: hsl(0deg 0% 100%);
+    background-color: var(--color-compose-box-background);
+
+    &:hover {
+        background-color: var(--color-background-dropdown-widget-button);
+
+        #recipient_box_clear_topic_button {
+            visibility: visible;
+        }
+    }
 
     /* Give the recipient box, a `<div>`, the
        correct styles when focus is in the
        #stream_message_recipient_topic `<input>` */
-    &:focus-within {
-        border: 1px solid hsl(0deg 0% 67%);
+    &:focus-within,
+    &:has(input:placeholder-shown) {
+        border: 1px solid var(--color-border-dropdown-widget-button);
+        background-color: var(--color-background-dropdown-widget-button);
+
+        #recipient_box_clear_topic_button {
+            visibility: visible;
+        }
     }
 
     #stream_message_recipient_topic,
@@ -937,6 +971,7 @@ textarea.new_message_textarea {
 
     /* Styles for new conversation button in the recipient_box */
     #recipient_box_clear_topic_button {
+        visibility: hidden;
         /* Set the border radius smaller, relative to the parent */
         border-radius: 2px;
         padding: 6px;
@@ -948,6 +983,7 @@ textarea.new_message_textarea {
         }
 
         &:hover {
+            visibility: visible;
             background-color: var(
                 --color-compose-embedded-button-background-hover
             );
@@ -976,6 +1012,11 @@ textarea.new_message_textarea {
     &.dropdown-widget-button {
         padding: 0 6px;
         border-radius: 4px;
+        background-color: var(--color-compose-box-background);
+
+        &.widget-open {
+            background-color: var(--color-background-dropdown-widget-button);
+        }
     }
 }
 
@@ -1425,6 +1466,17 @@ textarea.new_message_textarea {
     display: flex;
     justify-content: flex-start;
     height: var(--compose-recipient-box-min-height);
+
+    &:hover,
+    &:focus,
+    &:focus-visible,
+    &:active {
+        outline: none;
+
+        .dropdown-widget-button {
+            background-color: var(--color-background-dropdown-widget-button);
+        }
+    }
 
     .dropdown_widget_value {
         flex-grow: 1;
