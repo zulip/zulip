@@ -95,6 +95,17 @@ class DemoRequestForm(forms.Form):
     message = forms.CharField(widget=forms.Textarea)
 
 
+class SalesRequestForm(forms.Form):
+    MAX_INPUT_LENGTH = 50
+    ORG_TYPES = [org_type for org_type in Realm.ORG_TYPES.values() if not org_type["hidden"]]
+    role = forms.CharField(max_length=MAX_INPUT_LENGTH)
+    organization_name = forms.CharField(max_length=MAX_INPUT_LENGTH)
+    organization_type = forms.CharField()
+    organization_website = forms.URLField(required=True, assume_scheme="https")
+    expected_user_count = forms.CharField(max_length=MAX_INPUT_LENGTH)
+    message = forms.CharField(widget=forms.Textarea)
+
+
 @zulip_login_required
 @typed_endpoint_without_parameters
 def support_request(request: HttpRequest) -> HttpResponse:
@@ -183,6 +194,60 @@ def demo_request(request: HttpRequest) -> HttpResponse:
             return response
 
     response = render(request, "corporate/support/demo_request.html", context=context)
+    return response
+
+
+@zulip_login_required
+@typed_endpoint_without_parameters
+def sales_support_request(request: HttpRequest) -> HttpResponse:
+    from corporate.lib.stripe import BILLING_SUPPORT_EMAIL
+
+    assert request.user.is_authenticated
+
+    if not request.user.is_realm_admin:
+        return render(request, "404.html", status=404)
+
+    context = {
+        "MAX_INPUT_LENGTH": SalesRequestForm.MAX_INPUT_LENGTH,
+        "ORG_TYPES": SalesRequestForm.ORG_TYPES,
+        "realm_org_type": request.user.realm.org_type,
+        "user_email": request.user.delivery_email,
+        "user_full_name": request.user.full_name,
+    }
+
+    if request.POST:
+        post_data = request.POST.copy()
+        form = SalesRequestForm(post_data)
+
+        if form.is_valid():
+            rate_limit_request_by_ip(request, domain="sends_email_by_ip")
+
+            email_context = {
+                "full_name": request.user.full_name,
+                "email": request.user.delivery_email,
+                "role": form.cleaned_data["role"],
+                "organization_name": form.cleaned_data["organization_name"],
+                "organization_type": form.cleaned_data["organization_type"],
+                "organization_website": form.cleaned_data["organization_website"],
+                "expected_user_count": form.cleaned_data["expected_user_count"],
+                "message": form.cleaned_data["message"],
+            }
+
+            send_email(
+                "zerver/emails/sales_support_request",
+                to_emails=[BILLING_SUPPORT_EMAIL],
+                from_name="Sales support request",
+                from_address=FromAddress.tokenized_no_reply_address(),
+                reply_to_email=email_context["email"],
+                context=email_context,
+            )
+
+            response = render(
+                request, "corporate/support/support_request_thanks.html", context=context
+            )
+            return response
+
+    response = render(request, "corporate/support/sales_support_request.html", context=context)
     return response
 
 
