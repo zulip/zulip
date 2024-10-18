@@ -377,6 +377,7 @@ test("empty_query_suggestions", () => {
         "is:alerted",
         "is:unread",
         "is:resolved",
+        "-is:resolved",
         "sender:myself@zulip.com",
         `channel:${devel_id}`,
         `channel:${office_id}`,
@@ -510,6 +511,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
         "-is:alerted",
         "-is:unread",
         "-is:resolved",
+        "is:resolved",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
