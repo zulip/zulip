@@ -3,8 +3,8 @@ import $ from "jquery";
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_left_sidebar_topic_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_actions_popover.hbs";
 
+import {clipboard_handler} from "./clipboard_handler";
 import * as confirm_dialog from "./confirm_dialog";
-import {try_stream_topic_syntax_text} from "./copy_and_paste";
 import {$t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as popover_menus from "./popover_menus";
@@ -159,19 +159,11 @@ export function initialize() {
                 });
                 // copy link to the stream topic
                 $popper.on("click", ".sidebar-popover-copy-link-to-topic", () => {
-                    const $topicLinkElement = $(".sidebar-popover-copy-link-to-topic");
-                    const formatedLinkText = `
-                    <a href=${$topicLinkElement.data("clipboard-text")}>${try_stream_topic_syntax_text($topicLinkElement.data("clipboard-text")).replaceAll(/\**/g, "\u200B")}</a>
-                   `;
-                    const clipboardItem = new ClipboardItem({
-                        "text/plain": new Blob([$topicLinkElement.data("clipboard-text")], {
-                            type: "text/plain",
-                        }),
-                        "text/html": new Blob([formatedLinkText], {type: "text/html"}),
-                    });
-                    navigator.clipboard.write([clipboardItem]).then(() => {
-                        popover_menus.hide_current_popover_if_visible(instance);
-                    });
+                    clipboard_handler(
+                        $(".sidebar-popover-copy-link-to-topic"),
+                        popover_menus.hide_current_popover_if_visible,
+                        instance,
+                    );
                 });
             },
             onHidden(instance) {
