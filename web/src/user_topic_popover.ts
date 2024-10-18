@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_change_visibility_policy_popover from "../templates/popovers/change_visibility_policy_popover.hbs";
 
@@ -8,7 +9,10 @@ import {parse_html} from "./ui_util";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
 
-export function initialize() {
+let stream_id: number | undefined;
+let topic_name: string | undefined;
+
+export function initialize(): void {
     popover_menus.register_popover_menu(".change_visibility_policy", {
         theme: "popover-menu",
         placement: "bottom",
@@ -28,24 +32,30 @@ export function initialize() {
             popover_menus.popover_instances.change_visibility_policy = instance;
             popover_menus.on_show_prep(instance);
             const $elt = $(instance.reference).closest(".change_visibility_policy").expectOne();
-            const stream_id = $elt.attr("data-stream-id");
-            const topic_name = $elt.attr("data-topic-name");
+            const stream_id_str = $elt.attr("data-stream-id");
+            const topic_name_str = $elt.attr("data-topic-name");
             $elt.addClass("visibility-policy-popover-visible");
+            assert(stream_id_str !== undefined);
+            assert(topic_name_str !== undefined);
 
-            instance.context =
-                popover_menus_data.get_change_visibility_policy_popover_content_context(
-                    Number.parseInt(stream_id, 10),
-                    topic_name,
-                );
+            stream_id = Number.parseInt(stream_id_str, 10);
+            topic_name = topic_name_str;
+
             instance.setContent(
-                parse_html(render_change_visibility_policy_popover(instance.context)),
+                parse_html(
+                    render_change_visibility_policy_popover(
+                        popover_menus_data.get_change_visibility_policy_popover_content_context(
+                            stream_id,
+                            topic_name,
+                        ),
+                    ),
+                ),
             );
         },
         onMount(instance) {
             const $popper = $(instance.popper);
-            const {stream_id, topic_name} = instance.context;
 
-            if (!stream_id) {
+            if (!stream_id || !topic_name) {
                 popover_menus.hide_current_popover_if_visible(instance);
                 return;
             }
@@ -54,11 +64,11 @@ export function initialize() {
                 const start_time = Date.now();
 
                 const visibility_policy = Number.parseInt(
-                    $(e.currentTarget).attr("data-visibility-policy"),
+                    $(e.currentTarget).attr("data-visibility-policy") ?? "0",
                     10,
                 );
 
-                const success_cb = () => {
+                const success_cb = (): void => {
                     setTimeout(
                         () => {
                             popover_menus.hide_current_popover_if_visible(instance);
@@ -67,10 +77,10 @@ export function initialize() {
                     );
                 };
 
-                const error_cb = () => {
+                const error_cb = (): void => {
                     const prev_visibility_policy = user_topics.get_topic_visibility_policy(
-                        stream_id,
-                        topic_name,
+                        stream_id!,
+                        topic_name!,
                     );
                     const $prev_visibility_policy_input = $(e.currentTarget)
                         .parent()
@@ -84,8 +94,8 @@ export function initialize() {
                 };
 
                 user_topics.set_user_topic_visibility_policy(
-                    stream_id,
-                    topic_name,
+                    stream_id!,
+                    topic_name!,
                     visibility_policy,
                     false,
                     false,
@@ -101,7 +111,7 @@ export function initialize() {
                 .expectOne()
                 .removeClass("visibility-policy-popover-visible");
             instance.destroy();
-            popover_menus.popover_instances.change_visibility_policy = undefined;
+            popover_menus.popover_instances.change_visibility_policy = null;
 
             // If the reference is in recent view / inbox, we would ideally restore focus
             // to the reference icon here but we don't do that because there are a lot of
