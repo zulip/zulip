@@ -118,14 +118,20 @@ export const web_home_view_values = {
     inbox: {
         code: "inbox",
         description: $t({defaultMessage: "Inbox"}),
+        class: "top_left_inbox",
+        order: 1,
     },
     recent_topics: {
         code: "recent_topics",
         description: $t({defaultMessage: "Recent conversations"}),
+        class: "top_left_recent_view",
+        order: 2,
     },
     all_messages: {
         code: "all_messages",
         description: $t({defaultMessage: "Combined feed"}),
+        class: "top_left_all_messages",
+        order: 3,
     },
 };
 
