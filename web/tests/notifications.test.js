@@ -349,7 +349,7 @@ test("message_is_notifiable", ({override}) => {
 });
 
 test("basic_notifications", () => {
-    $("<div>").set_find_results(".emoji", {text: () => ({contents: () => ({unwrap() {}})})});
+    $("<div>").set_find_results("span.emoji", {each() {}});
     $("<div>").set_find_results("span.katex", {each() {}});
     $("<div>").children = () => [];
 
@@ -381,7 +381,7 @@ test("basic_notifications", () => {
 
     const message_1 = {
         id: 1000,
-        content: "@-mentions the user",
+        content: "@-mentions the user :smile:",
         avatar_url: "url",
         sent_by_me: false,
         sender_full_name: "Jesse Pinkman",
