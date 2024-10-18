@@ -66,7 +66,8 @@ Hello, world.
     def test_message_without_payload(self) -> None:
         self.url = self.build_webhook_url()
         result = self.client_post(self.url)
-        self.assert_json_error(result, "Missing 'payload' argument")
+        self.assertEqual(result.json()["error"], "Missing 'payload' argument")
+        self.assertEqual(result.json()["ok"], False)
 
     def test_message_with_actions(self) -> None:
         expected_topic_name = "C1H9RESGL"

@@ -14,7 +14,7 @@ from django.contrib.auth import login as django_login
 from django.contrib.auth.decorators import user_passes_test as django_user_passes_test
 from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
 from django.contrib.auth.views import redirect_to_login
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, QueryDict
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse, QueryDict
 from django.http.multipartparser import MultiPartParser
 from django.shortcuts import resolve_url
 from django.template.response import SimpleTemplateResponse, TemplateResponse
@@ -1062,3 +1062,23 @@ def add_google_analytics(
         return response
 
     return _wrapped_view_func
+
+
+def slack_error_handler(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+    """
+    A decorator that catches JsonableError exceptions and returns a
+    Slack-compatible error response in the format:
+    {ok: false, error: "error message"}.
+    """
+
+    @wraps(view_func)
+    def wrapped_view(
+        request: HttpRequest, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> HttpResponse:
+        try:
+            return view_func(request, *args, **kwargs)
+        except JsonableError as error:
+            error_message = error.msg_format().format(**getattr(error, "data", {}))
+            return JsonResponse({"ok": False, "error": error_message}, status=400)
+
+    return wrapped_view
