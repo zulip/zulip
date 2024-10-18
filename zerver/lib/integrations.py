@@ -749,7 +749,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "github": [ScreenshotConfig("push__1_commit.json")],
     "githubsponsors": [ScreenshotConfig("created.json")],
     "gitlab": [ScreenshotConfig("push_hook__push_local_branch_without_commits.json")],
-    "gocd": [ScreenshotConfig("pipeline.json")],
+    "gocd": [ScreenshotConfig("pipeline_with_mixed_job_result.json")],
     "gogs": [ScreenshotConfig("pull_request__opened.json")],
     "gosquared": [ScreenshotConfig("traffic_spike.json", image_name="000.png")],
     "grafana": [ScreenshotConfig("alert_values_v11.json")],
