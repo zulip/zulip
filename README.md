@@ -54,8 +54,8 @@ Come find us on the [development community chat](https://zulip.com/development-c
 
 - **Running a Zulip server**. Self-host Zulip directly on Ubuntu or Debian
   Linux, in [Docker](https://github.com/zulip/docker-zulip), or with prebuilt
-  images for [Digital Ocean](https://marketplace.digitalocean.com/apps/zulip) and
-  [Render](https://render.com/docs/deploy-zulip).
+  images for [Digital Ocean](https://marketplace.digitalocean.com/apps/zulip),
+  [Render](https://render.com/docs/deploy-zulip) and [Elestio](https://elest.io/open-source/zulip).
   Learn more about [self-hosting Zulip](https://zulip.com/self-hosting/).
 
 - **Using Zulip without setting up a server**. Learn about [Zulip
