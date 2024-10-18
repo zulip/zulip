@@ -736,6 +736,11 @@ export function exclude_me_from_string(user_ids_string: string): string {
     return user_ids.join(",");
 }
 
+export function user_is_bot(user_id: number): boolean {
+    const user = get_by_user_id(user_id);
+    return user.is_bot;
+}
+
 export function sender_is_bot(message: Message): boolean {
     if (message.sender_id) {
         const person = get_by_user_id(message.sender_id);

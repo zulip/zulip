@@ -192,6 +192,14 @@
         &:hover {
             background-color: var(--color-background-text-hover-direct-mention);
         }
+
+        i.zulip-icon-bot {
+            font-size: 12px;
+            margin: 0 var(--margin-lefthand-bot-icon-offset);
+            vertical-align: middle;
+            position: relative;
+            top: -1px;
+        }
     }
 
     .user-mention,
