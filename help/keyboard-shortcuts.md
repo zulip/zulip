@@ -185,9 +185,7 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Star message**: <kbd>Ctrl</kbd> + <kbd>S</kbd>
 
-* **React with <img alt=":thumbs_up:" class="emoji"
-  src="/static/generated/emoji/images/emoji/unicode/1f44d.png"
-  title="thumbs up"/>**: <kbd>+</kbd>
+* **React with 👍**: <kbd>+</kbd>
 
 * **Toggle first emoji reaction**: <kbd>=</kbd>
 
