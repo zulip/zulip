@@ -825,7 +825,7 @@
     i.fa:focus,
     i.zulip-icon:focus,
     [role="button"]:focus {
-        outline-color: hsl(0deg 0% 67%);
+        outline-color: var(--color-outline-focus);
     }
 
     .color_animated_button {
