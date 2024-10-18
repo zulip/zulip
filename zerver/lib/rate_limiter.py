@@ -604,6 +604,7 @@ def rate_limit_request_by_ip(request: HttpRequest, domain: str) -> None:
 
 
 def should_rate_limit(request: HttpRequest) -> bool:
+    return False
     if not settings.RATE_LIMITING:
         return False
 

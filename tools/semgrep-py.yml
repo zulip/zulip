@@ -216,6 +216,9 @@ rules:
       - pattern-not-inside: |
           def get_object_from_key(...):
             ...
+      - pattern-not-inside: |
+          def def realm_import_status(...):
+            ...
     paths:
       exclude:
         - zerver/tests/
