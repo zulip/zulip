@@ -53,6 +53,7 @@
 * [Get channel's email address](/api/get-stream-email-address)
 * [Get topics in a channel](/api/get-stream-topics)
 * [Topic muting](/api/mute-topic)
+* [Lock a topic](/api/update-topic-settings)
 * [Update personal preferences for a topic](/api/update-user-topic)
 * [Delete a topic](/api/delete-topic)
 * [Add a default channel](/api/add-default-stream)

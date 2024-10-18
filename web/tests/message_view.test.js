@@ -19,6 +19,7 @@ const narrow_title = zrequire("narrow_title");
 const recent_view_util = zrequire("recent_view_util");
 const inbox_util = zrequire("inbox_util");
 const message_lists = zrequire("message_lists");
+const topic_settings = zrequire("topic_settings");
 const {set_current_user, set_realm} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
@@ -103,6 +104,8 @@ const everyone = {
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
 };
+
+const fake_now = 1697404800000;
 
 user_groups.initialize({realm_user_groups: [nobody, everyone]});
 
@@ -268,6 +271,22 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: This channel doesn't exist, or you are not allowed to view it.",
+        ),
+    );
+
+    const delhi_id = 99;
+    stream_data.add_sub({name: "DELHI", stream_id: delhi_id});
+    set_filter([
+        ["stream", delhi_id.toString()],
+        ["topic", "foo"],
+    ]);
+    topic_settings.update_topic_settings(delhi_id, "DELHI", "foo", true, fake_now);
+    narrow_banner.show_empty_narrow_message("topic_locked");
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: This topic has been locked by a moderator.",
+            'translated HTML: <a target="_blank" rel="noopener noreferrer" href="/help/lock-a-topic">Learn more.</a>',
         ),
     );
 
