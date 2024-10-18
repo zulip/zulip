@@ -39,6 +39,33 @@ import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
 
+export function update_current_view_for_topic_visibility() {
+    // If we have rendered message list / cached data based on topic
+    // visibility policy, we need to rerender it to reflect the changes. It
+    // is easier to just load the narrow from scratch, instead of asking server
+    // for relevant messages in the updated topic.
+    const filter = message_lists.current?.data.filter;
+    if (
+        filter !== undefined &&
+        (filter.sorted_term_types().includes("is-followed") ||
+            filter.sorted_term_types().includes("not-is-followed"))
+    ) {
+        // Use `set_timeout to call after we update the topic
+        // visibility policy locally.
+        // Calling this outside `user_topics_ui` to avoid circular imports.
+        setTimeout(() => {
+            assert(message_lists.current !== undefined);
+            message_view.show(filter.terms(), {
+                then_select_id: message_lists.current.selected_id(),
+                trigger: "topic visibility policy change",
+                force_rerender: true,
+            });
+        }, 0);
+        return true;
+    }
+    return false;
+}
+
 export function update_views_filtered_on_message_property(
     message_ids,
     property_term_type,
@@ -58,8 +85,6 @@ export function update_views_filtered_on_message_property(
         "is-unread",
         "is-mentioned",
         "is-alerted",
-        // TODO: Implement support for these terms.
-        // "is-followed",
     ];
 
     if (message_ids.length === 0 || !supported_term_types.includes(property_term_type)) {
