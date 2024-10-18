@@ -106,6 +106,7 @@ export type MessageGroup = {
           topic_url: string | undefined;
           user_can_resolve_topic: boolean;
           visibility_policy: number | false;
+          always_display_date: boolean;
       }
     | {
           is_stream: false;
@@ -114,6 +115,7 @@ export type MessageGroup = {
           is_private: true;
           pm_with_url: string;
           recipient_users: RecipientRowUser[];
+          always_display_date: boolean;
       }
 );
 
@@ -425,6 +427,14 @@ function maybe_restore_focus_to_message_edit_form(): void {
     }, 0);
 }
 
+function is_search_view(): boolean {
+    const current_filter = narrow_state.filter();
+    if (current_filter && !current_filter.supports_collapsing_recipients()) {
+        return true;
+    }
+    return false;
+}
+
 type SubscriptionMarkers = {
     bookend_top: boolean;
     stream_name: string;
@@ -443,6 +453,9 @@ function populate_group_from_message(
     const message_group_id = _.uniqueId("message_group_");
     const date = get_group_display_date(message, year_changed);
 
+    // Each searched message is a self-contained result,
+    // so we always display date in the recipient bar for those messages.
+    const always_display_date = is_search_view();
     if (is_stream) {
         assert(message.type === "stream");
         // stream messages have string display_recipient
@@ -501,6 +514,7 @@ function populate_group_from_message(
             topic_is_resolved,
             visibility_policy,
             all_visibility_policies,
+            always_display_date,
         };
     }
     // Private message group
@@ -520,6 +534,7 @@ function populate_group_from_message(
         pm_with_url: message.pm_with_url,
         recipient_users: get_users_for_recipient_row(message),
         display_reply_to_for_tooltip: message_store.get_pm_full_names(user_ids),
+        always_display_date,
     };
 }
 
