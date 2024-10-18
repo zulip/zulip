@@ -76,6 +76,7 @@ export type InputPillContainer<ItemType> = {
     clear_text: () => void;
     getCurrentText: () => string | null;
     is_pending: () => boolean;
+    replace_items: (items: ItemType[]) => void;
     _get_pills_for_testing: () => InputPill<ItemType>[];
 };
 
@@ -272,6 +273,13 @@ export function create<ItemType extends {type: string}>(
 
         items() {
             return store.pills.map((pill) => pill.item);
+        },
+
+        replace_items(items: ItemType[]) {
+            funcs.removeAllPills("clear");
+            for (const item of items) {
+                funcs.appendValidatedData(item);
+            }
         },
 
         createPillonPaste() {
@@ -481,6 +489,7 @@ export function create<ItemType extends {type: string}>(
         },
         clear_text: funcs.clear_text.bind(funcs),
         is_pending: funcs.is_pending.bind(funcs),
+        replace_items: funcs.replace_items.bind(funcs),
         _get_pills_for_testing: funcs._get_pills_for_testing.bind(funcs),
     };
 

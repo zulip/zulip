@@ -39,6 +39,12 @@ export let select_tab = "general";
 let group_list_widget;
 let group_list_toggler;
 
+let can_add_members_group_widget;
+let can_join_group_widget;
+let can_leave_group_widget;
+let can_manage_group_widget;
+let can_mention_group_widget;
+
 function get_user_group_id(target) {
     const $row = $(target).closest(
         ".group-row, .user_group_settings_wrapper, .save-button, .group_settings_header",
@@ -104,6 +110,38 @@ function update_add_members_elements(group) {
     }
 }
 
+function sync_disabled_status_for_pill_widget(widget) {
+    const items = widget.items();
+    if (items.length > 0 && !items[0].disabled) {
+        for (const item of items) {
+            item.disabled = true;
+        }
+        widget.replace_items(items);
+    }
+}
+
+function sync_disabled_status_for_all_pill_widgets() {
+    if (can_add_members_group_widget) {
+        sync_disabled_status_for_pill_widget(can_add_members_group_widget);
+    }
+
+    if (can_join_group_widget) {
+        sync_disabled_status_for_pill_widget(can_join_group_widget);
+    }
+
+    if (can_leave_group_widget) {
+        sync_disabled_status_for_pill_widget(can_leave_group_widget);
+    }
+
+    if (can_manage_group_widget) {
+        sync_disabled_status_for_pill_widget(can_manage_group_widget);
+    }
+
+    if (can_mention_group_widget) {
+        sync_disabled_status_for_pill_widget(can_mention_group_widget);
+    }
+}
+
 function update_group_permission_settings_elements(group) {
     if (!is_editing_group(group.id)) {
         return;
@@ -134,6 +172,8 @@ function update_group_permission_settings_elements(group) {
             );
         });
         settings_components.disable_opening_typeahead_on_clicking_label($group_permission_settings);
+
+        sync_disabled_status_for_all_pill_widgets();
     }
 }
 
@@ -151,35 +191,35 @@ function show_membership_settings(group) {
 
 function show_general_settings(group) {
     const $edit_container = get_edit_container(group);
-    settings_components.create_group_setting_widget({
+    can_add_members_group_widget = settings_components.create_group_setting_widget({
         $pill_container: $edit_container.find(".can-add-members-group-container .pill-container"),
         setting_name: "can_add_members_group",
         setting_type: "group",
         group,
     });
 
-    settings_components.create_group_setting_widget({
+    can_manage_group_widget = settings_components.create_group_setting_widget({
         $pill_container: $edit_container.find(".can-manage-group-container .pill-container"),
         setting_name: "can_manage_group",
         setting_type: "group",
         group,
     });
 
-    settings_components.create_group_setting_widget({
+    can_join_group_widget = settings_components.create_group_setting_widget({
         $pill_container: $edit_container.find(".can-join-group-container .pill-container"),
         setting_name: "can_join_group",
         setting_type: "group",
         group,
     });
 
-    settings_components.create_group_setting_widget({
+    can_leave_group_widget = settings_components.create_group_setting_widget({
         $pill_container: $edit_container.find(".can-leave-group-container .pill-container"),
         setting_name: "can_leave_group",
         setting_type: "group",
         group,
     });
 
-    settings_components.create_group_setting_widget({
+    can_mention_group_widget = settings_components.create_group_setting_widget({
         $pill_container: $edit_container.find(".can-mention-group-container .pill-container"),
         setting_name: "can_mention_group",
         setting_type: "group",
