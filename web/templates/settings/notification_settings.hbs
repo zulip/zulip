@@ -28,17 +28,24 @@
             </thead>
             <tbody>
                 {{#each general_settings}}
-                    <tr>
-                        <td>{{ this.label }}</td>
-                        {{#each this.notification_settings}}
-                            {{> notification_settings_checkboxes
-                              setting_name=this.setting_name
-                              is_checked=this.is_checked
-                              is_disabled=this.is_disabled
-                              is_mobile_checkbox=this.is_mobile_checkbox
-                              prefix=../../prefix }}
-                        {{/each}}
-                    </tr>
+                <tr>
+                    <td>
+                        {{ this.label }}
+                        {{#if (eq this.label (t "Followed topics"))}}
+                        <a href="/help/follow-a-topic" class="help_link_widget">
+                            <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+                        </a>
+                        {{/if}}
+                    </td>
+                    {{#each this.notification_settings}}
+                    {{> notification_settings_checkboxes
+                    setting_name=this.setting_name
+                    is_checked=this.is_checked
+                    is_disabled=this.is_disabled
+                    is_mobile_checkbox=this.is_mobile_checkbox
+                    prefix=../../prefix }}
+                    {{/each}}
+                </tr>
                 {{/each}}
             </tbody>
             {{#unless for_realm_settings}}
