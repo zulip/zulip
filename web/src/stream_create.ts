@@ -348,10 +348,6 @@ function create_stream(): void {
         success(): void {
             $("#create_stream_name").val("");
             $("#create_stream_description").val("");
-            ui_report.success(
-                $t_html({defaultMessage: "Channel successfully created!"}),
-                $(".stream_create_info"),
-            );
             loading.destroy_indicator($("#stream_creating_indicator"));
             // The rest of the work is done via the subscribe event we will get
         },
