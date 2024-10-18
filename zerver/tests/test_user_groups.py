@@ -481,7 +481,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_error(result, "User group 'support' already exists.")
         self.assert_length(NamedUserGroup.objects.filter(realm=hamlet.realm), 10)
 
-        # Test we cannot create group with same name again
+        # Test we cannot create group with name longer than allowed length.
         params = {
             "name": "a" * (NamedUserGroup.MAX_NAME_LENGTH + 1),
             "members": orjson.dumps([hamlet.id]).decode(),
@@ -491,7 +491,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_error(result, "User group name cannot exceed 100 characters.")
         self.assert_length(NamedUserGroup.objects.filter(realm=hamlet.realm), 10)
 
-        # Test emtpty group name.
+        # Test empty group name.
         params = {
             "name": "",
             "members": orjson.dumps([hamlet.id]).decode(),
