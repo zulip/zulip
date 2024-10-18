@@ -280,10 +280,8 @@ labels.
   codebase, you can also find another "help wanted" issue in the same area to
   work on.
 - **What if there is already a pull request for the issue I want to work on?**
-  Start by reviewing the existing work. If you agree with the approach, you can
-  use the existing pull request (PR) as a starting point for your contribution. If
-  you think a different approach is needed, you can post a new PR, with a comment that clearly
-  explains _why_ you decided to start from scratch.
+  See our [guide on continuing unfinished
+  work](https://zulip.readthedocs.io/en/latest/contributing/continuing-unfinished-work.html).
 - **What if I ask if someone is still working on an issue, and they don't
   respond?** If you don't get a reply within 2-3 days, go ahead and post a comment
   that you are working on the issue, and submit a pull request. If the original
