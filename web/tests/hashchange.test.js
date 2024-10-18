@@ -16,6 +16,7 @@ const history = set_global("history", {});
 const admin = mock_esm("../src/admin");
 const drafts_overlay_ui = mock_esm("../src/drafts_overlay_ui");
 const info_overlay = mock_esm("../src/info_overlay");
+const message_lists = mock_esm("../src/message_lists");
 const message_viewport = mock_esm("../src/message_viewport");
 const overlays = mock_esm("../src/overlays");
 const popovers = mock_esm("../src/popovers");
@@ -33,6 +34,7 @@ const browser_history = zrequire("browser_history");
 const people = zrequire("people");
 const hash_util = zrequire("hash_util");
 const hashchange = zrequire("hashchange");
+const echo = zrequire("../src/echo");
 const message_view = zrequire("../src/message_view");
 const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../src/filter");
@@ -443,4 +445,44 @@ run_test("update_hash_to_match_filter", ({override, override_rewire}) => {
     message_view.update_hash_to_match_filter(new Filter(terms));
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(url_pushed, "http://zulip.zulipdev.com/#narrow/is/starred");
+});
+
+run_test("update_hash_to_match_filter", () => {
+    blueslip.expect("error", "browser does not support pushState");
+    let terms = [
+        {operator: "channel", operand: devel_id.toString(), negated: false},
+        {operator: "topic", operand: "test", negated: false},
+    ];
+
+    // Current filter is a channel-topic narrow, with no `with` term.
+    message_lists.current = {data: {filter: new Filter(terms)}};
+
+    // Message belongs to the same channel and topic as of current narrow.
+    echo.update_topic_hash_to_contain_with_term({
+        id: 12,
+        stream_id: devel_id,
+        topic: "test",
+        type: "stream",
+    });
+    assert.deepEqual(
+        [...terms, {operator: "with", operand: "12"}],
+        message_lists.current.data.filter.terms(),
+    );
+    assert.equal(window.location.hash, `#narrow/stream/${devel_id}-devel/topic/test/with/12`);
+
+    // Message does not belongs to the same channel and topic as of current narrow.
+    message_lists.current.data.filter = new Filter(terms);
+    echo.update_topic_hash_to_contain_with_term({
+        id: 12,
+        stream_id: devel_id,
+        topic: "test 2",
+        type: "stream",
+    });
+    assert.deepEqual(terms, message_lists.current.data.filter.terms());
+
+    // Current narrow is not channel topic narrow
+    terms = [{operator: "dm", operand: "foo@example.com", negated: false}];
+    message_lists.current.data.filter = new Filter(terms);
+    echo.update_topic_hash_to_contain_with_term({id: 12});
+    assert.deepEqual(terms, message_lists.current.data.filter.terms());
 });
