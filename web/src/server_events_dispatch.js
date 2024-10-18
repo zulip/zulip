@@ -1009,7 +1009,10 @@ export function dispatch_normal_event(event) {
             break;
 
         case "user_topic":
-            user_topics_ui.handle_topic_updates(event);
+            user_topics_ui.handle_topic_updates(
+                event,
+                message_events.update_current_view_for_topic_visibility(),
+            );
             break;
     }
 }
