@@ -432,5 +432,30 @@ $user_status_emoji_width: 24px;
         grid-area: 1 / 2 / 2 / 3;
         position: static;
         padding: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        box-sizing: border-box;
+        color: var(--color-icons-inbox);
+        border-radius: 4px;
+        opacity: 0.4;
+
+        &:hover,
+        &:focus {
+            outline: none;
+            opacity: 1;
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--color-outline-focus);
+            outline-offset: -2px;
+        }
+
+        &:active {
+            opacity: 1;
+            transform: scale(0.9);
+        }
     }
 }
