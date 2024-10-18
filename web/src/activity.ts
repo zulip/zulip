@@ -6,6 +6,7 @@ import * as channel from "./channel";
 import {electron_bridge} from "./electron_bridge";
 import {page_params} from "./page_params";
 import * as presence from "./presence";
+import * as unread_ops from "./unread_ops";
 import * as watchdog from "./watchdog";
 
 const post_presence_response_schema = z.object({
@@ -58,8 +59,19 @@ export let client_is_active = document.hasFocus();
 // server-initiated reload as user activity.
 export let new_user_input = true;
 
+let received_new_messages = false;
+
+export function set_received_new_messages(value: boolean): void {
+    received_new_messages = value;
+}
+
 export function set_new_user_input(value: boolean): void {
     new_user_input = value;
+
+    if (received_new_messages && new_user_input) {
+        unread_ops.process_visible();
+        set_received_new_messages(false);
+    }
 }
 
 export function clear_for_testing(): void {
@@ -139,7 +151,7 @@ export function send_presence_to_server(redraw?: () => void): void {
                 $("#zephyr-mirror-error").removeClass("show");
             }
 
-            new_user_input = false;
+            set_new_user_input(false);
 
             if (redraw) {
                 assert(
@@ -176,7 +188,7 @@ export function mark_client_active(): void {
 
 export function initialize(): void {
     $("html").on("mousemove", () => {
-        new_user_input = true;
+        set_new_user_input(true);
     });
 
     $(window).on("focus", mark_client_active);

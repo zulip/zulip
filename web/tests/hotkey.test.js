@@ -34,6 +34,8 @@ set_global("document", {
 });
 
 const activity_ui = mock_esm("../src/activity_ui");
+const activity = zrequire("../src/activity");
+const unread_ops = zrequire("../src/unread_ops");
 const browser_history = mock_esm("../src/browser_history");
 const compose_actions = mock_esm("../src/compose_actions");
 const compose_reply = mock_esm("../src/compose_reply");
@@ -542,4 +544,20 @@ run_test("motion_keys", () => {
     assert_mapping("down_arrow", drafts_overlay_ui, "handle_keyboard_events");
     delete overlays.any_active;
     delete overlays.drafts_open;
+});
+
+run_test("test process visible unreads on user activity", ({override_rewire}) => {
+    let called_process_visible = false;
+    override_rewire(unread_ops, "process_visible", () => {
+        called_process_visible = true;
+    });
+    const e = {
+        which: "S".codePointAt(0),
+    };
+    hotkey.process_keydown(e);
+    assert.equal(called_process_visible, false);
+
+    activity.set_received_new_messages(true);
+    hotkey.process_keydown(e);
+    assert.equal(called_process_visible, true);
 });

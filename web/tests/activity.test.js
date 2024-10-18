@@ -50,7 +50,7 @@ const activity_ui = zrequire("activity_ui");
 const stream_data = zrequire("stream_data");
 const peer_data = zrequire("peer_data");
 const message_lists = zrequire("message_lists");
-const util = zrequire("util");
+const ui_init = zrequire("ui_init");
 const {Filter} = zrequire("../src/filter");
 const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
@@ -299,7 +299,7 @@ test("direct_message_update_dom_counts", () => {
     assert.equal($count.text(), "");
 });
 
-test("handlers", ({override, override_rewire, mock_template}) => {
+test("handlers", ({override, mock_template}) => {
     let filter_key_handlers;
 
     mock_template("presence_rows.hbs", false, () => "<presence-rows-stub>");
@@ -345,8 +345,6 @@ test("handlers", ({override, override_rewire, mock_template}) => {
         stub_buddy_list_elements();
 
         buddy_list.start_scroll_handler = noop;
-        override_rewire(util, "call_function_periodically", noop);
-        override_rewire(activity, "send_presence_to_server", noop);
         activity_ui.initialize({narrow_by_email});
 
         buddy_list.populate({
@@ -838,6 +836,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
     activity.initialize();
     activity_ui.initialize({narrow_by_email() {}});
+    ui_init.periodically_update_user_presence();
     payload.success({
         zephyr_mirror_active: true,
         presences: {},
@@ -863,6 +862,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     $(window).off("focus");
     activity.initialize();
     activity_ui.initialize({narrow_by_email() {}});
+    ui_init.periodically_update_user_presence();
     payload.success({
         zephyr_mirror_active: false,
         presences: {},
