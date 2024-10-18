@@ -43,6 +43,8 @@ from typing import Any
 
 from django.core.management.base import CommandParser
 from django.core.management.commands import makemessages
+from django.template import engines
+from django.template.backends.jinja2 import Jinja2
 from django.template.base import BLOCK_TAG_END, BLOCK_TAG_START
 from django.utils.translation import template
 from typing_extensions import override
@@ -75,6 +77,23 @@ def strip_whitespaces(src: str) -> str:
     src = strip_whitespace_left.sub("\\1", src)
     src = strip_whitespace_right.sub("\\1", src)
     return src
+
+
+# Find trans blocks that have neither "trimmed" nor "notrimmed" set.
+trans_block_re = re.compile(
+    f"({BLOCK_TAG_START}-?\\s*trans)(?!\\s+(?:no)?trimmed)(.*?{BLOCK_TAG_END})"
+)
+
+
+def apply_i18n_trimmed_policy(src: str) -> str:
+    # if "ext.i18n.trimmed" is True, insert "trimmed" flag on trans
+    # blocks that have neither "trimmed" nor "notrimmed" set.
+    jinja = engines["Jinja2"]
+    assert isinstance(jinja, Jinja2)
+    i18n_trim_policy = jinja.env.policies["ext.i18n.trimmed"]
+    if not i18n_trim_policy:
+        return src
+    return trans_block_re.sub("\\1 trimmed \\2", src)
 
 
 class Command(makemessages.Command):
@@ -139,7 +158,9 @@ class Command(makemessages.Command):
             template.endblock_re.pattern + r"|" + r"""^-?\s*endtrans\s*-?$"""
         )
         template.block_re = re.compile(
-            template.block_re.pattern + r"|" + r"""^-?\s*trans(?:\s+(?!'|")(?=.*?=.*?)|\s*-?$)"""
+            template.block_re.pattern
+            + r"|"
+            + r"""^-?\s*trans(?:\s+(?:no)?trimmed)?(?:\s+(?!'|")(?=.*?=.*?)|\s*-?$)"""
         )
         template.plural_re = re.compile(
             template.plural_re.pattern + r"|" + r"""^-?\s*pluralize(?:\s+.+|-?$)"""
@@ -148,6 +169,7 @@ class Command(makemessages.Command):
 
         def my_templatize(src: str, *args: Any, **kwargs: Any) -> str:
             new_src = strip_whitespaces(src)
+            new_src = apply_i18n_trimmed_policy(new_src)
             return old_templatize(new_src, *args, **kwargs)
 
         template.templatize = my_templatize
