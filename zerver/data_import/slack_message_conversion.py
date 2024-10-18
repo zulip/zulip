@@ -114,22 +114,35 @@ def convert_to_zulip_markdown(
     return text, mentioned_users_id, message_has_link
 
 
+def get_zulip_mention_for_slack_user(
+    slack_user_id: str | None,
+    slack_user_shortname: str | None,
+    users: list[ZerverFieldsT],
+    silent: bool = False,
+) -> str | None:
+    if slack_user_id:
+        for user in users:
+            if user["id"] == slack_user_id and (
+                slack_user_shortname is None or user["name"] == slack_user_shortname
+            ):
+                return ("@_**" if silent else "@**") + get_user_full_name(user) + "**"
+    return None
+
+
 def get_user_mentions(
-    token: str, users: list[ZerverFieldsT], slack_user_id_to_zulip_user_id: SlackToZulipUserIDT
+    token: str,
+    users: list[ZerverFieldsT],
+    slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
 ) -> tuple[str, int | None]:
     slack_usermention_match = re.search(SLACK_USERMENTION_REGEX, token, re.VERBOSE)
     assert slack_usermention_match is not None
     short_name = slack_usermention_match.group(4)
     slack_id = slack_usermention_match.group(2)
-    for user in users:
-        if (user["id"] == slack_id and user["name"] == short_name and short_name) or (
-            user["id"] == slack_id and short_name is None
-        ):
-            full_name = get_user_full_name(user)
-            user_id = slack_user_id_to_zulip_user_id[slack_id]
-            mention = "@**" + full_name + "**"
-            token = re.sub(SLACK_USERMENTION_REGEX, mention, token, flags=re.VERBOSE)
-            return token, user_id
+    zulip_mention = get_zulip_mention_for_slack_user(slack_id, short_name, users)
+    if zulip_mention is not None:
+        token = re.sub(SLACK_USERMENTION_REGEX, zulip_mention, token, flags=re.VERBOSE)
+        user_id = slack_user_id_to_zulip_user_id[slack_id]
+        return token, user_id
     return token, None
 
 

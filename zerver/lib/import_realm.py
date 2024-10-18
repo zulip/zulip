@@ -396,6 +396,9 @@ def fix_message_rendered_content(
                     if old_user_group_id in user_group_id_map:
                         mention["data-user-group-id"] = str(user_group_id_map[old_user_group_id])
                 message[rendered_content_key] = str(soup)
+
+            message[rendered_content_key] = update_near_links(message[rendered_content_key])
+
             continue
 
         try:
@@ -418,6 +421,9 @@ def fix_message_rendered_content(
                 sent_by_bot=sent_by_bot,
                 translate_emoticons=translate_emoticons,
             ).rendered_content
+            # Near-links fix has to be done here for third-party platforms
+            # import because those doesn't have any rendered content yet.
+            rendered_content = update_near_links(rendered_content)
 
             message[rendered_content_key] = rendered_content
             if "scheduled_timestamp" not in message:
@@ -433,6 +439,63 @@ def fix_message_rendered_content(
             logging.warning(
                 "Error in Markdown rendering for message ID %s; continuing", message["id"]
             )
+
+
+def valid_near_link_parts(near_link_parts: list[str]) -> bool:
+    return (
+        3 <= len(near_link_parts) <= 7
+        and near_link_parts[0] == "#narrow"
+        and near_link_parts[1] in ["channel", "stream"]
+    )
+
+
+def update_near_link_channel_id(near_link_parts: list[str], channel_id_map: dict[int, int]) -> None:
+    """
+    Fixes the "#narrow/channel/70-Denmark/..." part of the
+    near-link by remapping the channel ID.
+    """
+    if near_link_parts[1] == "stream":
+        near_link_parts[1] = "channel"
+    encoded_channel_parts = near_link_parts[2].split("-")
+    old_channel_id = int(encoded_channel_parts[0])
+    new_channel_id = channel_id_map.get(old_channel_id)
+    encoded_channel_parts[0] = str(new_channel_id)
+    near_link_parts[2] = "-".join(encoded_channel_parts)
+
+
+def update_near_link_message_id(near_link_parts: list[str], message_id_map: dict[int, int]) -> None:
+    """
+    Fixes the "#narrow/.../.../.../.../near/237" part
+    of the near-link by remapping the message ID.
+    """
+    old_message_id = int(near_link_parts[6])
+    new_message_id = message_id_map.get(old_message_id)
+    near_link_parts[6] = str(new_message_id)
+
+
+def update_near_links(rendered_content: str) -> str:
+    soup = BeautifulSoup(rendered_content, "html.parser")
+    near_links = soup.find_all(
+        lambda tag: tag.name == "a"
+        and tag.has_attr("href")
+        and ("#narrow/stream/" in tag.get("href") or "#narrow/channel/" in tag.get("href"))
+    )
+
+    if near_links:
+        message_id_map = ID_MAP["message"]
+        channel_id_map = ID_MAP["stream"]
+        for link in near_links:
+            href = link["href"]
+            # This is necessary because only some near-link start
+            # with "/".
+            near_link_parts = " ".join(href.split("/")).split()
+            if valid_near_link_parts(near_link_parts):
+                update_near_link_channel_id(near_link_parts, channel_id_map)
+
+                if len(near_link_parts) == 7:
+                    update_near_link_message_id(near_link_parts, message_id_map)
+            link["href"] = "/".join(near_link_parts)
+    return str(soup)
 
 
 def fix_message_edit_history(

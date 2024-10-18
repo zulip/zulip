@@ -860,6 +860,22 @@ class RealmImportExportTest(ExportFile):
         special_characters_message = "```\n'\n```\n@**Polonius**"
         self.send_stream_message(self.example_user("iago"), "Denmark", special_characters_message)
 
+        channel_link_message = f"[channel near link](#narrow/stream/{denmark_stream.id}-Denmark)"
+        self.send_stream_message(self.example_user("iago"), "Denmark", channel_link_message)
+
+        topic_link_message = (
+            f"[topic near link](#narrow/channel/{denmark_stream.id}-Denmark/topic/test)"
+        )
+        self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_link_message)
+
+        near_link_target_message = "near link!"
+        near_link_target_message_id = self.send_stream_message(
+            self.example_user("othello"), "Denmark", near_link_target_message
+        )
+
+        near_link_message = f"[message near link](#narrow/channel/{denmark_stream.id}-Denmark/topic/test/near/{near_link_target_message_id})"
+        self.send_stream_message(self.example_user("othello"), "Denmark", near_link_message)
+
         sample_user = self.example_user("hamlet")
 
         check_add_reaction(
@@ -1085,6 +1101,32 @@ class RealmImportExportTest(ExportFile):
         )
         imported_denmark_stream = Stream.objects.get(name="Denmark", realm=imported_realm)
         self.assertEqual(imported_denmark_stream.creator, imported_hamlet_user)
+
+        # Check messages with near-link, channel and topic links are fixed.
+        imported_channel_link_message = Message.objects.get(
+            content=channel_link_message, sender__realm=imported_realm
+        )
+        self.assertEqual(
+            imported_channel_link_message.rendered_content,
+            f'<p><a href="#narrow/channel/{imported_denmark_stream.id}-Denmark">channel near link</a></p>',
+        )
+        imported_topic_link_message = Message.objects.get(
+            content=topic_link_message, sender__realm=imported_realm
+        )
+        self.assertEqual(
+            imported_topic_link_message.rendered_content,
+            f'<p><a href="#narrow/channel/{imported_denmark_stream.id}-Denmark/topic/test">topic near link</a></p>',
+        )
+        imported_near_link_message = Message.objects.get(
+            content=near_link_message, sender__realm=imported_realm
+        )
+        imported_near_link_target_message = Message.objects.get(
+            content=near_link_target_message, sender__realm=imported_realm
+        )
+        self.assertEqual(
+            imported_near_link_message.rendered_content,
+            f'<p><a href="#narrow/channel/{imported_denmark_stream.id}-Denmark/topic/test/near/{imported_near_link_target_message.id}">message near link</a></p>',
+        )
 
         # Check recipient_id was generated correctly for the imported users and streams.
         for user_profile in UserProfile.objects.filter(realm=imported_realm):
