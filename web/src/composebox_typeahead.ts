@@ -1339,7 +1339,6 @@ export function initialize({
     };
     new Typeahead(stream_message_typeahead_input, {
         source(): string[] {
-            const message_type = compose_state.get_message_type();  
            
             const topics = topics_seen_for(compose_state.stream_id());
             const topic_input = stream_message_typeahead_input.$element.val()?.toString() || "";
@@ -1382,12 +1381,10 @@ export function initialize({
         
                     update_placeholder_text();  
         
-                    return undefined;
                 }
             } else {    
                 return item; 
             }
-            return undefined;
         },
         
         
