@@ -1440,6 +1440,7 @@ export function get_group_setting_widget(setting_name: string): GroupSettingPill
 export function set_group_setting_widget_value(
     pill_widget: GroupSettingPillContainer,
     property_value: GroupSettingValue,
+    disabled = false,
 ): void {
     pill_widget.clear();
 
@@ -1448,18 +1449,18 @@ export function set_group_setting_widget_value(
         if (user_group.name === "role:nobody") {
             return;
         }
-        user_group_pill.append_user_group(user_group, pill_widget);
+        user_group_pill.append_user_group(user_group, pill_widget, disabled);
     } else {
         for (const setting_sub_group_id of property_value.direct_subgroups) {
             const user_group = user_groups.get_user_group_from_id(setting_sub_group_id);
             if (user_group.name === "role:nobody") {
                 continue;
             }
-            user_group_pill.append_user_group(user_group, pill_widget);
+            user_group_pill.append_user_group(user_group, pill_widget, disabled);
         }
         for (const setting_user_id of property_value.direct_members) {
             const user = people.get_user_by_id_assert_valid(setting_user_id);
-            user_pill.append_user(user, pill_widget);
+            user_pill.append_user(user, pill_widget, disabled);
         }
     }
 }
@@ -1499,7 +1500,11 @@ export function create_group_setting_widget({
     }
 
     if (group !== undefined) {
-        set_group_setting_widget_value(pill_widget, group[setting_name]);
+        set_group_setting_widget_value(
+            pill_widget,
+            group[setting_name],
+            !settings_data.can_manage_user_group(group.id),
+        );
 
         pill_widget.onPillCreate(() => {
             save_discard_group_widget_status_handler($("#group_permission_settings"), group);
