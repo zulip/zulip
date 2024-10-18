@@ -1,0 +1,41 @@
+Error: Migration mismatch between the exported realm and the local server; showing diff.
+--- exported realm
++++ local server
+'otp_static' app:
++[X] 0001_initial
+ [X] 0002_throttling
+
+'otp_totp' app:
++[X] 0001_initial
+ [X] 0002_auto_20190420_0723
++[X] 0003_add_timestamps
+
+'pgroonga' app:
+ [X] 0001_enable
++[X] 0002_html_escape_subject
++[X] 0003_v2_api_upgrade
+
+'social_django' app:
+ [X] 0001_initial (2 squashed migrations)
++[X] 0002_add_related_name (2 squashed migrations)
+ [X] 0003_alter_email_max_length (2 squashed migrations)
+@@ -4,3 +5,6 @@
+ [X] 0005_auto_20160727_2333 (1 squashed migrations)
++[X] 0006_partial
++[X] 0007_code_timestamp
+ [X] 0008_partial_timestamp
++[X] 0009_auto_20191118_0520
+ [X] 0010_uid_db_index
+@@ -9,2 +13,3 @@
+ [X] 0013_migrate_extra_data
++[X] 0014_remove_usersocialauth_extra_data
+ [X] 0015_rename_extra_data_new_usersocialauth_extra_data
+
+'zerver' app:
+ [X] 0570_namedusergroup_can_manage_group
++[X] 0571_set_default_for_can_manage_group
+ [X] 0572_alter_usergroup_can_manage_group
+@@ -9 +10,3 @@
+ [X] 0578_namedusergroup_deactivated
++[X] 0579_realm_can_delete_own_message_group
++[X] 0580_set_default_value_for_can_delete_own_message_group

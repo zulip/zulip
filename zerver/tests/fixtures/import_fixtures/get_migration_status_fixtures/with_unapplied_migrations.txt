@@ -1,0 +1,75 @@
+analytics
+ [X] 0001_squashed_0021_alter_fillstate_id (21 squashed migrations)
+auth
+ [X] 0001_initial
+ [X] 0002_alter_permission_name_max_length
+ [X] 0003_alter_user_email_max_length
+ [X] 0004_alter_user_username_opts
+ [X] 0005_alter_user_last_login_null
+ [X] 0006_require_contenttypes_0002
+ [X] 0007_alter_validators_add_error_messages
+ [X] 0008_alter_user_username_max_length
+ [X] 0009_alter_user_last_name_max_length
+ [X] 0010_alter_group_name_max_length
+ [X] 0011_update_proxy_permissions
+ [X] 0012_alter_user_first_name_max_length
+confirmation
+ [X] 0001_squashed_0014_confirmation_confirmatio_content_80155a_idx (14 squashed migrations)
+ [X] 0015_alter_confirmation_object_id
+contenttypes
+ [X] 0001_initial
+ [X] 0002_remove_content_type_name
+corporate
+ [X] 0001_squashed_0044_convert_ids_to_bigints (44 squashed migrations)
+otp_static
+ [X] 0001_initial
+ [X] 0002_throttling
+ [X] 0003_add_timestamps
+otp_totp
+ [X] 0001_initial
+ [X] 0002_auto_20190420_0723
+ [X] 0003_add_timestamps
+pgroonga
+ [X] 0001_enable
+ [X] 0002_html_escape_subject
+ [X] 0003_v2_api_upgrade
+phonenumber
+ [X] 0001_squashed_0001_initial (10 squashed migrations)
+sessions
+ [X] 0001_initial
+social_django
+ [X] 0001_initial (2 squashed migrations)
+ [X] 0002_add_related_name (2 squashed migrations)
+ [X] 0003_alter_email_max_length (2 squashed migrations)
+ [X] 0004_auto_20160423_0400 (2 squashed migrations)
+ [X] 0005_auto_20160727_2333 (1 squashed migrations)
+ [X] 0006_partial
+ [X] 0007_code_timestamp
+ [X] 0008_partial_timestamp
+ [X] 0009_auto_20191118_0520
+ [X] 0010_uid_db_index
+ [X] 0011_alter_id_fields
+ [X] 0012_usersocialauth_extra_data_new
+ [X] 0013_migrate_extra_data
+ [X] 0014_remove_usersocialauth_extra_data
+ [X] 0015_rename_extra_data_new_usersocialauth_extra_data
+ [X] 0016_alter_usersocialauth_extra_data
+two_factor
+ (no migrations)
+zerver
+ [X] 0001_squashed_0569 (545 squashed migrations)
+ [X] 0576_backfill_imageattachment
+ [X] 0570_namedusergroup_can_manage_group
+ [X] 0571_set_default_for_can_manage_group
+ [X] 0572_alter_usergroup_can_manage_group
+ [X] 0573_directmessagegroup_group_size
+ [X] 0574_backfill_directmessagegroup_group_size
+ [X] 0575_alter_directmessagegroup_group_size
+ [X] 0577_merge_20240829_0153
+ [X] 0578_namedusergroup_deactivated
+ [X] 0579_realm_can_delete_own_message_group
+ [ ] 0580_set_default_value_for_can_delete_own_message_group
+ [ ] 0581_alter_realm_can_delete_own_message_group
+ [ ] 0582_remove_realm_delete_own_message_policy
+zilencer
+ [X] 0001_squashed_0064_remotezulipserver_last_merge_base (64 squashed migrations)
