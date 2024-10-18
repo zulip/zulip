@@ -25,7 +25,21 @@
 
         .clear_search_button {
             position: static;
-            padding: 6px;
+            padding: 8px 6px;
+            outline: none;
+            opacity: 0.5;
+            border-radius: 4px;
+
+            &:hover {
+                opacity: 1;
+                color: var(--color-text-clear-search-button-hover);
+            }
+
+            &:focus-visible {
+                opacity: 1;
+                outline: 2px solid var(--color-outline-focus);
+                color: var(--color-text-clear-search-button-hover);
+            }
         }
 
         .status-emoji-wrapper {
