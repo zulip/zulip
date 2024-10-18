@@ -6,7 +6,7 @@ from typing import Literal, TypedDict, cast
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
-from zerver.decorator import webhook_view
+from zerver.decorator import slack_error_handler, webhook_view
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.response import json_success
@@ -28,6 +28,7 @@ from zerver.models import UserProfile
 
 @webhook_view("SlackIncoming")
 @typed_endpoint
+@slack_error_handler
 def api_slack_incoming_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
