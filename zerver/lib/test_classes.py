@@ -1893,7 +1893,7 @@ Output:
             user_notifications_data=user_notifications_data,
             message_id=message_id,
             acting_user_id=acting_user_id,
-            mentioned_user_group_id=kwargs.get("mentioned_user_group_id", None),
+            mentioned_user_group_id=kwargs.get("mentioned_user_group_id"),
             idle=kwargs.get("idle", True),
             already_notified=kwargs.get(
                 "already_notified", {"email_notified": False, "push_notified": False}
