@@ -8,6 +8,7 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
 const {run_test, noop} = require("./lib/test");
 
+const browser_history = mock_esm("../src/browser_history");
 const compose_notifications = mock_esm("../src/compose_notifications");
 const markdown = mock_esm("../src/markdown");
 const message_lists = mock_esm("../src/message_lists");
@@ -44,6 +45,13 @@ message_lists.current = {
             can_apply_locally() {
                 return true;
             },
+            is_in_channel_topic_narrow() {
+                return true;
+            },
+            has_operand() {
+                return true;
+            },
+            terms: () => [],
         },
     },
     change_message_id: noop,
@@ -68,6 +76,7 @@ message_lists.non_rendered_data = () => [];
 
 const echo = zrequire("echo");
 const echo_state = zrequire("echo_state");
+const {Filter} = zrequire("filter");
 const people = zrequire("people");
 const {set_current_user} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
@@ -368,6 +377,7 @@ run_test("test reify_message_id", ({override}) => {
 
     override(markdown, "render", noop);
     override(markdown, "get_topic_links", noop);
+    override(browser_history, "set_hash", noop);
 
     const message_request = {
         type: "stream",
@@ -402,6 +412,67 @@ run_test("test reify_message_id", ({override}) => {
     const history = stream_topic_history.find_or_create(general_sub.stream_id);
     assert.equal(history.max_message_id, 110);
     assert.equal(history.topics.get("test").message_id, 110);
+});
+
+run_test("test update_topic_hash_to_contain_with_term", ({override}) => {
+    const local_id_float = 103.01;
+    let initial_hash;
+    let new_hash;
+
+    override(markdown, "render", noop);
+    override(markdown, "get_topic_links", noop);
+    override(message_store, "reify_message_id", noop);
+    override(compose_notifications, "reify_message_id", noop);
+
+    const message_request = {
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "test",
+    };
+
+    // Test normal topic link converted to permalink upon arrival of a new
+    // message if it belongs to the same narrow.
+    let topic = "test";
+    initial_hash = `#narrow/channel/${general_sub.stream_id}-${general_sub.name}/topic/${topic}`;
+    new_hash = initial_hash;
+
+    override(browser_history, "set_hash", (updated_hash) => {
+        new_hash = updated_hash;
+    });
+
+    message_lists.current.data.filter = new Filter([
+        {operator: "channel", operand: general_sub.stream_id.toString()},
+        {operator: "topic", operand: topic},
+    ]);
+
+    echo.insert_local_message(message_request, local_id_float, (messages) => {
+        messages.map((message) => echo.track_local_message(message));
+        return messages;
+    });
+    echo.reify_message_id(local_id_float.toString(), 110);
+
+    assert.equal(
+        new_hash,
+        `#narrow/channel/${general_sub.stream_id}-${general_sub.name}/topic/${topic}/with/110`,
+    );
+
+    // No change in current hash if incoming message is of different
+    // narrow.
+    topic = "testing";
+    initial_hash = `#narrow/channel/${general_sub.stream_id}-${general_sub.name}/topic/${topic}`;
+    new_hash = initial_hash;
+
+    message_lists.current.data.filter = new Filter([
+        {operator: "channel", operand: general_sub.stream_id.toString()},
+        {operator: "topic", operand: topic},
+    ]);
+
+    echo.insert_local_message(message_request, local_id_float, (messages) => {
+        messages.map((message) => echo.track_local_message(message));
+        return messages;
+    });
+    echo.reify_message_id(local_id_float.toString(), 110);
+    assert.equal(new_hash, initial_hash);
 });
 
 run_test("reset MockDate", () => {

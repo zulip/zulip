@@ -6,6 +6,7 @@ from re import Match
 from django.conf import settings
 from django.db.models import Prefetch, Q
 
+from zerver.lib.topic import get_last_message_for_user_in_topic
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import NamedUserGroup, UserProfile
 from zerver.models.streams import get_linkable_streams
@@ -62,6 +63,19 @@ class PossibleMentions:
     message_has_stream_wildcards: bool
 
 
+@dataclass(frozen=True)
+class ChannelTopicInfo:
+    channel_name: str
+    topic_name: str
+
+
+@dataclass
+class ChannelInfo:
+    channel_id: int
+    recipient_id: int
+    history_public_to_subscribers: bool
+
+
 class MentionBackend:
     # Be careful about reuse: MentionBackend contains caches which are
     # designed to only have the lifespan of a sender user (typically a
@@ -73,7 +87,8 @@ class MentionBackend:
     def __init__(self, realm_id: int) -> None:
         self.realm_id = realm_id
         self.user_cache: dict[tuple[int, str], FullNameInfo] = {}
-        self.stream_cache: dict[str, int] = {}
+        self.stream_cache: dict[str, ChannelInfo] = {}
+        self.topic_cache: dict[ChannelTopicInfo, int] = {}
 
     def get_full_name_info_list(
         self, user_filters: list[UserFilter], message_sender: UserProfile | None
@@ -145,7 +160,7 @@ class MentionBackend:
 
         for stream_name in stream_names:
             if stream_name in self.stream_cache:
-                result[stream_name] = self.stream_cache[stream_name]
+                result[stream_name] = self.stream_cache[stream_name].channel_id
             else:
                 unseen_stream_names.append(stream_name)
 
@@ -162,12 +177,55 @@ class MentionBackend:
                 .values(
                     "id",
                     "name",
+                    "recipient_id",
+                    "history_public_to_subscribers",
                 )
             )
 
             for row in rows:
-                self.stream_cache[row["name"]] = row["id"]
+                self.stream_cache[row["name"]] = ChannelInfo(
+                    row["id"], row["recipient_id"], row["history_public_to_subscribers"]
+                )
                 result[row["name"]] = row["id"]
+
+        return result
+
+    def get_topic_info_map(
+        self, channel_topic: set[ChannelTopicInfo], message_sender: UserProfile | None
+    ) -> dict[ChannelTopicInfo, int]:
+        if not channel_topic:
+            return {}
+
+        result: dict[ChannelTopicInfo, int] = {}
+        unseen_channel_topic: list[ChannelTopicInfo] = []
+
+        for channel_topic_object in channel_topic:
+            if channel_topic_object in self.topic_cache:
+                result[channel_topic_object] = self.topic_cache[channel_topic_object]
+            else:
+                unseen_channel_topic.append(channel_topic_object)
+
+        for channel_topic_object in unseen_channel_topic:
+            channel_info = self.stream_cache.get(channel_topic_object.channel_name)
+
+            assert channel_info is not None
+            recipient_id = channel_info.recipient_id
+            topic_name = channel_topic_object.topic_name
+            history_public_to_subscribers = channel_info.history_public_to_subscribers
+
+            topic_latest_message = get_last_message_for_user_in_topic(
+                self.realm_id,
+                message_sender,
+                recipient_id,
+                topic_name,
+                history_public_to_subscribers,
+            )
+
+            if topic_latest_message is None:
+                continue
+
+            self.topic_cache[channel_topic_object] = topic_latest_message
+            result[channel_topic_object] = topic_latest_message
 
         return result
 
@@ -248,6 +306,7 @@ class MentionData:
     ) -> None:
         self.mention_backend = mention_backend
         realm_id = mention_backend.realm_id
+        self.message_sender = message_sender
         mentions = possible_mentions(content)
         possible_mentions_info = get_possible_mentions_info(
             mention_backend, mentions.mention_texts, message_sender
@@ -311,6 +370,11 @@ class MentionData:
 
     def get_stream_name_map(self, stream_names: set[str]) -> dict[str, int]:
         return self.mention_backend.get_stream_name_map(stream_names)
+
+    def get_topic_info_map(
+        self, channel_topic_names: set[ChannelTopicInfo]
+    ) -> dict[ChannelTopicInfo, int]:
+        return self.mention_backend.get_topic_info_map(channel_topic_names, self.message_sender)
 
 
 def silent_mention_syntax_for_user(user_profile: UserProfile) -> str:
