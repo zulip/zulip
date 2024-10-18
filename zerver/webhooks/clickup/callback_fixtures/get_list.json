@@ -1,0 +1,49 @@
+{
+    "id": "124",
+    "name": "Listener",
+    "orderindex": 1,
+    "content": "Updated List Content",
+    "status": {
+        "status": "red",
+        "color": "#e50000",
+        "hide_label": true
+    },
+    "priority": {
+        "priority": "high",
+        "color": "#f50000"
+    },
+    "assignee": null,
+    "due_date": "1567780450202",
+    "due_date_time": true,
+    "start_date": null,
+    "start_date_time": null,
+    "folder": {
+        "id": "456",
+        "name": "Folder Name",
+        "hidden": false,
+        "access": true
+    },
+    "space": {
+        "id": "789",
+        "name": "Space Name",
+        "access": true
+    },
+    "inbound_address": "add.task.124.ac725f.31518a6a-05bb-4997-92a6-1dcfe2f527ca@tasks.clickup.com",
+    "archived": false,
+    "override_statuses": false,
+    "statuses": [
+        {
+            "status": "to do",
+            "orderindex": 0,
+            "color": "#d3d3d3",
+            "type": "open"
+        },
+        {
+            "status": "complete",
+            "orderindex": 1,
+            "color": "#6bc950",
+            "type": "closed"
+        }
+    ],
+    "permission_level": "create"
+}
