@@ -508,8 +508,39 @@ h4.user_group_setting_subsection_title {
 
 #clear_search_stream_name,
 #clear_search_group_name {
-    right: 5px !important;
+    position: relative;
+    right: 7px !important;
     margin-left: -1px;
+    margin-right: 6px;
+    color: var(--color-search-icons);
+    opacity: 0.5;
+    top: 10px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    height: 100%;
+    box-sizing: border-box;
+    outline: none;
+
+    &:hover {
+        opacity: 1;
+    }
+
+    &:focus-visible {
+        opacity: 1;
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+    }
+
+    &:active {
+        opacity: 1;
+    }
+
+    &:disabled {
+        visibility: hidden;
+    }
 }
 
 #search_stream_name:placeholder-shown + #clear_search_stream_name {
