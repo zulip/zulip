@@ -63,6 +63,8 @@ from zerver.views.health import health
 from zerver.views.home import accounts_accept_terms, desktop_home, home
 from zerver.views.invite import (
     generate_multiuse_invite_backend,
+    get_invite_details,
+    get_multiuse_invite_details,
     get_user_invites,
     invite_users_backend,
     resend_user_invite_email,
@@ -326,12 +328,16 @@ v1_api_and_json_patterns = [
     rest_path("bots/<int:bot_id>", PATCH=patch_bot_backend, DELETE=deactivate_bot_backend),
     # invites -> zerver.views.invite
     rest_path("invites", GET=get_user_invites, POST=invite_users_backend),
-    rest_path("invites/<int:invite_id>", DELETE=revoke_user_invite),
+    rest_path("invites/<int:invite_id>", DELETE=revoke_user_invite, GET=get_invite_details),
     rest_path("invites/<int:invite_id>/resend", POST=resend_user_invite_email),
     # invites/multiuse -> zerver.views.invite
     rest_path("invites/multiuse", POST=generate_multiuse_invite_backend),
     # invites/multiuse -> zerver.views.invite
-    rest_path("invites/multiuse/<int:invite_id>", DELETE=revoke_multiuse_invite),
+    rest_path(
+        "invites/multiuse/<int:invite_id>",
+        DELETE=revoke_multiuse_invite,
+        GET=get_multiuse_invite_details,
+    ),
     # mark messages as read (in bulk)
     rest_path("mark_all_as_read", POST=mark_all_as_read),
     rest_path("mark_stream_as_read", POST=mark_stream_as_read),

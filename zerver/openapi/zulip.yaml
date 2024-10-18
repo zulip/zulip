@@ -13716,19 +13716,72 @@ paths:
                           }
                         description: |
                           A typical failed JSON response for an invalid email invitation ID:
+    get:
+      operationId: get-invite-details
+      summary: Get invite details by id
+      tags: ["invites"]
+      description: |
+        Fetch email invitation details also including stream ids associated with that invitation.
+
+        **Changes**: New in Zulip 10.0 (feature level 301), fetching the
+        invite details of email invitation by invite id.
+      parameters:
+        - name: invite_id
+          in: path
+          description: |
+            The ID of the email invitation to be fetched.
+          schema:
+            type: integer
+          example: 1
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      invite:
+                        allOf:
+                          - $ref: "#/components/schemas/Invite"
+                          - type: object
+                            description: |
+                              An Invitation object, representing a single unexpired
+                              [invitation](/help/invite-new-users).
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "invite":
+                          {
+                            email: "example@zulip.com",
+                            invited_by_user_id: 11,
+                            invited: 1726339239,
+                            expiry_date: 1727203239,
+                            id: 1,
+                            invited_as: 400,
+                            is_multiuse: false,
+                            notify_referrer_on_join: true,
+                            stream_ids: [14, 3, 13, 10, 2],
+                          },
+                      }
+
   /invites/multiuse/{invite_id}:
     delete:
       operationId: revoke-invite-link
       summary: Revoke a reusable invitation link
       tags: ["invites"]
       description: |
-        Revoke a [reusable invitation link](/help/invite-new-users#create-a-reusable-invitation-link).
+        Get details of a [reusable invitation link](/help/invite-new-users#create-a-reusable-invitation-link).
 
-        A user can only revoke [invitations that they can
+        A user can only get [invitations that they can
         manage](/help/invite-new-users#manage-pending-invitations).
-
-        **Changes**: Prior to Zulip 8.0 (feature level 209), only organization
-        administrators were able to create and revoke reusable invitation links.
       parameters:
         - name: invite_id
           in: path
@@ -13768,6 +13821,61 @@ paths:
                         description: |
                           A typical failed JSON response for when the invitation link has already
                           been revoked:
+    get:
+      operationId: get-invite-link-details
+      summary: Get details of reusable invitation link
+      tags: ["invites"]
+      description: |
+        Get details of reusable invitation link also including stream ids associated with it.
+
+        **Changes**: New in Zulip 10.0 (feature level 301), fetching the
+        details of reusable invitation link by invite id.
+      parameters:
+        - name: invite_id
+          in: path
+          description: |
+            The ID of the reusable invitation link to be fetched.
+          schema:
+            type: integer
+          example: 1
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      invite:
+                        allOf:
+                          - $ref: "#/components/schemas/Invite"
+                          - type: object
+                            description: |
+                              An Invitation Link object, representing a single unexpired
+                              [reusable invitation link](/help/invite-new-users#create-a-reusable-invitation-link).
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "invite":
+                          {
+                            link_url: "https://example.zulipchat.com/join/yddhtzk4jgl7rsmazc5fyyyy/",
+                            invited_by_user_id: 11,
+                            invited: 1726339239,
+                            expiry_date: 1727203239,
+                            id: 1,
+                            invited_as: 400,
+                            is_multiuse: true,
+                            stream_ids: [1, 2, 3, 13, 14],
+                          },
+                      }
+
   /invites/{invite_id}/resend:
     post:
       operationId: resend-email-invite
@@ -22438,6 +22546,13 @@ components:
           description: |
             The URL of the reusable invitation link. This will not be present when
             `is_multiuse` is `false` (i.e. the invitation is an email invitation).
+        stream_ids:
+          type: array
+          items:
+            type: integer
+          description: |
+            IDs of streams that users will be subscribed to after accepting this
+            invite.
         is_multiuse:
           type: boolean
           description: |

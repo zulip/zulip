@@ -1,0 +1,85 @@
+<div class="micromodal invite-modal-overlay" id="user-profile-modal">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container new-style" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+            <div class="modal__header">
+                <h1 class="modal__title user-profile-name-heading" id="name">
+                    <span class="user-profile-name">Invite Details</span>
+                </h1>
+                <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
+            </div>
+            <main class="modal__body" id="body" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
+                <div class="tab-data">
+                    <div class="tabcontent active" id="profile-tab">
+                        <div class="top">
+                            <div class="col-wrap col-left">
+                                <div id="default-section">
+                                    {{#if is_multiuse}}
+                                    <div id="email" class="default-field">
+                                        <div class="name">{{t "Invitee" }}</div>
+                                        <div class="value">
+                                            <a href="{{email}}" target="_blank" rel="noopener noreferrer">
+                                                {{t 'Invite link'}}
+                                            </a>
+                                        </div>
+                                    </div>
+                                    {{else}}
+                                    <div id="email" class="default-field">
+                                        <div class="name">{{t "Invitee" }}</div>
+                                        <div class="value">{{email}}</div>
+                                    </div>
+                                    {{/if}}
+                                    <div id="invite-as" class="default-field">
+                                        <div class="name">{{t "Invited as" }}</div>
+                                        <div class="value">{{invited_as}}</div>
+                                    </div>
+                                    {{#if is_admin}}
+                                    <div id="invite-id" class="default-field">
+                                        <div class="name" data->{{t "Invited by" }}</div>
+                                        <span class="referred_by panel_user_list">
+                                            {{> ../user_display_only_pill display_value=referrer_name user_id=invited_by_user_id is_active=true}}
+                                        </span>
+                                    </div>
+                                    {{/if}}
+                                    <div id="invited-at" class="default-field">
+                                        <div class="name">{{t "Invited at" }}</div>
+                                        <div class="value">{{invited_at}}</div>
+                                    </div>
+                                    {{#if expires_at}}
+                                    <div id="expires-at" class="default-field">
+                                        <div class="name">{{t "Expires at" }}</div>
+                                        <div class="value">{{expires_at}}</div>
+                                    </div>
+                                    {{/if}}
+                                    <div id="streams" class="default-field">
+                                        <div class="name">{{t "Channels" }}</div>
+                                        {{#if streams.length}}
+                                        <ul>
+                                            {{#each streams}}
+                                                <li><div class="value">{{this}}</div></li>
+                                            {{/each}}
+                                        </ul>
+                                        {{else}}
+                                        <div class="value">{{t 'NOT invited to any of the channels.'}}</div>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <footer class="modal__footer">
+                <div class="actions">
+                    {{#unless is_multiuse}}
+                    <button class="button rounded small resend btn-warning" {{#if disable_buttons}}disabled="disabled"{{/if}} data-invite-id="{{invite_id}}">
+                        {{t "Resend" }}
+                    </button>
+                    {{/unless}}
+                    <button class="button rounded small revoke btn-danger" {{#if disable_buttons}}disabled="disabled"{{/if}} data-invite-id="{{invite_id}}" data-is-multiuse="{{is_multiuse}}">
+                        {{t "Revoke" }}
+                    </button>
+                </div>
+            </footer>
+        </div>
+    </div>
+</div>

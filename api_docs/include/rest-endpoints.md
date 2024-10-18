@@ -96,6 +96,8 @@
 #### Invitations
 
 * [Get all invitations](/api/get-invites)
+* [Get invite details by id](/api/get-invite-details)
+* [Get details of reusable invitation link](/api/get-invite-link-details)
 * [Send invitations](/api/send-invites)
 * [Create a reusable invitation link](/api/create-invite-link)
 * [Resend an email invitation](/api/resend-email-invite)

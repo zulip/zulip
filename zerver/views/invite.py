@@ -15,6 +15,8 @@ from zerver.actions.invites import (
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
     do_send_user_invite_email,
+    get_invite_details_dict,
+    get_multiuse_invite_details_dict,
 )
 from zerver.decorator import require_member_or_admin
 from zerver.lib.exceptions import InvitationError, JsonableError, OrganizationOwnerRequiredError
@@ -166,6 +168,24 @@ def get_invitee_emails_set(invitee_emails_raw: str) -> set[str]:
 def get_user_invites(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     all_users = do_get_invites_controlled_by_user(user_profile)
     return json_success(request, data={"invites": all_users})
+
+
+@require_member_or_admin
+def get_invite_details(
+    request: HttpRequest, user_profile: UserProfile, invite_id: PathOnly[int]
+) -> HttpResponse:
+    prereg_user = access_invite_by_id(user_profile, invite_id)
+    invite = get_invite_details_dict(prereg_user, user_profile)
+    return json_success(request, data={"invite": invite})
+
+
+@require_member_or_admin
+def get_multiuse_invite_details(
+    request: HttpRequest, user_profile: UserProfile, invite_id: PathOnly[int]
+) -> HttpResponse:
+    multiuse_invite = access_multiuse_invite_by_id(user_profile, invite_id)
+    invite = get_multiuse_invite_details_dict(multiuse_invite, user_profile)
+    return json_success(request, data={"invite": invite})
 
 
 @require_member_or_admin
