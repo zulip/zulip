@@ -239,18 +239,25 @@ export function add_sub_to_table(sub) {
         // top of the list, so they are more visible.
         stream_ui_updates.row_for_stream_id(sub.stream_id).trigger("click");
 
-        // This banner is for administrators creating a channel that
-        // they are themselves not initial subscribers to; other users
-        // will be immediately navigated to the channel view.
-        const context = {
-            banner_type: compose_banner.SUCCESS,
-            classname: "stream_creation_confirmation",
-            stream_name: sub.name,
-            stream_url: hash_util.by_stream_url(sub.stream_id),
-        };
-        $("#stream_settings .stream-creation-confirmation-banner").html(
-            render_stream_creation_confirmation_banner(context),
-        );
+        if (!stream_create.get_current_user_subscribed_to_created_stream()) {
+            // This banner is for administrators creating a channel that
+            // they are themselves not initial subscribers to; other users
+            // will be immediately navigated to the channel view.
+            //
+            // stream_create.get_current_user_subscribed_to_created_stream
+            // is just a work around because we do not have the subscribers
+            // info yet.
+            const context = {
+                banner_type: compose_banner.SUCCESS,
+                classname: "stream_creation_confirmation",
+                stream_name: sub.name,
+                stream_url: hash_util.by_stream_url(sub.stream_id),
+            };
+            $("#stream_settings .stream-creation-confirmation-banner").html(
+                render_stream_creation_confirmation_banner(context),
+            );
+        }
+        stream_create.reset_current_user_subscribed_to_created_stream();
     }
     update_empty_left_panel_message();
 }
