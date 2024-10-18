@@ -233,8 +233,7 @@
     }
 }
 
-.always_visible_topic_edit,
-.on_hover_topic_read {
+.always_visible_topic_edit {
     opacity: 0.7;
 
     &:hover {

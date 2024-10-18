@@ -30,8 +30,22 @@
     cursor: pointer;
 }
 
-#left-sidebar-navigation-list .filter-icon i {
-    color: var(--color-left-sidebar-navigation-icon);
+.left-sidebar-navigation-list {
+    .filter-icon i {
+        color: var(--color-left-sidebar-navigation-icon);
+    }
+
+    .unread_count {
+        color: var(--color-unread-counter-normal);
+        background-color: var(--color-background-unread-counter-normal);
+    }
+}
+
+#streams_list {
+    .unread_count {
+        color: var(--color-unread-counter-normal);
+        background-color: var(--color-background-unread-counter-normal);
+    }
 }
 
 #stream_filters,
@@ -67,7 +81,7 @@
     /* Masked unreads display as flex when revealed. */
     align-items: center;
     justify-content: center;
-    color: var(--color-masked-unread-marker);
+    color: var(--color-background-unread-counter-normal);
     width: var(--left-sidebar-single-digit-unread-width);
 }
 
@@ -273,6 +287,16 @@
        in the DM section. */
     margin-right: var(--left-sidebar-right-margin);
 
+    .unread_count {
+        color: var(--color-unread-counter-prominent);
+        background-color: var(--color-background-unread-counter-prominent);
+    }
+
+    .heading-markers-and-unreads .unread_count {
+        color: var(--color-unread-counter-quiet);
+        background-color: var(--color-background-unread-counter-quiet);
+    }
+
     & ul.dm-list {
         list-style-type: none;
         font-weight: 400;
@@ -287,7 +311,7 @@
             }
 
             .zulip-icon {
-                opacity: 0.7;
+                color: var(--color-left-sidebar-dm-partners-icon);
             }
         }
 
@@ -492,7 +516,7 @@ ul.filters {
     }
 
     .zulip-icon-follow {
-        opacity: 0.6;
+        opacity: 0.5;
 
         &:hover {
             opacity: 1;
@@ -621,7 +645,10 @@ li.active-sub-filter {
                 /* 6px at 12px/1em */
                 top: -0.5em;
                 right: -0.5em;
-                background: var(--color-background-unread-counter-no-alpha);
+                color: var(--color-unread-counter-normal);
+                background: var(
+                    --color-background-unread-counter-normal-no-alpha
+                );
             }
         }
 
@@ -715,9 +742,8 @@ li.active-sub-filter {
 .top_left_drafts .unread_count,
 .top_left_scheduled_messages .unread_count,
 .condensed-views-popover-menu .unread_count {
-    background-color: unset;
-    color: inherit;
-    border: 0.5px solid var(--color-border-unread-counter);
+    background-color: var(--color-background-unread-counter-quiet);
+    color: var(--color-unread-counter-quiet);
 }
 
 /* Don't show unread counts on views... */
@@ -1530,6 +1556,9 @@ li.topic-list-item {
         /* Extra margin for unreads. */
         margin-right: var(--left-sidebar-unread-offset);
 
+        color: var(--color-unread-counter-quiet);
+        background-color: var(--color-background-unread-counter-quiet);
+
         &:empty {
             margin-right: 0;
         }
@@ -1592,6 +1621,11 @@ li.topic-list-item {
         grid-gap: 5px;
         /* Extra margin for unreads. */
         margin-right: var(--left-sidebar-unread-offset);
+
+        .unread_count {
+            color: var(--color-unread-counter-quiet);
+            background-color: var(--color-background-unread-counter-quiet);
+        }
 
         &:has(.unread_count:empty) {
             margin-right: 0;
