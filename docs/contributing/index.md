@@ -15,6 +15,7 @@ code-style
 code-reviewing
 reviewable-prs
 review-process
+continuing-unfinished-work
 zulipbot-usage
 reporting-bugs
 suggesting-features
