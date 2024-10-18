@@ -284,6 +284,10 @@
     }
 }
 
+.display_only_group_pill .zulip-icon-triple-users {
+    font-size: 19px;
+}
+
 @keyframes shake {
     10%,
     90% {
