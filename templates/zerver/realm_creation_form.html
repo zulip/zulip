@@ -22,7 +22,8 @@
 
     <div class="input-box">
         <div class="inline-block relative">
-            <select name="realm_type" id="realm_type">
+            <select name="realm_type" id="realm_type" required>
+                <option disabled selected value>-- {{ _("Select one") }} --</option>
                 {% for realm_type in sorted_realm_types %}
                     {% if not realm_type.hidden %}
                     <option value="{{ realm_type.id }}" {% if form.realm_type.value() == realm_type.id %}selected{% endif %} >{{ _(realm_type.name) }}</option>
