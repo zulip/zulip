@@ -6,22 +6,6 @@
 
 {!how-to-create-a-user-group.md!}
 
-## User group options
-
-There are several parameters you can set while creating a user group, which can
-all be changed later.
-
-* **User group name**: The user group name can be in any language, and can
-  include spaces and other punctuation.
-
-* **User group description** (optional)
-
-* **Who can mention this group**: Configures who is allowed to
-  [mention this group](/help/mention-a-user-or-group).
-
-* **Choose members**: You can copy the membership from an existing channel or
-  user group, add all users, or enter users one by one.
-
 ## Related articles
 
 * [Moving to Zulip](/help/moving-to-zulip)

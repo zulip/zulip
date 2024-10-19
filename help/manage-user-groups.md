@@ -30,7 +30,13 @@
 
 {end_tabs}
 
-## Configure who can mention a user group
+## Configure group permissions
+
+!!! warn ""
+
+    Guests can never manage user groups, add anyone else to a group, or remove
+    anyone else from a group, even if they belong to a group that has permissions
+    to do so.
 
 {start_tabs}
 
@@ -42,13 +48,15 @@
 
 1. Select the **General** tab on the right.
 
-1. Under **Group permissions**, configure **Who can mention this group**.
+1. Under **Group permissions**, configure **Who can manage this group**, **Who
+   can mention this group**, **Who can add members to this group**, **Who can join
+   this group**, and **Who can leave this group**.
 
 {!save-changes.md!}
 
 {end_tabs}
 
-## Add users to a user group
+## Add groups and users to a group
 
 {start_tabs}
 
@@ -60,15 +68,10 @@
 
 1. Select the **Members** tab on the right.
 
-1. Under **Add members**, enter a name or email address. The typeahead
-   will only include users who aren't already members of the group.
+1. Under **Add members**, enter groups and users you want to add. You can enter
+   a `#channel` to add all subscribers to the group.
 
 1. Click **Add**. Zulip will notify everyone who is added to the group.
-
-!!! tip ""
-
-    To add users in bulk, you can copy members from an
-    existing channel or user group.
 
 {end_tabs}
 
@@ -88,11 +91,6 @@
 
 1. Click the **Remove** button in that row. Zulip will notify everyone who is
    removed from the group.
-
-!!! warn ""
-
-    **Note**: If you remove yourself from a user group, you
-    may no longer have permission to modify the user group.
 
 {end_tabs}
 
@@ -117,10 +115,9 @@
 
 {!admin-only.md!}
 
-By default, [all members](/help/roles-and-permissions) in a Zulip
-organization can create user groups. However, you can restrict that
-ability to specific [roles](/help/roles-and-permissions). Note that
-guests cannot create user groups.
+You can configure who can create groups in your organization. Guests can never
+create user groups, even if they belong to a group that has permissions to do
+so.
 
 {start_tabs}
 
@@ -138,11 +135,12 @@ guests cannot create user groups.
 
 {!admin-only.md!}
 
-By default, [owners](/help/roles-and-permissions) in a Zulip
-organization can manage user groups. However, you can expand that
-ability to specific [roles](/help/roles-and-permissions).
+You can configure who can manage groups in your organization. Guests can never
+manage user groups, even if they belong to a group that has permissions to do
+so.
 
-Guests cannot modify user groups.
+In addition, you can [give users permission](#configure-group-permissions) to
+manage a specific group.
 
 {start_tabs}
 

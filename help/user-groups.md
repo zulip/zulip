@@ -2,15 +2,6 @@
 
 {!user-groups-intro.md!}
 
-You can also:
-
-- Add a user group to another user group. This individually adds all the users
-  in the group.
-- Subscribe a user group to a channel. This individually subscribes all the users
-  in the group.
-- Compose a [direct message](/help/direct-messages) to a user group. This
-  automatically puts all the users in the group into the addressee field.
-
 ## Browse and join user groups
 
 {start_tabs}
