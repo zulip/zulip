@@ -54,7 +54,7 @@ These links will still work even when the message is [moved to another
 topic](/help/move-content-to-another-topic) or
 [channel](/help/move-content-to-another-channel), or if its [topic is
 resolved](/help/resolve-a-topic). Zulip uses the same permanent link syntax when
-[quoting a message](/help/quote-and-reply).
+[quoting a message](/help/quote-or-forward-a-message).
 
 When you paste a message link into the compose box, it gets automatically
 formatted to be easy to read:
