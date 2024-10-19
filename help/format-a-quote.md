@@ -48,4 +48,4 @@ quote in two paragraphs
 ## Related articles
 
 * [Message formatting](/help/format-your-message-using-markdown)
-* [Quote message](/help/quote-and-reply)
+* [Quote message](/help/quote-or-forward-a-message)
