@@ -214,7 +214,7 @@ test("my_message_all_actions", ({override}) => {
     assert.equal(response.conversation_time_url, "conversation_and_time_url");
     assert.equal(response.should_display_delete_option, true);
     assert.equal(response.should_display_read_receipts_option, true);
-    assert.equal(response.should_display_quote_and_reply, true);
+    assert.equal(response.should_display_quote_message, true);
 });
 
 test("not_my_message_view_actions", ({override}) => {

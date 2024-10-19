@@ -227,7 +227,7 @@ function get_quote_target(opts: {message_id?: number; quote_content?: string | u
     return {message_id, message, quote_content};
 }
 
-export function quote_and_reply(opts: {
+export function quote_message(opts: {
     message_id: number;
     quote_content?: string | undefined;
     keep_composebox_empty?: boolean;
