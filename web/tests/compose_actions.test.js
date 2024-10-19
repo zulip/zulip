@@ -443,10 +443,16 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         assert.equal(mode, "block");
     });
 
-    const opts = {
+    let opts = {
         reply_type: "personal",
         message_id: 100,
     };
+
+    override_rewire(compose_state, "topic", (topic) => {
+        if (opts.forward_message) {
+            assert.equal(topic, "");
+        }
+    });
 
     $("textarea#compose-textarea").caret = noop;
     $("textarea#compose-textarea").attr("id", "compose-textarea");
@@ -462,6 +468,27 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     });
     assert.ok(replaced);
 
+    opts = {
+        reply_type: "personal",
+        message_id: 100,
+        forward_message: true,
+    };
+    replaced = false;
+
+    override(compose_ui, "insert_and_scroll_into_view", noop);
+
+    quote_message(opts);
+
+    success_function({
+        raw_content: "Testing.",
+    });
+    assert.ok(replaced);
+
+    opts = {
+        reply_type: "personal",
+        message_id: 100,
+    };
+
     selected_message = {
         type: "stream",
         stream_id: denmark_stream.stream_id,
@@ -476,7 +503,18 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     quote_message(opts);
     assert.ok(replaced);
 
-    delete opts.message_id;
+    opts = {
+        reply_type: "personal",
+        message_id: 100,
+        forward_message: true,
+    };
+    replaced = false;
+    quote_message(opts);
+    assert.ok(replaced);
+
+    opts = {
+        reply_type: "personal",
+    };
     override(message_lists.current, "selected_id", () => 100);
     override(message_lists.current, "selected_message", () => selected_message);
 
@@ -492,6 +530,14 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     replaced = false;
     expected_replacement =
         "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n````quote\n```\nmultiline code block\nshoudln't mess with quotes\n```\n````";
+    quote_message(opts);
+    assert.ok(replaced);
+
+    opts = {
+        reply_type: "personal",
+        forward_message: true,
+    };
+    replaced = false;
     quote_message(opts);
     assert.ok(replaced);
 });
