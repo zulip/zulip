@@ -4,7 +4,7 @@ import * as internal_url from "../shared/src/internal_url";
 
 import * as stream_data from "./stream_data";
 
-const invalid_stream_topic_regex = /[*>`]|(\$\$)/g;
+const invalid_stream_topic_regex = /[`>*&]|(\$\$)/g;
 
 export function will_produce_broken_stream_topic_link(word: string): boolean {
     return invalid_stream_topic_regex.test(word);
@@ -24,6 +24,8 @@ export function escape_invalid_stream_topic_characters(text: string): string {
             return "&gt;";
         case "*":
             return "&#42;";
+        case "&":
+            return "&amp;";
         case "$$":
             return "&#36;&#36;";
         default:
