@@ -47,11 +47,11 @@ run_test("stream_topic_link_syntax_test", () => {
     );
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("#**Sweden>t", "test `test` test"),
-        "[#Sweden>test &grave;test&grave; test](#narrow/channel/1-Sweden/topic/test.20.60test.60.20test)",
+        "[#Sweden>test &#96;test&#96; test](#narrow/channel/1-Sweden/topic/test.20.60test.60.20test)",
     );
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("#**Denmark>t", "test `test` test`s"),
-        "[#Denmark>test &grave;test&grave; test&grave;s](#narrow/channel/2-Denmark/topic/test.20.60test.60.20test.60s)",
+        "[#Denmark>test &#96;test&#96; test&#96;s](#narrow/channel/2-Denmark/topic/test.20.60test.60.20test.60s)",
     );
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("#**Sweden>typeah", "error due to *"),
