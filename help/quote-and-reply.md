@@ -52,12 +52,12 @@ to avoid unnecessarily mentioning someone twice.
 
 {tab|desktop-web}
 
-1. *(optional)* To quote only part of a message, select the part that you want
-   to quote.
+1. *(optional)* To forward only part of a message, select the part that you want
+   to forward.
 
 {!message-actions-menu.md!}
 
-1. Click **Quote message**.
+1. Click **Forward message**.
 
 1. Select the desired destination channel or **Direct message** from the dropdown
    in the top left of the compose box.
@@ -68,7 +68,7 @@ to avoid unnecessarily mentioning someone twice.
 
 !!! keyboard_tip ""
 
-    You can also use <kbd>></kbd> to forward the selected message.
+    You can also use <kbd><</kbd> to forward the selected message.
 
 {tab|mobile}
 

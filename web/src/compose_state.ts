@@ -127,7 +127,11 @@ export function set_compose_recipient_id(recipient_id: number | "direct"): void 
 }
 
 // TODO: Break out setter and getter into their own functions.
-export const topic = get_or_set("input#stream_message_recipient_topic");
+export let topic = get_or_set("input#stream_message_recipient_topic");
+
+export function rewire_topic(value: typeof topic): void {
+    topic = value;
+}
 
 export function empty_topic_placeholder(): string {
     return $t({defaultMessage: "(no topic)"});
