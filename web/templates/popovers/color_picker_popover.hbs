@@ -1,0 +1,25 @@
+<div class="popover-menu" class="color-picker-popover" data-simplebar data-simplebar-tab-index="-1">
+    <ul role="menu" class="popover-menu-list">
+        <div role="none" class="color-swatch-list">
+            {{#each stream_color_palette as |hex_color|}}
+                <span
+                  class="color-swatch-option"
+                  data-color="#{{hex_color}}"
+                  role="button"
+                  tabindex="0"
+                  ></span>
+            {{/each}}
+        </div>
+        <li class="custom-color-picker-container">
+            <span class="color-picker-preview"></span>
+            <input type="color" class="color-picker" tabindex="0" />
+        </li>
+        <li role="separator" class="popover-menu-separator"></li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="apply-stream-color popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-check" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Apply selected color"}}</span>
+            </a>
+        </li>
+    </ul>
+</div>
