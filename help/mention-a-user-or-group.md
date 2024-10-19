@@ -95,5 +95,5 @@ channels](/help/channel-notifications).
 
 * [Message formatting](/help/format-your-message-using-markdown)
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
-* [Quote message](/help/quote-and-reply)
+* [Quote message](/help/quote-or-forward-a-message)
 * [View your mentions](/help/view-your-mentions)

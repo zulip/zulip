@@ -124,6 +124,7 @@ HELP_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
     ),
     URLRedirect("/help/allow-image-link-previews", "/help/image-video-and-website-previews"),
     URLRedirect("/help/getting-your-organization-started-with-zulip", "/help/moving-to-zulip"),
+    URLRedirect("/help/quote-and-reply", "/help/quote-or-forward-a-message"),
 ]
 
 LANDING_PAGE_REDIRECTS = [

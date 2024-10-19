@@ -1,4 +1,4 @@
-# Quote message
+# Quote or forward a message
 
 You can quote a previous message, either replying within a topic or to
 start a new topic.
