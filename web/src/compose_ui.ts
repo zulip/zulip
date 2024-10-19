@@ -306,6 +306,7 @@ export let replace_syntax = (
     old_syntax: string,
     new_syntax: string,
     $textarea = $<HTMLTextAreaElement>("textarea#compose-textarea"),
+    ignore_caret = false,
 ): boolean => {
     // The following couple lines are needed to later restore the initial
     // logical position of the cursor after the replacement
@@ -325,6 +326,14 @@ export let replace_syntax = (
     const old_text = $textarea.val();
     replaceFieldText(util.the($textarea), old_syntax, () => new_syntax, "after-replacement");
     const new_text = $textarea.val();
+    const has_changed = old_text !== new_text;
+
+    // If the caller wants to ignore the caret position, we return early.
+    // This is useful e.g. when we are replacing content without affecting
+    // which element has focus.
+    if (ignore_caret) {
+        return has_changed;
+    }
 
     // When replacing content in a textarea, we need to move the cursor
     // to preserve its logical position if and only if the content we
@@ -344,7 +353,7 @@ export let replace_syntax = (
     }
 
     // Return if anything was actually replaced.
-    return old_text !== new_text;
+    return has_changed;
 };
 
 export function rewire_replace_syntax(value: typeof replace_syntax): void {

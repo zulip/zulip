@@ -155,6 +155,7 @@ const keypress_mappings = {
     45: {name: "toggle_message_collapse", message_view_only: true}, // '-'
     47: {name: "search", message_view_only: false}, // '/'
     58: {name: "toggle_reactions_popover", message_view_only: true}, // ':'
+    60: {name: "compose_forward_message", message_view_only: true}, // '<'
     62: {name: "compose_quote_message", message_view_only: true}, // '>'
     63: {name: "show_shortcuts", message_view_only: false}, // '?'
     64: {name: "compose_reply_with_mention", message_view_only: true}, // '@'
@@ -1197,6 +1198,9 @@ export function process_hotkey(e, hotkey) {
             return true;
         case "compose_quote_message": // > : respond to selected message with quote
             compose_reply.quote_message({trigger: "hotkey"});
+            return true;
+        case "compose_forward_message": // < : forward selected message
+            compose_reply.quote_message({trigger: "hotkey", forward_message: true});
             return true;
         case "edit_message": {
             const $row = message_lists.current.get_row(msg.id);

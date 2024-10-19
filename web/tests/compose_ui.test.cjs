@@ -24,6 +24,7 @@ const user_status = zrequire("user_status");
 const hash_util = mock_esm("../src/hash_util");
 const channel = mock_esm("../src/channel");
 const compose_reply = zrequire("compose_reply");
+const compose_actions = zrequire("compose_actions");
 const message_lists = zrequire("message_lists");
 const text_field_edit = mock_esm("text-field-edit");
 const {set_realm} = zrequire("state_data");
@@ -427,6 +428,27 @@ run_test("quote_message", ({override, override_rewire}) => {
     compose_reply.quote_message({});
 
     quote_text = "Testing with compose-box containing whitespaces and newlines only.";
+    override_with_quote_text(quote_text);
+    success_function({
+        raw_content: quote_text,
+    });
+
+    reset_test_state();
+
+    // If forwarding a message, the quoted message should be inserted into
+    // an empty compose box, even if compose box wasn't previously empty.
+    let new_message = false;
+    override_rewire(compose_actions, "start", (opts) => {
+        assert.equal(opts.message_type, "stream");
+        assert.equal(opts.topic, "");
+        assert.equal(opts.content, "translated: [Quoting…]");
+        new_message = true;
+    });
+
+    set_compose_content_with_caret("hello %there");
+    compose_reply.quote_message({forward_message: true});
+    assert.ok(new_message);
+
     override_with_quote_text(quote_text);
     success_function({
         raw_content: quote_text,

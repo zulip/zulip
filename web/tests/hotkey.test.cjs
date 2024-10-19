@@ -376,6 +376,7 @@ run_test("misc", ({override}) => {
     assert_mapping("i", message_actions_popover, "toggle_message_actions_menu");
     assert_mapping(":", emoji_picker, "toggle_emoji_popover", true);
     assert_mapping(">", compose_reply, "quote_message");
+    assert_mapping("<", compose_reply, "quote_message");
     assert_mapping("e", message_edit, "start");
 
     override(narrow_state, "narrowed_by_topic_reply", () => true);

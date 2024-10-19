@@ -133,6 +133,8 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Quote message**: <kbd>></kbd>
 
+* **Forward message**: <kbd><</kbd>
+
 * **Reply directly to sender**: <kbd>Shift</kbd> + <kbd>R</kbd>
 
 * **Reply @-mentioning sender**: <kbd>@</kbd>

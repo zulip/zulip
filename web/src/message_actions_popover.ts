@@ -119,6 +119,18 @@ export function initialize(): void {
                 popover_menus.hide_current_popover_if_visible(instance);
             });
 
+            $popper.one("click", ".forward_button", (e) => {
+                compose_reply.quote_message({
+                    trigger: "popover respond",
+                    message_id,
+                    quote_content,
+                    forward_message: true,
+                });
+                e.preventDefault();
+                e.stopPropagation();
+                popover_menus.hide_current_popover_if_visible(instance);
+            });
+
             $popper.one("click", ".popover_edit_message, .popover_view_source", (e) => {
                 const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 assert(message_lists.current !== undefined);

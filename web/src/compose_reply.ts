@@ -1,11 +1,13 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import type * as tippy from "tippy.js";
 import {z} from "zod";
 
 import * as fenced_code from "../shared/src/fenced_code.ts";
 
 import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
+import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as copy_and_paste from "./copy_and_paste.ts";
@@ -233,6 +235,7 @@ export function quote_message(opts: {
     keep_composebox_empty?: boolean;
     reply_type?: "personal";
     trigger?: string;
+    forward_message?: boolean;
 }): void {
     const {message_id, message, quote_content} = get_quote_target(opts);
     const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
@@ -240,25 +243,37 @@ export function quote_message(opts: {
     // If the last compose type textarea focused on is still in the DOM, we add
     // the quote in that textarea, else we default to the compose box.
     const last_focused_compose_type_input = compose_state.get_last_focused_compose_type_input();
-    const $textarea = last_focused_compose_type_input?.isConnected
-        ? $(last_focused_compose_type_input)
-        : $<HTMLTextAreaElement>("textarea#compose-textarea");
+    const $textarea =
+        last_focused_compose_type_input?.isConnected && !opts.forward_message
+            ? $(last_focused_compose_type_input)
+            : $<HTMLTextAreaElement>("textarea#compose-textarea");
 
-    if ($textarea.attr("id") === "compose-textarea" && !compose_state.has_message_content()) {
-        // The user has not started typing a message,
-        // but is quoting into the compose box,
-        // so we will re-open the compose box.
-        // (If you did re-open the compose box, you
-        // are prone to glitches where you select the
-        // text, plus it's a complicated codepath that
-        // can have other unintended consequences.)
-        respond_to_message({
-            ...opts,
-            keep_composebox_empty: true,
+    if (opts.forward_message) {
+        // Setting the stream_id to undefined will automatically open the recipient popover
+        compose_actions.start({
+            message_type: message.type,
+            topic: "",
+            keep_composebox_empty: opts.keep_composebox_empty,
+            content: quoting_placeholder,
         });
-    }
+        compose_recipient.open_compose_recipient_dropdown();
+    } else {
+        if ($textarea.attr("id") === "compose-textarea" && !compose_state.has_message_content()) {
+            // The user has not started typing a message,
+            // but is quoting into the compose box,
+            // so we will re-open the compose box.
+            // (If you did re-open the compose box, you
+            // are prone to glitches where you select the
+            // text, plus it's a complicated codepath that
+            // can have other unintended consequences.)
+            respond_to_message({
+                ...opts,
+                keep_composebox_empty: true,
+            });
+        }
 
-    compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
+        compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
+    }
 
     function replace_content(message: Message, raw_content: string): void {
         // Final message looks like:
@@ -277,8 +292,18 @@ export function quote_message(opts: {
         const fence = fenced_code.get_unused_fence(raw_content);
         content += `${fence}quote\n${raw_content}\n${fence}`;
 
-        compose_ui.replace_syntax(quoting_placeholder, content, $textarea);
+        compose_ui.replace_syntax(quoting_placeholder, content, $textarea, opts.forward_message);
         compose_ui.autosize_textarea($textarea);
+
+        if (!opts.forward_message) {
+            return;
+        }
+        const select_recipient_widget: tippy.ReferenceElement | undefined = $(
+            "#compose_select_recipient_widget",
+        )[0];
+        if (select_recipient_widget !== undefined) {
+            void select_recipient_widget._tippy?.popperInstance?.update();
+        }
     }
 
     if (message && quote_content) {
