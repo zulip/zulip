@@ -155,7 +155,7 @@ const keypress_mappings = {
     45: {name: "toggle_message_collapse", message_view_only: true}, // '-'
     47: {name: "search", message_view_only: false}, // '/'
     58: {name: "toggle_reactions_popover", message_view_only: true}, // ':'
-    62: {name: "compose_quote_reply", message_view_only: true}, // '>'
+    62: {name: "compose_quote_message", message_view_only: true}, // '>'
     63: {name: "show_shortcuts", message_view_only: false}, // '?'
     64: {name: "compose_reply_with_mention", message_view_only: true}, // '@'
     65: {name: "stream_cycle_backward", message_view_only: true}, // 'A'
@@ -1195,8 +1195,8 @@ export function process_hotkey(e, hotkey) {
         case "mark_unread":
             unread_ops.mark_as_unread_from_here(msg.id);
             return true;
-        case "compose_quote_reply": // > : respond to selected message with quote
-            compose_reply.quote_and_reply({trigger: "hotkey"});
+        case "compose_quote_message": // > : respond to selected message with quote
+            compose_reply.quote_message({trigger: "hotkey"});
             return true;
         case "edit_message": {
             const $row = message_lists.current.get_row(msg.id);

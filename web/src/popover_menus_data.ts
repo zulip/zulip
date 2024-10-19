@@ -38,7 +38,7 @@ type ActionPopoverContext = {
     should_display_mark_as_unread: boolean;
     should_display_collapse: boolean;
     should_display_uncollapse: boolean;
-    should_display_quote_and_reply: boolean;
+    should_display_quote_message: boolean;
     conversation_time_url: string;
     should_display_delete_option: boolean;
     should_display_read_receipts_option: boolean;
@@ -189,7 +189,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
     const should_display_uncollapse =
         !message.locally_echoed && !message.is_me_message && message.collapsed;
 
-    const should_display_quote_and_reply = message.content !== "<p>(deleted)</p>" && not_spectator;
+    const should_display_quote_message = message.content !== "<p>(deleted)</p>" && not_spectator;
 
     const conversation_time_url = hash_util.by_conversation_and_time_url(message);
 
@@ -225,7 +225,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         conversation_time_url,
         should_display_delete_option,
         should_display_read_receipts_option,
-        should_display_quote_and_reply,
+        should_display_quote_message,
     };
 }
 

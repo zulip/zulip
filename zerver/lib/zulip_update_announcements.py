@@ -52,14 +52,14 @@ announcements, they can be disabled. [Learn more]({zulip_update_announcements_he
 the formatting, including links, bulleted lists, bold, italics, and more.
 Pasting as plain text remains an alternative option. [Learn
 more]({keyboard_shortcuts_basics_help_url}).
-- To [quote and reply]({quote_and_reply_help_url}) to part of a message, you can
+- To [quote and reply]({quote_message_help_url}) to part of a message, you can
 now select the part that you want to quote.
 - You can now hide the user list in the right sidebar to reduce distraction.
 [Learn more]({user_list_help_url}).
 """.format(
             keyboard_shortcuts_basics_help_url="/help/keyboard-shortcuts#the-basics",
             user_list_help_url="/help/user-list",
-            quote_and_reply_help_url="/help/quote-and-reply",
+            quote_message_help_url="/help/quote-and-reply",
         ),
     ),
     ZulipUpdateAnnouncement(
