@@ -16,6 +16,7 @@ async function realm_creation_tests(page: Page): Promise<void> {
     await page.waitForSelector("#email");
     await page.type("#email", email);
     await page.type("#id_team_name", organization_name);
+    await page.select("#realm_type", "business");
     await page.$eval("input#realm_in_root_domain", (el) => {
         el.click();
     });
