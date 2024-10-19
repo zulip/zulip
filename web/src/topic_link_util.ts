@@ -19,7 +19,7 @@ function get_stream_name_from_topic_link_syntax(syntax: string): string {
 export function escape_invalid_stream_topic_characters(text: string): string {
     switch (text) {
         case "`":
-            return "&grave;";
+            return "&#96;";
         case ">":
             return "&gt;";
         case "*":
