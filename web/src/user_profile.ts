@@ -920,7 +920,7 @@ function get_human_profile_data(fields_user_pills: Map<number, user_pill.UserPil
         to see how the form is built.
 
         TODO: Ideally, this logic would be cleaned up or deduplicated with
-        the settings_account.js logic.
+        the settings_account.ts logic.
     */
     const new_profile_data = [];
     $("#edit-user-form .custom_user_field_value").each(function () {
