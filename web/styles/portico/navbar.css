@@ -73,7 +73,11 @@ details summary::-webkit-details-marker {
     transition-property: background, color;
     transition-duration: 0.05s;
     transition-timing-function: ease-out;
-    color: hsl(0deg 0% 100% / 80%);
+
+    &,
+    &:visited {
+        color: hsl(0deg 0% 100% / 80%);
+    }
 }
 
 .top-menu-item:hover {
