@@ -193,7 +193,7 @@ def read_stripe_fixture(
             requester = stripe._api_requestor._APIRequestor()
             # This function will raise the relevant StripeError according to the fixture
             requester._interpret_response(
-                fixture["http_body"], fixture["http_status"], fixture["headers"]
+                fixture["http_body"], fixture["http_status"], fixture["headers"], "V1"
             )
         return stripe.convert_to_stripe_object(fixture)
 
