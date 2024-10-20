@@ -64,23 +64,34 @@ function format(scheduled_messages) {
     const formatted_msgs = [];
     const sorted_messages = sort_scheduled_messages(scheduled_messages);
     for (const msg of sorted_messages) {
-        const msg_render_context = {...msg};
-        if (msg.type === "stream") {
-            msg_render_context.is_stream = true;
-            msg_render_context.stream_id = msg.to;
-            msg_render_context.stream_name = sub_store.maybe_get_stream_name(
-                msg_render_context.stream_id,
-            );
-            const color = stream_data.get_color(msg_render_context.stream_id);
-            msg_render_context.recipient_bar_color = stream_color.get_recipient_bar_color(color);
-            msg_render_context.stream_privacy_icon_color =
-                stream_color.get_stream_privacy_icon_color(color);
-        } else {
-            msg_render_context.is_stream = false;
-            msg_render_context.recipients = people.get_recipients(msg.to.join(","));
-        }
+        let msg_render_context;
         const time = new Date(msg.scheduled_delivery_timestamp * 1000);
-        msg_render_context.formatted_send_at_time = timerender.get_full_datetime(time, "time");
+        const formatted_send_at_time = timerender.get_full_datetime(time, "time");
+        if (msg.type === "stream") {
+            const stream_id = msg.to;
+            const stream_name = sub_store.maybe_get_stream_name(stream_id);
+            const color = stream_data.get_color(stream_id);
+            const recipient_bar_color = stream_color.get_recipient_bar_color(color);
+            const stream_privacy_icon_color = stream_color.get_stream_privacy_icon_color(color);
+
+            msg_render_context = {
+                ...msg,
+                is_stream: true,
+                stream_id,
+                stream_name,
+                recipient_bar_color,
+                stream_privacy_icon_color,
+                formatted_send_at_time,
+            };
+        } else {
+            const recipients = people.get_recipients(msg.to.join(","));
+            msg_render_context = {
+                ...msg,
+                is_stream: false,
+                recipients,
+                formatted_send_at_time,
+            };
+        }
         formatted_msgs.push(msg_render_context);
     }
     return formatted_msgs;
