@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 312  # Last bumped for adding 'realm_export_consent' event t
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (294, 2)  # bumped 2024-10-15 to upgrade Node.js
+PROVISION_VERSION = (295, 0)  # bumped 2024-10-20 to upgrade Python requirements
