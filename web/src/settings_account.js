@@ -186,22 +186,17 @@ function settings_change_error(message_html, xhr) {
 }
 
 function update_custom_profile_field(field, method) {
-    let field_id;
+    let data;
     if (method === channel.del) {
-        field_id = field;
+        data = JSON.stringify([field.id]);
     } else {
-        field_id = field.id;
+        data = JSON.stringify([field]);
     }
 
     const $spinner_element = $(
-        `.custom_user_field[data-field-id="${CSS.escape(field_id)}"] .custom-field-status`,
+        `.custom_user_field[data-field-id="${CSS.escape(field.id.toString())}"] .custom-field-status`,
     ).expectOne();
-    settings_ui.do_settings_change(
-        method,
-        "/json/users/me/profile_data",
-        {data: JSON.stringify([field])},
-        $spinner_element,
-    );
+    settings_ui.do_settings_change(method, "/json/users/me/profile_data", {data}, $spinner_element);
 }
 
 function update_user_custom_profile_fields(fields, method) {
@@ -217,7 +212,7 @@ function update_user_custom_profile_fields(fields, method) {
 function update_user_type_field(field, pills) {
     const user_ids = user_pill.get_user_ids(pills);
     if (user_ids.length < 1) {
-        update_user_custom_profile_fields([field.id], channel.del);
+        update_user_custom_profile_fields([{id: field.id}], channel.del);
     } else {
         update_user_custom_profile_fields([{id: field.id, value: user_ids}], channel.patch);
     }
@@ -685,7 +680,7 @@ export function set_up() {
         e.stopPropagation();
         const $field = $(e.target).closest(".custom_user_field").expectOne();
         const field_id = Number.parseInt($field.attr("data-field-id"), 10);
-        update_user_custom_profile_fields([field_id], channel.del);
+        update_user_custom_profile_fields([{id: field_id}], channel.del);
     });
 
     $("#profile-settings").on("change", ".custom_user_field_value", function (e) {
@@ -699,7 +694,7 @@ export function set_up() {
             fields.push({id: field_id, value});
             update_user_custom_profile_fields(fields, channel.patch);
         } else {
-            fields.push(field_id);
+            fields.push({id: field_id});
             update_user_custom_profile_fields(fields, channel.del);
         }
     });
