@@ -916,6 +916,10 @@ test("electron_bridge", ({override_rewire}) => {
         activity.mark_client_active();
         assert.equal(activity.compute_active_status(), "active");
     });
+
+    assert.ok(!activity.received_new_messages);
+    activity.set_received_new_messages(true);
+    assert.ok(activity.received_new_messages);
 });
 
 test("test_send_or_receive_no_presence_for_spectator", () => {

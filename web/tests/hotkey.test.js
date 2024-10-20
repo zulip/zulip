@@ -34,6 +34,7 @@ set_global("document", {
 });
 
 const activity_ui = mock_esm("../src/activity_ui");
+const activity = zrequire("../src/activity");
 const browser_history = mock_esm("../src/browser_history");
 const compose_actions = mock_esm("../src/compose_actions");
 const compose_reply = mock_esm("../src/compose_reply");
@@ -542,4 +543,14 @@ run_test("motion_keys", () => {
     assert_mapping("down_arrow", drafts_overlay_ui, "handle_keyboard_events");
     delete overlays.any_active;
     delete overlays.drafts_open;
+});
+
+run_test("test new user input hook called", () => {
+    let hook_called = false;
+    activity.register_on_new_user_input_hook(() => {
+        hook_called = true;
+    });
+
+    hotkey.process_keydown({which: "S".codePointAt(0)});
+    assert.ok(hook_called);
 });

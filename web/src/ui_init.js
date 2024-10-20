@@ -632,6 +632,16 @@ export function initialize_everything(state_data) {
 
     initialize_unread_ui();
     activity.initialize();
+    activity.register_on_new_user_input_hook(() => {
+        // Instead of marking new messages as read immediately when bottom
+        // of feed is visible, we wait for user input to mark them as read.
+        // This is to prevent marking messages as read unintentionally,
+        // especially when user is away from screen and the window is focused.
+        if (activity.received_new_messages && activity.new_user_input) {
+            unread_ops.process_visible();
+            activity.set_received_new_messages(false);
+        }
+    });
     activity_ui.initialize({
         narrow_by_email(email) {
             message_view.show(
