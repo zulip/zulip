@@ -1268,10 +1268,9 @@ def catch_ldap_error(signal: Signal, **kwargs: Any) -> None:
     we essentially convert the signal to a normal exception that will properly
     propagate out of django_auth_ldap internals.
     """
-    if kwargs["context"] == "populate_user":
-        # The exception message can contain the password (if it was invalid),
-        # so it seems better not to log that, and only use the original exception's name here.
-        raise PopulateUserLDAPError(type(kwargs["exception"]).__name__)
+    # The exception message can contain the password (if it was invalid),
+    # so it seems better not to log that, and only use the original exception's name here.
+    raise PopulateUserLDAPError(type(kwargs["exception"]).__name__)
 
 
 def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bool:
