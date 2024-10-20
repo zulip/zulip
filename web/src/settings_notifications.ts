@@ -56,7 +56,7 @@ function rerender_ui(): void {
                         settings_config.stream_specific_notification_settings,
                     is_disabled:
                         settings_config.all_notifications(user_settings)
-                            .show_push_notifications_tooltip,
+                            .disabled_notification_settings,
                     muted: muted_stream_ids.includes(stream.stream_id),
                 }),
             ),

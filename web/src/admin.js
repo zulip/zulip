@@ -102,8 +102,8 @@ function get_realm_level_notification_settings(options) {
 
     options.general_settings = all_notifications_settings.general_settings;
     options.notification_settings = all_notifications_settings.settings;
-    options.show_push_notifications_tooltip =
-        all_notifications_settings.show_push_notifications_tooltip;
+    options.disabled_notification_settings =
+        all_notifications_settings.disabled_notification_settings;
 }
 
 export function build_page() {
