@@ -4,7 +4,7 @@
 mypy
 
 boto3-stubs[s3,ses,sns,sqs]
-django-stubs<5.0.3  # https://github.com/typeddjango/django-stubs/issues/2299, https://github.com/typeddjango/django-stubs/issues/2302, https://github.com/typeddjango/django-stubs/issues/2304
+https://github.com/zulip/django-stubs/archive/a006b9993130cc2c1e80f2eb55d959422337554a.zip#egg=django-stubs==5.1.0+git  # https://github.com/typeddjango/django-stubs/pull/2408, https://github.com/typeddjango/django-stubs/pull/2411
 lxml-stubs
 SQLAlchemy[mypy]
 types-beautifulsoup4
