@@ -6,7 +6,6 @@ from unittest import mock
 
 import time_machine
 from django.apps import apps
-from django.db import models
 from django.db.models import Sum
 from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Literal
@@ -68,7 +67,6 @@ from zerver.models import (
     Message,
     NamedUserGroup,
     PreregistrationUser,
-    Realm,
     RealmAuditLog,
     Recipient,
     Stream,
@@ -111,7 +109,7 @@ class AnalyticsTestCase(ZulipTestCase):
 
         # used to generate unique names in self.create_*
         self.name_counter = 100
-        # used as defaults in self.assert_table_count
+        # used as defaults in self.assertTableState
         self.current_property: str | None = None
 
         # Delete RemoteRealm registrations to have a clean slate - the relevant
@@ -225,30 +223,6 @@ class AnalyticsTestCase(ZulipTestCase):
             create_time=create_time,
             content_type=content_type,
         )
-
-    # kwargs should only ever be a UserProfile or Stream.
-    def assert_table_count(
-        self,
-        table: type[BaseCount],
-        value: int,
-        property: str | None = None,
-        subgroup: str | None = None,
-        end_time: datetime = TIME_ZERO,
-        realm: Realm | None = None,
-        **kwargs: models.Model,
-    ) -> None:
-        if property is None:
-            property = self.current_property
-        queryset = table._default_manager.filter(property=property, end_time=end_time).filter(
-            **kwargs
-        )
-        if table is not InstallationCount:
-            if realm is None:
-                realm = self.default_realm
-            queryset = queryset.filter(realm=realm)
-        if subgroup is not None:
-            queryset = queryset.filter(subgroup=subgroup)
-        self.assertEqual(queryset.values_list("value", flat=True)[0], value)
 
     def assertTableState(
         self, table: type[BaseCount], arg_keys: list[str], arg_values: list[list[object]]
@@ -818,9 +792,17 @@ class TestCountStats(AnalyticsTestCase):
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
-        self.assert_table_count(UserCount, 1, subgroup="private_message")
-        self.assert_table_count(UserCount, 1, subgroup="huddle_message")
-        self.assert_table_count(UserCount, 1, subgroup="public_stream")
+        self.assertTableState(
+            UserCount,
+            ["value", "subgroup", "user"],
+            [
+                [1, "private_message", user],
+                [1, "huddle_message", user],
+                [1, "public_stream", user],
+                [1, "public_stream", self.hourly_user],
+                [1, "public_stream", self.daily_user],
+            ],
+        )
 
     def test_messages_sent_by_client(self) -> None:
         stat = COUNT_STATS["messages_sent:client:day"]
