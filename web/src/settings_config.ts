@@ -859,7 +859,7 @@ export type AllNotifications = {
         email_message_notification_settings: string[];
         other_email_settings: string[];
     };
-    show_push_notifications_tooltip: {
+    disabled_notification_settings: {
         push_notifications: boolean;
         enable_online_push_notifications: boolean;
     };
@@ -895,7 +895,7 @@ export const all_notifications = (settings_object: Settings): AllNotifications =
         email_message_notification_settings,
         other_email_settings,
     },
-    show_push_notifications_tooltip: {
+    disabled_notification_settings: {
         push_notifications: !realm.realm_push_notifications_enabled,
         enable_online_push_notifications: !realm.realm_push_notifications_enabled,
     },
