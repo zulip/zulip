@@ -547,6 +547,9 @@ export async function build_move_topic_to_stream_popover(
         dropdown.hide();
         event.preventDefault();
         event.stopPropagation();
+
+        // Move focus to the topic input after a new stream is selected.
+        $("#move_topic_form .move_messages_edit_topic").trigger("focus");
     }
 
     function move_topic_post_render() {
