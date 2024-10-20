@@ -469,6 +469,7 @@ def bulk_access_stream_messages_query(
 
     """
 
+    assert stream.recipient_id is not None
     messages = messages.filter(realm_id=user_profile.realm_id, recipient_id=stream.recipient_id)
 
     if stream.is_public() and user_profile.can_access_public_streams():

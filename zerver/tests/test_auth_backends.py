@@ -6637,20 +6637,36 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         LDAP_DEACTIVATE_NON_MATCHING_USERS was True.
         Details: https://github.com/zulip/zulip/issues/13130
         """
-        with self.settings(
-            LDAP_DEACTIVATE_NON_MATCHING_USERS=True,
-            LDAP_APPEND_DOMAIN="zulip.com",
-            AUTH_LDAP_BIND_PASSWORD="wrongpass",
+        with (
+            self.settings(
+                LDAP_DEACTIVATE_NON_MATCHING_USERS=True,
+                LDAP_APPEND_DOMAIN="zulip.com",
+                AUTH_LDAP_BIND_PASSWORD="wrongpass",
+            ),
+            self.assertLogs("django_auth_ldap", "WARN") as django_ldap_log,
+            self.assertRaisesRegex(PopulateUserLDAPError, r"^INVALID_CREDENTIALS$"),
         ):
-            with self.assertRaises(ldap.INVALID_CREDENTIALS):
-                sync_user_from_ldap(self.example_user("hamlet"), mock.Mock())
-            mock_deactivate.assert_not_called()
+            sync_user_from_ldap(self.example_user("hamlet"), mock.Mock())
+        mock_deactivate.assert_not_called()
+        self.assertEqual(
+            django_ldap_log.output,
+            [
+                "WARNING:django_auth_ldap:Caught LDAPError looking up user: INVALID_CREDENTIALS(':wrongpass')"
+            ],
+        )
 
         # Make sure other types of LDAPError won't cause deactivation either:
-        with mock.patch.object(_LDAPUser, "_get_or_create_user", side_effect=ldap.LDAPError):
-            with self.assertRaises(PopulateUserLDAPError):
-                sync_user_from_ldap(self.example_user("hamlet"), mock.Mock())
-            mock_deactivate.assert_not_called()
+        with (
+            mock.patch.object(_LDAPUser, "_get_or_create_user", side_effect=ldap.LDAPError),
+            self.assertLogs("django_auth_ldap", "WARN") as django_ldap_log,
+            self.assertRaises(PopulateUserLDAPError),
+        ):
+            sync_user_from_ldap(self.example_user("hamlet"), mock.Mock())
+        mock_deactivate.assert_not_called()
+        self.assertEqual(
+            django_ldap_log.output,
+            ["WARNING:django_auth_ldap:Caught LDAPError populating user info: LDAPError()"],
+        )
 
     @override_settings(LDAP_EMAIL_ATTR="mail")
     def test_populate_user_returns_none(self) -> None:
@@ -6702,12 +6718,12 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
 
         with (
             self.assertRaises(ZulipLDAPError),
-            self.assertLogs("django_auth_ldap", "WARNING") as warn_log,
+            self.assertLogs("django_auth_ldap", "DEBUG") as debug_log,
         ):
             self.perform_ldap_sync(self.example_user("hamlet"))
-        self.assertEqual(
-            warn_log.output,
-            ["WARNING:django_auth_ldap:Name too short! while authenticating hamlet"],
+        self.assertIn(
+            "DEBUG:django_auth_ldap:Failed to populate user hamlet: Name too short!",
+            debug_log.output,
         )
 
     def test_deactivate_user_with_useraccountcontrol_attr(self) -> None:
@@ -6976,46 +6992,44 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             self.assertEqual(field_value, test_case["expected_value"])
 
     def test_update_non_existent_profile_field(self) -> None:
-        with self.settings(
-            AUTH_LDAP_USER_ATTR_MAP={
-                "full_name": "cn",
-                "custom_profile_field__non_existent": "homePhone",
-            }
+        with (
+            self.settings(
+                AUTH_LDAP_USER_ATTR_MAP={
+                    "full_name": "cn",
+                    "custom_profile_field__non_existent": "homePhone",
+                }
+            ),
+            self.assertRaisesRegex(
+                PopulateUserLDAPError, r"^populate_user unexpectedly returned None$"
+            ),
+            self.assertLogs("django_auth_ldap", "DEBUG") as debug_log,
         ):
-            with (
-                self.assertRaisesRegex(
-                    ZulipLDAPError, "Custom profile field with name non_existent not found"
-                ),
-                self.assertLogs("django_auth_ldap", "WARNING") as warn_log,
-            ):
-                self.perform_ldap_sync(self.example_user("hamlet"))
-            self.assertEqual(
-                warn_log.output,
-                [
-                    "WARNING:django_auth_ldap:Custom profile field with name non_existent not found. while authenticating hamlet"
-                ],
-            )
+            self.perform_ldap_sync(self.example_user("hamlet"))
+        self.assertIn(
+            "DEBUG:django_auth_ldap:Failed to populate user hamlet: Custom profile field with name non_existent not found.",
+            debug_log.output,
+        )
 
     def test_update_custom_profile_field_invalid_data(self) -> None:
         self.change_ldap_user_attr("hamlet", "birthDate", "9999")
 
-        with self.settings(
-            AUTH_LDAP_USER_ATTR_MAP={
-                "full_name": "cn",
-                "custom_profile_field__birthday": "birthDate",
-            }
+        with (
+            self.settings(
+                AUTH_LDAP_USER_ATTR_MAP={
+                    "full_name": "cn",
+                    "custom_profile_field__birthday": "birthDate",
+                }
+            ),
+            self.assertRaisesRegex(
+                PopulateUserLDAPError, r"^populate_user unexpectedly returned None$"
+            ),
+            self.assertLogs("django_auth_ldap", "DEBUG") as debug_log,
         ):
-            with (
-                self.assertRaisesRegex(ZulipLDAPError, "Invalid data for birthday field"),
-                self.assertLogs("django_auth_ldap", "WARNING") as warn_log,
-            ):
-                self.perform_ldap_sync(self.example_user("hamlet"))
-            self.assertEqual(
-                warn_log.output,
-                [
-                    "WARNING:django_auth_ldap:Invalid data for birthday field: Birthday is not a date while authenticating hamlet"
-                ],
-            )
+            self.perform_ldap_sync(self.example_user("hamlet"))
+        self.assertIn(
+            "DEBUG:django_auth_ldap:Failed to populate user hamlet: Invalid data for birthday field: Birthday is not a date",
+            debug_log.output,
+        )
 
     def test_update_custom_profile_field_no_mapping(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -7741,11 +7755,10 @@ class LDAPGroupSyncTest(ZulipTestCase):
                 },
                 LDAP_APPEND_DOMAIN="zulip.com",
             ),
-            self.assertLogs("django_auth_ldap", "WARN") as django_ldap_log,
+            self.assertLogs("django_auth_ldap", "DEBUG") as django_ldap_log,
             self.assertLogs("zulip.ldap", "DEBUG") as zulip_ldap_log,
-            self.assertRaisesRegex(
-                ZulipLDAPError,
-                "search_s.*",
+            self.assertRaises(
+                PopulateUserLDAPError, msg="populate_user unexpectedly returned None"
             ),
         ):
             sync_user_from_ldap(cordelia, mock.Mock())
@@ -7754,11 +7767,9 @@ class LDAPGroupSyncTest(ZulipTestCase):
             zulip_ldap_log.output,
             [f"DEBUG:zulip.ldap:Syncing groups for user: {cordelia.id}"],
         )
-        self.assertEqual(
+        self.assertIn(
+            'DEBUG:django_auth_ldap:Failed to populate user cordelia: search_s("ou=groups,dc=zulip,dc=com", 1, "(&(objectClass=groupOfUniqueNames(uniqueMember=uid=cordelia,ou=users,dc=zulip,dc=com))", "None", 0)',
             django_ldap_log.output,
-            [
-                'WARNING:django_auth_ldap:search_s("ou=groups,dc=zulip,dc=com", 1, "(&(objectClass=groupOfUniqueNames(uniqueMember=uid=cordelia,ou=users,dc=zulip,dc=com))", "None", 0) while authenticating cordelia',
-            ],
         )
 
 

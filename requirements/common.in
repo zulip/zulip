@@ -189,7 +189,7 @@ django-scim2
 circuitbreaker
 
 # Runtime monkeypatching of django-stubs generics
-django_stubs_ext
+https://github.com/zulip/django-stubs/archive/a006b9993130cc2c1e80f2eb55d959422337554a.zip#egg=django-stubs-ext==5.1.0+git&subdirectory=ext  # https://github.com/typeddjango/django-stubs/pull/2408, https://github.com/typeddjango/django-stubs/pull/2411
 
 # Structured data representation with parsing.
 pydantic
