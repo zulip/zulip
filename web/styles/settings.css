@@ -510,7 +510,7 @@ input[type="checkbox"] {
     font-size: 0.9333em;
     font-style: normal;
     font-weight: 500;
-    color: hsl(0deg 0% 40%);
+    color: var(--color-kbd-enter-sends);
     position: relative;
     bottom: 1px;
     margin: 0 2px;
