@@ -746,6 +746,9 @@ export function dispatch_normal_event(event) {
                 break;
             }
 
+            // TODO/typescript: Move privacy_setting_name_schema and PrivacySettingName
+            // here from `settings_account` when this file is converted to typescript,
+            // and use them instead of `privacy_settings`.
             const privacy_settings = [
                 "send_stream_typing_notifications",
                 "send_private_typing_notifications",
