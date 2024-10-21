@@ -114,6 +114,7 @@ class HomeTest(ZulipTestCase):
         "muted_users",
         "never_subscribed",
         "onboarding_steps",
+        "onboarding_video_url",
         "password_min_guesses",
         "password_min_length",
         "password_max_length",

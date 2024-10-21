@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 363**
+
+* [`POST /register`](/api/register-queue): Added `onboarding_video_url`
+  to the response.
+
 **Feature level 362**
 
 * [`POST /users/me/subscriptions`](/api/subscribe),
