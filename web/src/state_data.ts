@@ -556,8 +556,14 @@ export const state_data_schema = z
     .and(z.object({max_message_id: z.number()}).transform((local_message) => ({local_message})))
     .and(
         z
-            .object({onboarding_steps: z.array(onboarding_step_schema)})
-            .transform((onboarding_steps) => ({onboarding_steps})),
+            .object({
+                onboarding_steps: z.array(onboarding_step_schema),
+                navigation_tour_video_url: z.nullable(z.string()),
+            })
+            .transform(({onboarding_steps, navigation_tour_video_url}) => ({
+                onboarding_steps: {onboarding_steps},
+                navigation_tour_video_url,
+            })),
     )
     .and(current_user_schema.transform((current_user) => ({current_user})))
     .and(realm_schema.transform((realm) => ({realm})));

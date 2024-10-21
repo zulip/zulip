@@ -273,6 +273,7 @@ def fetch_initial_state_data(
         state["onboarding_steps"] = (
             [] if user_profile is None else get_next_onboarding_steps(user_profile)
         )
+        state["navigation_tour_video_url"] = settings.NAVIGATION_TOUR_VIDEO_URL
 
     if want("message"):
         # Since the introduction of `anchor="latest"` in the API,

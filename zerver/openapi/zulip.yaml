@@ -14967,6 +14967,16 @@ paths:
                           exist as all onboarding steps were implicitly hotspots.
                         items:
                           $ref: "#/components/schemas/OnboardingStep"
+                      navigation_tour_video_url:
+                        type: string
+                        nullable: true
+                        description: |
+                          Present if `onboarding_steps` is present in `fetch_event_types`.
+
+                          URL of the navigation tour video to display to new users during
+                          onboarding. If `null`, the onboarding video experience is disabled.
+
+                          **Changes**: New in Zulip 10.0 (feature level 369).
                       max_message_id:
                         type: integer
                         deprecated: true

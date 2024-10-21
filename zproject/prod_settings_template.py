@@ -886,3 +886,10 @@ CAMO_URI = "/external_content/"
 
 ## Directory containing Markdown files for the server's policies.
 # POLICIES_DIRECTORY = "/etc/zulip/policies/"
+
+## URL of the navigation tour video to show to new users. You can use this
+## to host the official video on your network, or to provide your own
+## introductory video with details on how your organization uses Zulip.
+##
+## A value of None disables the navigation tour video experience.
+# NAVIGATION_TOUR_VIDEO_URL = "https://static.zulipchat.com/static/navigation-tour-video/zulip-10.mp4"

@@ -667,3 +667,67 @@
 #topic-summary-modal {
     width: 45em;
 }
+
+#navigation-tour-video-modal {
+    width: 97vw;
+    max-width: 1024px;
+
+    .modal__content {
+        overflow: hidden;
+    }
+
+    #navigation-tour-video-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        &::after {
+            content: "";
+            position: absolute;
+            background-image: url("../images/play_button.svg");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: transparent;
+            width: 20%;
+            height: 20%;
+            pointer-events: none;
+        }
+
+        &.hide-play-button::after {
+            content: none;
+            background-image: none;
+        }
+    }
+
+    #navigation-tour-video {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        cursor: pointer;
+        border: 1px solid hsl(0deg 0% 50%);
+    }
+
+    #navigation-tour-video-ended-button-wrapper {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        visibility: hidden;
+
+        #navigation-tour-video-ended-button {
+            background-color: hsl(240deg 96% 68%);
+            color: hsl(0deg 0% 100%) !important;
+            cursor: pointer;
+            font-size: 200%;
+            padding: 1% 5%;
+            border-radius: 8px;
+            border: 1px solid hsl(0deg 0% 100%);
+            transition: transform 0.25s ease-out;
+
+            &:hover {
+                transform: scale(1.05);
+            }
+        }
+    }
+}

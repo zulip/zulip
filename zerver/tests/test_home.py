@@ -104,6 +104,7 @@ class HomeTest(ZulipTestCase):
         "max_topic_length",
         "muted_topics",
         "muted_users",
+        "navigation_tour_video_url",
         "never_subscribed",
         "onboarding_steps",
         "password_min_guesses",
