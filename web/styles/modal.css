@@ -554,3 +554,43 @@
         }
     }
 }
+
+#onboarding-video-modal {
+    width: 97vw;
+    max-width: 1024px;
+
+    .modal__content {
+        overflow: hidden;
+    }
+
+    #onboarding-video-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        &::after {
+            content: "";
+            position: absolute;
+            background-image: url("../images/play_button.svg");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: transparent;
+            width: 20%;
+            height: 20%;
+            pointer-events: none;
+        }
+
+        &.hide-play-button::after {
+            content: none;
+            background-image: none;
+        }
+    }
+
+    video {
+        max-width: 100%;
+        max-height: 70vh;
+        cursor: pointer;
+        border: 1px solid hsl(0deg 0% 50%);
+    }
+}
