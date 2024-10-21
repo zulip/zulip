@@ -372,9 +372,11 @@ export function get_user_time(user_id: number): string | undefined {
     return undefined;
 }
 
-export function get_user_type(user_id: number): string | undefined {
+export function get_user_type(user_id: number): string {
     const user_profile = get_by_user_id(user_id);
-    return settings_config.user_role_map.get(user_profile.role);
+    const user_type = settings_config.user_role_map.get(user_profile.role);
+    assert(user_type !== undefined);
+    return user_type;
 }
 
 export function emails_strings_to_user_ids_string(emails_string: string): string | undefined {
