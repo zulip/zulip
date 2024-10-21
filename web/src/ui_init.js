@@ -319,7 +319,6 @@ export function initialize_kitchen_sink_stuff() {
         const $row = event.msg_list.get_row(event.id);
         $(".selected_message").removeClass("selected_message");
         $row.addClass("selected_message");
-        narrow_history.save_narrow_state();
 
         if (event.then_scroll) {
             if ($row.length === 0) {
@@ -355,6 +354,9 @@ export function initialize_kitchen_sink_stuff() {
                 });
             }
         }
+
+        // Save selected message and scroll position after we have scrolled to it.
+        narrow_history.save_narrow_state();
     });
 
     if (!realm.realm_allow_message_editing) {
