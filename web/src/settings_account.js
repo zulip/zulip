@@ -507,7 +507,6 @@ export function set_up() {
                 channel.set_password_change_in_progress(false);
             },
             $error_msg_element: $change_password_error,
-            failure_msg_html: null,
         };
         settings_ui.do_settings_change(
             channel.patch,
