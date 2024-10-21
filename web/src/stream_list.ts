@@ -846,6 +846,14 @@ export function set_event_handlers({
         e.stopPropagation();
 
         const stream_id = stream_id_for_elt($(e.target).parents("li"));
+        const current_narrow_stream_id = narrow_state.stream_id();
+        const current_topic = narrow_state.topic();
+
+        if (current_narrow_stream_id === stream_id && current_topic) {
+            const channel_feed_url = hash_util.by_stream_url(stream_id);
+            browser_history.go_to_location(channel_feed_url);
+            return;
+        }
 
         if (
             user_settings.web_channel_default_view ===
