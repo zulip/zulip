@@ -708,3 +708,7 @@ TOPIC_SUMMARIZATION_PARAMETERS: dict[str, object] = {}
 INPUT_COST_PER_GIGATOKEN: int = 0
 OUTPUT_COST_PER_GIGATOKEN: int = 0
 MAX_PER_USER_MONTHLY_AI_COST: float | None = 0.5
+
+# URL of the onboarding video displayed to new users.
+# Set it to None to disable it.
+ONBOARDING_VIDEO_URL: str | None = "/static/videos/onboarding-video.mp4"
