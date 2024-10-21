@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_scheduled_message from "../templates/scheduled_message.hbs";
 import render_scheduled_messages_overlay from "../templates/scheduled_messages_overlay.hbs";
@@ -8,11 +9,29 @@ import * as messages_overlay_ui from "./messages_overlay_ui";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as scheduled_messages from "./scheduled_messages";
+import type {ScheduledMessage} from "./scheduled_messages";
 import * as scheduled_messages_ui from "./scheduled_messages_ui";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
+
+type ScheduledMessageRenderContext = ScheduledMessage &
+    (
+        | {
+              is_stream: true;
+              formatted_send_at_time: string;
+              recipient_bar_color: string;
+              stream_id: number;
+              stream_name: string;
+              stream_privacy_icon_color: string;
+          }
+        | {
+              is_stream: false;
+              formatted_send_at_time: string;
+              recipients: string;
+          }
+    );
 
 export const keyboard_handling_context = {
     get_items_ids() {
@@ -40,7 +59,7 @@ export const keyboard_handling_context = {
         messages_overlay_ui.focus_on_sibling_element(this);
         // We need to have a super responsive UI feedback here, so we remove the row from the DOM manually
         $focused_row.remove();
-        scheduled_messages.delete_scheduled_message(focused_element_id);
+        scheduled_messages.delete_scheduled_message(Number.parseInt(focused_element_id, 10));
     },
     items_container_selector: "scheduled-messages-container",
     items_list_selector: "scheduled-messages-list",
@@ -49,20 +68,25 @@ export const keyboard_handling_context = {
     id_attribute_name: "data-scheduled-message-id",
 };
 
-function sort_scheduled_messages(scheduled_messages) {
+function sort_scheduled_messages(
+    scheduled_messages: Map<number, ScheduledMessage>,
+): ScheduledMessage[] {
     const sorted_messages = [...scheduled_messages.values()].sort(
         (msg1, msg2) => msg1.scheduled_delivery_timestamp - msg2.scheduled_delivery_timestamp,
     );
     return sorted_messages;
 }
 
-export function handle_keyboard_events(event_key) {
+export function handle_keyboard_events(event_key: string): void {
     messages_overlay_ui.modals_handle_events(event_key, keyboard_handling_context);
 }
 
-function format(scheduled_messages) {
+function format(
+    scheduled_messages: Map<number, ScheduledMessage>,
+): ScheduledMessageRenderContext[] {
     const formatted_msgs = [];
     const sorted_messages = sort_scheduled_messages(scheduled_messages);
+
     for (const msg of sorted_messages) {
         let msg_render_context;
         const time = new Date(msg.scheduled_delivery_timestamp * 1000);
@@ -74,9 +98,10 @@ function format(scheduled_messages) {
             const recipient_bar_color = stream_color.get_recipient_bar_color(color);
             const stream_privacy_icon_color = stream_color.get_stream_privacy_icon_color(color);
 
+            assert(stream_name !== undefined);
             msg_render_context = {
                 ...msg,
-                is_stream: true,
+                is_stream: true as const,
                 stream_id,
                 stream_name,
                 recipient_bar_color,
@@ -87,7 +112,7 @@ function format(scheduled_messages) {
             const recipients = people.get_recipients(msg.to.join(","));
             msg_render_context = {
                 ...msg,
-                is_stream: false,
+                is_stream: false as const,
                 recipients,
                 formatted_send_at_time,
             };
@@ -97,7 +122,7 @@ function format(scheduled_messages) {
     return formatted_msgs;
 }
 
-export function launch() {
+export function launch(): void {
     $("#scheduled_messages_overlay_container").html(render_scheduled_messages_overlay());
     overlays.open_overlay({
         name: "scheduled",
@@ -117,10 +142,10 @@ export function launch() {
     if (first_element_id === undefined) {
         return;
     }
-    messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
+    messages_overlay_ui.set_initial_element(String(first_element_id), keyboard_handling_context);
 }
 
-export function rerender() {
+export function rerender(): void {
     if (!overlays.scheduled_messages_open()) {
         return;
     }
@@ -132,7 +157,7 @@ export function rerender() {
     $messages_list.append($(rendered_list));
 }
 
-export function remove_scheduled_message_id(scheduled_msg_id) {
+export function remove_scheduled_message_id(scheduled_msg_id: number): void {
     if (overlays.scheduled_messages_open()) {
         $(
             `#scheduled_messages_overlay .scheduled-message-row[data-scheduled-message-id=${scheduled_msg_id}]`,
@@ -140,12 +165,12 @@ export function remove_scheduled_message_id(scheduled_msg_id) {
     }
 }
 
-export function initialize() {
+export function initialize(): void {
     $("body").on("click", ".scheduled-message-row .restore-overlay-message", (e) => {
-        let scheduled_msg_id = $(e.currentTarget)
-            .closest(".scheduled-message-row")
-            .attr("data-scheduled-message-id");
-        scheduled_msg_id = Number.parseInt(scheduled_msg_id, 10);
+        const scheduled_msg_id = Number.parseInt(
+            $(e.currentTarget).closest(".scheduled-message-row").attr("data-scheduled-message-id")!,
+            10,
+        );
         scheduled_messages_ui.edit_scheduled_message(scheduled_msg_id);
         overlays.close_overlay("scheduled");
         e.stopPropagation();
@@ -156,13 +181,15 @@ export function initialize() {
         const scheduled_msg_id = $(e.currentTarget)
             .closest(".scheduled-message-row")
             .attr("data-scheduled-message-id");
-        scheduled_messages.delete_scheduled_message(scheduled_msg_id);
+        assert(scheduled_msg_id !== undefined);
+
+        scheduled_messages.delete_scheduled_message(Number.parseInt(scheduled_msg_id, 10));
 
         e.stopPropagation();
         e.preventDefault();
     });
 
-    $("body").on("focus", ".scheduled-message-info-box", (e) => {
-        messages_overlay_ui.activate_element(e.target, keyboard_handling_context);
+    $("body").on("focus", ".scheduled-message-info-box", function (this: HTMLElement) {
+        messages_overlay_ui.activate_element(this, keyboard_handling_context);
     });
 }

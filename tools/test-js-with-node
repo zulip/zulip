@@ -198,7 +198,7 @@ EXEMPT_FILES = make_set(
         "web/src/saved_snippets_ui.ts",
         "web/src/scheduled_messages.ts",
         "web/src/scheduled_messages_feed_ui.ts",
-        "web/src/scheduled_messages_overlay_ui.js",
+        "web/src/scheduled_messages_overlay_ui.ts",
         "web/src/scheduled_messages_ui.ts",
         "web/src/scroll_bar.ts",
         "web/src/scroll_util.ts",
