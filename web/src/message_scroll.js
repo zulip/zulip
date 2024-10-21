@@ -160,12 +160,13 @@ export function initialize() {
             }
 
             const messages = event.msg_list.message_range(event.previously_selected_id, event.id);
-            // If the user just arrived at the message `event.id`, we don't mark it as read.
+            // If the user just arrived at the message `event.id`, we don't mark it as read
+            // unless it is the last message in the list.
             // We only mark messages as read when the pointer moves past the message.
             // This is likely the last message in the list. So, we loop through the messages
             // in reverse order to find the message.
             for (let i = messages.length - 1; i >= 0; i -= 1) {
-                if (messages[i].id === event.id) {
+                if (messages[i].id === event.id && event.id !== event.msg_list.last()?.id) {
                     delete messages[i];
                     break;
                 }
