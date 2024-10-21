@@ -33,8 +33,13 @@ function add_all_users(): void {
     add_user_ids(user_ids);
 }
 
-function remove_user_ids(user_ids: number[]): void {
-    user_group_create_members_data.remove_user_ids(user_ids);
+function soft_remove_user_id(user_id: number): void {
+    user_group_create_members_data.soft_remove_user_id(user_id);
+    redraw_member_list();
+}
+
+function undo_soft_remove_user_id(user_id: number): void {
+    user_group_create_members_data.undo_soft_remove_user_id(user_id);
     redraw_member_list();
 }
 
@@ -43,13 +48,25 @@ export function clear_member_list(): void {
     redraw_member_list();
 }
 
+function sync_user_ids(user_ids: number[]): void {
+    user_group_create_members_data.sync_user_ids(user_ids);
+    redraw_member_list();
+}
+
 function build_pill_widget({$parent_container}: {$parent_container: JQuery}): void {
     const $pill_container = $parent_container.find(".pill-container");
     const get_potential_members = user_group_create_members_data.get_potential_members;
 
-    pill_widget = add_subscribers_pill.create({
+    pill_widget = add_subscribers_pill.create_without_add_button({
         $pill_container,
         get_potential_subscribers: get_potential_members,
+        onPillCreateAction: add_user_ids,
+        // It is better to sync the current set of user ids in the input
+        // instead of removing user_ids from the user_ids_set, otherwise
+        // we'll have to have more complex logic of when to remove
+        // a user and when not to depending upon their group, channel
+        // and individual pills.
+        onPillRemoveAction: sync_user_ids,
     });
 }
 
@@ -64,7 +81,14 @@ export function create_handlers($container: JQuery): void {
         e.preventDefault();
         const $elem = $(e.target);
         const user_id = Number.parseInt($elem.attr("data-user-id")!, 10);
-        remove_user_ids([user_id]);
+        soft_remove_user_id(user_id);
+    });
+
+    $container.on("click", ".undo_soft_removed_potential_subscriber", (e) => {
+        e.preventDefault();
+        const $elem = $(e.target);
+        const user_id = Number.parseInt($elem.attr("data-user-id")!, 10);
+        undo_soft_remove_user_id(user_id);
     });
 
     function add_users({pill_user_ids}: {pill_user_ids: number[]}): void {
@@ -108,6 +132,9 @@ export function build_widgets(): void {
                 full_name: user.full_name,
                 is_current_user: user.user_id === current_user_id,
                 img_src: people.small_avatar_url_for_person(user),
+                soft_removed: user_group_create_members_data.user_id_in_soft_remove_list(
+                    user.user_id,
+                ),
             };
             return render_new_user_group_user(item);
         },
@@ -122,4 +149,5 @@ export function build_widgets(): void {
             return $(`#${CSS.escape("user_checkbox_" + user.user_id)}`);
         },
     });
+    pill_widget.appendValue(current_user.email);
 }
