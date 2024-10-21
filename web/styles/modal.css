@@ -554,3 +554,36 @@
         }
     }
 }
+
+#onboarding-video-modal {
+    width: 70%;
+
+    #onboarding-video-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        &::after {
+            content: "";
+            position: absolute;
+            background-image: url("../images/play_button.svg");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: transparent;
+            width: 20%;
+            height: 20%;
+            pointer-events: none;
+        }
+
+        &.hide-play-button::after {
+            content: none;
+            background-image: none;
+        }
+    }
+
+    video {
+        max-width: 100%;
+        cursor: pointer;
+    }
+}
