@@ -24,11 +24,11 @@ export const keyboard_handling_context = {
         return scheduled_messages_ids;
     },
     on_enter() {
-        const focused_element_id = Number.parseInt(
-            messages_overlay_ui.get_focused_element_id(this),
-            10,
-        );
-        scheduled_messages_ui.edit_scheduled_message(focused_element_id);
+        const focused_element_id = messages_overlay_ui.get_focused_element_id(this);
+        if (focused_element_id === undefined) {
+            return;
+        }
+        scheduled_messages_ui.edit_scheduled_message(Number.parseInt(focused_element_id, 10));
         overlays.close_overlay("scheduled");
     },
     on_delete() {
@@ -114,6 +114,9 @@ export function launch() {
     $messages_list.append($(rendered_list));
 
     const first_element_id = keyboard_handling_context.get_items_ids()[0];
+    if (first_element_id === undefined) {
+        return;
+    }
     messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
 }
 
