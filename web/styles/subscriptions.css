@@ -706,13 +706,15 @@ h4.user_group_setting_subsection_title {
         cursor: not-allowed;
     }
 
-    .input {
-        pointer-events: none;
-    }
+    .pill-container {
+        .pill {
+            .exit {
+                display: none;
+            }
+        }
 
-    .pill {
-        .exit {
-            display: none;
+        .input {
+            pointer-events: none;
         }
     }
 }
