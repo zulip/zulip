@@ -678,7 +678,7 @@ export function set_up() {
     $("#profile-settings").on("click", ".custom_user_field .remove_date", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const $field = $(e.target).closest(".custom_user_field").expectOne();
+        const $field = $(this).closest(".custom_user_field").expectOne();
         const field_id = Number.parseInt($field.attr("data-field-id"), 10);
         update_user_custom_profile_fields([{id: field_id}], channel.del);
     });
@@ -687,7 +687,7 @@ export function set_up() {
         const fields = [];
         const value = $(this).val();
         const field_id = Number.parseInt(
-            $(e.target).closest(".custom_user_field").attr("data-field-id"),
+            $(this).closest(".custom_user_field").attr("data-field-id"),
             10,
         );
         if (value) {
@@ -795,7 +795,7 @@ export function set_up() {
         e.preventDefault();
         e.stopPropagation();
 
-        const $input_elem = $(e.currentTarget);
+        const $input_elem = $(this);
         const setting_name = $input_elem.attr("name");
         const checked = $input_elem.prop("checked");
 
