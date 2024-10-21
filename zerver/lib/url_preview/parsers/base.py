@@ -1,4 +1,4 @@
-import cgi
+from email.message import EmailMessage
 
 from zerver.lib.url_preview.types import UrlEmbedData
 
@@ -10,9 +10,9 @@ class BaseParser:
         # importing it adds 10s of milliseconds to manage.py startup.
         from bs4 import BeautifulSoup
 
-        charset = None
-        if content_type is not None:
-            charset = cgi.parse_header(content_type)[1].get("charset")
+        m = EmailMessage()
+        m["Content-Type"] = content_type
+        charset = m.get_content_charset()
         self._soup = BeautifulSoup(html_source, "lxml", from_encoding=charset)
 
     def extract_data(self) -> UrlEmbedData:
