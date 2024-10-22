@@ -696,7 +696,7 @@ export function initialize() {
         const sub = sub_store.get(stream_id);
         const $subsection = $(e.target).closest(".settings-subsection-parent");
         settings_components.save_discard_stream_settings_widget_status_handler($subsection, sub);
-        if (sub) {
+        if (sub && $subsection.attr("id") === "stream_permission_settings") {
             stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
         }
         return true;
@@ -755,7 +755,9 @@ export function initialize() {
 
             const $subsection = $(e.target).closest(".settings-subsection-parent");
             settings_org.discard_stream_settings_subsection_changes($subsection, sub);
-            stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
+            if ($subsection.attr("id") === "stream_permission_settings") {
+                stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
+            }
         },
     );
 }
