@@ -7,9 +7,14 @@ const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
+const people = zrequire("people");
+const {set_current_user} = zrequire("state_data");
+
 set_global("document", "document-stub");
 
 page_params.realm_users = [];
+const current_user = {};
+set_current_user(current_user);
 
 // We use this with override.
 let unread_unmuted_count;
@@ -38,6 +43,16 @@ const {initialize_user_settings} = zrequire("user_settings");
 
 const user_settings = {};
 initialize_user_settings({user_settings});
+
+const me = {
+    email: "me@example.com",
+    user_id: 30,
+    full_name: "Me Myself",
+    date_joined: new Date(),
+};
+
+people.add_active_user(me);
+people.initialize_current_user(me.user_id);
 
 const devel = {
     name: "devel",
@@ -673,6 +688,7 @@ test_ui("rename_stream", ({mock_template, override}) => {
             color: payload.color,
             pin_to_top: true,
             hide_unread_count: true,
+            can_post_messages: true,
         });
         return {to_$: () => $li_stub};
     });
