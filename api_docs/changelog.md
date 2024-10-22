@@ -27,6 +27,11 @@ format used by the Zulip server that they are interacting with.
   by `create_multiuse_invite_group` realm setting, which is a now a
   [group-setting value](/api/group-setting-values) instead of an
   integer ID of the group.
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Anonymous groups are now accepted
+  by `can_access_all_users_group` realm setting, which is a now a
+  [group-setting value](/api/group-setting-values) instead of an
+  integer ID of the group.
 
 **Feature level 313**
 

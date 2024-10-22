@@ -1828,16 +1828,22 @@ class RealmAPITest(ZulipTestCase):
                 result = self.client_patch("/json/realm", {setting_name: value})
                 self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
 
+                group = admins_group
+                if setting_permission_configuration.allowed_system_groups:
+                    group = NamedUserGroup.objects.get(
+                        name=setting_permission_configuration.allowed_system_groups[0], realm=realm
+                    )
+
                 value = orjson.dumps(
                     {
                         "new": {
                             "direct_members": [],
-                            "direct_subgroups": [admins_group.id],
+                            "direct_subgroups": [group.id],
                         }
                     }
                 ).decode()
                 realm = self.update_with_api(setting_name, value)
-                self.assertEqual(getattr(realm, setting_name), admins_group.usergroup_ptr)
+                self.assertEqual(getattr(realm, setting_name), group.usergroup_ptr)
 
     def do_test_realm_permission_group_setting_update_api_with_anonymous_groups(
         self, setting_name: str
@@ -2377,12 +2383,12 @@ class RealmAPITest(ZulipTestCase):
         self.login("iago")
 
         members_group = NamedUserGroup.objects.get(name="role:members", realm=realm)
-        req = {"can_access_all_users_group": orjson.dumps(members_group.id).decode()}
+        req = {"can_access_all_users_group": orjson.dumps({"new": members_group.id}).decode()}
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "Available on Zulip Cloud Plus. Upgrade to access.")
 
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
-        req = {"can_access_all_users_group": orjson.dumps(members_group.id).decode()}
+        req = {"can_access_all_users_group": orjson.dumps({"new": members_group.id}).decode()}
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "Available on Zulip Cloud Plus. Upgrade to access.")
 

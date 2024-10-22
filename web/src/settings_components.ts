@@ -1044,6 +1044,7 @@ export function populate_data_for_realm_settings_request(
                 }
 
                 const realm_group_settings_using_new_api_format = new Set([
+                    "can_access_all_users_group",
                     "can_add_custom_emoji_group",
                     "can_create_groups",
                     "can_create_private_channel_group",

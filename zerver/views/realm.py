@@ -172,9 +172,7 @@ def update_realm(
         ApiParamConfig("move_messages_between_streams_limit_seconds"),
     ] = None,
     enable_guest_user_indicator: Json[bool] | None = None,
-    can_access_all_users_group_id: Annotated[
-        Json[int] | None, ApiParamConfig("can_access_all_users_group")
-    ] = None,
+    can_access_all_users_group: Json[GroupSettingChangeRequest] | None = None,
 ) -> HttpResponse:
     # Realm object is being refetched here to make sure that we
     # do not use stale object from cache which can happen when a
@@ -241,7 +239,7 @@ def update_realm(
     if enable_spectator_access:
         realm.ensure_not_on_limited_plan()
 
-    if can_access_all_users_group_id is not None:
+    if can_access_all_users_group is not None:
         realm.can_enable_restricted_user_access_for_guests()
 
     data: dict[str, Any] = {}

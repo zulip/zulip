@@ -809,6 +809,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT = [
         "create_multiuse_invite_group",
+        "can_access_all_users_group",
         "can_add_custom_emoji_group",
         "can_create_groups",
         "can_create_private_channel_group",
@@ -1190,10 +1191,10 @@ def get_realm_by_id(realm_id: int) -> Realm:
 
 def get_realm_with_settings(realm_id: int) -> Realm:
     # Prefetch the following settings:
-    # * All the settings that can be set to anonymous groups.
     # This also prefetches can_access_all_users_group setting,
     # even when it cannot be set to anonymous groups because
     # the setting is used when fetching users in the realm.
+    # * All the settings that can be set to anonymous groups.
     # * Announcements streams.
     return Realm.objects.select_related(
         "create_multiuse_invite_group",
