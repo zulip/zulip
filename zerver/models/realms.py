@@ -682,7 +682,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     REALM_PERMISSION_GROUP_SETTINGS: dict[str, GroupPermissionSetting] = dict(
         create_multiuse_invite_group=GroupPermissionSetting(
-            require_system_group=True,
+            require_system_group=not settings.ALLOW_GROUP_VALUED_SETTINGS,
             allow_internet_group=False,
             allow_owners_group=False,
             allow_nobody_group=True,
@@ -808,6 +808,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT = [
+        "create_multiuse_invite_group",
         "can_add_custom_emoji_group",
         "can_create_groups",
         "can_create_private_channel_group",
@@ -1195,6 +1196,8 @@ def get_realm_with_settings(realm_id: int) -> Realm:
     # the setting is used when fetching users in the realm.
     # * Announcements streams.
     return Realm.objects.select_related(
+        "create_multiuse_invite_group",
+        "create_multiuse_invite_group__named_user_group",
         "can_access_all_users_group",
         "can_access_all_users_group__named_user_group",
         "can_add_custom_emoji_group",

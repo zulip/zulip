@@ -2834,18 +2834,45 @@ class MultiuseInviteTest(ZulipTestCase):
         self.login("iago")
         result = self.client_patch(
             "/json/realm",
-            {"create_multiuse_invite_group": orjson.dumps(full_members_system_group.id).decode()},
+            {
+                "create_multiuse_invite_group": orjson.dumps(
+                    {"new": full_members_system_group.id}
+                ).decode()
+            },
         )
         self.assert_json_error(result, "Must be an organization owner")
 
         self.login("desdemona")
         result = self.client_patch(
             "/json/realm",
-            {"create_multiuse_invite_group": orjson.dumps(full_members_system_group.id).decode()},
+            {
+                "create_multiuse_invite_group": orjson.dumps(
+                    {"new": full_members_system_group.id}
+                ).decode()
+            },
         )
         self.assert_json_success(result)
         realm = get_realm("zulip")
         self.assertEqual(realm.create_multiuse_invite_group_id, full_members_system_group.id)
+
+        # Test setting the value to an anonymous group.
+        iago = self.example_user("iago")
+        result = self.client_patch(
+            "/json/realm",
+            {
+                "create_multiuse_invite_group": orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [iago.id],
+                            "direct_subgroups": [],
+                        }
+                    }
+                ).decode()
+            },
+        )
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertCountEqual(realm.create_multiuse_invite_group.direct_members.all(), [iago])
 
     def test_multiuse_link_for_inviting_as_owner(self) -> None:
         self.login("iago")

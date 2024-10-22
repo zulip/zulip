@@ -101,9 +101,7 @@ def update_realm(
     disallow_disposable_email_addresses: Json[bool] | None = None,
     invite_required: Json[bool] | None = None,
     invite_to_realm_policy: Json[InviteToRealmPolicyEnum] | None = None,
-    create_multiuse_invite_group_id: Annotated[
-        Json[int] | None, ApiParamConfig(whence="create_multiuse_invite_group")
-    ] = None,
+    create_multiuse_invite_group: Json[GroupSettingChangeRequest] | None = None,
     require_unique_names: Json[bool] | None = None,
     name_changes_disabled: Json[bool] | None = None,
     email_changes_disabled: Json[bool] | None = None,
@@ -226,7 +224,7 @@ def update_realm(
     if (
         invite_to_realm_policy is not None
         or invite_required is not None
-        or create_multiuse_invite_group_id is not None
+        or create_multiuse_invite_group is not None
         or can_create_groups is not None
         or can_manage_all_groups is not None
     ) and not user_profile.is_realm_owner:

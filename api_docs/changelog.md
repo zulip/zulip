@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 314**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Anonymous groups are now accepted
+  by `create_multiuse_invite_group` realm setting, which is a now a
+  [group-setting value](/api/group-setting-values) instead of an
+  integer ID of the group.
+
 **Feature level 313**
 
 * [`PATCH /users/{user_id}`](/api/update-user): Added `new_email` field to
