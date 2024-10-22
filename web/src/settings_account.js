@@ -256,7 +256,7 @@ export function update_privacy_settings_box(property) {
     settings_components.set_input_element_value($input_elem, user_settings[property]);
 }
 
-export function set_up() {
+export function set_up(load_password_quality) {
     // Add custom profile fields elements to user account settings.
     add_custom_profile_fields_to_settings();
     $("#account-settings-status").hide();
@@ -461,7 +461,7 @@ export function set_up() {
         if (realm.realm_password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
-            password_quality = (await import("./password_quality")).password_quality;
+            password_quality = await load_password_quality();
             $("#pw_strength .bar").removeClass("hide");
 
             $("#new_password").on("input", () => {
