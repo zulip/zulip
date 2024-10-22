@@ -79,6 +79,7 @@ export type DialogWidgetConfig = {
     loading_spinner?: boolean;
     update_submit_disabled_state_on_change?: boolean;
     always_visible_scrollbar?: boolean;
+    close_on_overlay_click?: boolean;
 };
 
 type RequestOpts = {
@@ -174,6 +175,7 @@ export function launch(conf: DialogWidgetConfig): string {
     // * always_visible_scrollbar: Whether the scrollbar is always visible if modal body
     //   has scrollable content. Default behaviour is to hide the scrollbar when it is
     //   not in use.
+    // * close_on_overlay_click: Whether to close modal on clicking overlay.
 
     widget_id_counter += 1;
     const modal_unique_id = current_dialog_widget_id();
@@ -189,6 +191,7 @@ export function launch(conf: DialogWidgetConfig): string {
         id: conf.id,
         single_footer_button: conf.single_footer_button,
         always_visible_scrollbar: conf.always_visible_scrollbar,
+        close_on_overlay_click: conf.close_on_overlay_click ?? true,
     });
     const $dialog = $(html);
     $("body").append($dialog);
