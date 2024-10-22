@@ -1745,13 +1745,11 @@ class RealmAPITest(ZulipTestCase):
         self.assertEqual(getattr(realm, setting_name), default_group.usergroup_ptr)
 
         for user_group in all_system_user_groups:
-            value = orjson.dumps(user_group.id).decode()
-            if setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
-                value = orjson.dumps(
-                    {
-                        "new": user_group.id,
-                    }
-                ).decode()
+            value = orjson.dumps(
+                {
+                    "new": user_group.id,
+                }
+            ).decode()
 
             if (
                 (
@@ -1788,62 +1786,55 @@ class RealmAPITest(ZulipTestCase):
         if setting_permission_configuration.require_system_group:
             leadership_group = NamedUserGroup.objects.get(name="leadership", realm=realm)
 
-            value = orjson.dumps(leadership_group.id).decode()
-            if setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
-                value = orjson.dumps(
-                    {
-                        "new": leadership_group.id,
-                    }
-                ).decode()
+            value = orjson.dumps(
+                {
+                    "new": leadership_group.id,
+                }
+            ).decode()
 
             result = self.client_patch("/json/realm", {setting_name: value})
             self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
 
-            if setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
-                admins_group = NamedUserGroup.objects.get(
-                    name=SystemGroups.ADMINISTRATORS, realm=realm
+            admins_group = NamedUserGroup.objects.get(name=SystemGroups.ADMINISTRATORS, realm=realm)
+            moderators_group = NamedUserGroup.objects.get(name=SystemGroups.MODERATORS, realm=realm)
+            value = orjson.dumps(
+                {
+                    "new": {
+                        "direct_members": [],
+                        "direct_subgroups": [admins_group.id, leadership_group.id],
+                    }
+                }
+            ).decode()
+            result = self.client_patch("/json/realm", {setting_name: value})
+            self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
+
+            value = orjson.dumps(
+                {
+                    "new": {
+                        "direct_members": [],
+                        "direct_subgroups": [admins_group.id, moderators_group.id],
+                    }
+                }
+            ).decode()
+            result = self.client_patch("/json/realm", {setting_name: value})
+            self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
+
+            group = admins_group
+            if setting_permission_configuration.allowed_system_groups:
+                group = NamedUserGroup.objects.get(
+                    name=setting_permission_configuration.allowed_system_groups[0], realm=realm
                 )
-                moderators_group = NamedUserGroup.objects.get(
-                    name=SystemGroups.MODERATORS, realm=realm
-                )
-                value = orjson.dumps(
-                    {
-                        "new": {
-                            "direct_members": [],
-                            "direct_subgroups": [admins_group.id, leadership_group.id],
-                        }
-                    }
-                ).decode()
-                result = self.client_patch("/json/realm", {setting_name: value})
-                self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
 
-                value = orjson.dumps(
-                    {
-                        "new": {
-                            "direct_members": [],
-                            "direct_subgroups": [admins_group.id, moderators_group.id],
-                        }
+            value = orjson.dumps(
+                {
+                    "new": {
+                        "direct_members": [],
+                        "direct_subgroups": [group.id],
                     }
-                ).decode()
-                result = self.client_patch("/json/realm", {setting_name: value})
-                self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
-
-                group = admins_group
-                if setting_permission_configuration.allowed_system_groups:
-                    group = NamedUserGroup.objects.get(
-                        name=setting_permission_configuration.allowed_system_groups[0], realm=realm
-                    )
-
-                value = orjson.dumps(
-                    {
-                        "new": {
-                            "direct_members": [],
-                            "direct_subgroups": [group.id],
-                        }
-                    }
-                ).decode()
-                realm = self.update_with_api(setting_name, value)
-                self.assertEqual(getattr(realm, setting_name), group.usergroup_ptr)
+                }
+            ).decode()
+            realm = self.update_with_api(setting_name, value)
+            self.assertEqual(getattr(realm, setting_name), group.usergroup_ptr)
 
     def do_test_realm_permission_group_setting_update_api_with_anonymous_groups(
         self, setting_name: str
@@ -2037,13 +2028,10 @@ class RealmAPITest(ZulipTestCase):
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             with self.subTest(property=prop):
                 self.do_test_realm_permission_group_setting_update_api(prop)
-
-        for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
-            if Realm.REALM_PERMISSION_GROUP_SETTINGS[prop].require_system_group:
-                # Anonymous system groups aren't relevant when
-                # restricted to system groups.
-                continue
-            with self.subTest(property=prop):
+                if Realm.REALM_PERMISSION_GROUP_SETTINGS[prop].require_system_group:
+                    # Anonymous system groups aren't relevant when
+                    # restricted to system groups.
+                    continue
                 self.do_test_realm_permission_group_setting_update_api_with_anonymous_groups(prop)
 
     # Not in Realm.property_types because org_type has

@@ -4038,13 +4038,11 @@ class RealmPropertyActionTest(BaseAction):
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             with self.settings(SEND_DIGEST_EMAILS=True):
                 self.do_set_realm_permission_group_setting_test(prop)
-
-        for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
             if Realm.REALM_PERMISSION_GROUP_SETTINGS[prop].require_system_group:
                 # Anonymous system groups aren't relevant when
                 # restricted to system groups.
                 continue
-            with self.settings(SEND_DIGEST_EMAILs=True):
+            with self.settings(SEND_DIGEST_EMAILS=True):
                 self.do_set_realm_permission_group_setting_to_anonymous_groups_test(prop)
 
     def do_set_realm_user_default_setting_test(self, name: str) -> None:

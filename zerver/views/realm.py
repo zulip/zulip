@@ -356,26 +356,18 @@ def update_realm(
                 data[k] = v
 
     for setting_name, permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
-        setting_group_id_name = permission_configuration.id_field_name
-
         expected_current_setting_value = None
-        if setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
-            assert setting_name in req_group_setting_vars
-            if req_group_setting_vars[setting_name] is None:
-                continue
+        assert setting_name in req_group_setting_vars
+        if req_group_setting_vars[setting_name] is None:
+            continue
 
-            setting_value = req_group_setting_vars[setting_name]
-            new_setting_value = parse_group_setting_value(setting_value.new, setting_name)
+        setting_value = req_group_setting_vars[setting_name]
+        new_setting_value = parse_group_setting_value(setting_value.new, setting_name)
 
-            if setting_value.old is not None:
-                expected_current_setting_value = parse_group_setting_value(
-                    setting_value.old, setting_name
-                )
-        else:
-            assert setting_group_id_name in req_group_setting_vars
-            if req_group_setting_vars[setting_group_id_name] is None:
-                continue
-            new_setting_value = req_group_setting_vars[setting_group_id_name]
+        if setting_value.old is not None:
+            expected_current_setting_value = parse_group_setting_value(
+                setting_value.old, setting_name
+            )
 
         current_value = getattr(realm, setting_name)
         current_setting_api_value = get_group_setting_value_for_api(current_value)
