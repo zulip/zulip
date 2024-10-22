@@ -35,9 +35,9 @@
     </div>
     <div class="input-group">
         <label for="expires_in" class="modal-field-label">{{t "Invitation expires after" }}</label>
-        <select id="expires_in" class="invite-user-select modal_select bootstrap-focus-style">
+        <select id="expires_in" name="expires_in" class="invite-user-select modal_select bootstrap-focus-style">
             {{#each expires_in_options}}
-                <option {{#if this.default }}selected{{/if}} name="expires_in" value="{{this.value}}">{{this.description}}</option>
+                <option {{#if this.default }}selected{{/if}} value="{{this.value}}">{{this.description}}</option>
             {{/each}}
         </select>
         <p class="time-input-formatted-description"></p>
