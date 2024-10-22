@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 313**
+
+* [`PATCH /users/{user_id}`](/api/update-user): Added `new_email` field to
+  allow updating the email address of the target user. The requester must be
+  an organization administrator and have the `can_change_user_emails` special
+  permission.
+* [`PATCH /users/{email}`](/api/update-user-by-email): Added new endpoint,
+  which is a copy of [`PATCH /users/{user_id}`](/api/update-user), but the user
+  is specified by their email address, following the same rules as [`GET
+  /users/{email}`](/api/get-user-by-email).
+
 **Feature level 312**
 
 * [`GET /events`](/api/get-events): Added `realm_export_consent` event
