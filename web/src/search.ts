@@ -13,6 +13,7 @@ import * as search_pill from "./search_pill";
 import type {SearchPillWidget} from "./search_pill";
 import * as search_suggestion from "./search_suggestion";
 import type {NarrowTerm} from "./state_data";
+import * as util from "./util";
 
 // Exported for unit testing
 export let is_using_input_method = false;
@@ -24,8 +25,12 @@ let on_narrow_search: OnNarrowSearch;
 
 function set_search_bar_text(text: string): void {
     $("#search_query").text(text);
-    // After setting the text, move the cursor to the end of the line.
-    window.getSelection()!.modify("move", "forward", "line");
+    const current_selection = window.getSelection()!;
+    if (current_selection.anchorNode?.isSameNode(util.the($("#search_query")))) {
+        // After setting the text, move the cursor to the end of the line if
+        // the cursor is in the search bar.
+        current_selection.modify("move", "forward", "line");
+    }
 }
 
 function get_search_bar_text(): string {
