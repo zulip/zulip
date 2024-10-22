@@ -90,19 +90,6 @@ export function create_handlers($container: JQuery): void {
         const user_id = Number.parseInt($elem.attr("data-user-id")!, 10);
         undo_soft_remove_user_id(user_id);
     });
-
-    function add_users({pill_user_ids}: {pill_user_ids: number[]}): void {
-        add_user_ids(pill_user_ids);
-        pill_widget.clear();
-    }
-
-    add_subscribers_pill.set_up_handlers({
-        get_pill_widget: () => pill_widget,
-        $parent_container: $container,
-        pill_selector: ".add_members_container .input",
-        button_selector: ".add_members_container button.add-member-button",
-        action: add_users,
-    });
 }
 
 export function build_widgets(): void {
