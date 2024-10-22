@@ -1532,6 +1532,29 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             result = self.client_post("/json/users/me/avatar", {"file": fp})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
 
+    def test_system_bot_avatars_url(self) -> None:
+        self.login("hamlet")
+        system_bot_emails = [
+            settings.NOTIFICATION_BOT,
+            settings.WELCOME_BOT,
+            settings.EMAIL_GATEWAY_BOT,
+        ]
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+
+        for email in system_bot_emails:
+            system_bot = get_system_bot(email, internal_realm.id)
+            response = self.client_get(f"/avatar/{email}")
+            redirect_url = response["Location"]
+            self.assertEqual(redirect_url, str(avatar_url(system_bot)))
+            self.assertTrue(str(redirect_url).endswith(".png"))
+            self.assertFalse(str(redirect_url).endswith("unknown.png"))
+
+            response = self.client_get(f"/avatar/{email}/medium")
+            redirect_url = response["Location"]
+            self.assertEqual(redirect_url, str(avatar_url(system_bot, medium=True)))
+            self.assertTrue(str(redirect_url).endswith("-medium.png"))
+            self.assertFalse(str(redirect_url).endswith("unknown-medium.png"))
+
 
 class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
     def test_multiple_upload_failure(self) -> None:
