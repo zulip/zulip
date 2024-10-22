@@ -55,6 +55,13 @@ class DropboxSignHookTests(WebhookTestCase):
             topic=expected_topic_name,
         )
 
+    def test_callback_test(self) -> None:
+        expected_topic_name = "Dropbox Sign"
+        expected_message = "Dropbox Sign webhook has been successfully configured."
+        self.check_webhook(
+            "callback_test", expected_topic_name, expected_message, content_type=None
+        )
+
     @override
     def get_payload(self, fixture_name: str) -> dict[str, str]:
         return {"json": self.webhook_fixture_data("dropboxsign", fixture_name, file_type="json")}
