@@ -153,6 +153,10 @@ export function open(
             return;
         }
 
+        if ($(e.target).is("[ignore-overlay-click]")) {
+            return;
+        }
+
         if (document.getSelection()?.type === "Range") {
             return;
         }
