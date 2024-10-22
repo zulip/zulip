@@ -24,6 +24,25 @@ else:
         return os.path.join(settings.STATIC_ROOT, path)
 
 
+def reformat_medium_filename(hashed_name: str) -> str:
+    """
+    Because the protocol for getting medium-size avatar URLs
+    was never fully documented, the mobile apps use a
+    substitution of the form s/.png/-medium.png/ to get the
+    medium-size avatar URLs. Thus, we must ensure the hashed
+    filenames for system bot avatars follow this naming convention.
+    """
+
+    name_parts = hashed_name.rsplit(".", 1)
+    base_name = name_parts[0]
+
+    if len(name_parts) != 2 or "-medium" not in base_name:
+        return hashed_name
+    extension = name_parts[1].replace("png", "medium.png")
+    base_name = base_name.replace("-medium", "")
+    return f"{base_name}-{extension}"
+
+
 class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
     @override
     def hashed_name(
@@ -45,7 +64,11 @@ class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
             # so they can hit our Nginx caching block for static files.
             # We don't need to worry about stale caches since these are
             # only used by the system bots.
-            return super().hashed_name(name, content, filename)
+            if not name.endswith("-medium.png"):
+                return super().hashed_name(name, content, filename)
+
+            hashed_medium_file = super().hashed_name(name, content, filename)
+            return reformat_medium_filename(hashed_medium_file)
         if name == "generated/emoji/emoji_api.json":
             # Unlike most .json files, we do want to hash this file;
             # its hashed URL is returned as part of the API.  See
