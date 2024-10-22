@@ -4532,18 +4532,18 @@ paths:
 
                                             [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                                     create_multiuse_invite_group:
-                                      type: integer
-                                      description: |
-                                        The ID of the [user group](/api/get-user-groups) whose members are
-                                        allowed to create [reusable invitation
-                                        links](/help/invite-new-users#create-a-reusable-invitation-link)
-                                        to the organization.
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the
+                                            set of users who are allowed to create [reusable invitation
+                                            links](/help/invite-new-users#create-a-reusable-invitation-link)
+                                            to the organization.
 
-                                        This setting can currently only be set to user groups that are
-                                        system groups, except for the system groups named
-                                        `"role:internet"` and `"role:owners"`.
+                                            **Changes**: Prior to Zulip 10.0 (feature level 314), this value used
+                                            to be of type integer and did not accept anonymous user groups.
 
-                                        **Changes**: New in Zulip 8.0 (feature level 209).
+                                            New in Zulip 8.0 (feature level 209).
                                     default_code_block_language:
                                       type: string
                                       description: |
@@ -16591,18 +16591,18 @@ paths:
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_create_multiuse_invite_group:
-                        type: integer
-                        description: |
-                          The ID of the [user group](/api/get-user-groups) whose members are
-                          allowed to create [reusable invitation
-                          links](/help/invite-new-users#create-a-reusable-invitation-link)
-                          to the organization.
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining the
+                              set of users who are allowed to create [reusable invitation
+                              links](/help/invite-new-users#create-a-reusable-invitation-link)
+                              to the organization.
 
-                          This setting can currently only be set to user groups that are
-                          system groups, except for the system groups named
-                          `"role:internet"` and `"role:owners"`.
+                              **Changes**: Prior to Zulip 10.0 (feature level 314), this value used
+                              to be of type integer and did not accept anonymous user groups.
 
-                          **Changes**: New in Zulip 8.0 (feature level 209).
+                              New in Zulip 8.0 (feature level 209).
                       realm_inline_image_preview:
                         type: boolean
                         description: |
