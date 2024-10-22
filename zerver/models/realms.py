@@ -807,22 +807,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         ),
     )
 
-    REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT = [
-        "create_multiuse_invite_group",
-        "can_access_all_users_group",
-        "can_add_custom_emoji_group",
-        "can_create_groups",
-        "can_create_private_channel_group",
-        "can_create_public_channel_group",
-        "can_create_web_public_channel_group",
-        "can_delete_any_message_group",
-        "can_delete_own_message_group",
-        "can_manage_all_groups",
-        "can_move_messages_between_channels_group",
-        "direct_message_initiator_group",
-        "direct_message_permission_group",
-    ]
-
     DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]
 
     # Icon is the square mobile icon.

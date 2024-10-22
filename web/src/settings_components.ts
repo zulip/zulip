@@ -1043,7 +1043,7 @@ export function populate_data_for_realm_settings_request(
                     continue;
                 }
 
-                const realm_group_settings_using_new_api_format = new Set([
+                const realm_group_settings = new Set([
                     "can_access_all_users_group",
                     "can_add_custom_emoji_group",
                     "can_create_groups",
@@ -1058,7 +1058,7 @@ export function populate_data_for_realm_settings_request(
                     "direct_message_initiator_group",
                     "direct_message_permission_group",
                 ]);
-                if (realm_group_settings_using_new_api_format.has(property_name)) {
+                if (realm_group_settings.has(property_name)) {
                     const old_value = get_realm_settings_property_value(
                         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
                         ("realm_" + property_name) as RealmSettingProperty,

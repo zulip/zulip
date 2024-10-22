@@ -292,16 +292,9 @@ def fetch_initial_state_data(
         for property_name in Realm.property_types:
             state["realm_" + property_name] = getattr(realm, property_name)
 
-        for (
-            setting_name,
-            permission_configuration,
-        ) in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
-            if setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
-                setting_value = getattr(realm, setting_name)
-                state["realm_" + setting_name] = get_group_setting_value_for_api(setting_value)
-                continue
-
-            state["realm_" + setting_name] = getattr(realm, permission_configuration.id_field_name)
+        for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
+            setting_value = getattr(realm, setting_name)
+            state["realm_" + setting_name] = get_group_setting_value_for_api(setting_value)
 
         state["realm_create_public_stream_policy"] = (
             get_corresponding_policy_value_for_group_setting(
@@ -1114,7 +1107,7 @@ def apply_event(
                             if user_id != person_user_id
                         ]
 
-                    for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+                    for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
                         if not isinstance(state["realm_" + setting_name], int):
                             state["realm_" + setting_name].direct_members = [
                                 user_id
