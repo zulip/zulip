@@ -666,18 +666,20 @@ export function initialize() {
 
         $(".dialog_submit_button").attr("data-stream-id", stream_id);
     });
-    
+
     $("#channels_overlay_container").on("click", ".stream-row", function (e) {
         const $target = $(e.target);
-        if ($target.hasClass("subscriber-count") || $target.hasClass("fa-user-o") || $target.hasClass("subscriber-count-text")){
+        if (
+            $target.hasClass("subscriber-count") ||
+            $target.hasClass("fa-user-o") ||
+            $target.hasClass("subscriber-count-text")
+        ) {
             open_edit_panel_for_row(this);
-            stream_edit_toggler.toggler.goto("subscribers")
-        }
-        else if ($target.closest(".check, .subscription_settings").length === 0) {
+            stream_edit_toggler.toggler.goto("subscribers");
+        } else if ($target.closest(".check, .subscription_settings").length === 0) {
             open_edit_panel_for_row(this);
         }
     });
-    
 
     $("#channels_overlay_container").on("change", ".stream_message_retention_setting", (e) => {
         const message_retention_setting_dropdown_value = e.target.value;
