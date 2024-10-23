@@ -1,10 +1,11 @@
 from collections import defaultdict
 from collections.abc import Iterable, Sequence
+from contextlib import suppress
 from datetime import timedelta
 from typing import Any
 
 from django.conf import settings
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -351,7 +352,17 @@ def process_new_human_user(
 
     # The 'visibility_policy_banner' is only displayed to existing users.
     # Mark it as read for a new user.
-    OnboardingStep.objects.create(user=user_profile, onboarding_step="visibility_policy_banner")
+    #
+    # If the new user opted to import settings from an existing account, and
+    # 'visibility_policy_banner' is already marked as read for the existing account,
+    # 'copy_onboarding_steps' function already did the needed copying.
+    # Simply ignore the IntegrityError in that case.
+    #
+    # The extremely brief nature of this subtransaction makes a savepoint safe.
+    # See https://postgres.ai/blog/20210831-postgresql-subtransactions-considered-harmful
+    # for context on risks around savepoints.
+    with suppress(IntegrityError), transaction.atomic(savepoint=True):
+        OnboardingStep.objects.create(user=user_profile, onboarding_step="visibility_policy_banner")
 
 
 def notify_created_user(user_profile: UserProfile, notify_user_ids: list[int]) -> None:
