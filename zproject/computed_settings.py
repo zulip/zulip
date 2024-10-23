@@ -615,7 +615,7 @@ LOCAL_FILES_DIR = os.path.join(LOCAL_UPLOADS_DIR, "files") if LOCAL_UPLOADS_DIR 
 # ZulipStorage when not DEBUG.
 
 if not DEBUG:
-    STATICFILES_STORAGE = "zerver.lib.storage.ZulipStorage"
+    STORAGES = {"staticfiles": {"BACKEND": "zerver.lib.storage.ZulipStorage"}}
     if PRODUCTION:
         STATIC_ROOT = "/home/zulip/prod-static"
     else:
