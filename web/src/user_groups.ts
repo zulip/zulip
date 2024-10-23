@@ -335,6 +335,17 @@ export function get_potential_subgroups(target_user_group_id: number): UserGroup
     });
 }
 
+export function get_direct_subgroups_of_group(target_user_group: UserGroup): UserGroup[] {
+    const direct_subgroups = [];
+    const subgroup_ids = target_user_group.direct_subgroup_ids;
+    for (const subgroup_id of subgroup_ids) {
+        const subgroup = user_group_by_id_dict.get(subgroup_id);
+        assert(subgroup !== undefined);
+        direct_subgroups.push(subgroup);
+    }
+    return direct_subgroups;
+}
+
 export function is_user_in_group(
     user_group_id: number,
     user_id: number,
