@@ -1525,3 +1525,31 @@ export function create_group_setting_widget({
 
     return pill_widget;
 }
+
+export function set_expires_on_text($elem: JQuery, valid_to_text: string): void {
+    if ($elem.val() === "custom") {
+        $elem.parent().find(".input-time-valid-till").hide();
+        set_custom_expires_on_text($elem, valid_to_text);
+    } else {
+        $elem.parent().find(".input-time-valid-till").show();
+        $elem.parent().find(".input-time-valid-till").text(valid_to_text);
+    }
+}
+
+export function set_custom_expires_on_text($elem: JQuery, valid_to_text: string): void {
+    $elem.parent().find(".custom-input-time-valid-till").text(valid_to_text);
+}
+
+export function set_custom_time_inputs_visibility(
+    $elem: JQuery,
+    custom_input_time_unit: string,
+    custom_input_time_value: number,
+): void {
+    if ($elem.val() === "custom") {
+        $elem.parent().find(".custom-input-time-value").val(custom_input_time_value);
+        $elem.parent().find(".custom-input-time-unit").val(custom_input_time_unit);
+        $elem.parent().find(".custom-time-input-container").show();
+    } else {
+        $elem.parent().find(".custom-time-input-container").hide();
+    }
+}

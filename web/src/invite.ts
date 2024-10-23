@@ -24,6 +24,7 @@ import * as input_pill from "./input_pill";
 import * as invite_stream_picker_pill from "./invite_stream_picker_pill";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
+import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
@@ -265,45 +266,6 @@ function valid_to(time_valid: number): string {
     const time = timerender.get_localized_date_or_time_for_format(valid_to, "time");
 
     return $t({defaultMessage: "Expires on {date} at {time}"}, {date, time});
-}
-
-function set_custom_expires_on_text(): void {
-    if (util.validate_custom_time_input(custom_expiration_time_input)) {
-        $("#custom_expires_on").text(
-            valid_to(
-                util.get_custom_time_in_minutes(
-                    custom_expiration_time_unit,
-                    custom_expiration_time_input,
-                ),
-            ),
-        );
-    } else {
-        $("#custom_expires_on").text($t({defaultMessage: "Invalid custom time"}));
-    }
-}
-
-function set_expires_on_text(): void {
-    const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
-    if ($expires_in.val() === "custom") {
-        $("#expires_on").hide();
-        set_custom_expires_on_text();
-    } else {
-        $("#expires_on").show();
-        $("#expires_on").text(valid_to(Number.parseFloat($expires_in.val()!)));
-    }
-}
-
-function set_custom_time_inputs_visibility(): void {
-    const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
-    if ($expires_in.val() === "custom") {
-        $("#custom-expiration-time-input").val(custom_expiration_time_input);
-        $<HTMLSelectOneElement>("select:not([multiple])#custom-expiration-time-unit").val(
-            custom_expiration_time_unit,
-        );
-        $("#custom-invite-expiration-time").show();
-    } else {
-        $("#custom-invite-expiration-time").hide();
-    }
 }
 
 function set_streams_to_join_list_visibility(): void {
