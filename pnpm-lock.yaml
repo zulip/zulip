@@ -253,6 +253,9 @@ importers:
       style-loader:
         specifier: ^4.0.0
         version: 4.0.0(webpack@5.95.0)
+      stylelint-high-performance-animation:
+        specifier: ^1.10.0
+        version: 1.10.0(stylelint@16.10.0(typescript@5.6.3))
       text-field-edit:
         specifier: ^4.0.0
         version: 4.1.1
@@ -8050,6 +8053,11 @@ packages:
     engines: {node: '>=18.12.0'}
     peerDependencies:
       stylelint: ^16.1.0
+
+  stylelint-high-performance-animation@1.10.0:
+    resolution: {integrity: sha512-YzNI+E6taN8pwgaM0INazRg4tw23VA17KNMKUVdOeohpnpSyJLBnLVT9NkRcaCFLodK/67smS5VZK+Qe4Ohrvw==}
+    peerDependencies:
+      stylelint: ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0 || ^12.0.0 || ^13.0.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
 
   stylelint@16.10.0:
     resolution: {integrity: sha512-z/8X2rZ52dt2c0stVwI9QL2AFJhLhbPkyfpDFcizs200V/g7v+UYY6SNcB9hKOLcDDX/yGLDsY/pX08sLkz9xQ==}
@@ -18379,6 +18387,11 @@ snapshots:
     dependencies:
       stylelint: 16.10.0(typescript@5.6.3)
       stylelint-config-recommended: 14.0.1(stylelint@16.10.0(typescript@5.6.3))
+
+  stylelint-high-performance-animation@1.10.0(stylelint@16.10.0(typescript@5.6.3)):
+    dependencies:
+      postcss-value-parser: 4.2.0
+      stylelint: 16.10.0(typescript@5.6.3)
 
   stylelint@16.10.0(typescript@5.6.3):
     dependencies:

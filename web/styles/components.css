@@ -79,20 +79,20 @@ a.no-underline:hover {
     }
 
     &.simplebar-vertical {
-        transition: width 0.2s ease 1s;
+        transition: width 0.2s ease 1s; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
 
         &.simplebar-hover {
             width: 15px;
-            transition: width 0.2s ease;
+            transition: width 0.2s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
         }
     }
 
     &.simplebar-horizontal {
-        transition: height 0.2s ease 1s;
+        transition: height 0.2s ease 1s; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
 
         &.simplebar-hover {
             height: 15px;
-            transition: height 0.2s ease;
+            transition: height 0.2s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
         }
     }
 }

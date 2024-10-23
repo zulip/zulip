@@ -840,7 +840,7 @@
         width: 0;
         /* The progress updates seem to come every second or so,
         so this is the smoothest it can probably get. */
-        transition: width 1s ease-in-out;
+        transition: width 1s ease-in-out; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
         background: hsl(204deg 63% 85%);
         top: 0;
         bottom: 0;

@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 313  # Last bumped for adding `new_email` to /users/{user_id
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (295, 0)  # bumped 2024-10-20 to upgrade Python requirements
+PROVISION_VERSION = (295, 1)  # bumped 2024-10-23 for stylelint-high-performance-animation
