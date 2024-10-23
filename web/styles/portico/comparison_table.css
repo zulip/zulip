@@ -130,7 +130,7 @@
         align-items: center;
         border-radius: 3px;
         cursor: pointer;
-        transition: all 120ms ease-out;
+        transition: background-color 120ms ease-out;
     }
 
     .comparison-tab:hover {
@@ -139,7 +139,6 @@
     }
 
     .comparison-tab:active {
-        transition: all 120ms ease-out;
         background-color: hsl(0deg 0% 100% / 70%);
     }
 
@@ -178,7 +177,7 @@
     }
 
     .comparison-table tr {
-        transition: all 200ms ease-out;
+        transition: background-color 200ms ease-out;
     }
 
     .comparison-table tbody tr:hover {
@@ -199,7 +198,6 @@
         font-weight: 700;
         color: hsl(223deg 40% 30% / 100%);
         background: hsl(209deg 41% 94%);
-        transition: all 200ms ease-out;
     }
 
     .comparison-table th .icon {
@@ -537,19 +535,10 @@
 
     .comparison-table th.comparison-table-feature {
         padding-top: 28px;
-        /* Don't apply transitions to the
-           padding. This prevents the "Features"
-           label from sliding into place when
-           switching over to the All view. */
-        transition: none;
     }
 
     .comparison-table td.stuck {
         padding-top: 24px;
-        /* Don't apply transitions to the
-           padding. This makes the stuck state
-           look more precise. */
-        transition: none;
     }
 
     @media (width <= 730px) {

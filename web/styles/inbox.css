@@ -79,7 +79,8 @@
                 font-size: 16px;
                 color: var(--color-icons-inbox);
                 opacity: 0.4;
-                transition: all 140ms;
+                transition: none 140ms;
+                transition-property: background-color, opacity, transform;
                 padding: 5px;
                 margin: 0;
                 /* = -Width of the button. */

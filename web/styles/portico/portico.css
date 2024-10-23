@@ -533,7 +533,7 @@ input.text-error {
             font-size: 0.6em;
             margin-left: 5px;
             opacity: 0.5;
-            transition: all 0.2s ease;
+            transition: opacity 0.2s ease;
         }
 
         &:hover .realm-name i.fa {
@@ -684,14 +684,14 @@ input.text-error {
         padding: 10px;
         border: 1px solid hsl(0deg 0% 93%);
         border-radius: 4px;
-        transition: all 0.3s ease;
+        transition: border-color 0.3s ease;
 
         & a {
             color: inherit;
         }
 
         &:hover {
-            border: 1px solid hsl(0deg 0% 73%);
+            border-color: hsl(0deg 0% 73%);
         }
 
         .avatar {
@@ -837,7 +837,8 @@ input.new-organization-button {
         padding: 2px 7px 1px 8px;
         font-weight: 600;
         font-size: 16px;
-        transition: all 0.2s ease-in;
+        transition: none 0.2s ease-in;
+        transition-property: background-color, color;
         border-radius: 4px;
 
         &:hover {
@@ -1103,7 +1104,8 @@ input.new-organization-button {
             right: calc(100% - 40px);
             fill: hsl(0deg 0% 100%);
             z-index: 2;
-            transition: all 0.3s ease;
+            transition: none 0.3s ease;
+            transition-property: right, top;
             cursor: pointer;
         }
 
@@ -1117,7 +1119,7 @@ input.new-organization-button {
             pointer-events: none;
             overflow: hidden;
             transform: translateX(0);
-            transition: all 0.3s ease;
+            transition: transform 0.3s ease;
         }
 
         .sidebar.show {
