@@ -1556,16 +1556,6 @@ li.topic-list-item {
     background-color: var(--color-background);
     border-radius: 4px;
 
-    &:hover {
-        background-color: var(--color-background-opaque-hover-narrow-filter);
-        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
-
-        .left-sidebar-title,
-        .sidebar-heading-icon {
-            opacity: var(--opacity-sidebar-heading-hover);
-        }
-    }
-
     &.showing-stream-search-section {
         /* Open up the stream-search rows. The 10px
            row maintains space with the streams list
@@ -1610,10 +1600,6 @@ li.topic-list-item {
         }
     }
 
-    &:hover #filter_streams_tooltip {
-        display: flex;
-    }
-
     #add_streams_tooltip {
         grid-row: 1 / 1;
         margin: 2px 0;
@@ -1632,8 +1618,20 @@ li.topic-list-item {
         }
     }
 
-    &:hover #streams_inline_icon {
-        display: flex;
+    &:hover,
+    &.showing-streams-popover {
+        background-color: var(--color-background-opaque-hover-narrow-filter);
+        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+
+        .left-sidebar-title,
+        .sidebar-heading-icon {
+            opacity: var(--opacity-sidebar-heading-hover);
+        }
+
+        #filter_streams_tooltip,
+        #streams_inline_icon {
+            display: flex;
+        }
     }
 
     .stream_search_section {
