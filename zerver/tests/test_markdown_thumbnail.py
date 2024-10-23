@@ -2,6 +2,7 @@ import re
 from unittest.mock import patch
 
 import pyvips
+from typing_extensions import override
 
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_send import check_message, do_send_messages
@@ -9,7 +10,7 @@ from zerver.lib.addressee import Addressee
 from zerver.lib.camo import get_camo_url
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import get_test_image_file, read_test_image_file
+from zerver.lib.test_helpers import read_test_image_file
 from zerver.lib.thumbnail import ThumbnailFormat
 from zerver.lib.upload import upload_message_attachment
 from zerver.models import (
@@ -25,20 +26,10 @@ from zerver.worker.thumbnail import ensure_thumbnails
 
 
 class MarkdownThumbnailTest(ZulipTestCase):
-    def upload_image(self, image_name: str) -> str:
+    @override
+    def setUp(self) -> None:
         self.login("othello")
-        with get_test_image_file(image_name) as image_file:
-            response = self.assert_json_success(
-                self.client_post("/json/user_uploads", {"file": image_file})
-            )
-            return re.sub(r"/user_uploads/", "", response["url"])
-
-    def upload_and_thumbnail_image(self, image_name: str) -> str:
-        with self.captureOnCommitCallbacks(execute=True):
-            # Running captureOnCommitCallbacks includes inserting into
-            # the Rabbitmq queue, which in testing means we
-            # immediately run the worker for it, producing the thumbnails.
-            return self.upload_image(image_name)
+        super().setUp()
 
     def assert_message_content_is(
         self, message_id: int, rendered_content: str, user_name: str = "othello"
