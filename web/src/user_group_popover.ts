@@ -14,6 +14,7 @@ import * as popover_menus from "./popover_menus";
 import * as rows from "./rows";
 import {current_user} from "./state_data";
 import * as ui_util from "./ui_util";
+import * as user_group_components from "./user_group_components";
 import * as user_groups from "./user_groups";
 import * as util from "./util";
 
@@ -95,9 +96,10 @@ export function toggle_user_group_info_popover(
                 const args = {
                     group_name: user_groups.get_display_group_name(group.name),
                     group_description: group.description,
-                    members: sort_group_members(
-                        fetch_group_members([...user_groups.get_recursive_group_members(group)]),
-                    ),
+                    members: sort_group_members(fetch_group_members([...group.members])),
+                    subgroups: user_groups
+                        .get_direct_subgroups_of_group(group)
+                        .sort(user_group_components.sort_group_member_name),
                     group_edit_url: hash_util.group_edit_url(group, "general"),
                     is_guest: current_user.is_guest,
                     is_system_group: group.is_system_group,
