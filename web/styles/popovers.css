@@ -349,6 +349,9 @@ ul.popover-group-menu-member-list {
 
     .zulip-icon-triple-users {
         color: var(--color-icon-purple);
+    }
+
+    .zulip-icon {
         padding-left: 3px;
         padding-right: 3px;
     }
