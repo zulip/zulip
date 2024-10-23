@@ -222,6 +222,7 @@ export function set_up_combined(
         user_group?: boolean;
         stream?: boolean;
         user_source?: () => User[];
+        user_group_source?: () => UserGroup[];
         exclude_bots?: boolean;
         update_func?: () => void;
     },
@@ -252,7 +253,14 @@ export function set_up_combined(
             }
 
             if (include_user_groups) {
-                source = [...source, ...user_group_pill.typeahead_source(pills)];
+                if (opts.user_group_source !== undefined) {
+                    const groups: UserGroupPillData[] = opts
+                        .user_group_source()
+                        .map((user_group) => ({type: "user_group", ...user_group}));
+                    source = [...source, ...groups];
+                } else {
+                    source = [...source, ...user_group_pill.typeahead_source(pills)];
+                }
             }
 
             if (include_users) {
