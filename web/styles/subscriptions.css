@@ -1229,7 +1229,7 @@ div.settings-radio-input-parent {
         background-color: var(--color-background-modal);
         border-top: none;
 
-        transition: left 0.3s ease;
+        transition: left 0.3s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
         z-index: 10;
 
         &.show {

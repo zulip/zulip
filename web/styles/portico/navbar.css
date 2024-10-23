@@ -195,7 +195,7 @@ details summary::-webkit-details-marker {
     height: 0;
     width: 100%;
     transition: none 0.05s;
-    transition-property: height, opacity;
+    transition-property: height, opacity; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
 }
 
 .top-menu-tab-input-unselect:not(:checked) + .top-menu-submenu-backdrop {
@@ -385,7 +385,7 @@ details summary::-webkit-details-marker {
     color: hsl(0deg 0% 100% / 80%);
 
     transition: none 0.2;
-    transition-property: backdrop-filter, background, bottom, height;
+    transition-property: backdrop-filter, background, bottom, height; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
     overscroll-behavior: contain;
 }
 
@@ -578,7 +578,7 @@ details summary::-webkit-details-marker {
     background-position: right;
     transition:
         background,
-        letter-spacing 0.2s;
+        letter-spacing 0.2s; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
 }
 
 .top-menu-mobile-summary:active::after {
