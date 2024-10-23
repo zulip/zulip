@@ -102,6 +102,7 @@ export function toggle_user_group_info_popover(
                     is_guest: current_user.is_guest,
                     is_system_group: group.is_system_group,
                     deactivated: group.deactivated,
+                    members_count: user_groups.get_recursive_group_members(group).size,
                 };
                 instance.setContent(ui_util.parse_html(render_user_group_info_popover(args)));
             },
