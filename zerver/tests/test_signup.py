@@ -993,7 +993,7 @@ class LoginTest(ZulipTestCase):
     def test_login_nonexistent_user(self) -> None:
         result = self.login_with_return("xxx@zulip.com", "xxx")
         self.assertEqual(result.status_code, 200)
-        self.assert_in_response("Please enter a correct email and password", result)
+        self.assert_in_response("Please enter a correct email and password.", result)
         self.assert_logged_in_user_id(None)
 
     def test_login_wrong_subdomain(self) -> None:
@@ -1009,9 +1009,7 @@ class LoginTest(ZulipTestCase):
                 ],
             )
         self.assertEqual(result.status_code, 200)
-        expected_error = (
-            "Please enter a correct email and password. Note that both fields may be case-sensitive"
-        )
+        expected_error = "Please enter a correct email and password."
         self.assert_in_response(expected_error, result)
         self.assert_logged_in_user_id(None)
 
