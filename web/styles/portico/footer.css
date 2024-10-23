@@ -171,7 +171,7 @@
         mask-position: center;
         mask-repeat: no-repeat;
         mask-image: var(--footer-social-icon);
-        transition: all 150ms ease-out;
+        transition: background-color 150ms ease-out;
 
         &:hover {
             background-color: hsl(238.6deg 84.31% 90%);

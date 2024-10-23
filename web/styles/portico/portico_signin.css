@@ -209,7 +209,7 @@ html {
 
         transition:
             color 0.3s ease,
-            border 0.3s ease;
+            border-color 0.3s ease;
 
         &:hover {
             color: hsl(156deg 62% 61%);
@@ -428,7 +428,8 @@ html {
         border: none;
         border-radius: 4px;
 
-        transition: all 0.3s ease;
+        transition: none 0.3s ease;
+        transition-property: background-color, outline;
 
         &:hover {
             background-color: hsl(213deg 33% 31%);
@@ -547,7 +548,7 @@ html {
             background-color: hsl(0deg 0% 100%);
             color: hsl(0deg 0% 33%);
 
-            transition: border 0.3s ease;
+            transition: border-color 0.3s ease;
 
             &:focus:invalid {
                 box-shadow: none;
@@ -555,7 +556,7 @@ html {
             }
 
             &:focus {
-                border: 1px solid hsl(0deg 0% 53%);
+                border-color: hsl(0deg 0% 53%);
                 outline: 0;
             }
         }
@@ -571,7 +572,8 @@ html {
 
             margin-top: 1px;
 
-            transition: all 0.3s ease;
+            transition: none 0.3s ease;
+            transition-property: color, font-size, font-weight, transform;
         }
 
         &.moving-label {
