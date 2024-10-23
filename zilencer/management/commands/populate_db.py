@@ -39,6 +39,7 @@ from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.generate_test_data import create_test_data, generate_topics
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
+from zerver.lib.onboarding_steps import ALL_ONBOARDING_STEPS
 from zerver.lib.push_notifications import logger as push_notifications_logger
 from zerver.lib.remote_server import get_realms_info_for_push_bouncer
 from zerver.lib.server_initialization import create_internal_realm, create_users
@@ -932,16 +933,16 @@ class Command(ZulipBaseCommand):
                 )
 
         user_profiles_ids = []
-        onboarding_steps = []
+        onboarding_steps: list[OnboardingStep] = []
         for user_profile in user_profiles:
             user_profiles_ids.append(user_profile.id)
-            onboarding_steps.append(
-                OnboardingStep(
-                    user=user_profile, onboarding_step="narrow_to_dm_with_welcome_bot_new_user"
-                )
+            onboarding_steps.extend(
+                OnboardingStep(user=user_profile, onboarding_step=onboarding_step.name)
+                for onboarding_step in ALL_ONBOARDING_STEPS
             )
 
-        # Existing users shouldn't narrow to DM with welcome bot on first login.
+        # Mark onboarding steps as seen for existing users to avoid
+        # unnecessary popups during development.
         OnboardingStep.objects.bulk_create(onboarding_steps)
 
         # Create several initial direct message groups
