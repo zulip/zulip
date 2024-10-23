@@ -818,14 +818,16 @@ export function launch(section, left_side_tab, right_side_tab) {
             },
         });
         change_state(section, left_side_tab, right_side_tab);
+        setTimeout(() => {
+            if (!stream_settings_components.get_active_data().id) {
+                if (section === "new") {
+                    $("#create_stream_name").trigger("focus");
+                } else {
+                    $("#search_stream_name").trigger("focus");
+                }
+            }
+        }, 0);
     });
-    if (!stream_settings_components.get_active_data().id) {
-        if (section === "new") {
-            $("#create_stream_name").trigger("focus");
-        } else {
-            $("#search_stream_name").trigger("focus");
-        }
-    }
 }
 
 export function switch_rows(event) {
