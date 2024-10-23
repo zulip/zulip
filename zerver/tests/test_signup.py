@@ -67,6 +67,7 @@ from zerver.models import (
     CustomProfileFieldValue,
     DefaultStream,
     Message,
+    OnboardingStep,
     OnboardingUserMessage,
     PreregistrationRealm,
     PreregistrationUser,
@@ -2828,6 +2829,9 @@ class UserSignUpTest(ZulipTestCase):
         hamlet_in_zulip.email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
         hamlet_in_zulip.save()
 
+        OnboardingStep.objects.filter(user=hamlet_in_zulip).delete()
+        OnboardingStep.objects.create(user=hamlet_in_zulip, onboarding_step="intro_resolve_topic")
+
         result = self.client_post("/accounts/home/", {"email": email}, subdomain=subdomain)
         self.assertEqual(result.status_code, 302)
         result = self.client_get(result["Location"], subdomain=subdomain)
@@ -2846,6 +2850,12 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(hamlet.high_contrast_mode, False)
         self.assertEqual(hamlet.enable_stream_audible_notifications, False)
         self.assertEqual(hamlet.enter_sends, False)
+        # 'visbility_policy_banner' is marked as seen in 'process_new_human_user'.
+        # 'copy_default_settings' is not executed as the user decided to NOT import
+        # settings from another realm, hence 'intro_resolve_topic' not marked as seen.
+        onboarding_steps = OnboardingStep.objects.filter(user=hamlet)
+        self.assertEqual(onboarding_steps.count(), 1)
+        self.assertEqual(onboarding_steps[0].onboarding_step, "visibility_policy_banner")
 
     def test_signup_with_user_settings_from_another_realm(self) -> None:
         hamlet_in_zulip = self.example_user("hamlet")
@@ -2865,6 +2875,9 @@ class UserSignUpTest(ZulipTestCase):
         hamlet_in_zulip.enter_sends = True
         hamlet_in_zulip.email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
         hamlet_in_zulip.save()
+
+        OnboardingStep.objects.filter(user=hamlet_in_zulip).delete()
+        OnboardingStep.objects.create(user=hamlet_in_zulip, onboarding_step="intro_resolve_topic")
 
         # Now we'll be making requests to another subdomain, so we need to logout
         # to avoid polluting the session in the test environment by still being
@@ -2911,6 +2924,10 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(
             hamlet_in_lear.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
         )
+        # Verify that 'copy_default_settings' copies the onboarding steps.
+        onboarding_steps = OnboardingStep.objects.filter(user=hamlet_in_lear)
+        self.assertEqual(onboarding_steps.count(), 1)
+        self.assertEqual(onboarding_steps[0].onboarding_step, "intro_resolve_topic")
 
         zulip_path_id = avatar_disk_path(hamlet_in_zulip)
         lear_path_id = avatar_disk_path(hamlet_in_lear)
