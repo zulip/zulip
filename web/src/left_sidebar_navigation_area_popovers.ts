@@ -46,7 +46,7 @@ function register_mark_all_read_handler(
     >,
 ): void {
     const {instance} = event.data;
-    unread_ops.confirm_mark_all_as_read();
+    unread_ops.confirm_mark_messages_as_read();
     popover_menus.hide_current_popover_if_visible(instance);
 }
 
