@@ -77,7 +77,6 @@
         line-height: 20px;
         color: var(--color-links);
         border-bottom: 1px solid var(--color-footer-background);
-        transition: border 0.4s ease-out;
     }
 
     & a,
