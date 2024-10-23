@@ -82,7 +82,7 @@ from zerver.lib.topic import (
 )
 from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamMessageEditRequest
-from zerver.lib.url_encoding import stream_message_url
+from zerver.lib.url_encoding import near_stream_message_url
 from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.lib.user_message import bulk_insert_all_ums
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
@@ -345,13 +345,9 @@ def send_message_moved_breadcrumbs(
     new_topic_name = message_edit_request.target_topic_name
     old_topic_link = get_stream_topic_link_syntax(old_stream.id, old_stream.name, old_topic_name)
     new_topic_link = get_stream_topic_link_syntax(new_stream.id, new_stream.name, new_topic_name)
-    message = {
-        "id": target_message.id,
-        "stream_id": new_stream.id,
-        "display_recipient": new_stream.name,
-        "topic": new_topic_name,
-    }
-    moved_message_link = stream_message_url(target_message.realm, message)
+    moved_message_link = near_stream_message_url(
+        target_message.realm, target_message.id, new_stream.name, new_stream.id, new_topic_name
+    )
 
     if new_thread_notification_string is not None:
         with override_language(new_stream.realm.default_language):

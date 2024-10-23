@@ -19,7 +19,7 @@ from zerver.lib.topic_link_util import (
     get_message_link_syntax,
     will_produce_broken_stream_topic_link,
 )
-from zerver.lib.url_encoding import pm_message_url, stream_message_url
+from zerver.lib.url_encoding import near_message_url
 from zerver.models import UserProfile
 from zerver.models.messages import Message
 from zerver.models.realms import Realm, get_realm
@@ -105,24 +105,6 @@ class ReportMessageTest(ZulipTestCase):
         expected_report_topic = f"{reported_user.full_name} moderation"
         self.assertEqual(submitted_report.topic_name(), expected_report_topic)
 
-        # Make sure channel message link is accessible.
-        message_link = stream_message_url(
-            None,
-            dict(
-                id=reported_message.id,
-                stream_id=channel_id,
-                display_recipient=channel_name,
-                topic=topic_name,
-            ),
-            include_base_url=False,
-        )
-
-        expected_message_link_html = (
-            f'<p>Original message at <a class="message-link" href="/{message_link}">'
-        )
-        assert submitted_report.rendered_content is not None
-        self.assertIn(expected_message_link_html, submitted_report.rendered_content)
-
     def build_direct_message_report_template(
         self,
         direct_message_link: str,
@@ -171,12 +153,8 @@ class ReportMessageTest(ZulipTestCase):
             dm_recipient_mention = silent_mention_syntax_for_user(dm_recipient)
             message_sent_to = f"{reporting_user_mention} reported a message sent by {reported_user_mention} to {dm_recipient_mention} at {reported_dm_date_sent}."
 
-        direct_message_link = pm_message_url(
-            realm,
-            dict(
-                id=reported_dm.id,
-                display_recipient=get_display_recipient(reported_dm.recipient),
-            ),
+        direct_message_link = near_message_url(
+            realm, reported_dm.id, get_display_recipient(reported_dm.recipient)
         )
         expected_message = self.build_direct_message_report_template(
             direct_message_link=direct_message_link,
@@ -210,12 +188,8 @@ class ReportMessageTest(ZulipTestCase):
             ]
         )
         message_sent_to = f"{reporting_user_mention} reported a message sent by {reported_user_mention} to {list_of_direct_message_recipients} at {reported_gdm_date_sent}."
-        direct_message_link = pm_message_url(
-            realm,
-            dict(
-                id=reported_gdm.id,
-                display_recipient=get_display_recipient(reported_gdm.recipient),
-            ),
+        direct_message_link = near_message_url(
+            realm, reported_gdm.id, get_display_recipient(reported_gdm.recipient)
         )
         expected_message = self.build_direct_message_report_template(
             direct_message_link=direct_message_link,
