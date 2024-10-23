@@ -255,17 +255,20 @@ function generate_multiuse_invite(): void {
     });
 }
 
-function valid_to(time_valid: number): string {
-    if (!time_valid) {
-        return $t({defaultMessage: "Never expires"});
+function valid_to(time_valid: number, custom_expiration_time_input: number): string {
+    if (util.validate_custom_time_input(custom_expiration_time_input)) {
+        if (!time_valid) {
+            return $t({defaultMessage: "Never expires"});
+        }
+
+        // The below is a duplicate of timerender.get_full_datetime, with a different base string.
+        const valid_to = add(new Date(), {minutes: time_valid});
+        const date = timerender.get_localized_date_or_time_for_format(valid_to, "dayofyear_year");
+        const time = timerender.get_localized_date_or_time_for_format(valid_to, "time");
+
+        return $t({defaultMessage: "Expires on {date} at {time}"}, {date, time});
     }
-
-    // The below is a duplicate of timerender.get_full_datetime, with a different base string.
-    const valid_to = add(new Date(), {minutes: time_valid});
-    const date = timerender.get_localized_date_or_time_for_format(valid_to, "dayofyear_year");
-    const time = timerender.get_localized_date_or_time_for_format(valid_to, "time");
-
-    return $t({defaultMessage: "Expires on {date} at {time}"}, {date, time});
+    return $t({defaultMessage: "Invalid custom time"});
 }
 
 function set_streams_to_join_list_visibility(): void {
@@ -347,8 +350,22 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         const user_has_email_set = !settings_data.user_email_not_configured();
 
-        set_custom_time_inputs_visibility();
-        set_expires_on_text();
+        settings_components.set_custom_time_inputs_visibility(
+            $expires_in,
+            custom_expiration_time_unit,
+            custom_expiration_time_input,
+        );
+        let expiration_time_in_minutes;
+        if ($expires_in.val() !== "custom") {
+            expiration_time_in_minutes = Number.parseFloat($expires_in.val()!);
+        } else {
+            expiration_time_in_minutes = util.get_custom_time_in_minutes(
+                custom_expiration_time_unit,
+                custom_expiration_time_input,
+            );
+        }
+        const valid_to_text = valid_to(expiration_time_in_minutes, custom_expiration_time_input);
+        settings_components.set_expires_on_text($expires_in, valid_to_text);
 
         if (settings_data.user_can_subscribe_other_users()) {
             set_streams_to_join_list_visibility();
@@ -401,8 +418,25 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         pills.onTextInputHook(toggle_invite_submit_button);
 
         $expires_in.on("change", () => {
-            set_custom_time_inputs_visibility();
-            set_expires_on_text();
+            settings_components.set_custom_time_inputs_visibility(
+                $expires_in,
+                custom_expiration_time_unit,
+                custom_expiration_time_input,
+            );
+            let expiration_time_in_minutes;
+            if ($expires_in.val() !== "custom") {
+                expiration_time_in_minutes = Number.parseFloat($expires_in.val()!);
+            } else {
+                expiration_time_in_minutes = util.get_custom_time_in_minutes(
+                    custom_expiration_time_unit,
+                    custom_expiration_time_input,
+                );
+            }
+            const valid_to_text = valid_to(
+                expiration_time_in_minutes,
+                custom_expiration_time_input,
+            );
+            settings_components.set_expires_on_text($expires_in, valid_to_text);
             toggle_invite_submit_button();
         });
 
@@ -413,14 +447,22 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             }
         });
 
-        $(".custom-expiration-time").on("change", () => {
+        $("#custom-invite-expiration-time").on("change", () => {
             custom_expiration_time_input = util.check_time_input(
                 $<HTMLInputElement>("input#custom-expiration-time-input").val()!,
             );
             custom_expiration_time_unit = $<HTMLSelectOneElement>(
                 "select:not([multiple])#custom-expiration-time-unit",
             ).val()!;
-            set_custom_expires_on_text();
+            expiration_time_in_minutes = util.get_custom_time_in_minutes(
+                custom_expiration_time_unit,
+                custom_expiration_time_input,
+            );
+            const valid_to_text = valid_to(
+                expiration_time_in_minutes,
+                custom_expiration_time_input,
+            );
+            settings_components.set_custom_expires_on_text($expires_in, valid_to_text);
             toggle_invite_submit_button();
         });
 
