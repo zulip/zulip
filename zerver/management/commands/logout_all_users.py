@@ -9,7 +9,7 @@ from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.sessions import (
     delete_all_deactivated_user_sessions,
     delete_all_user_sessions,
-    delete_realm_user_sessions,
+    delete_realm_sessions,
 )
 from zerver.models import UserProfile
 
@@ -41,7 +41,7 @@ mobile apps.
         realm = self.get_realm(options)
         rotate_api_keys = options["rotate_api_keys"]
         if realm:
-            delete_realm_user_sessions(realm)
+            delete_realm_sessions(realm)
             regenerate_api_key_queryset = UserProfile.objects.filter(realm=realm).values_list(
                 "id", flat=True
             )

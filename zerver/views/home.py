@@ -15,6 +15,7 @@ from zerver.lib.compatibility import is_outdated_desktop_app, is_unsupported_bro
 from zerver.lib.home import build_page_params_for_home_page_load, get_user_permission_info
 from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.request import RequestNotes
+from zerver.lib.sessions import save_session_fields
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
@@ -212,6 +213,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     if request.user.is_authenticated:
         user_profile = request.user
         realm = user_profile.realm
+        save_session_fields(request, realm)
     else:
         realm = get_valid_realm_from_request(request)
         # We load the spectator experience.  We fall through to the shared code

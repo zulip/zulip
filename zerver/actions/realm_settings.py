@@ -18,7 +18,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.send_email import FromAddress, send_email, send_email_to_admins
-from zerver.lib.sessions import delete_realm_user_sessions
+from zerver.lib.sessions import delete_realm_sessions
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.upload import delete_message_attachments
@@ -560,8 +560,8 @@ def do_deactivate_realm(
     # Note: This is intentionally outside the transaction because it
     # is unsafe to modify sessions inside transactions with the
     # cached_db session plugin we're using, and our session engine
-    # declared in zerver/lib/safe_session_cached_db.py enforces this.
-    delete_realm_user_sessions(realm)
+    # declared in zerver/models/sessions.py enforces this.
+    delete_realm_sessions(realm)
 
     # Flag to send deactivated realm email to organization owners; is false
     # for realm exports and realm subdomain changes so that those actions
