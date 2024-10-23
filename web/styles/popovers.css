@@ -753,7 +753,7 @@ ul.popover-group-menu-member-list {
         opacity: 0;
         pointer-events: none;
 
-        transition: all 0.3s ease;
+        transition: opacity 0.3s ease;
 
         &.fade.in {
             opacity: 1;

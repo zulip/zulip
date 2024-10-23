@@ -5,8 +5,6 @@
     box-shadow: 0 0 10px hsl(0deg 0% 0% / 10%);
     overflow: hidden;
 
-    transition: all 0.3s ease;
-
     .image-block {
         background-size: contain;
         height: 100%;

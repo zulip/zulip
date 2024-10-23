@@ -240,7 +240,8 @@
                 color: var(--color-compose-chevron-arrow);
                 text-decoration: none;
                 cursor: default;
-                transition: all 0.2s ease-in-out;
+                transition: none 0.2s ease-in-out;
+                transition-property: background, color;
 
                 &.narrow_to_compose_recipients {
                     background: var(
@@ -320,7 +321,7 @@
     grid-template-areas: "message-content composebox-buttons";
     border-radius: 4px;
     border: 1px solid var(--color-message-content-container-border);
-    transition: border 0.2s ease;
+    transition: border-color 0.2s ease;
 
     &:has(.new_message_textarea:focus) {
         border-color: var(--color-message-content-container-border-focus);
@@ -905,14 +906,14 @@ textarea.new_message_textarea {
     flex: 1 1 0;
     border: 1px solid hsl(0deg 0% 0% / 20%);
     border-radius: 3px;
-    transition: border 0.2s ease;
+    transition: border-color 0.2s ease;
     background: hsl(0deg 0% 100%);
 
     /* Give the recipient box, a `<div>`, the
        correct styles when focus is in the
        #stream_message_recipient_topic `<input>` */
     &:focus-within {
-        border: 1px solid hsl(0deg 0% 67%);
+        border-color: hsl(0deg 0% 67%);
     }
 
     #stream_message_recipient_topic,
@@ -991,7 +992,7 @@ textarea.new_message_textarea {
     background-color: var(--color-compose-send-button-background);
 
     &:active {
-        transition: all 80ms;
+        transition: transform 80ms;
         transform: scale(0.96);
     }
 
@@ -1461,7 +1462,7 @@ textarea.new_message_textarea {
     font-weight: 450;
 
     &:active {
-        transition: all 80ms;
+        transition: transform 80ms;
         transform: scale(0.96);
     }
 

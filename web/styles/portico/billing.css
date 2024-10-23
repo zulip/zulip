@@ -59,7 +59,8 @@
             width: 120px;
             height: 70px;
             background-color: hsl(0deg 0% 94%);
-            transition: all 0.2s ease;
+            transition: none 0.2s ease;
+            transition-property: background-color, border-color;
             display: inline-block;
             text-align: center;
             cursor: pointer;

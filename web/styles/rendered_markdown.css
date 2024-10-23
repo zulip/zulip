@@ -349,7 +349,7 @@
             float: right;
             width: 15px;
             cursor: pointer;
-            transition: 0.4s ease;
+            transition: transform 0.4s ease;
             transform: rotate(45deg);
 
             &::before,
@@ -360,7 +360,7 @@
                 width: 12px;
                 height: 3px;
                 background-color: hsl(0deg 0% 83%);
-                transition: 0.4s ease;
+                transition: transform 0.4s ease;
             }
 
             &::after {
@@ -917,7 +917,7 @@
     &::-webkit-scrollbar-thumb {
         background-color: hsl(0deg 0% 0% / 30%);
         border-radius: 20px;
-        transition: all 0.2s ease;
+        transition: background-color 0.2s ease;
     }
 
     &::-webkit-scrollbar-thumb:hover {

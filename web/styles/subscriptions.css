@@ -286,7 +286,8 @@ h4.user_group_setting_subsection_title {
 
     cursor: pointer;
 
-    transition: all 0.3s ease;
+    transition: none 0.3s ease;
+    transition-property: opacity, transform;
 }
 
 .user-groups-container .user-groups-header.slide-left .fa-chevron-left,
@@ -328,7 +329,6 @@ h4.user_group_setting_subsection_title {
         .user-groups-title,
         .subscriptions-title {
             display: inline-block;
-            transition: all 0.3s ease;
             transform: translate(-13px, 0);
         }
 
@@ -1229,7 +1229,7 @@ div.settings-radio-input-parent {
         background-color: var(--color-background-modal);
         border-top: none;
 
-        transition: all 0.3s ease;
+        transition: left 0.3s ease;
         z-index: 10;
 
         &.show {
