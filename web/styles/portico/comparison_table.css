@@ -228,11 +228,6 @@
         letter-spacing: 0.1ch;
     }
 
-    .comparison-table th.sticky {
-        padding: 8px 2px;
-        border-radius: 0;
-    }
-
     .comparison-table td {
         padding: 8px;
         border-top: 1px solid hsl(209deg 40% 40% / 30%);
@@ -345,8 +340,7 @@
     }
 
     @media (width <= 730px) {
-        .comparison-table th,
-        .comparison-table th.sticky {
+        .comparison-table th {
             font-size: 14px;
             line-height: 18px;
             box-sizing: border-box;
@@ -378,8 +372,7 @@
     }
 
     @media (width <= 500px) {
-        .comparison-table th,
-        .comparison-table th.sticky {
+        .comparison-table th {
             font-size: 13px;
             line-height: 14px;
         }
