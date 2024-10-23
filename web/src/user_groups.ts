@@ -14,9 +14,9 @@ import type {UserGroupUpdateEvent} from "./types";
 
 type UserGroupRaw = z.infer<typeof raw_user_group_schema>;
 
-// The members field is a number array which we convert
-// to a Set in the initialize function.
 export const user_group_schema = raw_user_group_schema.extend({
+    // These are delivered via the API as lists, but converted to sets
+    // during initialization for more convenient manipulation.
     members: z.set(z.number()),
     direct_subgroup_ids: z.set(z.number()),
 });
