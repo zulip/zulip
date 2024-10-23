@@ -23,8 +23,14 @@
         {{/if}}
         <li role="separator" class="popover-menu-separator"></li>
         <li role="none" class="popover-menu-list-item">
-            {{#if members.length}}
+            {{#if (or members.length subgroups.length)}}
                 <ul class="popover-menu-list popover-group-menu-member-list" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
+                    {{#each subgroups}}
+                        <li class="popover-group-menu-member">
+                            <i class="popover-menu-icon zulip-icon zulip-icon-triple-users" aria-hidden="true"></i>
+                            <span class="popover-group-menu-member-name">{{name}}</span>
+                        </li>
+                    {{/each}}
                     {{#each members}}
                         <li class="popover-group-menu-member">
                             {{#if is_bot}}
