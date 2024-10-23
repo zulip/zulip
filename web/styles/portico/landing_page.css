@@ -2534,10 +2534,6 @@ button {
         text-align: left;
         background-color: hsl(0deg 0% 100%);
 
-        transition-property: all;
-        transition-duration: 0.3s;
-        transition-timing-function: ease;
-
         .bottom {
             height: 275px;
 
