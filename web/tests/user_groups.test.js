@@ -583,3 +583,74 @@ run_test("get_display_group_name", () => {
     assert.equal(user_groups.get_display_group_name(all.name), "translated: Everyone");
     assert.equal(user_groups.get_display_group_name(students.name), "Students");
 });
+
+run_test("get_potential_subgroups", () => {
+    // Remove existing groups.
+    user_groups.init();
+
+    const admins = {
+        name: "Administrators",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([4]),
+    };
+    const all = {
+        name: "Everyone",
+        id: 2,
+        members: new Set([2, 3]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([1, 3]),
+    };
+    const students = {
+        name: "Students",
+        id: 3,
+        members: new Set([4, 5]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([]),
+    };
+    const teachers = {
+        name: "Teachers",
+        id: 4,
+        members: new Set([6, 7, 8]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([]),
+    };
+    const science = {
+        name: "Science",
+        id: 5,
+        members: new Set([9]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([]),
+    };
+
+    user_groups.initialize({
+        realm_user_groups: [admins, all, students, teachers, science],
+    });
+
+    function get_potential_subgroup_ids(group_id) {
+        return user_groups
+            .get_potential_subgroups(group_id)
+            .map((subgroup) => subgroup.id)
+            .sort();
+    }
+
+    assert.deepEqual(get_potential_subgroup_ids(all.id), [teachers.id, science.id]);
+    assert.deepEqual(get_potential_subgroup_ids(admins.id), [students.id, science.id]);
+    assert.deepEqual(get_potential_subgroup_ids(teachers.id), [students.id, science.id]);
+    assert.deepEqual(get_potential_subgroup_ids(students.id), [admins.id, teachers.id, science.id]);
+    assert.deepEqual(get_potential_subgroup_ids(science.id), [
+        admins.id,
+        all.id,
+        students.id,
+        teachers.id,
+    ]);
+
+    user_groups.add_subgroups(all.id, [teachers.id]);
+    user_groups.add_subgroups(teachers.id, [science.id]);
+    assert.deepEqual(get_potential_subgroup_ids(all.id), [science.id]);
+    assert.deepEqual(get_potential_subgroup_ids(admins.id), [students.id, science.id]);
+    assert.deepEqual(get_potential_subgroup_ids(teachers.id), [students.id]);
+    assert.deepEqual(get_potential_subgroup_ids(students.id), [admins.id, teachers.id, science.id]);
+    assert.deepEqual(get_potential_subgroup_ids(science.id), [students.id]);
+});
