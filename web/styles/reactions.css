@@ -22,7 +22,7 @@
         box-shadow: inset 0 0 5px 0 var(--color-message-reaction-shadow-inner);
         transition:
             transform 100ms linear,
-            font-weight 100ms linear;
+            font-weight 100ms linear; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
 
         &.reacted {
             color: var(--color-message-reaction-text-reacted);

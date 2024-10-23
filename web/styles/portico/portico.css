@@ -1105,7 +1105,7 @@ input.new-organization-button {
             fill: hsl(0deg 0% 100%);
             z-index: 2;
             transition: none 0.3s ease;
-            transition-property: right, top;
+            transition-property: right, top; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
             cursor: pointer;
         }
 

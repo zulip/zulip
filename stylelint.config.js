@@ -2,6 +2,7 @@
 
 module.exports = {
     extends: ["stylelint-config-standard"],
+    plugins: ["stylelint-high-performance-animation"],
     rules: {
         // Add some exceptions for recommended rules
         "at-rule-no-unknown": [true, {ignoreAtRules: ["extend"]}],
@@ -37,6 +38,7 @@ module.exports = {
             // We use hsl instead of rgb
             "rgb",
         ],
+        "plugin/no-low-performance-animation-properties": [true, {ignore: "paint-properties"}],
 
         // Zulip CSS should have no dependencies on external resources
         "function-url-no-scheme-relative": true,
