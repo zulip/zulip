@@ -52,6 +52,7 @@ MIT_VALIDATION_ERROR = Markup(
     ' <a href="mailto:support@zulip.com">contact us</a>.'
 )
 
+INVALID_ACCOUNT_CREDENTIALS_ERROR = gettext_lazy("Please enter a correct email and password.")
 DEACTIVATED_ACCOUNT_ERROR = gettext_lazy(
     "Your account {username} has been deactivated."
     " Please contact your organization administrator to reactivate it."
@@ -514,9 +515,7 @@ class OurAuthenticationForm(AuthenticationForm):
 
             if self.user_cache is None:
                 raise forms.ValidationError(
-                    self.error_messages["invalid_login"],
-                    code="invalid_login",
-                    params={"username": self.username_field.verbose_name},
+                    INVALID_ACCOUNT_CREDENTIALS_ERROR,
                 )
 
             self.confirm_login_allowed(self.user_cache)
