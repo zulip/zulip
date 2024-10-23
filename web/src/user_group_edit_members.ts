@@ -44,6 +44,10 @@ function get_potential_members(): User[] {
     return people.filter_all_users(is_potential_member);
 }
 
+function get_potential_subgroups(): UserGroup[] {
+    return user_groups.get_potential_subgroups(current_group_id);
+}
+
 function get_user_group_members(group: UserGroup): (User | UserGroup)[] {
     const member_ids = [...group.members];
     const member_users = people.get_users_from_ids(member_ids);
@@ -141,6 +145,7 @@ export function enable_member_management({
     pill_widget = add_subscribers_pill.create({
         $pill_container,
         get_potential_subscribers: get_potential_members,
+        get_potential_groups: get_potential_subgroups,
     });
 
     $pill_container.find(".input").on("input", () => {

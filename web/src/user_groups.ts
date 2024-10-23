@@ -311,6 +311,30 @@ export function get_recursive_group_members(target_user_group: UserGroup): Set<n
     return members;
 }
 
+export function get_potential_subgroups(target_user_group_id: number): UserGroup[] {
+    // This logic could be optimized if we maintained a reverse map
+    // from each group to the groups containing it, which might be a
+    // useful data structure for other code paths as well.
+    const target_user_group = get_user_group_from_id(target_user_group_id);
+    const already_subgroup_ids = target_user_group.direct_subgroup_ids;
+    return get_all_realm_user_groups().filter((user_group) => {
+        if (user_group.id === target_user_group.id) {
+            return false;
+        }
+
+        if (already_subgroup_ids.has(user_group.id)) {
+            return false;
+        }
+
+        const recursive_subgroup_ids = get_recursive_subgroups(user_group);
+        assert(recursive_subgroup_ids !== undefined);
+        if (recursive_subgroup_ids.has(target_user_group.id)) {
+            return false;
+        }
+        return true;
+    });
+}
+
 export function is_user_in_group(
     user_group_id: number,
     user_id: number,

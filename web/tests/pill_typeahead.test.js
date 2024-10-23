@@ -465,7 +465,11 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
                 })
                 .filter(Boolean);
             if (opts.user_group) {
-                expected_result = [...expected_result, ...group_items];
+                if (opts.user_group_source) {
+                    expected_result = [...expected_result, ...opts.user_group_source()];
+                } else {
+                    expected_result = [...expected_result, ...group_items];
+                }
             }
             if (opts.user) {
                 if (opts.user_source) {
@@ -530,6 +534,8 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
         {user: true, user_source: () => [fred_item, mark_item]},
         {stream: true},
         {user_group: true},
+        // user and custom user group source.
+        {user_group: true, user_group_source: () => [admins_item]},
         {user_group: true, stream: true},
         {user_group: true, user: true},
         {user: true, stream: true},
