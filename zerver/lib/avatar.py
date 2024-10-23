@@ -46,6 +46,20 @@ def get_static_avatar_url(email: str, medium: bool) -> str:
     avatar_file_name = get_system_bots_avatar_file_name(email)
     avatar_file_name += "-medium.png" if medium else ".png"
 
+    if settings.DEBUG:
+        # This find call may not be cheap, so we only do it in the
+        # development environment to do an assertion.
+        from django.contrib.staticfiles.finders import find
+
+        if not find(avatar_file_name):
+            raise AssertionError(f"Unknown avatar file for: {email}")
+    elif settings.STATIC_ROOT and not staticfiles_storage.exists(avatar_file_name):
+        # Fallback for the case where no avatar exists; this should
+        # never happen in practice. This logic cannot be executed
+        # while STATIC_ROOT is not defined, so the above STATIC_ROOT
+        # check is important.
+        return DEFAULT_AVATAR_FILE
+
     return staticfiles_storage.url(avatar_file_name)
 
 
