@@ -6,6 +6,7 @@ import render_add_saved_snippet_modal from "../templates/add_saved_snippet_modal
 import render_confirm_delete_saved_snippet from "../templates/confirm_dialog/confirm_delete_saved_snippet.hbs";
 
 import * as channel from "./channel";
+import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
@@ -91,7 +92,9 @@ function item_click_callback(
     if (current_value === saved_snippets.ADD_SAVED_SNIPPET_OPTION_ID) {
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Add a new saved snippet"}),
-            html_body: render_add_saved_snippet_modal(),
+            html_body: render_add_saved_snippet_modal({
+                prepopulated_content: compose_state.message_content(),
+            }),
             html_submit_button: $t_html({defaultMessage: "Save"}),
             id: "add-new-saved-snippet-modal",
             form_id: "add-new-saved-snippet-form",

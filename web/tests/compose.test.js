@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const MockDate = require("mockdate");
 
@@ -8,7 +8,7 @@ const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {current_user, page_params, realm, user_settings} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const user_groups = zrequire("user_groups");
 
@@ -58,7 +58,16 @@ const compose_setup = zrequire("compose_setup");
 const drafts = zrequire("drafts");
 const echo = zrequire("echo");
 const people = zrequire("people");
+const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const realm = {};
+set_realm(realm);
+const current_user = {};
+set_current_user(current_user);
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 function reset_jquery() {
     // Avoid leaks.
@@ -261,7 +270,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         stub_state = initialize_state_stub_dict();
         compose_state.topic("");
         compose_state.set_message_type("private");
-        current_user.user_id = new_user.user_id;
+        override(current_user, "user_id", new_user.user_id);
         override(compose_pm_pill, "get_emails", () => "alice@example.com");
 
         const server_message_id = 127;
@@ -397,7 +406,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
         show_button_spinner_called = true;
     });
 
-    current_user.user_id = new_user.user_id;
+    override(current_user, "user_id", new_user.user_id);
 
     // Test sending a message with content.
     compose_state.set_message_type("stream");
@@ -408,7 +417,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     $("#compose .preview_message_area").show();
     $("#compose .markdown_preview").hide();
     $("#compose").addClass("preview_mode");
-    user_settings.enter_sends = true;
+    override(user_settings, "enter_sends", true);
     let send_message_called = false;
     override_rewire(compose, "send_message", () => {
         send_message_called = true;
@@ -421,7 +430,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     assert.ok(send_message_called);
     assert.ok(show_button_spinner_called);
 
-    user_settings.enter_sends = false;
+    override(user_settings, "enter_sends", false);
     $("textarea#compose-textarea").trigger("blur");
     compose.enter_with_preview_open();
     assert.ok($("textarea#compose-textarea").is_focused());
@@ -429,7 +438,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     // Test sending a message without content.
     $("textarea#compose-textarea").val("");
     $("#compose .preview_message_area").show();
-    user_settings.enter_sends = true;
+    override(user_settings, "enter_sends", true);
 
     compose.enter_with_preview_open();
 });
@@ -518,7 +527,7 @@ test_ui("initialize", ({override}) => {
         resize_watch_manual_resize_checked = true;
     });
 
-    realm.max_file_upload_size_mib = 512;
+    override(realm, "max_file_upload_size_mib", 512);
 
     let uppy_cancel_all_called = false;
     override(upload, "compose_upload_cancel", () => {

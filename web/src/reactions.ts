@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import render_message_reaction from "../templates/message_reaction.hbs";
+import render_message_reactions from "../templates/message_reactions.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
@@ -369,11 +370,23 @@ export function insert_new_reaction(
         class: reaction_class,
     };
 
-    const $new_reaction = $(render_message_reaction(context));
-
-    // Now insert it before the add button.
-    const $reaction_button_element = get_add_reaction_button(message.id);
-    $new_reaction.insertBefore($reaction_button_element);
+    // If the given reaction is the first reaction in a message, then we add
+    // the whole message reactions section along with the new reaction.
+    // Else, we insert the new reaction before the add reaction button.
+    if (message.clean_reactions.size - 1 === 0) {
+        const $rows = message_lists.all_rendered_row_for_message_id(message.id);
+        const reaction_section_context = {
+            msg: {
+                message_reactions: [context],
+            },
+        };
+        const $msg_reaction_section = render_message_reactions(reaction_section_context);
+        $rows.find(".messagebox-content").append($msg_reaction_section);
+    } else {
+        const $new_reaction = $(render_message_reaction(context));
+        const $reaction_button_element = get_add_reaction_button(message.id);
+        $new_reaction.insertBefore($reaction_button_element);
+    }
 
     update_vote_text_on_message(message);
 }
@@ -423,6 +436,14 @@ export function remove_reaction_from_view(
     const local_id = get_local_reaction_id(clean_reaction_object);
     const $reaction = find_reaction(message.id, local_id);
     const reaction_count = clean_reaction_object.user_ids.length;
+
+    // Cleanup: If the reaction being removed is the last reaction on the
+    // message, we remove the whole message reaction section and exit.
+    if (message.clean_reactions.size === 0) {
+        const $msg_reaction_section = get_reaction_sections(message.id);
+        $msg_reaction_section.remove();
+        return;
+    }
 
     if (reaction_count === 0) {
         // If this user was the only one reacting for this emoji, we simply

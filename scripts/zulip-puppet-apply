@@ -66,25 +66,24 @@ puppet_env["FACTER_zulip_scripts_path"] = scripts_path
 def noop_would_change(puppet_cmd: list[str]) -> bool:
     # --noop does not work with --detailed-exitcodes; see
     # https://tickets.puppetlabs.com/browse/PUP-686
-    try:
-        lastrun_file = tempfile.NamedTemporaryFile()
-        subprocess.check_call(
-            # puppet_cmd may already contain --noop, but it is safe to
-            # supply twice
-            [*puppet_cmd, "--noop", "--lastrunfile", lastrun_file.name],
-            env=puppet_env,
-        )
+    with tempfile.NamedTemporaryFile() as lastrun_file:
+        try:
+            subprocess.check_call(
+                # puppet_cmd may already contain --noop, but it is safe to
+                # supply twice
+                [*puppet_cmd, "--noop", "--lastrunfile", lastrun_file.name],
+                env=puppet_env,
+            )
+        except subprocess.CalledProcessError:
+            sys.exit(2)
 
+        # Reopen the file since Puppet rewrote it with a new inode
         with open(lastrun_file.name) as lastrun:
             lastrun_data = yaml.safe_load(lastrun)
             resources = lastrun_data.get("resources", {})
             if resources.get("failed", 0) != 0:
                 sys.exit(2)
             return resources.get("out_of_sync", 0) != 0
-    except subprocess.CalledProcessError:
-        sys.exit(2)
-    finally:
-        lastrun_file.close()
 
 
 if not args.noop and not args.force:

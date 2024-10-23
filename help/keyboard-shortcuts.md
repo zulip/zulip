@@ -69,19 +69,21 @@ in the Zulip app to add more to your repertoire as needed.
 
 ## Scrolling
 
-* **Last message**: <kbd>End</kbd> or <kbd>Shift</kbd> + <kbd>G</kbd> —
-  Also marks all messages in the current view as read.
+* **Last message**: <kbd>End</kbd> or <kbd>Fn</kbd> + <kbd class="arrow-key">→</kbd>
+  or <kbd>Shift</kbd> + <kbd>G</kbd> — Also marks all messages in the current view
+  as read.
 
-* **First message**: <kbd>Home</kbd>
+* **First message**: <kbd>Home</kbd> or <kbd>Fn</kbd> + <kbd class="arrow-key">←</kbd>
 
 * **Previous message**: <kbd class="arrow-key">↑</kbd> or <kbd>K</kbd>
 
 * **Next message**: <kbd class="arrow-key">↓</kbd> or <kbd>J</kbd>
 
-* **Scroll up**: <kbd>PgUp</kbd> or <kbd>Shift</kbd> + <kbd>K</kbd>
+* **Scroll up**: <kbd>PgUp</kbd> or <kbd>Fn</kbd> + <kbd class="arrow-key">↑</kbd>
+  or <kbd>Shift</kbd> + <kbd>K</kbd>
 
-* **Scroll down**: <kbd>PgDn</kbd>, <kbd>Shift</kbd> + <kbd>J</kbd>, or
-  <kbd>Spacebar</kbd>
+* **Scroll down**: <kbd>PgDn</kbd> or <kbd>Fn</kbd> + <kbd class="arrow-key">↓</kbd>
+  or <kbd>Shift</kbd> + <kbd>J</kbd> or <kbd>Spacebar</kbd>
 
 ## Navigation
 
@@ -137,13 +139,15 @@ in the Zulip app to add more to your repertoire as needed.
 
 ### In the compose box
 
-* **Send message**: <kbd>Enter</kbd>, <kbd>Tab</kbd> then <kbd>Enter</kbd>,
-  and/or <kbd>Ctrl</kbd> + <kbd>Enter</kbd>, depending on your settings. See
-  [enable enter to send](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message).
+* **Send message**: <kbd>Tab</kbd> then <kbd>Enter</kbd>, or either
+  <kbd>Enter</kbd> or <kbd>Ctrl</kbd> + <kbd>Enter</kbd> based on
+  [your settings][toggle-enter-to-send]
 
-* **Insert new line**: <kbd>Enter</kbd>, or <kbd>Shift</kbd> + <kbd>Enter</kbd>,
-  depending on your settings. See
-  [enable enter to send](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message).
+* **Insert new line**: <kbd>Shift</kbd> + <kbd>Enter</kbd>, or either
+  <kbd>Enter</kbd> or <kbd>Ctrl</kbd> + <kbd>Enter</kbd> based on
+  [your settings][toggle-enter-to-send]
+
+[toggle-enter-to-send]: /help/configure-send-message-keys
 
 * **Insert italic text**: `*italic*` or <kbd>Ctrl</kbd> + <kbd>I</kbd>
 

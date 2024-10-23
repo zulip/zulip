@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
@@ -16,6 +16,9 @@ const {PollData} = zrequire("../shared/src/poll_data");
 const poll_widget = zrequire("poll_widget");
 
 const people = zrequire("people");
+const {set_realm} = zrequire("state_data");
+
+set_realm({});
 
 const me = {
     email: "me@zulip.com",

@@ -11,13 +11,7 @@ from typing_extensions import override
 from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import RealmAuditLog
-from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import (
-    EXPORT_FULL_WITH_CONSENT,
-    EXPORT_FULL_WITHOUT_CONSENT,
-    EXPORT_PUBLIC,
-)
+from zerver.models import RealmExport
 
 
 class Command(ZulipBaseCommand):
@@ -169,26 +163,27 @@ class Command(ZulipBaseCommand):
         def percent_callback(bytes_transferred: Any) -> None:
             print(end=".", flush=True)
 
-        RealmAuditLog.objects.create(
-            acting_user=None,
+        if public_only:
+            export_type = RealmExport.EXPORT_PUBLIC
+        elif export_full_with_consent:
+            export_type = RealmExport.EXPORT_FULL_WITH_CONSENT
+        else:
+            export_type = RealmExport.EXPORT_FULL_WITHOUT_CONSENT
+
+        export_row = RealmExport.objects.create(
             realm=realm,
-            event_type=AuditLogEventType.REALM_EXPORTED,
-            event_time=timezone_now(),
+            type=export_type,
+            acting_user=None,
+            status=RealmExport.REQUESTED,
+            date_requested=timezone_now(),
         )
 
         # Allows us to trigger exports separately from command line argument parsing
-        if public_only:
-            export_type = EXPORT_PUBLIC
-        elif export_full_with_consent:
-            export_type = EXPORT_FULL_WITH_CONSENT
-        else:
-            export_type = EXPORT_FULL_WITHOUT_CONSENT
         export_realm_wrapper(
-            realm=realm,
+            export_row=export_row,
             output_dir=output_dir,
             threads=num_threads,
             upload=options["upload"],
-            export_type=export_type,
             percent_callback=percent_callback,
             export_as_active=True if options["deactivate_realm"] else None,
         )

@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {
     clear_buddy_list,
@@ -13,7 +13,7 @@ const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespac
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {current_user, page_params, realm, user_settings} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const $window_stub = $.create("window-stub");
 set_global("to_$", () => $window_stub);
@@ -52,6 +52,15 @@ const peer_data = zrequire("peer_data");
 const message_lists = zrequire("message_lists");
 const util = zrequire("util");
 const {Filter} = zrequire("../src/filter");
+const {set_current_user, set_realm} = zrequire("state_data");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 const me = {
     email: "me@zulip.com",
@@ -116,7 +125,7 @@ function add_sub_and_set_as_current_narrow(sub) {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        user_settings.presence_enabled = true;
+        helpers.override(user_settings, "presence_enabled", true);
         // Simulate a small window by having the
         // fill_screen_with_content render the entire
         // list in one pass.  We will do more refined
@@ -158,18 +167,18 @@ run_test("reload_defaults", () => {
     assert.equal(activity_ui.get_filter_text(), "");
 });
 
-test("get_status", () => {
+test("get_status", ({override}) => {
     page_params.realm_users = [];
-    current_user.user_id = 999;
+    override(current_user, "user_id", 999);
 
     assert.equal(presence.get_status(current_user.user_id), "active");
     assert.equal(presence.get_status(alice.user_id), "active");
     assert.equal(presence.get_status(mark.user_id), "idle");
     assert.equal(presence.get_status(fred.user_id), "active");
 
-    user_settings.presence_enabled = false;
+    override(user_settings, "presence_enabled", false);
     assert.equal(presence.get_status(current_user.user_id), "offline");
-    user_settings.presence_enabled = true;
+    override(user_settings, "presence_enabled", true);
     assert.equal(presence.get_status(current_user.user_id), "active");
 
     presence.presence_info.delete(zoe.user_id);
@@ -184,7 +193,7 @@ test("sort_users", () => {
 
     presence.presence_info.delete(alice.user_id);
 
-    buddy_data.sort_users(user_ids);
+    buddy_data.sort_users(user_ids, new Set());
 
     assert.deepEqual(user_ids, [fred.user_id, jill.user_id, alice.user_id]);
 });
@@ -365,7 +374,7 @@ test("handlers", ({override, override_rewire, mock_template}) => {
     (function test_click_header_filter() {
         init();
         const e = {};
-        const handler = $("#userlist-header").get_on_handler("click");
+        const handler = $("#userlist-header-search").get_on_handler("click");
 
         simulate_right_column_buddy_list();
 
@@ -505,7 +514,7 @@ test("render_empty_user_list_message", ({override, mock_template}) => {
 });
 
 test("insert_one_user_into_empty_list", ({override, mock_template}) => {
-    user_settings.user_list_style = 2;
+    override(user_settings, "user_list_style", 2);
 
     override(padded_widget, "update_padding", noop);
     mock_template("presence_row.hbs", true, (data, html) => {
@@ -713,8 +722,8 @@ test("insert_unfiltered_user_with_filter", () => {
     activity_ui.redraw_user(fred.user_id);
 });
 
-test("realm_presence_disabled", () => {
-    realm.realm_presence_disabled = true;
+test("realm_presence_disabled", ({override}) => {
+    override(realm, "realm_presence_disabled", true);
 
     activity_ui.redraw_user();
     activity_ui.build_user_sidebar();
@@ -730,9 +739,9 @@ test("update_presence_info", ({override, override_rewire}) => {
     override(pm_list, "update_private_messages", noop);
     override_rewire(activity_ui, "update_presence_indicators", noop);
 
-    realm.realm_presence_disabled = false;
-    realm.server_presence_ping_interval_seconds = 60;
-    realm.server_presence_offline_threshold_seconds = 200;
+    override(realm, "realm_presence_disabled", false);
+    override(realm, "server_presence_ping_interval_seconds", 60);
+    override(realm, "server_presence_offline_threshold_seconds", 200);
 
     const server_time = 500;
     const info = {
@@ -907,6 +916,10 @@ test("electron_bridge", ({override_rewire}) => {
         activity.mark_client_active();
         assert.equal(activity.compute_active_status(), "active");
     });
+
+    assert.ok(!activity.received_new_messages);
+    activity.set_received_new_messages(true);
+    assert.ok(activity.received_new_messages);
 });
 
 test("test_send_or_receive_no_presence_for_spectator", () => {
@@ -914,7 +927,7 @@ test("test_send_or_receive_no_presence_for_spectator", () => {
     activity.send_presence_to_server();
 });
 
-test("check_should_redraw_new_user", () => {
+test("check_should_redraw_new_user", ({override}) => {
     presence.presence_info.set(9999, {status: "active"});
 
     // A user that wasn't yet known, but has presence info should be redrawn
@@ -923,10 +936,10 @@ test("check_should_redraw_new_user", () => {
 
     // We don't even build the user sidebar if realm_presence_disabled is true,
     // so nothing to redraw.
-    realm.realm_presence_disabled = true;
+    override(realm, "realm_presence_disabled", true);
     assert.equal(activity_ui.check_should_redraw_new_user(9999), false);
 
-    realm.realm_presence_disabled = false;
+    override(realm, "realm_presence_disabled", false);
     // A new user that didn't have presence info should not be redrawn.
     assert.equal(activity_ui.check_should_redraw_new_user(99999), false);
 });

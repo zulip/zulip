@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 function make_zblueslip() {
     const lib = {};

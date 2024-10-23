@@ -528,7 +528,7 @@ class MissedMessageHookTest(ZulipTestCase):
             self.cordelia.realm,
             "hamlet_and_cordelia",
             [self.user_profile, self.cordelia],
-            acting_user=None,
+            acting_user=self.user_profile,
         )
         msg_id = self.send_stream_message(
             self.iago, "Denmark", content="@*hamlet_and_cordelia* what's up?"

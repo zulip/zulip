@@ -161,12 +161,6 @@ js_rules = RuleList(
                 "web/tests/",
                 "web/src/billing/",
             },
-            "exclude_line": {
-                (
-                    "web/src/common.ts",
-                    '$(this).before($("<kbd>").text("Fn"), $("<span>").text(" + ").contents());',
-                ),
-            },
         },
         {
             "pattern": r"""report.success\(["']""",

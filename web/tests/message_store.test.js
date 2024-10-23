@@ -1,11 +1,10 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {current_user, realm} = require("./lib/zpage_params");
 
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
@@ -21,8 +20,6 @@ mock_esm("../src/recent_senders", {
 });
 
 set_global("document", "document-stub");
-realm.realm_allow_message_editing = true;
-current_user.is_admin = true;
 
 const util = zrequire("util");
 const people = zrequire("people");
@@ -30,6 +27,11 @@ const pm_conversations = zrequire("pm_conversations");
 const message_helper = zrequire("message_helper");
 const message_store = zrequire("message_store");
 const message_user_ids = zrequire("message_user_ids");
+const {set_realm} = zrequire("state_data");
+const {initialize_user_settings} = zrequire("user_settings");
+
+set_realm({});
+initialize_user_settings({user_settings: {}});
 
 const denmark = {
     subscribed: false,

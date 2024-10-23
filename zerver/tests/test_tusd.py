@@ -1,6 +1,5 @@
 import os
 
-import botocore
 import orjson
 from django.conf import settings
 from django.test import override_settings
@@ -11,7 +10,8 @@ from zerver.lib.test_helpers import create_s3_buckets, use_s3_backend
 from zerver.lib.upload import sanitize_name, upload_backend, upload_message_attachment
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Attachment
+from zerver.models import Attachment, Realm
+from zerver.models.realms import get_realm
 from zerver.views.tusd import TusEvent, TusHook, TusHTTPRequest, TusUpload
 
 
@@ -211,7 +211,37 @@ class TusdPreCreateTest(ZulipTestCase):
         self.assertEqual(result_json["HttpResponse"]["StatusCode"], 413)
         self.assertEqual(
             orjson.loads(result_json["HttpResponse"]["Body"]),
-            {"message": "Uploaded file is larger than the allowed limit of 1 MiB"},
+            {
+                "message": "File is larger than this server's configured maximum upload size (1 MiB)."
+            },
+        )
+        self.assertEqual(result_json["RejectUpload"], True)
+
+    @override_settings(MAX_FILE_UPLOAD_SIZE=1)  # In MB
+    def test_file_too_big_failure_limited(self) -> None:
+        self.login("hamlet")
+        request = self.request()
+        request.event.upload.size = 1024 * 1024 * 5  # 5MB
+
+        realm = get_realm("zulip")
+        realm.plan_type = Realm.PLAN_TYPE_LIMITED
+        realm.save()
+
+        result = self.client_post(
+            "/api/internal/tusd",
+            request.model_dump(),
+            content_type="application/json",
+        )
+
+        self.assertEqual(result.status_code, 200)
+        result_json = result.json()
+        self.assertEqual(result_json["HttpResponse"]["StatusCode"], 413)
+        self.assertEqual(
+            orjson.loads(result_json["HttpResponse"]["Body"]),
+            {
+                "message": "File is larger than the maximum upload size (1 MiB) allowed by "
+                "your organization's plan."
+            },
         )
         self.assertEqual(result_json["RejectUpload"], True)
 
@@ -338,9 +368,11 @@ class TusdPreFinishTest(ZulipTestCase):
         self.assertEqual(attachment.size, len("zulip!"))
         self.assertEqual(attachment.content_type, "text/plain")
 
+        # Assert that the .info file is still there -- tusd needs it
+        # to verify that the upload completed successfully
         assert settings.LOCAL_FILES_DIR is not None
         self.assertTrue(os.path.exists(os.path.join(settings.LOCAL_FILES_DIR, path_id)))
-        self.assertFalse(os.path.exists(os.path.join(settings.LOCAL_FILES_DIR, f"{path_id}.info")))
+        self.assertTrue(os.path.exists(os.path.join(settings.LOCAL_FILES_DIR, f"{path_id}.info")))
 
     def test_no_metadata(self) -> None:
         self.login("hamlet")
@@ -394,7 +426,7 @@ class TusdPreFinishTest(ZulipTestCase):
 
         assert settings.LOCAL_FILES_DIR is not None
         self.assertTrue(os.path.exists(os.path.join(settings.LOCAL_FILES_DIR, path_id)))
-        self.assertFalse(os.path.exists(os.path.join(settings.LOCAL_FILES_DIR, f"{path_id}.info")))
+        self.assertTrue(os.path.exists(os.path.join(settings.LOCAL_FILES_DIR, f"{path_id}.info")))
 
     @use_s3_backend
     @override_settings(S3_UPLOADS_STORAGE_CLASS="STANDARD_IA")
@@ -467,5 +499,6 @@ class TusdPreFinishTest(ZulipTestCase):
             response["Metadata"],
             {"realm_id": str(hamlet.realm_id), "user_profile_id": str(hamlet.id)},
         )
-        with self.assertRaises(botocore.exceptions.ClientError):
-            bucket.Object(f"{path_id}.info").get()
+
+        response = bucket.Object(f"{path_id}.info").get()
+        self.assertEqual(response["ContentType"], "binary/octet-stream")

@@ -205,15 +205,14 @@ export function dispatch_normal_event(event) {
 
         case "realm": {
             const realm_settings = {
-                add_custom_emoji_policy: settings_emoji.update_custom_emoji_ui,
                 allow_edit_history: noop,
                 allow_message_editing: noop,
                 edit_topic_policy: noop,
-                user_group_edit_policy: user_group_edit.update_group_management_ui,
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
                 bot_creation_policy: settings_bots.update_bot_permissions_ui,
                 can_delete_any_message_group: noop,
                 can_delete_own_message_group: noop,
+                can_move_messages_between_channels_group: noop,
                 create_multiuse_invite_group: noop,
                 invite_to_stream_policy: noop,
                 default_code_block_language: noop,
@@ -235,7 +234,6 @@ export function dispatch_normal_event(event) {
                 move_messages_between_streams_limit_seconds: noop,
                 move_messages_within_stream_limit_seconds: message_edit.update_inline_topic_edit_ui,
                 message_retention_days: noop,
-                move_messages_between_streams_policy: noop,
                 name: narrow_title.redraw_title,
                 name_changes_disabled: settings_account.update_name_change_display,
                 new_stream_announcements_stream_id: stream_ui_updates.update_announce_stream_option,
@@ -285,7 +283,12 @@ export function dispatch_normal_event(event) {
                     switch (event.property) {
                         case "default":
                             for (const [key, value] of Object.entries(event.data)) {
-                                realm["realm_" + key] = value;
+                                if (key === "max_file_upload_size_mib") {
+                                    realm[key] = value;
+                                } else {
+                                    realm["realm_" + key] = value;
+                                }
+
                                 if (Object.hasOwn(realm_settings, key)) {
                                     settings_org.sync_realm_settings(key);
                                 }
@@ -294,6 +297,10 @@ export function dispatch_normal_event(event) {
                                     settings_invites.update_invite_user_panel();
                                     sidebar_ui.update_invite_user_option();
                                     gear_menu.rerender();
+                                }
+
+                                if (key === "can_add_custom_emoji_group") {
+                                    settings_emoji.update_custom_emoji_ui();
                                 }
 
                                 if (
@@ -317,6 +324,10 @@ export function dispatch_normal_event(event) {
 
                                 if (key === "edit_topic_policy") {
                                     message_live_update.rerender_messages_view();
+                                }
+
+                                if (key === "plan_type") {
+                                    gear_menu.rerender();
                                 }
                             }
                             if (event.data.authentication_methods !== undefined) {
@@ -400,6 +411,13 @@ export function dispatch_normal_event(event) {
             settings_exports.populate_exports_table(event.exports);
             break;
 
+        case "realm_export_consent":
+            settings_exports.update_export_consent_data_and_redraw({
+                user_id: event.user_id,
+                consented: event.consented,
+            });
+            break;
+
         case "realm_linkifiers":
             realm.realm_linkifiers = event.realm_linkifiers;
             linkifiers.update_linkifier_rules(realm.realm_linkifiers);
@@ -479,6 +497,13 @@ export function dispatch_normal_event(event) {
 
                     if (should_redraw) {
                         activity_ui.redraw_user(event.person.user_id);
+                    }
+
+                    if (!event.person.is_bot) {
+                        settings_exports.update_export_consent_data_and_redraw({
+                            user_id: event.person.user_id,
+                            consented: false,
+                        });
                     }
                     break;
                 }
@@ -942,9 +967,11 @@ export function dispatch_normal_event(event) {
                     break;
                 case "add_subgroups":
                     user_groups.add_subgroups(event.group_id, event.direct_subgroup_ids);
+                    user_group_edit.handle_subgroup_edit_event(event.group_id);
                     break;
                 case "remove_subgroups":
                     user_groups.remove_subgroups(event.group_id, event.direct_subgroup_ids);
+                    user_group_edit.handle_subgroup_edit_event(event.group_id);
                     break;
                 case "update":
                     user_groups.update(event);
@@ -982,7 +1009,10 @@ export function dispatch_normal_event(event) {
             break;
 
         case "user_topic":
-            user_topics_ui.handle_topic_updates(event);
+            user_topics_ui.handle_topic_updates(
+                event,
+                message_events.update_current_view_for_topic_visibility(),
+            );
             break;
     }
 }

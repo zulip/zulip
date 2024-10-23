@@ -187,7 +187,13 @@ export function get_list_info(
     }
 
     if (zoomed) {
-        topic_names = util.filter_by_word_prefix_match(topic_names, search_term, (item) => item);
+        const word_separator_regex = /[\s/:_-]/; // Use -, _, :, / as word separators in addition to spaces.
+        topic_names = util.filter_by_word_prefix_match(
+            topic_names,
+            search_term,
+            (topic) => topic,
+            word_separator_regex,
+        );
     }
 
     if (stream_muted && !zoomed) {

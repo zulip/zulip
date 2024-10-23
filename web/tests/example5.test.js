@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {make_user} = require("./lib/example_user");
 const {mock_esm, zrequire} = require("./lib/namespace");
@@ -27,8 +27,8 @@ const message_notifications = mock_esm("../src/message_notifications");
 const message_util = mock_esm("../src/message_util");
 const pm_list = mock_esm("../src/pm_list");
 const stream_list = mock_esm("../src/stream_list");
-const unread_ops = mock_esm("../src/unread_ops");
 const unread_ui = mock_esm("../src/unread_ui");
+const activity = mock_esm("../src/activity");
 
 message_lists.current = {
     data: {
@@ -46,6 +46,9 @@ message_lists.non_rendered_data = () => [];
 const message_events = zrequire("message_events");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
+const {initialize_user_settings} = zrequire("user_settings");
+
+initialize_user_settings({user_settings: {}});
 
 const isaac = make_user({
     email: "isaac@example.com",
@@ -102,8 +105,8 @@ run_test("insert_message", ({override}) => {
     helper.redirect(message_notifications, "received_messages");
     helper.redirect(message_util, "add_new_messages");
     helper.redirect(stream_list, "update_streams_sidebar");
-    helper.redirect(unread_ops, "process_visible");
     helper.redirect(unread_ui, "update_unread_counts");
+    helper.redirect(activity, "set_received_new_messages");
 
     message_events.insert_new_messages([new_message]);
 
@@ -115,7 +118,7 @@ run_test("insert_message", ({override}) => {
         [direct_message_group_data, "process_loaded_messages"],
         [message_util, "add_new_messages"],
         [unread_ui, "update_unread_counts"],
-        [unread_ops, "process_visible"],
+        [activity, "set_received_new_messages"],
         [message_notifications, "received_messages"],
         [stream_list, "update_streams_sidebar"],
     ]);

@@ -8,6 +8,7 @@ import * as channel from "./channel";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_recipient from "./compose_recipient";
 import * as direct_message_group_data from "./direct_message_group_data";
+import {Filter} from "./filter";
 import * as message_feed_loading from "./message_feed_loading";
 import * as message_feed_top_notices from "./message_feed_top_notices";
 import * as message_helper from "./message_helper";
@@ -20,6 +21,7 @@ import * as narrow_banner from "./narrow_banner";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as recent_view_ui from "./recent_view_ui";
+import type {NarrowTerm} from "./state_data";
 import {narrow_term_schema} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
@@ -213,38 +215,17 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
     process_result(data, opts);
 }
 
-// This function modifies the data.narrow filters to use integer IDs
-// instead of strings if it is supported. We currently don't set or
-// convert user emails to user IDs directly in the Filter code
-// because doing so breaks the app in various modules that expect a
-// string of user emails.
-function handle_operators_supporting_id_based_api(data: {
-    anchor: string | number;
-    num_before: number;
-    num_after: number;
-    client_gravatar: boolean;
-    narrow?: string;
-}): {
-    anchor: string | number;
-    num_before: number;
-    num_after: number;
-    client_gravatar: boolean;
-    narrow?: string;
-} {
-    const operators_supporting_ids = new Set(["dm", "pm-with"]);
-    const operators_supporting_id = new Set([
-        "id",
-        "stream",
-        "sender",
-        "group-pm-with",
-        "dm-including",
-    ]);
-
-    if (data.narrow === undefined) {
-        return data;
-    }
-
-    const parsed_narrow_data = z.array(narrow_term_schema).parse(JSON.parse(data.narrow));
+// This function modifies the narrow data to use integer IDs instead of
+// strings if it is supported for that operator. We currently don't set
+// or convert user emails to IDs directly in the Filter code because
+// doing so breaks the app in various modules that expect a string of
+// user emails.
+function handle_operators_supporting_id_based_api(narrow_parameter: string): string {
+    // We use the canonical operator when checking these sets, so legacy
+    // operators, such as "pm-with" and "stream", are not included here.
+    const operators_supporting_ids = new Set(["dm"]);
+    const operators_supporting_id = new Set(["id", "channel", "sender", "dm-including"]);
+    const parsed_narrow_data = z.array(narrow_term_schema).parse(JSON.parse(narrow_parameter));
 
     const narrow_terms: {
         operator: string;
@@ -258,31 +239,38 @@ function handle_operators_supporting_id_based_api(data: {
             negated?: boolean | undefined;
         } = raw_term;
 
-        if (operators_supporting_ids.has(raw_term.operator)) {
+        const canonical_operator = Filter.canonicalize_operator(raw_term.operator);
+
+        if (operators_supporting_ids.has(canonical_operator)) {
             const user_ids_array = people.emails_strings_to_user_ids_array(raw_term.operand);
             assert(user_ids_array !== undefined);
             narrow_term.operand = user_ids_array;
         }
 
-        if (operators_supporting_id.has(raw_term.operator)) {
-            if (raw_term.operator === "id") {
+        if (operators_supporting_id.has(canonical_operator)) {
+            if (canonical_operator === "id") {
                 // The message ID may not exist locally,
                 // so send the term to the server as is.
                 narrow_terms.push(narrow_term);
                 continue;
             }
 
-            if (raw_term.operator === "stream") {
-                const stream_id = stream_data.get_stream_id(raw_term.operand);
-                if (stream_id !== undefined) {
-                    narrow_term.operand = stream_id;
+            if (canonical_operator === "channel") {
+                // An unknown channel will have an empty string set for
+                // the operand. And the page_params.narrow may have a
+                // channel name as the operand. But all other cases
+                // should have the channel ID set as the string value
+                // for the operand.
+                const stream = stream_data.get_sub_by_id_string(raw_term.operand);
+                if (stream !== undefined) {
+                    narrow_term.operand = stream.stream_id;
                 }
-
                 narrow_terms.push(narrow_term);
                 continue;
             }
 
-            // The other operands supporting object IDs all work with user objects.
+            // The other operands supporting integer IDs all work with
+            // a single user object.
             const person = people.get_by_email(raw_term.operand);
             if (person !== undefined) {
                 narrow_term.operand = person.user_id;
@@ -291,8 +279,7 @@ function handle_operators_supporting_id_based_api(data: {
         narrow_terms.push(narrow_term);
     }
 
-    data.narrow = JSON.stringify(narrow_terms);
-    return data;
+    return JSON.stringify(narrow_terms);
 }
 
 export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
@@ -303,7 +290,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         // the nearest integer before sending a request to the server.
         opts.anchor = opts.anchor.toFixed(0);
     }
-    let data: {
+    const data: {
         anchor: number | string;
         num_before: number;
         num_after: number;
@@ -327,41 +314,31 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
     // But support for the all_messages_data sharing of data with
     // the combined feed view and the (hacky) page_params.narrow feature
     // requires a somewhat ugly bundle of conditionals.
-    if (msg_list_data.filter.is_in_home()) {
-        if (page_params.narrow_stream !== undefined) {
-            data.narrow = JSON.stringify(page_params.narrow);
-        }
-        // Otherwise, we don't pass narrow for the combined feed view; this is
-        // required to display messages if their muted status changes without a new
-        // network request, and so we need the server to send us message history from muted
-        // streams and topics even though the combined feed view's in:home
-        // operators will filter those.
-    } else {
-        let terms = msg_list_data.filter.public_terms();
-        if (page_params.narrow !== undefined) {
-            terms = [...terms, ...page_params.narrow];
-        }
-        // TODO(stream_id): The server would ideally work with stream ids instead
-        // of stream names.
-        const server_terms = [];
-        for (const term of terms) {
-            if (term.operator === "channel") {
-                const sub = stream_data.get_sub_by_id_string(term.operand);
-                server_terms.push({
-                    ...term,
-                    // If we can't find the sub, we shouldn't send `undefined`
-                    // because we want to preserve the NarrowTerm type, so we just
-                    // send the unknown stream id.
-                    // This should show a "this channel does not exist or is private"
-                    // notice (both logged in and logged out).
-                    operand: sub?.name ?? term.operand,
-                });
-            } else {
-                server_terms.push({...term});
-            }
-        }
-
-        data.narrow = JSON.stringify(server_terms);
+    let narrow_data: NarrowTerm[] = [];
+    if (!msg_list_data.filter.is_in_home()) {
+        narrow_data = msg_list_data.filter.public_terms();
+    }
+    if (page_params.narrow !== undefined) {
+        narrow_data = [...narrow_data, ...page_params.narrow];
+    }
+    if (page_params.is_spectator) {
+        const web_public_narrow: NarrowTerm[] = [
+            {operator: "channels", operand: "web-public", negated: false},
+        ];
+        // This logic is not ideal in that, in theory, an existing `channels`
+        // operator could be present, but not in a useful way. We don't attempt
+        // to validate the narrow is compatible with spectators here; the server
+        // will return an error if appropriate.
+        narrow_data = [...narrow_data, ...web_public_narrow];
+    }
+    // We don't pass a narrow for the non-spectator, combined feed view; this
+    // is required to display messages if their muted status changes without
+    // a new network request, and so we need the server to send the message
+    // history from muted streams and topics even though the combined feed
+    // view's "in:home" narrow term will filter those.
+    if (narrow_data.length > 0) {
+        const narrow_param_string = JSON.stringify(narrow_data);
+        data.narrow = handle_operators_supporting_id_based_api(narrow_param_string);
     }
 
     let update_loading_indicator =
@@ -378,37 +355,6 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         msg_list_data.fetch_status.start_newer_batch({
             update_loading_indicator,
         });
-    }
-
-    data = handle_operators_supporting_id_based_api(data);
-
-    if (page_params.is_spectator) {
-        // This is a bit of a hack; ideally we'd unify this logic in
-        // some way with the above logic, and not need to do JSON
-        // parsing/stringifying here.
-        const web_public_narrow = {negated: false, operator: "channels", operand: "web-public"};
-
-        if (!data.narrow) {
-            /* For the combined feed, this will be the only operator. */
-            data.narrow = JSON.stringify([web_public_narrow]);
-        } else {
-            // Otherwise, we append the operator.  This logic is not
-            // ideal in that in theory an existing `streams:` operator
-            // could be present, but not in a useful way.  We don't
-            // attempt to validate the narrow is compatible with
-            // spectators here; the server will return an error if
-            // appropriate.
-            const narrow_schema = z.array(
-                z.object({
-                    operator: z.string(),
-                    operand: z.union([z.string(), z.number(), z.array(z.number())]),
-                    negated: z.optional(z.boolean()),
-                }),
-            );
-            const parsed_narrow_data = narrow_schema.parse(JSON.parse(data.narrow));
-            parsed_narrow_data.push(web_public_narrow);
-            data.narrow = JSON.stringify(parsed_narrow_data);
-        }
     }
 
     void channel.get({

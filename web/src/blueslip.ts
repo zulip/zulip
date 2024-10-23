@@ -93,7 +93,7 @@ export function error(msg: string, more_info?: object, original_error?: unknown)
     // Note that original_error could be of any type, because you can "raise"
     // any type -- something we do see in practice with the error
     // object being "dead": https://github.com/zulip/zulip/issues/18374
-    Sentry.getCurrentHub().captureException(new Error(msg, {cause: original_error}));
+    Sentry.captureException(new Error(msg, {cause: original_error}));
 
     const args = build_arg_list(msg, more_info);
     logger.error(...args);

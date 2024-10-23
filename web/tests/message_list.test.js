@@ -1,13 +1,12 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {current_user} = require("./lib/zpage_params");
 
 // These unit tests for web/src/message_list.ts emphasize the model-ish
 // aspects of the MessageList class.  We have to stub out a few functions
@@ -42,6 +41,10 @@ mock_esm("../src/message_list_view", {
     MessageListView,
 });
 const {Filter} = zrequire("filter");
+const {set_current_user} = zrequire("state_data");
+
+const current_user = {};
+set_current_user(current_user);
 
 run_test("basics", ({override}) => {
     override(activity_ui, "build_user_sidebar", noop);
@@ -230,7 +233,7 @@ run_test("change_message_id", () => {
     assert.equal(list.change_message_id(13, 15), undefined);
 });
 
-run_test("last_sent_by_me", () => {
+run_test("last_sent_by_me", ({override}) => {
     const list = new MessageList({
         data: new MessageListData({
             excludes_muted_topics: false,
@@ -253,7 +256,7 @@ run_test("last_sent_by_me", () => {
     ];
 
     list.append(items);
-    current_user.user_id = 3;
+    override(current_user, "user_id", 3);
     // Look for the last message where user_id == 3 (our ID)
     assert.equal(list.get_last_message_sent_by_me().id, 2);
 });

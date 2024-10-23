@@ -30,6 +30,10 @@ const todo_widget_inbound_data = z.intersection(
     z.record(z.string(), z.unknown()),
 );
 
+// TODO: This schema is being used to parse two completely
+// different types of things (inbound and outbound data),
+// which should be refactored so that the code here is
+// clearer and less confusing.
 const new_task_inbound_data_schema = z.object({
     type: z.literal("new_task").optional(),
     key: z.number().int().nonnegative().max(MAX_IDX),

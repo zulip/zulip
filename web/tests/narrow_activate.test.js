@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
@@ -31,6 +31,7 @@ const message_lists = mock_esm("../src/message_lists", {
                 removeClass: noop,
                 addClass: noop,
             },
+            update_sticky_recipient_headers: noop,
         },
         data: {
             filter: new Filter([{operator: "in", operand: "all"}]),
@@ -79,6 +80,9 @@ const narrow_state = zrequire("narrow_state");
 const stream_data = zrequire("stream_data");
 const message_view = zrequire("message_view");
 const people = zrequire("people");
+const {set_realm} = zrequire("state_data");
+
+set_realm({});
 
 const denmark = {
     subscribed: false,
@@ -141,6 +145,7 @@ function stub_message_list() {
                 removeClass: noop,
                 addClass: noop,
             },
+            update_sticky_recipient_headers: noop,
         };
 
         get(msg_id) {

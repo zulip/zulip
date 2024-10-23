@@ -80,6 +80,7 @@ from zerver.models import (
     Client,
     CustomProfileField,
     Draft,
+    NamedUserGroup,
     Realm,
     RealmUserDefault,
     Recipient,
@@ -349,7 +350,7 @@ def fetch_initial_state_data(
 
         # Important: Encode units in the client-facing API name.
         state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE_MIB
-        state["max_file_upload_size_mib"] = settings.MAX_FILE_UPLOAD_SIZE
+        state["max_file_upload_size_mib"] = realm.get_max_file_upload_size_mebibytes()
         state["max_icon_file_size_mib"] = settings.MAX_ICON_FILE_SIZE_MIB
         upload_quota_bytes = realm.upload_quota_bytes()
         state["realm_upload_quota_mib"] = optional_bytes_to_mib(upload_quota_bytes)
@@ -1092,11 +1093,42 @@ def apply_event(
                 if "new_email" in person:
                     p["email"] = person["new_email"]
 
-                if "is_active" in person and not person["is_active"] and include_subscribers:
-                    for sub in state["subscriptions"]:
-                        sub["subscribers"] = [
-                            user_id for user_id in sub["subscribers"] if user_id != person_user_id
+                if "is_active" in person and not person["is_active"]:
+                    if include_subscribers:
+                        for sub_dict in [
+                            state["subscriptions"],
+                            state["unsubscribed"],
+                            state["never_subscribed"],
+                        ]:
+                            for sub in sub_dict:
+                                sub["subscribers"] = [
+                                    user_id
+                                    for user_id in sub["subscribers"]
+                                    if user_id != person_user_id
+                                ]
+
+                    for user_group in state["realm_user_groups"]:
+                        user_group["members"] = [
+                            user_id
+                            for user_id in user_group["members"]
+                            if user_id != person_user_id
                         ]
+
+                    for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+                        if not isinstance(state["realm_" + setting_name], int):
+                            state["realm_" + setting_name].direct_members = [
+                                user_id
+                                for user_id in state["realm_" + setting_name].direct_members
+                                if user_id != person_user_id
+                            ]
+                    for group in state["realm_user_groups"]:
+                        for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
+                            if not isinstance(group[setting_name], int):
+                                group[setting_name].direct_members = [
+                                    user_id
+                                    for user_id in group[setting_name].direct_members
+                                    if user_id != person_user_id
+                                ]
         elif event["op"] == "remove":
             if person_user_id in state["raw_users"]:
                 if user_list_incomplete:
@@ -1108,10 +1140,15 @@ def apply_event(
                     state["raw_users"][person_user_id] = inaccessible_user_dict
 
             if include_subscribers:
-                for sub in state["subscriptions"]:
-                    sub["subscribers"] = [
-                        user_id for user_id in sub["subscribers"] if user_id != person_user_id
-                    ]
+                for sub_dict in [
+                    state["subscriptions"],
+                    state["unsubscribed"],
+                    state["never_subscribed"],
+                ]:
+                    for sub in sub_dict:
+                        sub["subscribers"] = [
+                            user_id for user_id in sub["subscribers"] if user_id != person_user_id
+                        ]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_bot":
@@ -1242,13 +1279,6 @@ def apply_event(
             field = "realm_" + event["property"]
             state[field] = event["value"]
 
-            if event["property"] == "plan_type":
-                # Then there are some extra fields that also need to be set.
-                state["zulip_plan_is_not_limited"] = event["value"] != Realm.PLAN_TYPE_LIMITED
-                # upload_quota is in bytes, so we need to convert it to MiB.
-                upload_quota_bytes = event["extra_data"]["upload_quota"]
-                state["realm_upload_quota_mib"] = optional_bytes_to_mib(upload_quota_bytes)
-
             if field == "realm_jitsi_server_url":
                 state["jitsi_server_url"] = (
                     state["realm_jitsi_server_url"]
@@ -1278,6 +1308,10 @@ def apply_event(
                 )
         elif event["op"] == "update_dict":
             for key, value in event["data"].items():
+                if key == "max_file_upload_size_mib":
+                    state["max_file_upload_size_mib"] = value
+                    continue
+
                 state["realm_" + key] = value
                 # It's a bit messy, but this is where we need to
                 # update the state for whether password authentication
@@ -1326,6 +1360,10 @@ def apply_event(
                         or state["can_create_public_streams"]
                         or state["can_create_web_public_streams"]
                     )
+
+                if key == "plan_type":
+                    # Then there are some extra fields that also need to be set.
+                    state["zulip_plan_is_not_limited"] = value != Realm.PLAN_TYPE_LIMITED
         elif event["op"] == "deactivated":
             # The realm has just been deactivated.  If our request had
             # arrived a moment later, we'd have rendered the
@@ -1524,6 +1562,10 @@ def apply_event(
         state["realm_emoji"] = event["realm_emoji"]
     elif event["type"] == "realm_export":
         # These realm export events are only available to
+        # administrators, and aren't included in page_params.
+        pass
+    elif event["type"] == "realm_export_consent":
+        # These 'realm_export_consent' events are only available to
         # administrators, and aren't included in page_params.
         pass
     elif event["type"] == "alert_words":

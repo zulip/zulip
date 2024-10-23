@@ -233,7 +233,7 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     const last_comma_index = operand.lastIndexOf(",");
     let all_but_last_part;
     let last_part;
-    if (last_comma_index < 0) {
+    if (last_comma_index === -1) {
         all_but_last_part = operand;
         last_part = "";
     } else {

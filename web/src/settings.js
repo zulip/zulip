@@ -122,8 +122,8 @@ export function build_page() {
         realm_name_in_email_notifications_policy_values:
             settings_config.realm_name_in_email_notifications_policy_values,
         desktop_icon_count_display_values: settings_config.desktop_icon_count_display_values,
-        show_push_notifications_tooltip:
-            settings_config.all_notifications(user_settings).show_push_notifications_tooltip,
+        disabled_notification_settings:
+            settings_config.all_notifications(user_settings).disabled_notification_settings,
         information_section_checkbox_group: settings_config.information_section_checkbox_group,
         information_density_settings: settings_config.get_information_density_preferences(),
         settings_render_only: settings_config.get_settings_render_only(),

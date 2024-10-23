@@ -119,7 +119,7 @@ def parser() -> argparse.ArgumentParser:
 
 def maybe_gzip(logfile_name: str) -> TextIO:
     if logfile_name.endswith(".gz"):
-        return gzip.open(logfile_name, "rt")
+        return gzip.open(logfile_name, "rt")  # noqa: SIM115
     return open(logfile_name)  # noqa: SIM115
 
 

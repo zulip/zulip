@@ -6,20 +6,21 @@
     glorified wrappers for peer_data functions.
 */
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {current_user, page_params} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
+const {set_current_user} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 
-current_user.is_admin = false;
+set_current_user({});
+
 page_params.realm_users = [];
-current_user.is_guest = false;
 
 const me = {
     email: "me@zulip.com",
@@ -42,6 +43,13 @@ const george = {
     email: "george@zulip.com",
     full_name: "George",
     user_id: 103,
+};
+const bot_botson = {
+    email: "botson-bot@example.com",
+    user_id: 35,
+    full_name: "Bot Botson",
+    is_bot: true,
+    role: 300,
 };
 
 function contains_sub(subs, sub) {
@@ -290,4 +298,21 @@ test("is_subscriber_subset", () => {
     blueslip.expect("warn", "We called get_user_set for an untracked stream: undefined");
     peer_data.is_subscriber_subset(undefined, sub_a.stream_id);
     blueslip.reset();
+});
+
+test("get_unique_subscriber_count_for_streams", () => {
+    const sub = {name: "Rome", subscribed: true, stream_id: 1001};
+    stream_data.add_sub(sub);
+
+    people.add_active_user(fred);
+    people.add_active_user(gail);
+    people.add_active_user(george);
+    people.add_active_user(bot_botson);
+
+    const stream_id = sub.stream_id;
+    peer_data.set_subscribers(stream_id, [me.user_id, fred.user_id, bot_botson.user_id]);
+
+    const count = peer_data.get_unique_subscriber_count_for_streams([stream_id]);
+
+    assert.equal(count, 2);
 });

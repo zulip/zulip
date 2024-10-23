@@ -5,11 +5,15 @@ using [user groups](/help/user-groups), which offer much more flexible
 configuration than the older [roles](/api/roles-and-permissions) system.
 
 !!! warn ""
+    Note that many group-valued settings are configured to require
+    a single system group for their value via
+    `server_supported_permission_settings`, pending web app UI
+    changes to fully support group-setting values.
 
-    This API feature is under development, and currently only values that
-    correspond to a single named user group are permitted in
-    production environments, pending the web application UI supporting
-    displaying more complex values correctly.
+    **Changes**: Before Zulip 10.0 (feature level 309), only system
+    groups were permitted values for group-setting values in
+    production environments, regardless of the values in
+    `server_supported_permission_settings`.
 
 In the API, these settings are represented using a **group-setting
 value**, which can take two forms:
@@ -88,3 +92,29 @@ accidentally reverts the first one without either user noticing.
 Omitting `old` is appropriate where the intent really is a new complete
 list rather than an edit, for example in an integration that syncs the
 list from an external source of truth.
+
+## Permitted values
+
+Not every possible group-setting value is a valid configuration for a
+given group-based setting. For example, as a security hardening
+measure, some administrative permissions should never be exercised by
+guest users, and the system group for all users, including guests,
+should not be offered to users as an option for those settings.
+
+Others have restrictions to only permit system groups due to UI
+components not yet having been migrated to support a broader set of
+values. In order to avoid this configuration ending up hardcoded in
+clients, every permission setting using this framework has an entry in
+the `server_supported_permission_settings` section of the [`POST
+/register`](/api/register-queue) response.
+
+Clients that support mutating group-settings values must parse that
+part of the `register` payload in order to compute the set of
+permitted values to offer to the user and avoid server-side errors
+when trying to save a value.
+
+Note specifically that the `allow_everyone_group` field, which
+determines whether the setting can have the value of "all user
+accounts, including guests" also controls whether guests users can
+exercise the permission regardless of their membership in the
+group-setting value.

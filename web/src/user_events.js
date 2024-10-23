@@ -16,6 +16,7 @@ import * as pm_list from "./pm_list";
 import * as settings from "./settings";
 import * as settings_account from "./settings_account";
 import * as settings_config from "./settings_config";
+import * as settings_exports from "./settings_exports";
 import * as settings_linkifiers from "./settings_linkifiers";
 import * as settings_org from "./settings_org";
 import * as settings_profile_fields from "./settings_profile_fields";
@@ -24,6 +25,7 @@ import * as settings_streams from "./settings_streams";
 import * as settings_users from "./settings_users";
 import {current_user, realm} from "./state_data";
 import * as stream_events from "./stream_events";
+import * as user_group_edit from "./user_group_edit";
 import * as user_profile from "./user_profile";
 
 export const update_person = function update(person) {
@@ -179,12 +181,16 @@ export const update_person = function update(person) {
         } else {
             people.deactivate(person_obj);
             stream_events.remove_deactivated_user_from_all_streams(person.user_id);
+            user_group_edit.remove_deactivated_user_from_all_groups(person.user_id);
             settings_users.update_view_on_deactivate(person.user_id);
             buddy_list.maybe_remove_user_id({user_id: person.user_id});
         }
         settings_account.maybe_update_deactivate_account_button();
         if (people.is_valid_bot_user(person.user_id)) {
             settings_users.update_bot_data(person.user_id);
+        } else if (!person.is_active) {
+            // A human user deactivated, update 'Export permissions' table.
+            settings_exports.remove_export_consent_data_and_redraw(person.user_id);
         }
     }
 };

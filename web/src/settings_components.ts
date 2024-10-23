@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 import {z} from "zod";
@@ -18,14 +19,18 @@ import {
     NON_COMPACT_MODE_LINE_HEIGHT_PERCENT,
 } from "./information_density";
 import * as people from "./people";
-import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
+import {
+    realm_default_settings_schema,
+    realm_user_settings_defaults,
+} from "./realm_user_settings_defaults";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
-import type {CustomProfileField, group_setting_type_schema} from "./state_data";
-import {realm} from "./state_data";
+import type {CustomProfileField, GroupSettingValue} from "./state_data";
+import {current_user, realm, realm_schema} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
+import {stream_subscription_schema} from "./sub_store";
 import type {GroupSettingPillContainer} from "./typeahead_helper";
 import type {HTMLSelectOneElement} from "./types";
 import * as user_group_pill from "./user_group_pill";
@@ -42,7 +47,7 @@ type SettingOptionValue = {
     description: string;
 };
 
-type SettingOptionValueWithKey = SettingOptionValue & {key: string};
+export type SettingOptionValueWithKey = SettingOptionValue & {key: string};
 
 export function get_sorted_options_list(
     option_values_object: Record<string, SettingOptionValue>,
@@ -75,10 +80,13 @@ export function get_sorted_options_list(
     return options_list;
 }
 
-type MessageTimeLimitSetting =
-    | "realm_message_content_edit_limit_seconds"
-    | "realm_move_messages_between_streams_limit_seconds"
+export type MessageMoveTimeLimitSetting =
     | "realm_move_messages_within_stream_limit_seconds"
+    | "realm_move_messages_between_streams_limit_seconds";
+
+export type MessageTimeLimitSetting =
+    | MessageMoveTimeLimitSetting
+    | "realm_message_content_edit_limit_seconds"
     | "realm_message_content_delete_limit_seconds";
 
 export function get_realm_time_limits_in_minutes(property: MessageTimeLimitSetting): string {
@@ -95,19 +103,31 @@ export function get_realm_time_limits_in_minutes(property: MessageTimeLimitSetti
 }
 
 type RealmSetting = typeof realm;
-type RealmSettingProperties = keyof RealmSetting | "realm_org_join_restrictions";
+export const realm_setting_property_schema = z.union([
+    realm_schema.keyof(),
+    z.literal("realm_org_join_restrictions"),
+]);
+type RealmSettingProperty = z.infer<typeof realm_setting_property_schema>;
 
 type RealmUserSettingDefaultType = typeof realm_user_settings_defaults;
-type RealmUserSettingDefaultProperties =
-    | keyof RealmUserSettingDefaultType
-    | "email_notification_batching_period_edit_minutes";
+export const realm_user_settings_default_properties_schema = z.union([
+    realm_default_settings_schema.keyof(),
+    z.literal("email_notification_batching_period_edit_minutes"),
+]);
+type RealmUserSettingDefaultProperties = z.infer<
+    typeof realm_user_settings_default_properties_schema
+>;
 
-type StreamSettingProperties = keyof StreamSubscription | "stream_privacy" | "is_default_stream";
+export const stream_settings_property_schema = z.union([
+    stream_subscription_schema.keyof(),
+    z.enum(["stream_privacy", "is_default_stream"]),
+]);
+type StreamSettingProperty = z.infer<typeof stream_settings_property_schema>;
 
 type valueof<T> = T[keyof T];
 
 export function get_realm_settings_property_value(
-    property_name: RealmSettingProperties,
+    property_name: RealmSettingProperty,
 ): valueof<RealmSetting> {
     if (property_name === "realm_org_join_restrictions") {
         if (realm.realm_emails_restricted_to_domains) {
@@ -126,7 +146,7 @@ export function get_realm_settings_property_value(
 }
 
 export function get_stream_settings_property_value(
-    property_name: StreamSettingProperties,
+    property_name: StreamSettingProperty,
     sub: StreamSubscription,
 ): valueof<StreamSubscription> {
     if (property_name === "stream_privacy") {
@@ -214,26 +234,22 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
     return [...$subsection.find(".prop-element")];
 }
 
-type simple_dropdown_realm_settings = Pick<
-    typeof realm,
-    | "realm_create_private_stream_policy"
-    | "realm_invite_to_stream_policy"
-    | "realm_user_group_edit_policy"
-    | "realm_add_custom_emoji_policy"
-    | "realm_invite_to_realm_policy"
-    | "realm_wildcard_mention_policy"
-    | "realm_move_messages_between_streams_policy"
-    | "realm_edit_topic_policy"
-    | "realm_org_type"
->;
+export const simple_dropdown_realm_settings_schema = realm_schema.pick({
+    realm_invite_to_stream_policy: true,
+    realm_invite_to_realm_policy: true,
+    realm_wildcard_mention_policy: true,
+    realm_edit_topic_policy: true,
+    realm_org_type: true,
+});
+export type SimpleDropdownRealmSettings = z.infer<typeof simple_dropdown_realm_settings_schema>;
 
 export function set_property_dropdown_value(
-    property_name: keyof simple_dropdown_realm_settings,
+    property_name: keyof SimpleDropdownRealmSettings,
 ): void {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const property_value = get_realm_settings_property_value(
         property_name,
-    ) as valueof<simple_dropdown_realm_settings>;
+    ) as valueof<SimpleDropdownRealmSettings>;
     $(`#id_${CSS.escape(property_name)}`).val(property_value);
 }
 
@@ -332,22 +348,6 @@ export function set_time_limit_setting(property_name: MessageTimeLimitSetting): 
     );
 }
 
-function check_valid_number_input(input_value: string, keep_number_as_float = false): number {
-    // This check is important to make sure that inputs like "24a" are
-    // considered invalid and this function returns NaN for such inputs.
-    // Number.parseInt and Number.parseFloat will convert strings like
-    // "24a" to 24.
-    if (Number.isNaN(Number(input_value))) {
-        return Number.NaN;
-    }
-
-    if (keep_number_as_float) {
-        return Number.parseFloat(Number.parseFloat(input_value).toFixed(1));
-    }
-
-    return Number.parseInt(input_value, 10);
-}
-
 function get_message_retention_setting_value(
     $input_elem: JQuery<HTMLSelectElement>,
     for_api_data = true,
@@ -374,7 +374,7 @@ function get_message_retention_setting_value(
     if (custom_input_val.length === 0) {
         return settings_config.retain_message_forever;
     }
-    return check_valid_number_input(custom_input_val);
+    return util.check_time_input(custom_input_val);
 }
 
 export const select_field_data_schema = z.record(z.object({text: z.string(), order: z.string()}));
@@ -472,8 +472,6 @@ function get_field_data_input_value($input_elem: JQuery): string | undefined {
     return JSON.stringify(proposed_value);
 }
 
-export let new_group_can_mention_group_widget: DropdownWidget | null = null;
-
 const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_new_stream_announcements_stream_id", null],
     ["realm_signup_announcements_stream_id", null],
@@ -482,12 +480,15 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_create_multiuse_invite_group", null],
     ["can_remove_subscribers_group", null],
     ["realm_can_access_all_users_group", null],
-    ["can_mention_group", null],
+    ["realm_can_add_custom_emoji_group", null],
+    ["realm_can_create_groups", null],
     ["realm_can_create_public_channel_group", null],
     ["realm_can_create_private_channel_group", null],
     ["realm_can_create_web_public_channel_group", null],
     ["realm_can_delete_any_message_group", null],
     ["realm_can_delete_own_message_group", null],
+    ["realm_can_manage_all_groups", null],
+    ["realm_can_move_messages_between_channels_group", null],
     ["realm_direct_message_initiator_group", null],
     ["realm_direct_message_permission_group", null],
 ]);
@@ -512,10 +513,6 @@ export function set_dropdown_setting_widget(property_name: string, widget: Dropd
     }
 
     dropdown_widget_map.set(property_name, widget);
-}
-
-export function set_new_group_can_mention_group_widget(widget: DropdownWidget): void {
-    new_group_can_mention_group_widget = widget;
 }
 
 export function set_dropdown_list_widget_setting_value(
@@ -637,7 +634,7 @@ export function change_save_button_state($element: JQuery, state: string): void 
     });
 }
 
-function get_input_type($input_elem: JQuery, input_type?: string): string {
+export function get_input_type($input_elem: JQuery, input_type?: string): string {
     if (input_type !== undefined && ["boolean", "string", "number"].includes(input_type)) {
         return input_type;
     }
@@ -649,7 +646,7 @@ function get_input_type($input_elem: JQuery, input_type?: string): string {
 export function get_input_element_value(
     input_elem: HTMLElement,
     input_type?: string,
-): boolean | number | string | null | undefined | GroupSettingType {
+): boolean | number | string | null | undefined | GroupSettingValue {
     const $input_elem = $(input_elem);
     input_type = get_input_type($input_elem, input_type);
     let input_value;
@@ -697,8 +694,12 @@ export function get_input_element_value(
             return $input_elem.find(".language_selection_button span").attr("data-language-code");
         case "auth-methods":
             return JSON.stringify(get_auth_method_list_data());
-        case "group-setting-type":
-            return get_group_setting_widget_value($input_elem);
+        case "group-setting-type": {
+            const setting_name = extract_property_name($input_elem);
+            const pill_widget = get_group_setting_widget(setting_name);
+            assert(pill_widget !== null);
+            return get_group_setting_widget_value(pill_widget);
+        }
         default:
             return undefined;
     }
@@ -740,7 +741,7 @@ export function get_auth_method_list_data(): Record<string, boolean> {
 }
 
 export function parse_time_limit($elem: JQuery<HTMLInputElement>): number {
-    const time_limit_in_minutes = check_valid_number_input($elem.val()!, true);
+    const time_limit_in_minutes = util.check_time_input($elem.val()!, true);
     return Math.floor(time_limit_in_minutes * 60);
 }
 
@@ -779,7 +780,7 @@ function get_time_limit_setting_value(
     if ($input_elem.attr("id") === "id_realm_waiting_period_threshold") {
         // For realm waiting period threshold setting, the custom input element contains
         // number of days.
-        return check_valid_number_input($custom_input_elem.val()!);
+        return util.check_time_input($custom_input_elem.val()!);
     }
 
     return parse_time_limit($custom_input_elem);
@@ -789,7 +790,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
     const $elem = $(elem);
 
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const property_name = extract_property_name($elem) as RealmSettingProperties;
+    const property_name = extract_property_name($elem) as RealmSettingProperty;
     const current_val = get_realm_settings_property_value(property_name);
     let proposed_val;
     switch (property_name) {
@@ -802,11 +803,15 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_default_code_block_language":
         case "realm_create_multiuse_invite_group":
         case "realm_can_access_all_users_group":
+        case "realm_can_add_custom_emoji_group":
+        case "realm_can_create_groups":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
         case "realm_can_create_web_public_channel_group":
         case "realm_can_delete_any_message_group":
         case "realm_can_delete_own_message_group":
+        case "realm_can_manage_all_groups":
+        case "realm_can_move_messages_between_channels_group":
         case "realm_direct_message_initiator_group":
         case "realm_direct_message_permission_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
@@ -848,7 +853,7 @@ export function check_stream_settings_property_changed(
 ): boolean {
     const $elem = $(elem);
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const property_name = extract_property_name($elem) as StreamSettingProperties;
+    const property_name = extract_property_name($elem) as StreamSettingProperty;
     const current_val = get_stream_settings_property_value(property_name, sub);
     let proposed_val;
     switch (property_name) {
@@ -872,11 +877,9 @@ export function check_stream_settings_property_changed(
     return current_val !== proposed_val;
 }
 
-export function get_group_setting_widget_value($input_elem: JQuery): GroupSettingType {
-    const setting_name = extract_property_name($input_elem);
-    const pill_widget = get_group_setting_widget(setting_name);
-    assert(pill_widget !== null);
-
+export function get_group_setting_widget_value(
+    pill_widget: GroupSettingPillContainer,
+): GroupSettingValue {
     const setting_pills = pill_widget.items();
     const direct_subgroups: number[] = [];
     const direct_members: number[] = [];
@@ -912,12 +915,16 @@ export function check_group_property_changed(elem: HTMLElement, group: UserGroup
     const current_val = get_group_property_value(property_name, group);
     let proposed_val;
     switch (property_name) {
+        case "can_add_members_group":
+        case "can_join_group":
+        case "can_leave_group":
         case "can_manage_group":
-            proposed_val = get_group_setting_widget_value($elem);
+        case "can_mention_group": {
+            const pill_widget = get_group_setting_widget(property_name);
+            assert(pill_widget !== null);
+            proposed_val = get_group_setting_widget_value(pill_widget);
             break;
-        case "can_mention_group":
-            proposed_val = get_dropdown_list_widget_setting_value($elem);
-            break;
+        }
         default:
             if (current_val !== undefined) {
                 proposed_val = get_input_element_value(elem, typeof current_val);
@@ -925,7 +932,7 @@ export function check_group_property_changed(elem: HTMLElement, group: UserGroup
                 blueslip.error("Element refers to unknown property", {property_name});
             }
     }
-    return current_val !== proposed_val;
+    return !_.isEqual(current_val, proposed_val);
 }
 
 export function check_custom_profile_property_changed(
@@ -1037,18 +1044,22 @@ export function populate_data_for_realm_settings_request(
                 }
 
                 const realm_group_settings_using_new_api_format = new Set([
+                    "can_add_custom_emoji_group",
+                    "can_create_groups",
                     "can_create_private_channel_group",
                     "can_create_public_channel_group",
                     "can_create_web_public_channel_group",
+                    "can_manage_all_groups",
                     "can_delete_any_message_group",
                     "can_delete_own_message_group",
+                    "can_move_messages_between_channels_group",
                     "direct_message_initiator_group",
                     "direct_message_permission_group",
                 ]);
                 if (realm_group_settings_using_new_api_format.has(property_name)) {
                     const old_value = get_realm_settings_property_value(
                         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-                        ("realm_" + property_name) as RealmSettingProperties,
+                        ("realm_" + property_name) as RealmSettingProperty,
                     );
                     data[property_name] = JSON.stringify({
                         new: input_value,
@@ -1309,7 +1320,7 @@ function should_disable_save_button_for_time_limit_settings(
         const $custom_input_elem = $(setting_elem).find<HTMLInputElement>(
             "input.time-limit-custom-input",
         );
-        const custom_input_elem_val = check_valid_number_input($custom_input_elem.val()!);
+        const custom_input_elem_val = util.check_time_input($custom_input_elem.val()!);
 
         const for_realm_default_settings =
             $dropdown_elem.closest(".settings-section.show").attr("id") ===
@@ -1375,7 +1386,7 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
 export function initialize_disable_btn_hint_popover(
     $btn_wrapper: JQuery,
     hint_text: string | undefined,
-    opts: Partial<tippy.Props>,
+    opts: Partial<tippy.Props> = {},
 ): void {
     const tippy_opts: Partial<tippy.Props> = {
         animation: false,
@@ -1392,9 +1403,27 @@ export function initialize_disable_btn_hint_popover(
     tippy.default(util.the($btn_wrapper), tippy_opts);
 }
 
-const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
+export function enable_opening_typeahead_on_clicking_label($container: JQuery): void {
+    const $group_setting_labels = $container.find(".group-setting-label");
+    $group_setting_labels.on("click", (e) => {
+        // Click opens the typeahead.
+        $(e.target).siblings(".pill-container").find(".input").expectOne().trigger("click");
+        // Focus puts the cursor into the input.
+        $(e.target).siblings(".pill-container").find(".input").expectOne().trigger("focus");
+    });
+}
+
+export function disable_opening_typeahead_on_clicking_label($container: JQuery): void {
+    const $group_setting_labels = $container.find(".group-setting-label");
+    $group_setting_labels.off("click");
+}
+
+export const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
+    ["can_add_members_group", null],
+    ["can_join_group", null],
+    ["can_leave_group", null],
     ["can_manage_group", null],
-    ["new_group_can_manage_group", null],
+    ["can_mention_group", null],
 ]);
 
 export function get_group_setting_widget(setting_name: string): GroupSettingPillContainer | null {
@@ -1409,11 +1438,9 @@ export function get_group_setting_widget(setting_name: string): GroupSettingPill
 }
 
 export function set_group_setting_widget_value(
-    property_name: string,
-    property_value: GroupSettingType,
+    pill_widget: GroupSettingPillContainer,
+    property_value: GroupSettingValue,
 ): void {
-    const pill_widget = get_group_setting_widget(property_name);
-    assert(pill_widget !== null);
     pill_widget.clear();
 
     if (typeof property_value === "number") {
@@ -1437,9 +1464,12 @@ export function set_group_setting_widget_value(
     }
 }
 
-export type GroupSettingType = z.output<typeof group_setting_type_schema>;
-
-type group_setting_name = "can_manage_group";
+type group_setting_name =
+    | "can_add_members_group"
+    | "can_join_group"
+    | "can_leave_group"
+    | "can_manage_group"
+    | "can_mention_group";
 
 export function create_group_setting_widget({
     $pill_container,
@@ -1451,7 +1481,7 @@ export function create_group_setting_widget({
     setting_name: group_setting_name;
     setting_type: "realm" | "stream" | "group";
     group?: UserGroup;
-}): void {
+}): GroupSettingPillContainer {
     const pill_widget = group_setting_pill.create_pills(
         $pill_container,
         setting_name,
@@ -1464,14 +1494,12 @@ export function create_group_setting_widget({
     };
     group_setting_pill.set_up_pill_typeahead({pill_widget, $pill_container, opts});
 
-    if (group === undefined) {
-        group_setting_widget_map.set("new_group_" + setting_name, pill_widget);
-    } else {
+    if (group !== undefined) {
         group_setting_widget_map.set(setting_name, pill_widget);
     }
 
     if (group !== undefined) {
-        set_group_setting_widget_value(setting_name, group[setting_name]);
+        set_group_setting_widget_value(pill_widget, group[setting_name]);
 
         pill_widget.onPillCreate(() => {
             save_discard_group_widget_status_handler($("#group_permission_settings"), group);
@@ -1484,7 +1512,16 @@ export function create_group_setting_widget({
             setting_name,
             "group",
         )!.default_group_name;
-        const default_group_id = user_groups.get_user_group_from_name(default_group_name)!.id;
-        set_group_setting_widget_value("new_group_" + setting_name, default_group_id);
+        if (default_group_name === "group_creator") {
+            set_group_setting_widget_value(pill_widget, {
+                direct_members: [current_user.user_id],
+                direct_subgroups: [],
+            });
+        } else {
+            const default_group_id = user_groups.get_user_group_from_name(default_group_name)!.id;
+            set_group_setting_widget_value(pill_widget, default_group_id);
+        }
     }
+
+    return pill_widget;
 }

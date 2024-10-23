@@ -1,12 +1,11 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {user_settings} = require("./lib/zpage_params");
 
 const user_pill = mock_esm("../src/user_pill");
 const messages_overlay_ui = mock_esm("../src/messages_overlay_ui");
@@ -17,6 +16,9 @@ const compose_state = zrequire("compose_state");
 const compose_recipient = zrequire("compose_recipient");
 const sub_store = zrequire("sub_store");
 const stream_data = zrequire("stream_data");
+const {initialize_user_settings} = zrequire("user_settings");
+
+initialize_user_settings({user_settings: {}});
 
 const aaron = {
     email: "aaron@zulip.com",
@@ -58,7 +60,6 @@ mock_esm("tippy.js", {
     },
     delegate: noop,
 });
-user_settings.twenty_four_hour_time = false;
 
 const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");

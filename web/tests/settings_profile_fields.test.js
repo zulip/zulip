@@ -1,11 +1,10 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
+const {mock_esm, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {current_user, realm} = require("./lib/zpage_params");
 
 const loading = mock_esm("../src/loading");
 
@@ -49,40 +48,44 @@ const Sortable = {create: noop};
 
 mock_esm("sortablejs", {default: Sortable});
 
+mock_esm("../src/list_widget", {
+    generic_sort_functions: noop,
+    create(_container, custom_profile_data, opts) {
+        for (const item of custom_profile_data) {
+            opts.modifier_html(item);
+        }
+    },
+});
+
 const settings_profile_fields = zrequire("settings_profile_fields");
+const {set_current_user, set_realm} = zrequire("state_data");
+
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
 
 function test_populate(opts, template_data) {
-    const fields_data = opts.fields_data;
+    with_overrides(({override}) => {
+        const fields_data = opts.fields_data;
 
-    realm.custom_profile_field_types = custom_profile_field_types;
-    current_user.is_admin = opts.is_admin;
-    const $table = $("#admin_profile_fields_table");
-    const $rows = $.create("rows");
-    const $form = $.create("forms");
-    $table.set_find_results("tr.profile-field-row", $rows);
-    $table.set_find_results("tr.profile-field-form", $form);
+        override(realm, "custom_profile_field_types", custom_profile_field_types);
+        override(current_user, "is_admin", opts.is_admin);
+        const $table = $("#admin_profile_fields_table");
 
-    $table[0] = "stub";
+        $table[0] = "stub";
 
-    $rows.remove = noop;
-    $form.remove = noop;
+        loading.destroy_indicator = noop;
 
-    let num_appends = 0;
-    $table.append = () => {
-        num_appends += 1;
-    };
+        settings_profile_fields.do_populate_profile_fields(fields_data);
 
-    loading.destroy_indicator = noop;
-
-    settings_profile_fields.do_populate_profile_fields(fields_data);
-
-    assert.deepEqual(template_data, opts.expected_template_data);
-    assert.equal(num_appends, fields_data.length);
+        assert.deepEqual(template_data, opts.expected_template_data);
+    });
 }
 
-run_test("populate_profile_fields", ({mock_template}) => {
-    realm.custom_profile_fields = {};
-    realm.realm_default_external_accounts = JSON.stringify({});
+run_test("populate_profile_fields", ({mock_template, override}) => {
+    override(realm, "custom_profile_fields", {});
+    override(realm, "realm_default_external_accounts", JSON.stringify({}));
 
     $("#admin_profile_fields_table .display_in_profile_summary_false").toggleClass = noop;
 

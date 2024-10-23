@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
@@ -25,9 +25,15 @@ mock_esm("../src/hash_parser", {
 });
 set_global("page_params", {});
 
+const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const stream_settings_ui = zrequire("stream_settings_ui");
 const user_groups = zrequire("user_groups");
+const {initialize_user_settings} = zrequire("user_settings");
+
+set_realm({});
+set_current_user({});
+initialize_user_settings({user_settings: {}});
 
 run_test("redraw_left_panel", ({mock_template}) => {
     const admins_group = {

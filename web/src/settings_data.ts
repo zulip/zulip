@@ -4,7 +4,7 @@ import * as group_permission_settings from "./group_permission_settings";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import {current_user, realm} from "./state_data";
-import type {GroupSettingType} from "./state_data";
+import type {GroupSettingValue} from "./state_data";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
 
@@ -110,10 +110,14 @@ function user_has_permission(policy_value: number): boolean {
 }
 
 export function user_has_permission_for_group_setting(
-    setting_group_id: GroupSettingType,
+    setting_group_id: GroupSettingValue,
     setting_name: string,
     setting_type: "realm" | "stream" | "group",
 ): boolean {
+    if (page_params.is_spectator) {
+        return false;
+    }
+
     const settings_config = group_permission_settings.get_group_permission_setting_config(
         setting_name,
         setting_type,
@@ -132,9 +136,6 @@ export function user_can_invite_users_by_email(): boolean {
 }
 
 export function user_can_create_multiuse_invite(): boolean {
-    if (page_params.is_spectator) {
-        return false;
-    }
     return user_has_permission_for_group_setting(
         realm.realm_create_multiuse_invite_group,
         "create_multiuse_invite_group",
@@ -147,9 +148,6 @@ export function user_can_subscribe_other_users(): boolean {
 }
 
 export function user_can_create_private_streams(): boolean {
-    if (page_params.is_spectator) {
-        return false;
-    }
     return user_has_permission_for_group_setting(
         realm.realm_can_create_private_channel_group,
         "can_create_private_channel_group",
@@ -158,9 +156,6 @@ export function user_can_create_private_streams(): boolean {
 }
 
 export function user_can_create_public_streams(): boolean {
-    if (page_params.is_spectator) {
-        return false;
-    }
     return user_has_permission_for_group_setting(
         realm.realm_can_create_public_channel_group,
         "can_create_public_channel_group",
@@ -173,10 +168,6 @@ export function user_can_create_web_public_streams(): boolean {
         return false;
     }
 
-    if (page_params.is_spectator) {
-        return false;
-    }
-
     return user_has_permission_for_group_setting(
         realm.realm_can_create_web_public_channel_group,
         "can_create_web_public_channel_group",
@@ -185,33 +176,32 @@ export function user_can_create_web_public_streams(): boolean {
 }
 
 export function user_can_move_messages_between_streams(): boolean {
-    return user_has_permission(realm.realm_move_messages_between_streams_policy);
+    return user_has_permission_for_group_setting(
+        realm.realm_can_move_messages_between_channels_group,
+        "can_move_messages_between_channels_group",
+        "realm",
+    );
 }
 
-export function user_can_edit_all_user_groups(): boolean {
-    return user_has_permission(realm.realm_user_group_edit_policy);
+export function user_can_manage_all_groups(): boolean {
+    return user_has_permission_for_group_setting(
+        realm.realm_can_manage_all_groups,
+        "can_manage_all_groups",
+        "realm",
+    );
 }
 
-export function can_edit_user_group(group_id: number): boolean {
+export function can_manage_user_group(group_id: number): boolean {
     if (page_params.is_spectator) {
         return false;
     }
 
-    let can_edit_all_user_groups = user_can_edit_all_user_groups();
+    const group = user_groups.get_user_group_from_id(group_id);
 
-    if (
-        !current_user.is_admin &&
-        !current_user.is_moderator &&
-        !user_groups.is_direct_member_of(current_user.user_id, group_id)
-    ) {
-        can_edit_all_user_groups = false;
-    }
-
-    if (can_edit_all_user_groups) {
+    if (user_can_manage_all_groups()) {
         return true;
     }
 
-    const group = user_groups.get_user_group_from_id(group_id);
     return user_has_permission_for_group_setting(
         group.can_manage_group,
         "can_manage_group",
@@ -219,12 +209,56 @@ export function can_edit_user_group(group_id: number): boolean {
     );
 }
 
+export function can_add_members_to_user_group(group_id: number): boolean {
+    const group = user_groups.get_user_group_from_id(group_id);
+
+    if (
+        user_has_permission_for_group_setting(
+            group.can_add_members_group,
+            "can_add_members_group",
+            "group",
+        )
+    ) {
+        return true;
+    }
+
+    return can_manage_user_group(group_id);
+}
+
+export function can_join_user_group(group_id: number): boolean {
+    const group = user_groups.get_user_group_from_id(group_id);
+
+    if (user_has_permission_for_group_setting(group.can_join_group, "can_join_group", "group")) {
+        return true;
+    }
+
+    return can_manage_user_group(group_id);
+}
+
+export function can_leave_user_group(group_id: number): boolean {
+    const group = user_groups.get_user_group_from_id(group_id);
+
+    if (user_has_permission_for_group_setting(group.can_leave_group, "can_leave_group", "group")) {
+        return true;
+    }
+
+    return can_manage_user_group(group_id);
+}
+
 export function user_can_create_user_groups(): boolean {
-    return user_has_permission(realm.realm_user_group_edit_policy);
+    return user_has_permission_for_group_setting(
+        realm.realm_can_create_groups,
+        "can_create_groups",
+        "realm",
+    );
 }
 
 export function user_can_add_custom_emoji(): boolean {
-    return user_has_permission(realm.realm_add_custom_emoji_policy);
+    return user_has_permission_for_group_setting(
+        realm.realm_can_add_custom_emoji_group,
+        "can_add_custom_emoji_group",
+        "realm",
+    );
 }
 
 export function user_can_move_messages_to_another_topic(): boolean {
@@ -232,10 +266,6 @@ export function user_can_move_messages_to_another_topic(): boolean {
 }
 
 export function user_can_delete_any_message(): boolean {
-    if (page_params.is_spectator) {
-        return false;
-    }
-
     return user_has_permission_for_group_setting(
         realm.realm_can_delete_any_message_group,
         "can_delete_any_message_group",
@@ -244,10 +274,6 @@ export function user_can_delete_any_message(): boolean {
 }
 
 export function user_can_delete_own_message(): boolean {
-    if (page_params.is_spectator) {
-        return false;
-    }
-
     return user_has_permission_for_group_setting(
         realm.realm_can_delete_own_message_group,
         "can_delete_own_message_group",
@@ -306,6 +332,11 @@ export function bot_type_id_to_string(type_id: number): string | undefined {
 }
 
 export function user_can_access_all_other_users(): boolean {
+    // While spectators have is_guest=true for convenience in some code
+    // paths, they do not currently use the guest user systems for
+    // limiting their user access to subscribers of web-public
+    // channels, which is typically the entire user set for a server
+    // anyway.
     if (page_params.is_spectator) {
         return true;
     }
@@ -353,4 +384,11 @@ export function get_request_data_for_stream_privacy(selected_val: string): {
             };
         }
     }
+}
+
+export function guests_can_access_all_other_users(): boolean {
+    const everyone_group = user_groups.get_user_group_from_id(
+        realm.realm_can_access_all_users_group,
+    );
+    return everyone_group.name === "role:everyone";
 }

@@ -415,6 +415,10 @@
                the left of the filter icon. */
             gap: 7px;
             place-content: center center;
+            /* Visually match the 8px of padding around the
+               filter icon, and keep DM icons from colliding
+               with the "Direct messages" text. */
+            margin-right: 9px;
         }
 
         & a {

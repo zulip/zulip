@@ -415,7 +415,7 @@ export function revive_current_focus(): boolean {
                 const last_visited_topic_index = current_list.findIndex(
                     (topic) => topic.last_msg_id === topic_last_msg_id,
                 );
-                if (last_visited_topic_index >= 0) {
+                if (last_visited_topic_index !== -1) {
                     row_focus = last_visited_topic_index;
                 }
             }

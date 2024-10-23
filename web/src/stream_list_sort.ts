@@ -183,7 +183,7 @@ export function first_stream_id(): number | undefined {
 export function prev_stream_id(stream_id: number): number | undefined {
     const i = all_streams.indexOf(stream_id);
 
-    if (i < 0) {
+    if (i === -1) {
         return undefined;
     }
 
@@ -193,7 +193,7 @@ export function prev_stream_id(stream_id: number): number | undefined {
 export function next_stream_id(stream_id: number): number | undefined {
     const i = all_streams.indexOf(stream_id);
 
-    if (i < 0) {
+    if (i === -1) {
         return undefined;
     }
 

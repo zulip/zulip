@@ -1,12 +1,12 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params, realm} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const hash_util = zrequire("hash_util");
 const compose_state = zrequire("compose_state");
@@ -19,7 +19,14 @@ const narrow_title = zrequire("narrow_title");
 const recent_view_util = zrequire("recent_view_util");
 const inbox_util = zrequire("inbox_util");
 const message_lists = zrequire("message_lists");
+const {set_current_user, set_realm} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
+const {initialize_user_settings} = zrequire("user_settings");
+
+set_current_user({});
+const realm = {};
+set_realm(realm);
+initialize_user_settings({user_settings: {}});
 
 mock_esm("../src/compose_banner", {
     clear_errors() {},
@@ -226,8 +233,8 @@ run_test("urls", () => {
     assert.equal(emails, "me@example.com");
 });
 
-run_test("show_empty_narrow_message", ({mock_template}) => {
-    realm.stop_words = [];
+run_test("show_empty_narrow_message", ({mock_template, override}) => {
+    override(realm, "stop_words", []);
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
@@ -246,7 +253,22 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: This channel does not exist or is private."),
+        empty_narrow_html(
+            "translated: This channel doesn't exist, or you are not allowed to view it.",
+        ),
+    );
+
+    set_filter([
+        ["stream", "999"],
+        ["topic", "foo"],
+        ["near", "99"],
+    ]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: This channel doesn't exist, or you are not allowed to view it.",
+        ),
     );
 
     // for non-subbed public stream
@@ -321,8 +343,8 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    realm.realm_direct_message_permission_group = everyone.id;
-    realm.realm_direct_message_initiator_group = everyone.id;
+    override(realm, "realm_direct_message_permission_group", everyone.id);
+    override(realm, "realm_direct_message_initiator_group", everyone.id);
     set_filter([["is", "dm"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
@@ -355,7 +377,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // organization has disabled sending direct messages
-    realm.realm_direct_message_permission_group = nobody.id;
+    override(realm, "realm_direct_message_permission_group", nobody.id);
 
     // prioritize information about invalid user(s) in narrow/search
     set_filter([["dm", ["Yo"]]]);
@@ -409,7 +431,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // sending direct messages enabled
-    realm.realm_direct_message_permission_group = everyone.id;
+    override(realm, "realm_direct_message_permission_group", everyone.id);
     set_filter([["dm", "alice@example.com"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
@@ -421,7 +443,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // sending direct messages to deactivated user
-    realm.realm_direct_message_permission_group = everyone.id;
+    override(realm, "realm_direct_message_permission_group", everyone.id);
     people.deactivate(alice);
     set_filter([["dm", alice.email]]);
     narrow_banner.show_empty_narrow_message();
@@ -464,7 +486,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     people.add_active_user(alice);
 
     // organization has disabled sending direct messages
-    realm.realm_direct_message_permission_group = nobody.id;
+    override(realm, "realm_direct_message_permission_group", nobody.id);
 
     // prioritize information about invalid user in narrow/search
     set_filter([["dm-including", ["Yo"]]]);
@@ -494,8 +516,8 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // sending direct messages enabled
-    realm.realm_direct_message_permission_group = everyone.id;
-    realm.realm_direct_message_permission_group = everyone.id;
+    override(realm, "realm_direct_message_permission_group", everyone.id);
+    override(realm, "realm_direct_message_permission_group", everyone.id);
     set_filter([["dm-including", "alice@example.com"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
@@ -566,7 +588,9 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: This channel does not exist or is private."),
+        empty_narrow_html(
+            "translated: This channel doesn't exist, or you are not allowed to view it.",
+        ),
     );
 
     set_filter([
@@ -583,8 +607,8 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 });
 
-run_test("show_empty_narrow_message_with_search", ({mock_template}) => {
-    realm.stop_words = [];
+run_test("show_empty_narrow_message_with_search", ({mock_template, override}) => {
+    override(realm, "stop_words", []);
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
@@ -599,8 +623,8 @@ run_test("hide_empty_narrow_message", () => {
     assert.equal($(".empty_feed_notice").text(), "never-been-set");
 });
 
-run_test("show_search_stopwords", ({mock_template}) => {
-    realm.stop_words = ["what", "about"];
+run_test("show_search_stopwords", ({mock_template, override}) => {
+    override(realm, "stop_words", ["what", "about"]);
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 

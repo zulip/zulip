@@ -1,15 +1,18 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {current_user} = require("./lib/zpage_params");
 
 const user_topics = zrequire("user_topics");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const pmc = zrequire("pm_conversations");
+const {set_current_user} = zrequire("state_data");
+
+const current_user = {};
+set_current_user(current_user);
 
 const alice = {
     user_id: 1,
@@ -132,8 +135,8 @@ test("muted_users", () => {
     assert.deepEqual(pmc.recent.get_strings(), ["3", "1,2,3", "15"]);
 });
 
-test("has_conversation", () => {
-    current_user.user_id = me.user_id;
+test("has_conversation", ({override}) => {
+    override(current_user, "user_id", me.user_id);
     pmc.recent.initialize(params);
 
     // Tests if `has_conversation` returns `true` when there are previous

@@ -44,7 +44,9 @@
         </div>
 
         <div class="bottom-text">
-            {{ _("Need to get your group started on Zulip?") }} <a target="_blank" rel="noopener noreferrer" href="/new/">{{ _("Create a new organization.") }}</a>
+            {% trans org_creation_link="/new/" %}
+            <a target="_blank" rel="noopener noreferrer" href="{{ org_creation_link }}">Create a new organization</a> if you don't have one yet.
+            {% endtrans %}
         </div>
     </div>
 

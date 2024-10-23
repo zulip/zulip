@@ -4,7 +4,6 @@ from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from typing import Any, TypedDict
 
-from django.conf import settings
 from django.db import connection, transaction
 from django.db.models import F, Q, QuerySet
 from django.utils.timezone import now as timezone_now
@@ -55,6 +54,9 @@ class UserGroupDict(TypedDict):
     creator_id: int | None
     date_created: int | None
     is_system_group: bool
+    can_add_members_group: int | AnonymousSettingGroupDict
+    can_join_group: int | AnonymousSettingGroupDict
+    can_leave_group: int | AnonymousSettingGroupDict
     can_manage_group: int | AnonymousSettingGroupDict
     can_mention_group: int | AnonymousSettingGroupDict
     deactivated: bool
@@ -130,24 +132,6 @@ def access_user_group_to_read_membership(user_group_id: int, realm: Realm) -> Na
     return get_user_group_by_id_in_realm(user_group_id, realm, for_read=True)
 
 
-def check_permission_for_managing_all_groups(
-    user_group: UserGroup, user_profile: UserProfile
-) -> bool:
-    """
-    Given a user and a group in the same realm, checks if the user
-    can manage the group through the legacy can_edit_all_user_groups
-    permission, which is a permission that requires either certain roles
-    or membership in the group itself to be used.
-    """
-    can_edit_all_user_groups = user_profile.can_edit_all_user_groups()
-    if can_edit_all_user_groups:
-        if user_profile.is_realm_admin or user_profile.is_moderator:
-            return True
-
-        return is_user_in_group(user_group, user_profile)
-    return False
-
-
 def access_user_group_for_update(
     user_group_id: int,
     user_profile: UserProfile,
@@ -170,22 +154,31 @@ def access_user_group_for_update(
     if user_group.is_system_group:
         raise JsonableError(_("Insufficient permission"))
 
-    assert permission_setting in NamedUserGroup.GROUP_PERMISSION_SETTINGS
-    if permission_setting == "can_manage_group" and check_permission_for_managing_all_groups(
-        user_group, user_profile
-    ):
+    # Users with permission to manage the group have all the permissions
+    # including joining/leaving the group and add others to group.
+    if user_profile.can_manage_all_groups():
         return user_group
 
     user_has_permission = user_has_permission_for_group_setting(
-        getattr(user_group, permission_setting),
+        user_group.can_manage_group,
         user_profile,
-        NamedUserGroup.GROUP_PERMISSION_SETTINGS[permission_setting],
+        NamedUserGroup.GROUP_PERMISSION_SETTINGS["can_manage_group"],
     )
+    if user_has_permission:
+        return user_group
 
-    if not user_has_permission:
-        raise JsonableError(_("Insufficient permission"))
+    if permission_setting != "can_manage_group":
+        assert permission_setting in NamedUserGroup.GROUP_PERMISSION_SETTINGS
+        user_has_permission = user_has_permission_for_group_setting(
+            getattr(user_group, permission_setting),
+            user_profile,
+            NamedUserGroup.GROUP_PERMISSION_SETTINGS[permission_setting],
+        )
 
-    return user_group
+        if user_has_permission:
+            return user_group
+
+    raise JsonableError(_("Insufficient permission"))
 
 
 def access_user_group_for_deactivation(
@@ -278,7 +271,12 @@ def access_user_group_for_deactivation(
 
 @contextmanager
 def lock_subgroups_with_respect_to_supergroup(
-    potential_subgroup_ids: Collection[int], potential_supergroup_id: int, acting_user: UserProfile
+    potential_subgroup_ids: Collection[int],
+    potential_supergroup_id: int,
+    acting_user: UserProfile,
+    *,
+    permission_setting: str | None,
+    creating_group: bool = False,
 ) -> Iterator[LockedUserGroupContext]:
     """This locks the user groups with the given potential_subgroup_ids, as well
     as their indirect subgroups, followed by the potential supergroup. It
@@ -308,9 +306,17 @@ def lock_subgroups_with_respect_to_supergroup(
         # the transaction with a JsonableError by handling the DatabaseError.
         # But at the current scale of concurrent requests, we rely on
         # Postgres's deadlock detection when it occurs.
-        potential_supergroup = access_user_group_for_update(
-            potential_supergroup_id, acting_user, permission_setting="can_manage_group"
-        )
+        if creating_group:
+            # User can add subgroups to the group while creating it irrespective
+            # of whether the user has other permissions for that group.
+            potential_supergroup = get_user_group_by_id_in_realm(
+                potential_supergroup_id, acting_user.realm, for_read=False
+            )
+        else:
+            assert permission_setting is not None
+            potential_supergroup = access_user_group_for_update(
+                potential_supergroup_id, acting_user, permission_setting=permission_setting
+            )
         # We avoid making a separate query for user_group_ids because the
         # recursive query already returns those user groups.
         potential_subgroups = [
@@ -350,11 +356,6 @@ def check_setting_configuration_for_system_groups(
     setting_name: str,
     permission_configuration: GroupPermissionSetting,
 ) -> None:
-    if setting_name != "can_mention_group" and (
-        not settings.ALLOW_GROUP_VALUED_SETTINGS and not setting_group.is_system_group
-    ):
-        raise SystemGroupRequiredError(setting_name)
-
     if permission_configuration.require_system_group and not setting_group.is_system_group:
         raise SystemGroupRequiredError(setting_name)
 
@@ -426,7 +427,7 @@ def update_or_create_user_group_for_setting(
 
     from zerver.lib.users import user_ids_to_users
 
-    member_users = user_ids_to_users(direct_members, realm)
+    member_users = user_ids_to_users(direct_members, realm, allow_deactivated=False)
     user_group.direct_members.set(member_users)
 
     potential_subgroups = NamedUserGroup.objects.select_for_update().filter(
@@ -515,7 +516,9 @@ def get_group_setting_value_for_api(
         return setting_value_group.id
 
     return AnonymousSettingGroupDict(
-        direct_members=[member.id for member in setting_value_group.direct_members.all()],
+        direct_members=[
+            member.id for member in setting_value_group.direct_members.filter(is_active=True)
+        ],
         direct_subgroups=[subgroup.id for subgroup in setting_value_group.direct_subgroups.all()],
     )
 
@@ -551,6 +554,12 @@ def user_groups_in_realm_serialized(
     UserGroup and UserGroupMembership that we need.
     """
     realm_groups = NamedUserGroup.objects.select_related(
+        "can_add_members_group",
+        "can_add_members_group__named_user_group",
+        "can_join_group",
+        "can_join_group__named_user_group",
+        "can_leave_group",
+        "can_leave_group__named_user_group",
         "can_manage_group",
         "can_manage_group__named_user_group",
         "can_mention_group",
@@ -560,8 +569,10 @@ def user_groups_in_realm_serialized(
     if not include_deactivated_groups:
         realm_groups = realm_groups.filter(deactivated=False)
 
-    membership = UserGroupMembership.objects.filter(user_group__realm=realm).values_list(
-        "user_group_id", "user_profile_id"
+    membership = (
+        UserGroupMembership.objects.filter(user_group__realm=realm)
+        .exclude(user_profile__is_active=False)
+        .values_list("user_group_id", "user_profile_id")
     )
 
     group_membership = GroupGroupMembership.objects.filter(subgroup__realm=realm).values_list(
@@ -603,6 +614,15 @@ def user_groups_in_realm_serialized(
             members=direct_member_ids,
             direct_subgroup_ids=direct_subgroup_ids,
             is_system_group=user_group.is_system_group,
+            can_add_members_group=get_setting_value_for_user_group_object(
+                user_group.can_add_members_group, group_members, group_subgroups
+            ),
+            can_join_group=get_setting_value_for_user_group_object(
+                user_group.can_join_group, group_members, group_subgroups
+            ),
+            can_leave_group=get_setting_value_for_user_group_object(
+                user_group.can_leave_group, group_members, group_subgroups
+            ),
             can_manage_group=get_setting_value_for_user_group_object(
                 user_group.can_manage_group, group_members, group_subgroups
             ),
@@ -626,16 +646,19 @@ def get_direct_user_groups(user_profile: UserProfile) -> list[UserGroup]:
 def get_user_group_direct_member_ids(
     user_group: UserGroup,
 ) -> QuerySet[UserGroupMembership, int]:
-    return UserGroupMembership.objects.filter(user_group=user_group).values_list(
-        "user_profile_id", flat=True
-    )
+    return UserGroupMembership.objects.filter(
+        user_group=user_group, user_profile__is_active=True
+    ).values_list("user_profile_id", flat=True)
 
 
 def get_user_group_direct_members(user_group: UserGroup) -> QuerySet[UserProfile]:
-    return user_group.direct_members.all()
+    return user_group.direct_members.filter(is_active=True)
 
 
 def get_direct_memberships_of_users(user_group: UserGroup, members: list[UserProfile]) -> list[int]:
+    # Returns the subset of the provided members list who are direct subscribers of the group.
+    # If a deactivated user is passed, it will be returned if the user was a member of the
+    # group when deactivated.
     return list(
         UserGroupMembership.objects.filter(
             user_group=user_group, user_profile__in=members
@@ -678,7 +701,9 @@ def get_recursive_strict_subgroups(user_group: UserGroup) -> QuerySet[NamedUserG
 
 
 def get_recursive_group_members(user_group: UserGroup) -> QuerySet[UserProfile]:
-    return UserProfile.objects.filter(direct_groups__in=get_recursive_subgroups(user_group))
+    return UserProfile.objects.filter(
+        is_active=True, direct_groups__in=get_recursive_subgroups(user_group)
+    )
 
 
 def get_recursive_membership_groups(user_profile: UserProfile) -> QuerySet[UserGroup]:
@@ -782,7 +807,19 @@ def set_defaults_for_group_settings(
         else:
             default_group_name = permission_config.default_group_name
 
-        default_group = system_groups_name_dict[default_group_name].usergroup_ptr
+        if default_group_name == "group_creator":
+            if user_group.creator:
+                default_group = UserGroup(
+                    realm=user_group.realm,
+                )
+                default_group.save()
+                UserGroupMembership.objects.create(
+                    user_profile=user_group.creator, user_group=default_group
+                )
+            else:
+                raise AssertionError("Group creator should not be None.")
+        else:
+            default_group = system_groups_name_dict[default_group_name].usergroup_ptr
         setattr(user_group, setting_name, default_group)
 
     return user_group
@@ -807,12 +844,15 @@ def bulk_create_system_user_groups(groups: list[dict[str, str]], realm: Realm) -
         user_group_ids = [id for (id,) in cursor.fetchall()]
 
     rows = [
-        SQL("({},{},{},{},{},{},{},{})").format(
+        SQL("({},{},{},{},{},{},{},{},{},{},{})").format(
             Literal(user_group_ids[idx]),
             Literal(realm.id),
             Literal(group["name"]),
             Literal(group["description"]),
             Literal(True),
+            Literal(initial_group_setting_value),
+            Literal(initial_group_setting_value),
+            Literal(initial_group_setting_value),
             Literal(initial_group_setting_value),
             Literal(initial_group_setting_value),
             Literal(False),
@@ -821,7 +861,7 @@ def bulk_create_system_user_groups(groups: list[dict[str, str]], realm: Realm) -
     ]
     query = SQL(
         """
-        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_manage_group_id, can_mention_group_id, deactivated)
+        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_add_members_group_id, can_join_group_id, can_leave_group_id, can_manage_group_id, can_mention_group_id, deactivated)
         VALUES {rows}
         """
     ).format(rows=SQL(", ").join(rows))
@@ -903,7 +943,14 @@ def create_system_user_groups_for_realm(realm: Realm) -> dict[int, NamedUserGrou
         user_group = set_defaults_for_group_settings(group, {}, system_groups_name_dict)
         groups_with_updated_settings.append(user_group)
     NamedUserGroup.objects.bulk_update(
-        groups_with_updated_settings, ["can_manage_group", "can_mention_group"]
+        groups_with_updated_settings,
+        [
+            "can_add_members_group",
+            "can_join_group",
+            "can_leave_group",
+            "can_manage_group",
+            "can_mention_group",
+        ],
     )
 
     subgroup_objects: list[GroupGroupMembership] = []
@@ -966,9 +1013,6 @@ def parse_group_setting_value(
 
     if len(setting_value.direct_members) == 0 and len(setting_value.direct_subgroups) == 1:
         return setting_value.direct_subgroups[0]
-
-    if not settings.ALLOW_GROUP_VALUED_SETTINGS:
-        raise SystemGroupRequiredError(setting_name)
 
     return setting_value
 

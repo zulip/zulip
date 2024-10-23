@@ -122,23 +122,21 @@ aux_services = list_supervisor_processes(["go-camo", "smokescreen"], only_runnin
 if aux_services:
     subprocess.check_call(["supervisorctl", "start", *aux_services])
 
+if args.only_django:
+    workers = []
+    check_services = ["zulip-django"]
+else:
+    check_services = [*workers, "zulip-django", "zulip-tornado:*"]
+
 # If none of the workers nor the application servers are running, this
 # is actually a "start," not a restart, which means we will defer
 # workers to later.
-if (
-    action == "restart"
-    and len(
-        list_supervisor_processes([*workers, "zulip-django", "zulip-tornado:*"], only_running=True)
-    )
-    == 0
-):
+running_services = list_supervisor_processes(check_services, only_running=True)
+if action == "restart" and len(running_services) == 0:
     action = "start"
     verbing = "Starting"
 elif action == "start":
-    existing_services = list_supervisor_processes([*workers, "zulip-django", "zulip-tornado:*"])
-    running_services = list_supervisor_processes(
-        [*workers, "zulip-django", "zulip-tornado:*"], only_running=True
-    )
+    existing_services = list_supervisor_processes(check_services)
     if existing_services == running_services:
         logging.info("Zulip is already started; nothing to do!")
         sys.exit(0)
@@ -172,25 +170,26 @@ if action == "restart" and len(workers) > 0:
             restart_or_start(worker)
 
 if has_application_server():
-    # Next, we restart the Tornado processes sequentially, in order to
-    # minimize downtime of the tornado service caused by too many
-    # Python processes restarting at the same time, resulting in each
-    # receiving insufficient priority.  This is important, because
-    # Tornado being unavailable for too long is the main source of
-    # user-visible downtime when we restart a Zulip server.  We do
-    # this before restarting Django, in case there are new event types
-    # which it will need to know how to deal with.
-    if len(tornado_ports) > 1:
-        for p in tornado_ports:
-            # Restart Tornado processes individually for a better rate of
-            # restarts.  This also avoids behavior with restarting a whole
-            # supervisord group where if any individual process is slow to
-            # stop, the whole bundle stays stopped for an extended time.
-            logging.info("%s Tornado process on port %s", verbing, p)
-            restart_or_start(f"zulip-tornado:zulip-tornado-port-{p}")
-    else:
-        logging.info("%s Tornado process", verbing)
-        restart_or_start("zulip-tornado:*")
+    if not args.only_django:
+        # Next, we restart the Tornado processes sequentially, in order to
+        # minimize downtime of the tornado service caused by too many
+        # Python processes restarting at the same time, resulting in each
+        # receiving insufficient priority.  This is important, because
+        # Tornado being unavailable for too long is the main source of
+        # user-visible downtime when we restart a Zulip server.  We do
+        # this before restarting Django, in case there are new event types
+        # which it will need to know how to deal with.
+        if len(tornado_ports) > 1:
+            for p in tornado_ports:
+                # Restart Tornado processes individually for a better rate of
+                # restarts.  This also avoids behavior with restarting a whole
+                # supervisord group where if any individual process is slow to
+                # stop, the whole bundle stays stopped for an extended time.
+                logging.info("%s Tornado process on port %s", verbing, p)
+                restart_or_start(f"zulip-tornado:zulip-tornado-port-{p}")
+        else:
+            logging.info("%s Tornado process", verbing)
+            restart_or_start("zulip-tornado:*")
 
     # Finally, restart the Django uWSGI processes.
     if (
@@ -235,13 +234,13 @@ if has_application_server():
 # If we were doing this non-gracefully, or starting as opposed to
 # restarting, we need to turn the workers (back) on.  There's no
 # advantage to doing this not-all-at-once.
-if action == "start" or args.less_graceful:
+if (action == "start" or args.less_graceful) and not args.only_django:
     workers = list_supervisor_processes(workers, only_running=False)
     if workers:
         logging.info("Starting workers")
         subprocess.check_call(["supervisorctl", "start", *workers])
 
-if has_application_server() and not args.skip_client_reloads:
+if has_application_server() and not args.skip_client_reloads and not args.only_django:
     # All of the servers have been (re)started; now enqueue events in
     # the Tornado servers to tell clients to reload.
     subprocess.check_call(["./scripts/reload-clients"])

@@ -62,13 +62,16 @@ Regardless of whether invitations are required, you can:
 
 ## Configuring email domain restrictions
 
+Email domain restrictions apply to both new user accounts and [email
+changes](/help/change-your-email-address).
+
 ### Restrict sign-ups to a list of domains
 
 {start_tabs}
 
 {settings_tab|organization-permissions}
 
-1. Set **Restrict email domains of new users?** to
+1. Set **Restrict email domains of new users** to
    **Restrict to a list of domains**.
 
 1. Click **Configure** to add any number of domains. For each domain, you can
@@ -86,7 +89,7 @@ Regardless of whether invitations are required, you can:
 
 {settings_tab|organization-permissions}
 
-1. Set **Restrict email domains of new users?** to
+1. Set **Restrict email domains of new users** to
    **Don't allow disposable emails**.
 
 {!save-changes.md!}
@@ -99,7 +102,7 @@ Regardless of whether invitations are required, you can:
 
 {settings_tab|organization-permissions}
 
-1. Set **Restrict email domains of new users?** to
+1. Set **Restrict email domains of new users** to
    **No restrictions**.
 
 {!save-changes.md!}

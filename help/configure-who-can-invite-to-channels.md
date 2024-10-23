@@ -31,7 +31,7 @@ subscribed to the channel to configure these settings.
 {!select-channel-view-general.md!}
 
 1. Under **Channel permissions**, configure
-   **Who can unsubscribe others from this channel?**
+   **Who can unsubscribe others from this channel**
 
 {!save-changes.md!}
 

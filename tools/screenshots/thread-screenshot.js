@@ -2,7 +2,7 @@
 
 /* global $, CSS */
 
-const path = require("path");
+const path = require("node:path");
 
 const {program} = require("commander");
 require("css.escape");

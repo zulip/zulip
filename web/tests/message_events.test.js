@@ -1,11 +1,10 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {realm} = require("./lib/zpage_params");
 
 const message_edit = mock_esm("../src/message_edit");
 const message_lists = mock_esm("../src/message_lists");
@@ -25,9 +24,16 @@ const people = zrequire("people");
 const message_events = zrequire("message_events");
 message_events.__Rewire__("update_views_filtered_on_message_property", () => {});
 const message_helper = zrequire("message_helper");
+const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const unread = zrequire("unread");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const realm = {};
+set_realm(realm);
+
+initialize_user_settings({user_settings: {}});
 
 const alice = {
     email: "alice@example.com",
@@ -62,7 +68,7 @@ function test_helper(side_effects) {
     return self;
 }
 
-run_test("update_messages", () => {
+run_test("update_messages", ({override}) => {
     const raw_message = {
         id: 111,
         display_recipient: denmark.name,
@@ -112,7 +118,7 @@ run_test("update_messages", () => {
 
     const helper = test_helper(side_effects);
 
-    realm.realm_allow_edit_history = false;
+    override(realm, "realm_allow_edit_history", false);
 
     const $message_edit_history_modal = $.create("#message-edit-history");
     const $modal = $.create("micromodal").addClass("modal--open");

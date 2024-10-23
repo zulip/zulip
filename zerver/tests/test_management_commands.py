@@ -20,7 +20,7 @@ from zerver.lib.management import ZulipBaseCommand, check_config
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, stdout_suppressed
 from zerver.models import Realm, Recipient, UserProfile
-from zerver.models.realms import EXPORT_FULL_WITH_CONSENT, get_realm
+from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_profile_by_email
 
@@ -515,7 +515,6 @@ class TestExport(ZulipTestCase):
     COMMAND_NAME = "export"
 
     def test_command_to_export_full_with_consent(self) -> None:
-        realm = get_realm("zulip")
         do_change_user_setting(
             self.example_user("iago"), "allow_private_data_export", True, acting_user=None
         )
@@ -529,8 +528,7 @@ class TestExport(ZulipTestCase):
         ):
             call_command(self.COMMAND_NAME, "-r=zulip", "--export-full-with-consent")
             m.assert_called_once_with(
-                realm=realm,
-                export_type=EXPORT_FULL_WITH_CONSENT,
+                export_row=mock.ANY,
                 threads=mock.ANY,
                 output_dir=mock.ANY,
                 percent_callback=mock.ANY,

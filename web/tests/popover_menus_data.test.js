@@ -1,11 +1,11 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params, realm, current_user} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const {Filter} = zrequire("filter");
 const {MessageList} = zrequire("message_list");
@@ -16,6 +16,7 @@ const people = zrequire("people");
 const compose_state = zrequire("compose_state");
 const user_groups = zrequire("user_groups");
 const {MessageListData} = zrequire("message_list_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 
 const noop = function () {};
 
@@ -53,6 +54,11 @@ mock_esm("../src/group_permission_settings", {
         };
     },
 });
+
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
 
 // Define test users
 const mike = {
@@ -128,15 +134,15 @@ function add_message_with_view(list, messages) {
 
 // Function sets page parameters with no time constraints on editing the message.
 // User is assumed to not be an admin.
-function set_page_params_no_edit_restrictions() {
+function set_page_params_no_edit_restrictions({override}) {
     page_params.is_spectator = false;
-    realm.realm_allow_message_editing = true;
-    realm.realm_message_content_edit_limit_seconds = null;
-    realm.realm_allow_edit_history = true;
-    realm.realm_message_content_delete_limit_seconds = null;
-    realm.realm_enable_read_receipts = true;
-    realm.realm_edit_topic_policy = 5;
-    realm.realm_move_messages_within_stream_limit_seconds = null;
+    override(realm, "realm_allow_message_editing", true);
+    override(realm, "realm_message_content_edit_limit_seconds", null);
+    override(realm, "realm_allow_edit_history", true);
+    override(realm, "realm_message_content_delete_limit_seconds", null);
+    override(realm, "realm_enable_read_receipts", true);
+    override(realm, "realm_edit_topic_policy", 5);
+    override(realm, "realm_move_messages_within_stream_limit_seconds", null);
 }
 
 // Test init function
@@ -156,12 +162,12 @@ function test(label, f) {
 }
 
 // Test functions
-test("my_message_all_actions", () => {
+test("my_message_all_actions", ({override}) => {
     // Set page parameters.
-    set_page_params_no_edit_restrictions();
-    realm.realm_can_delete_any_message_group = everyone.id;
-    realm.realm_can_delete_own_message_group = everyone.id;
-    current_user.user_id = me.user_id;
+    set_page_params_no_edit_restrictions({override});
+    override(realm, "realm_can_delete_any_message_group", everyone.id);
+    override(realm, "realm_can_delete_own_message_group", everyone.id);
+    override(current_user, "user_id", me.user_id);
     // Get message with maximum permissions available
     // Initialize message list
     const list = init_message_list();
@@ -210,10 +216,10 @@ test("my_message_all_actions", () => {
     assert.equal(response.should_display_quote_and_reply, true);
 });
 
-test("not_my_message_view_actions", () => {
-    set_page_params_no_edit_restrictions();
+test("not_my_message_view_actions", ({override}) => {
+    set_page_params_no_edit_restrictions({override});
     // Get message that is only viewable
-    realm.realm_can_delete_any_message_group = everyone.id;
+    override(realm, "realm_can_delete_any_message_group", everyone.id);
     const list = init_message_list();
     message_lists.set_current(list);
 
@@ -249,9 +255,9 @@ test("not_my_message_view_actions", () => {
     assert.equal(response.move_message_menu_item, undefined);
 });
 
-test("not_my_message_view_source_and_move", () => {
-    set_page_params_no_edit_restrictions();
-    realm.realm_can_delete_any_message_group = everyone.id;
+test("not_my_message_view_source_and_move", ({override}) => {
+    set_page_params_no_edit_restrictions({override});
+    override(realm, "realm_can_delete_any_message_group", everyone.id);
     // Get message that is movable with viewable source
 
     const list = init_message_list();

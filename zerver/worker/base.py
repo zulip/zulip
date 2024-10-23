@@ -212,7 +212,7 @@ class QueueProcessingWorker(ABC):
                 flush_per_request_caches()
                 reset_queries()
 
-                with sentry_sdk.start_span(description="statistics"):
+                with sentry_sdk.start_span(name="statistics"):
                     if consume_time_seconds is not None:
                         self.recent_consume_times.append((len(events), consume_time_seconds))
 
@@ -252,7 +252,7 @@ class QueueProcessingWorker(ABC):
             # is needed and the worker can proceed.
             return
 
-        with sentry_sdk.configure_scope() as scope:
+        with sentry_sdk.new_scope() as scope:
             scope.set_context(
                 "events",
                 {
@@ -261,9 +261,8 @@ class QueueProcessingWorker(ABC):
                 },
             )
             if isinstance(exception, WorkerTimeoutError):
-                with sentry_sdk.push_scope() as scope:
-                    scope.fingerprint = ["worker-timeout", self.queue_name]
-                    logging.exception(exception, stack_info=True)
+                scope.fingerprint = ["worker-timeout", self.queue_name]
+                logging.exception(exception, stack_info=True)
             else:
                 logging.exception(
                     "Problem handling data on queue %s", self.queue_name, stack_info=True

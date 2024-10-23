@@ -1,18 +1,21 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {user_settings} = require("./lib/zpage_params");
 
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const stream_list_sort = zrequire("stream_list_sort");
 const settings_config = zrequire("settings_config");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 function contains_sub(subs, sub) {
     return subs.some((s) => s.name === sub.name);
@@ -196,15 +199,18 @@ test("basics", ({override_rewire}) => {
     assert.deepEqual(sorted.dormant_streams, []);
 });
 
-test("has_recent_activity", () => {
+test("has_recent_activity", ({override}) => {
     people.init();
     people.add_active_user(me);
     people.initialize_current_user(me.user_id);
 
     let sub;
 
-    user_settings.demote_inactive_streams =
-        settings_config.demote_inactive_streams_values.automatic.code;
+    override(
+        user_settings,
+        "demote_inactive_streams",
+        settings_config.demote_inactive_streams_values.automatic.code,
+    );
 
     stream_list_sort.set_filter_out_inactives();
 
@@ -235,8 +241,11 @@ test("has_recent_activity", () => {
 
     assert.ok(stream_list_sort.has_recent_activity(sub));
 
-    user_settings.demote_inactive_streams =
-        settings_config.demote_inactive_streams_values.always.code;
+    override(
+        user_settings,
+        "demote_inactive_streams",
+        settings_config.demote_inactive_streams_values.always.code,
+    );
 
     stream_list_sort.set_filter_out_inactives();
 
@@ -264,8 +273,11 @@ test("has_recent_activity", () => {
 
     assert.ok(stream_list_sort.has_recent_activity(sub));
 
-    user_settings.demote_inactive_streams =
-        settings_config.demote_inactive_streams_values.never.code;
+    override(
+        user_settings,
+        "demote_inactive_streams",
+        settings_config.demote_inactive_streams_values.never.code,
+    );
 
     stream_list_sort.set_filter_out_inactives();
 
@@ -294,9 +306,12 @@ test("has_recent_activity_but_muted", () => {
     assert.ok(stream_list_sort.has_recent_activity_but_muted(sub));
 });
 
-test("filter inactives", () => {
-    user_settings.demote_inactive_streams =
-        settings_config.demote_inactive_streams_values.automatic.code;
+test("filter inactives", ({override}) => {
+    override(
+        user_settings,
+        "demote_inactive_streams",
+        settings_config.demote_inactive_streams_values.automatic.code,
+    );
 
     assert.ok(!stream_list_sort.is_filtering_inactives());
 
@@ -317,8 +332,8 @@ test("filter inactives", () => {
     assert.ok(stream_list_sort.is_filtering_inactives());
 });
 
-test("initialize", () => {
-    user_settings.demote_inactive_streams = 1;
+test("initialize", ({override}) => {
+    override(user_settings, "demote_inactive_streams", 1);
     stream_list_sort.initialize();
 
     assert.ok(!stream_list_sort.is_filtering_inactives());

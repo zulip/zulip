@@ -610,13 +610,27 @@ paths:
                                     - type: object
                                       additionalProperties: false
                                       description: |
-                                        When a user is deactivated or reactivated.
+                                        When a user is deactivated or reactivated. Only
+                                        users who can access the modified user under the
+                                        organization's `can_access_all_users_group` policy
+                                        will receive this event.
 
-                                        **Changes**: New in Zulip 8.0 (feature level
-                                        222). Previously the server sent a `realm_user` event with
-                                        `op` field set to `remove` when deactivating a user and a
-                                        `realm_user` event with `op` field set to `add` when
-                                        reactivating a user.
+                                        Clients receiving a deactivation event should
+                                        remove the user from all user groups in their data
+                                        structures, because deactivated users cannot be
+                                        members of groups.
+
+                                        **Changes**: Prior to Zulip 10.0 (feature level
+                                        303), reactivation events were sent to users who
+                                        could not access the reactivated user due to a
+                                        `can_access_all_users_group` policy. Also,
+                                        previously, Clients were not required to update
+                                        group membership records during user deactivation.
+
+                                        New in Zulip 8.0 (feature level 222). Previously the server
+                                        sent a `realm_user` event with `op` field set to `remove`
+                                        when deactivating a user and a `realm_user` event with `op`
+                                        field set to `add` when reactivating a user.
                                       properties:
                                         user_id:
                                           type: integer
@@ -3161,6 +3175,9 @@ paths:
                                       "description": "Backend team",
                                       "id": 2,
                                       "is_system_group": false,
+                                      "can_add_members_group": 16,
+                                      "can_join_group": 16,
+                                      "can_leave_group": 15,
                                       "can_manage_group": 16,
                                       "can_mention_group": 11,
                                     },
@@ -3176,9 +3193,16 @@ paths:
                                 if `include_deactivated_groups` client capability
                                 is set to `true`.
 
-                                **Changes**: Prior to Zulip 10.0 (feature level 294),
-                                this event was sent to all clients when a user group
-                                was deactivated.
+                                This event is also sent when deactivating or reactivating
+                                a user for settings set to anonymous user groups which the
+                                user is direct member of. When deactivating the user, event
+                                is only sent to users who cannot access the deactivated user.
+
+                                **Changes**: Starting with Zulip 10.0 (feature level 303), this
+                                event can also be sent when deactivating or reactivating a user.
+
+                                Prior to Zulip 10.0 (feature level 294), this event was sent to
+                                all clients when a user group was deactivated.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -3210,13 +3234,53 @@ paths:
                                       description: |
                                         The new description of the group. Only present if the description
                                         changed.
+                                    can_add_members_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value][setting-values] defining the set of users who
+                                            have permission to add members to this group. Only present if this user
+                                            group permission setting changed.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 305). Previously, this
+                                            permission was controlled by the `can_manage_group` setting.
+
+                                            Will be one of the following:
+
+                                            [setting-values]: /api/group-setting-values
+                                    can_join_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value][setting-values] defining the set of users who
+                                            have permission to join this group. Only present if this user group
+                                            permission setting changed.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 301).
+
+                                            Will be one of the following:
+
+                                            [setting-values]: /api/group-setting-values
+                                    can_leave_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value][setting-values] defining the set of users who
+                                            have permission to leave this group. Only present if this user group
+                                            permission setting changed.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 308).
+
+                                            Will be one of the following:
+
+                                            [setting-values]: /api/group-setting-values
                                     can_manage_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
                                         - description: |
                                             A [group-setting value][setting-values] defining the set of users who
                                             have permission to [manage this group][manage-user-groups]. Only present
-                                            if this user group permissiod setting changed.
+                                            if this user group permission setting changed.
 
                                             **Changes**: New in Zulip 10.0 (feature level 283).
 
@@ -3269,6 +3333,12 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users when users have been added to a user group.
+
+                                This event is also sent when reactivating a user for all the user
+                                groups the reactivated user was a member of before being deactivated.
+
+                                **Changes**: Starting with Zulip 10.0 (feature level 303), this
+                                event can also be sent when reactivating a user.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -3305,6 +3375,13 @@ paths:
                               description: |
                                 Event sent to all users when users have been removed from
                                 a user group.
+
+                                This event is also sent when deactivating a user, for all
+                                the user groups the deactivated user is a member of, but only
+                                to the users who cannot access the deactivated user.
+
+                                **Changes**: Starting with Zulip 10.0 (feature level 303),
+                                this event can also be sent when deactivating a user.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -3768,7 +3845,7 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to the user who requested a public
+                                Event sent to the user who requested a
                                 [data export](/help/export-your-organization)
                                 when the status of the data export changes.
                               properties:
@@ -3783,7 +3860,10 @@ paths:
                                   type: array
                                   description: |
                                     An array of dictionaries where each dictionary contains
-                                    details about a public data export of the organization.
+                                    details about a data export of the organization.
+
+                                    **Changes**: Prior to Zulip 10.0 (feature level 304), `export_type`
+                                    parameter was not present as only public data export was supported via API.
                                   items:
                                     $ref: "#/components/schemas/RealmExport"
                               example:
@@ -3799,9 +3879,45 @@ paths:
                                         "deleted_timestamp": null,
                                         "failed_timestamp": 1594825444.4363360405,
                                         "pending": false,
+                                        "export_type": 1,
                                       },
                                     ],
                                   "id": 1,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to administrators when the [data export
+                                consent][help-export-consent] status for a user changes, whether due
+                                to a user changing their consent preferences or a user being created
+                                or reactivated (since user creation/activation events do not contain
+                                these data).
+
+                                [help-export-consent]: /help/export-your-organization#configure-whether-administrators-can-export-your-private-data
+
+                                **Changes**: New in Zulip 10.0 (feature level 312). Previously,
+                                there was not event available to administrators with these data.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_export_consent
+                                user_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the user whose setting was changed.
+                                consented:
+                                  type: boolean
+                                  description: |
+                                    Whether the user has consented for their private data export.
+                              example:
+                                {
+                                  "type": "realm_export_consent",
+                                  "user_id": 1,
+                                  "consented": true,
                                 }
                             - type: object
                               additionalProperties: false
@@ -3997,6 +4113,12 @@ paths:
                                 A correct client implementation should convert these
                                 events into the corresponding [realm/update_dict](#realm-update_dict)
                                 event and then process that.
+
+                                **Changes**: Removed `extra_data` optional property in Zulip 10.0
+                                (feature level 306). The `extra_data` used to include an
+                                `upload_quota` field when changed property was `plan_type`. The
+                                server now sends a standard `realm/update_dict` event for plan
+                                changes.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -4021,19 +4143,6 @@ paths:
                                     - type: string
                                     - type: boolean
                                     - type: integer
-                                extra_data:
-                                  description: |
-                                    Object containing extra data related to the changed
-                                    property.
-                                  type: object
-                                  additionalProperties: false
-                                  properties:
-                                    upload_quota:
-                                      type: integer
-                                      description: |
-                                        Note: Only present if changed property is `plan_type`.
-
-                                        The new upload quota for the Zulip organization.
                               example:
                                 {
                                   "type": "realm",
@@ -4199,7 +4308,15 @@ paths:
                                 event type supports multiple properties being changed in a
                                 single event.
 
-                                **Changes**: In Zulip 7.0 (feature level 163), the realm setting
+                                This event is also sent when deactivating or reactivating a user
+                                for settings set to anonymous user groups which the user is direct
+                                member of. When deactivating the user, event is only sent to users
+                                who cannot access the deactivated user.
+
+                                **Changes**: Starting with Zulip 10.0 (feature level 303), this
+                                event can also be sent when deactivating or reactivating a user.
+
+                                In Zulip 7.0 (feature level 163), the realm setting
                                 `email_address_visibility` was removed. It was replaced by a [user
                                 setting](/api/update-settings#parameter-email_address_visibility) with
                                 a [realm user default][user-defaults], with the encoding of different
@@ -4245,11 +4362,6 @@ paths:
                                     irrespective of which of these settings were changed. Now, a separate event
                                     is sent for each changed setting.
                                   properties:
-                                    add_custom_emoji_policy:
-                                      type: integer
-                                      description: |
-                                        The [policy](/api/roles-and-permissions#permission-levels)
-                                        for which users can add custom emoji in this organization.
                                     allow_edit_history:
                                       type: boolean
                                       description: |
@@ -4258,8 +4370,13 @@ paths:
                                     allow_message_editing:
                                       type: boolean
                                       description: |
-                                        Whether this organizations [message edit policy](/help/restrict-message-editing-and-deletion)
+                                        Whether this organization's [message edit policy][config-message-editing]
                                         allows editing the content of messages.
+
+                                        See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+                                        history of how message editing permissions work.
+
+                                        [config-message-editing]: /help/restrict-message-editing-and-deletion
                                     authentication_methods:
                                       type: object
                                       additionalProperties:
@@ -4283,19 +4400,27 @@ paths:
                                       description: |
                                         The [policy](/api/roles-and-permissions#permission-levels)
                                         for which users can create bot users in this organization.
-                                    create_multiuse_invite_group:
+                                    can_access_all_users_group:
                                       type: integer
                                       description: |
-                                        The ID of the [user group](/api/get-user-groups) whose members are
-                                        allowed to create [reusable invitation
-                                        links](/help/invite-new-users#create-a-reusable-invitation-link)
-                                        to the organization.
+                                        The ID of the [user group](/api/get-user-groups) whose members
+                                        are allowed to access all users in the organization.
 
-                                        This setting can currently only be set to user groups that are
-                                        system groups, except for the system groups named
-                                        `"role:internet"` and `"role:owners"`.
+                                        This setting can currently only be set to `"role:everyone"`
+                                        system group.
 
-                                        **Changes**: New in Zulip 8.0 (feature level 209).
+                                        **Changes**: New in Zulip 8.0 (feature level 225).
+                                    can_create_groups:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining
+                                            the set of users who have permission to create user
+                                            groups in this organization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 299). Previously
+                                            `user_group_edit_policy` field used to control the permission
+                                            to create user groups.
                                     can_create_public_channel_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -4303,9 +4428,6 @@ paths:
                                             A [group-setting value](/api/group-setting-values) defining
                                             the set of users who have permission to create public
                                             channels in this organization.
-
-                                            This setting cannot be set to `"role:internet"`, `"role:everyone"`,
-                                            `"role:owners"` and `"role:nobody"` system groups.
 
                                             **Changes**: New in Zulip 9.0 (feature level 264). Previously
                                             `realm_create_public_stream_policy` field used to control the
@@ -4318,9 +4440,6 @@ paths:
                                             the set of users who have permission to create private
                                             channels in this organization.
 
-                                            This setting cannot be set to `"role:internet"`, `"role:everyone"`,
-                                            `"role:owners"` and `"role:nobody"` system groups.
-
                                             **Changes**: New in Zulip 9.0 (feature level 266). Previously
                                             `realm_create_private_stream_policy` field used to control the
                                             permission to create private channels.
@@ -4332,13 +4451,23 @@ paths:
                                             the set of users who have permission to create web-public
                                             channels in this organization.
 
-                                            This setting can only be set to `"role:moderators"`,
-                                            `"role:administrators"`, `"role:owners"` and
-                                            `"role:nobody"` system groups.
-
                                             **Changes**: New in Zulip 10.0 (feature level 280). Previously
                                             `realm_create_web_public_stream_policy` field used to control
                                             the permission to create web-public channels.
+                                    can_add_custom_emoji_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to add custom emoji in the organization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 307). Previously, this
+                                            permission was controlled by the enum `add_custom_emoji_policy`. Values
+                                            were 1=Members, 2=Admins, 3=Full members, 4=Moderators.
+
+                                            Before Zulip 5.0 (feature level 85), the `realm_add_emoji_by_admins_only`
+                                            boolean setting controlled this permission; `true` corresponded to `Admins`,
+                                            and `false` to `Everyone`.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_delete_any_message_group:
                                       allOf:
                                         - description: |
@@ -4363,6 +4492,58 @@ paths:
                                             setting controlled this permission; `true` corresponded to `Everyone`, and
                                             `false` to `Admins`.
                                         - $ref: "#/components/schemas/GroupSettingValue"
+                                    can_move_messages_between_channels_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to move messages from one channel to another
+                                            in the organization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 310). Previously, this
+                                            permission was controlled by the enum `move_messages_between_streams_policy`.
+                                            Values were 1=Members, 2=Admins, 3=Full members, 4=Moderators, 6=Nobody.
+
+                                            In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
+                                            `move_messages_between_streams_policy` enum.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                    can_manage_all_groups:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values)
+                                            defining the set of users who have permission to
+                                            administer all existing groups in this organization.
+
+                                            **Changes**: Prior to Zulip 10.0 (feature level 305), only users who
+                                            were a member of the group or had the moderator role or above could
+                                            exercise the permission on a given group.
+
+                                            New in Zulip 10.0 (feature level 299). Previously the
+                                            `user_group_edit_policy` field controlled the permission
+                                            to manage user groups. Valid values were as follows:
+
+                                            - 1 = All members can create and edit user groups
+                                            - 2 = Only organization administrators can create and edit
+                                              user groups
+                                            - 3 = Only [full members][calc-full-member] can create and
+                                              edit user groups.
+                                            - 4 = Only organization administrators and moderators can
+                                              create and edit user groups.
+
+                                            [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+                                    create_multiuse_invite_group:
+                                      type: integer
+                                      description: |
+                                        The ID of the [user group](/api/get-user-groups) whose members are
+                                        allowed to create [reusable invitation
+                                        links](/help/invite-new-users#create-a-reusable-invitation-link)
+                                        to the organization.
+
+                                        This setting can currently only be set to user groups that are
+                                        system groups, except for the system groups named
+                                        `"role:internet"` and `"role:owners"`.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 209).
                                     default_code_block_language:
                                       type: string
                                       description: |
@@ -4441,10 +4622,12 @@ paths:
                                         - 5 = Everyone
                                         - 6 = Nobody
 
+                                        See [`PATCH /messages/{message_id}`](/api/update-message) for details and history
+                                        of how message editing permissions work.
+
                                         **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
 
-                                        New in Zulip 5.0 (feature level 75), replacing the previous
-                                        `allow_community_topic_editing` boolean.
+                                        New in Zulip 5.0 (feature level 75).
 
                                         [permission-level]: /api/roles-and-permissions#permission-levels
                                         [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -4454,12 +4637,29 @@ paths:
                                         Whether users are allowed to change their own email address in this
                                         organization. This is typically disabled for organizations that
                                         synchronize accounts from LDAP or a similar corporate database.
+                                    enable_read_receipts:
+                                      type: boolean
+                                      description: |
+                                        Whether read receipts is enabled in the organization or not.
+
+                                        If disabled, read receipt data will be unavailable to clients, regardless
+                                        of individual users' personal read receipt settings. See also the
+                                        `send_read_receipts` setting within `realm_user_settings_defaults`.
+
+                                        **Changes**: New in Zulip 6.0 (feature level 137).
                                     emails_restricted_to_domains:
                                       type: boolean
                                       description: |
                                         Whether [new users joining](/help/restrict-account-creation#configuring-email-domain-restrictions)
                                         this organization are required to have an email
                                         address in one of the `realm_domains` configured for the organization.
+                                    enable_guest_user_indicator:
+                                      type: boolean
+                                      description: |
+                                        Whether clients should display "(guest)" after the names of
+                                        guest users to prominently highlight their status.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 216).
                                     enable_spectator_access:
                                       type: boolean
                                       description: |
@@ -4519,6 +4719,19 @@ paths:
                                       description: |
                                         The [policy](/api/roles-and-permissions#permission-levels)
                                         for which users can add other users to channels in this organization.
+                                    jitsi_server_url:
+                                      type: string
+                                      nullable: true
+                                      description: |
+                                        The URL of the custom Jitsi Meet server configured in this organization's
+                                        settings.
+
+                                        `null`, the default, means that the organization is using the should use the
+                                        server-level configuration, `server_jitsi_server_url`.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
+                                        available as a server-level configuration, and required a server restart to
+                                        change.
                                     logo_source:
                                       type: string
                                       description: |
@@ -4538,6 +4751,14 @@ paths:
                                       type: boolean
                                       description: |
                                         Whether [topics are required](/help/require-topics) for messages in this organization.
+                                    max_file_upload_size_mib:
+                                      type: integer
+                                      description: |
+                                        The new maximum file size that can be uploaded to this Zulip organization.
+
+                                        **Changes**: New in Zulip 10.0 (feature level 306). Previously, this field of
+                                        the core state did not support being updated via the events system, as it was
+                                        typically hardcoded for a given Zulip installation.
                                     message_content_allowed_in_email_notifications:
                                       type: boolean
                                       description: |
@@ -4565,8 +4786,14 @@ paths:
                                         with this organization's
                                         [message edit policy](/help/restrict-message-editing-and-deletion).
 
-                                        **Changes**: No limit was represented using the
-                                        special value `0` before Zulip 6.0 (feature level 138).
+                                        Will not be `0`. A `null` value means no limit, so messages can be edited
+                                        regardless of how long ago they were sent.
+
+                                        See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+                                        history of how message editing permissions work.
+
+                                        **Changes**: Before Zulip 6.0 (feature level 138), no limit was
+                                        represented using the special value `0`.
                                     move_messages_within_stream_limit_seconds:
                                       type: integer
                                       nullable: true
@@ -4576,8 +4803,11 @@ paths:
                                         organization's [topic edit policy](/help/restrict-moving-messages). This
                                         setting does not affect moderators and administrators.
 
-                                        Will not be 0. A `null` value means no limit, so message topics can be
+                                        Will not be `0`. A `null` value means no limit, so message topics can be
                                         edited regardless of how long ago they were sent.
+
+                                        See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+                                        history of how message editing permissions work.
 
                                         **Changes**: New in Zulip 7.0 (feature level 162). Previously, this time
                                         limit was always 72 hours for users who were not administrators or
@@ -4591,30 +4821,15 @@ paths:
                                         [message move policy](/help/restrict-moving-messages). This setting does
                                         not affect moderators and administrators.
 
-                                        Will not be 0. A `null` value means no limit, so messages can be moved
+                                        Will not be `0`. A `null` value means no limit, so messages can be moved
                                         regardless of how long ago they were sent.
+
+                                        See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+                                        history of how message editing permissions work.
 
                                         **Changes**: New in Zulip 7.0 (feature level 162). Previously, there was
                                         no time limit for moving messages between channels for users with permission
                                         to do so.
-                                    move_messages_between_streams_policy:
-                                      type: integer
-                                      description: |
-                                        The [policy][permission-level] for which users can move messages from
-                                        one channel to another.
-
-                                        - 1 = Members only
-                                        - 2 = Administrators only
-                                        - 3 = [Full members][calc-full-member] only
-                                        - 4 = Moderators only
-                                        - 6 = Nobody
-
-                                        **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
-
-                                        New in Zulip 4.0 (feature level 56).
-
-                                        [permission-level]: /api/roles-and-permissions#permission-levels
-                                        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                                     name:
                                       type: string
                                       description: |
@@ -4692,6 +4907,27 @@ paths:
                                       description: |
                                         Whether online presence of other users is shown in this
                                         organization.
+                                    push_notifications_enabled:
+                                      type: boolean
+                                      description: |
+                                        Whether push notifications are enabled for this organization. Typically
+                                        `true` for Zulip Cloud and self-hosted realms that have a valid
+                                        registration for the [Mobile push notifications
+                                        service](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html),
+                                        and `false` for self-hosted servers that do not.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 231).
+                                        Previously, this value was never updated via events.
+                                    push_notifications_enabled_end_timestamp:
+                                      type: integer
+                                      nullable: true
+                                      description: |
+                                        If the server expects the realm's push notifications access to end at a
+                                        definite time in the future, the time at which this is expected to happen.
+                                        Mobile clients should use this field to display warnings to users when the
+                                        indicated timestamp is near.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 231).
                                     require_unique_names:
                                       type: boolean
                                       description: |
@@ -4723,32 +4959,17 @@ paths:
 
                                         **Changes**: In Zulip 9.0 (feature level 241), renamed
                                         `signup_notifications_stream_id` to `signup_announcements_stream_id`.
-                                    zulip_update_announcements_stream_id:
+                                    upload_quota_mib:
                                       type: integer
+                                      nullable: true
                                       description: |
-                                        The ID of the channel to which automated messages announcing
-                                        new features or other end-user updates about the Zulip software are sent.
+                                        The new upload quota for the Zulip organization.
 
-                                        Will be `-1` if such automated messages are disabled.
+                                        If `null`, there is no limit.
 
-                                        Since these automated messages are sent by the server, this field is
-                                        primarily relevant to clients containing UI for changing it.
-
-                                        **Changes**: New in Zulip 9.0 (feature level 242).
-                                    user_group_edit_policy:
-                                      type: integer
-                                      description: |
-                                        The organization's [policy][permission-level] for
-                                        [who can manage user groups][user-group-permissions].
-
-                                        - 1 = All members can create and edit user groups
-                                        - 2 = Only organization administrators can create and edit user groups
-                                        - 3 = Only [full members][calc-full-member] can create and edit user groups
-                                        - 4 = Only organization administrators and moderators can create and edit user groups
-
-                                        [user-group-permissions]: /help/user-groups#configure-who-can-create-and-manage-user-groups
-                                        [permission-level]: /api/roles-and-permissions#permission-levels
-                                        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+                                        **Changes**: New in Zulip 10.0 (feature level 306). Previously,
+                                        this was present changed via an `upload_quota` field in `extra_data` property
+                                        of [realm/update](#realm-update) event format for `plan_type` events.
                                     video_chat_provider:
                                       type: integer
                                       description: |
@@ -4762,19 +4983,6 @@ paths:
 
                                         **Changes**: None added as an option in Zulip 3.0 (feature level 1)
                                         to disable video call UI.
-                                    jitsi_server_url:
-                                      type: string
-                                      nullable: true
-                                      description: |
-                                        The URL of the custom Jitsi Meet server configured in this organization's
-                                        settings.
-
-                                        `null`, the default, means that the organization is using the should use the
-                                        server-level configuration, `server_jitsi_server_url`.
-
-                                        **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
-                                        available as a server-level configuration, and required a server restart to
-                                        change.
                                     waiting_period_threshold:
                                       type: integer
                                       description: |
@@ -4812,54 +5020,18 @@ paths:
 
                                         [permission-level]: /api/roles-and-permissions#permission-levels
                                         [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
-                                    enable_read_receipts:
-                                      type: boolean
-                                      description: |
-                                        Whether read receipts is enabled in the organization or not.
-
-                                        If disabled, read receipt data will be unavailable to clients, regardless
-                                        of individual users' personal read receipt settings. See also the
-                                        `send_read_receipts` setting within `realm_user_settings_defaults`.
-
-                                        **Changes**: New in Zulip 6.0 (feature level 137).
-                                    enable_guest_user_indicator:
-                                      type: boolean
-                                      description: |
-                                        Whether clients should display "(guest)" after the names of
-                                        guest users to prominently highlight their status.
-
-                                        **Changes**: New in Zulip 8.0 (feature level 216).
-                                    can_access_all_users_group:
+                                    zulip_update_announcements_stream_id:
                                       type: integer
                                       description: |
-                                        The ID of the [user group](/api/get-user-groups) whose members
-                                        are allowed to access all users in the organization.
+                                        The ID of the channel to which automated messages announcing
+                                        new features or other end-user updates about the Zulip software are sent.
 
-                                        This setting can currently only be set to `"role:everyone"`
-                                        system group.
+                                        Will be `-1` if such automated messages are disabled.
 
-                                        **Changes**: New in Zulip 8.0 (feature level 225).
-                                    push_notifications_enabled:
-                                      type: boolean
-                                      description: |
-                                        Whether push notifications are enabled for this organization. Typically
-                                        `true` for Zulip Cloud and self-hosted realms that have a valid
-                                        registration for the [Mobile push notifications
-                                        service](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html),
-                                        and `false` for self-hosted servers that do not.
+                                        Since these automated messages are sent by the server, this field is
+                                        primarily relevant to clients containing UI for changing it.
 
-                                        **Changes**: New in Zulip 8.0 (feature level 231).
-                                        Previously, this value was never updated via events.
-                                    push_notifications_enabled_end_timestamp:
-                                      type: integer
-                                      nullable: true
-                                      description: |
-                                        If the server expects the realm's push notifications access to end at a
-                                        definite time in the future, the time at which this is expected to happen.
-                                        Mobile clients should use this field to display warnings to users when the
-                                        indicated timestamp is near.
-
-                                        **Changes**: New in Zulip 8.0 (feature level 231).
+                                        **Changes**: New in Zulip 9.0 (feature level 242).
                                   additionalProperties: false
                               example:
                                 {
@@ -6449,33 +6621,37 @@ paths:
       summary: Get messages
       tags: ["messages"]
       description: |
-        Fetch user's message history from a Zulip server.
+        This endpoint is the primary way to fetch a messages. It is used by all official
+        Zulip clients (e.g. the web, desktop, mobile, and terminal clients) as well as
+        many bots, API clients, backup scripts, etc.
 
-        This endpoint is the primary way to fetch a user's message history
-        from a Zulip server. It is useful both for Zulip clients (e.g. the
-        web, desktop, mobile, and terminal clients) as well as bots, API
-        clients, backup scripts, etc.
+        Most queries will specify a [narrow filter](/api/get-messages#parameter-narrow),
+        to fetch the messages matching any supported [search
+        query](/help/search-for-messages). If not specified, it will return messages
+        corresponding to the user's [combined feed](/help/combined-feed). There are two
+        ways to specify which messages matching the narrow filter to fetch:
+
+        - A range of messages, described by an `anchor` message ID (or a string-format
+          specification of how the server should computer an anchor to use) and a maximum
+          number of messages in each direction from that anchor.
+
+        - A rarely used variant (`message_ids`) where the client specifies the message IDs
+          to fetch.
+
+        The server returns the matching messages, sorted by message ID, as well as some
+        metadata that makes it easy for a client to determine whether there are more
+        messages matching the query that were not returned due to the `num_before` and
+        `num_after` limits.
 
         Note that a user's message history does not contain messages sent to
         channels before they [subscribe](/api/subscribe), and newly created
         bot users are not usually subscribed to any channels.
 
-        By specifying a [narrow filter](/api/get-messages#parameter-narrow),
-        you can use this endpoint to fetch the messages matching any search
-        query that is supported by Zulip's powerful full-text search backend.
+        We recommend requesting at most 1000 messages in a batch, to avoid generating very
+        large HTTP responses. A maximum of 5000 messages can be obtained per request;
+        attempting to exceed this will result in an error.
 
-        In either case, you specify an `anchor` message (or ask the server to
-        calculate the first unread message for you and use that as the
-        anchor), as well as a number of messages before and after the anchor
-        message. The server returns those messages, sorted by message ID, as
-        well as some metadata that makes it easy for a client to determine
-        whether there are more messages matching the query that were not
-        returned due to the `num_before` and `num_after` limits.
-
-        We recommend setting `num_before` and `num_after` to no more than 1000, to
-        avoid generating very large HTTP responses. A maximum of 5000 messages
-        can be obtained per request; attempting to exceed this will result in an
-        error.
+        **Changes**: The `message_ids` option is new in Zulip 10.0 (feature level 300).
       x-curl-examples-parameters:
         oneOf:
           - type: exclude
@@ -6485,6 +6661,7 @@ paths:
                 - apply_markdown
                 - use_first_unread_anchor
                 - include_anchor
+                - message_ids
       parameters:
         - name: anchor
           in: query
@@ -6524,20 +6701,22 @@ paths:
           in: query
           description: |
             The number of messages with IDs less than the anchor to retrieve.
+            Required if `message_ids` is not provided.
           schema:
             type: integer
             minimum: 0
           example: 4
-          required: true
+          required: false
         - name: num_after
           in: query
           description: |
             The number of messages with IDs greater than the anchor to retrieve.
+            Required if `message_ids` is not provided.
           schema:
             type: integer
             minimum: 0
           example: 8
-          required: true
+          required: false
         - name: narrow
           in: query
           description: |
@@ -6618,6 +6797,26 @@ paths:
             type: boolean
             default: false
           example: true
+        - name: message_ids
+          in: query
+          description: |
+            A list of message IDs to fetch. The server will return messages corresponding to the
+            subset of the requested message IDs that exist and the current user has access to,
+            potentially filtered by the narrow (if that parameter is provided).
+
+            It is an error to pass this parameter as well as any of the parameters involved in
+            specifying a range of messages: `anchor`, `include_anchor`, `use_first_unread_anchor`,
+            `num_before`, and `num_after`.
+
+            **Changes**: New in Zulip 10.0 (feature level 300). Previously, there was
+            no way to request a specific set of messages IDs.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+              example: [1, 2, 3]
       responses:
         "200":
           description: Success.
@@ -6627,6 +6826,10 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - additionalProperties: false
+                    required:
+                      - result
+                      - msg
+                      - messages
                     properties:
                       result: {}
                       msg: {}
@@ -6636,6 +6839,8 @@ paths:
                         description: |
                           The same `anchor` specified in the request (or the computed one, if
                           `use_first_unread_anchor` is `true`).
+
+                          Only present if `message_ids` is not provided.
                       found_newest:
                         type: boolean
                         description: |
@@ -8071,16 +8276,15 @@ paths:
       summary: Edit a message
       tags: ["messages"]
       description: |
-        Edit/update the content, topic, or channel of a message.
+        Update the content, topic, or channel of the message with the specified
+        ID.
 
-        `{msg_id}` in the above URL should be replaced with the ID of the
-        message you wish you update.
-
-        You can [resolve topics](/help/resolve-a-topic) by editing the
-        topic to `✔ {original_topic}`.
+        You can [resolve topics](/help/resolve-a-topic) by editing the topic to
+        `✔ {original_topic}` with the `propagate_mode` parameter set to
+        `"change_all"`.
 
         See [configuring message editing][config-message-editing] for detailed
-        documentation on when users are allowed to edit message content and
+        documentation on when users are allowed to edit message content, and
         [restricting moving messages][restrict-move-messages] for detailed
         documentation on when users are allowed to change a message's topic
         and/or channel.
@@ -8089,8 +8293,8 @@ paths:
         linked documentation on when users are allowed to update messages are:
 
         - `allow_message_editing`
+        - `can_move_messages_between_channels_group`
         - `edit_topic_policy`
-        - `move_messages_between_streams_policy`
         - `message_content_edit_limit_seconds`
         - `move_messages_within_stream_limit_seconds`
         - `move_messages_between_streams_limit_seconds`
@@ -8100,7 +8304,11 @@ paths:
         of the [`realm op: update_dict`](/api/get-events#realm-update_dict)
         event in [`GET /events`](/api/get-events).
 
-        **Changes**: Prior to Zulip 7.0 (feature level 172), anyone could add a
+        **Changes**: In Zulip 10.0 (feature level 310), `move_messages_between_streams_policy`
+        was removed and replaced by `can_move_messages_between_channels_group`
+        realm setting.
+
+        Prior to Zulip 7.0 (feature level 172), anyone could add a
         topic to channel messages without a topic, regardless of the organization's
         [topic editing permissions](/help/restrict-moving-messages). As of this
         feature level, messages without topics have the same restrictions for
@@ -8132,6 +8340,12 @@ paths:
 
         Before Zulip 7.0 (feature level 159), message senders were allowed to edit
         the topic of their messages indefinitely.
+
+        In Zulip 5.0 (feature level 75), the `edit_topic_policy` realm setting
+        was added, replacing the `allow_community_topic_editing` boolean.
+
+        In Zulip 4.0 (feature level 56), the `move_messages_between_streams_policy`
+        realm setting was added.
 
         [config-message-editing]: /help/restrict-message-editing-and-deletion
         [restrict-move-messages]: /help/restrict-moving-messages
@@ -12308,9 +12522,17 @@ paths:
         Fetching by user ID is generally recommended when possible,
         as a user might [change their email address](/help/change-your-email-address)
         or change their [email address visibility](/help/configure-email-visibility),
-        either of which could change the value of their Zulip API email address.
+        either of which could change the client's ability to look them up by that
+        email address.
 
-        **Changes**: New in Zulip Server 4.0 (feature level 39).
+        **Changes**: Starting with Zulip 10.0 (feature level 302), the real email
+        address can be used in the `email` parameter and will fetch the target user's
+        data if and only if the target's email visibility setting permits the requester
+        to see the email address.
+        The dummy email addresses of the form `user{id}@{realm.host}` still work, and
+        will now work for **all** users, via identifying them by the embedded user ID.
+
+        New in Zulip Server 4.0 (feature level 39).
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -12327,7 +12549,24 @@ paths:
         - name: email
           in: path
           description: |
-            The Zulip API email address of the user whose details you want to fetch.
+            The email address of the user to fetch. Two forms are supported:
+
+            - The real email address of the user (`delivery_email`). The lookup will
+              succeed if and only if the user exists and their email address visibility
+              setting permits the client to see the email address.
+
+            - The dummy Zulip API email address of the form `user{user_id}@{realm_host}`. This
+              is identical to simply [getting user by ID](/api/get-user). If the server or
+              realm change domains, the dummy email address used has to be adjustment to
+              match the new realm domain. This is legacy behavior for
+              backwards-compatibility, and will be removed in a future release.
+
+            **Changes**: Starting with Zulip 10.0 (feature level 302), lookups by real email
+            address match the semantics of the target's email visibility setting and dummy
+            email addresses work for all users, independently of their email visibility
+            setting.
+
+            Previously, lookups were done only using the Zulip API email addresses.
           schema:
             type: string
           example: iago@zulip.com
@@ -12395,6 +12634,52 @@ paths:
                             "delivery_email": null,
                           },
                       }
+    patch:
+      operationId: update-user-by-email
+      summary: Update a user by email
+      tags: ["users"]
+      x-requires-administrator: true
+      description: |
+        Administrative endpoint to update the details of another user in the organization by their email address.
+        Works the same way as [`PATCH /users/{user_id}`](/api/update-user) but fetching the target user by their
+        real email address.
+
+        The requester needs to have permission to view the target user's real email address, subject to the
+        user's email address visibility setting. Otherwise, the dummy address of the format
+        `user{id}@{realm.host}` needs be used. This follows the same rules as `GET /users/{email}`.
+
+        **Changes**: New in Zulip 10.0 (feature level 313).
+      parameters:
+        - name: email
+          in: path
+          required: true
+          description: |
+            The email address of the user, specified following the same rules as
+            [`GET /users/{email}`](/api/get-user-by-email).
+          schema:
+            type: string
+          example: hamlet@zulip.com
+      requestBody:
+        $ref: "#/components/requestBodies/UpdateUser"
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "Guests cannot be organization administrators",
+                        "code": "BAD_REQUEST",
+                      }
+                    description: |
+                      A typical unsuccessful JSON response:
   /users/{user_id}:
     get:
       operationId: get-user
@@ -12499,52 +12784,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/UserId"
       requestBody:
-        required: false
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                full_name:
-                  description: |
-                    The user's full name.
-
-                    **Changes**: Removed unnecessary JSON-encoding of this parameter in
-                    Zulip 5.0 (feature level 106).
-                  type: string
-                  example: NewName
-                role:
-                  description: |
-                    New [role](/api/roles-and-permissions) for the user. Roles are encoded as:
-
-                    - Organization owner: 100
-                    - Organization administrator: 200
-                    - Organization moderator: 300
-                    - Member: 400
-                    - Guest: 600
-
-                    Only organization owners can add or remove the owner role.
-
-                    The owner role cannot be removed from the only organization owner.
-
-                    **Changes**: New in Zulip 3.0 (feature level 8), replacing the previous
-                    pair of `is_admin` and `is_guest` boolean parameters. Organization moderator
-                    role added in Zulip 4.0 (feature level 60).
-                  type: integer
-                  example: 400
-                profile_data:
-                  description: |
-                    A dictionary containing the to be updated custom profile field data for the user.
-                  type: array
-                  items:
-                    type: object
-                  example:
-                    [{"id": 4, "value": "0"}, {"id": 5, "value": "1909-04-05"}]
-            encoding:
-              role:
-                contentType: application/json
-              profile_data:
-                contentType: application/json
+        $ref: "#/components/requestBodies/UpdateUser"
 
       responses:
         "200":
@@ -12908,14 +13148,19 @@ paths:
   /export/realm:
     get:
       operationId: get-realm-exports
-      summary: Get all public data exports
+      summary: Get all data exports
       tags: ["server_and_organizations"]
       x-requires-administrator: true
       description: |
-        Fetch all public [data exports](/help/export-your-organization)
+        Fetch all the public and standard [data exports][export-data]
         of the organization.
 
-        **Changes**: New in Zulip 2.1.
+        **Changes**: Prior to Zulip 10.0 (feature level 304), only
+        public data exports could be fetched using this endpoint.
+
+        New in Zulip 2.1.
+
+        [export-data]: /help/export-your-organization#export-for-migrating-to-zulip-cloud-or-a-self-hosted-server
       responses:
         "200":
           description: Success.
@@ -12933,7 +13178,7 @@ paths:
                         type: array
                         description: |
                           An array of dictionaries where each dictionary contains
-                          details about a public data export of the organization.
+                          details about a data export of the organization.
                         items:
                           $ref: "#/components/schemas/RealmExport"
                     example:
@@ -12943,6 +13188,7 @@ paths:
                             {
                               "acting_user_id": 11,
                               "deleted_timestamp": null,
+                              "export_type": 1,
                               "export_time": 1722243168.134179,
                               "export_url": "http://example.zulipchat.com/user_avatars/exports/2/FprbwiF0c_sCN0O-rf-ryFtc/zulip-export-p6yuxc45.tar.gz",
                               "id": 323,
@@ -12955,12 +13201,11 @@ paths:
                       }
     post:
       operationId: export-realm
-      summary: Create a public data export
+      summary: Create a data export
       tags: ["server_and_organizations"]
       x-requires-administrator: true
       description: |
-        Create a public [data export](/help/export-your-organization)
-        of the organization.
+        Create a public or a standard [data export][export-data] of the organization.
 
         !!! warn ""
 
@@ -12968,10 +13213,38 @@ paths:
             you may be looking for the documentation on [server data export and
             import][data-export] or [server backups][backups].
 
-        **Changes**: New in Zulip 2.1.
+        **Changes**: Prior to Zulip 10.0 (feature level 304), only
+        public data exports could be created using this endpoint.
 
+        New in Zulip 2.1.
+
+        [export-data]: /help/export-your-organization#export-for-migrating-to-zulip-cloud-or-a-self-hosted-server
         [data-export]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#data-export
         [backups]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                export_type:
+                  description: |
+                    Whether to create a public or a standard data export.
+
+                    - 1 = Public data export.
+                    - 2 = Standard data export.
+
+                    If not specified, defaults to 1.
+
+                    **Changes**: New in Zulip 10.0 (feature level 304). Previously,
+                    all export requests were public data exports.
+                  type: integer
+                  enum:
+                    - 1
+                    - 2
+                  default: 1
+                  example: 2
       responses:
         "200":
           description: Success
@@ -12988,7 +13261,7 @@ paths:
                       id:
                         type: integer
                         description: |
-                          The ID of the public data export created.
+                          The ID of the data export created.
 
                           **Changes**: New in Zulip 7.0 (feature level 182).
                     example: {"id": 1, "result": "success", "msg": ""}
@@ -13006,7 +13279,7 @@ paths:
                         "result": "error",
                       }
                     description: |
-                      An example JSON error response for when the public data export
+                      An example JSON error response for when the data export
                       exceeds the maximum allowed data export size.
   /export/realm/consents:
     get:
@@ -13015,7 +13288,7 @@ paths:
       tags: ["server_and_organizations"]
       x-requires-administrator: true
       description: |
-        Fetches which users have [consented](/help/export-your-organization#full-export-with-member-consent)
+        Fetches which users have [consented](/help/export-your-organization#configure-whether-administrators-can-export-your-private-data)
         for their private data to be exported by organization administrators.
 
         **Changes**: New in Zulip 10.0 (feature level 295).
@@ -14975,7 +15248,7 @@ paths:
                           enter_sends:
                             type: boolean
                             description: |
-                              Whether the user setting for [sending on pressing Enter](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
+                              Whether the user setting for [sending on pressing Enter](/help/configure-send-message-keys)
                               in the compose box is enabled.
                           enable_drafts_synchronization:
                             type: boolean
@@ -15952,7 +16225,7 @@ paths:
                           `update_display_settings`.
 
                           [capabilities]: /api/register-queue#parameter-client_capabilities
-                          [set-enter-send]: /help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message
+                          [set-enter-send]: /help/configure-send-message-keys
                       emojiset_choices:
                         deprecated: true
                         description: |
@@ -15990,24 +16263,6 @@ paths:
                               type: string
                               description: |
                                 The text describing the emoji set.
-                      realm_add_custom_emoji_policy:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          The [policy][permission-level] for which users can upload new custom emoji
-                          in this organization.
-
-                          - 1 = Members only
-                          - 2 = Administrators only
-                          - 3 = [Full members][calc-full-member] only
-                          - 4 = Moderators only
-
-                          **Changes**: New in Zulip 5.0 (feature level 85) replacing the
-                          previous `realm_add_emoji_by_admins_only` boolean.
-
-                          [permission-level]: /api/roles-and-permissions#permission-levels
-                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_allow_edit_history:
                         type: boolean
                         description: |
@@ -16015,6 +16270,22 @@ paths:
 
                           Whether this organization is configured to allow users to access
                           [message edit history](/help/view-a-messages-edit-history).
+                      realm_can_add_custom_emoji_group:
+                        allOf:
+                          - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to add custom emoji in the organization.
+
+                              **Changes**: New in Zulip 10.0 (feature level 307). Previously, this
+                              permission was controlled by the enum `add_custom_emoji_policy`. Values
+                              were 1=Members, 2=Admins, 3=Full members, 4=Moderators.
+
+                              Before Zulip 5.0 (feature level 85), the `realm_add_emoji_by_admins_only`
+                              boolean setting controlled this permission; `true` corresponded to `Admins`,
+                              and `false` to `Everyone`.
+                          - $ref: "#/components/schemas/GroupSettingValue"
                       realm_can_delete_any_message_group:
                         allOf:
                           - description: |
@@ -16043,6 +16314,22 @@ paths:
                               setting controlled this permission; `true` corresponded to `Everyone`, and
                               `false` to `Admins`.
                           - $ref: "#/components/schemas/GroupSettingValue"
+                      realm_can_move_messages_between_channels_group:
+                        allOf:
+                          - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to move messages from one channel to another
+                              in the organization.
+
+                              **Changes**: New in Zulip 10.0 (feature level 310). Previously, this
+                              permission was controlled by the enum `move_messages_between_streams_policy`.
+                              Values were 1=Members, 2=Admins, 3=Full members, 4=Moderators, 6=Nobody.
+
+                              In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
+                              `move_messages_between_streams_policy` enum.
+                          - $ref: "#/components/schemas/GroupSettingValue"
                       realm_bot_creation_policy:
                         type: integer
                         description: |
@@ -16050,6 +16337,42 @@ paths:
 
                           The [policy](/api/roles-and-permissions#permission-levels)
                           for which users can create bot users in this organization.
+                      realm_can_create_groups:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining
+                              the set of users who have permission to create user
+                              groups in this organization.
+
+                              **Changes**: New in Zulip 10.0 (feature level 299). Previously
+                              `realm_user_group_edit_policy` field used to control the
+                              permission to create user groups.
+                      realm_can_manage_all_groups:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values)
+                              defining the set of users who have permission to
+                              administer all existing groups in this organization.
+
+                              **Changes**: Prior to Zulip 10.0 (feature level 305), only users who
+                              were a member of the group or had the moderator role or above could
+                              exercise the permission on a given group.
+
+                              New in Zulip 10.0 (feature level 299). Previously the
+                              `user_group_edit_policy` field controlled the permission
+                              to manage user groups. Valid values were as follows:
+
+                              - 1 = All members can create and edit user groups
+                              - 2 = Only organization administrators can create and edit
+                                user groups
+                              - 3 = Only [full members][calc-full-member] can create and
+                                edit user groups.
+                              - 4 = Only organization administrators and moderators can
+                                create and edit user groups.
+
+                              [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_can_create_public_channel_group:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
@@ -16057,9 +16380,6 @@ paths:
                               A [group-setting value](/api/group-setting-values) defining
                               the set of users who have permission to create public
                               channels in this organization.
-
-                              This setting cannot be set to `"role:internet"`, `"role:everyone"`,
-                              `"role:owners"` and `"role:nobody"` system groups.
 
                               **Changes**: New in Zulip 9.0 (feature level 264). Previously
                               `realm_create_public_stream_policy` field used to control the
@@ -16072,9 +16392,6 @@ paths:
                               the set of users who have permission to create private
                               channels in this organization.
 
-                              This setting cannot be set to `"role:internet"`, `"role:everyone"`,
-                              `"role:owners"` and `"role:nobody"` system groups.
-
                               **Changes**: New in Zulip 9.0 (feature level 266). Previously
                               `realm_create_private_stream_policy` field used to control the
                               permission to create private channels.
@@ -16085,10 +16402,6 @@ paths:
                               A [group-setting value](/api/group-setting-values) defining
                               the set of users who have permission to create web-public
                               channels in this organization.
-
-                              This setting can only be set to `"role:moderators"`,
-                              `"role:administrators"`, `"role:owners"` and
-                              `"role:nobody"` system groups.
 
                               Has no effect and should not be displayed in settings UI
                               unless the Zulip server has the `WEB_PUBLIC_STREAMS_ENABLED`
@@ -16290,26 +16603,6 @@ paths:
                           `"role:internet"` and `"role:owners"`.
 
                           **Changes**: New in Zulip 8.0 (feature level 209).
-                      realm_move_messages_between_streams_policy:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          The [policy][permission-level] for which users can move messages
-                          from one channel to another.
-
-                          - 1 = Members only
-                          - 2 = Administrators only
-                          - 3 = [Full members][calc-full-member] only
-                          - 4 = Moderators only
-                          - 6 = Nobody
-
-                          **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
-
-                          New in Zulip 4.0 (feature level 56).
-
-                          [permission-level]: /api/roles-and-permissions#permission-levels
-                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_inline_image_preview:
                         type: boolean
                         description: |
@@ -16521,22 +16814,6 @@ paths:
                               `private_message_policy` realm setting, which supported values of
                               1 (enabled) and 2 (disabled).
                           - $ref: "#/components/schemas/GroupSettingValue"
-                      realm_user_group_edit_policy:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          The organization's [policy][permission-level] for
-                          [who can manage user groups][user-group-permissions].
-
-                          - 1 = All members can create and edit user groups
-                          - 2 = Only organization administrators can create and edit user groups
-                          - 3 = Only [full members][calc-full-member] can create and edit user groups.
-                          - 4 = Only organization administrators and moderators can create and edit user groups.
-
-                          [user-group-permissions]: /help/user-groups#configure-who-can-create-and-manage-user-groups
-                          [permission-level]: /api/roles-and-permissions#permission-levels
-                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_default_code_block_language:
                         type: string
                         description: |
@@ -16589,8 +16866,13 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Whether this organizations [message edit policy](/help/restrict-message-editing-and-deletion)
+                          Whether this organization's [message edit policy][config-message-editing]
                           allows editing the content of messages.
+
+                          See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+                          history of how message editing permissions work.
+
+                          [config-message-editing]: /help/restrict-message-editing-and-deletion
                       realm_edit_topic_policy:
                         type: integer
                         description: |
@@ -16605,10 +16887,12 @@ paths:
                           - 5 = Everyone
                           - 6 = Nobody
 
+                          See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+                          history of how message editing permissions work.
+
                           **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
 
-                          New in Zulip 5.0 (feature level 75), replacing the previous
-                          `allow_community_topic_editing` boolean.
+                          New in Zulip 5.0 (feature level 75).
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -16622,11 +16906,14 @@ paths:
                           with this organization's
                           [message edit policy](/help/restrict-message-editing-and-deletion).
 
-                          Will not be 0. A `null` value means no limit: messages can be edited
+                          Will not be `0`. A `null` value means no limit, so messages can be edited
                           regardless of how long ago they were sent.
 
-                          **Changes**: No limit was represented using the
-                          special value `0` before Zulip 6.0 (feature level 138).
+                          See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+                          history of how message editing permissions work.
+
+                          **Changes**: Before Zulip 6.0 (feature level 138), no limit was
+                          represented using the special value `0`.
                       realm_move_messages_within_stream_limit_seconds:
                         type: integer
                         nullable: true
@@ -16638,8 +16925,11 @@ paths:
                           organization's [topic edit policy](/help/restrict-moving-messages). This
                           setting does not affect moderators and administrators.
 
-                          Will not be 0. A `null` value means no limit, so message topics can be
+                          Will not be `0`. A `null` value means no limit, so message topics can be
                           edited regardless of how long ago they were sent.
+
+                          See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+                          history of how message editing permissions work.
 
                           **Changes**: New in Zulip 7.0 (feature level 162). Previously, this time
                           limit was always 72 hours for users who were not administrators or
@@ -16655,8 +16945,11 @@ paths:
                           [message move policy](/help/restrict-moving-messages). This setting does
                           not affect moderators and administrators.
 
-                          Will not be 0. A `null` value means no limit, so messages can be moved
+                          Will not be `0`. A `null` value means no limit, so messages can be moved
                           regardless of how long ago they were sent.
+
+                          See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+                          history of how message editing permissions work.
 
                           **Changes**: New in Zulip 7.0 (feature level 162). Previously, there was
                           no time limit for moving messages between channels for users with permission
@@ -17079,7 +17372,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The maximum file size that can be uploaded to this Zulip server.
+                          The maximum file size that can be uploaded to this Zulip organization.
                       max_avatar_file_size_mib:
                         type: integer
                         description: |
@@ -17642,7 +17935,7 @@ paths:
                           enter_sends:
                             type: boolean
                             description: |
-                              Whether the user setting for [sending on pressing Enter](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
+                              Whether the user setting for [sending on pressing Enter](/help/configure-send-message-keys)
                               in the compose box is enabled.
                           enable_drafts_synchronization:
                             type: boolean
@@ -17982,10 +18275,15 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Configuration for various group permission settings.
+                          Metadata detailing the valid values for permission settings that
+                          use [group-setting values](/api/group-setting-values). Clients
+                          should use these data as explained in the
+                          [main documentation](/api/group-setting-values#permitted-values)
+                          to determine what values to present as possible values for these
+                          settings in UI components.
 
-                          We consider this part of the Zulip API to be unstable
-                          and may change significantly in future versions.
+                          This part of the Zulip API is unstable and may change
+                          significantly in future versions.
 
                           **Changes**: New in Zulip 8.0 (feature level 221).
                         type: object
@@ -20017,6 +20315,56 @@ paths:
                   items:
                     type: integer
                   example: [1, 2, 3, 4]
+                subgroups:
+                  description: |
+                    An array containing the IDs of the initial subgroups for the new
+                    user group.
+
+                    User can add subgroups to the new group irrespective of other
+                    permissions for the new group.
+
+                    **Changes**: New in Zulip 10.0 (feature level 311).
+                  type: array
+                  items:
+                    type: integer
+                  example: [11]
+                can_add_members_group:
+                  allOf:
+                    - description: |
+                        A [group-setting value][setting-values] defining the set of users who
+                        have permission to add members to this user group.
+
+                        **Changes**: New in Zulip 10.0 (feature level 305). Previously, this
+                        permission was controlled by the `can_manage_group` setting.
+
+                        [setting-values]: /api/group-setting-values
+                        [system-groups]: /api/group-setting-values#system-groups
+                    - $ref: "#/components/schemas/GroupSettingValue"
+                  example: 11
+                can_join_group:
+                  allOf:
+                    - description: |
+                        A [group-setting value][setting-values] defining the set of users who
+                        have permission to join this user group.
+
+                        **Changes**: New in Zulip 10.0 (feature level 301).
+
+                        [setting-values]: /api/group-setting-values
+                        [system-groups]: /api/group-setting-values#system-groups
+                    - $ref: "#/components/schemas/GroupSettingValue"
+                  example: 11
+                can_leave_group:
+                  allOf:
+                    - description: |
+                        A [group-setting value][setting-values] defining the set of users who
+                        have permission to leave this user group.
+
+                        **Changes**: New in Zulip 10.0 (feature level 308).
+
+                        [setting-values]: /api/group-setting-values
+                        [system-groups]: /api/group-setting-values#system-groups
+                    - $ref: "#/components/schemas/GroupSettingValue"
+                  example: 15
                 can_manage_group:
                   allOf:
                     - description: |
@@ -20063,6 +20411,14 @@ paths:
             encoding:
               members:
                 contentType: application/json
+              subgroups:
+                contentType: application/json
+              can_add_members_group:
+                contentType: application/json
+              can_join_group:
+                contentType: application/json
+              can_leave_group:
+                contentType: application/json
               can_manage_group:
                 contentType: application/json
               can_mention_group:
@@ -20091,7 +20447,11 @@ paths:
       summary: Update user group members
       tags: ["users"]
       description: |
-        Update the members of a [user group](/help/user-groups).
+        Update the members of a [user group](/help/user-groups). The
+        user IDs must correspond to non-deactivated users.
+
+        **Changes**: Prior to Zulip 10.0 (feature level 303), group memberships of
+        deactivated users were visible to the API and could be edited via this endpoint.
       x-curl-examples-parameters:
         oneOf:
           - type: exclude
@@ -20121,10 +20481,32 @@ paths:
                   items:
                     type: integer
                   example: [12, 13]
+                delete_subgroups:
+                  description: |
+                    The list of user group IDs to be removed from the user group.
+
+                    **Changes**: New in Zulip 10.0 (feature level 311).
+                  type: array
+                  items:
+                    type: integer
+                  example: [9]
+                add_subgroups:
+                  description: |
+                    The list of user group IDs to be added to the user group.
+
+                    **Changes**: New in Zulip 10.0 (feature level 311).
+                  type: array
+                  items:
+                    type: integer
+                  example: [9]
             encoding:
               delete:
                 contentType: application/json
               add:
+                contentType: application/json
+              delete_subgroups:
+                contentType: application/json
+              add_subgroups:
                 contentType: application/json
       responses:
         "200":
@@ -20193,6 +20575,100 @@ paths:
                     a required field.
                   type: string
                   example: The marketing team.
+                can_add_members_group:
+                  description: |
+                    The set of users who have permission to add members to this user group
+                    expressed as an [update to a group-setting value][update-group-setting].
+
+                    **Changes**: New in Zulip 10.0 (feature level 305). Previously, this
+                    permission was controlled by the `can_manage_group` setting.
+
+                    [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+                    [system-groups]: /api/group-setting-values#system-groups
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    new:
+                      allOf:
+                        - description: |
+                            The new [group-setting value](/api/group-setting-values) for the set of users
+                            who would have the permission to add members to the group.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                    old:
+                      allOf:
+                        - description: |
+                            The expected current [group-setting value](/api/group-setting-values)
+                            for the set of users who have the permission to add members to the group.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                  required:
+                    - new
+                  example:
+                    {
+                      "new": {"direct_members": [10], "direct_subgroups": [11]},
+                      "old": 11,
+                    }
+                can_join_group:
+                  description: |
+                    The set of users who have permission to join this user group
+                    expressed as an [update to a group-setting value][update-group-setting].
+
+                    **Changes**: New in Zulip 10.0 (feature level 301).
+
+                    [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+                    [system-groups]: /api/group-setting-values#system-groups
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    new:
+                      allOf:
+                        - description: |
+                            The new [group-setting value](/api/group-setting-values) for who would
+                            have the permission to join the group.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                    old:
+                      allOf:
+                        - description: |
+                            The expected current [group-setting value](/api/group-setting-values)
+                            for who has the permission to join the group.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                  required:
+                    - new
+                  example:
+                    {
+                      "new": {"direct_members": [10], "direct_subgroups": [11]},
+                      "old": 11,
+                    }
+                can_leave_group:
+                  description: |
+                    The set of users who have permission to leave this user group
+                    expressed as an [update to a group-setting value][update-group-setting].
+
+                    **Changes**: New in Zulip 10.0 (feature level 308).
+
+                    [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+                    [system-groups]: /api/group-setting-values#system-groups
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    new:
+                      allOf:
+                        - description: |
+                            The new [group-setting value](/api/group-setting-values) for who would
+                            have the permission to leave the group.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                    old:
+                      allOf:
+                        - description: |
+                            The expected current [group-setting value](/api/group-setting-values)
+                            for who has the permission to leave the group.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                  required:
+                    - new
+                  example:
+                    {
+                      "new": {"direct_members": [10], "direct_subgroups": [11]},
+                      "old": 15,
+                    }
                 can_manage_group:
                   description: |
                     The set of users who have permission to [manage this user group][manage-user-groups]
@@ -20277,6 +20753,12 @@ paths:
                       "old": 11,
                     }
             encoding:
+              can_add_members_group:
+                contentType: application/json
+              can_join_group:
+                contentType: application/json
+              can_leave_group:
+                contentType: application/json
               can_manage_group:
                 contentType: application/json
               can_mention_group:
@@ -20394,7 +20876,12 @@ paths:
                             members:
                               type: array
                               description: |
-                                The integer user IDs of the user group members.
+                                The integer user IDs of the user group's members, which
+                                are guaranteed to be non-deactivated users in the organization.
+
+                                **Changes**: Prior to Zulip 10.0 (feature level 303), this
+                                list also included deactivated users who were members of
+                                the user group before being deactivated.
                               items:
                                 type: integer
                             direct_subgroup_ids:
@@ -20419,6 +20906,43 @@ paths:
                                 modified by users.
 
                                 **Changes**: New in Zulip 5.0 (feature level 93).
+                            can_add_members_group:
+                              allOf:
+                                - $ref: "#/components/schemas/GroupSettingValue"
+                                - description: |
+                                    A [group-setting value][setting-values] defining the set of users who
+                                    have permission to add members to this user group.
+
+                                    **Changes**: New in Zulip 10.0 (feature level 305). Previously, this
+                                    permission was controlled by the `can_manage_group` setting.
+
+                                    Will be one of the following:
+
+                                    [setting-values]: /api/group-setting-values
+                            can_join_group:
+                              allOf:
+                                - $ref: "#/components/schemas/GroupSettingValue"
+                                - description: |
+                                    A [group-setting value][setting-values] defining the set of users who
+                                    have permission to join this user group.
+
+                                    **Changes**: New in Zulip 10.0 (feature level 301).
+
+                                    Will be one of the following:
+
+                                    [setting-values]: /api/group-setting-values
+                            can_leave_group:
+                              allOf:
+                                - $ref: "#/components/schemas/GroupSettingValue"
+                                - description: |
+                                    A [group-setting value][setting-values] defining the set of users who
+                                    have permission to leave this user group.
+
+                                    **Changes**: New in Zulip 10.0 (feature level 308).
+
+                                    Will be one of the following:
+
+                                    [setting-values]: /api/group-setting-values
                             can_manage_group:
                               allOf:
                                 - $ref: "#/components/schemas/GroupSettingValue"
@@ -20478,6 +21002,9 @@ paths:
                               "members": [1],
                               "direct_subgroup_ids": [],
                               "is_system_group": true,
+                              "can_add_members_group": 16,
+                              "can_join_group": 16,
+                              "can_leave_group": 15,
                               "can_manage_group": 16,
                               "can_mention_group": 11,
                             },
@@ -20490,6 +21017,9 @@ paths:
                               "members": [2],
                               "direct_subgroup_ids": [1],
                               "is_system_group": true,
+                              "can_add_members_group": 17,
+                              "can_join_group": 17,
+                              "can_leave_group": 15,
                               "can_manage_group": 17,
                               "can_mention_group": 12,
                             },
@@ -20502,6 +21032,9 @@ paths:
                               "members": [3, 4],
                               "direct_subgroup_ids": [],
                               "is_system_group": false,
+                              "can_add_members_group": 20,
+                              "can_join_group": 20,
+                              "can_leave_group": 15,
                               "can_manage_group": 20,
                               "can_mention_group": 13,
                             },
@@ -20544,7 +21077,7 @@ paths:
                   type: array
                   items:
                     type: integer
-                  example: [9, 10]
+                  example: [10]
             encoding:
               delete:
                 contentType: application/json
@@ -20602,7 +21135,11 @@ paths:
       description: |
         Check whether a user is member of user group.
 
-        **Changes**: New in Zulip 6.0 (feature level 127).
+        **Changes**: Prior to Zulip 10.0 (feature level 303),
+        this would return true when passed a deactivated user
+        who was a member of the user group before being deactivated.
+
+        New in Zulip 6.0 (feature level 127).
       parameters:
         - $ref: "#/components/parameters/UserGroupId"
         - $ref: "#/components/parameters/UserId"
@@ -21679,6 +22216,17 @@ components:
             Depending on the size of the organization, it can take
             anywhere from seconds to an hour to generate the data
             export.
+        export_type:
+          type: integer
+          description: |
+            Whether the data export is a public or a standard data export.
+
+            - 1 = Public data export.
+            - 2 = Standard data export.
+
+            **Changes**: New in Zulip 10.0 (feature level 304). Previously,
+            the export type was not included in these objects because only
+            public data exports could be created or listed via the API or UI.
     UserGroup:
       type: object
       additionalProperties: false
@@ -21724,6 +22272,10 @@ components:
           description: |
             Array containing the ID of the users who are
             members of this user group.
+
+            **Changes**: Prior to Zulip 10.0 (feature level 303), this
+            list also included deactivated users who were members of
+            the user group before being deactivated.
         direct_subgroup_ids:
           type: array
           items:
@@ -21747,6 +22299,43 @@ components:
             directly modified by users.
 
             **Changes**: New in Zulip 5.0 (feature level 93).
+        can_add_members_group:
+          allOf:
+            - $ref: "#/components/schemas/GroupSettingValue"
+            - description: |
+                A [group-setting value][setting-values] defining the set of users who
+                have permission to add members to this user group.
+
+                **Changes**: New in Zulip 10.0 (feature level 305). Previously, this
+                permission was controlled by the `can_manage_group` setting.
+
+                Will be one of the following:
+
+                [setting-values]: /api/group-setting-values
+        can_join_group:
+          allOf:
+            - $ref: "#/components/schemas/GroupSettingValue"
+            - description: |
+                A [group-setting value][setting-values] defining the set of users who
+                have permission to join this user group.
+
+                **Changes**: New in Zulip 10.0 (feature level 301).
+
+                Will be one of the following:
+
+                [setting-values]: /api/group-setting-values
+        can_leave_group:
+          allOf:
+            - $ref: "#/components/schemas/GroupSettingValue"
+            - description: |
+                A [group-setting value][setting-values] defining the set of users who
+                have permission to leave this user group.
+
+                **Changes**: New in Zulip 10.0 (feature level 308).
+
+                Will be one of the following:
+
+                [setting-values]: /api/group-setting-values
         can_manage_group:
           allOf:
             - $ref: "#/components/schemas/GroupSettingValue"
@@ -21800,6 +22389,9 @@ components:
             direct_members:
               description: |
                 The list of IDs of individual users in the collection of users with this permission.
+
+                **Changes**: Prior to Zulip 10.0 (feature level 303), this list would include
+                deactivated users who had the permission before being deactivated.
               type: array
               items:
                 type: integer
@@ -22958,6 +23550,9 @@ components:
           type: boolean
           description: |
             Whether the setting can be set to `role:everyone` system group.
+
+            If false, guest users cannot exercise this permission even if they are part of
+            the [group-setting value](/api/group-setting-values) for this setting.
         default_group_name:
           type: string
           description: |
@@ -23871,6 +24466,67 @@ components:
             allOf:
               - $ref: "#/components/schemas/IgnoredParametersSuccess"
 
+  ################
+  # Shared request bodies
+  ################
+  requestBodies:
+    UpdateUser:
+      required: false
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              full_name:
+                description: |
+                  The user's full name.
+
+                  **Changes**: Removed unnecessary JSON-encoding of this parameter in
+                  Zulip 5.0 (feature level 106).
+                type: string
+                example: NewName
+              role:
+                description: |
+                  New [role](/api/roles-and-permissions) for the user. Roles are encoded as:
+
+                  - Organization owner: 100
+                  - Organization administrator: 200
+                  - Organization moderator: 300
+                  - Member: 400
+                  - Guest: 600
+
+                  Only organization owners can add or remove the owner role.
+
+                  The owner role cannot be removed from the only organization owner.
+
+                  **Changes**: New in Zulip 3.0 (feature level 8), replacing the previous
+                  pair of `is_admin` and `is_guest` boolean parameters. Organization moderator
+                  role added in Zulip 4.0 (feature level 60).
+                type: integer
+                example: 400
+              profile_data:
+                description: |
+                  A dictionary containing the updated custom profile field data for the user.
+                type: array
+                items:
+                  type: object
+                example:
+                  [{"id": 4, "value": "0"}, {"id": 5, "value": "1909-04-05"}]
+              new_email:
+                description: |
+                  New email address for the user. Requires the user making the request
+                  to be an organization owner and additionally have the `.can_change_user_emails`
+                  special permission.
+
+                  **Changes**: New in Zulip 10.0 (feature level 285).
+                type: string
+                example: username@example.com
+          encoding:
+            role:
+              contentType: application/json
+            profile_data:
+              contentType: application/json
+
   ####################
   # Shared parameters
   ####################
@@ -23882,7 +24538,7 @@ components:
         The ID of the target user group.
       schema:
         type: integer
-      example: 33
+      example: 35
       required: true
     QueueId:
       name: queue_id

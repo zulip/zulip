@@ -1,4 +1,4 @@
-import {strict as assert} from "assert";
+import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
 
@@ -136,7 +136,6 @@ async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page: Page): 
     const multiple_recipients_pm = "A direct message group to check spaces";
     await common.send_message(page, "private", {
         recipient: recipients.join(", "),
-        outside_view: true,
         content: multiple_recipients_pm,
     });
 

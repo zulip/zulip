@@ -1,7 +1,7 @@
 "use strict";
 
-const {strict: assert} = require("assert");
-const path = require("path");
+const assert = require("node:assert/strict");
+const path = require("node:path");
 
 require("css.escape");
 require("handlebars/runtime");
@@ -129,12 +129,6 @@ test.set_verbose(files.length === 1);
         require("../../src/billing/page_params");
         namespace.mock_esm("../../src/page_params", zpage_params);
         require("../../src/page_params");
-        namespace.mock_esm("../../src/state_data", zpage_params);
-        require("../../src/state_data");
-        namespace.mock_esm("../../src/user_settings", zpage_params);
-        require("../../src/user_settings");
-        namespace.mock_esm("../../src/realm_user_settings_defaults", zpage_params);
-        require("../../src/realm_user_settings_defaults");
 
         try {
             await run_one_module(file);

@@ -57,10 +57,14 @@ def add_user_group(
     name: str,
     members: Json[list[int]],
     description: str,
+    subgroups: Json[list[int]] | None = None,
+    can_add_members_group: Json[int | AnonymousSettingGroupDict] | None = None,
+    can_join_group: Json[int | AnonymousSettingGroupDict] | None = None,
+    can_leave_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_manage_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_mention_group: Json[int | AnonymousSettingGroupDict] | None = None,
 ) -> HttpResponse:
-    user_profiles = user_ids_to_users(members, user_profile.realm)
+    user_profiles = user_ids_to_users(members, user_profile.realm, allow_deactivated=False)
     name = check_user_group_name(name)
 
     group_settings_map = {}
@@ -81,7 +85,7 @@ def add_user_group(
             )
             group_settings_map[setting_name] = setting_value_group
 
-    check_add_user_group(
+    user_group = check_add_user_group(
         user_profile.realm,
         name,
         user_profiles,
@@ -89,6 +93,15 @@ def add_user_group(
         group_settings_map=group_settings_map,
         acting_user=user_profile,
     )
+
+    if subgroups is not None and len(subgroups) != 0:
+        with lock_subgroups_with_respect_to_supergroup(
+            subgroups, user_group.id, user_profile, permission_setting=None, creating_group=True
+        ) as context:
+            add_subgroups_to_user_group(
+                context.supergroup, context.direct_subgroups, acting_user=user_profile
+            )
+
     return json_success(request)
 
 
@@ -116,12 +129,18 @@ def edit_user_group(
     user_group_id: PathOnly[int],
     name: str | None = None,
     description: str | None = None,
+    can_add_members_group: Json[GroupSettingChangeRequest] | None = None,
+    can_join_group: Json[GroupSettingChangeRequest] | None = None,
+    can_leave_group: Json[GroupSettingChangeRequest] | None = None,
     can_manage_group: Json[GroupSettingChangeRequest] | None = None,
     can_mention_group: Json[GroupSettingChangeRequest] | None = None,
 ) -> HttpResponse:
     if (
         name is None
         and description is None
+        and can_add_members_group is None
+        and can_join_group is None
+        and can_leave_group is None
         and can_manage_group is None
         and can_mention_group is None
     ):
@@ -132,7 +151,12 @@ def edit_user_group(
     )
 
     if user_group.deactivated and (
-        description is not None or can_mention_group is not None or can_manage_group is not None
+        description is not None
+        or can_add_members_group is not None
+        or can_join_group is not None
+        or can_leave_group is not None
+        or can_mention_group is not None
+        or can_manage_group is not None
     ):
         raise JsonableError(_("You can only change name of deactivated user groups"))
 
@@ -198,6 +222,7 @@ def deactivate_user_group(
 
 @require_member_or_admin
 @typed_endpoint
+@transaction.atomic(durable=True)
 def update_user_group_backend(
     request: HttpRequest,
     user_profile: UserProfile,
@@ -205,9 +230,15 @@ def update_user_group_backend(
     user_group_id: PathOnly[Json[int]],
     delete: Json[list[int]] | None = None,
     add: Json[list[int]] | None = None,
+    delete_subgroups: Json[list[int]] | None = None,
+    add_subgroups: Json[list[int]] | None = None,
 ) -> HttpResponse:
-    if not add and not delete:
-        raise JsonableError(_('Nothing to do. Specify at least one of "add" or "delete".'))
+    if not add and not delete and not add_subgroups and not delete_subgroups:
+        raise JsonableError(
+            _(
+                'Nothing to do. Specify at least one of "add", "delete", "add_subgroups" or "delete_subgroups".'
+            )
+        )
 
     thunks = []
     if add:
@@ -220,6 +251,20 @@ def update_user_group_backend(
         thunks.append(
             lambda: remove_members_from_group_backend(
                 request, user_profile, user_group_id=user_group_id, members=delete
+            )
+        )
+
+    if add_subgroups:
+        thunks.append(
+            lambda: add_subgroups_to_group_backend(
+                request, user_profile, user_group_id=user_group_id, subgroup_ids=add_subgroups
+            )
+        )
+
+    if delete_subgroups:
+        thunks.append(
+            lambda: remove_subgroups_from_group_backend(
+                request, user_profile, user_group_id=user_group_id, subgroup_ids=delete_subgroups
             )
         )
 
@@ -248,9 +293,8 @@ def notify_for_user_group_subscription_changes(
         if recipient_user.is_bot:
             # Don't send notification message to bots.
             continue
-        if not recipient_user.is_active:
-            # Don't send notification message to deactivated users.
-            continue
+
+        assert recipient_user.is_active
 
         with override_language(recipient_user.default_language):
             if send_subscription_message:
@@ -277,17 +321,29 @@ def notify_for_user_group_subscription_changes(
         do_send_messages(notifications)
 
 
-@transaction.atomic
 def add_members_to_group_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     user_group_id: int,
     members: list[int],
 ) -> HttpResponse:
-    user_group = access_user_group_for_update(
-        user_group_id, user_profile, permission_setting="can_manage_group"
-    )
-    member_users = user_ids_to_users(members, user_profile.realm)
+    if len(members) == 1 and user_profile.id == members[0]:
+        try:
+            user_group = access_user_group_for_update(
+                user_group_id, user_profile, permission_setting="can_join_group"
+            )
+        except JsonableError:
+            # User can still join the group if user has permission to add
+            # anyone in the group.
+            user_group = access_user_group_for_update(
+                user_group_id, user_profile, permission_setting="can_add_members_group"
+            )
+    else:
+        user_group = access_user_group_for_update(
+            user_group_id, user_profile, permission_setting="can_add_members_group"
+        )
+
+    member_users = user_ids_to_users(members, user_profile.realm, allow_deactivated=False)
     existing_member_ids = set(
         get_direct_memberships_of_users(user_group.usergroup_ptr, member_users)
     )
@@ -311,17 +367,22 @@ def add_members_to_group_backend(
     return json_success(request)
 
 
-@transaction.atomic
 def remove_members_from_group_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     user_group_id: int,
     members: list[int],
 ) -> HttpResponse:
-    user_profiles = user_ids_to_users(members, user_profile.realm)
-    user_group = access_user_group_for_update(
-        user_group_id, user_profile, permission_setting="can_manage_group"
-    )
+    user_profiles = user_ids_to_users(members, user_profile.realm, allow_deactivated=False)
+    if len(members) == 1 and user_profile.id == members[0]:
+        user_group = access_user_group_for_update(
+            user_group_id, user_profile, permission_setting="can_leave_group"
+        )
+    else:
+        user_group = access_user_group_for_update(
+            user_group_id, user_profile, permission_setting="can_manage_group"
+        )
+
     group_member_ids = get_user_group_direct_member_ids(user_group)
     for member in members:
         if member not in group_member_ids:
@@ -347,7 +408,7 @@ def add_subgroups_to_group_backend(
     subgroup_ids: list[int],
 ) -> HttpResponse:
     with lock_subgroups_with_respect_to_supergroup(
-        subgroup_ids, user_group_id, user_profile
+        subgroup_ids, user_group_id, user_profile, permission_setting="can_add_members_group"
     ) as context:
         existing_direct_subgroup_ids = context.supergroup.direct_subgroups.all().values_list(
             "id", flat=True
@@ -383,7 +444,7 @@ def remove_subgroups_from_group_backend(
     subgroup_ids: list[int],
 ) -> HttpResponse:
     with lock_subgroups_with_respect_to_supergroup(
-        subgroup_ids, user_group_id, user_profile
+        subgroup_ids, user_group_id, user_profile, permission_setting="can_manage_group"
     ) as context:
         # While the recursive subgroups in the context are not used, it is important that
         # we acquire a lock for these rows while updating the subgroups to acquire the locks

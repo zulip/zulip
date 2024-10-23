@@ -757,10 +757,12 @@ def bulk_import_named_user_groups(data: TableData) -> None:
             group["name"],
             group["description"],
             group["is_system_group"],
+            group["can_add_members_group_id"],
+            group["can_join_group_id"],
+            group["can_leave_group_id"],
             group["can_manage_group_id"],
             group["can_mention_group_id"],
             group["deactivated"],
-            group["creator_id"],
             group["date_created"],
         )
         for group in data["zerver_namedusergroup"]
@@ -768,7 +770,7 @@ def bulk_import_named_user_groups(data: TableData) -> None:
 
     query = SQL(
         """
-        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_manage_group_id, can_mention_group_id, deactivated, creator_id, date_created)
+        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_add_members_group_id, can_join_group_id,  can_leave_group_id, can_manage_group_id, can_mention_group_id, deactivated, date_created)
         VALUES %s
         """
     )
@@ -878,7 +880,7 @@ def process_emojis(
         # while 3rd party exports don't use the deactivated field, so this shouldn't
         # particularly matter.
         RealmEmoji.objects.filter(
-            name=record["name"], realm_id=user_profile.realm_id, deactivated=False
+            file_name=record["file_name"], realm_id=user_profile.realm_id, deactivated=False
         ).update(is_animated=True)
 
 
@@ -1200,6 +1202,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
             # We need to enforce the invariant that every realm must have a PresenceSequence.
             PresenceSequence.objects.create(realm=realm, last_update_id=0)
 
+        named_user_group_id_to_creator_id = {}
         if "zerver_usergroup" in data:
             re_map_foreign_keys(data, "zerver_usergroup", "realm", related_table="realm")
             bulk_import_model(data, UserGroup)
@@ -1215,6 +1218,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
                 re_map_foreign_keys(
                     data, "zerver_namedusergroup", "realm_for_sharding", related_table="realm"
                 )
+                for group in data["zerver_namedusergroup"]:
+                    creator_id = group.pop("creator_id", None)
+                    named_user_group_id_to_creator_id[group["id"]] = creator_id
                 for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
                     re_map_foreign_keys(
                         data,
@@ -1306,6 +1312,16 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     for stream in streams:
         stream.creator_id = stream_id_to_creator_id[stream.id]
     Stream.objects.bulk_update(streams, ["creator_id"])
+
+    if "zerver_namedusergroup" in data:
+        # UserProfiles have been loaded, so now we're ready to set .creator_id
+        # for groups based on the mapping we saved earlier.
+        named_user_groups = NamedUserGroup.objects.filter(
+            id__in=named_user_group_id_to_creator_id.keys()
+        )
+        for group in named_user_groups:
+            group.creator_id = named_user_group_id_to_creator_id[group.id]
+        NamedUserGroup.objects.bulk_update(named_user_groups, ["creator_id"])
 
     re_map_foreign_keys(data, "zerver_defaultstream", "stream", related_table="stream")
     re_map_foreign_keys(data, "zerver_realmemoji", "author", related_table="user_profile")
@@ -1706,7 +1722,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # 'zulip_update_announcements_level' is set to None by default.
     # Set it to the latest level to avoid receiving older update messages.
     is_realm_imported_from_other_zulip_server = RealmAuditLog.objects.filter(
-        realm=realm, event_type=AuditLogEventType.REALM_EXPORTED, acting_user=None
+        realm=realm, event_type=AuditLogEventType.REALM_EXPORTED
     ).exists()
     if not is_realm_imported_from_other_zulip_server:
         send_zulip_update_announcements_to_realm(

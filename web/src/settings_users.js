@@ -444,7 +444,6 @@ export function redraw_bots_list() {
     // user IDs to display.
     const bot_user_ids = people.get_bot_ids();
     bot_list_widget.replace_list_data(bot_user_ids);
-    bot_list_widget.hard_redraw();
 }
 
 function redraw_users_list(user_section, user_list) {
@@ -453,7 +452,6 @@ function redraw_users_list(user_section, user_list) {
     }
 
     user_section.list_widget.replace_list_data(user_list);
-    user_section.list_widget.hard_redraw();
 }
 
 export function redraw_deactivated_users_list() {

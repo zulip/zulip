@@ -70,6 +70,9 @@ def create_internal_realm() -> None:
     bots = UserProfile.objects.filter(email__in=[bot_info[1] for bot_info in internal_bots])
     for bot in bots:
         bot.bot_owner = bot
+        # Avatars for system bots are hardcoded, so make sure gravatar
+        # won't be used..
+        bot.avatar_source = "U"
         bot.save()
 
     # Initialize the email gateway bot as able to forge senders.

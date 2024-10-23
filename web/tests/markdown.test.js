@@ -1,13 +1,13 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_cases");
 
 const markdown_assert = require("./lib/markdown_assert");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const example_realm_linkifiers = [
     {
@@ -38,7 +38,6 @@ const example_realm_linkifiers = [
         id: 4,
     },
 ];
-user_settings.translate_emoticons = false;
 
 set_global("document", {compatMode: "CSS1Compat"});
 
@@ -54,8 +53,14 @@ const markdown_config = zrequire("markdown_config");
 const markdown = zrequire("markdown");
 const people = zrequire("people");
 const pygments_data = zrequire("pygments_data");
+const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
+const {initialize_user_settings} = zrequire("user_settings");
+
+set_realm({});
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 const emoji_params = {
     realm_emoji: {
@@ -259,7 +264,7 @@ test("markdown_detection", () => {
     }
 });
 
-test("marked_shared", () => {
+test("marked_shared", ({override}) => {
     const tests = markdown_test_cases.regular_tests;
 
     for (const test of tests) {
@@ -270,7 +275,7 @@ test("marked_shared", () => {
         }
 
         let message = {raw_content: test.input};
-        user_settings.translate_emoticons = test.translate_emoticons || false;
+        override(user_settings, "translate_emoticons", test.translate_emoticons || false);
         message = {
             ...message,
             ...markdown.render(message.raw_content),
@@ -320,7 +325,7 @@ test("message_flags", () => {
     assert.ok(message.flags.includes("topic_wildcard_mentioned"));
 });
 
-test("marked", () => {
+test("marked", ({override}) => {
     const test_cases = [
         {input: "hello", expected: "<p>hello</p>"},
         {input: "hello there", expected: "<p>hello there</p>"},
@@ -388,12 +393,12 @@ test("marked", () => {
         {
             input: "This is a #**Denmark** stream link",
             expected:
-                '<p>This is a <a class="stream" data-stream-id="1" href="/#narrow/stream/1-Denmark">#Denmark</a> stream link</p>',
+                '<p>This is a <a class="stream" data-stream-id="1" href="/#narrow/channel/1-Denmark">#Denmark</a> stream link</p>',
         },
         {
             input: "This is #**Denmark** and #**social** stream links",
             expected:
-                '<p>This is <a class="stream" data-stream-id="1" href="/#narrow/stream/1-Denmark">#Denmark</a> and <a class="stream" data-stream-id="2" href="/#narrow/stream/2-social">#social</a> stream links</p>',
+                '<p>This is <a class="stream" data-stream-id="1" href="/#narrow/channel/1-Denmark">#Denmark</a> and <a class="stream" data-stream-id="2" href="/#narrow/channel/2-social">#social</a> stream links</p>',
         },
         {
             input: "And this is a #**wrong** stream link",
@@ -402,12 +407,12 @@ test("marked", () => {
         {
             input: "This is a #**Denmark>some topic** stream_topic link",
             expected:
-                '<p>This is a <a class="stream-topic" data-stream-id="1" href="/#narrow/stream/1-Denmark/topic/some.20topic">#Denmark &gt; some topic</a> stream_topic link</p>',
+                '<p>This is a <a class="stream-topic" data-stream-id="1" href="/#narrow/channel/1-Denmark/topic/some.20topic">#Denmark &gt; some topic</a> stream_topic link</p>',
         },
         {
             input: "This has two links: #**Denmark>some topic** and #**social>other topic**.",
             expected:
-                '<p>This has two links: <a class="stream-topic" data-stream-id="1" href="/#narrow/stream/1-Denmark/topic/some.20topic">#Denmark &gt; some topic</a> and <a class="stream-topic" data-stream-id="2" href="/#narrow/stream/2-social/topic/other.20topic">#social &gt; other topic</a>.</p>',
+                '<p>This has two links: <a class="stream-topic" data-stream-id="1" href="/#narrow/channel/1-Denmark/topic/some.20topic">#Denmark &gt; some topic</a> and <a class="stream-topic" data-stream-id="2" href="/#narrow/channel/2-social/topic/other.20topic">#social &gt; other topic</a>.</p>',
         },
         {
             input: "This is not a #**Denmark>** stream_topic link",
@@ -510,7 +515,7 @@ test("marked", () => {
         {
             input: "T\n#**Denmark**",
             expected:
-                '<p>T<br>\n<a class="stream" data-stream-id="1" href="/#narrow/stream/1-Denmark">#Denmark</a></p>',
+                '<p>T<br>\n<a class="stream" data-stream-id="1" href="/#narrow/channel/1-Denmark">#Denmark</a></p>',
         },
         {
             input: "T\n@**Cordelia, Lear's daughter**",
@@ -617,23 +622,23 @@ test("marked", () => {
         {
             input: "#**Bobby <h1>Tables</h1>**",
             expected:
-                '<p><a class="stream-topic" data-stream-id="4" href="/#narrow/stream/4-Bobby-.3Ch1/topic/Tables.3C.2Fh1.3E">#Bobby &lt;h1 &gt; Tables&lt;/h1&gt;</a></p>',
+                '<p><a class="stream-topic" data-stream-id="4" href="/#narrow/channel/4-Bobby-.3Ch1/topic/Tables.3C.2Fh1.3E">#Bobby &lt;h1 &gt; Tables&lt;/h1&gt;</a></p>',
         },
         {
             input: "#**& &amp; &amp;amp;**",
             expected:
-                '<p><a class="stream" data-stream-id="5" href="/#narrow/stream/5-.26-.26-.26amp.3B">#&amp; &amp; &amp;amp;</a></p>',
+                '<p><a class="stream" data-stream-id="5" href="/#narrow/channel/5-.26-.26-.26amp.3B">#&amp; &amp; &amp;amp;</a></p>',
         },
         {
             input: "#**& &amp; &amp;amp;>& &amp; &amp;amp;**",
             expected:
-                '<p><a class="stream-topic" data-stream-id="5" href="/#narrow/stream/5-.26-.26-.26amp.3B/topic/.26.20.26.20.26amp.3B">#&amp; &amp; &amp;amp; &gt; &amp; &amp; &amp;amp;</a></p>',
+                '<p><a class="stream-topic" data-stream-id="5" href="/#narrow/channel/5-.26-.26-.26amp.3B/topic/.26.20.26.20.26amp.3B">#&amp; &amp; &amp;amp; &gt; &amp; &amp; &amp;amp;</a></p>',
         },
     ];
 
     for (const test_case of test_cases) {
         // Disable emoji conversion by default.
-        user_settings.translate_emoticons = test_case.translate_emoticons || false;
+        override(user_settings, "translate_emoticons", test_case.translate_emoticons || false);
 
         const input = test_case.input;
         const expected = test_case.expected;

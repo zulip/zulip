@@ -85,6 +85,11 @@ function create_ajax_request(): void {
 }
 
 export function initialize(): void {
+    if ($(".sponsorship-status-page").length > 0) {
+        // Sponsorship form is not present on sponsorship status page.
+        return;
+    }
+
     $("#sponsorship-button").on("click", (e) => {
         if (!helpers.is_valid_input($("#sponsorship-form"))) {
             return;

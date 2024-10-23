@@ -1201,7 +1201,7 @@ class TestRealmAuditLog(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         now = timezone_now()
-        user_group = check_add_user_group(hamlet.realm, "foo", [], acting_user=None)
+        user_group = check_add_user_group(hamlet.realm, "foo", [], acting_user=hamlet)
 
         bulk_add_members_to_user_groups([user_group], [hamlet.id, cordelia.id], acting_user=hamlet)
         audit_log_entries = RealmAuditLog.objects.filter(
@@ -1228,7 +1228,7 @@ class TestRealmAuditLog(ZulipTestCase):
 
     def test_change_user_group_subgroups_memberships(self) -> None:
         hamlet = self.example_user("hamlet")
-        user_group = check_add_user_group(hamlet.realm, "main", [], acting_user=None)
+        user_group = check_add_user_group(hamlet.realm, "main", [], acting_user=hamlet)
         subgroups = [
             check_add_user_group(hamlet.realm, f"subgroup{num}", [], acting_user=hamlet)
             for num in range(3)

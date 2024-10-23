@@ -202,11 +202,11 @@ export function initialize(): void {
     });
 
     // Variant of .tippy-left-sidebar-tooltip configuration. Since
-    // this element doesn't have an always visible label, and
-    // thus hovering it is a way to find out what it does, give
-    // it the faster LONG_HOVER_DELAY.
+    // some elements don't have an always visible label, and
+    // thus hovering them is a way to find out what they do, give
+    // them the shorter LONG_HOVER_DELAY.
     tippy.delegate("body", {
-        target: "#show-all-direct-messages",
+        target: ".tippy-left-sidebar-tooltip-no-label-delay",
         placement: "right",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
@@ -532,6 +532,24 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: "#user_message_content_in_email_notifications_label",
+        onShow(instance) {
+            if ($("#user_message_content_in_email_notifications").prop("disabled")) {
+                instance.setContent(
+                    $t({
+                        defaultMessage:
+                            "Including message content in message notification emails is not allowed in this organization.",
+                    }),
+                );
+                return undefined;
+            }
+            instance.destroy();
+            return false;
+        },
+        appendTo: () => document.body,
+    });
+
+    tippy.delegate("body", {
         target: ".views-tooltip-target",
         onShow(instance) {
             if ($("#toggle-top-left-navigation-area-icon").hasClass("rotate-icon-down")) {
@@ -679,7 +697,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#userlist-header",
+        target: "#userlist-header-search",
         placement: "top",
         appendTo: () => document.body,
         onShow(instance) {

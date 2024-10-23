@@ -1,4 +1,5 @@
 import re
+from io import StringIO
 from re import Match
 
 from bs4 import BeautifulSoup
@@ -167,6 +168,11 @@ IGNORED_PHRASES = [
     r"deactivated",
     # This is a reference to a setting/secret and should be lowercase.
     r"zulip_org_id",
+    # These are custom time unit options for modal dropdowns
+    r"minutes",
+    r"hours",
+    r"days",
+    r"weeks",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the
@@ -177,7 +183,8 @@ IGNORED_PHRASES.sort(key=len, reverse=True)
 # text using BeautifulSoup and then removes extra whitespaces from
 # it. This step enables us to add HTML in our regexes directly.
 COMPILED_IGNORED_PHRASES = [
-    re.compile(r" ".join(BeautifulSoup(regex, "lxml").text.split())) for regex in IGNORED_PHRASES
+    re.compile(r" ".join(BeautifulSoup(StringIO(regex), "lxml").text.split()))
+    for regex in IGNORED_PHRASES
 ]
 
 SPLIT_BOUNDARY = r"?.!"  # Used to split string into sentences.
@@ -236,7 +243,7 @@ def get_safe_text(text: str) -> str:
     This returns text which is rendered by BeautifulSoup and is in the
     form that can be split easily and has all IGNORED_PHRASES processed.
     """
-    soup = BeautifulSoup(text, "lxml")
+    soup = BeautifulSoup(StringIO(text), "lxml")
     text = " ".join(soup.text.split())  # Remove extra whitespaces.
     for phrase_regex in COMPILED_IGNORED_PHRASES:
         text = phrase_regex.sub(replace_with_safe_phrase, text)

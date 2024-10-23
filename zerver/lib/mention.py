@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from re import Match
 
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import NamedUserGroup, UserProfile
@@ -269,9 +269,19 @@ class MentionData:
         self.user_group_members: dict[int, list[int]] = {}
         user_group_names = possible_user_group_mentions(content)
         if user_group_names:
+            # We are not directly doing 'prefetch_related("direct_members")'
+            # because then we would have to filter out deactivated users
+            # using 'group.direct_members.filter(is_active=True)', and that
+            # would take away the advantage of using 'prefetch_related'
+            # because of not using group.direct_members.all().
             for group in NamedUserGroup.objects.filter(
                 realm_id=realm_id, name__in=user_group_names, is_system_group=False
-            ).prefetch_related("direct_members"):
+            ).prefetch_related(
+                Prefetch(
+                    "direct_members",
+                    queryset=UserProfile.objects.filter(realm_id=realm_id, is_active=True),
+                )
+            ):
                 self.user_group_name_info[group.name.lower()] = group
                 self.user_group_members[group.id] = [m.id for m in group.direct_members.all()]
 

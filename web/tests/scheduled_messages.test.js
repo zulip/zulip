@@ -1,12 +1,15 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
 const scheduled_messages = zrequire("scheduled_messages");
 const compose_send_menu_popover = zrequire("compose_send_menu_popover");
+const {initialize_user_settings} = zrequire("user_settings");
+
+initialize_user_settings({user_settings: {}});
 
 const per_day_stamps = {
     "2023-04-30": {

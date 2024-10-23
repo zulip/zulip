@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
@@ -31,10 +31,13 @@ const narrow_state = mock_esm("../src/narrow_state", {
     stream_id() {},
 });
 
+const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const topic_list_data = zrequire("topic_list_data");
 const unread = zrequire("unread");
+
+set_realm({});
 
 const general = {
     stream_id: 556,
@@ -106,7 +109,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         is_followed: false,
         is_unmuted_or_followed: false,
         is_active_topic: true,
-        url: "#narrow/stream/556-general/topic/topic.2011",
+        url: "#narrow/channel/556-general/topic/topic.2011",
         contains_unread_mention: false,
     });
 
@@ -130,7 +133,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         topic_name: "✔ topic 9",
         topic_resolved_prefix: "✔ ",
         unread: 0,
-        url: "#narrow/stream/556-general/topic/.E2.9C.94.20topic.209",
+        url: "#narrow/channel/556-general/topic/.E2.9C.94.20topic.209",
     });
 
     assert.deepEqual(list_info.items[1], {
@@ -145,7 +148,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         topic_name: "topic 8",
         topic_resolved_prefix: "",
         unread: 0,
-        url: "#narrow/stream/556-general/topic/topic.208",
+        url: "#narrow/channel/556-general/topic/topic.208",
     });
 
     // If we zoom in, our results are based on topic filter.
@@ -403,4 +406,42 @@ test("get_list_info unreads", ({override}) => {
             "topic 14",
         ],
     );
+});
+
+test("get_list_info with specific topics and searches", () => {
+    let list_info;
+
+    function add_topic_message(topic_name, message_id) {
+        stream_topic_history.add_message({
+            stream_id: general.stream_id,
+            topic_name,
+            message_id,
+        });
+    }
+
+    add_topic_message("BF-2924 zulip", 1001);
+    add_topic_message("tech_support/escalation", 1002);
+
+    list_info = get_list_info(true, "2924");
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "BF-2924 zulip");
+
+    list_info = get_list_info(true, "support/escalation");
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "tech_support/escalation");
+
+    list_info = get_list_info(true, "support");
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "tech_support/escalation");
+
+    list_info = get_list_info(true, "zulip");
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "BF-2924 zulip");
+
+    list_info = get_list_info(true, "SUPPORT");
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "tech_support/escalation");
+
+    list_info = get_list_info(true, "nonexistent");
+    assert.equal(list_info.items.length, 0);
 });

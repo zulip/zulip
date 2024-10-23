@@ -1,13 +1,12 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {realm} = require("./lib/zpage_params");
 
 const user_groups = zrequire("user_groups");
 
@@ -88,6 +87,10 @@ const compose_reply = zrequire("compose_reply");
 const message_lists = zrequire("message_lists");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("compose_recipient");
+const {set_realm} = zrequire("state_data");
+
+const realm = {};
+set_realm(realm);
 
 const start = compose_actions.start;
 const cancel = compose_actions.cancel;
@@ -569,8 +572,8 @@ test("on_narrow", ({override, override_rewire}) => {
         start_called = true;
     });
     narrowed_by_pm_reply = true;
-    realm.realm_direct_message_permission_group = nobody.id;
-    realm.realm_direct_message_initiator_group = everyone.id;
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+    override(realm, "realm_direct_message_initiator_group", everyone.id);
     compose_actions.on_narrow({
         force_close: false,
         trigger: "not-search",
@@ -585,7 +588,7 @@ test("on_narrow", ({override, override_rewire}) => {
     });
     assert.ok(start_called);
 
-    realm.realm_direct_message_permission_group = everyone.id;
+    override(realm, "realm_direct_message_permission_group", everyone.id);
     blueslip.expect("warn", "Unknown emails");
     compose_actions.on_narrow({
         force_close: false,

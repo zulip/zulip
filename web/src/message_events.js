@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
+import * as activity from "./activity";
 import * as alert_words from "./alert_words";
 import * as channel from "./channel";
 import * as compose_fade from "./compose_fade";
@@ -11,6 +12,7 @@ import * as compose_state from "./compose_state";
 import * as compose_validate from "./compose_validate";
 import * as direct_message_group_data from "./direct_message_group_data";
 import * as drafts from "./drafts";
+import * as echo from "./echo";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_events_util from "./message_events_util";
@@ -34,9 +36,40 @@ import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
 import * as unread from "./unread";
-import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
+
+export function update_current_view_for_topic_visibility() {
+    // If we have rendered message list / cached data based on topic
+    // visibility policy, we need to rerender it to reflect the changes. It
+    // is easier to just load the narrow from scratch, instead of asking server
+    // for relevant messages in the updated topic.
+    const filter = message_lists.current?.data.filter;
+    if (
+        filter !== undefined &&
+        (filter.sorted_term_types().includes("is-followed") ||
+            filter.sorted_term_types().includes("not-is-followed"))
+    ) {
+        // Use `set_timeout to call after we update the topic
+        // visibility policy locally.
+        // Calling this outside `user_topics_ui` to avoid circular imports.
+        const msg_list_id = message_lists.current.id;
+        setTimeout(() => {
+            if (message_lists.current.id !== msg_list_id) {
+                // Check if the message list is still the same.
+                return;
+            }
+
+            message_view.show(filter.terms(), {
+                then_select_id: message_lists.current.selected_id(),
+                trigger: "topic visibility policy change",
+                force_rerender: true,
+            });
+        }, 0);
+        return true;
+    }
+    return false;
+}
 
 export function update_views_filtered_on_message_property(
     message_ids,
@@ -46,8 +79,11 @@ export function update_views_filtered_on_message_property(
     // NOTE: Call this function after updating the message property locally.
     assert(!property_term_type.includes("not-"));
 
-    // List of narrow terms whose msg list doesn't get updated elsewhere but
-    // can be applied locally.
+    // List of narrow terms where the message list doesn't get
+    // automatically updated elsewhere when the property changes, but
+    // we can apply locally if we have the message.
+    //
+    // is:followed is handled via update_current_view_for_topic_visibility.
     const supported_term_types = [
         "has-image",
         "has-link",
@@ -57,8 +93,6 @@ export function update_views_filtered_on_message_property(
         "is-unread",
         "is-mentioned",
         "is-alerted",
-        // TODO: Implement support for these terms.
-        // "is-followed",
     ];
 
     if (message_ids.length === 0 || !supported_term_types.includes(property_term_type)) {
@@ -112,27 +146,52 @@ export function update_views_filtered_on_message_property(
             }
         }
 
-        // In most cases, we will only have one message to fetch which
-        // can happen without rerendering the view.
-        // In case of multiple messages, we just rerender the view
-        // since it is likely to use similar amount of resources to
-        // fetching the messages and rerendering the view.
-        if (messages_to_fetch.length > 1 || !filter.can_apply_locally()) {
-            // TODO: Might be better to check if `/messages/matches_narrow`
-            // rather than doing a full rerender.
-            message_view.show(filter.terms(), {
-                then_select_id: msg_list.selected_id(),
-                then_select_offset: msg_list.selected_row().get_offset_to_window().top,
-                trigger: "message property update",
-                force_rerender: true,
+        if (!filter.can_apply_locally()) {
+            channel.get({
+                url: "/json/messages",
+                data: {
+                    message_ids: JSON.stringify(message_ids),
+                    narrow: JSON.stringify(filter.terms()),
+                },
+                success(data) {
+                    const messages_to_add = [];
+                    const messages_to_remove = new Set(message_ids);
+                    for (const raw_message of data.messages) {
+                        messages_to_remove.delete(raw_message.id);
+                        let message = message_store.get(raw_message.id);
+                        if (!message) {
+                            message = message_helper.process_new_message(raw_message);
+                        }
+                        messages_to_add.push(message);
+                    }
+                    msg_list.data.remove([...messages_to_remove]);
+                    msg_list.data.add_messages(messages_to_add);
+                    msg_list.rerender();
+                },
             });
-        } else if (messages_to_fetch.length === 1) {
+        } else if (messages_to_fetch.length > 0) {
             // Fetch the message and update the view.
             channel.get({
-                url: "/json/messages/" + messages_to_fetch[0],
+                url: "/json/messages",
+                data: {
+                    message_ids: JSON.stringify(messages_to_fetch),
+                    // We don't filter by narrow here since we can
+                    // apply the filter locally and the fetched message
+                    // can be used to update other message lists and
+                    // cached message data structures as well.
+                },
                 success(data) {
-                    message_helper.process_new_message(data.message);
-                    update_views_filtered_on_message_property(message_ids, property_term_type);
+                    // `messages_to_fetch` might already be cached locally when
+                    // we reach here but `message_helper.process_new_message`
+                    // already handles that case.
+                    for (const raw_message of data.messages) {
+                        message_helper.process_new_message(raw_message);
+                    }
+                    update_views_filtered_on_message_property(
+                        message_ids,
+                        property_term_type,
+                        property_value,
+                    );
                 },
             });
         } else {
@@ -170,7 +229,9 @@ export function update_views_filtered_on_message_property(
 }
 
 export function insert_new_messages(messages, sent_by_this_client, deliver_locally) {
-    messages = messages.map((message) => message_helper.process_new_message(message));
+    messages = messages.map((message) =>
+        message_helper.process_new_message(message, deliver_locally),
+    );
 
     const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
     direct_message_group_data.process_loaded_messages(messages);
@@ -239,7 +300,14 @@ export function insert_new_messages(messages, sent_by_this_client, deliver_local
         unread_ui.update_unread_counts();
     }
 
-    unread_ops.process_visible();
+    // Messages being locally echoed need must be inserted into this
+    // tracking before we update the stream sidebar, to take advantage
+    // of how stream_topic_history uses the echo data structures.
+    if (deliver_locally) {
+        messages.map((message) => echo.track_local_message(message));
+    }
+
+    activity.set_received_new_messages(true);
     message_notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
@@ -249,12 +317,10 @@ export function insert_new_messages(messages, sent_by_this_client, deliver_local
 
 export function update_messages(events) {
     const messages_to_rerender = [];
-    let any_topic_edited = false;
     let changed_narrow = false;
     let refreshed_current_narrow = false;
     let changed_compose = false;
     let any_message_content_edited = false;
-    let any_stream_changed = false;
     let local_cache_missing_messages = false;
 
     // Clear message list data cache since the local data for the
@@ -275,8 +341,6 @@ export function update_messages(events) {
             // needs to run if we had a local copy of the message.
 
             delete anchor_message.local_edit_timestamp;
-
-            messages_to_rerender.push(anchor_message);
 
             message_store.update_booleans(anchor_message, event.flags);
 
@@ -348,14 +412,17 @@ export function update_messages(events) {
         const topic_edited = new_topic !== undefined;
         const stream_changed = new_stream_id !== undefined;
         const stream_archived = old_stream === undefined;
-        if (stream_changed) {
-            any_stream_changed = true;
-        }
-        if (topic_edited) {
-            any_topic_edited = true;
-        }
 
-        if (topic_edited || stream_changed) {
+        if (!topic_edited && !stream_changed) {
+            // If the topic or stream of the anchor message was changed,
+            // it will be rerendered if present in any rendered list.
+            //
+            // But for content edits, we need to schedule it to be
+            // rerendered, if we have a local copy of it.
+            if (anchor_message !== undefined) {
+                messages_to_rerender.push(anchor_message);
+            }
+        } else {
             const going_forward_change = ["change_later", "change_all"].includes(
                 event.propagate_mode,
             );
@@ -561,41 +628,34 @@ export function update_messages(events) {
             // narrow are deleted and messages that are now part
             // of this narrow are added to the message_list.
             //
-            // Even if we end up renarrowing, the message_list_data
-            // part of this is important for non-rendering message
-            // lists, so we do this unconditionally.  Most correctly,
-            // this should be a loop over all valid message_list_data
-            // objects, without the rerender (which will naturally
-            // happen in the following code).
-            if (!changed_narrow && !refreshed_current_narrow && current_filter) {
-                let message_ids_to_remove = [];
-                if (current_filter.can_apply_locally()) {
-                    const predicate = current_filter.predicate();
-                    message_ids_to_remove = event_messages.filter((msg) => !predicate(msg));
-                    message_ids_to_remove = message_ids_to_remove.map((msg) => msg.id);
-                    // We filter out messages that do not belong to the message
-                    // list and then pass these to the remove messages codepath.
-                    // While we can pass all our messages to the add messages
-                    // codepath as the filtering is done within the method.
-                    assert(message_lists.current !== undefined);
-                    message_lists.current.remove_and_rerender(message_ids_to_remove);
-                    message_lists.current.add_messages(event_messages);
-                } else if (message_lists.current !== undefined) {
+            // TODO: Update cached message list data objects as well.
+            for (const list of message_lists.all_rendered_message_lists()) {
+                if (
+                    list === message_lists.current &&
+                    (changed_narrow || refreshed_current_narrow)
+                ) {
+                    continue;
+                }
+
+                const event_msg_ids = event_messages.map((msg) => msg.id);
+                if (list.data.filter.can_apply_locally()) {
+                    // Remove add messages and add them back to the list to
+                    // allow event muted messages which were previously part
+                    // of the message list but hidden could be rerendered again.
+                    list.data.remove(event_msg_ids);
+                    list.data.add_messages(event_messages);
+                    list.rerender();
+                } else {
                     // Remove existing message that were updated, since
                     // they may not be a part of the filter now. Also,
                     // this will help us rerender them via
                     // maybe_add_narrowed_messages, if they were
                     // simply updated.
-                    const updated_messages = event_messages.filter(
-                        (msg) => message_lists.current.data.get(msg.id) !== undefined,
-                    );
-                    message_lists.current.remove_and_rerender(
-                        updated_messages.map((msg) => msg.id),
-                    );
+                    list.remove_and_rerender(event_msg_ids);
                     // For filters that cannot be processed locally, ask server.
                     message_events_util.maybe_add_narrowed_messages(
                         event_messages,
-                        message_lists.current,
+                        list,
                         message_util.add_messages,
                     );
                 }
@@ -685,30 +745,7 @@ export function update_messages(events) {
         }
     }
 
-    // If a topic was edited, we re-render the whole view to get any
-    // propagated edits to be updated (since the topic edits can have
-    // changed the correct grouping of messages).
-    if (any_topic_edited || any_stream_changed) {
-        // However, we don't need to rerender message_list if
-        // we just changed the narrow earlier in this function.
-        //
-        // TODO: We can potentially optimize this logic to avoid
-        // calling `update_muting_and_rerender` if the muted
-        // messages would not match the view before or after this
-        // edit.  Doing so could save significant work, since most
-        // topic edits will not match the current topic narrow in
-        // large organizations.
-
-        for (const list of message_lists.all_rendered_message_lists()) {
-            if ((changed_narrow || refreshed_current_narrow) && list === message_lists.current) {
-                // Avoid updating current message list if user switched to a different narrow and
-                // we don't want to preserver the rendered state for the current one.
-                continue;
-            }
-
-            list.view.rerender_messages(messages_to_rerender, any_message_content_edited);
-        }
-    } else {
+    if (messages_to_rerender.length > 0) {
         // If the content of the message was edited, we do a special animation.
         //
         // BUG: This triggers the "message edited" animation for every

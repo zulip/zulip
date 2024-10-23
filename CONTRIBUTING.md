@@ -219,8 +219,14 @@ issue you're interested in.
 There is no bot for other Zulip repositories
 ([`zulip/zulip-flutter`](https://github.com/zulip/zulip-flutter/), etc.). If
 you are interested in claiming an issue in one of these repositories, simply
-post a comment on the issue thread saying that you'd like to work on it. There
-is no need to @-mention the issue creator in your comment.
+post a comment on the issue thread saying that you've started work on the
+issue and would like to claim it. In your comment, describe what part of the
+code you're modifying and how you plan to approach the problem, based on
+what you learned in steps 1–4 [above](#picking-an-issue-to-work-on).
+
+There is no need to @-mention the issue creator in your comment. There is
+also no need to post the same information in multiple places, for example in
+a chat thread in addition to the GitHub issue.
 
 Please follow the same guidelines as described above: find an issue labeled
 "help wanted", and only pick up one issue at a time to start with.
@@ -274,10 +280,8 @@ labels.
   codebase, you can also find another "help wanted" issue in the same area to
   work on.
 - **What if there is already a pull request for the issue I want to work on?**
-  Start by reviewing the existing work. If you agree with the approach, you can
-  use the existing pull request (PR) as a starting point for your contribution. If
-  you think a different approach is needed, you can post a new PR, with a comment that clearly
-  explains _why_ you decided to start from scratch.
+  See our [guide on continuing unfinished
+  work](https://zulip.readthedocs.io/en/latest/contributing/continuing-unfinished-work.html).
 - **What if I ask if someone is still working on an issue, and they don't
   respond?** If you don't get a reply within 2-3 days, go ahead and post a comment
   that you are working on the issue, and submit a pull request. If the original
@@ -297,9 +301,10 @@ labels.
   issue. After that, sure! If
   [Zulipbot](https://github.com/zulip/zulipbot) does not allow you to
   claim an issue, you can post a comment describing the status of your
-  other work on the issue you're interested in, and asking for the
-  issue to be assigned to you. Note that addressing feedback on
-  in-progress PRs should always take priority over starting a new PR.
+  other work on the issue you're interested in (including links to all open
+  PRs), and asking for the issue to be assigned to you. Note that addressing
+  feedback on in-progress PRs should always take priority over starting a new
+  PR.
 - **I think my PR is done, but it hasn't been merged yet. What's going on?**
   1. **Double-check that you have addressed all the feedback**, including any comments
      on [Git commit

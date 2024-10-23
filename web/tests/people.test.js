@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {parseISO} = require("date-fns");
 const _ = require("lodash");
@@ -10,7 +10,7 @@ const {$t} = require("./lib/i18n");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {current_user, page_params, realm, user_settings} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const message_user_ids = mock_esm("../src/message_user_ids");
 const settings_data = mock_esm("../src/settings_data", {
@@ -19,7 +19,16 @@ const settings_data = mock_esm("../src/settings_data", {
 
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
+const {set_current_user, set_realm} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 const welcome_bot = {
     email: "welcome-bot@example.com",
@@ -507,7 +516,7 @@ test_people("get_display_full_names", ({override}) => {
     people.add_active_user(bob);
     people.add_active_user(charles);
     people.add_active_user(guest);
-    realm.realm_enable_guest_user_indicator = true;
+    override(realm, "realm_enable_guest_user_indicator", true);
 
     let user_ids = [me.user_id, steven.user_id, bob.user_id, charles.user_id, guest.user_id];
     let names = people.get_display_full_names(user_ids);
@@ -523,7 +532,7 @@ test_people("get_display_full_names", ({override}) => {
     ]);
 
     muted_users.add_muted_user(charles.user_id);
-    realm.realm_enable_guest_user_indicator = false;
+    override(realm, "realm_enable_guest_user_indicator", false);
     names = people.get_display_full_names(user_ids);
     assert.deepEqual(names, [
         "Me Myself",
@@ -543,7 +552,7 @@ test_people("get_display_full_names", ({override}) => {
         "translated: Muted user",
     ]);
 
-    realm.realm_enable_guest_user_indicator = true;
+    override(realm, "realm_enable_guest_user_indicator", true);
     names = people.get_display_full_names(user_ids);
     assert.deepEqual(names, [
         "Me Myself",
@@ -567,10 +576,10 @@ test_people("my_custom_profile_data", () => {
     assert.equal(people.my_custom_profile_data(4), "My phone number");
 });
 
-test_people("get_custom_fields_by_type", () => {
+test_people("get_custom_fields_by_type", ({override}) => {
     people.add_active_user(stewie);
     const person = people.get_by_user_id(stewie.user_id);
-    realm.custom_profile_field_types = {
+    override(realm, "custom_profile_field_types", {
         SHORT_TEXT: {
             id: 1,
             name: "Short text",
@@ -579,8 +588,8 @@ test_people("get_custom_fields_by_type", () => {
             id: 8,
             name: "Pronouns",
         },
-    };
-    realm.custom_profile_fields = [
+    });
+    override(realm, "custom_profile_fields", [
         {
             id: 1,
             name: "Phone number (mobile)",
@@ -596,7 +605,7 @@ test_people("get_custom_fields_by_type", () => {
             name: "Pronouns",
             type: 8,
         },
-    ];
+    ]);
     const SHORT_TEXT_ID = 1;
     assert.deepEqual(people.get_custom_fields_by_type(person.user_id, SHORT_TEXT_ID), [
         "(888) 888-8888",
@@ -614,19 +623,19 @@ test_people("bot_custom_profile_data", () => {
     assert.equal(people.get_custom_profile_data(bot_botson.user_id, 3), null);
 });
 
-test_people("user_timezone", () => {
+test_people("user_timezone", ({override}) => {
     MockDate.set(parseISO("20130208T080910").getTime());
 
-    user_settings.twenty_four_hour_time = true;
+    override(user_settings, "twenty_four_hour_time", true);
     assert.equal(people.get_user_time(me.user_id), "00:09");
 
-    user_settings.twenty_four_hour_time = false;
+    override(user_settings, "twenty_four_hour_time", false);
     assert.equal(people.get_user_time(me.user_id), "12:09 AM");
 });
 
 test_people("utcToZonedTime", ({override}) => {
     MockDate.set(parseISO("20130208T080910").getTime());
-    user_settings.twenty_four_hour_time = true;
+    override(user_settings, "twenty_four_hour_time", true);
 
     assert.deepEqual(people.get_user_time(unknown_user.user_id), undefined);
     assert.equal(people.get_user_time(me.user_id), "00:09");
@@ -703,14 +712,14 @@ test_people("set_custom_profile_field_data", () => {
     assert.equal(person.profile_data[field.id].rendered_value, "<p>Field value</p>");
 });
 
-test_people("is_current_user_only_owner", () => {
+test_people("is_current_user_only_owner", ({override}) => {
     const person = people.get_by_email(me.email);
     person.is_owner = false;
-    current_user.is_owner = false;
+    override(current_user, "is_owner", false);
     assert.ok(!people.is_current_user_only_owner());
 
     person.is_owner = true;
-    current_user.is_owner = true;
+    override(current_user, "is_owner", true);
     assert.ok(people.is_current_user_only_owner());
 
     people.add_active_user(realm_owner);
@@ -1258,13 +1267,13 @@ test_people("initialize", () => {
     assert.equal(page_params.realm_non_active_users, undefined);
 });
 
-test_people("predicate_for_user_settings_filters", () => {
+test_people("predicate_for_user_settings_filters", ({override}) => {
     /*
         This function calls matches_user_settings_search,
         so that is where we do more thorough testing.
         This test is just a sanity check for now.
     */
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
 
     const fred_smith = {full_name: "Fred Smith", role: 100};
 
@@ -1303,15 +1312,15 @@ test_people("predicate_for_user_settings_filters", () => {
     );
 });
 
-test_people("matches_user_settings_search", () => {
+test_people("matches_user_settings_search", ({override}) => {
     const match = people.matches_user_settings_search;
 
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
 
     assert.equal(match({email: "fred@example.com"}, "fred"), false);
     assert.equal(match({full_name: "Fred Smith"}, "fr"), true);
 
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
 
     assert.equal(match({delivery_email: "fred@example.com"}, "fr"), true);
     assert.equal(
@@ -1424,15 +1433,15 @@ test_people("get_realm_active_human_users", () => {
     assert.deepEqual(humans, [me]);
 });
 
-test_people("should_show_guest_user_indicator", () => {
+test_people("should_show_guest_user_indicator", ({override}) => {
     people.add_active_user(charles);
     people.add_active_user(guest);
 
-    realm.realm_enable_guest_user_indicator = false;
+    override(realm, "realm_enable_guest_user_indicator", false);
     assert.equal(people.should_add_guest_user_indicator(charles.user_id), false);
     assert.equal(people.should_add_guest_user_indicator(guest.user_id), false);
 
-    realm.realm_enable_guest_user_indicator = true;
+    override(realm, "realm_enable_guest_user_indicator", true);
     assert.equal(people.should_add_guest_user_indicator(charles.user_id), false);
     assert.equal(people.should_add_guest_user_indicator(guest.user_id), true);
 });
@@ -1440,7 +1449,7 @@ test_people("should_show_guest_user_indicator", () => {
 test_people("get_user_by_id_assert_valid", ({override}) => {
     people.add_active_user(charles);
     const inaccessible_user_id = 99;
-    realm.realm_bot_domain = "zulipdev.com";
+    override(realm, "realm_bot_domain", "zulipdev.com");
     override(settings_data, "user_can_access_all_other_users", () => false);
 
     let user = people.get_user_by_id_assert_valid(inaccessible_user_id);
@@ -1472,14 +1481,14 @@ test_people("get_user_by_id_assert_valid", ({override}) => {
     assert.equal(user.email, charles.email);
 });
 
-test_people("user_can_initiate_direct_message_thread", () => {
+test_people("user_can_initiate_direct_message_thread", ({override}) => {
     people.add_active_user(welcome_bot);
-    realm.realm_direct_message_initiator_group = nobody.id;
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
     assert.ok(!people.user_can_initiate_direct_message_thread("32"));
     // Can send if only bots and self are present.
     assert.ok(people.user_can_initiate_direct_message_thread("4,30"));
 
-    realm.realm_direct_message_initiator_group = everyone.id;
+    override(realm, "realm_direct_message_initiator_group", everyone.id);
     assert.ok(people.user_can_initiate_direct_message_thread("32"));
 });
 

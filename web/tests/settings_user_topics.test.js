@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
@@ -13,6 +13,9 @@ const list_widget = mock_esm("../src/list_widget", {
 const settings_user_topics = zrequire("settings_user_topics");
 const stream_data = zrequire("stream_data");
 const user_topics = zrequire("user_topics");
+const {initialize_user_settings} = zrequire("user_settings");
+
+initialize_user_settings({user_settings: {}});
 
 const frontend = {
     stream_id: 101,

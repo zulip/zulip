@@ -1683,7 +1683,16 @@ $option_title_width: 180px;
 #attachment-stats-holder {
     position: relative;
     margin-top: 13px;
-    display: inline-block;
+    display: block;
+
+    .upgrade-tip {
+        width: auto;
+    }
+
+    .tip::before {
+        content: "\f135";
+        margin-right: 8px;
+    }
 }
 
 .admin_exports_table {
@@ -2091,4 +2100,8 @@ $option_title_width: 180px;
 
 #admin-user-list .tab-switcher .ind-tab {
     width: 110px;
+}
+
+#data-exports .tab-switcher .ind-tab {
+    width: 160px;
 }

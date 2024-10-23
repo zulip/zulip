@@ -368,8 +368,12 @@ exports.fixtures = {
             authentication_methods: {
                 Google: {enabled: true, available: true},
             },
+            can_add_custom_emoji_group: 3,
             can_create_public_channel_group: 3,
             direct_message_permission_group: 3,
+            plan_type: 3,
+            upload_quota_mib: 50000,
+            max_file_upload_size_mib: 1024,
         },
     },
 
@@ -480,8 +484,15 @@ exports.fixtures = {
                 deleted_timestamp: null,
                 failed_timestamp: null,
                 pending: true,
+                export_type: 1,
             },
         ],
+    },
+
+    realm_export_consent: {
+        type: "realm_export_consent",
+        user_id: test_user.user_id,
+        consented: true,
     },
 
     realm_linkifiers: {
@@ -834,6 +845,9 @@ exports.fixtures = {
             members: [1],
             is_system_group: false,
             direct_subgroup_ids: [2],
+            can_add_members_group: 16,
+            can_join_group: 16,
+            can_leave_group: 15,
             can_manage_group: 16,
             can_mention_group: 11,
             deactivated: false,

@@ -1,6 +1,5 @@
 # Zulip's main Markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our Markdown syntax.
-import cgi
 import html
 import logging
 import mimetypes
@@ -10,6 +9,7 @@ from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from email.message import EmailMessage
 from functools import lru_cache
 from re import Match, Pattern
 from typing import Any, Generic, Optional, TypeAlias, TypedDict, TypeVar, cast
@@ -441,7 +441,9 @@ def fetch_open_graph_image(url: str) -> dict[str, Any] | None:
             if res.status_code != requests.codes.ok:
                 return None
 
-            mimetype, options = cgi.parse_header(res.headers["Content-Type"])
+            m = EmailMessage()
+            m["Content-Type"] = res.headers.get("Content-Type")
+            mimetype = m.get_content_type()
             if mimetype not in ("text/html", "application/xhtml+xml"):
                 return None
             html = mimetype == "text/html"
@@ -2008,7 +2010,7 @@ class StreamPattern(CompiledInlineProcessor):
         # provide more clarity to API clients.
         # Also do the same for StreamTopicPattern.
         stream_url = encode_stream(stream_id, name)
-        el.set("href", f"/#narrow/stream/{stream_url}")
+        el.set("href", f"/#narrow/channel/{stream_url}")
         text = f"#{name}"
         el.text = markdown.util.AtomicString(text)
         return el, m.start(), m.end()
@@ -2037,7 +2039,7 @@ class StreamTopicPattern(CompiledInlineProcessor):
         el.set("data-stream-id", str(stream_id))
         stream_url = encode_stream(stream_id, stream_name)
         topic_url = hash_util_encode(topic_name)
-        link = f"/#narrow/stream/{stream_url}/topic/{topic_url}"
+        link = f"/#narrow/channel/{stream_url}/topic/{topic_url}"
         el.set("href", link)
         text = f"#{stream_name} > {topic_name}"
         el.text = markdown.util.AtomicString(text)

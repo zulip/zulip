@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
@@ -22,6 +22,9 @@ mock_esm("../src/left_sidebar_navigation_area", {
 
 const message_flags = zrequire("message_flags");
 const starred_messages_ui = zrequire("starred_messages_ui");
+const {initialize_user_settings} = zrequire("user_settings");
+
+initialize_user_settings({user_settings: {}});
 
 run_test("starred", ({override}) => {
     const message = {

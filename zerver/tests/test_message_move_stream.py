@@ -2,19 +2,21 @@ from datetime import timedelta
 
 import orjson
 
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.message_delete import do_delete_messages
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_set_realm_property,
+)
 from zerver.actions.streams import do_change_stream_post_policy
+from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.users import do_change_user_role
 from zerver.lib.message import has_message_access
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import queries_captured
 from zerver.lib.url_encoding import near_stream_message_url
-from zerver.models import Message, Stream, UserMessage, UserProfile
-from zerver.models.realms import (
-    EditTopicPolicyEnum,
-    MoveMessagesBetweenStreamsPolicyEnum,
-    get_realm,
-)
+from zerver.models import Message, NamedUserGroup, Stream, UserMessage, UserProfile
+from zerver.models.groups import SystemGroups
+from zerver.models.realms import EditTopicPolicyEnum, get_realm
 from zerver.models.streams import get_stream
 
 
@@ -49,8 +51,18 @@ class MessageMoveStreamTest(ZulipTestCase):
             user_profile.save(update_fields=["default_language"])
 
         self.login(user_email)
-        stream = self.make_stream(old_stream)
-        stream_to = self.make_stream(new_stream)
+        try:
+            stream = get_stream(old_stream, user_profile.realm)
+            messages = get_topic_messages(user_profile, stream, "test")
+            do_delete_messages(user_profile.realm, messages, acting_user=None)
+        except Stream.DoesNotExist:
+            stream = self.make_stream(old_stream)
+        try:
+            stream_to = get_stream(new_stream, user_profile.realm)
+            messages = get_topic_messages(user_profile, stream_to, "test")
+            do_delete_messages(user_profile.realm, messages, acting_user=None)
+        except Stream.DoesNotExist:
+            stream_to = self.make_stream(new_stream)
         self.subscribe(user_profile, stream.name)
         self.subscribe(user_profile, stream_to.name)
         msg_id = self.send_stream_message(
@@ -104,16 +116,21 @@ class MessageMoveStreamTest(ZulipTestCase):
 
     def test_change_all_propagate_mode_for_moving_old_messages(self) -> None:
         user_profile = self.example_user("hamlet")
+        realm = user_profile.realm
         id1 = self.send_stream_message(user_profile, "Denmark", topic_name="topic1")
         id2 = self.send_stream_message(user_profile, "Denmark", topic_name="topic1")
         id3 = self.send_stream_message(user_profile, "Denmark", topic_name="topic1")
         id4 = self.send_stream_message(user_profile, "Denmark", topic_name="topic1")
         self.send_stream_message(user_profile, "Denmark", topic_name="topic1")
 
-        do_set_realm_property(
-            user_profile.realm,
-            "move_messages_between_streams_policy",
-            MoveMessagesBetweenStreamsPolicyEnum.MEMBERS_ONLY,
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_channels_group",
+            members_system_group,
             acting_user=None,
         )
 
@@ -784,13 +801,16 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
     def test_move_message_between_streams_policy_setting(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
-            "othello", "old_stream_1", "new_stream_1", "test"
-        )
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        realm = othello.realm
 
-        def check_move_message_according_to_policy(role: int, expect_fail: bool = False) -> None:
-            do_change_user_role(user_profile, role, acting_user=None)
-
+        def check_move_message_according_to_permission(
+            username: str, expect_fail: bool = False
+        ) -> None:
+            (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+                username, "old_stream", "new_stream", "test"
+            )
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
                 {
@@ -812,76 +832,116 @@ class MessageMoveStreamTest(ZulipTestCase):
                 messages = get_topic_messages(user_profile, new_stream, "test")
                 self.assert_length(messages, 4)
 
-        # Check sending messages when policy is MoveMessagesBetweenStreamsPolicyEnum.NOBODY.
-        do_set_realm_property(
-            user_profile.realm,
-            "move_messages_between_streams_policy",
-            MoveMessagesBetweenStreamsPolicyEnum.NOBODY,
-            acting_user=None,
+        administrators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
-        check_move_message_according_to_policy(UserProfile.ROLE_REALM_OWNER, expect_fail=True)
-        check_move_message_according_to_policy(
-            UserProfile.ROLE_REALM_ADMINISTRATOR, expect_fail=True
+        full_members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+        )
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
         )
 
-        # Check sending messages when policy is MoveMessagesBetweenStreamsPolicyEnum.ADMINS_ONLY.
-        do_set_realm_property(
-            user_profile.realm,
-            "move_messages_between_streams_policy",
-            MoveMessagesBetweenStreamsPolicyEnum.ADMINS_ONLY,
+        # Check sending messages when nobody is allowed to move messages.
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_channels_group",
+            nobody_system_group,
             acting_user=None,
         )
-        check_move_message_according_to_policy(UserProfile.ROLE_MODERATOR, expect_fail=True)
-        check_move_message_according_to_policy(UserProfile.ROLE_REALM_ADMINISTRATOR)
+        check_move_message_according_to_permission("desdemona", expect_fail=True)
+        check_move_message_according_to_permission("iago", expect_fail=True)
 
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
-            "othello", "old_stream_2", "new_stream_2", "test"
-        )
-        # Check sending messages when policy is MoveMessagesBetweenStreamsPolicyEnum.MODERATORS_ONLY.
-        do_set_realm_property(
-            user_profile.realm,
-            "move_messages_between_streams_policy",
-            MoveMessagesBetweenStreamsPolicyEnum.MODERATORS_ONLY,
+        # Check sending messages when only administrators are allowed.
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_channels_group",
+            administrators_system_group,
             acting_user=None,
         )
-        check_move_message_according_to_policy(UserProfile.ROLE_MEMBER, expect_fail=True)
-        check_move_message_according_to_policy(UserProfile.ROLE_MODERATOR)
+        check_move_message_according_to_permission("shiva", expect_fail=True)
+        check_move_message_according_to_permission("iago")
 
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
-            "othello", "old_stream_3", "new_stream_3", "test"
-        )
-        # Check sending messages when policy is MoveMessagesBetweenStreamsPolicyEnum.FULL_MEMBERS_ONLY.
-        do_set_realm_property(
-            user_profile.realm,
-            "move_messages_between_streams_policy",
-            MoveMessagesBetweenStreamsPolicyEnum.FULL_MEMBERS_ONLY,
+        # Check sending messages when only moderators are allowed.
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_channels_group",
+            moderators_system_group,
             acting_user=None,
         )
-        do_set_realm_property(
-            user_profile.realm, "waiting_period_threshold", 100000, acting_user=None
-        )
-        check_move_message_according_to_policy(UserProfile.ROLE_MEMBER, expect_fail=True)
+        check_move_message_according_to_permission("cordelia", expect_fail=True)
+        check_move_message_according_to_permission("shiva")
 
-        do_set_realm_property(user_profile.realm, "waiting_period_threshold", 0, acting_user=None)
-        check_move_message_according_to_policy(UserProfile.ROLE_MEMBER)
-
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
-            "othello", "old_stream_4", "new_stream_4", "test"
-        )
-        # Check sending messages when policy is MoveMessagesBetweenStreamsPolicyEnum.MEMBERS_ONLY.
-        do_set_realm_property(
-            user_profile.realm,
-            "move_messages_between_streams_policy",
-            MoveMessagesBetweenStreamsPolicyEnum.MEMBERS_ONLY,
+        # Check sending messages when full members are allowed.
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_channels_group",
+            full_members_system_group,
             acting_user=None,
         )
-        check_move_message_according_to_policy(UserProfile.ROLE_GUEST, expect_fail=True)
-        check_move_message_according_to_policy(UserProfile.ROLE_MEMBER)
+        do_set_realm_property(othello.realm, "waiting_period_threshold", 100000, acting_user=None)
+        check_move_message_according_to_permission("othello", expect_fail=True)
+
+        do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
+        check_move_message_according_to_permission("cordelia")
+
+        # Check sending messages when members are allowed.
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_channels_group",
+            members_system_group,
+            acting_user=None,
+        )
+        check_move_message_according_to_permission("polonius", expect_fail=True)
+        check_move_message_according_to_permission("cordelia")
+
+        # Test for checking setting for non-system user group.
+        user_group = check_add_user_group(
+            realm, "new_group", [othello, cordelia], acting_user=othello
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_move_messages_between_channels_group", user_group, acting_user=None
+        )
+
+        # Othello and Cordelia are in the allowed user group, so can move messages.
+        check_move_message_according_to_permission("othello")
+        check_move_message_according_to_permission("cordelia")
+
+        # Iago is not in the allowed user group, so cannot move messages.
+        check_move_message_according_to_permission("iago", expect_fail=True)
+
+        # Test for checking the setting for anonymous user group.
+        anonymous_user_group = self.create_or_update_anonymous_group_for_setting(
+            [othello],
+            [administrators_system_group],
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_channels_group",
+            anonymous_user_group,
+            acting_user=None,
+        )
+
+        # Othello is the direct member of the anonymous user group, so can move messages.
+        check_move_message_according_to_permission("othello")
+        # Iago is in the `administrators_system_group` subgroup, so can move messages.
+        check_move_message_according_to_permission("iago")
+
+        # Shiva is not in the anonymous user group, so cannot move messages.
+        check_move_message_according_to_permission("shiva", expect_fail=True)
 
     def test_move_message_to_stream_time_limit(self) -> None:
         shiva = self.example_user("shiva")
         iago = self.example_user("iago")
         cordelia = self.example_user("cordelia")
+
+        realm = cordelia.realm
 
         test_stream_1 = self.make_stream("test_stream_1")
         test_stream_2 = self.make_stream("test_stream_2")
@@ -900,10 +960,14 @@ class MessageMoveStreamTest(ZulipTestCase):
 
         self.send_stream_message(cordelia, test_stream_1.name, topic_name="test", content="third")
 
-        do_set_realm_property(
-            cordelia.realm,
-            "move_messages_between_streams_policy",
-            MoveMessagesBetweenStreamsPolicyEnum.MEMBERS_ONLY,
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_channels_group",
+            members_system_group,
             acting_user=None,
         )
 
@@ -968,10 +1032,16 @@ class MessageMoveStreamTest(ZulipTestCase):
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream_1", "new_stream_1", "test"
         )
-        do_set_realm_property(
-            user_profile.realm,
-            "move_messages_between_streams_policy",
-            MoveMessagesBetweenStreamsPolicyEnum.MEMBERS_ONLY,
+        realm = user_profile.realm
+
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_channels_group",
+            members_system_group,
             acting_user=None,
         )
 
@@ -1066,10 +1136,14 @@ class MessageMoveStreamTest(ZulipTestCase):
         realm.save()
         self.login("cordelia")
 
-        do_set_realm_property(
-            user_profile.realm,
-            "move_messages_between_streams_policy",
-            MoveMessagesBetweenStreamsPolicyEnum.MEMBERS_ONLY,
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_channels_group",
+            members_system_group,
             acting_user=None,
         )
 
@@ -1101,7 +1175,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(51), self.assert_memcached_count(14):
+        with self.assert_database_query_count(53), self.assert_memcached_count(14):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
@@ -1578,12 +1652,6 @@ class MessageMoveStreamTest(ZulipTestCase):
             user_messages_created=False,
             to_invite_only=False,
         )
-
-    def test_can_move_messages_between_streams(self) -> None:
-        def validation_func(user_profile: UserProfile) -> bool:
-            return user_profile.can_move_messages_between_streams()
-
-        self.check_has_permission_policies("move_messages_between_streams_policy", validation_func)
 
     def test_move_message_from_private_to_private_with_old_member(self) -> None:
         admin_user = self.example_user("iago")

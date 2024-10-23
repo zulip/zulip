@@ -66,6 +66,7 @@
 * [Get all users](/api/get-users)
 * [Create a user](/api/create-user)
 * [Update a user](/api/update-user)
+* [Update a user by email](/api/update-user-by-email)
 * [Deactivate a user](/api/deactivate-user)
 * [Deactivate own user](/api/deactivate-own-user)
 * [Reactivate a user](/api/reactivate-user)
@@ -119,8 +120,8 @@
 * [Reorder custom profile fields](/api/reorder-custom-profile-fields)
 * [Create a custom profile field](/api/create-custom-profile-field)
 * [Update realm-level defaults of user settings](/api/update-realm-user-settings-defaults)
-* [Get all public data exports](/api/get-realm-exports)
-* [Create a public data export](/api/export-realm)
+* [Get all data exports](/api/get-realm-exports)
+* [Create a data export](/api/export-realm)
 * [Get data export consent state](/api/get-realm-export-consents)
 
 #### Real-time events

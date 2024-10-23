@@ -2,8 +2,25 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import * as browser_history from "./browser_history";
+import type {Filter} from "./filter";
+import * as hash_util from "./hash_util";
 import * as message_lists from "./message_lists";
 import * as narrow_state from "./narrow_state";
+
+function is_URL_hash_same_as_filter_hash(filter: Filter): boolean {
+    if (filter.is_in_home()) {
+        if (window.location.hash === "#feed") {
+            return true;
+        }
+
+        if (window.location.hash === "") {
+            return browser_history.get_home_view_hash() === "#feed";
+        }
+    }
+
+    const hash_from_filter = hash_util.search_terms_to_hash(filter.terms());
+    return window.location.hash === hash_from_filter;
+}
 
 // Saves the selected message of the narrow in the browser
 // history, so that we are able to restore it if the user
@@ -15,9 +32,8 @@ function _save_narrow_state(): void {
     }
 
     assert(message_lists.current !== undefined);
-    // We don't want to save state in the middle of a narrow change
-    // to the wrong hash.
-    if (browser_history.state.changing_hash) {
+    // Only save state if the URL hash matches the filter terms.
+    if (!is_URL_hash_same_as_filter_hash(current_filter)) {
         return;
     }
 

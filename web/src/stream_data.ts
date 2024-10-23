@@ -736,6 +736,7 @@ export function create_sub_from_server_data(
         render_subscribers: !realm.realm_is_zephyr_mirror_realm || attrs.invite_only,
         newly_subscribed: false,
         is_muted: false,
+        pin_to_top: false,
         desktop_notifications: null,
         audible_notifications: null,
         push_notifications: null,

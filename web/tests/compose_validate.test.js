@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_banners} = require("./lib/compose_banner");
 const {$t} = require("./lib/i18n");
@@ -8,7 +8,6 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {current_user, realm} = require("./lib/zpage_params");
 
 const compose_banner = zrequire("compose_banner");
 const compose_pm_pill = zrequire("compose_pm_pill");
@@ -19,9 +18,15 @@ const people = zrequire("people");
 const resolved_topic = zrequire("../shared/src/resolved_topic");
 const settings_config = zrequire("settings_config");
 const settings_data = mock_esm("../src/settings_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("/compose_recipient");
 const user_groups = zrequire("user_groups");
+
+const realm = {};
+set_realm(realm);
+const current_user = {};
+set_current_user(current_user);
 
 const me = {
     email: "me@example.com",
@@ -136,7 +141,7 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
     assert.ok(user_not_subscribed_rendered);
 });
 
-test_ui("validate", ({mock_template}) => {
+test_ui("validate", ({mock_template, override}) => {
     function initialize_pm_pill() {
         $.clear_all_elements();
 
@@ -172,8 +177,8 @@ test_ui("validate", ({mock_template}) => {
     add_content_to_compose_box();
     compose_state.private_message_recipient("");
     let pm_recipient_error_rendered = false;
-    realm.realm_direct_message_permission_group = everyone.id;
-    realm.realm_direct_message_initiator_group = everyone.id;
+    override(realm, "realm_direct_message_permission_group", everyone.id);
+    override(realm, "realm_direct_message_initiator_group", everyone.id);
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.missing_private_message_recipient);
         assert.equal(
@@ -193,16 +198,16 @@ test_ui("validate", ({mock_template}) => {
     assert.ok(compose_validate.validate());
     assert.ok(!pm_recipient_error_rendered);
 
-    realm.realm_direct_message_initiator_group = admin.id;
+    override(realm, "realm_direct_message_initiator_group", admin.id);
     assert.ok(compose_validate.validate());
     assert.ok(!pm_recipient_error_rendered);
 
-    realm.realm_direct_message_permission_group = admin.id;
+    override(realm, "realm_direct_message_permission_group", admin.id);
     assert.ok(compose_validate.validate());
     assert.ok(!pm_recipient_error_rendered);
 
-    realm.realm_direct_message_initiator_group = everyone.id;
-    realm.realm_direct_message_permission_group = everyone.id;
+    override(realm, "realm_direct_message_initiator_group", everyone.id);
+    override(realm, "realm_direct_message_permission_group", everyone.id);
     people.deactivate(bob);
     let deactivated_user_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
@@ -217,9 +222,9 @@ test_ui("validate", ({mock_template}) => {
     assert.ok(!compose_validate.validate());
     assert.ok(deactivated_user_error_rendered);
 
-    realm.realm_is_zephyr_mirror_realm = true;
+    override(realm, "realm_is_zephyr_mirror_realm", true);
     assert.ok(compose_validate.validate());
-    realm.realm_is_zephyr_mirror_realm = false;
+    override(realm, "realm_is_zephyr_mirror_realm", false);
 
     initialize_pm_pill();
     add_content_to_compose_box();
@@ -284,7 +289,7 @@ test_ui("validate", ({mock_template}) => {
     };
     stream_data.add_sub(denmark);
     compose_state.set_stream_id(denmark.stream_id);
-    realm.realm_mandatory_topics = true;
+    override(realm, "realm_mandatory_topics", true);
     compose_state.topic("");
     let missing_topic_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
@@ -305,14 +310,14 @@ test_ui("validate", ({mock_template}) => {
     assert.ok(missing_topic_error_rendered);
 });
 
-test_ui("get_invalid_recipient_emails", ({override_rewire}) => {
+test_ui("get_invalid_recipient_emails", ({override, override_rewire}) => {
     const welcome_bot = {
         email: "welcome-bot@example.com",
         user_id: 124,
         full_name: "Welcome Bot",
     };
 
-    current_user.user_id = me.user_id;
+    override(current_user, "user_id", me.user_id);
 
     const params = {};
     params.realm_users = [];
@@ -325,79 +330,100 @@ test_ui("get_invalid_recipient_emails", ({override_rewire}) => {
     assert.deepEqual(compose_validate.get_invalid_recipient_emails(), []);
 });
 
-test_ui("test_stream_wildcard_mention_allowed", ({override_rewire}) => {
-    current_user.user_id = me.user_id;
+test_ui("test_stream_wildcard_mention_allowed", ({override, override_rewire}) => {
+    override(current_user, "user_id", me.user_id);
 
     // First, check for large streams (>15 subscribers) where the wildcard mention
     // policy matters.
     override_rewire(peer_data, "get_subscriber_count", () => 16);
 
-    realm.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_everyone.code;
-    current_user.is_guest = true;
-    current_user.is_admin = false;
+    override(
+        realm,
+        "realm_wildcard_mention_policy",
+        settings_config.wildcard_mention_policy_values.by_everyone.code,
+    );
+    override(current_user, "is_guest", true);
+    override(current_user, "is_admin", false);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
-    realm.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.nobody.code;
-    current_user.is_admin = true;
+    override(
+        realm,
+        "realm_wildcard_mention_policy",
+        settings_config.wildcard_mention_policy_values.nobody.code,
+    );
+    override(current_user, "is_admin", true);
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
-    realm.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_members.code;
-    current_user.is_guest = true;
-    current_user.is_admin = false;
+    override(
+        realm,
+        "realm_wildcard_mention_policy",
+        settings_config.wildcard_mention_policy_values.by_members.code,
+    );
+    override(current_user, "is_guest", true);
+    override(current_user, "is_admin", false);
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
-    current_user.is_guest = false;
+    override(current_user, "is_guest", false);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
-    realm.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_moderators_only.code;
-    current_user.is_moderator = false;
+    override(
+        realm,
+        "realm_wildcard_mention_policy",
+        settings_config.wildcard_mention_policy_values.by_moderators_only.code,
+    );
+    override(current_user, "is_moderator", false);
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
-    current_user.is_moderator = true;
+    override(current_user, "is_moderator", true);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
-    realm.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_admins_only.code;
-    current_user.is_admin = false;
+    override(
+        realm,
+        "realm_wildcard_mention_policy",
+        settings_config.wildcard_mention_policy_values.by_admins_only.code,
+    );
+    override(current_user, "is_admin", false);
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
     // TODO: Add a by_admins_only case when we implement stream-level administrators.
 
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
-    realm.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_full_members.code;
+    override(
+        realm,
+        "realm_wildcard_mention_policy",
+        settings_config.wildcard_mention_policy_values.by_full_members.code,
+    );
     const person = people.get_by_user_id(current_user.user_id);
     person.date_joined = new Date(Date.now());
-    realm.realm_waiting_period_threshold = 10;
+    override(realm, "realm_waiting_period_threshold", 10);
 
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
     // Now, check for small streams (<=15 subscribers) where the wildcard mention
     // policy doesn't matter; everyone is allowed to use wildcard mentions.
     override_rewire(peer_data, "get_subscriber_count", () => 14);
-    realm.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_admins_only.code;
-    current_user.is_admin = false;
-    current_user.is_guest = true;
+    override(
+        realm,
+        "realm_wildcard_mention_policy",
+        settings_config.wildcard_mention_policy_values.by_admins_only.code,
+    );
+    override(current_user, "is_admin", false);
+    override(current_user, "is_guest", true);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 });
 
-test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
+test_ui("validate_stream_message", ({override, override_rewire, mock_template}) => {
     // This test is in kind of continuation to test_validate but since it is
     // primarily used to get coverage over functions called from validate()
     // we are separating it up in different test. Though their relative position
     // of execution should not be changed.
     mock_banners();
-    current_user.user_id = me.user_id;
-    realm.realm_mandatory_topics = false;
+    override(current_user, "user_id", me.user_id);
+    override(realm, "realm_mandatory_topics", false);
 
     const special_sub = {
         stream_id: 101,
@@ -440,13 +466,13 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     assert.ok(wildcards_not_allowed_rendered);
 });
 
-test_ui("test_validate_stream_message_post_policy_admin_only", ({mock_template}) => {
+test_ui("test_validate_stream_message_post_policy_admin_only", ({mock_template, override}) => {
     // This test is in continuation with test_validate but it has been separated out
     // for better readability. Their relative position of execution should not be changed.
     // Although the position with respect to test_validate_stream_message does not matter
     // as different stream is used for this test.
     mock_banners();
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     const sub_stream_102 = {
         stream_id: 102,
         name: "stream102",
@@ -476,8 +502,8 @@ test_ui("test_validate_stream_message_post_policy_admin_only", ({mock_template})
     // Reset error message.
     compose_state.set_stream_id(social_sub.stream_id);
 
-    current_user.is_admin = false;
-    current_user.is_guest = true;
+    override(current_user, "is_admin", false);
+    override(current_user, "is_guest", true);
 
     compose_state.topic("topic102");
     compose_state.set_stream_id(sub_stream_102.stream_id);
@@ -486,12 +512,12 @@ test_ui("test_validate_stream_message_post_policy_admin_only", ({mock_template})
     assert.ok(banner_rendered);
 });
 
-test_ui("test_validate_stream_message_post_policy_moderators_only", ({mock_template}) => {
+test_ui("test_validate_stream_message_post_policy_moderators_only", ({mock_template, override}) => {
     mock_banners();
 
-    current_user.is_admin = false;
-    current_user.is_moderator = false;
-    current_user.is_guest = false;
+    override(current_user, "is_admin", false);
+    override(current_user, "is_moderator", false);
+    override(current_user, "is_guest", false);
 
     const sub = {
         stream_id: 104,
@@ -520,43 +546,46 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", ({mock_templ
     // Reset error message.
     compose_state.set_stream_id(social_sub.stream_id);
 
-    current_user.is_guest = true;
+    override(current_user, "is_guest", true);
     assert.ok(!compose_validate.validate());
     assert.ok(banner_rendered);
 });
 
-test_ui("test_validate_stream_message_post_policy_full_members_only", ({mock_template}) => {
-    mock_banners();
-    current_user.is_admin = false;
-    current_user.is_guest = true;
-    const sub = {
-        stream_id: 103,
-        name: "stream103",
-        subscribed: true,
-        stream_post_policy: settings_config.stream_post_policy_values.non_new_members.code,
-    };
+test_ui(
+    "test_validate_stream_message_post_policy_full_members_only",
+    ({mock_template, override}) => {
+        mock_banners();
+        override(current_user, "is_admin", false);
+        override(current_user, "is_guest", true);
+        const sub = {
+            stream_id: 103,
+            name: "stream103",
+            subscribed: true,
+            stream_post_policy: settings_config.stream_post_policy_values.non_new_members.code,
+        };
 
-    stream_data.add_sub(sub);
-    compose_state.topic("topic103");
-    compose_state.set_stream_id(sub.stream_id);
-    let banner_rendered = false;
-    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        assert.equal(data.classname, compose_banner.CLASSNAMES.no_post_permissions);
-        assert.equal(
-            data.banner_text,
-            $t({
-                defaultMessage: "You do not have permission to post in this channel.",
-            }),
-        );
-        banner_rendered = true;
-        return "<banner-stub>";
-    });
-    assert.ok(!compose_validate.validate());
-    assert.ok(banner_rendered);
-});
+        stream_data.add_sub(sub);
+        compose_state.topic("topic103");
+        compose_state.set_stream_id(sub.stream_id);
+        let banner_rendered = false;
+        mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+            assert.equal(data.classname, compose_banner.CLASSNAMES.no_post_permissions);
+            assert.equal(
+                data.banner_text,
+                $t({
+                    defaultMessage: "You do not have permission to post in this channel.",
+                }),
+            );
+            banner_rendered = true;
+            return "<banner-stub>";
+        });
+        assert.ok(!compose_validate.validate());
+        assert.ok(banner_rendered);
+    },
+);
 
-test_ui("test_check_overflow_text", ({mock_template}) => {
-    realm.max_message_length = 10000;
+test_ui("test_check_overflow_text", ({mock_template, override}) => {
+    override(realm, "max_message_length", 10000);
 
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
@@ -721,7 +750,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
         new_banner_rendered = false;
         const msg_type = is_private ? "private" : "stream";
         compose_state.set_message_type(msg_type);
-        realm.realm_is_zephyr_mirror_realm = is_zephyr_mirror;
+        override(realm, "realm_is_zephyr_mirror_realm", is_zephyr_mirror);
         mentioned_details.type = type;
         compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
         assert.ok(!new_banner_rendered);
@@ -733,7 +762,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
 
     $("#compose_invite_users").hide();
     compose_state.set_message_type("stream");
-    realm.realm_is_zephyr_mirror_realm = false;
+    override(realm, "realm_is_zephyr_mirror_realm", false);
 
     // Test with empty stream name in compose box. It should return noop.
     new_banner_rendered = false;

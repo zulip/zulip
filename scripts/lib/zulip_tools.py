@@ -691,10 +691,16 @@ def start_arg_parser(action: str, add_help: bool = False) -> argparse.ArgumentPa
     parser.add_argument(
         "--skip-checks", action="store_true", help="Skip syntax and database checks"
     )
-    parser.add_argument(
+    which_services = parser.add_mutually_exclusive_group()
+    which_services.add_argument(
         "--skip-client-reloads",
         action="store_true",
         help="Do not send reload events to web clients",
+    )
+    which_services.add_argument(
+        "--only-django",
+        action="store_true",
+        help=f"Only {action} Django (not Tornado or workers)",
     )
     if action == "restart":
         parser.add_argument(

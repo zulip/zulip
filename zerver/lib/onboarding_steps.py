@@ -52,6 +52,9 @@ ONE_TIME_NOTICES: list[OneTimeNotice] = [
     OneTimeNotice(
         name="interleaved_view_messages_fading",
     ),
+    OneTimeNotice(
+        name="intro_resolve_topic",
+    ),
 ]
 
 ONE_TIME_ACTIONS = [OneTimeAction(name="narrow_to_dm_with_welcome_bot_new_user")]

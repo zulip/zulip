@@ -348,8 +348,6 @@ export const edit_topic_policy_values = {
     },
 };
 
-export const move_messages_between_streams_policy_values = email_invite_to_realm_policy_values;
-
 export const time_limit_dropdown_values = [
     {
         text: $t({defaultMessage: "Any time"}),
@@ -544,6 +542,25 @@ export const expires_in_values = {
         value: "custom",
         description: $t({defaultMessage: "Custom"}),
         default: false,
+    },
+};
+
+export const custom_time_unit_values = {
+    minutes: {
+        name: "minutes",
+        description: $t({defaultMessage: "minutes"}),
+    },
+    hours: {
+        name: "hours",
+        description: $t({defaultMessage: "hours"}),
+    },
+    days: {
+        name: "days",
+        description: $t({defaultMessage: "days"}),
+    },
+    weeks: {
+        name: "weeks",
+        description: $t({defaultMessage: "weeks"}),
     },
 };
 
@@ -842,9 +859,10 @@ export type AllNotifications = {
         email_message_notification_settings: string[];
         other_email_settings: string[];
     };
-    show_push_notifications_tooltip: {
+    disabled_notification_settings: {
         push_notifications: boolean;
         enable_online_push_notifications: boolean;
+        message_content_in_email_notifications: boolean;
     };
 };
 
@@ -878,9 +896,11 @@ export const all_notifications = (settings_object: Settings): AllNotifications =
         email_message_notification_settings,
         other_email_settings,
     },
-    show_push_notifications_tooltip: {
+    disabled_notification_settings: {
         push_notifications: !realm.realm_push_notifications_enabled,
         enable_online_push_notifications: !realm.realm_push_notifications_enabled,
+        message_content_in_email_notifications:
+            !realm.realm_message_content_allowed_in_email_notifications,
     },
 });
 
@@ -1055,4 +1075,15 @@ export const stream_post_policy_values = {
     },
 } as const;
 
-export type {Settings as GenericUserSettings};
+export const export_type_values = {
+    export_public: {
+        value: 1,
+        description: $t({defaultMessage: "Public data"}),
+        default: false,
+    },
+    export_full_with_consent: {
+        value: 2,
+        description: $t({defaultMessage: "Standard"}),
+        default: true,
+    },
+};

@@ -1,13 +1,12 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const MockDate = require("mockdate");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
 const {run_test, noop} = require("./lib/test");
-const {current_user} = require("./lib/zpage_params");
 
 const compose_notifications = mock_esm("../src/compose_notifications");
 const markdown = mock_esm("../src/markdown");
@@ -70,7 +69,12 @@ message_lists.non_rendered_data = () => [];
 const echo = zrequire("echo");
 const echo_state = zrequire("echo_state");
 const people = zrequire("people");
+const {set_current_user} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
+const stream_topic_history = zrequire("stream_topic_history");
+
+const current_user = {};
+set_current_user(current_user);
 
 const general_sub = {
     stream_id: 101,
@@ -187,8 +191,8 @@ run_test("process_from_server for messages to add to narrow", ({override}) => {
     ]);
 });
 
-run_test("build_display_recipient", () => {
-    current_user.user_id = 123;
+run_test("build_display_recipient", ({override}) => {
+    override(current_user, "user_id", 123);
 
     const params = {};
     params.realm_users = [
@@ -320,7 +324,7 @@ run_test("insert_local_message streams", ({override}) => {
 run_test("insert_local_message direct message", ({override}) => {
     const local_id_float = 102.01;
 
-    current_user.user_id = 123;
+    override(current_user, "user_id", 123);
 
     const params = {};
     params.realm_users = [
@@ -363,16 +367,21 @@ run_test("test reify_message_id", ({override}) => {
     const local_id_float = 103.01;
 
     override(markdown, "render", noop);
+    override(markdown, "get_topic_links", noop);
 
     const message_request = {
         type: "stream",
         stream_id: general_sub.stream_id,
+        topic: "test",
         sender_email: "iago@zulip.com",
         sender_full_name: "Iago",
         sender_id: 123,
         draft_id: 100,
     };
-    echo.insert_local_message(message_request, local_id_float, (messages) => messages);
+    echo.insert_local_message(message_request, local_id_float, (messages) => {
+        messages.map((message) => echo.track_local_message(message));
+        return messages;
+    });
 
     let message_store_reify_called = false;
     let notifications_reify_called = false;
@@ -389,6 +398,10 @@ run_test("test reify_message_id", ({override}) => {
 
     assert.ok(message_store_reify_called);
     assert.ok(notifications_reify_called);
+
+    const history = stream_topic_history.find_or_create(general_sub.stream_id);
+    assert.equal(history.max_message_id, 110);
+    assert.equal(history.topics.get("test").message_id, 110);
 });
 
 run_test("reset MockDate", () => {

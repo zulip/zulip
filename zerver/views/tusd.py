@@ -21,12 +21,11 @@ from zerver.lib.upload import (
     attachment_vips_source,
     check_upload_within_quota,
     create_attachment,
-    delete_message_attachment,
     sanitize_name,
     upload_backend,
 )
 from zerver.lib.upload.base import INLINE_MIME_TYPES
-from zerver.models import UserProfile
+from zerver.models import Realm, UserProfile
 
 
 # See https://tus.github.io/tusd/advanced-topics/hooks/ for the spec
@@ -100,13 +99,27 @@ def handle_upload_pre_create_hook(
     if data.size_is_deferred or data.size is None:
         return reject_upload("SizeIsDeferred is not supported", 411)
 
-    if data.size > settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024:
-        return reject_upload(
-            _("Uploaded file is larger than the allowed limit of {max_file_size} MiB").format(
-                max_file_size=settings.MAX_FILE_UPLOAD_SIZE
-            ),
-            413,
-        )
+    max_file_upload_size_mebibytes = user_profile.realm.get_max_file_upload_size_mebibytes()
+    if data.size > max_file_upload_size_mebibytes * 1024 * 1024:
+        if user_profile.realm.plan_type != Realm.PLAN_TYPE_SELF_HOSTED:
+            return reject_upload(
+                _(
+                    "File is larger than the maximum upload size ({max_size} MiB) allowed by your organization's plan."
+                ).format(
+                    max_size=max_file_upload_size_mebibytes,
+                ),
+                413,
+            )
+        else:
+            return reject_upload(
+                _(
+                    "File is larger than this server's configured maximum upload size ({max_size} MiB)."
+                ).format(
+                    max_size=max_file_upload_size_mebibytes,
+                ),
+                413,
+            )
+
     try:
         check_upload_within_quota(user_profile.realm, data.size)
     except RealmUploadQuotaError as e:
@@ -167,10 +180,19 @@ def handle_upload_pre_finish_hook(
             StorageClass=settings.S3_UPLOADS_STORAGE_CLASS,
         )
 
-    # https://tus.github.io/tusd/storage-backends/overview/#storage-format
-    # tusd creates a .info file next to the upload, which we do not
-    # need to keep.  Clean it up.
-    delete_message_attachment(f"{path_id}.info")
+        # https://tus.github.io/tusd/storage-backends/overview/#storage-format
+        # tusd also creates a .info file next to the upload, which
+        # must be preserved for HEAD requests (to check for upload
+        # state) to work.  These files are inaccessible via Zulip, and
+        # small enough to not pose any notable storage use; but we
+        # should store them with the right StorageClass.
+        if settings.S3_UPLOADS_STORAGE_CLASS != "STANDARD":
+            info_key = upload_backend.uploads_bucket.Object(path_id + ".info")
+            info_key.copy_from(
+                CopySource={"Bucket": settings.S3_AUTH_UPLOADS_BUCKET, "Key": path_id + ".info"},
+                MetadataDirective="COPY",
+                StorageClass=settings.S3_UPLOADS_STORAGE_CLASS,
+            )
 
     with transaction.atomic():
         create_attachment(

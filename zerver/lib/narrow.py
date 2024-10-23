@@ -1334,7 +1334,7 @@ def post_process_limited_query(
 
 @dataclass
 class FetchedMessages(LimitedMessages[Row]):
-    anchor: int
+    anchor: int | None
     include_history: bool
     is_search: bool
 
@@ -1349,6 +1349,7 @@ def fetch_messages(
     include_anchor: bool,
     num_before: int,
     num_after: int,
+    client_requested_message_ids: list[int] | None = None,
 ) -> FetchedMessages:
     include_history = ok_to_include_history(narrow, user_profile, is_web_public_query)
     if include_history:
@@ -1372,6 +1373,8 @@ def fetch_messages(
         need_message = True
         need_user_message = True
 
+    # get_base_query_for_search and ok_to_include_history are responsible for ensuring
+    # that we only include messages the user has access to.
     query: SelectBase
     query, inner_msg_id_col = get_base_query_for_search(
         realm_id=realm.id,
@@ -1389,47 +1392,70 @@ def fetch_messages(
         is_web_public_query=is_web_public_query,
     )
 
+    anchored_to_left = False
+    anchored_to_right = False
+    first_visible_message_id = get_first_visible_message_id(realm)
     with get_sqlalchemy_connection() as sa_conn:
-        if anchor is None:
-            # `anchor=None` corresponds to the anchor="first_unread" parameter.
-            anchor = find_first_unread_anchor(
-                sa_conn,
-                user_profile,
-                narrow,
+        if client_requested_message_ids is not None:
+            query = query.filter(inner_msg_id_col.in_(client_requested_message_ids))
+        else:
+            if anchor is None:
+                # `anchor=None` corresponds to the anchor="first_unread" parameter.
+                anchor = find_first_unread_anchor(
+                    sa_conn,
+                    user_profile,
+                    narrow,
+                )
+
+            anchored_to_left = anchor == 0
+
+            # Set value that will be used to short circuit the after_query
+            # altogether and avoid needless conditions in the before_query.
+            anchored_to_right = anchor >= LARGER_THAN_MAX_MESSAGE_ID
+            if anchored_to_right:
+                num_after = 0
+
+            query = limit_query_to_range(
+                query=query,
+                num_before=num_before,
+                num_after=num_after,
+                anchor=anchor,
+                include_anchor=include_anchor,
+                anchored_to_left=anchored_to_left,
+                anchored_to_right=anchored_to_right,
+                id_col=inner_msg_id_col,
+                first_visible_message_id=first_visible_message_id,
             )
 
-        anchored_to_left = anchor == 0
+            main_query = query.subquery()
+            query = (
+                select(*main_query.c)
+                .select_from(main_query)
+                .order_by(column("message_id", Integer).asc())
+            )
 
-        # Set value that will be used to short circuit the after_query
-        # altogether and avoid needless conditions in the before_query.
-        anchored_to_right = anchor >= LARGER_THAN_MAX_MESSAGE_ID
-        if anchored_to_right:
-            num_after = 0
-
-        first_visible_message_id = get_first_visible_message_id(realm)
-
-        query = limit_query_to_range(
-            query=query,
-            num_before=num_before,
-            num_after=num_after,
-            anchor=anchor,
-            include_anchor=include_anchor,
-            anchored_to_left=anchored_to_left,
-            anchored_to_right=anchored_to_right,
-            id_col=inner_msg_id_col,
-            first_visible_message_id=first_visible_message_id,
-        )
-
-        main_query = query.subquery()
-        query = (
-            select(*main_query.c)
-            .select_from(main_query)
-            .order_by(column("message_id", Integer).asc())
-        )
         # This is a hack to tag the query we use for testing
         query = query.prefix_with("/* get_messages */")
         rows = list(sa_conn.execute(query).fetchall())
 
+    if client_requested_message_ids is not None:
+        # We don't need to do any post-processing in this case.
+        if first_visible_message_id > 0:
+            visible_rows = [r for r in rows if r[0] >= first_visible_message_id]
+        else:
+            visible_rows = rows
+        return FetchedMessages(
+            rows=visible_rows,
+            found_anchor=False,
+            found_newest=False,
+            found_oldest=False,
+            history_limited=False,
+            anchor=None,
+            include_history=include_history,
+            is_search=is_search,
+        )
+
+    assert anchor is not None
     query_info = post_process_limited_query(
         rows=rows,
         num_before=num_before,

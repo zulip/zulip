@@ -1,11 +1,14 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
 const muted_users = zrequire("muted_users");
+const {initialize_user_settings} = zrequire("user_settings");
+
+initialize_user_settings({user_settings: {}});
 
 function test(label, f) {
     run_test(label, ({override}) => {

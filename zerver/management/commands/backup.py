@@ -2,6 +2,7 @@ import os
 import re
 import tempfile
 from argparse import ArgumentParser, RawTextHelpFormatter
+from contextlib import ExitStack
 from typing import Any
 
 from django.conf import settings
@@ -33,9 +34,10 @@ class Command(ZulipBaseCommand):
     @override
     def handle(self, *args: Any, **options: Any) -> None:
         timestamp = timezone_now().strftime(TIMESTAMP_FORMAT)
-        with tempfile.TemporaryDirectory(
-            prefix=f"zulip-backup-{timestamp}-",
-        ) as tmp:
+        with ExitStack() as stack:
+            tmp = stack.enter_context(
+                tempfile.TemporaryDirectory(prefix=f"zulip-backup-{timestamp}-")
+            )
             os.mkdir(os.path.join(tmp, "zulip-backup"))
             members = []
             paths = []
@@ -121,10 +123,12 @@ class Command(ZulipBaseCommand):
 
             try:
                 if options["output"] is None:
-                    tarball_path = tempfile.NamedTemporaryFile(
-                        prefix=f"zulip-backup-{timestamp}-",
-                        suffix=".tar.gz",
-                        delete=False,
+                    tarball_path = stack.enter_context(
+                        tempfile.NamedTemporaryFile(
+                            prefix=f"zulip-backup-{timestamp}-",
+                            suffix=".tar.gz",
+                            delete=False,
+                        )
                     ).name
                 else:
                     tarball_path = options["output"]

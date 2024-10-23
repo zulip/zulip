@@ -1,5 +1,5 @@
 import assert from "minimalistic-assert";
-import type {z} from "zod";
+import {z} from "zod";
 
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
@@ -7,26 +7,22 @@ import * as group_permission_settings from "./group_permission_settings";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
-import type {
-    GroupPermissionSetting,
-    GroupSettingType,
-    StateData,
-    user_group_schema,
-} from "./state_data";
-import {current_user, realm} from "./state_data";
+import type {GroupPermissionSetting, GroupSettingValue, StateData} from "./state_data";
+import {current_user, raw_user_group_schema, realm} from "./state_data";
 import type {UserOrMention} from "./typeahead_helper";
 import type {UserGroupUpdateEvent} from "./types";
 
-type UserGroupRaw = z.infer<typeof user_group_schema>;
+type UserGroupRaw = z.infer<typeof raw_user_group_schema>;
 
-// The members field is a number array which we convert
-// to a Set in the initialize function.
-export type UserGroup = Omit<UserGroupRaw, "members" | "direct_subgroup_ids"> & {
-    members: Set<number>;
-    direct_subgroup_ids: Set<number>;
-};
+export const user_group_schema = raw_user_group_schema.extend({
+    // These are delivered via the API as lists, but converted to sets
+    // during initialization for more convenient manipulation.
+    members: z.set(z.number()),
+    direct_subgroup_ids: z.set(z.number()),
+});
+export type UserGroup = z.infer<typeof user_group_schema>;
 
-type UserGroupForDropdownListWidget = {
+export type UserGroupForDropdownListWidget = {
     name: string;
     unique_id: number;
 };
@@ -55,6 +51,9 @@ export function add(user_group_raw: UserGroupRaw): UserGroup {
         members: new Set(user_group_raw.members),
         is_system_group: user_group_raw.is_system_group,
         direct_subgroup_ids: new Set(user_group_raw.direct_subgroup_ids),
+        can_add_members_group: user_group_raw.can_add_members_group,
+        can_join_group: user_group_raw.can_join_group,
+        can_leave_group: user_group_raw.can_leave_group,
         can_manage_group: user_group_raw.can_manage_group,
         can_mention_group: user_group_raw.can_mention_group,
         deactivated: user_group_raw.deactivated,
@@ -101,6 +100,12 @@ export function update(event: UserGroupUpdateEvent): void {
         user_group_name_dict.set(group.name, group);
     }
 
+    if (event.data.can_add_members_group !== undefined) {
+        group.can_add_members_group = event.data.can_add_members_group;
+        user_group_name_dict.delete(group.name);
+        user_group_name_dict.set(group.name, group);
+    }
+
     if (event.data.can_mention_group !== undefined) {
         group.can_mention_group = event.data.can_mention_group;
         user_group_name_dict.delete(group.name);
@@ -109,6 +114,18 @@ export function update(event: UserGroupUpdateEvent): void {
 
     if (event.data.can_manage_group !== undefined) {
         group.can_manage_group = event.data.can_manage_group;
+        user_group_name_dict.delete(group.name);
+        user_group_name_dict.set(group.name, group);
+    }
+
+    if (event.data.can_join_group !== undefined) {
+        group.can_join_group = event.data.can_join_group;
+        user_group_name_dict.delete(group.name);
+        user_group_name_dict.set(group.name, group);
+    }
+
+    if (event.data.can_leave_group !== undefined) {
+        group.can_leave_group = event.data.can_leave_group;
         user_group_name_dict.delete(group.name);
         user_group_name_dict.set(group.name, group);
     }
@@ -145,7 +162,7 @@ export function get_user_groups_allowed_to_mention(): UserGroup[] {
     const user_groups = get_realm_user_groups();
     return user_groups.filter((group) => {
         const can_mention_group_id = group.can_mention_group;
-        return is_user_in_group(can_mention_group_id, current_user.user_id);
+        return is_user_in_setting_group(can_mention_group_id, current_user.user_id);
     });
 }
 
@@ -294,7 +311,35 @@ export function get_recursive_group_members(target_user_group: UserGroup): Set<n
     return members;
 }
 
-export function is_user_in_group(user_group_id: number, user_id: number): boolean {
+export function get_potential_subgroups(target_user_group_id: number): UserGroup[] {
+    // This logic could be optimized if we maintained a reverse map
+    // from each group to the groups containing it, which might be a
+    // useful data structure for other code paths as well.
+    const target_user_group = get_user_group_from_id(target_user_group_id);
+    const already_subgroup_ids = target_user_group.direct_subgroup_ids;
+    return get_all_realm_user_groups().filter((user_group) => {
+        if (user_group.id === target_user_group.id) {
+            return false;
+        }
+
+        if (already_subgroup_ids.has(user_group.id)) {
+            return false;
+        }
+
+        const recursive_subgroup_ids = get_recursive_subgroups(user_group);
+        assert(recursive_subgroup_ids !== undefined);
+        if (recursive_subgroup_ids.has(target_user_group.id)) {
+            return false;
+        }
+        return true;
+    });
+}
+
+export function is_user_in_group(
+    user_group_id: number,
+    user_id: number,
+    direct_member_only = false,
+): boolean {
     const user_group = user_group_by_id_dict.get(user_group_id);
     if (user_group === undefined) {
         blueslip.error("Could not find user group", {user_group_id});
@@ -302,6 +347,10 @@ export function is_user_in_group(user_group_id: number, user_id: number): boolea
     }
     if (is_direct_member_of(user_id, user_group_id)) {
         return true;
+    }
+
+    if (direct_member_only) {
+        return false;
     }
 
     const subgroup_ids = get_recursive_subgroups(user_group);
@@ -318,7 +367,7 @@ export function is_user_in_group(user_group_id: number, user_id: number): boolea
 }
 
 export function is_user_in_setting_group(
-    setting_group: GroupSettingType,
+    setting_group: GroupSettingValue,
     user_id: number,
 ): boolean {
     if (typeof setting_group === "number") {
@@ -425,10 +474,7 @@ export function get_realm_user_groups_for_setting(
             return user_group;
         });
 
-    if (
-        (setting_name !== "can_mention_group" && !page_params.development_environment) ||
-        group_setting_config.require_system_group
-    ) {
+    if (!page_params.development_environment || group_setting_config.require_system_group) {
         return system_user_groups;
     }
 

@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {make_bot} = require("./lib/example_user");
 const {mock_esm, zrequire} = require("./lib/namespace");
@@ -65,6 +65,9 @@ const user_profile = mock_esm("../src/user_profile");
 // Use real versions of these modules.
 const people = zrequire("people");
 const server_events_dispatch = zrequire("server_events_dispatch");
+const {set_current_user} = zrequire("state_data");
+
+set_current_user({});
 
 const bob = make_bot({
     email: "bob@example.com",

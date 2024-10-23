@@ -345,7 +345,7 @@ _Released 2024-07-25_
   `0544_copy_avatar_images`, which re-thumbnails every uploaded avatar
   using Zulip's new image-processing pipeline.
 
-[thumbor-remediation-topic]: https://chat.zulip.org/#narrow/stream/31-production-help/topic/THUMBNAIL_IMAGES.20remediation
+[thumbor-remediation-topic]: https://chat.zulip.org/#narrow/channel/31-production-help/topic/THUMBNAIL_IMAGES.20remediation
 
 ## Zulip Server 8.x series
 
@@ -1405,9 +1405,8 @@ _Released 2022-07-21_
 _Released 2022-07-11_
 
 - CVE-2022-31134: Exclude private file uploads from [exports of public
-  data](https://zulip.com/help/export-your-organization#export-of-public-data). We
-  would like to thank Antoine Benoist for bringing this issue to our
-  attention.
+  data](https://zulip.com/help/export-your-organization#export-for-migrating-to-zulip-cloud-or-a-self-hosted-server).
+  We would like to thank Antoine Benoist for bringing this issue to our attention.
 - Upgraded python requirements.
 - Improved documentation for load balancers to mention CIDR address
   ranges.

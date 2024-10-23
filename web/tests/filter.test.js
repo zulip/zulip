@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {parseOneAddress} = require("email-addresses");
 
@@ -8,7 +8,7 @@ const {mock_esm, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {current_user, page_params, realm} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const message_store = mock_esm("../src/message_store");
 const user_topics = mock_esm("../src/user_topics");
@@ -17,6 +17,14 @@ const resolved_topic = zrequire("../shared/src/resolved_topic");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 const {Filter} = zrequire("../src/filter");
+const {set_current_user, set_realm} = zrequire("state_data");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const realm = {};
+set_realm(realm);
+const current_user = {};
+set_current_user(current_user);
+initialize_user_settings({user_settings: {}});
 
 const stream_message = "stream";
 const direct_message = "private";
@@ -861,16 +869,42 @@ test("canonicalization", () => {
 });
 
 test("ensure_channel_topic_terms", () => {
-    const channel_term = {operator: "channel", operand: ""};
-    const topic_term = {operator: "topic", operand: ""};
+    const channel_term = {operator: "channel", operand: `${general_sub.stream_id}`};
+    const topic_term = {operator: "topic", operand: "discussion"};
 
-    const term_1 = Filter.ensure_channel_topic_terms([{operator: "with", operand: 12}]);
-    const term_2 = Filter.ensure_channel_topic_terms([topic_term, {operator: "with", operand: 12}]);
-    const term_3 = Filter.ensure_channel_topic_terms([
-        channel_term,
-        {operator: "with", operand: 12},
-    ]);
-    const terms = [term_1, term_2, term_3];
+    const message = {
+        type: "stream",
+        id: 12,
+        stream_id: general_sub.stream_id,
+        display_recipient: "general",
+        topic: "discussion",
+    };
+
+    const term_1 = Filter.ensure_channel_topic_terms(
+        [{operator: "with", operand: message.id}],
+        message,
+    );
+    const term_2 = Filter.ensure_channel_topic_terms(
+        [topic_term, {operator: "with", operand: message.id}],
+        message,
+    );
+    const term_3 = Filter.ensure_channel_topic_terms(
+        [channel_term, {operator: "with", operand: message.id}],
+        message,
+    );
+    const term_4 = Filter.ensure_channel_topic_terms(
+        [
+            {operator: "dm", operand: "foo@example.com"},
+            {operator: "with", operand: message.id},
+        ],
+        message,
+    );
+    const term_5 = Filter.ensure_channel_topic_terms(
+        [{operator: "with", operand: message.id}],
+        message,
+    );
+
+    const terms = [term_1, term_2, term_3, term_4, term_5];
 
     for (const term of terms) {
         assert.deepEqual(term, [channel_term, topic_term, {operator: "with", operand: 12}]);
@@ -1435,6 +1469,14 @@ test("unparse", () => {
     ];
     string = `channel:${foo_stream_id} topic:Bar`;
     assert.deepEqual(Filter.unparse(terms), string);
+
+    terms = [
+        {operator: "dm", operand: '\t "%+.\u00A0'},
+        {operator: "topic", operand: '\t "%+.\u00A0'},
+    ];
+    string = "dm:%09%20%22%25+.%C2%A0 topic:%09+%22%25%2B.%C2%A0";
+    assert.equal(Filter.unparse(terms), string);
+    assert_same_terms(Filter.parse(string), terms);
 });
 
 test("describe", ({mock_template}) => {
@@ -1983,7 +2025,7 @@ function make_web_public_sub(name, stream_id) {
     stream_data.add_sub(sub);
 }
 
-test("navbar_helpers", () => {
+test("navbar_helpers", ({override}) => {
     stream_data.add_sub(foo_sub);
 
     // make sure title has names separated with correct delimiters
@@ -2123,7 +2165,7 @@ test("navbar_helpers", () => {
         {
             terms: is_starred,
             is_common_narrow: true,
-            zulip_icon: "star-filled",
+            zulip_icon: "star",
             title: "translated: Starred messages",
             redirect_url_with_search: "/#narrow/is/starred",
             description: "translated: Important messages, tasks, and other useful references.",
@@ -2180,7 +2222,7 @@ test("navbar_helpers", () => {
             is_common_narrow: true,
             zulip_icon: "hashtag",
             title: "Foo",
-            redirect_url_with_search: `/#narrow/stream/${foo_stream_id}-Foo/topic/bar`,
+            redirect_url_with_search: `/#narrow/channel/${foo_stream_id}-Foo/topic/bar`,
         },
         {
             terms: invalid_channel_with_topic,
@@ -2194,14 +2236,14 @@ test("navbar_helpers", () => {
             is_common_narrow: true,
             icon: undefined,
             title: "translated: Messages in all public channels",
-            redirect_url_with_search: "/#narrow/streams/public",
+            redirect_url_with_search: "/#narrow/channels/public",
         },
         {
             terms: channel_term,
             is_common_narrow: true,
             zulip_icon: "hashtag",
             title: "Foo",
-            redirect_url_with_search: `/#narrow/stream/${foo_stream_id}-Foo`,
+            redirect_url_with_search: `/#narrow/channel/${foo_stream_id}-Foo`,
         },
         {
             terms: invalid_channel,
@@ -2215,14 +2257,14 @@ test("navbar_helpers", () => {
             is_common_narrow: true,
             zulip_icon: "lock",
             title: "psub",
-            redirect_url_with_search: `/#narrow/stream/${public_sub_id}-psub`,
+            redirect_url_with_search: `/#narrow/channel/${public_sub_id}-psub`,
         },
         {
             terms: web_public_channel,
             is_common_narrow: true,
             zulip_icon: "globe",
             title: "webPublicSub",
-            redirect_url_with_search: `/#narrow/stream/${web_public_sub_id}-webPublicSub`,
+            redirect_url_with_search: `/#narrow/channel/${web_public_sub_id}-webPublicSub`,
         },
         {
             terms: dm,
@@ -2318,7 +2360,7 @@ test("navbar_helpers", () => {
         },
     ];
 
-    realm.realm_enable_guest_user_indicator = true;
+    override(realm, "realm_enable_guest_user_indicator", true);
 
     for (const test_case of test_cases) {
         test_helpers(test_case);
@@ -2373,7 +2415,7 @@ test("navbar_helpers", () => {
 
     test_get_title(channel_topic_search_term_test_case);
 
-    realm.realm_enable_guest_user_indicator = false;
+    override(realm, "realm_enable_guest_user_indicator", false);
     const guest_user_test_cases_without_indicator = [
         {
             terms: guest_sender,
@@ -2530,8 +2572,8 @@ run_test("equals", () => {
     );
 });
 
-run_test("adjusted_terms_if_moved", () => {
-    current_user.email = me.email;
+run_test("adjusted_terms_if_moved", ({override}) => {
+    override(current_user, "email", me.email);
     // should return null for non-stream messages containing no
     // `with` operator
     let raw_terms = [{operator: "channel", operand: foo_stream_id.toString()}];

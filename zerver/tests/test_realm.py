@@ -62,12 +62,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import (
-    CommonPolicyEnum,
-    InviteToRealmPolicyEnum,
-    MoveMessagesBetweenStreamsPolicyEnum,
-    get_realm,
-)
+from zerver.models.realms import CommonPolicyEnum, InviteToRealmPolicyEnum, get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 
@@ -119,12 +114,13 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
 
         self.assertEqual(realm.invite_to_realm_policy, InviteToRealmPolicyEnum.ADMINS_ONLY)
-        self.assertEqual(
-            realm.move_messages_between_streams_policy,
-            MoveMessagesBetweenStreamsPolicyEnum.MODERATORS_ONLY,
-        )
-        self.assertEqual(realm.user_group_edit_policy, CommonPolicyEnum.MODERATORS_ONLY)
         self.assertEqual(realm.invite_to_stream_policy, CommonPolicyEnum.MODERATORS_ONLY)
+        realm = get_realm("test_education_non_profit")
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        self.assertEqual(realm.can_create_groups.id, moderators_group.id)
+        self.assertEqual(realm.can_move_messages_between_channels_group.id, moderators_group.id)
 
     def test_permission_for_education_for_profit_organization(self) -> None:
         realm = do_create_realm(
@@ -139,12 +135,13 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
 
         self.assertEqual(realm.invite_to_realm_policy, InviteToRealmPolicyEnum.ADMINS_ONLY)
-        self.assertEqual(
-            realm.move_messages_between_streams_policy,
-            MoveMessagesBetweenStreamsPolicyEnum.MODERATORS_ONLY,
-        )
-        self.assertEqual(realm.user_group_edit_policy, CommonPolicyEnum.MODERATORS_ONLY)
         self.assertEqual(realm.invite_to_stream_policy, CommonPolicyEnum.MODERATORS_ONLY)
+        realm = get_realm("test_education_for_profit")
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        self.assertEqual(realm.can_create_groups.id, moderators_group.id)
+        self.assertEqual(realm.can_move_messages_between_channels_group.id, moderators_group.id)
 
     def test_realm_enable_spectator_access(self) -> None:
         realm = do_create_realm(
@@ -850,12 +847,9 @@ class RealmTest(ZulipTestCase):
             giphy_rating=10,
             waiting_period_threshold=-10,
             digest_weekday=10,
-            user_group_edit_policy=10,
             message_content_delete_limit_seconds=-10,
             wildcard_mention_policy=10,
             invite_to_realm_policy=10,
-            move_messages_between_streams_policy=10,
-            add_custom_emoji_policy=10,
             edit_topic_policy=10,
             message_content_edit_limit_seconds=0,
             move_messages_within_stream_limit_seconds=0,
@@ -1690,7 +1684,6 @@ class RealmAPITest(ZulipTestCase):
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[10, 20],
-            user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
             invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
             bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
@@ -1705,8 +1698,6 @@ class RealmAPITest(ZulipTestCase):
             ],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
             invite_to_realm_policy=Realm.INVITE_TO_REALM_POLICY_TYPES,
-            move_messages_between_streams_policy=Realm.MOVE_MESSAGES_BETWEEN_STREAMS_POLICY_TYPES,
-            add_custom_emoji_policy=Realm.COMMON_POLICY_TYPES,
             edit_topic_policy=Realm.EDIT_TOPIC_POLICY_TYPES,
             message_content_edit_limit_seconds=[1000, 1100, 1200],
             move_messages_within_stream_limit_seconds=[1000, 1100, 1200],
@@ -2028,52 +2019,6 @@ class RealmAPITest(ZulipTestCase):
         realm = get_realm("zulip")
         self.assertEqual(getattr(realm, setting_name), admins_group.usergroup_ptr)
 
-        # Test case when ALLOW_GROUP_VALUED_SETTINGS is False.
-        with self.settings(ALLOW_GROUP_VALUED_SETTINGS=False):
-            result = self.client_patch(
-                "/json/realm",
-                {
-                    setting_name: orjson.dumps(
-                        {
-                            "new": {
-                                "direct_members": [othello.id],
-                                "direct_subgroups": [moderators_group.id, leadership_group.id],
-                            }
-                        }
-                    ).decode()
-                },
-            )
-            self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
-
-            result = self.client_patch(
-                "/json/realm",
-                {
-                    setting_name: orjson.dumps(
-                        {
-                            "new": leadership_group.id,
-                        }
-                    ).decode()
-                },
-            )
-            self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
-
-            result = self.client_patch(
-                "/json/realm",
-                {
-                    setting_name: orjson.dumps(
-                        {
-                            "new": {
-                                "direct_members": [],
-                                "direct_subgroups": [moderators_group.id],
-                            }
-                        }
-                    ).decode()
-                },
-            )
-            self.assert_json_success(result)
-            realm = get_realm("zulip")
-            self.assertEqual(getattr(realm, setting_name), moderators_group.usergroup_ptr)
-
     def test_update_realm_properties(self) -> None:
         for prop in Realm.property_types:
             # push_notifications_enabled is maintained by the server, not via the API.
@@ -2081,9 +2026,8 @@ class RealmAPITest(ZulipTestCase):
                 with self.subTest(property=prop):
                     self.do_test_realm_update_api(prop)
 
-        check_add_user_group(
-            get_realm("zulip"), "leadership", [self.example_user("hamlet")], acting_user=None
-        )
+        hamlet = self.example_user("hamlet")
+        check_add_user_group(get_realm("zulip"), "leadership", [hamlet], acting_user=hamlet)
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             with self.subTest(property=prop):
                 self.do_test_realm_permission_group_setting_update_api(prop)
@@ -2390,6 +2334,32 @@ class RealmAPITest(ZulipTestCase):
         self.do_test_changing_settings_by_owners_only("emails_restricted_to_domains")
         self.do_test_changing_settings_by_owners_only("disallow_disposable_email_addresses")
         self.do_test_changing_settings_by_owners_only("waiting_period_threshold")
+
+    def do_test_changing_groups_setting_by_owners_only(self, setting_name: str) -> None:
+        realm = get_realm("zulip")
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+
+        self.login("iago")
+        result = self.client_patch(
+            "/json/realm", {setting_name: orjson.dumps({"new": admins_group.id}).decode()}
+        )
+        self.assert_json_error(result, "Must be an organization owner")
+
+        self.login("desdemona")
+        result = self.client_patch(
+            "/json/realm", {setting_name: orjson.dumps({"new": admins_group.id}).decode()}
+        )
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertEqual(getattr(realm, setting_name).id, admins_group.id)
+
+    def test_can_create_groups_setting_requires_owner(self) -> None:
+        self.do_test_changing_groups_setting_by_owners_only("can_create_groups")
+
+    def test_can_manage_all_groups_setting_requires_owner(self) -> None:
+        self.do_test_changing_groups_setting_by_owners_only("can_manage_all_groups")
 
     def test_enable_spectator_access_for_limited_plan_realms(self) -> None:
         self.login("iago")

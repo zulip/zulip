@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {make_stub} = require("./lib/stub");
 const {run_test, noop} = require("./lib/test");

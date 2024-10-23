@@ -26,8 +26,21 @@ $user_status_emoji_width: 24px;
     overflow: auto;
 }
 
-.buddy-list-section-toggle {
+.buddy-list-section-toggle.fa-caret-right {
     width: 7px;
+    transition: rotate 140ms linear;
+    /* The triangle icon has asymmetrical padding on it, so
+       when it rotates down it would be too high without
+       this padding. */
+    padding-left: 2px;
+
+    &.rotate-icon-down {
+        rotate: 90deg;
+    }
+
+    &.rotate-icon-right {
+        rotate: 0deg;
+    }
 }
 
 .buddy-list-section-container {
@@ -49,11 +62,74 @@ $user_status_emoji_width: 24px;
     }
 }
 
+.buddy-list-section .user_sidebar_entry,
+#userlist-header {
+    .user-list-sidebar-menu-icon {
+        justify-self: stretch;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 2px 2px 2px 1px;
+        /* This helps horizontally align the vdots,
+           given the reduced margin-left above.
+           Vertical centering looks better with an
+           extra pixel of top padding in this area,
+           too. */
+        padding: 1px 0 0 1px;
+        border-radius: 3px;
+
+        & i {
+            font-size: 17px;
+            /* Ensure the icon takes the same baseline
+               as the rest of the row, for perfect
+               vertical alignment with the username and
+               status circle. */
+            line-height: inherit;
+        }
+
+        /*
+        Hover does not work for touch-based devices like mobile phones.
+        Hence the icons does not appear, making the user unaware of its
+        presence on such devices. The following media property displays the
+        icon by default for such behaviour.
+        */
+
+        @media (hover: none) {
+            visibility: visible;
+            /* Show dots on touchscreens in a less distracting,
+               lighter shade. */
+            color: var(--color-vdots-hint);
+        }
+    }
+
+    &:hover {
+        .user-list-sidebar-menu-icon {
+            cursor: pointer;
+            color: var(--color-vdots-visible);
+
+            &:hover {
+                color: var(--color-vdots-hover);
+                background-color: var(--color-background-sidebar-action-hover);
+            }
+        }
+    }
+}
+
 .buddy-list-section {
     margin-bottom: 0;
     overflow-x: hidden;
     list-style-position: inside; /* Draw the bullets inside our box */
     line-height: var(--line-height-sidebar-row);
+
+    .user-list-sidebar-menu-icon {
+        visibility: hidden;
+    }
+
+    li:hover {
+        .user-list-sidebar-menu-icon {
+            visibility: visible;
+        }
+    }
 
     & li {
         overflow: hidden;
@@ -62,60 +138,6 @@ $user_status_emoji_width: 24px;
         list-style-type: none;
         border-radius: 4px;
         padding: 0;
-
-        .user-list-sidebar-menu-icon {
-            visibility: hidden;
-            justify-self: stretch;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 2px 2px 2px 1px;
-            /* This helps horizontally align the vdots,
-               given the reduced margin-left above.
-               Vertical centering looks better with an
-               extra pixel of top padding in this area,
-               too. */
-            padding: 1px 0 0 1px;
-            border-radius: 3px;
-
-            & i {
-                font-size: 17px;
-                /* Ensure the icon takes the same baseline
-                   as the rest of the row, for perfect
-                   vertical alignment with the username and
-                   status circle. */
-                line-height: inherit;
-            }
-
-            /*
-            Hover does not work for touch-based devices like mobile phones.
-            Hence the icons does not appear, making the user unaware of its
-            presence on such devices. The following media property displays the
-            icon by default for such behaviour.
-            */
-
-            @media (hover: none) {
-                visibility: visible;
-                /* Show dots on touchscreens in a less distracting,
-                   lighter shade. */
-                color: var(--color-vdots-hint);
-            }
-        }
-
-        &:hover {
-            .user-list-sidebar-menu-icon {
-                visibility: visible;
-                cursor: pointer;
-                color: var(--color-vdots-visible);
-
-                &:hover {
-                    color: var(--color-vdots-hover);
-                    background-color: var(
-                        --color-background-sidebar-action-hover
-                    );
-                }
-            }
-        }
 
         &:hover,
         &.highlighted_user {
@@ -339,9 +361,16 @@ $user_status_emoji_width: 24px;
     cursor: pointer;
     display: grid;
     grid-template-rows: var(--line-height-sidebar-row-prominent);
-    grid-template-columns: minmax(0, 1fr) 20px;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     margin-right: var(--width-simplebar-scroll-hover);
+
+    #userlist-header-search {
+        display: grid;
+        grid-template-rows: var(--line-height-sidebar-row-prominent);
+        grid-template-columns: minmax(0, 1fr) 20px;
+        align-items: center;
+    }
 
     #userlist-title {
         margin: 0;
@@ -361,6 +390,11 @@ $user_status_emoji_width: 24px;
     &:hover > #user_filter_icon {
         opacity: 1;
         cursor: pointer;
+    }
+
+    #buddy-list-menu-icon {
+        justify-content: center;
+        display: grid;
     }
 }
 

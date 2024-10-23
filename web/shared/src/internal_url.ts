@@ -54,7 +54,7 @@ export function by_stream_url(
     stream_id: number,
     maybe_get_stream_name: MaybeGetStreamName,
 ): string {
-    return `#narrow/stream/${encode_stream_id(stream_id, maybe_get_stream_name)}`;
+    return `#narrow/channel/${encode_stream_id(stream_id, maybe_get_stream_name)}`;
 }
 
 export function by_stream_topic_url(
@@ -62,7 +62,7 @@ export function by_stream_topic_url(
     topic: string,
     maybe_get_stream_name: MaybeGetStreamName,
 ): string {
-    return `#narrow/stream/${encode_stream_id(
+    return `#narrow/channel/${encode_stream_id(
         stream_id,
         maybe_get_stream_name,
     )}/topic/${encodeHashComponent(topic)}`;

@@ -1,12 +1,12 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {addDays} = require("date-fns");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {current_user, page_params, realm} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 page_params.is_spectator = false;
 
@@ -16,6 +16,12 @@ const timerender = mock_esm("../src/timerender");
 
 const {localstorage} = zrequire("localstorage");
 const navbar_alerts = zrequire("navbar_alerts");
+const {set_current_user, set_realm} = zrequire("state_data");
+
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
 
 function test(label, f) {
     run_test(label, (helpers) => {
@@ -68,18 +74,18 @@ test("profile_incomplete_alert", ({override}) => {
     override(timerender, "should_display_profile_incomplete_alert", () => true);
 
     // Show alert.
-    current_user.is_admin = true;
-    realm.realm_description = "Organization imported from Slack!";
+    override(current_user, "is_admin", true);
+    override(realm, "realm_description", "Organization imported from Slack!");
     assert.equal(navbar_alerts.check_profile_incomplete(), true);
 
     // Avoid showing if the user is not admin.
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     assert.equal(navbar_alerts.check_profile_incomplete(), false);
 
     // Avoid showing if the realm description is already updated.
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     assert.equal(navbar_alerts.check_profile_incomplete(), true);
-    realm.realm_description = "Organization description already set!";
+    override(realm, "realm_description", "Organization description already set!");
     assert.equal(navbar_alerts.check_profile_incomplete(), false);
 });
 
@@ -103,12 +109,20 @@ test("demo_organization_days_remaining", ({override}) => {
     const start_time = new Date(1620327447050); // Thursday 06/5/2021 07:02:27 AM (UTC+0)
 
     const high_priority_deadline = addDays(start_time, 5);
-    realm.demo_organization_scheduled_deletion_date = Math.trunc(high_priority_deadline / 1000);
+    override(
+        realm,
+        "demo_organization_scheduled_deletion_date",
+        Math.trunc(high_priority_deadline / 1000),
+    );
     override(Date, "now", () => start_time);
     assert.equal(navbar_alerts.get_demo_organization_deadline_days_remaining(), 5);
 
     const low_priority_deadline = addDays(start_time, 10);
-    realm.demo_organization_scheduled_deletion_date = Math.trunc(low_priority_deadline / 1000);
+    override(
+        realm,
+        "demo_organization_scheduled_deletion_date",
+        Math.trunc(low_priority_deadline / 1000),
+    );
     override(Date, "now", () => start_time);
     assert.equal(navbar_alerts.get_demo_organization_deadline_days_remaining(), 10);
 });

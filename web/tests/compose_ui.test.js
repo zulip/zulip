@@ -1,12 +1,11 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {realm} = require("./lib/zpage_params");
 
 set_global("navigator", {});
 
@@ -27,6 +26,12 @@ const channel = mock_esm("../src/channel");
 const compose_reply = zrequire("compose_reply");
 const message_lists = zrequire("message_lists");
 const text_field_edit = mock_esm("text-field-edit");
+const {set_realm} = zrequire("state_data");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const realm = {};
+set_realm(realm);
+initialize_user_settings({user_settings: {}});
 
 const alice = {
     email: "alice@zulip.com",
@@ -184,7 +189,7 @@ run_test("replace_syntax", ({override}) => {
     assert.equal(prev_caret + "$$\\pi$$".length - "Bca".length, $textbox.caret());
 });
 
-run_test("compute_placeholder_text", () => {
+run_test("compute_placeholder_text", ({override}) => {
     let opts = {
         message_type: "stream",
         stream_id: undefined,
@@ -250,13 +255,13 @@ run_test("compute_placeholder_text", () => {
     );
 
     alice.is_guest = true;
-    realm.realm_enable_guest_user_indicator = true;
+    override(realm, "realm_enable_guest_user_indicator", true);
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
         $t({defaultMessage: "Message translated: Alice (guest) and Bob"}),
     );
 
-    realm.realm_enable_guest_user_indicator = false;
+    override(realm, "realm_enable_guest_user_indicator", false);
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
         $t({defaultMessage: "Message Alice and Bob"}),

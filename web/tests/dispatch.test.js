@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const events = require("./lib/events");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
@@ -8,13 +8,7 @@ const {make_stub} = require("./lib/stub");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {
-    current_user,
-    page_params,
-    realm,
-    realm_user_settings_defaults,
-    user_settings,
-} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const event_fixtures = events.fixtures;
 const test_message = events.test_message;
@@ -40,6 +34,7 @@ const information_density = mock_esm("../src/information_density");
 const linkifiers = mock_esm("../src/linkifiers");
 const message_events = mock_esm("../src/message_events", {
     update_views_filtered_on_message_property: noop,
+    update_current_view_for_topic_visibility: noop,
 });
 const message_lists = mock_esm("../src/message_lists");
 const user_topics_ui = mock_esm("../src/user_topics_ui");
@@ -103,6 +98,20 @@ const user_group_edit = mock_esm("../src/user_group_edit");
 const overlays = mock_esm("../src/overlays");
 mock_esm("../src/giphy");
 const {Filter} = zrequire("filter");
+const {initialize: initialize_realm_user_settings_defaults} = zrequire(
+    "realm_user_settings_defaults",
+);
+const {set_current_user, set_realm} = zrequire("state_data");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const realm = {};
+set_realm(realm);
+const current_user = {};
+set_current_user(current_user);
+const realm_user_settings_defaults = {};
+initialize_realm_user_settings_defaults({realm_user_settings_defaults});
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 message_lists.update_recipient_bar_background_color = noop;
 message_lists.current = {
@@ -124,8 +133,6 @@ message_lists.all_rendered_message_lists = () => [cached_message_list, message_l
 
 // page_params is highly coupled to dispatching now
 page_params.test_suite = false;
-current_user.is_admin = true;
-realm.realm_description = "already set description";
 
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
@@ -258,8 +265,11 @@ run_test("user groups", ({override}) => {
     {
         const stub = make_stub();
         override(user_groups, "add_subgroups", stub.f);
+        const user_group_edit_stub = make_stub();
+        override(user_group_edit, "handle_subgroup_edit_event", user_group_edit_stub.f);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
+        assert.equal(user_group_edit_stub.num_calls, 1);
         const args = stub.get_args("group_id", "direct_subgroup_ids");
         assert_same(args.group_id, event.group_id);
         assert_same(args.direct_subgroup_ids, event.direct_subgroup_ids);
@@ -285,8 +295,11 @@ run_test("user groups", ({override}) => {
     {
         const stub = make_stub();
         override(user_groups, "remove_subgroups", stub.f);
+        const user_group_edit_stub = make_stub();
+        override(user_group_edit, "handle_subgroup_edit_event", user_group_edit_stub.f);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
+        assert.equal(user_group_edit_stub.num_calls, 1);
         const args = stub.get_args("group_id", "direct_subgroup_ids");
         assert_same(args.group_id, event.group_id);
         assert_same(args.direct_subgroup_ids, event.direct_subgroup_ids);
@@ -450,12 +463,13 @@ run_test("scheduled_messages", ({override}) => {
 });
 
 run_test("realm settings", ({override}) => {
-    current_user.is_admin = true;
-    realm.realm_date_created = new Date("2023-01-01Z");
+    override(current_user, "is_admin", true);
+    override(realm, "realm_date_created", new Date("2023-01-01Z"));
 
     override(settings_org, "check_disable_direct_message_initiator_group_dropdown", noop);
     override(settings_org, "sync_realm_settings", noop);
     override(settings_bots, "update_bot_permissions_ui", noop);
+    override(settings_emoji, "update_custom_emoji_ui", noop);
     override(settings_invites, "update_invite_user_panel", noop);
     override(sidebar_ui, "update_invite_user_option", noop);
     override(gear_menu, "rerender", noop);
@@ -473,7 +487,7 @@ run_test("realm settings", ({override}) => {
 
     // realm
     function test_realm_boolean(event, parameter_name) {
-        realm[parameter_name] = true;
+        override(realm, parameter_name, true);
         event = {...event};
         event.value = false;
         dispatch(event);
@@ -485,7 +499,7 @@ run_test("realm settings", ({override}) => {
     }
 
     function test_realm_integer(event, parameter_name) {
-        realm[parameter_name] = 1;
+        override(realm, parameter_name, 1);
         event = {...event};
         event.value = 2;
         dispatch(event);
@@ -538,17 +552,17 @@ run_test("realm settings", ({override}) => {
     event = event_fixtures.realm__update__new_stream_announcements_stream_id;
     dispatch(event);
     assert_same(realm.realm_new_stream_announcements_stream_id, 42);
-    realm.realm_new_stream_announcements_stream_id = -1; // make sure to reset for future tests
+    override(realm, "realm_new_stream_announcements_stream_id", -1); // make sure to reset for future tests
 
     event = event_fixtures.realm__update__signup_announcements_stream_id;
     dispatch(event);
     assert_same(realm.realm_signup_announcements_stream_id, 41);
-    realm.realm_signup_announcements_stream_id = -1; // make sure to reset for future tests
+    override(realm, "realm_signup_announcements_stream_id", -1); // make sure to reset for future tests
 
     event = event_fixtures.realm__update__zulip_update_announcements_stream_id;
     dispatch(event);
     assert_same(realm.realm_zulip_update_announcements_stream_id, 42);
-    realm.realm_zulip_update_announcements_stream_id = -1; // make sure to reset for future tests
+    override(realm, "realm_zulip_update_announcements_stream_id", -1); // make sure to reset for future tests
 
     event = event_fixtures.realm__update__default_code_block_language;
     dispatch(event);
@@ -571,13 +585,17 @@ run_test("realm settings", ({override}) => {
     };
 
     event = event_fixtures.realm__update_dict__default;
-    realm.realm_create_multiuse_invite_group = 1;
-    realm.realm_allow_message_editing = false;
-    realm.realm_message_content_edit_limit_seconds = 0;
-    realm.realm_edit_topic_policy = 3;
-    realm.realm_authentication_methods = {Google: {enabled: false, available: true}};
-    realm.realm_can_create_public_channel_group = 1;
-    realm.realm_direct_message_permission_group = 1;
+    override(realm, "realm_create_multiuse_invite_group", 1);
+    override(realm, "realm_allow_message_editing", false);
+    override(realm, "realm_message_content_edit_limit_seconds", 0);
+    override(realm, "realm_edit_topic_policy", 3);
+    override(realm, "realm_authentication_methods", {Google: {enabled: false, available: true}});
+    override(realm, "realm_can_add_custom_emoji_group", 1);
+    override(realm, "realm_can_create_public_channel_group", 1);
+    override(realm, "realm_direct_message_permission_group", 1);
+    override(realm, "realm_plan_type", 2);
+    override(realm, "realm_upload_quota_mib", 5000);
+    override(realm, "max_file_upload_size_mib", 10);
     override(settings_org, "populate_auth_methods", noop);
     dispatch(event);
     assert_same(realm.realm_create_multiuse_invite_group, 3);
@@ -587,8 +605,12 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_authentication_methods, {
         Google: {enabled: true, available: true},
     });
+    assert_same(realm.realm_can_add_custom_emoji_group, 3);
     assert_same(realm.realm_can_create_public_channel_group, 3);
     assert_same(realm.realm_direct_message_permission_group, 3);
+    assert_same(realm.realm_plan_type, 3);
+    assert_same(realm.realm_upload_quota_mib, 50000);
+    assert_same(realm.max_file_upload_size_mib, 1024);
     assert_same(update_stream_privacy_choices_called, true);
 
     event = event_fixtures.realm__update_dict__icon;
@@ -692,7 +714,7 @@ run_test("realm_emoji", ({override}) => {
 
 run_test("realm_linkifiers", ({override}) => {
     const event = event_fixtures.realm_linkifiers;
-    realm.realm_linkifiers = [];
+    override(realm, "realm_linkifiers", []);
     override(settings_linkifiers, "populate_linkifiers", noop);
     override(linkifiers, "update_linkifier_rules", noop);
     dispatch(event);
@@ -701,7 +723,7 @@ run_test("realm_linkifiers", ({override}) => {
 
 run_test("realm_playgrounds", ({override}) => {
     const event = event_fixtures.realm_playgrounds;
-    realm.realm_playgrounds = [];
+    override(realm, "realm_playgrounds", []);
     override(settings_playgrounds, "populate_playgrounds", noop);
     override(realm_playground, "update_playgrounds", noop);
     dispatch(event);
@@ -710,7 +732,7 @@ run_test("realm_playgrounds", ({override}) => {
 
 run_test("realm_domains", ({override}) => {
     let event = event_fixtures.realm_domains__add;
-    realm.realm_domains = [];
+    override(realm, "realm_domains", []);
     override(settings_org, "populate_realm_domains_label", noop);
     override(settings_realm_domains, "populate_realm_domains_table", noop);
     dispatch(event);
@@ -733,6 +755,7 @@ run_test("add_realm_user_redraw_logic", ({override}) => {
     presence.presence_info.set(999, {status: "active"});
 
     override(settings_account, "maybe_update_deactivate_account_button", noop);
+    override(settings_exports, "update_export_consent_data_and_redraw", noop);
 
     const check_should_redraw_new_user_stub = make_stub();
     // make_stub().f returns true by default, so it's already doing what we want.
@@ -751,6 +774,7 @@ run_test("add_realm_user_redraw_logic", ({override}) => {
 run_test("realm_user", ({override}) => {
     override(settings_account, "maybe_update_deactivate_account_button", noop);
     override(activity_ui, "check_should_redraw_new_user", noop);
+    override(settings_exports, "update_export_consent_data_and_redraw", noop);
     let event = event_fixtures.realm_user__add;
     dispatch({...event});
     const added_person = people.get_by_user_id(event.person.user_id);
@@ -831,7 +855,7 @@ run_test("submessage", ({override}) => {
 
 run_test("typing", ({override}) => {
     // Simulate that we are not typing.
-    current_user.user_id = typing_person1.user_id + 1;
+    override(current_user, "user_id", typing_person1.user_id + 1);
 
     let event = event_fixtures.typing__start;
     {
@@ -854,10 +878,10 @@ run_test("typing", ({override}) => {
     }
 
     // Get line coverage--we ignore our own typing events.
-    current_user.user_id = typing_person1.user_id;
+    override(current_user, "user_id", typing_person1.user_id);
     event = event_fixtures.typing__start;
     dispatch(event);
-    current_user.user_id = undefined; // above change shouldn't effect stream_typing tests below
+    override(current_user, "user_id", undefined); // above change shouldn't effect stream_typing tests below
 });
 
 run_test("stream_typing", ({override}) => {
@@ -893,7 +917,7 @@ run_test("stream_typing", ({override}) => {
 run_test("user_settings", ({override}) => {
     settings_preferences.set_default_language_name = () => {};
     let event = event_fixtures.user_settings__default_language;
-    user_settings.default_language = "en";
+    override(user_settings, "default_language", "en");
     override(settings_preferences, "update_page", noop);
     override(information_density, "calculate_timestamp_widths", noop);
     override(overlays, "settings_open", () => true);
@@ -901,7 +925,7 @@ run_test("user_settings", ({override}) => {
     assert_same(user_settings.default_language, "fr");
 
     event = event_fixtures.user_settings__web_escape_navigates_to_home_view;
-    user_settings.web_escape_navigates_to_home_view = false;
+    override(user_settings, "web_escape_navigates_to_home_view", false);
     let toggled = [];
     $("#go-to-home-view-hotkey-help").toggleClass = (cls) => {
         toggled.push(cls);
@@ -919,24 +943,24 @@ run_test("user_settings", ({override}) => {
         called_for_cached_msg_list = true;
     };
     event = event_fixtures.user_settings__twenty_four_hour_time;
-    user_settings.twenty_four_hour_time = false;
+    override(user_settings, "twenty_four_hour_time", false);
     dispatch(event);
     assert_same(user_settings.twenty_four_hour_time, true);
     assert_same(called, true);
     assert_same(called_for_cached_msg_list, true);
 
     event = event_fixtures.user_settings__translate_emoticons;
-    user_settings.translate_emoticons = false;
+    override(user_settings, "translate_emoticons", false);
     dispatch(event);
     assert_same(user_settings.translate_emoticons, true);
 
     event = event_fixtures.user_settings__display_emoji_reaction_users;
-    user_settings.display_emoji_reaction_users = false;
+    override(user_settings, "display_emoji_reaction_users", false);
     dispatch(event);
     assert_same(user_settings.display_emoji_reaction_users, true);
 
     event = event_fixtures.user_settings__high_contrast_mode;
-    user_settings.high_contrast_mode = false;
+    override(user_settings, "high_contrast_mode", false);
     toggled = [];
     $("body").toggleClass = (cls) => {
         toggled.push(cls);
@@ -946,18 +970,18 @@ run_test("user_settings", ({override}) => {
     assert_same(toggled, ["high-contrast"]);
 
     event = event_fixtures.user_settings__web_mark_read_on_scroll_policy;
-    user_settings.web_mark_read_on_scroll_policy = 3;
+    override(user_settings, "web_mark_read_on_scroll_policy", 3);
     override(unread_ui, "update_unread_banner", noop);
     dispatch(event);
     assert_same(user_settings.web_mark_read_on_scroll_policy, 1);
 
     event = event_fixtures.user_settings__web_channel_default_view;
-    user_settings.web_channel_default_view = 2;
+    override(user_settings, "web_channel_default_view", 2);
     dispatch(event);
     assert_same(user_settings.web_channel_default_view, 1);
 
     event = event_fixtures.user_settings__dense_mode;
-    user_settings.dense_mode = false;
+    override(user_settings, "dense_mode", false);
     settings_preferences.user_settings_panel = {
         container: "#user-preferences",
     };
@@ -968,13 +992,13 @@ run_test("user_settings", ({override}) => {
     assert_same(toggled, ["less-dense-mode", "more-dense-mode"]);
 
     event = event_fixtures.user_settings__web_font_size_px;
-    user_settings.web_font_size_px = 14;
+    override(user_settings, "web_font_size_px", 14);
     override(information_density, "set_base_typography_css_variables", noop);
     dispatch(event);
     assert_same(user_settings.web_font_size_px, 16);
 
     event = event_fixtures.user_settings__web_line_height_percent;
-    user_settings.web_font_size_px = 122;
+    override(user_settings, "web_font_size_px", 122);
     override(information_density, "set_base_typography_css_variables", noop);
     dispatch(event);
     assert_same(user_settings.web_line_height_percent, 130);
@@ -982,7 +1006,7 @@ run_test("user_settings", ({override}) => {
     {
         const stub = make_stub();
         event = event_fixtures.user_settings__color_scheme_automatic;
-        user_settings.color_scheme = 2;
+        override(user_settings, "color_scheme", 2);
         override(theme, "set_theme_and_update", stub.f); // automatically checks if called
         dispatch(event);
         const args = stub.get_args("color_scheme_code");
@@ -993,7 +1017,7 @@ run_test("user_settings", ({override}) => {
     {
         const stub = make_stub();
         event = event_fixtures.user_settings__color_scheme_dark;
-        user_settings.color_scheme = 1;
+        override(user_settings, "color_scheme", 1);
         override(theme, "set_theme_and_update", stub.f); // automatically checks if called
         dispatch(event);
         const args = stub.get_args("color_scheme_code");
@@ -1004,7 +1028,7 @@ run_test("user_settings", ({override}) => {
     {
         const stub = make_stub();
         event = event_fixtures.user_settings__color_scheme_light;
-        user_settings.color_scheme = 1;
+        override(user_settings, "color_scheme", 1);
         override(theme, "set_theme_and_update", stub.f); // automatically checks if called
         dispatch(event);
         const args = stub.get_args("color_scheme_code");
@@ -1014,41 +1038,41 @@ run_test("user_settings", ({override}) => {
 
     {
         event = event_fixtures.user_settings__web_home_view_recent_topics;
-        user_settings.web_home_view = "all_messages";
+        override(user_settings, "web_home_view", "all_messages");
         dispatch(event);
         assert.equal(user_settings.web_home_view, "recent_topics");
     }
 
     {
         event = event_fixtures.user_settings__web_home_view_all_messages;
-        user_settings.web_home_view = "recent_topics";
+        override(user_settings, "web_home_view", "recent_topics");
         dispatch(event);
         assert.equal(user_settings.web_home_view, "all_messages");
     }
 
     {
         event = event_fixtures.user_settings__web_home_view_inbox;
-        user_settings.web_home_view = "all_messages";
+        override(user_settings, "web_home_view", "all_messages");
         dispatch(event);
         assert.equal(user_settings.web_home_view, "inbox");
     }
     {
         event = event_fixtures.user_settings__web_animate_image_previews_always;
-        user_settings.web_animate_image_previews = "on_hover";
+        override(user_settings, "web_animate_image_previews", "on_hover");
         dispatch(event);
         assert.equal(user_settings.web_animate_image_previews, "always");
     }
 
     {
         event = event_fixtures.user_settings__web_animate_image_previews_on_hover;
-        user_settings.web_animate_image_previews = "never";
+        override(user_settings, "web_animate_image_previews", "never");
         dispatch(event);
         assert.equal(user_settings.web_animate_image_previews, "on_hover");
     }
 
     {
         event = event_fixtures.user_settings__web_animate_image_previews_never;
-        user_settings.web_animate_image_previews = "always";
+        override(user_settings, "web_animate_image_previews", "always");
         dispatch(event);
         assert.equal(user_settings.web_animate_image_previews, "never");
     }
@@ -1059,7 +1083,7 @@ run_test("user_settings", ({override}) => {
         called = false;
         override(settings_preferences, "report_emojiset_change", stub.f);
         override(activity_ui, "build_user_sidebar", noop);
-        user_settings.emojiset = "text";
+        override(user_settings, "emojiset", "text");
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         assert_same(called, true);
@@ -1067,24 +1091,24 @@ run_test("user_settings", ({override}) => {
     }
 
     event = event_fixtures.user_settings__starred_message_counts;
-    user_settings.starred_message_counts = false;
+    override(user_settings, "starred_message_counts", false);
     dispatch(event);
     assert_same(user_settings.starred_message_counts, true);
 
     event = event_fixtures.user_settings__receives_typing_notifications;
-    user_settings.receives_typing_notifications = false;
+    override(user_settings, "receives_typing_notifications", false);
     dispatch(event);
     assert_same(user_settings.receives_typing_notifications, true);
 
     event = event_fixtures.user_settings__receives_typing_notifications_disabled;
     override(typing_events, "disable_typing_notification", noop);
-    user_settings.receives_typing_notifications = true;
+    override(user_settings, "receives_typing_notifications", true);
     dispatch(event);
     assert_same(user_settings.receives_typing_notifications, false);
 
     override(scroll_bar, "set_layout_width", noop);
     event = event_fixtures.user_settings__fluid_layout_width;
-    user_settings.fluid_layout_width = false;
+    override(user_settings, "fluid_layout_width", false);
     dispatch(event);
     assert_same(user_settings.fluid_layout_width, true);
 
@@ -1093,7 +1117,7 @@ run_test("user_settings", ({override}) => {
         event = event_fixtures.user_settings__demote_inactive_streams;
         override(stream_list_sort, "set_filter_out_inactives", noop);
         override(stream_list, "update_streams_sidebar", stub.f);
-        user_settings.demote_inactive_streams = 1;
+        override(user_settings, "demote_inactive_streams", 1);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         assert_same(user_settings.demote_inactive_streams, 2);
@@ -1103,7 +1127,7 @@ run_test("user_settings", ({override}) => {
         const stub = make_stub();
         event = event_fixtures.user_settings__web_stream_unreads_count_display_policy;
         override(stream_list, "update_dom_unread_counts_visibility", stub.f);
-        user_settings.web_stream_unreads_count_display_policy = 1;
+        override(user_settings, "web_stream_unreads_count_display_policy", 1);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         assert_same(user_settings.web_stream_unreads_count_display_policy, 2);
@@ -1113,7 +1137,7 @@ run_test("user_settings", ({override}) => {
         const stub = make_stub();
         event = event_fixtures.user_settings__user_list_style;
         override(settings_preferences, "report_user_list_style_change", stub.f);
-        user_settings.user_list_style = 1;
+        override(user_settings, "user_list_style", 1);
         override(activity_ui, "build_user_sidebar", stub.f);
         dispatch(event);
         assert.equal(stub.num_calls, 2);
@@ -1121,12 +1145,12 @@ run_test("user_settings", ({override}) => {
     }
 
     event = event_fixtures.user_settings__enter_sends;
-    user_settings.enter_sends = false;
+    override(user_settings, "enter_sends", false);
     dispatch(event);
     assert_same(user_settings.enter_sends, true);
 
     event = event_fixtures.user_settings__presence_disabled;
-    user_settings.presence_enabled = true;
+    override(user_settings, "presence_enabled", true);
     override(activity_ui, "redraw_user", noop);
     override(settings_account, "update_privacy_settings_box", noop);
     dispatch(event);
@@ -1153,12 +1177,12 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
 
     event = event_fixtures.user_settings__email_address_visibility;
-    user_settings.email_address_visibility = 3;
+    override(user_settings, "email_address_visibility", 3);
     dispatch(event);
     assert_same(user_settings.email_address_visibility, 5);
 
     event = event_fixtures.user_settings__web_navigate_to_sent_message;
-    user_settings.web_navigate_to_sent_message = true;
+    override(user_settings, "web_navigate_to_sent_message", true);
     dispatch(event);
     assert_same(user_settings.web_navigate_to_sent_message, false);
 });
@@ -1288,6 +1312,18 @@ run_test("realm_export", ({override}) => {
     assert.equal(args.exports, event.exports);
 });
 
+run_test("realm_export_consent", ({override}) => {
+    const event = event_fixtures.realm_export_consent;
+    const stub = make_stub();
+    override(settings_exports, "update_export_consent_data_and_redraw", stub.f);
+    dispatch(event);
+
+    assert.equal(stub.num_calls, 1);
+    const {export_consent} = stub.get_args("export_consent");
+    assert.equal(export_consent.user_id, event.user_id);
+    assert.equal(export_consent.consented, event.consented);
+});
+
 run_test("server_event_dispatch_op_errors", () => {
     blueslip.expect("error", "Unexpected event type subscription/other");
     server_events_dispatch.dispatch_normal_event({type: "subscription", op: "other"});
@@ -1319,13 +1355,13 @@ run_test("server_event_dispatch_op_errors", () => {
 
 run_test("realm_user_settings_defaults", ({override}) => {
     let event = event_fixtures.realm_user_settings_defaults__emojiset;
-    realm_user_settings_defaults.emojiset = "text";
+    override(realm_user_settings_defaults, "emojiset", "text");
     override(settings_realm_user_settings_defaults, "update_page", noop);
     dispatch(event);
     assert_same(realm_user_settings_defaults.emojiset, "google");
 
     event = event_fixtures.realm_user_settings_defaults__notification_sound;
-    realm_user_settings_defaults.notification_sound = "zulip";
+    override(realm_user_settings_defaults, "notification_sound", "zulip");
     let called = false;
     audible_notifications.update_notification_sound_source = () => {
         called = true;

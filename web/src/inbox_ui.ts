@@ -74,7 +74,7 @@ type StreamContext = {
     invite_only: boolean;
     is_web_public: boolean;
     stream_name: string;
-    pin_to_top: boolean | undefined;
+    pin_to_top: boolean;
     is_muted: boolean;
     stream_color: string;
     stream_header_color: string;

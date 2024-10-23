@@ -35,7 +35,7 @@ export function encode_operand(operator: string, operand: string): string {
         }
     }
 
-    if (operator === "stream") {
+    if (util.canonicalize_channel_synonyms(operator) === "channel") {
         const stream_id = Number.parseInt(operand, 10);
         return encode_stream_id(stream_id);
     }
@@ -67,7 +67,7 @@ export function decode_operand(operator: string, operand: string): string {
 
     operand = internal_url.decodeHashComponent(operand);
 
-    if (util.canonicalize_stream_synonyms(operator) === "stream") {
+    if (util.canonicalize_channel_synonyms(operator) === "channel") {
         return stream_data.slug_to_stream_id(operand)?.toString() ?? "";
     }
 
@@ -97,7 +97,7 @@ export function search_terms_to_hash(terms?: NarrowTerm[]): string {
 
         for (const term of terms) {
             // Support legacy tuples.
-            const operator = util.canonicalize_stream_synonyms(term.operator);
+            const operator = util.canonicalize_channel_synonyms(term.operator);
             const operand = term.operand;
 
             const sign = term.negated ? "-" : "";

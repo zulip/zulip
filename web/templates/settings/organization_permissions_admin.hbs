@@ -29,7 +29,7 @@
                   value_type="number"}}
 
                 <div class="input-group">
-                    <label for="realm_org_join_restrictions" class="settings-field-label">{{t "Restrict email domains of new users?" }}</label>
+                    <label for="realm_org_join_restrictions" class="settings-field-label">{{t "Restrict email domains of new users" }}</label>
                     <select name="realm_org_join_restrictions" id="id_realm_org_join_restrictions" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">
                         <option value="no_restriction">{{t "No restrictions" }}</option>
                         <option value="no_disposable_email">{{t "Don’t allow disposable email addresses" }}</option>
@@ -201,13 +201,10 @@
                 </div>
             </div>
 
-            <div class="input-group">
-                <label for="realm_move_messages_between_streams_policy" class="settings-field-label">{{t "Who can move messages to another channel" }}
-                </label>
-                <select name="realm_move_messages_between_streams_policy" class="setting-widget prop-element bootstrap-focus-style move-message-policy-setting settings_select" id="id_realm_move_messages_between_streams_policy" data-setting-widget-type="number">
-                    {{> dropdown_options_widget option_values=move_messages_between_streams_policy_values}}
-                </select>
-            </div>
+            {{> ../dropdown_widget_with_label
+              widget_name="realm_can_move_messages_between_channels_group"
+              label=(t 'Who can move messages to another channel')
+              value_type="number" }}
 
             <div class="input-group time-limit-setting">
                 <label for="realm_move_messages_between_streams_limit_seconds" class="settings-field-label">{{t "Time limit for moving messages between channels" }} <i>({{t "does not apply to moderators and administrators" }})</i></label>
@@ -338,19 +335,22 @@
                     </select>
                 </div>
 
-                <div class="input-group">
-                    <label for="realm_user_group_edit_policy" class="settings-field-label">{{t "Who can create and manage user groups" }}</label>
-                    <select name="realm_user_group_edit_policy" id="id_realm_user_group_edit_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=common_policy_values}}
-                    </select>
-                </div>
+                {{> ../dropdown_widget_with_label
+                  widget_name="realm_can_create_groups"
+                  label=(t 'Who can create user groups')
+                  value_type="number"
+                  is_setting_disabled=(not is_owner)}}
 
-                <div class="input-group">
-                    <label for="realm_add_custom_emoji_policy" class="settings-field-label">{{t "Who can add custom emoji" }}</label>
-                    <select name="realm_add_custom_emoji_policy" class="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_add_custom_emoji_policy" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=common_policy_values}}
-                    </select>
-                </div>
+                {{> ../dropdown_widget_with_label
+                  widget_name="realm_can_manage_all_groups"
+                  label=(t 'Who can manage user groups')
+                  value_type="number"
+                  is_setting_disabled=(not is_owner)}}
+
+                {{> ../dropdown_widget_with_label
+                  widget_name="realm_can_add_custom_emoji_group"
+                  label=(t 'Who can add custom emoji')
+                  value_type="number"}}
             </div>
         </div>
     </form>

@@ -87,6 +87,16 @@ export function scroll_finished() {
 
     if (message_scroll_state.update_selection_on_next_scroll) {
         message_viewport.keep_pointer_in_view();
+        // If we don't want to update message selection on this scroll,
+        // we also don't want to mark any visible messages as read and
+        // are waiting on user input to do so. So, we only mark messages
+        // as read if we are updating selection on this scroll.
+        //
+        // When the window scrolls, it may cause some messages to
+        // enter the screen and become read.  Calling
+        // unread_ops.process_visible will update necessary
+        // data structures and DOM elements.
+        unread_ops.process_visible();
     } else {
         message_scroll_state.set_update_selection_on_next_scroll(true);
     }
@@ -109,12 +119,6 @@ export function scroll_finished() {
             msg_list: message_lists.current,
         });
     }
-
-    // When the window scrolls, it may cause some messages to
-    // enter the screen and become read.  Calling
-    // unread_ops.process_visible will update necessary
-    // data structures and DOM elements.
-    setTimeout(unread_ops.process_visible, 0);
 }
 
 let scroll_timer;
@@ -140,7 +144,6 @@ export function initialize() {
                 return;
             }
 
-            unread_ops.process_visible();
             message_lists.current.view.update_sticky_recipient_headers();
             scroll_finish();
         }, 50),
@@ -154,12 +157,24 @@ export function initialize() {
 
         if (event.mark_read && event.previously_selected_id !== -1) {
             // Mark messages between old pointer and new pointer as read
-            let messages;
             if (event.id < event.previously_selected_id) {
-                messages = event.msg_list.message_range(event.id, event.previously_selected_id);
-            } else {
-                messages = event.msg_list.message_range(event.previously_selected_id, event.id);
+                // We don't mark messages as read when the pointer moves up.
+                return;
             }
+
+            const messages = event.msg_list.message_range(event.previously_selected_id, event.id);
+            // If the user just arrived at the message `event.id`, we don't mark it as read
+            // unless it is the last message in the list.
+            // We only mark messages as read when the pointer moves past the message.
+            // This is likely the last message in the list. So, we loop through the messages
+            // in reverse order to find the message.
+            for (let i = messages.length - 1; i >= 0; i -= 1) {
+                if (messages[i].id === event.id && event.id !== event.msg_list.last()?.id) {
+                    delete messages[i];
+                    break;
+                }
+            }
+
             if (event.msg_list.can_mark_messages_read()) {
                 unread_ops.notify_server_messages_read(messages, {from: "pointer"});
             } else if (

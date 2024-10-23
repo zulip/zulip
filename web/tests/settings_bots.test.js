@@ -1,10 +1,9 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {current_user, realm} = require("./lib/zpage_params");
 
 const bot_data_params = {
     realm_bots: [
@@ -29,17 +28,23 @@ const bot_data_params = {
 
 const bot_data = zrequire("bot_data");
 const settings_bots = zrequire("settings_bots");
+const {set_current_user, set_realm} = zrequire("state_data");
+
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
 
 bot_data.initialize(bot_data_params);
 
 function test(label, f) {
     run_test(label, ({override}) => {
-        realm.realm_url = "https://chat.example.com";
-        realm.realm_embedded_bots = [
+        override(realm, "realm_url", "https://chat.example.com");
+        override(realm, "realm_embedded_bots", [
             {name: "converter", config: {}},
             {name: "giphy", config: {key: "12345678"}},
             {name: "foobot", config: {bar: "baz", qux: "quux"}},
-        ];
+        ]);
 
         f({override});
     });
@@ -91,14 +96,14 @@ test("generate_botserverrc_content", () => {
     assert.equal(content, expected);
 });
 
-test("can_create_new_bots", () => {
-    current_user.is_admin = true;
+test("can_create_new_bots", ({override}) => {
+    override(current_user, "is_admin", true);
     assert.ok(settings_bots.can_create_new_bots());
 
-    current_user.is_admin = false;
-    realm.realm_bot_creation_policy = 1;
+    override(current_user, "is_admin", false);
+    override(realm, "realm_bot_creation_policy", 1);
     assert.ok(settings_bots.can_create_new_bots());
 
-    realm.realm_bot_creation_policy = 3;
+    override(realm, "realm_bot_creation_policy", 3);
     assert.ok(!settings_bots.can_create_new_bots());
 });

@@ -169,7 +169,7 @@ export function parse_html(html: string): DocumentFragment {
  * any interactive trigger like a button. See
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play for more details.
  */
-export async function play_audio(elem: HTMLVideoElement): Promise<void> {
+export async function play_audio(elem: HTMLAudioElement): Promise<void> {
     try {
         await elem.play();
     } catch (error) {
@@ -191,6 +191,7 @@ export function listener_for_preferred_color_scheme_change(callback: () => void)
     if (media_query_list.addEventListener) {
         media_query_list.addEventListener("change", listener);
     } else {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         media_query_list.addListener(listener);
     }
 }

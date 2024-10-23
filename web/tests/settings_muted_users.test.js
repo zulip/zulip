@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
@@ -17,6 +17,11 @@ mock_esm("../src/settings_data", {
 const settings_muted_users = zrequire("settings_muted_users");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
+const {set_realm} = zrequire("state_data");
+const {initialize_user_settings} = zrequire("user_settings");
+
+set_realm({});
+initialize_user_settings({user_settings: {}});
 
 run_test("settings", ({override}) => {
     people.add_active_user({user_id: 5, email: "five@zulip.com", full_name: "Feivel Fiverson"});

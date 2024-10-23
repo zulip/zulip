@@ -1,13 +1,12 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const events = require("./lib/events");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {realm} = require("./lib/zpage_params");
 
 const event_fixtures = events.fixtures;
 const test_user = events.test_user;
@@ -27,8 +26,12 @@ const compose_state = zrequire("compose_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const server_events_dispatch = zrequire("server_events_dispatch");
+const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const sub_store = zrequire("sub_store");
+
+const realm = {};
+set_realm(realm);
 
 people.add_active_user(test_user);
 
@@ -241,9 +244,9 @@ test("stream delete (special streams)", ({override}) => {
 
     // sanity check data
     assert.equal(event.streams.length, 2);
-    realm.realm_new_stream_announcements_stream_id = event.streams[0].stream_id;
-    realm.realm_signup_announcements_stream_id = event.streams[1].stream_id;
-    realm.realm_zulip_update_announcements_stream_id = event.streams[0].stream_id;
+    override(realm, "realm_new_stream_announcements_stream_id", event.streams[0].stream_id);
+    override(realm, "realm_signup_announcements_stream_id", event.streams[1].stream_id);
+    override(realm, "realm_zulip_update_announcements_stream_id", event.streams[0].stream_id);
 
     override(stream_settings_ui, "remove_stream", noop);
     override(settings_org, "sync_realm_settings", noop);

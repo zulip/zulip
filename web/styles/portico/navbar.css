@@ -50,7 +50,6 @@ details summary::-webkit-details-marker {
     margin-right: 16px;
 }
 
-.top-menu-item,
 .top-menu-mobile a {
     &,
     &:hover,
@@ -74,7 +73,11 @@ details summary::-webkit-details-marker {
     transition-property: background, color;
     transition-duration: 0.05s;
     transition-timing-function: ease-out;
-    color: hsl(0deg 0% 100% / 80%);
+
+    &,
+    &:visited {
+        color: hsl(0deg 0% 100% / 80%);
+    }
 }
 
 .top-menu-item:hover {
@@ -488,7 +491,6 @@ details summary::-webkit-details-marker {
 .top-menu-mobile-submenu-section {
     letter-spacing: 0.1em;
     color: hsl(0deg 0% 100% / 40%);
-    opacity: 0.8;
     text-transform: uppercase;
     margin-top: 8px;
     font-size: 17px;

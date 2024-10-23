@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 const MockDate = require("mockdate");
@@ -9,9 +9,12 @@ const {set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
 const blueslip = zrequire("blueslip");
+const {initialize_user_settings} = zrequire("user_settings");
 
 set_global("document", {});
 const util = zrequire("util");
+
+initialize_user_settings({user_settings: {}});
 
 run_test("CachedValue", () => {
     let x = 5;
@@ -383,6 +386,46 @@ run_test("get_remaining_time", () => {
     assert.equal(util.get_remaining_time(start_time, duration), expected_remaining_time);
 
     MockDate.reset();
+});
+
+run_test("get_custom_time_in_minutes", () => {
+    const time_input = 15;
+    assert.equal(util.get_custom_time_in_minutes("weeks", time_input), time_input * 7 * 24 * 60);
+    assert.equal(util.get_custom_time_in_minutes("days", time_input), time_input * 24 * 60);
+    assert.equal(util.get_custom_time_in_minutes("hours", time_input), time_input * 60);
+    assert.equal(util.get_custom_time_in_minutes("minutes", time_input), time_input);
+    // Unknown time unit returns same time input
+    assert.equal(util.get_custom_time_in_minutes("invalid", time_input), time_input);
+    /// NaN time input returns NaN
+    const invalid_time_input = Number.NaN;
+    assert.equal(
+        util.get_custom_time_in_minutes("minutes", invalid_time_input),
+        invalid_time_input,
+    );
+});
+
+run_test("check_and_validate_custom_time_input", () => {
+    const input_is_nan = "24abc";
+    let checked_input = util.check_time_input(input_is_nan);
+    assert.equal(checked_input, Number.NaN);
+    assert.equal(util.validate_custom_time_input(checked_input), false);
+
+    const input_is_negative = "-24";
+    checked_input = util.check_time_input(input_is_negative);
+    assert.equal(checked_input, -24);
+    assert.equal(util.validate_custom_time_input(input_is_negative), false);
+
+    const input_is_float = "24.5";
+    checked_input = util.check_time_input(input_is_float);
+    assert.equal(checked_input, 24);
+    checked_input = util.check_time_input(input_is_float, true);
+    assert.equal(checked_input, 24.5);
+    assert.equal(util.validate_custom_time_input(input_is_float), true);
+
+    const input_is_integer = "10";
+    checked_input = util.check_time_input(input_is_integer);
+    assert.equal(checked_input, 10);
+    assert.equal(util.validate_custom_time_input(input_is_integer), true);
 });
 
 run_test("the", () => {

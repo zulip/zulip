@@ -18,7 +18,11 @@ from zerver.actions.message_send import (
 )
 from zerver.actions.streams import bulk_add_subscriptions, send_peer_subscriber_events
 from zerver.actions.user_groups import do_send_user_group_members_update_event
-from zerver.actions.users import change_user_is_active, get_service_dicts_for_bot
+from zerver.actions.users import (
+    change_user_is_active,
+    get_service_dicts_for_bot,
+    send_update_events_for_anonymous_group_settings,
+)
 from zerver.lib.avatar import avatar_url
 from zerver.lib.create_user import create_user
 from zerver.lib.default_streams import get_slim_realm_default_streams
@@ -37,6 +41,7 @@ from zerver.lib.users import (
     format_user_row,
     get_api_key,
     get_data_for_inaccessible_user,
+    get_user_ids_who_can_access_user,
     user_access_restricted_in_realm,
     user_profile_to_user_row,
 )
@@ -724,7 +729,19 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, is_active=True)
     )
-    send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+    send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
+
+    if not user_profile.is_bot:
+        realm_export_consent_event = dict(
+            type="realm_export_consent",
+            user_id=user_profile.id,
+            consented=user_profile.allow_private_data_export,
+        )
+        send_event_on_commit(
+            user_profile.realm,
+            realm_export_consent_event,
+            list(user_profile.realm.get_human_admin_users().values_list("id", flat=True)),
+        )
 
     if user_profile.is_bot:
         event = dict(
@@ -770,3 +787,25 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
         stream_dict=stream_dict,
         subscriber_peer_info=subscriber_peer_info,
     )
+
+    member_user_groups = user_profile.direct_groups.select_related("named_user_group").order_by(
+        "id"
+    )
+    named_user_groups = []
+    setting_user_groups = []
+    for group in member_user_groups:
+        if hasattr(group, "named_user_group"):
+            named_user_groups.append(group)
+        else:
+            setting_user_groups.append(group)
+
+    for user_group in named_user_groups:
+        do_send_user_group_members_update_event(
+            "add_members", user_group.named_user_group, [user_profile.id]
+        )
+
+    if setting_user_groups:
+        notify_user_ids = active_user_ids(user_profile.realm_id)
+        send_update_events_for_anonymous_group_settings(
+            setting_user_groups, user_profile.realm, list(notify_user_ids)
+        )

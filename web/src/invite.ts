@@ -5,6 +5,7 @@ import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import copy_invite_link from "../templates/copy_invite_link.hbs";
+import render_guest_visible_users_message from "../templates/guest_visible_users_message.hbs";
 import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";
 import render_invite_user_modal from "../templates/invite_user_modal.hbs";
 import render_invite_tips_banner from "../templates/modal_banner/invite_tips_banner.hbs";
@@ -22,6 +23,7 @@ import {$t, $t_html} from "./i18n";
 import * as input_pill from "./input_pill";
 import * as invite_stream_picker_pill from "./invite_stream_picker_pill";
 import {page_params} from "./page_params";
+import * as peer_data from "./peer_data";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
@@ -65,7 +67,10 @@ function get_common_invitation_data(): {
     if (raw_expires_in === "null") {
         expires_in = null;
     } else if (raw_expires_in === "custom") {
-        expires_in = get_expiration_time_in_minutes();
+        expires_in = util.get_custom_time_in_minutes(
+            custom_expiration_time_unit,
+            custom_expiration_time_input,
+        );
     } else {
         expires_in = Number.parseFloat(raw_expires_in);
     }
@@ -149,7 +154,10 @@ function submit_invitation_form(): void {
             if ($expires_in.val() === "custom") {
                 // Hide the custom inputs if the custom input is set
                 // to one of the dropdown's standard options.
-                const time_in_minutes = get_expiration_time_in_minutes();
+                const time_in_minutes = util.get_custom_time_in_minutes(
+                    custom_expiration_time_unit,
+                    custom_expiration_time_input,
+                );
                 for (const option of Object.values(settings_config.expires_in_values)) {
                     if (option.value === time_in_minutes) {
                         $("#custom-invite-expiration-time").hide();
@@ -259,16 +267,18 @@ function valid_to(time_valid: number): string {
     return $t({defaultMessage: "Expires on {date} at {time}"}, {date, time});
 }
 
-function get_expiration_time_in_minutes(): number {
-    switch (custom_expiration_time_unit) {
-        case "hours":
-            return custom_expiration_time_input * 60;
-        case "days":
-            return custom_expiration_time_input * 24 * 60;
-        case "weeks":
-            return custom_expiration_time_input * 7 * 24 * 60;
-        default:
-            return custom_expiration_time_input;
+function set_custom_expires_on_text(): void {
+    if (util.validate_custom_time_input(custom_expiration_time_input)) {
+        $("#custom_expires_on").text(
+            valid_to(
+                util.get_custom_time_in_minutes(
+                    custom_expiration_time_unit,
+                    custom_expiration_time_input,
+                ),
+            ),
+        );
+    } else {
+        $("#custom_expires_on").text($t({defaultMessage: "Invalid custom time"}));
     }
 }
 
@@ -276,7 +286,7 @@ function set_expires_on_text(): void {
     const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
     if ($expires_in.val() === "custom") {
         $("#expires_on").hide();
-        $("#custom_expires_on").text(valid_to(get_expiration_time_in_minutes()));
+        set_custom_expires_on_text();
     } else {
         $("#expires_on").show();
         $("#expires_on").text(valid_to(Number.parseFloat($expires_in.val()!)));
@@ -308,6 +318,31 @@ function set_streams_to_join_list_visibility(): void {
     }
 }
 
+function update_guest_visible_users_count(): void {
+    const invite_as = Number.parseInt(
+        $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
+        10,
+    );
+
+    assert(!Number.isNaN(invite_as));
+
+    const guest_role_selected = invite_as === settings_config.user_role_values.guest.code;
+    if (!guest_role_selected || settings_data.guests_can_access_all_other_users()) {
+        $("#guest_visible_users_container").hide();
+        return;
+    }
+    const stream_ids = $("#invite_select_default_streams").is(":checked")
+        ? stream_data.get_default_stream_ids()
+        : stream_pill.get_stream_ids(stream_pill_widget);
+    const visible_users_count = peer_data.get_unique_subscriber_count_for_streams(stream_ids);
+
+    const message_html = render_guest_visible_users_message({
+        user_count: visible_users_count,
+    });
+
+    $("#guest_visible_users_container").html(message_html).show();
+}
+
 function generate_invite_tips_data(): Record<string, boolean> {
     const {realm_description, realm_icon_source, custom_profile_fields} = realm;
 
@@ -324,14 +359,13 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     e.stopPropagation();
     e.preventDefault();
 
-    const time_unit_choices = ["minutes", "hours", "days", "weeks"];
     const html_body = render_invite_user_modal({
         is_admin: current_user.is_admin,
         is_owner: current_user.is_owner,
         development_environment: page_params.development_environment,
         invite_as_options: settings_config.user_role_values,
         expires_in_options: settings_config.expires_in_values,
-        time_choices: time_unit_choices,
+        time_choices: settings_config.custom_time_unit_values,
         show_select_default_streams_option: stream_data.get_default_stream_ids().length !== 0,
         user_has_email_set: !settings_data.user_email_not_configured(),
         can_subscribe_other_users: settings_data.user_can_subscribe_other_users(),
@@ -360,6 +394,11 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             stream_pill_widget = invite_stream_picker_pill.create($stream_pill_container);
         }
 
+        $("#invite_as, #invite_streams_container .input, #invite_select_default_streams").on(
+            "change",
+            update_guest_visible_users_count,
+        );
+
         $("#invite-user-modal").on("click", ".setup-tips-container .banner_content a", () => {
             dialog_widget.close();
         });
@@ -375,12 +414,14 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                     .find(".selected")
                     .attr("data-tab-key");
             }
+            const valid_custom_time = util.validate_custom_time_input(custom_expiration_time_input);
             const $button = $("#invite-user-modal .dialog_submit_button");
             $button.prop(
                 "disabled",
-                selected_tab === "invite-email-tab" &&
+                (selected_tab === "invite-email-tab" &&
                     pills.items().length === 0 &&
-                    email_pill.get_current_email(pills) === null,
+                    email_pill.get_current_email(pills) === null) ||
+                    ($expires_in.val() === "custom" && !valid_custom_time),
             );
             if (selected_tab === "invite-email-tab") {
                 $button.text($t({defaultMessage: "Invite"}));
@@ -400,9 +441,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         $expires_in.on("change", () => {
             set_custom_time_inputs_visibility();
             set_expires_on_text();
+            toggle_invite_submit_button();
         });
-
-        $("#expires_on").text(valid_to(Number.parseFloat($expires_in.val()!)));
 
         $("#custom-expiration-time-input").on("keydown", (e) => {
             if (e.key === "Enter") {
@@ -412,13 +452,14 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         });
 
         $(".custom-expiration-time").on("change", () => {
-            custom_expiration_time_input = Number.parseFloat(
+            custom_expiration_time_input = util.check_time_input(
                 $<HTMLInputElement>("input#custom-expiration-time-input").val()!,
             );
             custom_expiration_time_unit = $<HTMLSelectOneElement>(
                 "select:not([multiple])#custom-expiration-time-unit",
             ).val()!;
-            $("#custom_expires_on").text(valid_to(get_expiration_time_in_minutes()));
+            set_custom_expires_on_text();
+            toggle_invite_submit_button();
         });
 
         $("#invite_check_all_button").on("click", () => {

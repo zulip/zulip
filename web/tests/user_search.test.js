@@ -1,11 +1,10 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {set_global, mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {realm} = require("./lib/zpage_params");
 
 const fake_buddy_list = {
     scroll_container_selector: "#whatever",
@@ -46,6 +45,10 @@ const activity_ui = zrequire("activity_ui");
 const buddy_data = zrequire("buddy_data");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
+const {set_realm} = zrequire("state_data");
+
+const realm = {};
+set_realm(realm);
 
 const me = {
     email: "me@zulip.com",
@@ -122,7 +125,7 @@ test("clear_search", ({override}) => {
 });
 
 test("escape_search", ({override}) => {
-    realm.realm_presence_disabled = true;
+    override(realm, "realm_presence_disabled", true);
 
     override(resize, "resize_sidebars", noop);
     override(popovers, "hide_all", noop);
@@ -233,13 +236,13 @@ test("click on user header to toggle display", ({override}) => {
     override(sidebar_ui, "show_userlist_sidebar", noop);
     override(resize, "resize_sidebars", noop);
 
-    realm.realm_presence_disabled = true;
+    override(realm, "realm_presence_disabled", true);
 
     assert.ok(!$("#user_search_section").hasClass("notdisplayed"));
 
     $user_filter.val("bla");
 
-    $("#userlist-header").trigger("click");
+    $("#userlist-header-search").trigger("click");
     assert.ok($("#user_search_section").hasClass("notdisplayed"));
     assert.equal($user_filter.val(), "");
 
@@ -248,7 +251,7 @@ test("click on user header to toggle display", ({override}) => {
         return $.create("sidebar").addClass("column-right");
     };
 
-    $("#userlist-header").trigger("click");
+    $("#userlist-header-search").trigger("click");
     assert.equal($("#user_search_section").hasClass("notdisplayed"), false);
 });
 

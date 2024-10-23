@@ -67,12 +67,6 @@ type ValidOrInvalidUser =
     | {valid_user: true; user_pill_context: UserPillItem}
     | {valid_user: false; operand: string};
 
-// TODO: When "stream" is renamed to "channel", these placeholders
-// should be removed, or replaced with helper functions similar
-// to util.is_topic_synonym.
-const CHANNEL_SYNONYM = "stream";
-const CHANNELS_SYNONYM = "streams";
-
 function zephyr_stream_name_match(
     message: Message & {type: "stream"},
     stream_name: string,
@@ -143,7 +137,7 @@ function message_in_home(message: Message): boolean {
     }
 
     return (
-        // If stream is muted, we show the message if topic is unmuted or followed.
+        // If channel is muted, we show the message if topic is unmuted or followed.
         !stream_data.is_muted(message.stream_id) ||
         user_topics.is_topic_unmuted_or_followed(message.stream_id, message.topic)
     );
@@ -324,11 +318,11 @@ export class Filter {
             return "topic";
         }
 
-        if (operator === CHANNEL_SYNONYM) {
+        if (util.is_channel_synonym(operator)) {
             return "channel";
         }
 
-        if (operator === CHANNELS_SYNONYM) {
+        if (util.is_channels_synonym(operator)) {
             return "channels";
         }
         return operator;
@@ -388,36 +382,56 @@ export class Filter {
         };
     }
 
-    static ensure_channel_topic_terms(orig_terms: NarrowTerm[]): NarrowTerm[] {
+    static ensure_channel_topic_terms(
+        orig_terms: NarrowTerm[],
+        message: Message,
+    ): NarrowTerm[] | undefined {
         // In presence of `with` term without channel or topic terms in the narrow, the
         // narrow is populated with the channel and toipic terms through this operation,
         // so that `with` can be used as a standalone operator to target conversation.
-        const with_term = orig_terms.find((term: NarrowTerm) => term.operator === "with");
+        const contains_with_operator = orig_terms.some((term) => term.operator === "with");
 
-        if (!with_term) {
-            return orig_terms;
+        if (!contains_with_operator) {
+            return undefined;
         }
 
-        const updated_terms = orig_terms.filter((term: NarrowTerm) => term.operator !== "dm");
+        let contains_channel_term = false;
+        let contains_topic_term = false;
+        let contains_dm_term = false;
 
-        let channel_term = updated_terms.find(
-            (term: NarrowTerm) => Filter.canonicalize_operator(term.operator) === "channel",
-        );
-        let topic_term = updated_terms.find(
-            (term: NarrowTerm) => Filter.canonicalize_operator(term.operator) === "topic",
-        );
-
-        if (!topic_term) {
-            topic_term = {operator: "topic", operand: ""};
-            const with_index = updated_terms.indexOf(with_term);
-            updated_terms.splice(with_index, 0, topic_term);
+        for (const term of orig_terms) {
+            switch (Filter.canonicalize_operator(term.operator)) {
+                case "channel":
+                    contains_channel_term = true;
+                    break;
+                case "topic":
+                    contains_topic_term = true;
+                    break;
+                case "dm":
+                    contains_dm_term = true;
+            }
         }
 
-        if (!channel_term) {
-            channel_term = {operator: "channel", operand: ""};
-            const topic_index = updated_terms.indexOf(topic_term);
-            updated_terms.splice(topic_index, 0, channel_term);
+        // If the narrow is already a channel-topic narrow containing
+        // channel and topic terms, we will return undefined now so that
+        // it can be adjusted further if needed later.
+        if (!contains_dm_term && contains_channel_term && contains_topic_term) {
+            return undefined;
         }
+
+        const conversation_terms = new Set(["channel", "topic", "dm"]);
+
+        const non_conversation_terms = orig_terms.filter((term) => {
+            const operator = Filter.canonicalize_operator(term.operator);
+            return !conversation_terms.has(operator);
+        });
+
+        assert(message.type === "stream");
+
+        const channel_term = {operator: "channel", operand: message.stream_id.toString()};
+        const topic_term = {operator: "topic", operand: message.topic};
+
+        const updated_terms = [channel_term, topic_term, ...non_conversation_terms];
         return updated_terms;
     }
 
@@ -428,20 +442,19 @@ export class Filter {
        This is just for the search bar, not for saving the
        narrow in the URL fragment.  There we do use full
        URI encoding to avoid problematic characters. */
-    static encodeOperand(operand: string): string {
-        return operand
-            .replaceAll("%", "%25")
-            .replaceAll("+", "%2B")
-            .replaceAll(" ", "+")
-            .replaceAll('"', "%22");
+    static encodeOperand(operand: string, operator: string): string {
+        if (USER_OPERATORS.has(operator)) {
+            return operand.replaceAll(/[\s"%]/g, (c) => encodeURIComponent(c));
+        }
+        return operand.replaceAll(/[\s"%+]/g, (c) => (c === " " ? "+" : encodeURIComponent(c)));
     }
 
     static decodeOperand(encoded: string, operator: string): string {
-        encoded = encoded.replaceAll('"', "");
+        encoded = encoded.trim().replaceAll('"', "");
         if (!USER_OPERATORS.has(operator)) {
             encoded = encoded.replaceAll("+", " ");
         }
-        return util.robust_url_decode(encoded).trim();
+        return util.robust_url_decode(encoded);
     }
 
     // Parse a string into a list of terms (see below).
@@ -494,7 +507,7 @@ export class Filter {
                 // Check for user-entered channel name. If the name is valid,
                 // convert it to id.
                 if (
-                    (operator === "stream" || operator === "channel") &&
+                    (operator === "channel" || util.is_channel_synonym(operator)) &&
                     Number.isNaN(Number.parseInt(operand, 10))
                 ) {
                     const sub = stream_data.get_sub(operand);
@@ -598,7 +611,9 @@ export class Filter {
                 return term.operand;
             }
             const operator = Filter.canonicalize_operator(term.operator);
-            return sign + operator + ":" + Filter.encodeOperand(term.operand.toString());
+            return (
+                sign + operator + ":" + Filter.encodeOperand(term.operand.toString(), term.operator)
+            );
         });
         return term_strings.join(" ");
     }
@@ -804,7 +819,7 @@ export class Filter {
                         };
                     }
                     // Assume the operand is a partially formed name and return
-                    // the operator as the stream name in the next block.
+                    // the operator as the channel name in the next block.
                 }
                 return {
                     type: "prefix_for_operator",
@@ -839,7 +854,7 @@ export class Filter {
     }
 
     static adjusted_terms_if_moved(raw_terms: NarrowTerm[], message: Message): NarrowTerm[] | null {
-        // In case of narrow containing non-stream messages, we replace the
+        // In case of narrow containing non-channel messages, we replace the
         // channel/topic/dm operators with singular dm operator corresponding
         // to the message if it contains `with` operator.
         if (message.type !== "stream") {
@@ -880,7 +895,14 @@ export class Filter {
         const adjusted_terms = [];
         let terms_changed = false;
 
-        raw_terms = Filter.ensure_channel_topic_terms(raw_terms);
+        const adjusted_narrow_containing_with = Filter.ensure_channel_topic_terms(
+            raw_terms,
+            message,
+        );
+
+        if (adjusted_narrow_containing_with !== undefined) {
+            return adjusted_narrow_containing_with;
+        }
 
         for (const term of raw_terms) {
             const adjusted_term = {...term};
@@ -1196,9 +1218,7 @@ export class Filter {
                 return "#";
             }
             return (
-                "/#narrow/" +
-                CHANNEL_SYNONYM +
-                "/" +
+                "/#narrow/channel/" +
                 stream_data.id_to_slug(sub.stream_id) +
                 "/topic/" +
                 this.operands("topic")[0]
@@ -1218,9 +1238,7 @@ export class Filter {
                     if (!sub) {
                         return "#";
                     }
-                    return (
-                        "/#narrow/" + CHANNEL_SYNONYM + "/" + stream_data.id_to_slug(sub.stream_id)
-                    );
+                    return "/#narrow/channel/" + stream_data.id_to_slug(sub.stream_id);
                 }
                 case "is-dm":
                     return "/#narrow/is/dm";
@@ -1229,7 +1247,7 @@ export class Filter {
                 case "is-mentioned":
                     return "/#narrow/is/mentioned";
                 case "channels-public":
-                    return "/#narrow/" + CHANNELS_SYNONYM + "/public";
+                    return "/#narrow/channels/public";
                 case "dm":
                     return "/#narrow/dm/" + people.emails_to_slug(this.operands("dm").join(","));
                 case "is-resolved":
@@ -1291,7 +1309,7 @@ export class Filter {
                 zulip_icon = "user";
                 break;
             case "is-starred":
-                zulip_icon = "star-filled";
+                zulip_icon = "star";
                 break;
             case "is-mentioned":
                 zulip_icon = "at-sign";

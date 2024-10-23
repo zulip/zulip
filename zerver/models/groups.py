@@ -59,6 +59,11 @@ class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # djang
     )
     is_system_group = models.BooleanField(default=False, db_column="is_system_group")
 
+    can_add_members_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
+    can_join_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT, related_name="+")
+    can_leave_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT, related_name="+")
     can_manage_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT, related_name="+")
     can_mention_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, db_column="can_mention_group_id"
@@ -94,13 +99,43 @@ class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # djang
     }
 
     GROUP_PERMISSION_SETTINGS = {
-        "can_manage_group": GroupPermissionSetting(
+        "can_add_members_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=True,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name="group_creator",
+            default_for_system_groups=SystemGroups.NOBODY,
+            id_field_name="can_add_members_group_id",
+        ),
+        "can_join_group": GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
             allow_owners_group=True,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.NOBODY,
+            default_for_system_groups=SystemGroups.NOBODY,
+            id_field_name="can_join_group_id",
+        ),
+        "can_leave_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=True,
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+            default_for_system_groups=SystemGroups.NOBODY,
+            id_field_name="can_leave_group_id",
+        ),
+        "can_manage_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=True,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name="group_creator",
             default_for_system_groups=SystemGroups.NOBODY,
             id_field_name="can_manage_group_id",
         ),

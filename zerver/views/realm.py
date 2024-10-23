@@ -54,7 +54,6 @@ from zerver.models.realms import (
     DigestWeekdayEnum,
     EditTopicPolicyEnum,
     InviteToRealmPolicyEnum,
-    MoveMessagesBetweenStreamsPolicyEnum,
     OrgTypeEnum,
     WildcardMentionPolicyEnum,
 )
@@ -111,7 +110,7 @@ def update_realm(
     avatar_changes_disabled: Json[bool] | None = None,
     inline_image_preview: Json[bool] | None = None,
     inline_url_embed_preview: Json[bool] | None = None,
-    add_custom_emoji_policy: Json[CommonPolicyEnum] | None = None,
+    can_add_custom_emoji_group: Json[GroupSettingChangeRequest] | None = None,
     can_delete_any_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_delete_own_message_group: Json[GroupSettingChangeRequest] | None = None,
     message_content_delete_limit_seconds_raw: Annotated[
@@ -140,14 +139,15 @@ def update_realm(
     digest_emails_enabled: Json[bool] | None = None,
     message_content_allowed_in_email_notifications: Json[bool] | None = None,
     bot_creation_policy: Json[BotCreationPolicyEnum] | None = None,
+    can_create_groups: Json[GroupSettingChangeRequest] | None = None,
     can_create_public_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_create_private_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_create_web_public_channel_group: Json[GroupSettingChangeRequest] | None = None,
+    can_manage_all_groups: Json[GroupSettingChangeRequest] | None = None,
+    can_move_messages_between_channels_group: Json[GroupSettingChangeRequest] | None = None,
     direct_message_initiator_group: Json[GroupSettingChangeRequest] | None = None,
     direct_message_permission_group: Json[GroupSettingChangeRequest] | None = None,
     invite_to_stream_policy: Json[CommonPolicyEnum] | None = None,
-    move_messages_between_streams_policy: Json[MoveMessagesBetweenStreamsPolicyEnum] | None = None,
-    user_group_edit_policy: Json[CommonPolicyEnum] | None = None,
     wildcard_mention_policy: Json[WildcardMentionPolicyEnum] | None = None,
     video_chat_provider: Json[int] | None = None,
     jitsi_server_url_raw: Annotated[
@@ -227,6 +227,8 @@ def update_realm(
         invite_to_realm_policy is not None
         or invite_required is not None
         or create_multiuse_invite_group_id is not None
+        or can_create_groups is not None
+        or can_manage_all_groups is not None
     ) and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequiredError
 

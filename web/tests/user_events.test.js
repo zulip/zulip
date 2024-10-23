@@ -1,12 +1,11 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {current_user} = require("./lib/zpage_params");
 
 const message_live_update = mock_esm("../src/message_live_update");
 const navbar_alerts = mock_esm("../src/navbar_alerts");
@@ -36,6 +35,9 @@ mock_esm("../src/compose_state", {
 mock_esm("../src/pm_list", {
     update_private_messages() {},
 });
+mock_esm("../src/settings", {
+    update_lock_icon_in_sidebar() {},
+});
 mock_esm("../src/settings_linkifiers", {
     maybe_disable_widgets() {},
 });
@@ -52,11 +54,14 @@ mock_esm("../src/settings_streams", {
     maybe_disable_widgets() {},
 });
 
-current_user.is_admin = true;
-
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
+const {set_current_user, set_realm} = zrequire("state_data");
 const user_events = zrequire("user_events");
+
+const current_user = {};
+set_current_user(current_user);
+set_realm({});
 
 const me = {
     email: "me@example.com",

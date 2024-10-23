@@ -28,7 +28,8 @@ type PopoverName =
     | "change_visibility_policy"
     | "personal_menu"
     | "gear_menu"
-    | "help_menu";
+    | "help_menu"
+    | "buddy_list";
 
 export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     compose_control_buttons: null,
@@ -47,6 +48,7 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     personal_menu: null,
     gear_menu: null,
     help_menu: null,
+    buddy_list: null,
 };
 
 /* Keyboard UI functions */

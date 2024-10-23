@@ -60,4 +60,4 @@ Get Zulip notifications for the issues in your Sentry projects!
 
 {!webhooks-url-specification.md!}
 
-[dev-community]: https://chat.zulip.org/#narrow/stream/127-integrations
+[dev-community]: https://chat.zulip.org/#narrow/channel/127-integrations

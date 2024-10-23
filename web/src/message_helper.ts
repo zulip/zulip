@@ -14,7 +14,7 @@ import * as stream_topic_history from "./stream_topic_history";
 import * as user_status from "./user_status";
 import * as util from "./util";
 
-export function process_new_message(raw_message: RawMessage): Message {
+export function process_new_message(raw_message: RawMessage, deliver_locally = false): Message {
     // Call this function when processing a new message.  After
     // a message is processed and inserted into the message store
     // cache, most modules use message_store.get to look at
@@ -61,11 +61,18 @@ export function process_new_message(raw_message: RawMessage): Message {
             topic = message_with_booleans.subject;
         }
         assert(topic !== undefined);
-        stream_topic_history.add_message({
-            stream_id: message_with_booleans.stream_id,
-            topic_name: topic,
-            message_id: message_with_booleans.id,
-        });
+
+        // We add fully delivered messages to stream_topic_history,
+        // being careful to not include locally echoed messages, which
+        // don't have permanent IDs and don't belong in that structure.
+        if (!deliver_locally) {
+            stream_topic_history.add_message({
+                stream_id: message_with_booleans.stream_id,
+                topic_name: topic,
+                message_id: message_with_booleans.id,
+            });
+        }
+
         recent_senders.process_stream_message({
             stream_id: message_with_booleans.stream_id,
             topic,

@@ -58,8 +58,24 @@ export let client_is_active = document.hasFocus();
 // server-initiated reload as user activity.
 export let new_user_input = true;
 
+export let received_new_messages = false;
+
+type UserInputHook = () => void;
+const on_new_user_input_hooks: UserInputHook[] = [];
+
+export function register_on_new_user_input_hook(hook: UserInputHook): void {
+    on_new_user_input_hooks.push(hook);
+}
+
+export function set_received_new_messages(value: boolean): void {
+    received_new_messages = value;
+}
+
 export function set_new_user_input(value: boolean): void {
     new_user_input = value;
+    for (const hook of on_new_user_input_hooks) {
+        hook();
+    }
 }
 
 export function clear_for_testing(): void {
@@ -139,7 +155,7 @@ export function send_presence_to_server(redraw?: () => void): void {
                 $("#zephyr-mirror-error").removeClass("show");
             }
 
-            new_user_input = false;
+            set_new_user_input(false);
 
             if (redraw) {
                 assert(
@@ -176,7 +192,7 @@ export function mark_client_active(): void {
 
 export function initialize(): void {
     $("html").on("mousemove", () => {
-        new_user_input = true;
+        set_new_user_input(true);
     });
 
     $(window).on("focus", mark_client_active);

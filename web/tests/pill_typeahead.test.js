@@ -1,12 +1,12 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {zrequire, mock_esm} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params, realm} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const noop = function () {};
 
@@ -17,9 +17,13 @@ const input_pill = zrequire("input_pill");
 const pill_typeahead = zrequire("pill_typeahead");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
+const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
 const typeahead_helper = zrequire("typeahead_helper");
+
+const realm = {};
+set_realm(realm);
 
 // set global test variables.
 let sort_recipients_called = false;
@@ -461,7 +465,11 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
                 })
                 .filter(Boolean);
             if (opts.user_group) {
-                expected_result = [...expected_result, ...group_items];
+                if (opts.user_group_source) {
+                    expected_result = [...expected_result, ...opts.user_group_source()];
+                } else {
+                    expected_result = [...expected_result, ...group_items];
+                }
             }
             if (opts.user) {
                 if (opts.user_source) {
@@ -526,6 +534,8 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
         {user: true, user_source: () => [fred_item, mark_item]},
         {stream: true},
         {user_group: true},
+        // user and custom user group source.
+        {user_group: true, user_group_source: () => [admins_item]},
         {user_group: true, stream: true},
         {user_group: true, user: true},
         {user: true, stream: true},
@@ -614,7 +624,7 @@ run_test("set_up_group_setting_typeahead", ({mock_template, override, override_r
     const system_group_items = [moderators_item];
 
     page_params.development_environment = true;
-    realm.realm_waiting_period_threshold = 0;
+    override(realm, "realm_waiting_period_threshold", 0);
 
     override(bootstrap_typeahead, "Typeahead", (input_element, config) => {
         assert.equal(input_element.$element, $fake_input);

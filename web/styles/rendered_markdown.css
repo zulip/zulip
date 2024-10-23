@@ -738,6 +738,14 @@
         &:hover .code-buttons-container {
             visibility: visible;
         }
+
+        /* Hide the code buttons container when the user is
+           clicking on the code block other than the buttons.
+           This allows the user to select part of the the code
+           without the buttons interfering with the selection. */
+        &:active .code-buttons-container:not(:hover) {
+            visibility: hidden;
+        }
     }
 
     & pre code {
@@ -776,50 +784,40 @@
         /* Having absolute positioning here ensures that the element
         doesn't scroll along with the code div in narrow windows */
         position: absolute;
-        top: 5px;
+        top: 4px;
         right: 0;
         padding: 0 4px;
         /* Invisible unless <pre> is hovered. */
         visibility: hidden;
         z-index: 0;
+    }
 
-        &::after {
-            content: " ";
-            position: absolute;
-            height: 100%;
-            width: 100%;
-            z-index: -1;
-            /* Blur the background behind the button container */
-            backdrop-filter: blur(5px);
-            /* Use a radial gradient to avoid obvious hard edges
-               to the blur. */
-            mask-image: radial-gradient(
-                farthest-corner,
-                hsl(0deg 0% 0% / 100%),
-                hsl(0deg 0% 0% / 50%)
-            );
+    /* The properties of the code_external_link button are copied from the
+       copy-btn class in app_components.css. */
+    .code_external_link {
+        display: flex;
+        border-radius: 4px;
+        color: var(--color-copy-btn);
+        /* 2px at 16px/1em */
+        padding: 0.125em;
+        cursor: pointer;
+
+        &:hover,
+        :focus-visible {
+            background-color: var(--color-copy-btn-square-bg-hover);
+        }
+
+        &:active {
+            background-color: var(--color-copy-btn-square-bg-active);
+            color: var(--color-copy-btn-square-active);
         }
     }
 
+    .copy_codeblock,
     .code_external_link {
-        /* Match the apparent size of the playground icon
-           to the copy-to-clipboard icon. */
-        font-size: 16px;
-        /* Center the icon vertically in the link container. */
-        display: flex;
-        align-content: center;
-        /* The font-icon footprint still requires 2px of
-           top padding to get better alignment with the
-           copy-to-clipboard icon. */
-        padding-top: 2px;
-        /* The default icon and on-hover colors are inherited from <a> tag.
-        so we set our own to match the copy-to-clipbord icon */
-        color: hsl(0deg 0% 47%);
-
-        &:hover {
-            color: hsl(200deg 100% 40%);
-            text-decoration: none;
-        }
+        font-size: 1.1363em;
+        border: 1px solid var(--color-copy-btn-square-bg-active);
+        backdrop-filter: blur(20px);
     }
 }
 

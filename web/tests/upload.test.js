@@ -1,11 +1,10 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {realm} = require("./lib/zpage_params");
 
 class ClipboardEvent {
     constructor({clipboardData}) {
@@ -34,12 +33,17 @@ const rows = mock_esm("../src/rows");
 const compose_ui = zrequire("compose_ui");
 const upload = zrequire("upload");
 const message_lists = mock_esm("../src/message_lists");
+const {set_realm} = zrequire("state_data");
+
+const realm = {};
+set_realm(realm);
+
 message_lists.current = {
     id: "1",
 };
 function test(label, f) {
     run_test(label, (helpers) => {
-        realm.max_file_upload_size_mib = 25;
+        helpers.override(realm, "max_file_upload_size_mib", 25);
         return f(helpers);
     });
 }
@@ -162,7 +166,7 @@ test("show_error_message", ({mock_template}) => {
     upload.show_error_message(upload.compose_config);
 });
 
-test("upload_files", async ({mock_template, override_rewire}) => {
+test("upload_files", async ({mock_template, override, override_rewire}) => {
     $("#compose_banners .upload_banner").remove = noop;
     $("#compose_banners .upload_banner .moving_bar").css = noop;
     $("#compose_banners .upload_banner").length = 0;
@@ -208,12 +212,12 @@ test("upload_files", async ({mock_template, override_rewire}) => {
         banner_shown = true;
         return "<banner-stub>";
     });
-    realm.max_file_upload_size_mib = 0;
+    override(realm, "max_file_upload_size_mib", 0);
     $("#compose_banners .upload_banner .upload_msg").text("");
     await upload.upload_files(uppy, config, files);
     assert.ok(banner_shown);
 
-    realm.max_file_upload_size_mib = 25;
+    override(realm, "max_file_upload_size_mib", 25);
     let on_click_close_button_callback;
 
     $("#compose_banners .upload_banner.file_id_123 .upload_banner_cancel_button").one = (

@@ -117,11 +117,6 @@ Copyright: Google, Inc.
 License: Apache-2.0
 Comment: Material volume icon (rounded) with custom cross symbol
 
-Files: web/shared/icons/scheduled-messages.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-Comment: Icon has been modified by Vlad Koborov
-
 Files: web/shared/icons/smart-toy.svg
 Source: https://fonts.google.com/icons?selected=Material+Symbols+Rounded:smart_toy
 Copyright: Google, Inc.
@@ -1497,5 +1492,5 @@ License: ISC License
  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE
  FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY
  DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, 
+ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
  ARISING OUT OF OR IN CONNECTION  WITH THE USE ORPERFORMANCE OF THIS SOFTWARE

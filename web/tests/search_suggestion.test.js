@@ -1,10 +1,10 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
-const {current_user, page_params, realm} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 const narrow_state = mock_esm("../src/narrow_state");
 const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");
@@ -16,6 +16,12 @@ const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
 const search = zrequire("search_suggestion");
+const {set_current_user, set_realm} = zrequire("state_data");
+
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
 
 const me = {
     email: "myself@zulip.com",
@@ -56,8 +62,8 @@ function new_stream_id() {
     return _stream_id;
 }
 
-function init() {
-    current_user.is_admin = true;
+function init({override}) {
+    override(current_user, "is_admin", true);
 
     people.init();
     people.add_active_user(bob);
@@ -79,7 +85,7 @@ function get_suggestions(query, pill_query = "") {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        init();
+        init(helpers);
         f(helpers);
     });
 }
@@ -937,7 +943,7 @@ test("people_suggestions", ({override, mock_template}) => {
         }
     }
 
-    realm.realm_enable_guest_user_indicator = true;
+    override(realm, "realm_enable_guest_user_indicator", true);
     suggestions = get_suggestions(query);
 
     test_guest_user_indicator("dm:bob@zulip.com", false);
@@ -951,7 +957,7 @@ test("people_suggestions", ({override, mock_template}) => {
     test_guest_user_indicator("sender:bob@zulip.com", true);
     test_guest_user_indicator("dm-including:bob@zulip.com", true);
 
-    realm.realm_enable_guest_user_indicator = false;
+    override(realm, "realm_enable_guest_user_indicator", false);
     suggestions = get_suggestions(query);
 
     test_guest_user_indicator("dm:bob@zulip.com", false);

@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/browser";
+import {SPAN_STATUS_OK} from "@sentry/core";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
@@ -296,6 +297,11 @@ export function try_rendering_locally_for_same_narrow(
         target_scroll_offset = opts.then_select_offset;
     } else if (filter.has_operator("near")) {
         target_id = Number.parseInt(filter.operands("near")[0]!, 10);
+    } else if (filter.equals(current_filter)) {
+        // The caller doesn't want to force rerender and the filter is the same.
+        // Also, we don't have a specific message id we want to select, so we
+        // just keep the same message id selected.
+        return true;
     } else {
         return false;
     }
@@ -441,23 +447,11 @@ export function show(raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): v
         ...show_opts,
     };
 
-    const existing_span = Sentry.getCurrentHub().getScope().getSpan();
     const span_data = {
         op: "function",
-        description: "narrow",
         data: {raw_terms, trigger: opts.trigger},
     };
-    let span;
-    if (!existing_span) {
-        span = Sentry.startTransaction({...span_data, name: "narrow"});
-    } else {
-        span = existing_span.startChild(span_data);
-    }
-    let do_close_span = true;
-    try {
-        const scope = Sentry.getCurrentHub().pushScope();
-        scope.setSpan(span);
-
+    void Sentry.startSpan({...span_data, name: "narrow"}, async (span) => {
         const id_info: TargetMessageIdInfo = {
             target_id: undefined,
             local_select_id: undefined,
@@ -534,11 +528,9 @@ export function show(raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): v
                 // topic and then moved back to the current topic. In this
                 // situation, narrow_exists_in_edit_history will be true,
                 // but we don't need to redirect the narrow.
-                assert(target_message.type === "stream");
-                const narrow_matches_target_message = util.same_stream_and_topic(
-                    target_message,
-                    narrow_dict,
-                );
+                const narrow_matches_target_message =
+                    target_message.type === "stream" &&
+                    util.same_stream_and_topic(target_message, narrow_dict);
 
                 if (
                     !narrow_matches_target_message &&
@@ -776,26 +768,16 @@ export function show(raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): v
             then_select_offset,
         );
 
-        const post_span = span.startChild({
+        const post_span_context = {
+            name: "post-narrow busy time",
             op: "function",
-            description: "post-narrow busy time",
-        });
-        do_close_span = false;
-        span.setStatus("ok");
-        setTimeout(() => {
+        };
+        await Sentry.startSpan(post_span_context, async () => {
+            span?.setStatus({code: SPAN_STATUS_OK});
+            await new Promise((resolve) => setTimeout(resolve, 0));
             resize.resize_stream_filters_container();
-            post_span.finish();
-            span.finish();
-        }, 0);
-    } catch (error) {
-        span.setStatus("unknown_error");
-        throw error;
-    } finally {
-        if (do_close_span) {
-            span.finish();
-        }
-        Sentry.getCurrentHub().popScope();
-    }
+        });
+    });
 }
 
 function navigate_to_anchor_message(opts: {
@@ -917,7 +899,7 @@ function min_defined(a: number | undefined, b: number | undefined): number | und
     if (b === undefined) {
         return a;
     }
-    return a < b ? a : b;
+    return Math.min(a, b);
 }
 
 function load_local_messages(msg_data: MessageListData, superset_data: MessageListData): boolean {
@@ -1147,6 +1129,7 @@ export function render_message_list_with_selected_message(opts: {
         // narrowing
         message_lists.current.view.set_message_offset(select_offset);
     }
+    message_lists.current.view.update_sticky_recipient_headers();
     unread_ops.process_visible();
     narrow_history.save_narrow_state_and_flush();
 }
@@ -1233,8 +1216,6 @@ export function narrow_to_next_topic(opts: {trigger: string; only_followed_topic
 
 export function narrow_to_next_pm_string(opts = {}): void {
     const current_direct_message = narrow_state.pm_ids_string();
-    assert(current_direct_message !== undefined);
-
     const next_direct_message = topic_generator.get_next_unread_pm_string(current_direct_message);
 
     if (!next_direct_message) {

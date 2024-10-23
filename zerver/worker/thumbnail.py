@@ -158,15 +158,14 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
 def update_message_rendered_content(
     realm_id: int, path_id: str, image_data: MarkdownImageMetadata | None
 ) -> None:
-    for message_class in [Message, ArchivedMessage]:
+    for message_class in (Message, ArchivedMessage):
         messages_with_image = (
-            message_class.objects.filter(  # type: ignore[attr-defined]  # TODO: ?
-                realm_id=realm_id, attachment__path_id=path_id
-            )
-            .select_for_update()
+            message_class.objects.filter(realm_id=realm_id, attachment__path_id=path_id)
+            .select_for_update(of=("self",))
             .order_by("id")
         )
         for message in messages_with_image:
+            assert message.rendered_content is not None
             rendered_content = rewrite_thumbnailed_images(
                 message.rendered_content,
                 {} if image_data is None else {path_id: image_data},

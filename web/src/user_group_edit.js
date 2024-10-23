@@ -18,7 +18,6 @@ import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as settings_components from "./settings_components";
@@ -87,7 +86,7 @@ function update_add_members_elements(group) {
     const $input_element = $add_members_container.find(".input").expectOne();
     const $button_element = $add_members_container.find('button[name="add_member"]').expectOne();
 
-    if (settings_data.can_edit_user_group(group.id)) {
+    if (settings_data.can_add_members_to_user_group(group.id)) {
         $input_element.prop("contenteditable", true);
         $button_element.prop("disabled", false);
         $button_element.css("pointer-events", "");
@@ -113,45 +112,28 @@ function update_group_permission_settings_elements(group) {
     // We are concerend with the General tab for changing group permissions.
     const $group_permission_settings = $("#group_permission_settings");
 
-    // Otherwise, we adjust whether the widgets are disabled based on
-    // whether this user is authorized to change the group settings.
-    const $permission_dropdown_elements =
-        $group_permission_settings.find(".dropdown-widget-button");
-
     const $permission_pill_container_elements = $group_permission_settings.find(".pill-container");
 
-    if (settings_data.can_edit_user_group(group.id)) {
-        $permission_dropdown_elements.prop("disabled", false);
+    if (settings_data.can_manage_user_group(group.id)) {
         $permission_pill_container_elements.find(".input").prop("contenteditable", true);
         $permission_pill_container_elements.removeClass("group_setting_disabled");
-
-        $permission_dropdown_elements.each(function () {
-            const $dropdown_wrapper = $(this).closest(".dropdown_widget_with_label_wrapper");
-            $dropdown_wrapper[0]._tippy?.destroy();
-        });
 
         $permission_pill_container_elements.each(function () {
             $(this)[0]._tippy?.destroy();
         });
+        settings_components.enable_opening_typeahead_on_clicking_label($group_permission_settings);
     } else {
-        $permission_dropdown_elements.prop("disabled", true);
         $permission_pill_container_elements.find(".input").prop("contenteditable", false);
-        $permission_pill_container_elements.addClass("group_setting_disabled");
 
-        $permission_dropdown_elements.each(function () {
-            const $dropdown_wrapper = $(this).closest(".dropdown_widget_with_label_wrapper");
-            settings_components.initialize_disable_btn_hint_popover(
-                $dropdown_wrapper,
-                $t({defaultMessage: "You do not have permission to edit this setting."}),
-            );
-        });
-
-        $permission_pill_container_elements.each(function () {
+        const $permission_input_groups = $group_permission_settings.find(".input-group");
+        $permission_input_groups.addClass("group_setting_disabled");
+        $permission_input_groups.each(function () {
             settings_components.initialize_disable_btn_hint_popover(
                 $(this),
                 $t({defaultMessage: "You do not have permission to edit this setting."}),
             );
         });
+        settings_components.disable_opening_typeahead_on_clicking_label($group_permission_settings);
     }
 }
 
@@ -168,26 +150,48 @@ function show_membership_settings(group) {
 }
 
 function show_general_settings(group) {
-    user_group_components.setup_permissions_dropdown("can_mention_group", group, false);
     const $edit_container = get_edit_container(group);
-    const $pill_container = $edit_container.find(".can-manage-group-container .pill-container");
     settings_components.create_group_setting_widget({
-        $pill_container,
+        $pill_container: $edit_container.find(".can-add-members-group-container .pill-container"),
+        setting_name: "can_add_members_group",
+        setting_type: "group",
+        group,
+    });
+
+    settings_components.create_group_setting_widget({
+        $pill_container: $edit_container.find(".can-manage-group-container .pill-container"),
         setting_name: "can_manage_group",
         setting_type: "group",
         group,
     });
-    update_general_panel_ui(group);
 
-    if (!page_params.development_environment) {
-        $(".can-manage-group-container").hide();
-    }
+    settings_components.create_group_setting_widget({
+        $pill_container: $edit_container.find(".can-join-group-container .pill-container"),
+        setting_name: "can_join_group",
+        setting_type: "group",
+        group,
+    });
+
+    settings_components.create_group_setting_widget({
+        $pill_container: $edit_container.find(".can-leave-group-container .pill-container"),
+        setting_name: "can_leave_group",
+        setting_type: "group",
+        group,
+    });
+
+    settings_components.create_group_setting_widget({
+        $pill_container: $edit_container.find(".can-mention-group-container .pill-container"),
+        setting_name: "can_mention_group",
+        setting_type: "group",
+        group,
+    });
+    update_general_panel_ui(group);
 }
 
 function update_general_panel_ui(group) {
     const $edit_container = get_edit_container(group);
 
-    if (settings_data.can_edit_user_group(group.id)) {
+    if (settings_data.can_manage_user_group(group.id)) {
         $edit_container.find(".group-header .button-group").show();
         $(`.group_settings_header[data-group-id='${CSS.escape(group.id)}'] .deactivate`).show();
     } else {
@@ -258,7 +262,17 @@ function update_group_membership_button(group_id) {
         $group_settings_button.text($t({defaultMessage: "Join group"}));
     }
 
-    if (settings_data.can_edit_user_group(group_id)) {
+    const can_join_group = settings_data.can_join_user_group(group_id);
+    const can_leave_group = settings_data.can_leave_user_group(group_id);
+
+    let can_update_membership = true;
+    if (!is_member && !can_join_group) {
+        can_update_membership = false;
+    } else if (is_member && !can_leave_group) {
+        can_update_membership = false;
+    }
+
+    if (can_update_membership) {
         $group_settings_button.prop("disabled", false);
         $group_settings_button.css("pointer-events", "");
         const $group_settings_button_wrapper = $group_settings_button.closest(
@@ -268,6 +282,18 @@ function update_group_membership_button(group_id) {
     } else {
         $group_settings_button.prop("disabled", true);
         initialize_tooltip_for_membership_button(group_id);
+    }
+}
+
+export function handle_subgroup_edit_event(group_id) {
+    if (!overlays.groups_open()) {
+        return;
+    }
+    const group = user_groups.get_user_group_from_id(group_id);
+
+    // update members list if currently rendered.
+    if (is_editing_group(group_id)) {
+        user_group_edit_members.update_member_list_widget(group);
     }
 }
 
@@ -298,7 +324,7 @@ export function handle_member_edit_event(group_id, user_ids) {
             // is added to it. The whole list is redrawed to
             // maintain the sorted order of groups.
             redraw_user_group_list();
-        } else if (!settings_data.can_edit_user_group(group_id)) {
+        } else if (!settings_data.can_join_user_group(group_id)) {
             // We remove the group row immediately only if the
             // user cannot join the group again themselves.
             const group_row = row_for_group_id(group_id);
@@ -315,7 +341,8 @@ export function handle_member_edit_event(group_id, user_ids) {
 
         const item = group;
         item.is_member = user_groups.is_user_in_group(group_id, people.my_current_user_id());
-        item.can_edit = settings_data.can_edit_user_group(item.id);
+        item.can_join = settings_data.can_join_user_group(item.id);
+        item.can_leave = settings_data.can_leave_user_group(item.id);
         const html = render_browse_user_groups_list_item(item);
         const $new_row = $(html);
 
@@ -337,20 +364,10 @@ export function handle_member_edit_event(group_id, user_ids) {
     }
 }
 
-export function update_settings_pane(group) {
+export function update_group_details(group) {
     const $edit_container = get_edit_container(group);
     $edit_container.find(".group-name").text(group.name);
     $edit_container.find(".group-description").text(group.description);
-
-    const $subsection = $edit_container.find(".settings-subsection-parent");
-    // We currently have only one group-level setting, so it is
-    // fine to just call the function to discard changes in the
-    // complete subsection.
-    //
-    // We can update this code to be similar to how we handle realm
-    // settings in settings_org.sync_realm_settings when we add more
-    // group-level settings.
-    settings_org.discard_group_settings_subsection_changes($subsection, group);
 }
 
 function update_toggler_for_group_setting() {
@@ -601,6 +618,16 @@ export function add_group_to_table(group) {
     }
 }
 
+export function sync_group_permission_setting(property, group) {
+    const $elem = $(`#id_${CSS.escape(property)}`);
+    const $subsection = $elem.closest(".settings-subsection-parent");
+    if ($subsection.find(".save-button-controls").hasClass("hide")) {
+        settings_org.discard_group_property_element_changes($elem, group);
+    } else {
+        settings_org.discard_group_settings_subsection_changes($subsection, group);
+    }
+}
+
 export function update_group(event) {
     if (!overlays.groups_open()) {
         return;
@@ -626,13 +653,30 @@ export function update_group(event) {
 
     if (get_active_data().id === group.id) {
         // update right side pane
-        update_settings_pane(group);
+        update_group_details(group);
         if (event.data.name !== undefined) {
             // update settings title
             $("#groups_overlay .user-group-info-title").text(group.name);
         }
-        if (event.data.can_manage_group !== undefined) {
+        if (event.data.can_mention_group !== undefined) {
+            sync_group_permission_setting("can_mention_group", group);
             update_group_management_ui();
+        }
+        if (event.data.can_add_members_group !== undefined) {
+            sync_group_permission_setting("can_add_members_group", group);
+            update_group_management_ui();
+        }
+        if (event.data.can_manage_group !== undefined) {
+            sync_group_permission_setting("can_manage_group", group);
+            update_group_management_ui();
+        }
+        if (event.data.can_join_group !== undefined) {
+            sync_group_permission_setting("can_join_group", group);
+            update_group_membership_button(group.id);
+        }
+        if (event.data.can_leave_group !== undefined) {
+            sync_group_permission_setting("can_leave_group", group);
+            update_group_membership_button(group.id);
         }
     }
 }
@@ -781,6 +825,21 @@ export function update_empty_left_panel_message() {
     $(".no-groups-to-show").show();
 }
 
+export function remove_deactivated_user_from_all_groups(user_id) {
+    const all_user_groups = user_groups.get_realm_user_groups(true);
+
+    for (const user_group of all_user_groups) {
+        if (user_groups.is_direct_member_of(user_id, user_group.id)) {
+            user_groups.remove_members(user_group.id, [user_id]);
+        }
+
+        // update members list if currently rendered.
+        if (overlays.groups_open() && is_editing_group(user_group.id)) {
+            user_group_edit_members.update_member_list_widget(user_group);
+        }
+    }
+}
+
 export function setup_page(callback) {
     function initialize_components() {
         group_list_toggler = components.toggle({
@@ -831,7 +890,8 @@ export function setup_page(callback) {
                     people.my_current_user_id(),
                     item.id,
                 );
-                item.can_edit = settings_data.can_edit_user_group(item.id);
+                item.can_join = settings_data.can_join_user_group(item.id);
+                item.can_leave = settings_data.can_leave_user_group(item.id);
                 return render_browse_user_groups_list_item(item);
             },
             filter: {
@@ -956,7 +1016,7 @@ export function initialize() {
         const group_id = active_group_data.id;
         const user_group = user_groups.get_user_group_from_id(group_id);
 
-        if (!user_group || !settings_data.can_edit_user_group(group_id)) {
+        if (!user_group || !settings_data.can_manage_user_group(group_id)) {
             return;
         }
         function deactivate_user_group() {

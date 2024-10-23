@@ -5,8 +5,8 @@ import * as channel from "./channel";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
-import {page_params} from "./page_params";
 import * as settings_components from "./settings_components";
+import type {GroupSettingPillContainer} from "./typeahead_helper";
 import * as ui_report from "./ui_report";
 import * as user_group_components from "./user_group_components";
 import * as user_group_create_members from "./user_group_create_members";
@@ -27,10 +27,16 @@ export function get_name(): string | undefined {
     return created_group_name;
 }
 
+let can_add_members_group_widget: GroupSettingPillContainer | undefined;
+let can_join_group_widget: GroupSettingPillContainer | undefined;
+let can_leave_group_widget: GroupSettingPillContainer | undefined;
+let can_manage_group_widget: GroupSettingPillContainer | undefined;
+let can_mention_group_widget: GroupSettingPillContainer | undefined;
+
 class UserGroupMembershipError {
     report_no_members_to_user_group(): void {
         $("#user_group_membership_error").text(
-            $t({defaultMessage: "You cannot create a user group with no members."}),
+            $t({defaultMessage: "You cannot create a user group with no members or subgroups."}),
         );
         $("#user_group_membership_error").show();
     }
@@ -127,10 +133,6 @@ export function show_new_user_group_modal(): void {
     user_group_create_members.build_widgets();
 
     clear_error_display();
-
-    if (!page_params.development_environment) {
-        $("#new_group_can_manage_group_widget_container").hide();
-    }
 }
 
 function create_user_group(): void {
@@ -149,24 +151,38 @@ function create_user_group(): void {
         return;
     }
     const user_ids = user_group_create_members.get_principals();
+    const subgroup_ids = user_group_create_members.get_subgroups();
 
-    const can_manage_group = settings_components.get_group_setting_widget_value(
-        $("#id_new_group_can_manage_group"),
+    assert(can_add_members_group_widget !== undefined);
+    const can_add_members_group = settings_components.get_group_setting_widget_value(
+        can_add_members_group_widget,
     );
 
-    assert(settings_components.new_group_can_mention_group_widget !== null);
-    const can_mention_group_value = settings_components.new_group_can_mention_group_widget.value();
-    assert(can_mention_group_value !== undefined);
+    assert(can_manage_group_widget !== undefined);
+    const can_manage_group =
+        settings_components.get_group_setting_widget_value(can_manage_group_widget);
+
+    assert(can_join_group_widget !== undefined);
+    const can_join_group =
+        settings_components.get_group_setting_widget_value(can_join_group_widget);
+
+    assert(can_leave_group_widget !== undefined);
+    const can_leave_group =
+        settings_components.get_group_setting_widget_value(can_leave_group_widget);
+
+    assert(can_mention_group_widget !== undefined);
     const can_mention_group =
-        typeof can_mention_group_value === "number"
-            ? can_mention_group_value
-            : Number.parseInt(can_mention_group_value, 10);
+        settings_components.get_group_setting_widget_value(can_mention_group_widget);
 
     const data = {
         name: group_name,
         description,
         members: JSON.stringify(user_ids),
-        can_mention_group,
+        subgroups: JSON.stringify(subgroup_ids),
+        can_add_members_group: JSON.stringify(can_add_members_group),
+        can_join_group: JSON.stringify(can_join_group),
+        can_leave_group: JSON.stringify(can_leave_group),
+        can_mention_group: JSON.stringify(can_mention_group),
         can_manage_group: JSON.stringify(can_manage_group),
     };
     loading.make_indicator($("#user_group_creating_indicator"), {
@@ -216,7 +232,8 @@ export function set_up_handlers(): void {
         }
 
         const principals = user_group_create_members_data.get_principals();
-        if (principals.length === 0) {
+        const subgroups = user_group_create_members_data.get_subgroups();
+        if (principals.length === 0 && subgroups.length === 0) {
             user_group_membership_error.report_no_members_to_user_group();
             return;
         }
@@ -239,12 +256,37 @@ export function set_up_handlers(): void {
         }
     });
 
+    // This will always be enabled when creating a user group.
+    settings_components.enable_opening_typeahead_on_clicking_label($container);
+
+    can_add_members_group_widget = settings_components.create_group_setting_widget({
+        $pill_container: $container.find(".can-add-members-group-container .pill-container"),
+        setting_name: "can_add_members_group",
+        setting_type: "group",
+    });
+
     const $pill_container = $container.find(".can-manage-group-container .pill-container");
-    settings_components.create_group_setting_widget({
+    can_manage_group_widget = settings_components.create_group_setting_widget({
         $pill_container,
         setting_name: "can_manage_group",
         setting_type: "group",
     });
 
-    user_group_components.setup_permissions_dropdown("can_mention_group", undefined, true);
+    can_join_group_widget = settings_components.create_group_setting_widget({
+        $pill_container: $container.find(".can-join-group-container .pill-container"),
+        setting_name: "can_join_group",
+        setting_type: "group",
+    });
+
+    can_leave_group_widget = settings_components.create_group_setting_widget({
+        $pill_container: $container.find(".can-leave-group-container .pill-container"),
+        setting_name: "can_leave_group",
+        setting_type: "group",
+    });
+
+    can_mention_group_widget = settings_components.create_group_setting_widget({
+        $pill_container: $container.find(".can-mention-group-container .pill-container"),
+        setting_name: "can_mention_group",
+        setting_type: "group",
+    });
 }

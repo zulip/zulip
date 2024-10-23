@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
@@ -23,6 +23,11 @@ const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");
 const pm_list_data = zrequire("pm_list_data");
 const message_lists = zrequire("message_lists");
+const {set_realm} = zrequire("state_data");
+const {initialize_user_settings} = zrequire("user_settings");
+
+set_realm({});
+initialize_user_settings({user_settings: {}});
 
 const alice = {
     email: "alice@zulip.com",

@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
@@ -74,7 +74,7 @@ run_test("t_tag", ({mock_template}) => {
         editability_menu_item: true,
         should_display_hide_option: true,
         conversation_time_url:
-            "http://zulip.zulipdev.com/#narrow/stream/101-devel/topic/testing/near/99",
+            "http://zulip.zulipdev.com/#narrow/channel/101-devel/topic/testing/near/99",
     };
 
     mock_template("popovers/message_actions_popover.hbs", true, (data, html) => {

@@ -20,6 +20,186 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 313**
+
+* [`PATCH /users/{user_id}`](/api/update-user): Added `new_email` field to
+  allow updating the email address of the target user. The requester must be
+  an organization administrator and have the `can_change_user_emails` special
+  permission.
+* [`PATCH /users/{email}`](/api/update-user-by-email): Added new endpoint,
+  which is a copy of [`PATCH /users/{user_id}`](/api/update-user), but the user
+  is specified by their email address, following the same rules as [`GET
+  /users/{email}`](/api/get-user-by-email).
+
+**Feature level 312**
+
+* [`GET /events`](/api/get-events): Added `realm_export_consent` event
+  type to allow realm administrators to view which users have
+  consented to export their private data as part of a realm export.
+
+**Feature level 311**
+
+* [`POST /user_groups/{user_group_id}/members`](/api/update-user-group-members):
+  Added `add_subgroups` and `delete_subgroups` parameters to support updating
+  subgroups of a user group using this endpoint.
+* [`POST /user_groups/create`](/api/create-user-group): Added `subgroups`
+  parameter to support setting subgroups of a user group during its creation.
+
+**Feature level 310**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_move_messages_between_channels_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to move messages from one channel to another in the organization.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `move_messages_between_streams_policy` property, as the permission to move
+  messages between channels in the organization is now controlled by
+  `can_move_messages_between_channels_group` setting.
+
+**Feature level 309**
+
+* [Group-setting values](/api/group-setting-values): Starting with
+  this feature level, it's now possible to use group-setting values in
+  production for those settings whose value is not required to be a
+  system group
+
+**Feature level 308**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /user_groups`](/api/get-user-groups): Add `can_leave_group` to
+  user group objects.
+* [`POST /user_groups/create`](/api/create-user-group): Added `can_leave_group`
+  parameter to support setting the user group whose members can leave the user
+  group.
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): Added
+  `can_leave_group` parameter to support changing the user group whose
+  members can leave the specified user group.
+
+**Feature level 307**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_add_custom_emoji_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to add custom emoji in the organization.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `add_custom_emoji_policy` property, as the permission to add custom emoji
+  in the organization is now controlled by `can_add_custom_emoji_group` setting.
+
+**Feature level 306**
+
+* [`GET /events`](/api/get-events): Removed the `extra_data` optional
+  field from the `realm/update` event format, which was only used for
+  `plan_type` events, with a single `upload_quota` field. Now, we use
+  a standard `realm/update_dict` event to notify clients about changes
+  in `plan_type` and other fields that atomically change with a given
+  change in plan.
+* [`GET /events`](/api/get-events): Added `max_file_upload_size_mib`
+  field to the `data` object in `realm/update_dict` event format;
+  previously, this was a constant. Note that the field does not have a
+  `realm_` prefix in the [`POST /register`](/api/register-queue)
+  response.
+
+**Feature level 305**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /user_groups`](/api/get-user-groups): Add `can_add_members_group` to
+  user group objects.
+* [`POST /user_groups/create`](/api/create-user-group): Added `can_add_members_group`
+  parameter to support setting the user group which can add members to the user
+  group.
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): Added
+  `can_add_members_group` parameter to support changing the user group which
+  can add members to the specified user group.
+* The `can_manage_all_groups` permission now has the natural semantics
+  of applying to all groups, regardless of the role of the user given
+  this permission. Since its introduction in feature level 299,
+  `can_manage_all_groups` had temporarily had unusual semantics
+  matching those of the original`user_group_edit_policy` setting.
+
+**Feature level 304**
+
+* [`GET /export/realm`](/api/get-realm-exports),
+  [`GET /events`](/api/get-events): Added `export_type` field
+  to the dictionaries in `exports` array. It indicates whether
+  the export is of public data or full data with user consent
+  (standard export).
+
+* [`POST /export/realm`](/api/get-realm-exports): Added `export_type`
+  parameter to add support for admins to decide whether to create a
+  public or a standard data export.
+
+**Feature level 303**
+
+* [`POST /register`](/api/register-queue), [`GET /user_groups`](/api/get-user-groups),
+  [`GET /user_groups/{user_group_id}/members/{user_id}`](/api/get-is-user-group-member),
+  [`GET /user_groups/{user_group_id}/members`](/api/get-user-group-members):
+  Deactivated users are no longer returned as members of the user groups
+  that they were members of prior to deactivation.
+* [`POST /register`](/api/register-queue): Settings, represented as
+  [group-setting value](/api/group-setting-values), will never include
+  deactivated users in the `direct_members` list for settings whose
+  value is an anonymous group.
+* [`POST /user_groups/{user_group_id}/members`](/api/update-user-group-members):
+  Deactivated users cannot be added or removed from a user group; they
+  are now implicitly not members of any groups while deactivated.
+* [`GET /events`](/api/get-events): User reactivation event is not sent
+  to users who cannot access the reactivated user anymore due to a
+  `can_access_all_users_group` policy.
+* [`GET /events`](/api/get-events): The server will now send
+  `user_group` events with the `add_members`/`remove_members`
+  operations as appropriate when deactivating or reactivating a user,
+  to ensure client state correctly reflects groups never containing
+  deactivated users.
+* [`GET /events`](/api/get-events): To ensure that [group-setting
+  values](/api/group-setting-values) are correct, `realm/update_dict`
+  and `user_group/update` events may now be by sent by the server when
+  processing a deactivation/reactivation of a user, to ensure client
+  state correctly reflects the state, given that deactivated users
+  cannot have permissions in an organization.
+
+**Feature level 302**
+
+* [`GET /users/{email}`](/api/get-user-by-email): Changed the `email`
+  values by which users can successfully be looked up to match the
+  user email visibility setting's semantics better.
+
+**Feature level 301**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /user_groups`](/api/get-user-groups): Add `can_join_group` to
+  user group objects.
+* [`POST /user_groups/create`](/api/create-user-group): Added `can_join_group`
+  parameter to support setting the user group whose members can join the user
+  group.
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): Added
+  `can_join_group` parameter to support changing the user group whose
+  members can join the specified user group.
+
+**Feature level 300**
+
+* [`GET /messages`](/api/get-message): Added a new message_ids parameter,
+  as an alternative method of specifying which messages to fetch.
+
+**Feature level 299**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_create_groups`
+  realm setting, which is a [group-setting value](/api/group-setting-values)
+  describing the set of users with permission to create user groups.
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_manage_all_groups`
+  realm setting, which is a [group-setting value](/api/group-setting-values)
+  describing the set of users with permission to manage all user groups.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `user_group_edit_policy` property, as the permission to create user
+  groups is now controlled by `can_create_groups` setting and permission to
+  manage groups in now controlled by `can_manage_all_groups` setting.
+* [`POST /register`](/api/register-queue): `user_group_edit_policy`
+  field is deprecated, having been replaced by `can_create_groups` for user
+  group creation and `can_manage_all_groups` for user group management.
+
 **Feature level 298**
 
 * [`POST /user_groups/{user_group_id}/deactivate`](/api/deactivate-user-group):
@@ -50,8 +230,8 @@ format used by the Zulip server that they are interacting with.
 **Feature level 295**
 
 * [`GET /export/realm/consents`](/api/get-realm-export-consents): Added
-  a new endpoint to fetch the consents of users for their [private data
-  exports](/help/export-your-organization#full-export-with-member-consent).
+  a new endpoint to fetch the [consents of users](/help/export-your-organization#configure-whether-administrators-can-export-your-private-data)
+  for their private data exports.
 * `/api/v1/tus` is an endpoint implementing the [`tus`
   protocol](https://tus.io/protocols/resumable-upload) for resumable uploads.
   Clients which send authenticated credentials (either via browser-based

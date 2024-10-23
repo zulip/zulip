@@ -13,6 +13,7 @@ import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
 import type {BuddyUserInfo} from "./buddy_data";
 import {media_breakpoints_num} from "./css_variables";
+import type {Filter} from "./filter";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_viewport from "./message_viewport";
@@ -166,6 +167,7 @@ export class BuddyList extends BuddyListConf {
     $participants_list = $(this.participants_list_selector);
     $users_matching_view_list = $(this.matching_view_list_selector);
     $other_users_list = $(this.other_user_list_selector);
+    current_filter: Filter | undefined | "unset" = "unset";
 
     initialize_tooltips(): void {
         $("#right-sidebar").on(
@@ -354,22 +356,65 @@ export class BuddyList extends BuddyListConf {
         }
     }
 
-    render_section_headers(): void {
-        const {
-            current_sub,
-            total_human_subscribers_count,
+    update_section_header_counts(): void {
+        const {total_human_subscribers_count, other_users_count, participant_ids_set} =
+            this.render_data;
+        const subscriber_section_user_count =
+            total_human_subscribers_count - this.participant_user_ids.length;
+
+        const formatted_participants_count = get_formatted_sub_count(participant_ids_set.size);
+        const formatted_sub_users_count = get_formatted_sub_count(subscriber_section_user_count);
+        const formatted_other_users_count = get_formatted_sub_count(other_users_count);
+
+        $("#buddy-list-participants-container .buddy-list-heading-user-count").text(
+            formatted_participants_count,
+        );
+        $("#buddy-list-users-matching-view-container .buddy-list-heading-user-count").text(
+            formatted_sub_users_count,
+        );
+        $("#buddy-list-other-users-container .buddy-list-heading-user-count").text(
+            formatted_other_users_count,
+        );
+
+        $("#buddy-list-participants-section-heading").attr(
+            "data-user-count",
+            participant_ids_set.size,
+        );
+        $("#buddy-list-users-matching-view-section-heading").attr(
+            "data-user-count",
+            subscriber_section_user_count,
+        );
+        $("#buddy-list-users-other-users-section-heading").attr(
+            "data-user-count",
             other_users_count,
-            total_human_users,
-            hide_headers,
-            participant_ids_set,
-        } = this.render_data;
+        );
+    }
+
+    render_section_headers(): void {
+        const {hide_headers, participant_ids_set} = this.render_data;
+        // We only show the participants list if it has members, so even if we're not
+        // changing filters and only updating user counts for the current filter, that
+        // can affect if we show/hide this section.
+        const show_participants_list = !hide_headers && participant_ids_set.size;
+        $("#buddy-list-participants-container").toggleClass("no-display", !show_participants_list);
+
+        // If we're not changing filters, this just means some users were added or
+        // removed but otherwise everything is the same, so we don't need to do a full
+        // rerender.
+        if (this.current_filter === narrow_state.filter()) {
+            this.update_section_header_counts();
+            return;
+        }
+        this.current_filter = narrow_state.filter();
+
+        const {current_sub, total_human_subscribers_count, other_users_count, total_human_users} =
+            this.render_data;
         $(".buddy-list-subsection-header").empty();
 
         // If we're in the mode of hiding headers, that means we're only showing the "other users"
         // section, so hide the other two sections.
         $("#buddy-list-users-matching-view-container").toggleClass("no-display", hide_headers);
-        const show_participants_list = !hide_headers && participant_ids_set.size;
-        $("#buddy-list-participants-container").toggleClass("no-display", !show_participants_list);
+
         // This is the case where every subscriber is in the participants list. In this case, we
         // hide the "others in this channel" section.
         if (
@@ -447,11 +492,11 @@ export class BuddyList extends BuddyListConf {
             this.participants_is_collapsed,
         );
         $("#buddy-list-participants-container .toggle-participants").toggleClass(
-            "fa-caret-down",
+            "rotate-icon-down",
             !this.participants_is_collapsed,
         );
         $("#buddy-list-participants-container .toggle-participants").toggleClass(
-            "fa-caret-right",
+            "rotate-icon-right",
             this.participants_is_collapsed,
         );
 
@@ -467,11 +512,11 @@ export class BuddyList extends BuddyListConf {
             this.users_matching_view_is_collapsed,
         );
         $("#buddy-list-users-matching-view-container .toggle-users-matching-view").toggleClass(
-            "fa-caret-down",
+            "rotate-icon-down",
             !this.users_matching_view_is_collapsed,
         );
         $("#buddy-list-users-matching-view-container .toggle-users-matching-view").toggleClass(
-            "fa-caret-right",
+            "rotate-icon-right",
             this.users_matching_view_is_collapsed,
         );
 
@@ -487,11 +532,11 @@ export class BuddyList extends BuddyListConf {
             this.other_users_is_collapsed,
         );
         $("#buddy-list-other-users-container .toggle-other-users").toggleClass(
-            "fa-caret-down",
+            "rotate-icon-down",
             !this.other_users_is_collapsed,
         );
         $("#buddy-list-other-users-container .toggle-other-users").toggleClass(
-            "fa-caret-right",
+            "rotate-icon-right",
             this.other_users_is_collapsed,
         );
 
@@ -746,7 +791,7 @@ export class BuddyList extends BuddyListConf {
             this.other_user_ids,
         ]) {
             const pos = user_id_list.indexOf(opts.user_id);
-            if (pos >= 0) {
+            if (pos !== -1) {
                 user_id_list.splice(pos, 1);
                 was_removed = true;
                 break;
@@ -776,7 +821,13 @@ export class BuddyList extends BuddyListConf {
 
         const i = user_id_list.findIndex(
             (list_user_id) =>
-                this.compare_function(user_id, list_user_id, current_sub, pm_ids_set) < 0,
+                this.compare_function(
+                    user_id,
+                    list_user_id,
+                    current_sub,
+                    pm_ids_set,
+                    this.render_data.participant_ids_set,
+                ) < 0,
         );
         return i === -1 ? user_id_list.length : i;
     }
@@ -823,7 +874,7 @@ export class BuddyList extends BuddyListConf {
         // it yet.
         const pos = this.all_user_ids.indexOf(user_id);
 
-        if (pos < 0) {
+        if (pos === -1) {
             return undefined;
         }
 

@@ -1,21 +1,24 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {current_user, realm} = require("./lib/zpage_params");
-
-realm.realm_move_messages_within_stream_limit_seconds = 259200;
 
 const message_edit = zrequire("message_edit");
 const people = zrequire("people");
+const {set_current_user, set_realm} = zrequire("state_data");
 
 const is_content_editable = message_edit.is_content_editable;
 
 const settings_data = mock_esm("../src/settings_data");
 
-run_test("is_content_editable", () => {
+const realm = {};
+set_realm(realm);
+const current_user = {};
+set_current_user(current_user);
+
+run_test("is_content_editable", ({override}) => {
     // You can't edit a null message
     assert.equal(is_content_editable(null), false);
     // You can't edit a message you didn't send
@@ -52,15 +55,15 @@ run_test("is_content_editable", () => {
         sent_by_me: true,
     };
 
-    realm.realm_allow_message_editing = false;
+    override(realm, "realm_allow_message_editing", false);
     assert.equal(is_content_editable(message), false);
 
-    realm.realm_allow_message_editing = true;
+    override(realm, "realm_allow_message_editing", true);
     // Limit of 0 means no time limit on editing messages
-    realm.realm_message_content_edit_limit_seconds = null;
+    override(realm, "realm_message_content_edit_limit_seconds", null);
     assert.equal(is_content_editable(message), true);
 
-    realm.realm_message_content_edit_limit_seconds = 10;
+    override(realm, "realm_message_content_edit_limit_seconds", 10);
     const now = new Date();
     const current_timestamp = now / 1000;
     message.timestamp = current_timestamp - 60;
@@ -90,9 +93,9 @@ run_test("is_topic_editable", ({override}) => {
         locally_echoed: true,
         type: "stream",
     };
-    realm.realm_allow_message_editing = true;
+    override(realm, "realm_allow_message_editing", true);
     override(settings_data, "user_can_move_messages_to_another_topic", () => true);
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
 
     assert.equal(message_edit.is_topic_editable(message), false);
 
@@ -109,7 +112,7 @@ run_test("is_topic_editable", ({override}) => {
     override(settings_data, "user_can_move_messages_to_another_topic", () => false);
     assert.equal(message_edit.is_topic_editable(message), false);
 
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     assert.equal(message_edit.is_topic_editable(message), false);
 
     message.topic = "translated: (no topic)";
@@ -119,7 +122,7 @@ run_test("is_topic_editable", ({override}) => {
     override(settings_data, "user_can_move_messages_to_another_topic", () => false);
     assert.equal(message_edit.is_topic_editable(message), false);
 
-    realm.realm_move_messages_within_stream_limit_seconds = 259200;
+    override(realm, "realm_move_messages_within_stream_limit_seconds", 259200);
     message.timestamp = current_timestamp - 60;
 
     override(settings_data, "user_can_move_messages_to_another_topic", () => true);
@@ -128,10 +131,10 @@ run_test("is_topic_editable", ({override}) => {
     message.timestamp = current_timestamp - 600000;
     assert.equal(message_edit.is_topic_editable(message), false);
 
-    current_user.is_moderator = true;
+    override(current_user, "is_moderator", true);
     assert.equal(message_edit.is_topic_editable(message), true);
 
-    realm.realm_allow_message_editing = false;
+    override(realm, "realm_allow_message_editing", false);
     assert.equal(message_edit.is_topic_editable(message), true);
 });
 
@@ -144,9 +147,9 @@ run_test("is_stream_editable", ({override}) => {
         locally_echoed: true,
         type: "stream",
     };
-    realm.realm_allow_message_editing = true;
+    override(realm, "realm_allow_message_editing", true);
     override(settings_data, "user_can_move_messages_between_streams", () => true);
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
 
     assert.equal(message_edit.is_stream_editable(message), false);
 
@@ -163,10 +166,10 @@ run_test("is_stream_editable", ({override}) => {
     override(settings_data, "user_can_move_messages_between_streams", () => false);
     assert.equal(message_edit.is_stream_editable(message), false);
 
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     assert.equal(message_edit.is_stream_editable(message), false);
 
-    realm.realm_move_messages_between_streams_limit_seconds = 259200;
+    override(realm, "realm_move_messages_between_streams_limit_seconds", 259200);
     message.timestamp = current_timestamp - 60;
 
     override(settings_data, "user_can_move_messages_between_streams", () => true);
@@ -175,15 +178,15 @@ run_test("is_stream_editable", ({override}) => {
     message.timestamp = current_timestamp - 600000;
     assert.equal(message_edit.is_stream_editable(message), false);
 
-    current_user.is_moderator = true;
+    override(current_user, "is_moderator", true);
     assert.equal(message_edit.is_stream_editable(message), true);
 });
 
 run_test("get_deletability", ({override}) => {
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     override(settings_data, "user_can_delete_any_message", () => true);
     override(settings_data, "user_can_delete_own_message", () => false);
-    realm.realm_message_content_delete_limit_seconds = null;
+    override(realm, "realm_message_content_delete_limit_seconds", null);
     const test_user = {
         user_id: 1,
         full_name: "Test user",
@@ -231,7 +234,7 @@ run_test("get_deletability", ({override}) => {
     let current_timestamp = now / 1000;
     message.timestamp = current_timestamp - 5;
 
-    realm.realm_message_content_delete_limit_seconds = 10;
+    override(realm, "realm_message_content_delete_limit_seconds", 10);
     assert.equal(message_edit.get_deletability(message), true);
 
     message.timestamp = current_timestamp - 60;
@@ -240,7 +243,7 @@ run_test("get_deletability", ({override}) => {
     message.sender_id = 2;
     message.sent_by_me = false;
     people.initialize_current_user(test_user.user_id);
-    realm.realm_message_content_delete_limit_seconds = null;
+    override(realm, "realm_message_content_delete_limit_seconds", null);
 
     override(settings_data, "user_can_delete_own_message", () => true);
     assert.equal(message_edit.get_deletability(message), true);
@@ -250,7 +253,7 @@ run_test("get_deletability", ({override}) => {
 
     now = new Date();
     current_timestamp = now / 1000;
-    realm.realm_message_content_delete_limit_seconds = 10;
+    override(realm, "realm_message_content_delete_limit_seconds", 10);
     message.timestamp = current_timestamp - 60;
     override(settings_data, "user_can_delete_own_message", () => true);
     assert.equal(message_edit.get_deletability(message), false);

@@ -3,12 +3,13 @@ from django.utils.translation import gettext as _
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import (
+    event_recipient_ids_for_action_on_messages,
     set_visibility_policy_possible,
     should_change_visibility_policy,
     visibility_policy_for_participation,
 )
 from zerver.lib.streams import access_stream_by_id
-from zerver.models import Realm, SubMessage, UserMessage, UserProfile
+from zerver.models import Realm, SubMessage, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -90,7 +91,6 @@ def do_add_submessage(
         sender_id=sender_id,
         content=content,
     )
-    ums = UserMessage.objects.filter(message_id=message_id)
-    target_user_ids = [um.user_profile_id for um in ums]
+    target_user_ids = event_recipient_ids_for_action_on_messages([submessage.message])
 
     send_event_on_commit(realm, event, target_user_ids)

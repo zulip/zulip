@@ -67,7 +67,13 @@ def get_active_realm_ids() -> QuerySet[RealmCount, int]:
     """
     date = timezone_now() - timedelta(days=2)
     return (
-        RealmCount.objects.filter(end_time__gte=date, property="1day_actives::day", value__gt=0)
+        RealmCount.objects.filter(
+            end_time__gte=date,
+            property="1day_actives::day",
+            # Filtering on subgroup is important to ensure we use the good indexes.
+            subgroup=None,
+            value__gt=0,
+        )
         .distinct("realm_id")
         .values_list("realm_id", flat=True)
     )

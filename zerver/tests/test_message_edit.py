@@ -1460,8 +1460,10 @@ class EditMessageTest(ZulipTestCase):
         self.subscribe(othello, "test_stream")
         self.subscribe(cordelia, "test_stream")
 
-        leadership = check_add_user_group(othello.realm, "leadership", [othello], acting_user=None)
-        support = check_add_user_group(othello.realm, "support", [othello], acting_user=None)
+        leadership = check_add_user_group(
+            othello.realm, "leadership", [othello], acting_user=othello
+        )
+        support = check_add_user_group(othello.realm, "support", [othello], acting_user=othello)
 
         moderators_system_group = NamedUserGroup.objects.get(
             realm=iago.realm, name=SystemGroups.MODERATORS, is_system_group=True
@@ -1526,7 +1528,7 @@ class EditMessageTest(ZulipTestCase):
         )
         self.assert_json_success(result)
 
-        test = check_add_user_group(shiva.realm, "test", [shiva], acting_user=None)
+        test = check_add_user_group(shiva.realm, "test", [shiva], acting_user=shiva)
         add_subgroups_to_user_group(leadership, [test], acting_user=None)
         support.can_mention_group = leadership
         support.save()

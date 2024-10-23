@@ -3,7 +3,7 @@
 By default, anyone can change their email address at any time.
 
 Organization administrators can
-[restrict users to certain email domains](/help/change-a-users-name), or
+[restrict users to certain email domains](/help/restrict-account-creation#configuring-email-domain-restrictions), or
 [prevent users from changing their email](/help/restrict-name-and-email-changes).
 
 ### Change your email address

@@ -217,7 +217,7 @@ jobs:
       - name: Test locked requirements
         if: ${{ matrix.os == 'jammy' }}
         run: |
-          . /srv/zulip-py3-venv/bin/activate && \
+          source tools/ci/activate-venv
           ./tools/test-locked-requirements
 
       - name: Upload coverage reports

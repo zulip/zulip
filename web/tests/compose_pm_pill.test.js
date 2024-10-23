@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
@@ -10,6 +10,9 @@ const input_pill = mock_esm("../src/input_pill");
 const people = zrequire("people");
 
 const compose_pm_pill = zrequire("compose_pm_pill");
+const {set_realm} = zrequire("state_data");
+
+set_realm({});
 
 let pills = {
     pill: {},

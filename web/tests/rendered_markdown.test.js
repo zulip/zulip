@@ -1,13 +1,12 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {$t} = require("./lib/i18n");
 const {mock_cjs, mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {realm, user_settings} = require("./lib/zpage_params");
 
 let clipboard_args;
 class Clipboard {
@@ -23,7 +22,6 @@ mock_cjs("clipboard", Clipboard);
 
 const realm_playground = mock_esm("../src/realm_playground");
 const copied_tooltip = mock_esm("../src/copied_tooltip");
-user_settings.emojiset = "apple";
 
 const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
@@ -34,6 +32,13 @@ const message_store = mock_esm("../src/message_store");
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => false,
 });
+const {set_realm} = zrequire("state_data");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const realm = {};
+set_realm(realm);
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 const iago = {
     email: "iago@zulip.com",
@@ -159,7 +164,7 @@ const get_content_element = () => {
     return $content;
 };
 
-run_test("misc_helpers", () => {
+run_test("misc_helpers", ({override}) => {
     const $elem = $.create("user-mention");
     rm.set_name_in_mention_element($elem, "Aaron");
     assert.equal($elem.text(), "@Aaron");
@@ -167,11 +172,11 @@ run_test("misc_helpers", () => {
     rm.set_name_in_mention_element($elem, "Aaron, but silent");
     assert.equal($elem.text(), "Aaron, but silent");
 
-    realm.realm_enable_guest_user_indicator = true;
+    override(realm, "realm_enable_guest_user_indicator", true);
     rm.set_name_in_mention_element($elem, "Polonius", polonius.user_id);
     assert.equal($elem.text(), "translated: Polonius (guest)");
 
-    realm.realm_enable_guest_user_indicator = false;
+    override(realm, "realm_enable_guest_user_indicator", false);
     rm.set_name_in_mention_element($elem, "Polonius", polonius.user_id);
     assert.equal($elem.text(), "Polonius");
 });
@@ -192,7 +197,7 @@ run_test("message_inline_video", () => {
     window.GestureEvent = false;
 });
 
-run_test("user-mention", () => {
+run_test("user-mention", ({override}) => {
     // Setup
     const $content = get_content_element();
     const $iago = $.create("user-mention(iago)");
@@ -205,7 +210,7 @@ run_test("user-mention", () => {
     $polonius.set_find_results(".highlight", false);
     $polonius.attr("data-user-id", polonius.user_id);
     $content.set_find_results(".user-mention", $array([$iago, $cordelia, $polonius]));
-    realm.realm_enable_guest_user_indicator = true;
+    override(realm, "realm_enable_guest_user_indicator", true);
     // Initial asserts
     assert.ok(!$iago.hasClass("user-mention-me"));
     assert.equal($iago.text(), "never-been-set");
@@ -225,14 +230,14 @@ run_test("user-mention", () => {
     assert.ok($iago.hasClass("user-mention-me"));
 });
 
-run_test("user-mention without guest indicator", () => {
+run_test("user-mention without guest indicator", ({override}) => {
     const $content = get_content_element();
     const $polonius = $.create("user-mention(polonius-again)");
     $polonius.set_find_results(".highlight", false);
     $polonius.attr("data-user-id", polonius.user_id);
     $content.set_find_results(".user-mention", $array([$polonius]));
 
-    realm.realm_enable_guest_user_indicator = false;
+    override(realm, "realm_enable_guest_user_indicator", false);
     rm.update_elements($content);
     assert.equal($polonius.text(), `@${polonius.full_name}`);
 });
@@ -475,7 +480,7 @@ run_test("timestamp-error", () => {
     assert.equal($timestamp_error.text(), "translated: Invalid time format: the-time-format");
 });
 
-run_test("emoji", () => {
+run_test("emoji", ({override}) => {
     // Setup
     const $content = get_content_element();
     const $emoji = $.create("emoji-stub");
@@ -488,14 +493,14 @@ run_test("emoji", () => {
         return {contents: () => ({unwrap() {}})};
     };
     $content.set_find_results(".emoji", $emoji);
-    user_settings.emojiset = "text";
+    override(user_settings, "emojiset", "text");
 
     rm.update_elements($content);
 
     assert.ok(called);
 
     // Set page parameters back so that test run order is independent
-    user_settings.emojiset = "apple";
+    override(user_settings, "emojiset", "apple");
 });
 
 run_test("spoiler-header", () => {

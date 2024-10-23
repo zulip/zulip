@@ -316,14 +316,14 @@ $(() => {
         ]);
 
         const hideElement = (element: string): void => {
-            const $element = $(`#${element}`);
+            const $element = $(`#${CSS.escape(element)}`);
             $element.hide();
             $element.removeAttr("required");
-            $(`#${element}-error`).hide();
+            $(`#${CSS.escape(element)}-error`).hide();
         };
 
         const showElement = (element: string): void => {
-            const $element = $(`#${element}`);
+            const $element = $(`#${CSS.escape(element)}`);
             $element.show();
             $element.attr("required", "required");
         };

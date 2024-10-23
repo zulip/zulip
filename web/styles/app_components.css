@@ -436,12 +436,6 @@ input.settings_text_input {
         outline: none !important;
         box-shadow: none;
         z-index: 5;
-
-        #set-user-status-modal & {
-            margin-left: -26px;
-            right: 0;
-            padding-top: 6px;
-        }
     }
 }
 
@@ -632,15 +626,6 @@ input.settings_text_input {
     margin-right: 5px;
     margin-left: 2px;
     opacity: 0.7;
-}
-
-.masked_unread_count {
-    float: right;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: var(--color-masked-unread-marker);
-    display: none;
 }
 
 /* Implement the web app's default-hidden convention for alert
@@ -1157,7 +1142,9 @@ input.settings_text_input {
 
     &:disabled {
         cursor: not-allowed;
-        background-color: hsl(0deg 0% 93%);
+        background-color: var(
+            --color-background-disabled-dropdown-widget-button
+        );
         opacity: 0.7;
     }
 }

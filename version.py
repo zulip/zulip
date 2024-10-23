@@ -34,7 +34,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 298  # Last bumped for CANNOT_DEACTIVATE_GROUP_IN_USE error.
+API_FEATURE_LEVEL = 313  # Last bumped for adding `new_email` to /users/{user_id} and the new PATCH /users/{email} endpoint
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 298  # Last bumped for CANNOT_DEACTIVATE_GROUP_IN_USE error.
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (293, 1)  # bumped 2024-09-24 to upgrade Transifex CLI
+PROVISION_VERSION = (295, 0)  # bumped 2024-10-20 to upgrade Python requirements

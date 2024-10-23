@@ -69,6 +69,6 @@
 
 <div class="message_length_controller"></div>
 
-{{#unless is_hidden}}
-<div class="message_reactions">{{> message_reactions }}</div>
-{{/unless}}
+{{#if (and (not is_hidden) msg.message_reactions)}}
+    {{> message_reactions }}
+{{/if}}

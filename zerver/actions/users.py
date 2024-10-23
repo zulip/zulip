@@ -6,6 +6,7 @@ from typing import Any
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator, default_token_generator
 from django.db import transaction
+from django.db.models import Q
 from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
@@ -29,7 +30,7 @@ from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import get_streams_for_user, stream_to_dict
 from zerver.lib.user_counts import realm_user_count_by_role
-from zerver.lib.user_groups import get_system_user_group_for_user
+from zerver.lib.user_groups import AnonymousSettingGroupDict, get_system_user_group_for_user
 from zerver.lib.users import (
     get_active_bots_owned_by_user,
     get_user_ids_who_can_access_user,
@@ -37,13 +38,16 @@ from zerver.lib.users import (
     user_access_restricted_in_realm,
 )
 from zerver.models import (
+    GroupGroupMembership,
     Message,
+    NamedUserGroup,
     Realm,
     RealmAuditLog,
     Recipient,
     Service,
     Stream,
     Subscription,
+    UserGroup,
     UserGroupMembership,
     UserProfile,
 )
@@ -262,6 +266,108 @@ def change_user_is_active(user_profile: UserProfile, value: bool) -> None:
         Subscription.objects.filter(user_profile=user_profile).update(is_user_active=value)
 
 
+def send_group_update_event_for_anonymous_group_setting(
+    setting_group: UserGroup,
+    group_members_dict: dict[int, list[int]],
+    group_subgroups_dict: dict[int, list[int]],
+    named_group: NamedUserGroup,
+    notify_user_ids: list[int],
+) -> None:
+    realm = setting_group.realm
+    for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
+        if getattr(named_group, setting_name + "_id") == setting_group.id:
+            new_setting_value = AnonymousSettingGroupDict(
+                direct_members=group_members_dict[setting_group.id],
+                direct_subgroups=group_subgroups_dict[setting_group.id],
+            )
+            event = dict(
+                type="user_group",
+                op="update",
+                group_id=named_group.id,
+                data={setting_name: new_setting_value},
+            )
+            send_event_on_commit(realm, event, notify_user_ids)
+            return
+
+
+def send_realm_update_event_for_anonymous_group_setting(
+    setting_group: UserGroup,
+    group_members_dict: dict[int, list[int]],
+    group_subgroups_dict: dict[int, list[int]],
+    notify_user_ids: list[int],
+) -> None:
+    realm = setting_group.realm
+    for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
+        if getattr(realm, setting_name + "_id") == setting_group.id:
+            new_setting_value = AnonymousSettingGroupDict(
+                direct_members=group_members_dict[setting_group.id],
+                direct_subgroups=group_subgroups_dict[setting_group.id],
+            )
+            event = dict(
+                type="realm",
+                op="update_dict",
+                property="default",
+                data={setting_name: new_setting_value},
+            )
+            send_event_on_commit(realm, event, notify_user_ids)
+            return
+
+
+def send_update_events_for_anonymous_group_settings(
+    setting_groups: list[UserGroup], realm: Realm, notify_user_ids: list[int]
+) -> None:
+    setting_group_ids = [group.id for group in setting_groups]
+    membership = (
+        UserGroupMembership.objects.filter(user_group_id__in=setting_group_ids)
+        .exclude(user_profile__is_active=False)
+        .values_list("user_group_id", "user_profile_id")
+    )
+
+    group_membership = GroupGroupMembership.objects.filter(
+        supergroup_id__in=setting_group_ids
+    ).values_list("subgroup_id", "supergroup_id")
+
+    group_members = defaultdict(list)
+    for user_group_id, user_profile_id in membership:
+        group_members[user_group_id].append(user_profile_id)
+
+    group_subgroups = defaultdict(list)
+    for subgroup_id, supergroup_id in group_membership:
+        group_subgroups[supergroup_id].append(subgroup_id)
+
+    group_setting_query = Q()
+    for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
+        group_setting_query |= Q(**{f"{setting_name}__in": setting_group_ids})
+
+    named_groups_using_setting_groups_dict = {}
+    named_groups_using_setting_groups = NamedUserGroup.objects.filter(realm=realm).filter(
+        group_setting_query
+    )
+    for group in named_groups_using_setting_groups:
+        for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
+            setting_value_id = getattr(group, setting_name + "_id")
+            if setting_value_id in setting_group_ids:
+                named_groups_using_setting_groups_dict[setting_value_id] = group
+
+    for setting_group in setting_groups:
+        if setting_group.id in named_groups_using_setting_groups_dict:
+            named_group = named_groups_using_setting_groups_dict[setting_group.id]
+            send_group_update_event_for_anonymous_group_setting(
+                setting_group,
+                group_members,
+                group_subgroups,
+                named_group,
+                notify_user_ids,
+            )
+        else:
+            send_realm_update_event_for_anonymous_group_setting(
+                setting_group,
+                group_members,
+                group_subgroups,
+                notify_user_ids,
+            )
+
+
 def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
     event_deactivate_user = dict(
         type="realm_user",
@@ -310,6 +416,44 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
         send_event_on_commit(
             realm, event_deactivate_user, list(users_with_access_to_deactivated_user)
         )
+
+    all_active_user_ids = active_user_ids(realm.id)
+    users_without_access_to_deactivated_user = (
+        set(all_active_user_ids) - users_with_access_to_deactivated_user
+    )
+    if users_without_access_to_deactivated_user:
+        # Guests who have access to the deactivated user receive
+        # 'realm_user/update' event and can update the user groups
+        # data, but guests who cannot access the deactivated user
+        # need an explicit 'user_group/remove_members' event to
+        # update the user groups data.
+        deactivated_user_groups = user_profile.direct_groups.select_related(
+            "named_user_group"
+        ).order_by("id")
+        deactivated_user_named_groups = []
+        deactivated_user_setting_groups = []
+        for group in deactivated_user_groups:
+            if not hasattr(group, "named_user_group"):
+                deactivated_user_setting_groups.append(group)
+            else:
+                deactivated_user_named_groups.append(group)
+        for user_group in deactivated_user_named_groups:
+            event = dict(
+                type="user_group",
+                op="remove_members",
+                group_id=user_group.id,
+                user_ids=[user_profile.id],
+            )
+            send_event_on_commit(
+                user_group.realm, event, list(users_without_access_to_deactivated_user)
+            )
+
+        if deactivated_user_setting_groups:
+            send_update_events_for_anonymous_group_settings(
+                deactivated_user_setting_groups,
+                user_profile.realm,
+                list(users_without_access_to_deactivated_user),
+            )
 
     users_losing_access_to_deactivated_user = (
         peer_stream_subscribers - users_with_access_to_deactivated_user
@@ -601,6 +745,28 @@ def do_change_can_create_users(user_profile: UserProfile, value: bool) -> None:
             RealmAuditLog.OLD_VALUE: old_value,
             RealmAuditLog.NEW_VALUE: value,
             "property": "can_create_users",
+        },
+    )
+
+
+@transaction.atomic(savepoint=False)
+def do_change_can_change_user_emails(user_profile: UserProfile, value: bool) -> None:
+    event_time = timezone_now()
+    old_value = user_profile.can_change_user_emails
+
+    user_profile.can_change_user_emails = value
+    user_profile.save(update_fields=["can_change_user_emails"])
+
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        event_type=AuditLogEventType.USER_SPECIAL_PERMISSION_CHANGED,
+        event_time=event_time,
+        acting_user=None,
+        modified_user=user_profile,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: value,
+            "property": "can_change_user_emails",
         },
     )
 

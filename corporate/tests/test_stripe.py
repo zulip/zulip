@@ -193,7 +193,7 @@ def read_stripe_fixture(
             requester = stripe._api_requestor._APIRequestor()
             # This function will raise the relevant StripeError according to the fixture
             requester._interpret_response(
-                fixture["http_body"], fixture["http_status"], fixture["headers"]
+                fixture["http_body"], fixture["http_status"], fixture["headers"], "V1"
             )
         return stripe.convert_to_stripe_object(fixture)
 
@@ -650,7 +650,7 @@ class StripeTestCase(ZulipTestCase):
                 license_management="automatic",
             )
 
-        remote_server_plan_start_date = kwargs.get("remote_server_plan_start_date", None)
+        remote_server_plan_start_date = kwargs.get("remote_server_plan_start_date")
         if remote_server_plan_start_date:
             params.update(
                 remote_server_plan_start_date=remote_server_plan_start_date,

@@ -194,6 +194,7 @@ export function copy_handler(): void {
         // TODO: Add a reference for this statement, I just tested
         // it in console for various selection directions and found this
         // to be the case not sure why there is no online reference for it.
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         document.execCommand("copy");
         return;
     }
@@ -201,6 +202,7 @@ export function copy_handler(): void {
     if (!skip_same_td_check && start_id === end_id) {
         // Check whether the selection both starts and ends in the
         // same message.  If so, Let the browser handle this.
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         document.execCommand("copy");
         return;
     }
@@ -219,6 +221,7 @@ export function copy_handler(): void {
     // Select div so that the browser will copy it
     // instead of copying the original selection
     select_div($div, selection);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     document.execCommand("copy");
     remove_div($div, ranges);
 }
@@ -433,34 +436,31 @@ export function paste_handler_converter(paste_html: string): string {
             return "~~" + content + "~~";
         },
     });
-    turndownService.addRule("latexMath", {
+    turndownService.addRule("katex", {
         filter(node: Node) {
             if (node instanceof Element) {
-                const closestDisplay = node.closest(".katex-display");
-                const hasMathML = node.querySelector(".katex-mathml") !== null;
-                return closestDisplay !== null && hasMathML;
+                const closest_display = node.closest(".katex-display");
+                const has_mathml = node.querySelector(".katex-mathml") !== null;
+                return closest_display !== null && has_mathml;
             }
             return false;
         },
         replacement(content: string, node: Node) {
-            if (node instanceof Element) {
-                const displayElement = node.closest(".katex-display")! || node;
-                const mathmlElement = displayElement.querySelector(".katex-mathml");
-                if (mathmlElement) {
-                    const annotation = mathmlElement.querySelector(
-                        'annotation[encoding="application/x-tex"]',
-                    );
-                    if (annotation?.textContent) {
-                        const latexContent = annotation.textContent.trim();
-                        const isMultiLine = latexContent.includes("\n");
-                        if (isMultiLine) {
-                            return `\`\`\`math\n${latexContent}\n\`\`\`\n`;
-                        }
-                        return `$$${latexContent}$$`;
-                    }
-                }
+            assert(node instanceof HTMLElement);
+            const display_element = node.closest(".katex-display") ?? node;
+            const annotation_element = display_element.querySelector(
+                '.katex-mathml annotation[encoding="application/x-tex"]',
+            );
+            if (!annotation_element?.textContent) {
+                // This shouldn't happen with Zulip markup.
+                return content;
             }
-            return content;
+            const latex_content = annotation_element.textContent.trim();
+            const is_multi_line = latex_content.includes("\n");
+            if (is_multi_line) {
+                return `\`\`\`math\n${latex_content}\n\`\`\`\n`;
+            }
+            return `$$${latex_content}$$`;
         },
     });
     turndownService.addRule("links", {

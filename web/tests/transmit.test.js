@@ -1,11 +1,10 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {current_user} = require("./lib/zpage_params");
 
 const channel = mock_esm("../src/channel");
 const reload = mock_esm("../src/reload");
@@ -14,15 +13,22 @@ const sent_messages = mock_esm("../src/sent_messages", {
     start_tracking_message: noop,
     get_message_state: () => ({
         report_server_ack: noop,
+        report_error: noop,
         saw_event: true,
     }),
-    start_send: noop,
+    wrap_send(_local_id, callback) {
+        callback();
+    },
 });
 const server_events = mock_esm("../src/server_events");
 
 const people = zrequire("people");
 const transmit = zrequire("transmit");
+const {set_current_user} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
+
+const current_user = {};
+set_current_user(current_user);
 
 run_test("transmit_message_ajax", () => {
     let success_func_called;
@@ -148,7 +154,7 @@ run_test("reply_message_stream", ({override}) => {
         send_message_args = data;
     });
 
-    current_user.user_id = 44;
+    override(current_user, "user_id", 44);
     server_events.queue_id = 66;
     sent_messages.get_new_local_id = () => "99";
 
@@ -189,7 +195,7 @@ run_test("reply_message_private", ({override}) => {
         send_message_args = data;
     });
 
-    current_user.user_id = 155;
+    override(current_user, "user_id", 155);
     server_events.queue_id = 177;
     sent_messages.get_new_local_id = () => "199";
 

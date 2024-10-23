@@ -359,7 +359,7 @@ def send_failed_scheduled_message_notification(
 
 
 @transaction.atomic(durable=True)
-def try_deliver_one_scheduled_message(logger: logging.Logger) -> bool:
+def try_deliver_one_scheduled_message() -> bool:
     # Returns whether there was a scheduled message to attempt
     # delivery on, regardless of whether delivery succeeded.
     scheduled_message = (
@@ -375,7 +375,7 @@ def try_deliver_one_scheduled_message(logger: logging.Logger) -> bool:
     if scheduled_message is None:
         return False
 
-    logger.info(
+    logging.info(
         "Sending scheduled message %s with date %s (sender: %s)",
         scheduled_message.id,
         scheduled_message.scheduled_timestamp,
@@ -392,12 +392,12 @@ def try_deliver_one_scheduled_message(logger: logging.Logger) -> bool:
 
             if isinstance(e, JsonableError):
                 scheduled_message.failure_message = e.msg
-                logger.info("Failed with message: %s", e.msg)
+                logging.info("Failed with message: %s", e.msg)
             else:
                 # An unexpected failure; store and send user a generic
                 # internal server error in notification message.
                 scheduled_message.failure_message = _("Internal server error")
-                logger.exception(
+                logging.exception(
                     "Unexpected error sending scheduled message %s (sent: %s)",
                     scheduled_message.id,
                     was_delivered,

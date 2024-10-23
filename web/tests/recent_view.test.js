@@ -1,6 +1,6 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
@@ -200,7 +200,10 @@ const rt = zrequire("recent_view_ui");
 const recent_view_util = zrequire("recent_view_util");
 const rt_data = zrequire("recent_view_data");
 const muted_users = zrequire("muted_users");
+const {set_realm} = zrequire("state_data");
 const sub_store = zrequire("sub_store");
+
+set_realm({});
 
 for (const stream_id of [stream1, stream2, stream3, stream4, stream6]) {
     sub_store.add_hydrated_sub(stream_id, {

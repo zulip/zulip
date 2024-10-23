@@ -43,7 +43,7 @@ reset();
 export function claim_color(color: string): void {
     const i = unused_colors.indexOf(color);
 
-    if (i < 0) {
+    if (i === -1) {
         return;
     }
 

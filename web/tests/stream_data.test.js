@@ -1,11 +1,11 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {current_user, page_params, realm, user_settings} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 // TODO: Remove after we enable support for
 // web_public_streams in production.
@@ -18,8 +18,17 @@ const settings_config = zrequire("settings_config");
 const sub_store = zrequire("sub_store");
 const stream_data = zrequire("stream_data");
 const hash_util = zrequire("hash_util");
+const {set_current_user, set_realm} = zrequire("state_data");
 const stream_settings_data = zrequire("stream_settings_data");
 const user_groups = zrequire("user_groups");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 mock_esm("../src/group_permission_settings", {
     get_group_permission_setting_config() {
@@ -68,9 +77,9 @@ const everyone_group = {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        current_user.is_admin = false;
+        helpers.override(current_user, "is_admin", false);
         page_params.realm_users = [];
-        current_user.is_guest = false;
+        helpers.override(current_user, "is_guest", false);
         people.init();
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
@@ -266,7 +275,7 @@ test("basics", () => {
     ]);
 });
 
-test("get_streams_for_user", () => {
+test("get_streams_for_user", ({override}) => {
     const denmark = {
         subscribed: true,
         color: "blue",
@@ -320,7 +329,11 @@ test("get_streams_for_user", () => {
     peer_data.set_subscribers(test.stream_id, [test_user.user_id]);
     peer_data.set_subscribers(world.stream_id, [me.user_id]);
 
-    realm.realm_invite_to_stream_policy = settings_config.common_policy_values.by_admins_only.code;
+    override(
+        realm,
+        "realm_invite_to_stream_policy",
+        settings_config.common_policy_values.by_admins_only.code,
+    );
     assert.deepEqual(stream_data.get_streams_for_user(me.user_id).can_subscribe, [social, errors]);
 
     // test_user is subscribed to all three streams, but current user (me)
@@ -336,14 +349,18 @@ test("get_streams_for_user", () => {
     ]);
     assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, []);
     // Verify can subscribe if we're an administrator.
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, [
         world,
         errors,
     ]);
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
 
-    realm.realm_invite_to_stream_policy = settings_config.common_policy_values.by_members.code;
+    override(
+        realm,
+        "realm_invite_to_stream_policy",
+        settings_config.common_policy_values.by_members.code,
+    );
     assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, [
         world,
         errors,
@@ -379,7 +396,7 @@ test("renames", () => {
     assert.equal(actual_id, 42);
 });
 
-test("admin_options", () => {
+test("admin_options", ({override}) => {
     function make_sub() {
         const sub = {
             subscribed: false,
@@ -405,7 +422,7 @@ test("admin_options", () => {
     }
 
     // non-admins can't do anything
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     let sub = make_sub();
     assert.ok(!is_realm_admin(sub));
     assert.ok(!can_change_stream_permissions(sub));
@@ -414,7 +431,7 @@ test("admin_options", () => {
     assert.equal(sub.color, "blue");
 
     // the remaining cases are for admin users
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
 
     // admins can make public streams become private
     sub = make_sub();
@@ -436,7 +453,7 @@ test("admin_options", () => {
     assert.ok(can_change_stream_permissions(sub));
 });
 
-test("stream_settings", () => {
+test("stream_settings", ({override}) => {
     const cinnamon = {
         stream_id: 1,
         name: "c",
@@ -513,7 +530,7 @@ test("stream_settings", () => {
     // For guest user only retrieve subscribed streams
     sub_rows = stream_settings_data.get_updated_unsorted_subs();
     assert.equal(sub_rows.length, 3);
-    current_user.is_guest = true;
+    override(current_user, "is_guest", true);
     sub_rows = stream_settings_data.get_updated_unsorted_subs();
     assert.equal(sub_rows[0].name, "c");
     assert.equal(sub_rows[1].name, "a");
@@ -582,7 +599,7 @@ test("delete_sub", () => {
     stream_data.delete_sub(99999);
 });
 
-test("notifications", () => {
+test("notifications", ({override}) => {
     const india = {
         stream_id: 102,
         name: "India",
@@ -601,13 +618,13 @@ test("notifications", () => {
     assert.ok(!stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
     assert.ok(!stream_data.receives_notifications(india.stream_id, "audible_notifications"));
 
-    user_settings.enable_stream_desktop_notifications = true;
-    user_settings.enable_stream_audible_notifications = true;
+    override(user_settings, "enable_stream_desktop_notifications", true);
+    override(user_settings, "enable_stream_audible_notifications", true);
     assert.ok(stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
     assert.ok(stream_data.receives_notifications(india.stream_id, "audible_notifications"));
 
-    user_settings.enable_stream_desktop_notifications = false;
-    user_settings.enable_stream_audible_notifications = false;
+    override(user_settings, "enable_stream_desktop_notifications", false);
+    override(user_settings, "enable_stream_audible_notifications", false);
     assert.ok(!stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
     assert.ok(!stream_data.receives_notifications(india.stream_id, "audible_notifications"));
 
@@ -618,38 +635,38 @@ test("notifications", () => {
 
     india.desktop_notifications = false;
     india.audible_notifications = false;
-    user_settings.enable_stream_desktop_notifications = true;
-    user_settings.enable_stream_audible_notifications = true;
+    override(user_settings, "enable_stream_desktop_notifications", true);
+    override(user_settings, "enable_stream_audible_notifications", true);
     assert.ok(!stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
     assert.ok(!stream_data.receives_notifications(india.stream_id, "audible_notifications"));
 
-    user_settings.wildcard_mentions_notify = true;
+    override(user_settings, "wildcard_mentions_notify", true);
     assert.ok(stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
-    user_settings.wildcard_mentions_notify = false;
+    override(user_settings, "wildcard_mentions_notify", false);
     assert.ok(!stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
     india.wildcard_mentions_notify = true;
     assert.ok(stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
-    user_settings.wildcard_mentions_notify = true;
+    override(user_settings, "wildcard_mentions_notify", true);
     india.wildcard_mentions_notify = false;
     assert.ok(!stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
 
-    user_settings.enable_stream_push_notifications = true;
+    override(user_settings, "enable_stream_push_notifications", true);
     assert.ok(stream_data.receives_notifications(india.stream_id, "push_notifications"));
-    user_settings.enable_stream_push_notifications = false;
+    override(user_settings, "enable_stream_push_notifications", false);
     assert.ok(!stream_data.receives_notifications(india.stream_id, "push_notifications"));
     india.push_notifications = true;
     assert.ok(stream_data.receives_notifications(india.stream_id, "push_notifications"));
-    user_settings.enable_stream_push_notifications = true;
+    override(user_settings, "enable_stream_push_notifications", true);
     india.push_notifications = false;
     assert.ok(!stream_data.receives_notifications(india.stream_id, "push_notifications"));
 
-    user_settings.enable_stream_email_notifications = true;
+    override(user_settings, "enable_stream_email_notifications", true);
     assert.ok(stream_data.receives_notifications(india.stream_id, "email_notifications"));
-    user_settings.enable_stream_email_notifications = false;
+    override(user_settings, "enable_stream_email_notifications", false);
     assert.ok(!stream_data.receives_notifications(india.stream_id, "email_notifications"));
     india.email_notifications = true;
     assert.ok(stream_data.receives_notifications(india.stream_id, "email_notifications"));
-    user_settings.enable_stream_email_notifications = true;
+    override(user_settings, "enable_stream_email_notifications", true);
     india.email_notifications = false;
     assert.ok(!stream_data.receives_notifications(india.stream_id, "email_notifications"));
 
@@ -680,11 +697,11 @@ test("notifications", () => {
     };
     stream_data.add_sub(antarctica);
 
-    user_settings.enable_stream_desktop_notifications = true;
-    user_settings.enable_stream_audible_notifications = true;
-    user_settings.enable_stream_email_notifications = false;
-    user_settings.enable_stream_push_notifications = false;
-    user_settings.wildcard_mentions_notify = true;
+    override(user_settings, "enable_stream_desktop_notifications", true);
+    override(user_settings, "enable_stream_audible_notifications", true);
+    override(user_settings, "enable_stream_email_notifications", false);
+    override(user_settings, "enable_stream_push_notifications", false);
+    override(user_settings, "wildcard_mentions_notify", true);
 
     india.desktop_notifications = null;
     india.audible_notifications = true;
@@ -753,14 +770,14 @@ const jazy = {
     is_muted: true,
 };
 
-test("is_new_stream_announcements_stream_muted", () => {
+test("is_new_stream_announcements_stream_muted", ({override}) => {
     stream_data.add_sub(tony);
     stream_data.add_sub(jazy);
 
-    realm.realm_new_stream_announcements_stream_id = tony.stream_id;
+    override(realm, "realm_new_stream_announcements_stream_id", tony.stream_id);
     assert.ok(!stream_data.is_new_stream_announcements_stream_muted());
 
-    realm.realm_new_stream_announcements_stream_id = jazy.stream_id;
+    override(realm, "realm_new_stream_announcements_stream_id", jazy.stream_id);
     assert.ok(stream_data.is_new_stream_announcements_stream_muted());
 });
 
@@ -810,10 +827,10 @@ test("muted_stream_ids", () => {
     assert.deepEqual(stream_data.muted_stream_ids(), [1, 3]);
 });
 
-test("realm_has_new_stream_announcements_stream", () => {
-    realm.realm_new_stream_announcements_stream_id = 10;
+test("realm_has_new_stream_announcements_stream", ({override}) => {
+    override(realm, "realm_new_stream_announcements_stream_id", 10);
     assert.ok(stream_data.realm_has_new_stream_announcements_stream());
-    realm.realm_new_stream_announcements_stream_id = -1;
+    override(realm, "realm_new_stream_announcements_stream_id", -1);
     assert.ok(!stream_data.realm_has_new_stream_announcements_stream());
 });
 
@@ -873,10 +890,10 @@ test("create_sub", () => {
     assert.equal(antarctica_sub.color, "#76ce90");
 });
 
-test("creator_id", () => {
+test("creator_id", ({override}) => {
     people.add_active_user(test_user);
-    realm.realm_can_access_all_users_group = everyone_group.id;
-    current_user.user_id = me.user_id;
+    override(realm, "realm_can_access_all_users_group", everyone_group.id);
+    override(current_user, "user_id", me.user_id);
     // When creator id is not a valid user id
     assert.throws(() => stream_data.maybe_get_creator_details(-1), {
         name: "Error",
@@ -901,7 +918,7 @@ test("creator_id", () => {
     );
 });
 
-test("initialize", () => {
+test("initialize", ({override}) => {
     function get_params() {
         const params = {};
 
@@ -935,7 +952,7 @@ test("initialize", () => {
         stream_data.initialize(get_params());
     }
 
-    realm.realm_new_stream_announcements_stream_id = -1;
+    override(realm, "realm_new_stream_announcements_stream_id", -1);
 
     initialize();
 
@@ -946,7 +963,7 @@ test("initialize", () => {
     assert.equal(stream_data.get_new_stream_announcements_stream(), "");
 
     // Simulate a private stream the user isn't subscribed to
-    realm.realm_new_stream_announcements_stream_id = 89;
+    override(realm, "realm_new_stream_announcements_stream_id", 89);
     initialize();
     assert.equal(stream_data.get_new_stream_announcements_stream(), "");
 
@@ -969,7 +986,7 @@ test("edge_cases", () => {
     stream_settings_data.sort_for_stream_settings(bad_stream_ids);
 });
 
-test("get_invite_stream_data", () => {
+test("get_invite_stream_data", ({override}) => {
     // add default stream
     const orie = {
         name: "Orie",
@@ -982,7 +999,7 @@ test("get_invite_stream_data", () => {
     people.init();
     people.add_active_user(me);
     people.initialize_current_user(me.user_id);
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
 
     stream_data.add_sub(orie);
     stream_data.set_realm_default_streams([orie]);
@@ -1048,7 +1065,7 @@ test("get_invite_stream_data", () => {
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
 });
 
-test("can_post_messages_in_stream", () => {
+test("can_post_messages_in_stream", ({override}) => {
     const social = {
         subscribed: true,
         color: "red",
@@ -1059,31 +1076,31 @@ test("can_post_messages_in_stream", () => {
         history_public_to_subscribers: false,
         stream_post_policy: settings_config.stream_post_policy_values.admins.code,
     };
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     social.stream_post_policy = settings_config.stream_post_policy_values.moderators.code;
-    current_user.is_moderator = false;
-    current_user.is_admin = false;
+    override(current_user, "is_moderator", false);
+    override(current_user, "is_admin", false);
 
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
-    current_user.is_moderator = true;
+    override(current_user, "is_moderator", true);
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     social.stream_post_policy = settings_config.stream_post_policy_values.non_new_members.code;
-    current_user.is_moderator = false;
+    override(current_user, "is_moderator", false);
     me.date_joined = new Date(Date.now());
-    realm.realm_waiting_period_threshold = 10;
+    override(realm, "realm_waiting_period_threshold", 10);
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
     me.date_joined = new Date(Date.now() - 20 * 86400000);
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
-    current_user.is_guest = true;
+    override(current_user, "is_guest", true);
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
     social.stream_post_policy = settings_config.stream_post_policy_values.everyone.code;
@@ -1093,7 +1110,7 @@ test("can_post_messages_in_stream", () => {
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 });
 
-test("can_unsubscribe_others", () => {
+test("can_unsubscribe_others", ({override}) => {
     const admin_user_id = 1;
     const moderator_user_id = 2;
     const member_user_id = 3;
@@ -1161,17 +1178,17 @@ test("can_unsubscribe_others", () => {
 
     // Even with the nobody system group, admins can still unsubscribe others.
     sub.can_remove_subscribers_group = nobody.id;
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
 
     // This isn't a real state, but we want coverage on !can_view_subscribers.
     sub.subscribed = false;
     sub.invite_only = true;
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
 });
 
@@ -1275,7 +1292,7 @@ test("options for dropdown widget", () => {
     ]);
 });
 
-test("can_access_stream_email", () => {
+test("can_access_stream_email", ({override}) => {
     const social = {
         subscribed: true,
         color: "red",
@@ -1285,10 +1302,10 @@ test("can_access_stream_email", () => {
         invite_only: true,
         history_public_to_subscribers: false,
     };
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     assert.equal(stream_data.can_access_stream_email(social), true);
 
-    current_user.is_admin = true;
+    override(current_user, "is_admin", true);
     assert.equal(stream_data.can_access_stream_email(social), true);
 
     social.subscribed = false;
@@ -1297,10 +1314,10 @@ test("can_access_stream_email", () => {
     social.invite_only = false;
     assert.equal(stream_data.can_access_stream_email(social), true);
 
-    current_user.is_admin = false;
+    override(current_user, "is_admin", false);
     assert.equal(stream_data.can_access_stream_email(social), true);
 
-    current_user.is_guest = true;
+    override(current_user, "is_guest", true);
     assert.equal(stream_data.can_access_stream_email(social), false);
 
     social.subscribed = true;

@@ -111,22 +111,16 @@ function register_click_handlers(): void {
             if (playground_info === undefined) {
                 return;
             }
-            // We do the code extraction here and set the target href expanding
-            // the url_template with the extracted code. Depending on whether
-            // the language has multiple playground links configured, a popover
-            // is shown.
+            // We do the code extraction here and send user to the target destination,
+            // obtained by expanding the url_template with the extracted code.
+            // Depending on whether the language has multiple playground links configured,
+            // a popover is shown.
             const extracted_code = $codehilite_div.find("code").text();
             if (playground_info.length === 1 && playground_info[0] !== undefined) {
                 const url_template = url_template_lib.parse(playground_info[0].url_template);
-                $view_in_playground_button.attr(
-                    "href",
-                    url_template.expand({code: extracted_code}),
-                );
+                const playground_url = url_template.expand({code: extracted_code});
+                window.open(playground_url, "_blank", "noopener,noreferrer");
             } else {
-                // Remove the href attribute that was set when there was only
-                // one playground link, so that it doesn't interfere with the
-                // popover toggle when multiple playground links exist.
-                $view_in_playground_button.removeAttr("href");
                 const playground_store = new Map<number, RealmPlaygroundWithURL>();
                 for (const playground of playground_info) {
                     const url_template = url_template_lib.parse(playground.url_template);

@@ -1,12 +1,12 @@
 "use strict";
 
-const {strict: assert} = require("assert");
+const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {current_user, page_params, realm, user_settings} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_params");
 
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
@@ -24,6 +24,15 @@ const user_status = zrequire("user_status");
 const buddy_data = zrequire("buddy_data");
 const {Filter} = zrequire("filter");
 const message_lists = zrequire("message_lists");
+const {set_current_user, set_realm} = zrequire("state_data");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const realm = {};
+set_realm(realm);
+const current_user = {};
+set_current_user(current_user);
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 // The buddy_data module is mostly tested indirectly through
 // activity.test.js, but we should feel free to add direct tests
@@ -101,7 +110,7 @@ function add_canned_users() {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        user_settings.presence_enabled = true;
+        helpers.override(user_settings, "presence_enabled", true);
         compose_fade_helper.clear_focused_recipient();
         stream_data.clear_subscriptions();
         peer_data.clear_for_testing();
@@ -126,7 +135,7 @@ function set_presence(user_id, status) {
     });
 }
 
-test("user_circle, level", () => {
+test("user_circle, level", ({override}) => {
     add_canned_users();
 
     set_presence(selma.user_id, "active");
@@ -145,11 +154,11 @@ test("user_circle, level", () => {
     assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_green");
     assert.equal(buddy_data.level(me.user_id), 0);
 
-    user_settings.presence_enabled = false;
+    override(user_settings, "presence_enabled", false);
     assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_empty");
     assert.equal(buddy_data.level(me.user_id), 0);
 
-    user_settings.presence_enabled = true;
+    override(user_settings, "presence_enabled", true);
     assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_green");
     assert.equal(buddy_data.level(me.user_id), 0);
 
@@ -162,7 +171,7 @@ test("user_circle, level", () => {
     assert.equal(buddy_data.level(fred.user_id), 3);
 });
 
-test("title_data", () => {
+test("title_data", ({override}) => {
     page_params.presence_history_limit_days_for_web_app = 365;
     add_canned_users();
 
@@ -209,7 +218,7 @@ test("title_data", () => {
         third_line: "translated: Active now",
         show_you: true,
     };
-    current_user.user_id = me.user_id;
+    override(current_user, "user_id", me.user_id);
     assert.deepEqual(buddy_data.get_title_data(me.user_id, is_group), expected_data);
 
     expected_data = {
@@ -412,8 +421,8 @@ test("get_conversation_participants", ({override_rewire}) => {
     assert.deepEqual(buddy_data.get_conversation_participants(), new Set([selma.user_id]));
 });
 
-test("level", () => {
-    realm.server_presence_offline_threshold_seconds = 200;
+test("level", ({override}) => {
+    override(realm, "server_presence_offline_threshold_seconds", 200);
 
     add_canned_users();
     assert.equal(buddy_data.level(me.user_id), 0);
@@ -432,7 +441,7 @@ test("level", () => {
     assert.equal(buddy_data.level(me.user_id), 0);
     assert.equal(buddy_data.level(selma.user_id), 1);
 
-    user_settings.presence_enabled = false;
+    override(user_settings, "presence_enabled", false);
     set_presence(selma.user_id, "offline");
 
     // Selma gets demoted to level 3, but "me"
@@ -455,18 +464,18 @@ test("compare_function", () => {
     peer_data.set_subscribers(stream_id, []);
     assert.equal(
         second_user_shown_higher,
-        buddy_data.compare_function(fred.user_id, alice.user_id, sub, new Set()),
+        buddy_data.compare_function(fred.user_id, alice.user_id, sub, new Set(), new Set()),
     );
 
     // Fred is higher because they're in the narrow and Alice isn't.
     peer_data.set_subscribers(stream_id, [fred.user_id]);
     assert.equal(
         first_user_shown_higher,
-        buddy_data.compare_function(fred.user_id, alice.user_id, sub, new Set()),
+        buddy_data.compare_function(fred.user_id, alice.user_id, sub, new Set(), new Set()),
     );
     assert.equal(
         second_user_shown_higher,
-        buddy_data.compare_function(alice.user_id, fred.user_id, sub, new Set()),
+        buddy_data.compare_function(alice.user_id, fred.user_id, sub, new Set(), new Set()),
     );
 
     // Fred is higher because they're in the DM conversation and Alice isn't.
@@ -477,19 +486,49 @@ test("compare_function", () => {
             alice.user_id,
             undefined,
             new Set([fred.user_id]),
+            new Set(),
+        ),
+    );
+
+    // Fred is higher because they're in the conversation and Alice isn't.
+    assert.equal(
+        first_user_shown_higher,
+        buddy_data.compare_function(
+            fred.user_id,
+            alice.user_id,
+            undefined,
+            new Set(),
+            new Set([fred.user_id]),
+        ),
+    );
+
+    assert.equal(
+        second_user_shown_higher,
+        buddy_data.compare_function(
+            alice.user_id,
+            fred.user_id,
+            undefined,
+            new Set(),
+            new Set([fred.user_id]),
         ),
     );
 
     // Alice is higher because of alphabetical sorting.
     assert.equal(
         second_user_shown_higher,
-        buddy_data.compare_function(fred.user_id, alice.user_id, undefined, new Set()),
+        buddy_data.compare_function(fred.user_id, alice.user_id, undefined, new Set(), new Set()),
     );
 
     // The user is part of a DM conversation, though that's not explicitly in the DM list.
     assert.equal(
         first_user_shown_higher,
-        buddy_data.compare_function(me.user_id, alice.user_id, undefined, new Set([fred.user_id])),
+        buddy_data.compare_function(
+            me.user_id,
+            alice.user_id,
+            undefined,
+            new Set([fred.user_id]),
+            new Set(),
+        ),
     );
 });
 
@@ -500,12 +539,12 @@ test("user_last_seen_time_status", ({override}) => {
 
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Active now");
 
-    realm.realm_is_zephyr_mirror_realm = true;
+    override(realm, "realm_is_zephyr_mirror_realm", true);
     assert.equal(
         buddy_data.user_last_seen_time_status(old_user.user_id),
         "translated: Activity unknown",
     );
-    realm.realm_is_zephyr_mirror_realm = false;
+    override(realm, "realm_is_zephyr_mirror_realm", false);
     assert.equal(
         buddy_data.user_last_seen_time_status(old_user.user_id),
         "translated: Not active in the last year",
@@ -527,12 +566,12 @@ test("user_last_seen_time_status", ({override}) => {
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Idle");
 });
 
-test("get_items_for_users", () => {
+test("get_items_for_users", ({override}) => {
     people.add_active_user(alice);
     people.add_active_user(fred);
     set_presence(alice.user_id, "offline");
-    user_settings.emojiset = "google";
-    user_settings.user_list_style = 2;
+    override(user_settings, "emojiset", "google");
+    override(user_settings, "user_list_style", 2);
 
     const status_emoji_info = {
         emoji_alt_code: false,

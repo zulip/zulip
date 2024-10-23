@@ -319,7 +319,6 @@ export function initialize_kitchen_sink_stuff() {
         const $row = event.msg_list.get_row(event.id);
         $(".selected_message").removeClass("selected_message");
         $row.addClass("selected_message");
-        narrow_history.save_narrow_state();
 
         if (event.then_scroll) {
             if ($row.length === 0) {
@@ -355,6 +354,9 @@ export function initialize_kitchen_sink_stuff() {
                 });
             }
         }
+
+        // Save selected message and scroll position after we have scrolled to it.
+        narrow_history.save_narrow_state();
     });
 
     if (!realm.realm_allow_message_editing) {
@@ -632,6 +634,16 @@ export function initialize_everything(state_data) {
 
     initialize_unread_ui();
     activity.initialize();
+    activity.register_on_new_user_input_hook(() => {
+        // Instead of marking new messages as read immediately when bottom
+        // of feed is visible, we wait for user input to mark them as read.
+        // This is to prevent marking messages as read unintentionally,
+        // especially when user is away from screen and the window is focused.
+        if (activity.received_new_messages && activity.new_user_input) {
+            unread_ops.process_visible();
+            activity.set_received_new_messages(false);
+        }
+    });
     activity_ui.initialize({
         narrow_by_email(email) {
             message_view.show(

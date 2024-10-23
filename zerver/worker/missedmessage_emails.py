@@ -197,7 +197,7 @@ class MissedMessageWorker(QueueProcessingWorker):
                 # re-checking the condition.
                 return False
 
-            with sentry_sdk.start_span(description="condvar wait") as span:
+            with sentry_sdk.start_span(name="condvar wait") as span:
                 span.set_data("timeout", timeout)
                 was_notified = self.cv.wait_for(wait_condition, timeout=timeout)
                 span.set_data("was_notified", was_notified)
@@ -236,9 +236,7 @@ class MissedMessageWorker(QueueProcessingWorker):
                     len(events),
                     user_profile_id,
                 )
-                with sentry_sdk.start_span(
-                    description="sending missedmessage_emails to user"
-                ) as span:
+                with sentry_sdk.start_span(name="sending missedmessage_emails to user") as span:
                     span.set_data("user_profile_id", user_profile_id)
                     span.set_data("event_count", len(events))
                     try:

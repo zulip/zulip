@@ -11,9 +11,10 @@ import * as stream_pill from "./stream_pill";
 import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper";
 import * as user_group_pill from "./user_group_pill";
 import * as user_groups from "./user_groups";
+import type {UserGroup} from "./user_groups";
 import * as user_pill from "./user_pill";
 
-function create_item_from_text(
+export function create_item_from_text(
     text: string,
     current_items: CombinedPill[],
 ): CombinedPill | undefined {
@@ -31,7 +32,7 @@ function create_item_from_text(
     return undefined;
 }
 
-function get_text_from_item(item: CombinedPill): string {
+export function get_text_from_item(item: CombinedPill): string {
     let text: string;
     switch (item.type) {
         case "stream":
@@ -47,25 +48,36 @@ function get_text_from_item(item: CombinedPill): string {
     return text;
 }
 
-function set_up_pill_typeahead({
+export function set_up_pill_typeahead({
     pill_widget,
     $pill_container,
     get_users,
+    get_user_groups,
 }: {
     pill_widget: CombinedPillContainer;
     $pill_container: JQuery;
     get_users: () => User[];
+    get_user_groups?: () => UserGroup[];
 }): void {
-    const opts = {
+    const opts: {
+        user_source: () => User[];
+        stream: boolean;
+        user_group: boolean;
+        user: boolean;
+        user_group_source?: () => UserGroup[];
+    } = {
         user_source: get_users,
         stream: true,
         user_group: true,
         user: true,
     };
+    if (get_user_groups !== undefined) {
+        opts.user_group_source = get_user_groups;
+    }
     pill_typeahead.set_up_combined($pill_container.find(".input"), pill_widget, opts);
 }
 
-function get_display_value_from_item(item: CombinedPill): string {
+export function get_display_value_from_item(item: CombinedPill): string {
     if (item.type === "user_group") {
         return user_group_pill.display_pill(user_groups.get_user_group_from_id(item.group_id));
     } else if (item.type === "stream") {
@@ -75,7 +87,7 @@ function get_display_value_from_item(item: CombinedPill): string {
     return user_pill.get_display_value_from_item(item);
 }
 
-function generate_pill_html(item: CombinedPill): string {
+export function generate_pill_html(item: CombinedPill): string {
     if (item.type === "user_group") {
         return render_input_pill({
             display_value: get_display_value_from_item(item),
@@ -91,9 +103,11 @@ function generate_pill_html(item: CombinedPill): string {
 export function create({
     $pill_container,
     get_potential_subscribers,
+    get_potential_groups,
 }: {
     $pill_container: JQuery;
     get_potential_subscribers: () => User[];
+    get_potential_groups?: () => UserGroup[];
 }): CombinedPillContainer {
     const pill_widget = input_pill.create<CombinedPill>({
         $container: $pill_container,
@@ -106,8 +120,26 @@ export function create({
         const potential_subscribers = get_potential_subscribers();
         return user_pill.filter_taken_users(potential_subscribers, pill_widget);
     }
+    const opts: {
+        pill_widget: CombinedPillContainer;
+        $pill_container: JQuery;
+        get_users: () => User[];
+        get_user_groups?: () => UserGroup[];
+    } = {
+        pill_widget,
+        $pill_container,
+        get_users,
+    };
+    if (get_potential_groups !== undefined) {
+        function get_user_groups(): UserGroup[] {
+            assert(get_potential_groups !== undefined);
+            const potential_groups = get_potential_groups();
+            return user_group_pill.filter_taken_groups(potential_groups, pill_widget);
+        }
+        opts.get_user_groups = get_user_groups;
+    }
 
-    set_up_pill_typeahead({pill_widget, $pill_container, get_users});
+    set_up_pill_typeahead(opts);
 
     const $pill_widget_input = $pill_container.find(".input");
     const $pill_widget_button = $pill_container.parent().find(".add-users-button");
