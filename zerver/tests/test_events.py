@@ -3388,6 +3388,9 @@ class NormalActionsTest(BaseAction):
         check_realm_deactivated("events[0]", events[0])
 
     def test_do_mark_onboarding_step_as_read(self) -> None:
+        self.user_profile = do_create_user(
+            "user@zulip.com", "password", self.user_profile.realm, "user", acting_user=None
+        )
         with self.verify_action() as events:
             do_mark_onboarding_step_as_read(self.user_profile, "intro_inbox_view_modal")
         check_onboarding_steps("events[0]", events[0])

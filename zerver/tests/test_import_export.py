@@ -977,6 +977,7 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(reaction.emoji_code, str(realm_emoji.id))
 
         # data to test import of onboaring step
+        OnboardingStep.objects.filter(user=sample_user).delete()
         OnboardingStep.objects.create(
             user=sample_user,
             onboarding_step="intro_inbox_view_modal",
