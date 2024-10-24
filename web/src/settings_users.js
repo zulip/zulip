@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import render_admin_user_list from "../templates/settings/admin_user_list.hbs";
 
+import {compute_active_status, post_presence_response_schema} from "./activity";
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
@@ -10,6 +11,7 @@ import * as dropdown_widget from "./dropdown_widget";
 import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as presence from "./presence";
 import * as scroll_util from "./scroll_util";
@@ -25,6 +27,8 @@ import * as user_sort from "./user_sort";
 
 export const active_user_list_dropdown_widget_name = "active_user_list_select_user_role";
 export const deactivated_user_list_dropdown_widget_name = "deactivated_user_list_select_user_role";
+// introduced a new data structure to store the presence data of users for the last 10 years.
+export const user_setting_presence_info = new Map();
 
 let should_redraw_active_users_list = false;
 let should_redraw_deactivated_users_list = false;
@@ -182,12 +186,15 @@ function populate_users() {
 
     if (active_user_ids.length === 0 && deactivated_user_ids.length === 0) {
         failed_listing_users();
+        return;
     }
 
-    section.active.create_table(active_user_ids);
-    section.deactivated.create_table(deactivated_user_ids);
-    create_role_filter_dropdown($("#admin-user-list"), section.active);
-    create_role_filter_dropdown($("#admin-deactivated-users-list"), section.deactivated);
+    fetch_presence_user_setting(() => {
+        section.active.create_table(active_user_ids);
+        section.deactivated.create_table(deactivated_user_ids);
+        create_role_filter_dropdown($("#admin-user-list"), section.active);
+        create_role_filter_dropdown($("#admin-deactivated-users-list"), section.deactivated);
+    });
 }
 
 function reset_scrollbar($sel) {
@@ -256,11 +263,17 @@ function bot_info(bot_user_id) {
 }
 
 function get_last_active(user) {
-    const last_active_date = presence.last_active_date(user.user_id);
+    const presence_row = user_setting_presence_info.get(String(user.user_id));
 
-    if (!last_active_date) {
+    if (!presence_row) {
         return $t({defaultMessage: "Unknown"});
     }
+
+    const last_active = Math.max(
+        presence_row.idle_timestamp ?? 0,
+        presence_row.active_timestamp ?? 0,
+    );
+    const last_active_date = new Date(last_active * 1000);
     return timerender.render_now(last_active_date).time_str;
 }
 
@@ -629,5 +642,39 @@ export function set_up_bots() {
         e.preventDefault();
         e.stopPropagation();
         settings_bots.add_a_new_bot();
+    });
+}
+
+export function fetch_presence_user_setting(render_table) {
+    if (page_params.is_spectator) {
+        render_table();
+        return;
+    }
+
+    channel.post({
+        url: "/json/users/me/presence",
+        data: {
+            status: compute_active_status(),
+            ping_only: false,
+            last_update_id: -1,
+            history_limit_days: 9999,
+        },
+        success(response) {
+            const data = post_presence_response_schema.parse(response);
+
+            if (data.presences) {
+                user_setting_presence_info.clear();
+
+                for (const [user_id, presence_data] of Object.entries(data.presences)) {
+                    user_setting_presence_info.set(user_id, {
+                        active_timestamp: presence_data.active_timestamp,
+                        idle_timestamp: presence_data.idle_timestamp,
+                    });
+                }
+            }
+
+            // Call the callback function after successful completion
+            render_table();
+        },
     });
 }
