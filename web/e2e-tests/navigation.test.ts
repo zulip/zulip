@@ -6,7 +6,7 @@ import * as common from "./lib/common";
 
 async function navigate_using_left_sidebar(page: Page, stream_name: string): Promise<void> {
     console.log("Visiting #" + stream_name);
-    await page.click(`.stream-name[title="${stream_name}"]`);
+    await page.click(`a[href="#narrow/channel/3-Verona"]`);
     await page.waitForSelector(`#message_feed_container`, {visible: true});
 }
 
