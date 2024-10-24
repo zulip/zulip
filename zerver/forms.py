@@ -52,7 +52,7 @@ MIT_VALIDATION_ERROR = Markup(
     ' <a href="mailto:support@zulip.com">contact us</a>.'
 )
 
-INVALID_ACCOUNT_CREDENTIALS_ERROR = gettext_lazy("Please enter a correct email and password.")
+INVALID_ACCOUNT_CREDENTIALS_ERROR = gettext_lazy("Incorrect email or password.")
 DEACTIVATED_ACCOUNT_ERROR = gettext_lazy(
     "Your account {username} has been deactivated."
     " Please contact your organization administrator to reactivate it."
