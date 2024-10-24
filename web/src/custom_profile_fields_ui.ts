@@ -77,23 +77,22 @@ export function append_custom_profile_fields(element_id: string, user_id: number
     }
 }
 
+export type PillUpdateField = {
+    type: number;
+    field_data: string;
+    hint: string;
+    id: number;
+    name: string;
+    order: number;
+    required: boolean;
+    display_in_profile_summary?: boolean | undefined;
+};
+
 export function initialize_custom_user_type_fields(
     element_id: string,
     user_id: number,
     is_target_element_editable: boolean,
-    pill_update_handler?: (
-        field: {
-            type: number;
-            field_data: string;
-            hint: string;
-            id: number;
-            name: string;
-            order: number;
-            required: boolean;
-            display_in_profile_summary?: boolean | undefined;
-        },
-        pills: UserPillWidget,
-    ) => void,
+    pill_update_handler?: (field: PillUpdateField, pills: UserPillWidget) => void,
 ): Map<number, UserPillWidget> {
     const field_types = realm.custom_profile_field_types;
     const user_pills = new Map<number, UserPillWidget>();

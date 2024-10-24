@@ -105,7 +105,12 @@ export function encode_zuliprc_as_url(zuliprc: string): string {
     return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(zuliprc);
 }
 
-export function generate_zuliprc_content(bot: bot_data.Bot): string {
+export function generate_zuliprc_content(bot: {
+    bot_type?: number;
+    user_id: number;
+    email: string;
+    api_key: string;
+}): string {
     let token;
     // For outgoing webhooks, include the token in the zuliprc.
     // It's needed for authenticating to the Botserver.
