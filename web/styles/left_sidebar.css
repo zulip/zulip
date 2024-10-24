@@ -81,7 +81,7 @@
     /* Masked unreads display as flex when revealed. */
     align-items: center;
     justify-content: center;
-    color: var(--color-background-unread-counter-normal);
+    color: var(--color-unread-counter-muted);
     width: var(--left-sidebar-single-digit-unread-width);
 }
 

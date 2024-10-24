@@ -611,11 +611,12 @@
     /* Legacy unread-counter color value. */
     --color-background-unread-counter: hsl(105deg 2% 50%);
     --color-background-unread-counter-prominent: hsl(240deg 10% 50% / 70%);
-    --color-background-unread-counter-normal: hsl(240deg 10% 50% / 15%);
+    --color-background-unread-counter-normal: hsl(240deg 10% 50% / 25%);
     --color-background-unread-counter-quiet: transparent;
     --color-unread-counter-prominent: hsl(0deg 0% 100%);
-    --color-unread-counter-normal: hsl(240deg 0% 0% / 80%);
+    --color-unread-counter-normal: hsl(0deg 0% 0% / 90%);
     --color-unread-counter-quiet: hsl(240deg 15% 50%);
+    --color-unread-counter-muted: hsl(240deg 10% 50% / 35%);
     --color-border-add-subscription-button-focus: hsl(0deg 0% 20%);
     /* When unreads are hovered on the condensed
        views, they should not have an alpha.
@@ -628,7 +629,7 @@
        an rgb() value by PostCSS Preset Env. */
     --color-background-unread-counter-normal-no-alpha: color-mix(
         in srgb,
-        hsl(240deg 10% 50%) 15%,
+        hsl(240deg 10% 50%) 25%,
         hsl(0deg 0% 94%)
     );
     --color-background-unread-counter-dot: hsl(240deg 30% 40%);
@@ -1151,8 +1152,9 @@
     --color-background-unread-counter-normal: hsl(240deg 10% 50% / 35%);
     --color-background-unread-counter-quiet: transparent;
     --color-unread-counter-prominent: hsl(0deg 0% 100%);
-    --color-unread-counter-normal: hsl(240deg 0% 100% / 75%);
+    --color-unread-counter-normal: hsl(0deg 0% 100% / 85%);
     --color-unread-counter-quiet: hsl(240deg 15% 60%);
+    --color-unread-counter-muted: hsl(240deg 10% 50% / 35%);
     --color-border-unread-counter: hsl(105deg 2% 50%);
     --color-border-unread-counter-popover-menu: var(
         --color-border-unread-counter
