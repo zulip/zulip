@@ -427,7 +427,7 @@ function maybe_restore_focus_to_message_edit_form(): void {
     }, 0);
 }
 
-function is_search_view(): boolean {
+export function is_search_view(): boolean {
     const current_filter = narrow_state.filter();
     if (current_filter && !current_filter.supports_collapsing_recipients()) {
         return true;

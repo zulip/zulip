@@ -14,6 +14,7 @@ import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
+import {is_search_view} from "./message_list_view";
 import * as message_lists from "./message_lists";
 import * as message_view from "./message_view";
 import * as popover_menus from "./popover_menus";
@@ -389,11 +390,20 @@ export async function build_move_topic_to_stream_popover(
         const move_limit_buffer = 5;
         args.disable_topic_input = !message_edit.is_topic_editable(message, move_limit_buffer);
         disable_stream_input = !message_edit.is_stream_editable(message, move_limit_buffer);
-        args.message_placement = await get_message_placement_in_conversation(
-            current_stream_id,
-            topic_name,
-            message.id,
-        );
+
+        // If message is in a search view, default to "move only this message" option,
+        // same as if it were the last message in any view.
+        if (is_search_view()) {
+            args.message_placement = "last";
+        }
+        // Else, default option is based on the message placement in the view.
+        else {
+            args.message_placement = await get_message_placement_in_conversation(
+                current_stream_id,
+                topic_name,
+                message.id,
+            );
+        }
     }
 
     function get_params_from_form() {
