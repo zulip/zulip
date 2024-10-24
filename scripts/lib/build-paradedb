@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euxo pipefail
+
+tmpdir="$(mktemp -d)"
+trap 'rm -r "$tmpdir"' EXIT
+cd "$tmpdir"
+
+curl -fLO --retry 3 "https://github.com/paradedb/paradedb/releases/download/v0.11.0/postgresql-14-pg-search_0.11.0-1PARADEDB-jammy_amd64.deb"
+
+dpkg -i "postgresql-14-pg-search_0.11.0-1PARADEDB-jammy_amd64.deb"

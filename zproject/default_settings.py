@@ -421,6 +421,10 @@ REALM_MOBILE_REMAP_URIS: dict[str, str] = {}
 # testing.
 USING_PGROONGA = False
 
+# Whether the server is using the pg_search (paradedb) extension
+# for full-text search.
+USING_PARADEDB = False
+
 # How Django should send emails.  Set for most contexts in settings.py, but
 # available for sysadmin override in unusual cases.
 EMAIL_BACKEND: str | None = None

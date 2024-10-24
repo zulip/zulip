@@ -40,6 +40,7 @@ from zerver.lib.message import (
     get_first_visible_message_id,
 )
 from zerver.lib.narrow_predicate import channel_operators, channels_operators
+from zerver.lib.paradedb import search_operand_to_tantivy_query
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import (
@@ -755,10 +756,47 @@ class NarrowBuilder:
         return query.where(maybe_negate(cond))
 
     def by_search(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
-        if settings.USING_PGROONGA:
+        if settings.USING_PARADEDB:
+            return self._by_search_paradedb(query, operand, maybe_negate)
+        elif settings.USING_PGROONGA:
             return self._by_search_pgroonga(query, operand, maybe_negate)
         else:
             return self._by_search_tsearch(query, operand, maybe_negate)
+
+    def _by_search_paradedb(
+        self, query: Select, operand: str, maybe_negate: ConditionTransform
+    ) -> Select:
+        # See search_operand_to_tantivy_query for details of what queries are supported.
+        text_search_query = search_operand_to_tantivy_query(operand)
+
+        # This makes the tantivy query be passed to Postgres as a bind parameter.
+        # This might interfere in the future with ParadeDB's ability to "push down"
+        # regular SQL conditions such as "AND realm_id = N" into the tantivy query
+        # when they add this smart push down functionality.
+        # All this means for us is that we'll have to verify if it works before
+        # relying on it, and if it doesn't just make sure we insert the relevant
+        # conditions into the tantivy query ourselves when appropriate.
+        #
+        # The benefit of passing the tantivy query in a bind parameter is that
+        # it's more robust against SQL injection if we have bugs in
+        # search_operand_to_tantivy_query.
+        safe_text_search_query = literal(text_search_query)
+        final_search_operand = func.paradedb.parse(safe_text_search_query)
+
+        # TODO: finding the matches for higlighting is not implemented yet
+        # https://github.com/paradedb/paradedb/issues/1778
+        query = query.add_columns(
+            literal_column("ARRAY[]::integer[]").label("content_matches"),
+            literal_column("ARRAY[]::integer[]").label("topic_matches"),
+        )
+
+        if text_search_query is None:
+            # The operand was not parsable or not supported. Return empty results
+            # from the search.
+            return query.where(false())
+
+        condition = literal_column("zerver_message.id").op("@@@")(final_search_operand)
+        return query.where(maybe_negate(condition))
 
     def _by_search_pgroonga(
         self, query: Select, operand: str, maybe_negate: ConditionTransform
@@ -1436,6 +1474,9 @@ def fetch_messages(
 
         # This is a hack to tag the query we use for testing
         query = query.prefix_with("/* get_messages */")
+        # print("----------- final query -----------")
+        # print(query.compile(compile_kwargs={"literal_binds": True}))
+        # print("-----------------------------------")
         rows = list(sa_conn.execute(query).fetchall())
 
     if client_requested_message_ids is not None:
