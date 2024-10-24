@@ -170,8 +170,8 @@ $user_status_emoji_width: 24px;
         position: absolute;
         width: 0.4em;
         height: 0.4em;
-        top: 1.7em;
-        left: 1.7em;
+        top: 1.6em;
+        left: 1.6em;
     }
 
     .empty-list-message {
@@ -254,12 +254,21 @@ $user_status_emoji_width: 24px;
     align-items: baseline;
 }
 
-.user_sidebar_entry.with_avatar .selectable_sidebar_block {
-    margin: 3px;
-    grid-template:
-        "row-content markers-and-controls" var(--line-height-sidebar-row-with-avatars)
-        "row-content ." auto / minmax(0, 1fr)
-        minmax(0, auto);
+.user_sidebar_entry.with_avatar {
+    grid-template: "row-content" var(--line-height-sidebar-row-with-avatars) "row-content" auto / minmax(
+            0,
+            1fr
+        );
+
+    .selectable_sidebar_block {
+        margin: 2px;
+        grid-template:
+            "row-content markers-and-controls" var(
+                --line-height-sidebar-row-with-avatars
+            )
+            "row-content ." auto / minmax(0, 1fr)
+            minmax(0, auto);
+    }
 }
 
 .user-presence-link {
