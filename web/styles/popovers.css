@@ -589,7 +589,8 @@ ul.popover-group-menu-member-list {
         }
 
         .stream-privacy {
-            display: inline-block;
+            display: flex;
+            align-items: center;
         }
 
         .filter-icon i {
@@ -660,16 +661,15 @@ ul.popover-group-menu-member-list {
                 & td {
                     padding: 4px 0;
 
-                    &:first-of-type {
-                        padding-left: 10px;
-                    }
-
-                    &:last-of-type {
+                    &.remove_subscription {
+                        text-align: right;
                         padding-right: 10px;
                     }
 
-                    &.remove_subscription {
-                        text-align: right;
+                    &.subscription_list_stream {
+                        padding-left: 10px;
+                        display: flex;
+                        gap: 3px;
                     }
                 }
             }
