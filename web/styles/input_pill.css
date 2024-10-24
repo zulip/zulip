@@ -55,6 +55,11 @@
             min-width: 0;
             align-items: center;
             margin: 0 5px;
+
+            .zulip-icon-bot {
+                font-size: 12px;
+                margin-left: var(--margin-lefthand-bot-icon-offset);
+            }
         }
 
         .pill-value {

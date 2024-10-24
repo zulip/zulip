@@ -286,7 +286,7 @@
                 color: inherit;
             }
 
-            .zulip-icon {
+            .fa-group {
                 opacity: 0.7;
             }
         }
@@ -858,6 +858,11 @@ li.top_left_scheduled_messages {
     /* Prevent status emoji from colliding
        with unread counts. */
     margin-right: 3px;
+}
+
+.conversation-partners i.conversation_bot_icon {
+    /* Prevents bot emoji from colliding with unread counts. */
+    margin: 0 var(--margin-lefthand-bot-icon-offset);
 }
 
 /* New .topic-box grid definitions here. */
@@ -1444,6 +1449,10 @@ li.topic-list-item {
                in the future. */
             margin-top: -2.5px;
         }
+    }
+
+    .zulip-icon.zulip-icon-bot {
+        font-size: 12px; /* Reduce the bulkiness of this icon */
     }
 
     .unread_count {
