@@ -1573,6 +1573,23 @@ export class MessageListView {
         );
     }
 
+    focus_navigation_bar(): void {
+        $(".message-list-navigation-button:visible").first().trigger("focus");
+    }
+
+    unfocus_navigation_bar(): void {
+        // Unfocus the buttons and hide any tooltips.
+        $(".message-list-navigation-button").trigger("blur");
+    }
+
+    hide_navigation_bar(): void {
+        $("#message-list-navigation").hide();
+    }
+
+    show_navigation_bar(): void {
+        $("#message-list-navigation").show();
+    }
+
     maybe_rerender(): boolean {
         const selected_idx = this.list.selected_idx();
 
