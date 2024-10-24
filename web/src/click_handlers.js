@@ -440,6 +440,9 @@ export function initialize() {
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
+        if ($(e.target).parents(".user-profile-picture").length === 1) {
+            return;
+        }
 
         const $li = $(e.target).parents("li");
 
