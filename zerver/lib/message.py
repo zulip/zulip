@@ -196,6 +196,12 @@ def normalize_body(body: str) -> str:
     return truncate_content(body, settings.MAX_MESSAGE_LENGTH, "\n[message truncated]")
 
 
+def normalize_body_for_import(body: str) -> str:
+    if "\x00" in body:
+        body = re.sub(r"\x00", "", body)
+    return truncate_content(body, settings.MAX_MESSAGE_LENGTH, "\n[message truncated]")
+
+
 def truncate_topic(topic_name: str) -> str:
     return truncate_content(topic_name, MAX_TOPIC_NAME_LENGTH, "...")
 

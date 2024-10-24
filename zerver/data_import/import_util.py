@@ -17,6 +17,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
+from zerver.lib.message import normalize_body_for_import
 from zerver.lib.mime_types import guess_extension
 from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
@@ -499,6 +500,8 @@ def build_message(
     has_link: bool = False,
     has_attachment: bool = True,
 ) -> ZerverFieldsT:
+    # check and remove NULL Bytes if any.
+    content = normalize_body_for_import(content)
     zulip_message = Message(
         rendered_content_version=1,  # this is Zulip specific
         id=message_id,
