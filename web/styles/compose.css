@@ -1059,7 +1059,8 @@ textarea.new_message_textarea {
     .enter_sends_choice {
         display: flex;
         gap: 8px;
-        padding: 4px 10px;
+        margin: 0 3.2px;
+        padding: 4px 8px;
         align-items: flex-start;
 
         &:hover {
