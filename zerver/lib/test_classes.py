@@ -789,6 +789,16 @@ Output:
             self.client.login(request=request, username=email, password=password, realm=realm)
         )
 
+    def login_user_hits_home(self, user_profile: UserProfile) -> None:
+        """
+        We need this function when we test session deletions,
+        self.login_user() alone doesn't trigger the request/response cycle,
+        and therefore no custom fields are saved in the session.
+        So this is a way to simulate a real login request which hits "/".
+        """
+        self.login_user(user_profile)
+        self.client_get("/")
+
     def login_2fa(self, user_profile: UserProfile) -> None:
         """
         We need this function to call request.session.save().
@@ -2202,7 +2212,7 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
 
 def get_row_ids_in_all_tables() -> Iterator[tuple[str, set[int]]]:
     all_models = apps.get_models(include_auto_created=True)
-    ignored_tables = {"django_session"}
+    ignored_tables = {"django_session", "zerver_realmsession"}
 
     for model in all_models:
         table_name = model._meta.db_table

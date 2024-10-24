@@ -756,7 +756,7 @@ class InactiveUserTest(ZulipTestCase):
 
         """
         user_profile = self.example_user("hamlet")
-        self.login_user(user_profile)
+        self.login_user_hits_home(user_profile)
         with self.captureOnCommitCallbacks(execute=True):
             do_deactivate_user(user_profile, acting_user=None)
 
@@ -772,7 +772,7 @@ class InactiveUserTest(ZulipTestCase):
 
         # Even if a logged-in session was leaked, it still wouldn't work
         do_reactivate_user(user_profile, acting_user=None)
-        self.login_user(user_profile)
+        self.login_user_hits_home(user_profile)
         change_user_is_active(user_profile, False)
 
         result = self.client_post(

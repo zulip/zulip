@@ -9,7 +9,6 @@ from typing import Any
 import bmemcached
 import orjson
 from django.conf import settings
-from django.contrib.sessions.models import Session
 from django.core.files.base import File
 from django.core.management import call_command
 from django.core.management.base import CommandParser
@@ -59,6 +58,7 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     RealmDomain,
+    RealmSession,
     RealmUserDefault,
     Recipient,
     Service,
@@ -145,7 +145,7 @@ def clear_database() -> None:
         RemoteZulipServer,
     ]:
         model.objects.all().delete()
-    Session.objects.all().delete()
+    RealmSession.objects.all().delete()
     post_delete.connect(flush_alert_word, sender=AlertWord)
 
 

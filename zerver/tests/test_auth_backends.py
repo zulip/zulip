@@ -2314,7 +2314,8 @@ class SAMLAuthBackendTest(SocialAuthBase):
     def test_saml_idp_initiated_logout_success(self) -> None:
         hamlet = self.example_user("hamlet")
         old_api_key = hamlet.api_key
-        self.login("hamlet")
+        user_profile = self.example_user("hamlet")
+        self.login_user_hits_home(user_profile)
 
         self.assert_logged_in_user_id(hamlet.id)
         result = self.make_idp_initiated_logout_request(hamlet.delivery_email)
