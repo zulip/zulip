@@ -1615,6 +1615,42 @@ def set_typing_status(client: Client) -> None:
     validate_against_openapi_schema(result, "/typing", "post", "200")
 
 
+@openapi_test_function("/topic_settings:post")
+def update_topic_settings(client: Client) -> None:
+    stream_id = client.get_stream_id("Denmark")["stream_id"]
+    # {code_example|start}
+    # Lock the topic "dinner" in a channel, given the channel's ID.
+    request = {
+        "stream_id": stream_id,
+        "topic": "dinner",
+        "is_locked": True,
+    }
+    result = client.call_endpoint(
+        url="topic_settings",
+        method="POST",
+        request=request,
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/topic_settings", "post", "200")
+
+    # {code_example|start}
+    # Unlock the topic "dinner" in a channel, given the channel's ID.
+    request = {
+        "stream_id": stream_id,
+        "topic": "dinner",
+        "is_locked": False,
+    }
+    result = client.call_endpoint(
+        url="topic_settings",
+        method="POST",
+        request=request,
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/topic_settings", "post", "200")
+
+
 @openapi_test_function("/realm/emoji/{emoji_name}:post")
 def upload_custom_emoji(client: Client) -> None:
     emoji_path = os.path.join(ZULIP_DIR, "zerver", "tests", "images", "img.jpg")
@@ -1835,6 +1871,7 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
     remove_subscriptions(client)
     toggle_mute_topic(client)
     update_user_topic(client)
+    update_topic_settings(client)
     update_subscription_settings(client)
     get_stream_topics(client, 1)
     delete_topic(client, 1, "test")
