@@ -116,8 +116,13 @@ export function get_user_topics_for_visibility_policy(visibility_policy: number)
     return topics;
 }
 
-export function has_muted_topics(stream_id: number): boolean {
+export function has_muted_topics(stream_id: number, topics_length: number): boolean {
     if (stream_id === undefined) {
+        return false;
+    }
+
+    // Check for invalid topics_length
+    if (topics_length < 0) {
         return false;
     }
 
@@ -132,13 +137,13 @@ export function has_muted_topics(stream_id: number): boolean {
     for (const value of sub_dict.values()) {
         const visibility_policy = value.visibility_policy;
 
-        // Check if the visibility_policy indicates that the topic is muted
-        if (visibility_policy === all_visibility_policies.MUTED) {
-            return true;
+        // If any topic is not muted and topics_length is not zero, return false
+        if (visibility_policy !== all_visibility_policies.MUTED && topics_length !== 0) {
+            return false;
         }
     }
 
-    return false;
+    return true;
 }
 
 export function set_user_topic_visibility_policy(

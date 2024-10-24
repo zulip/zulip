@@ -127,15 +127,13 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
     };
 
     const muted_banner = {
-        title: $t({defaultMessage: "This feed is empty"}),
+        title: $t({defaultMessage: "This feed is empty,"}),
         html: page_params.is_spectator
             ? ""
-            : $t_html(
-                  {
-                      defaultMessage: "because you have muted all the topics in this channel.",
-                  }
-              ),
-    }
+            : $t_html({
+                  defaultMessage: "because you have muted all the topics in this channel.",
+              }),
+    };
 
     const default_banner_for_multiple_filters = $t({defaultMessage: "No search results."});
 
@@ -326,7 +324,7 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
             }
 
             // Check if there are muted topics in the specified stream and no topics in the stream
-            if (has_muted_topics(parseInt(first_operand, 10)) && topics.length === 0) {
+            if (has_muted_topics(parseInt(first_operand, 10), topics.length)) {
                 return muted_banner;
             }
             // else fallthrough to default case
