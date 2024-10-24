@@ -216,6 +216,12 @@ export let get_first_unread_info = (
         return cannot_compute_response;
     }
 
+    if (unread.old_unreads_missing) {
+        // We don't have full unread information from server, so we can't
+        // accurately compute the first unread message.
+        return cannot_compute_response;
+    }
+
     if (!current_filter.can_apply_locally()) {
         // For things like search queries, where the server has info
         // that the client isn't privy to, we need to wait for the
