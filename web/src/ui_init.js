@@ -20,6 +20,7 @@ import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
 import * as click_handlers from "./click_handlers";
+import * as color_picker_popover from "./color_picker_popover";
 import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_closed_ui from "./compose_closed_ui";
@@ -567,6 +568,7 @@ export function initialize_everything(state_data) {
     sidebar_ui.initialize();
     user_profile.initialize();
     stream_popover.initialize();
+    color_picker_popover.initialize();
     add_stream_options_popover.initialize();
     click_handlers.initialize();
     scheduled_messages_overlay_ui.initialize();

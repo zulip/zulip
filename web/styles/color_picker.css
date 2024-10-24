@@ -1,0 +1,48 @@
+.color-swatch-list {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px 5px;
+    place-items: center;
+    padding: 10px;
+}
+
+.color-swatch-option {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    cursor: pointer;
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus) !important;
+        outline-offset: 1px;
+    }
+}
+
+.current-color-swatch-option {
+    outline: 2px solid var(--color-outline-focus) !important;
+    outline-offset: 1px;
+}
+
+.color-picker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100% !important;
+    opacity: 0 !important;
+    cursor: pointer;
+}
+
+.custom-color-picker-container {
+    position: relative;
+    display: flex;
+    margin: 5px 10px 10px;
+    gap: 5px;
+}
+
+.color-picker-preview {
+    width: 100%;
+    height: 30px;
+    border-radius: 4px;
+    cursor: pointer;
+}

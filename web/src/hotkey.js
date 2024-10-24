@@ -418,7 +418,7 @@ function handle_popover_events(event_name) {
         return true;
     }
 
-    if (stream_popover.is_open()) {
+    if (popover_menus.is_stream_actions_popover_displayed()) {
         stream_popover.stream_sidebar_menu_handle_keyboard(event_name);
         return true;
     }
