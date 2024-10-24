@@ -255,9 +255,11 @@ $user_status_emoji_width: 24px;
         minmax(0, auto);
 }
 
-.user-presence-link {
+.user-presence-row {
     grid-area: row-content;
+}
 
+.user-presence-link {
     &:hover,
     &:focus {
         color: var(--color-text-sidebar-row);
@@ -266,7 +268,7 @@ $user_status_emoji_width: 24px;
 }
 
 .information-settings .profile-with-avatar,
-.user_sidebar_entry.with_avatar .user-presence-link {
+.user_sidebar_entry.with_avatar .user-presence-row {
     display: grid;
     grid-template: "avatar row-content" var(--message-box-avatar-width) / auto minmax(
             0,
@@ -280,7 +282,7 @@ $user_status_emoji_width: 24px;
     margin: 3px 0;
 }
 
-.user_sidebar_entry.with_avatar .user-presence-link {
+.user_sidebar_entry.with_avatar .user-presence-row {
     margin: 3px;
 }
 
