@@ -134,6 +134,7 @@ import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
 import * as topic_popover from "./topic_popover";
+import * as topic_settings from "./topic_settings";
 import * as transmit from "./transmit";
 import * as typeahead_helper from "./typeahead_helper";
 import * as typing from "./typing";
@@ -543,6 +544,7 @@ export function initialize_everything(state_data) {
     stream_card_popover.initialize();
     pm_conversations.recent.initialize(state_data.pm_conversations);
     user_topics.initialize(state_data.user_topics);
+    topic_settings.initialize(state_data.topic_settings);
     muted_users.initialize(state_data.muted_users);
     stream_settings_ui.initialize();
     left_sidebar_navigation_area.initialize();

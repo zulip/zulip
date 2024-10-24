@@ -160,6 +160,13 @@ export const user_topic_schema = z.object({
     visibility_policy: z.number(),
 });
 
+export const topic_settings_schema = z.object({
+    stream_id: z.number(),
+    topic_name: z.string(),
+    last_updated: z.number(),
+    is_locked: z.boolean(),
+});
+
 export const muted_user_schema = z.object({
     id: z.number(),
     timestamp: z.number(),
@@ -516,6 +523,11 @@ export const state_data_schema = z
         z
             .object({user_topics: z.array(user_topic_schema)})
             .transform((user_topics) => ({user_topics})),
+    )
+    .and(
+        z
+            .object({topic_settings: z.array(topic_settings_schema)})
+            .transform((topic_settings) => ({topic_settings})),
     )
     .and(
         z

@@ -82,6 +82,7 @@ import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import * as theme from "./theme";
+import * as topic_settings_ui from "./topic_settings_ui";
 import * as typing_events from "./typing_events";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
@@ -1036,5 +1037,9 @@ export function dispatch_normal_event(event) {
             }
             break;
         }
+
+        case "topic_settings":
+            topic_settings_ui.handle_topic_settings_updates(event);
+            break;
     }
 }

@@ -263,6 +263,8 @@ EXEMPT_FILES = make_set(
         "web/src/todo_widget.ts",
         "web/src/topic_list.ts",
         "web/src/topic_popover.js",
+        "web/src/topic_settings.ts",
+        "web/src/topic_settings_ui.ts",
         "web/src/tutorial.js",
         "web/src/typing.ts",
         "web/src/typing_events.ts",

@@ -782,6 +782,14 @@ exports.fixtures = {
         value: true,
     },
 
+    topic_settings: {
+        type: "topic_settings",
+        stream_id: 101,
+        topic_name: "failure",
+        last_updated: fake_now,
+        is_locked: true,
+    },
+
     typing__start: {
         type: "typing",
         op: "start",

@@ -70,6 +70,7 @@ export function initialize() {
 
     $("textarea#compose-textarea").on("input propertychange", () => {
         compose_validate.warn_if_topic_resolved(false);
+        compose_validate.warn_if_topic_locked(false);
         const compose_text_length = compose_validate.check_overflow_text();
         if (compose_text_length !== 0 && $("textarea#compose-textarea").hasClass("invalid")) {
             $("textarea#compose-textarea").toggleClass("invalid", false);
@@ -141,6 +142,22 @@ export function initialize() {
             } else {
                 compose.finish();
             }
+        },
+    );
+
+    $("body").on(
+        "click",
+        `.${CSS.escape(
+            compose_banner.CLASSNAMES.warn_if_topic_locked,
+        )} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            compose_state.set_recipient_viewed_topic_locked_banner(true);
+            const $target = $(event.target).parents(".main-view-banner");
+            const stream_id = Number.parseInt($target.attr("data-stream-id"), 10);
+            const topic_name = $target.attr("data-topic-name");
+            message_edit.toggle_topic_lock(stream_id, topic_name);
+            compose_validate.clear_topic_locked_warning(true);
         },
     );
 
