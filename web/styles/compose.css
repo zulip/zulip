@@ -931,9 +931,15 @@ textarea.new_message_textarea {
         box-shadow: none;
         outline: none;
 
-        padding: 4px 6px;
+        /* At 16px; 0.15em = 2.4px and 0.43em = 6.88px.
+           At 14px; 0.15em = 2.1px and 0.43em = 6.02px. */
+        padding: 0.15em 0.43em;
         /* Reset height to let `align-items: stretch` on the grid parent handle this. */
         height: auto;
+        /* Line-height needed to stop text from sagging on low-resolution
+           monitors on Safari and Chrome. 1.6em is 25.6px at 16px.
+           1.6em is 22.4px at 14px. */
+        line-height: 1.6em;
     }
 
     /* Styles for new conversation button in the recipient_box */
