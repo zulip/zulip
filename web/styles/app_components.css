@@ -626,7 +626,7 @@ input.settings_text_input {
 .unread_mention_info:not(:empty) {
     margin-right: 5px;
     margin-left: 2px;
-    opacity: 0.7;
+    opacity: 0.5;
 }
 
 /* Implement the web app's default-hidden convention for alert

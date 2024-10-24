@@ -19,10 +19,35 @@
         }
 
         .unread_count {
-            opacity: 0.7;
+            color: var(--color-unread-counter-normal);
+            background-color: var(--color-background-unread-counter-normal);
+            cursor: pointer;
+            outline: 0 solid var(--color-background-unread-counter-normal);
+            transition: outline-width 0.1s ease;
 
             &:hover {
-                opacity: 1;
+                outline-width: 1.5px;
+            }
+        }
+
+        #inbox-dm-header .unread_count {
+            color: var(--color-unread-counter-quiet);
+            background-color: var(--color-background-unread-counter-quiet);
+        }
+
+        #inbox-direct-messages-container {
+            .unread_count {
+                color: var(--color-unread-counter-prominent);
+                background-color: var(
+                    --color-background-unread-counter-prominent
+                );
+                outline: 0 solid
+                    var(--color-background-unread-counter-prominent);
+                transition: outline-width 0.1s ease;
+
+                &:hover {
+                    outline-width: 1.5px;
+                }
             }
         }
 
