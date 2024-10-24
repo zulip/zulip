@@ -55,6 +55,9 @@ ONE_TIME_NOTICES: list[OneTimeNotice] = [
     OneTimeNotice(
         name="intro_resolve_topic",
     ),
+    OneTimeNotice(
+        name="intro_topic_lock",
+    ),
 ]
 
 ONE_TIME_ACTIONS = [OneTimeAction(name="narrow_to_dm_with_welcome_bot_new_user")]

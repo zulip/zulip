@@ -65,6 +65,7 @@ from zerver.lib.topic import (
     update_edit_history,
     update_messages_for_topic_edit,
 )
+from zerver.lib.topic_settings import get_topic_lock_status
 from zerver.lib.types import EditHistoryEvent
 from zerver.lib.url_encoding import near_stream_message_url
 from zerver.lib.user_message import bulk_insert_all_ums
@@ -1299,6 +1300,25 @@ def check_update_message(
         )
         if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message's topic has passed."))
+
+    original_topic_name = topic_name
+    original_stream_id = stream_id
+
+    if topic_name is None:
+        topic_name = message.topic_name()
+
+    if stream_id is None:
+        stream_id = message.recipient.type_id
+
+    is_topic_locked = get_topic_lock_status(
+        user_profile=user_profile, topic_name=topic_name, stream_id=stream_id
+    )
+    # so that logic does not break in future code
+    topic_name = original_topic_name
+    stream_id = original_stream_id
+
+    if not user_profile.is_realm_admin and not user_profile.is_moderator and is_topic_locked:
+        raise JsonableError(_("This topic has been locked by a moderator."))
 
     rendering_result = None
     links_for_embed: set[str] = set()

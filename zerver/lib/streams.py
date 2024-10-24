@@ -517,6 +517,18 @@ def access_stream_by_name(
     return (stream, sub)
 
 
+def access_stream_id_by_name(
+    user_profile: UserProfile,
+    stream_name: str,
+) -> int | None:
+    try:
+        stream_id = get_realm_stream(stream_name, user_profile.realm_id).id
+    except Stream.DoesNotExist:
+        return None
+
+    return stream_id
+
+
 def access_web_public_stream(stream_id: int, realm: Realm) -> Stream:
     error = _("Invalid channel ID")
     try:

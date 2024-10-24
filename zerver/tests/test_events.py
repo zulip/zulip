@@ -104,6 +104,7 @@ from zerver.actions.streams import (
     do_rename_stream,
 )
 from zerver.actions.submessage import do_add_submessage
+from zerver.actions.topic_settings import do_set_topic_settings
 from zerver.actions.typing import check_send_typing_notification, do_send_stream_typing_notification
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
@@ -188,6 +189,7 @@ from zerver.lib.event_schema import (
     check_subscription_peer_remove,
     check_subscription_remove,
     check_subscription_update,
+    check_topic_settings_event,
     check_typing_start,
     check_typing_stop,
     check_update_display_settings,
@@ -210,6 +212,7 @@ from zerver.lib.events import apply_events, fetch_initial_state_data, post_proce
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.muted_users import get_mute_object
+from zerver.lib.streams import access_stream_by_id, can_access_stream_user_ids
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     create_dummy_file,
@@ -1683,6 +1686,21 @@ class NormalActionsTest(BaseAction):
         with self.verify_action() as events:
             do_delete_saved_snippet(saved_snippet_id, self.user_profile)
         check_saved_snippet_remove("events[0]", events[0])
+
+    def test_topic_settings_events(self) -> None:
+        (stream, sub) = access_stream_by_id(
+            self.user_profile, stream_id=get_stream("Verona", self.user_profile.realm).id
+        )
+        user_ids = can_access_stream_user_ids(stream)
+        with self.verify_action() as events:
+            do_set_topic_settings(
+                self.user_profile,
+                stream.id,
+                "verona3",
+                is_topic_locked=True,
+                users_to_notify=user_ids,
+            )
+        check_topic_settings_event("events[0]", events[0])
 
     def test_away_events(self) -> None:
         client = get_client("website")

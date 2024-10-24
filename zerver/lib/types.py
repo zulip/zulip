@@ -138,6 +138,17 @@ class UserTopicDict(TypedDict, total=False):
     visibility_policy: int
 
 
+class TopicSettingsDict(TypedDict, total=False):
+    """Dictionary containing fields fetched from the TopicSettings model that
+    are needed to encode the TopicSettings object for the API.
+    """
+
+    stream_id: int
+    topic_name: str
+    last_updated: int
+    is_locked: bool
+
+
 # This next batch of types is for Stream/Subscription objects.
 class RawStreamDict(TypedDict):
     """Dictionary containing fields fetched from the Stream model that
