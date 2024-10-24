@@ -8,6 +8,8 @@ import * as message_store from "./message_store";
 import type {Message} from "./message_store";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
+import {current_user} from "./state_data";
+import * as topic_settings from "./topic_settings";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 
@@ -169,5 +171,16 @@ export function user_can_send_direct_message(user_ids_string: string): boolean {
         (!get_direct_message_permission_hints(user_ids_string).is_known_empty_conversation ||
             people.user_can_initiate_direct_message_thread(user_ids_string)) &&
         people.user_can_direct_message(user_ids_string)
+    );
+}
+
+export function user_can_send_message_in_locked_topic(
+    stream_id: number,
+    topic_name: string,
+): boolean {
+    return (
+        current_user.is_admin ||
+        current_user.is_moderator ||
+        !topic_settings.get_topic_lock_status(stream_id, topic_name)
     );
 }
