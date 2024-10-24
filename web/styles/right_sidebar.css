@@ -161,6 +161,13 @@ $user_status_emoji_width: 24px;
         }
     }
 
+    .user_sidebar_entry.with_avatar .user_circle {
+        display: inline-block;
+        position: absolute;
+        top: 32px;
+        left: 32px;
+    }
+
     .empty-list-message {
         font-style: italic;
         color: var(--color-text-empty-list-message);
@@ -241,14 +248,49 @@ $user_status_emoji_width: 24px;
     align-items: baseline;
 }
 
-.user-presence-link {
-    grid-area: row-content;
+.user_sidebar_entry.with_avatar {
+    grid-template: "row-content" var(--line-height-sidebar-row) "row-content" auto / minmax(
+            0,
+            1fr
+        );
 
+    .selectable_sidebar_block {
+        grid-template:
+            "row-content markers-and-controls" var(--line-height-sidebar-row)
+            "row-content ." auto / minmax(0, 1fr)
+            minmax(0, auto);
+    }
+}
+
+.user-presence-row {
+    grid-area: row-content;
+}
+
+.user-presence-link {
     &:hover,
     &:focus {
         color: var(--color-text-sidebar-row);
         text-decoration: none;
     }
+}
+
+.information-settings .profile-with-avatar,
+.user_sidebar_entry.with_avatar .user-presence-row {
+    display: grid;
+    grid-template: "avatar row-content" var(--message-box-avatar-width) / auto minmax(
+            0,
+            1fr
+        );
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.information-settings .profile-with-avatar {
+    margin: 3px 0;
+}
+
+.user_sidebar_entry.with_avatar .user-presence-row {
+    margin: 3px;
 }
 
 .my_user_status {

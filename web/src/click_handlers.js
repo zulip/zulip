@@ -440,6 +440,9 @@ export function initialize() {
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
+        if ($(e.target).parents(".user-profile-picture").length === 1) {
+            return;
+        }
 
         const $li = $(e.target).parents("li");
 
@@ -515,7 +518,7 @@ export function initialize() {
     // BUDDY LIST TOOLTIPS (not displayed on touch devices)
     $(".buddy-list-section").on("mouseenter", ".selectable_sidebar_block", (e) => {
         e.stopPropagation();
-        const $elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
+        const $elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-row");
         const user_id_string = $elem.attr("data-user-id");
         const title_data = buddy_data.get_title_data(user_id_string, false);
 
@@ -543,14 +546,14 @@ export function initialize() {
            when hovering them in the right sidebar. This requires special logic, to avoid
            conflicting with the main tooltip or showing duplicate tooltips.
         */
-        $(".user-presence-link .status-emoji-name").off("mouseenter").off("mouseleave");
-        $(".user-presence-link .status-emoji-name").on("mouseenter", () => {
+        $(".user-presence-row .status-emoji-name").off("mouseenter").off("mouseleave");
+        $(".user-presence-row .status-emoji-name").on("mouseenter", () => {
             const instance = $elem.parent()[0]._tippy;
             if (instance && instance.state.isVisible) {
                 instance.destroy();
             }
         });
-        $(".user-presence-link .status-emoji-name").on("mouseleave", () => {
+        $(".user-presence-row .status-emoji-name").on("mouseleave", () => {
             do_render_buddy_list_tooltip(
                 $elem.parent(),
                 title_data,
