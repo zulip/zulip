@@ -1,6 +1,8 @@
 # Zulip Clubhouse integration
 
-Get Zulip notifications for your Clubhouse Stories and Epics!
+Get Zulip notifications for your Clubhouse(now known as Shortcut) Stories and Epics!
+
+> **Note**: Clubhouse has changed its name to Shortcut. However, for backward compatibility and to avoid confusion, we will continue to us the name "Clubhouse" in this documentation.
 
 {start_tabs}
 
