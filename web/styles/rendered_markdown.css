@@ -941,3 +941,11 @@
         white-space: nowrap;
     }
 }
+
+.user-mention {
+    i.zulip-icon-bot {
+        vertical-align: middle;
+        position: relative;
+        top: -1px;
+    }
+}
