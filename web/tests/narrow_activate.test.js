@@ -57,9 +57,8 @@ const unread_ops = mock_esm("../src/unread_ops");
 mock_esm("../src/pm_list", {
     handle_narrow_activated() {},
 });
-mock_esm("../src/unread_ui", {
-    reset_unread_banner() {},
-    update_unread_banner() {},
+mock_esm("../src/message_list_navigation", {
+    update: noop,
 });
 
 //
@@ -119,8 +118,6 @@ function test_helper({override}) {
     stub(unread_ops, "process_visible");
     stub(compose_closed_ui, "update_buttons_for_stream_views");
     stub(compose_closed_ui, "update_buttons_for_private");
-    // We don't test the css calls; we just skip over them.
-    $("#mark_read_on_scroll_state_banner").toggleClass = noop;
 
     return {
         assert_events(expected_events) {

@@ -14,6 +14,7 @@ import * as message_feed_top_notices from "./message_feed_top_notices";
 import * as message_helper from "./message_helper";
 import type {MessageList} from "./message_list";
 import type {MessageListData} from "./message_list_data";
+import * as message_list_navigation from "./message_list_navigation";
 import * as message_lists from "./message_lists";
 import {raw_message_schema} from "./message_store";
 import * as message_util from "./message_util";
@@ -132,6 +133,7 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
     direct_message_group_data.process_loaded_messages(messages);
     stream_list.update_streams_sidebar();
     stream_list.maybe_scroll_narrow_into_view();
+    message_list_navigation.update();
 
     if (
         message_lists.current !== undefined &&

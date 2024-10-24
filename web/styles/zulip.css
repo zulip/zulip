@@ -2105,3 +2105,51 @@ body:not(.hide-left-sidebar) {
         border: 1px solid var(--color-border-personal-menu-avatar);
     }
 }
+
+#message-list-navigation {
+    display: flex;
+    justify-content: center;
+    margin: 5px;
+    /* 18px at 16px/1em */
+    font-size: 1.125em;
+}
+
+#message-list-navigation-buttons-wrapper {
+    display: inline;
+    border: 1px solid var(--color-border-sidebar-subheader);
+    border-radius: 5px;
+}
+
+.message-list-navigation-button {
+    display: inline-block;
+    line-height: 0;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    color: var(--color-message-list-navigation-medium-attention-text);
+    background: transparent;
+
+    &:hover {
+        background: var(
+            --color-message-list-navigation-medium-attention-background-hover
+        );
+    }
+
+    &:active {
+        background: var(
+            --color-message-list-navigation-medium-attention-background-active
+        );
+    }
+
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        outline: 1px solid var(--color-outline-focus);
+    }
+}
+
+#message-list-navigation-next-unread-conversation {
+    float: right;
+}
