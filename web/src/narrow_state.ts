@@ -197,12 +197,11 @@ export function pm_emails_string(
 export function get_first_unread_info(
     current_filter: Filter | undefined = filter(),
 ): {flavor: "cannot_compute" | "not_found"} | {flavor: "found"; msg_id: number} {
+    const cannot_compute_response: {flavor: "cannot_compute"} = {flavor: "cannot_compute"};
     if (current_filter === undefined) {
         // we don't yet support the all-messages view
         blueslip.error("unexpected call to get_first_unread_info");
-        return {
-            flavor: "cannot_compute",
-        };
+        return cannot_compute_response;
     }
 
     if (!current_filter.can_apply_locally()) {
@@ -210,18 +209,14 @@ export function get_first_unread_info(
         // that the client isn't privy to, we need to wait for the
         // server to give us a definitive list of messages before
         // deciding where we'll move the selection.
-        return {
-            flavor: "cannot_compute",
-        };
+        return cannot_compute_response;
     }
 
     const unread_ids = _possible_unread_message_ids(current_filter);
 
     if (unread_ids === undefined) {
         // _possible_unread_message_ids() only works for certain narrows
-        return {
-            flavor: "cannot_compute",
-        };
+        return cannot_compute_response;
     }
 
     const msg_id = current_filter.first_valid_id_from(unread_ids);
