@@ -62,6 +62,31 @@
             </a>
         </li>
         {{!-- Group 3 --}}
+        {{#if (or can_rename_topic can_manage_topic_lock )}}
+        <li role="separator" class="popover-menu-separator"></li>
+        {{/if}}
+        {{#if can_rename_topic}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="sidebar-popover-toggle-resolved popover-menu-link" tabindex="0">
+                {{# if topic_is_resolved }}
+                <i class="popover-menu-icon zulip-icon zulip-icon-check-x" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Mark as unresolved"}}</span>
+                {{else}}
+                <i class="popover-menu-icon zulip-icon zulip-icon-check" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Mark as resolved"}}</span>
+                {{/if}}
+            </a>
+        </li>
+        {{/if}}
+        {{#if can_manage_topic_lock}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="sidebar-popover-change-topic-lock-status popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-{{#if is_topic_locked}}unlock{{else}}lock{{/if}}-topic" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{#if is_topic_locked}}{{t 'Unlock topic'}}{{else}}{{t 'Lock topic'}}{{/if}}</span>
+            </a>
+        </li>
+        {{/if}}
+        {{!-- Group 4 --}}
         {{#if (or can_move_topic can_rename_topic is_realm_admin)}}
         <li role="separator" class="popover-menu-separator"></li>
         {{/if}}
@@ -77,19 +102,6 @@
             <a role="menuitem" class="sidebar-popover-rename-topic-messages popover-menu-link" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-rename" aria-hidden="true"></i>
                 <span class="popover-menu-label">{{t "Rename topic" }}</span>
-            </a>
-        </li>
-        {{/if}}
-        {{#if can_rename_topic}}
-        <li role="none" class="link-item popover-menu-list-item">
-            <a role="menuitem" class="sidebar-popover-toggle-resolved popover-menu-link" tabindex="0">
-                {{# if topic_is_resolved }}
-                <i class="popover-menu-icon zulip-icon zulip-icon-check-x" aria-hidden="true"></i>
-                <span class="popover-menu-label">{{t "Mark as unresolved"}}</span>
-                {{else}}
-                <i class="popover-menu-icon zulip-icon zulip-icon-check" aria-hidden="true"></i>
-                <span class="popover-menu-label">{{t "Mark as resolved"}}</span>
-                {{/if}}
             </a>
         </li>
         {{/if}}
