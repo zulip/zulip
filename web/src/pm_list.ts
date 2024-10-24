@@ -258,4 +258,12 @@ export function initialize(): void {
 
         clear_search();
     });
+
+    $(".direct-messages-container").on("mouseenter", () => {
+        $("#direct-messages-section-header").addClass("hover-over-dm-section");
+    });
+
+    $(".direct-messages-container").on("mouseleave", () => {
+        $("#direct-messages-section-header").removeClass("hover-over-dm-section");
+    });
 }

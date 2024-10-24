@@ -259,6 +259,7 @@
         }
     }
 
+    &.hover-over-dm-section,
     &.zoom-in,
     &:hover {
         #compose-new-direct-message,
