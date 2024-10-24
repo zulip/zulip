@@ -316,6 +316,28 @@ h3,
     }
 }
 
+.modal_select:focus {
+    border-color: hsl(207deg 65% 56%);
+    box-shadow: none;
+}
+
+.message-dropdown {
+    position: relative;
+}
+
+.input-group.message-dropdown .form-control {
+    margin-left: -20px;
+}
+
+.message-count {
+    margin-left: -20px;
+    margin-top: -20px;
+    display: inline-block;
+    padding: 4px;
+    border-radius: 4px;
+    position: relative;
+}
+
 /* For consistent custom select dropdowns that match with dropdown-widget */
 select.modal_select,
 select.list_select,
