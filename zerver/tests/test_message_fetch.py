@@ -5142,16 +5142,19 @@ class MessageVisibilityTest(ZulipTestCase):
 class PersonalMessagesNearTest(ZulipTestCase):
     def test_near_pm_message_url(self) -> None:
         realm = get_realm("zulip")
-        message = dict(
-            type="personal",
-            id=555,
-            display_recipient=[
-                dict(id=77),
-                dict(id=80),
-            ],
-        )
+        recipient_77: UserDisplayRecipient = {
+            "id": 77,
+            "email": "",
+            "full_name": "",
+            "is_mirror_dummy": False,
+        }
+        recipient_80: UserDisplayRecipient = {
+            "id": 80,
+            "email": "",
+            "full_name": "",
+            "is_mirror_dummy": False,
+        }
         url = near_message_url(
-            realm=realm,
-            message=message,
+            realm=realm, message_id=555, display_recipient=[recipient_77, recipient_80]
         )
         self.assertEqual(url, "http://zulip.testserver/#narrow/dm/77,80-pm/near/555")
