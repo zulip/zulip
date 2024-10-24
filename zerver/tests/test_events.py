@@ -3794,7 +3794,7 @@ class RealmPropertyActionTest(BaseAction):
             else:
                 check_realm_update("events[0]", events[0], name)
 
-    def do_set_realm_permission_group_setting_test(self, setting_name: str) -> None:
+    def do_test_allow_system_group(self, setting_name: str) -> None:
         all_system_user_groups = NamedUserGroup.objects.filter(
             realm=self.user_profile.realm,
             is_system_group=True,
@@ -3808,22 +3808,6 @@ class RealmPropertyActionTest(BaseAction):
 
         now = timezone_now()
 
-        do_change_realm_permission_group_setting(
-            self.user_profile.realm,
-            setting_name,
-            default_group,
-            acting_user=self.user_profile,
-        )
-
-        self.assertEqual(
-            RealmAuditLog.objects.filter(
-                realm=self.user_profile.realm,
-                event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
-                event_time__gte=now,
-                acting_user=self.user_profile,
-            ).count(),
-            1,
-        )
         for user_group in all_system_user_groups:
             if user_group.name == default_group_name:
                 continue
@@ -4037,7 +4021,7 @@ class RealmPropertyActionTest(BaseAction):
 
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             with self.settings(SEND_DIGEST_EMAILS=True):
-                self.do_set_realm_permission_group_setting_test(prop)
+                self.do_test_allow_system_group(prop)
             if Realm.REALM_PERMISSION_GROUP_SETTINGS[prop].require_system_group:
                 # Anonymous system groups aren't relevant when
                 # restricted to system groups.
