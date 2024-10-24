@@ -143,7 +143,7 @@ class Stream(models.Model):
 
     stream_permission_group_settings = {
         "can_remove_subscribers_group": GroupPermissionSetting(
-            require_system_group=True,
+            require_system_group=False,
             allow_internet_group=False,
             allow_owners_group=False,
             allow_nobody_group=False,

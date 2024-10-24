@@ -1459,7 +1459,33 @@ paths:
                                 value:
                                   description: |
                                     The new value of the changed property.
+
+                                    **Changes**: Starting with Zulip 10.0 (feature level 320), this
+                                    field can be an object for `can_remove_subscribers_group` property,
+                                    which is a [group-setting value][setting-values], when the setting
+                                    is set to a combination of users and groups.
+
+                                    [setting-values]: /api/group-setting-values
                                   oneOf:
+                                    - type: object
+                                      additionalProperties: false
+                                      properties:
+                                        direct_members:
+                                          description: |
+                                            The list of IDs of individual users in the collection of users with this permission.
+                                          type: array
+                                          items:
+                                            type: integer
+                                        direct_subgroups:
+                                          description: |
+                                            The list of IDs of the groups in the collection of users with this permission.
+                                          type: array
+                                          items:
+                                            type: integer
+                                      description: |
+                                        If an object, it will be a [group-setting value][setting-values] with these fields:
+
+                                        [setting-values]: /api/group-setting-values
                                     - type: integer
                                     - type: boolean
                                     - type: string
@@ -10364,7 +10390,7 @@ paths:
                 message_retention_days:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 can_remove_subscribers_group:
-                  $ref: "#/components/schemas/CanRemoveSubscribersGroupId"
+                  $ref: "#/components/schemas/CanRemoveSubscribersGroup"
               required:
                 - subscriptions
             encoding:
@@ -19958,7 +19984,43 @@ paths:
                 message_retention_days:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 can_remove_subscribers_group:
-                  $ref: "#/components/schemas/CanRemoveSubscribersGroupId"
+                  description: |
+                    The set of users who have permission to unsubscribe others from this
+                    channel expressed as an [update to a group-setting value][update-group-setting].
+
+                    Note that a user who is a member of the specified user group must
+                    also [have access](/help/channel-permissions) to the channel in
+                    order to unsubscribe others.
+
+                    **Changes**: Prior to Zulip 10.0 (feature level 320), this value was
+                    always the integer ID of a system group.
+
+                    Before Zulip 8.0 (feature level 197), the `can_remove_subscribers_group`
+                    setting was named `can_remove_subscribers_group_id`.
+
+                    New in Zulip 7.0 (feature level 161).
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    new:
+                      allOf:
+                        - description: |
+                            The new [group-setting value](/api/group-setting-values) for who would
+                            have the permission to remove subscribers from the channel.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                    old:
+                      allOf:
+                        - description: |
+                            The expected current [group-setting value](/api/group-setting-values)
+                            for who has the permission to remove subscribers from the channel.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                  required:
+                    - new
+                  example:
+                    {
+                      "new": {"direct_members": [10], "direct_subgroups": [11]},
+                      "old": 15,
+                    }
             encoding:
               is_private:
                 contentType: application/json
@@ -21819,16 +21881,7 @@ components:
             **Changes**: Deprecated in Zulip 3.0 (feature level 1). Clients
             should use `stream_post_policy` instead.
         can_remove_subscribers_group:
-          type: integer
-          description: |
-            ID of the user group whose members are allowed to unsubscribe others
-            from the channel.
-
-            **Changes**: Before Zulip 8.0 (feature level 197),
-            the `can_remove_subscribers_group` setting
-            was named `can_remove_subscribers_group_id`.
-
-            New in Zulip 6.0 (feature level 142).
+          $ref: "#/components/schemas/CanRemoveSubscribersGroup"
     BasicBot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -22835,16 +22888,7 @@ components:
             If `null`, the channel was recently created and there is
             insufficient data to estimate the average traffic.
         can_remove_subscribers_group:
-          type: integer
-          description: |
-            ID of the user group whose members are allowed to unsubscribe others
-            from the channel.
-
-            **Changes**: Before Zulip 8.0 (feature level 197),
-            the `can_remove_subscribers_group` setting
-            was named `can_remove_subscribers_group_id`.
-
-            New in Zulip 6.0 (feature level 142).
+          $ref: "#/components/schemas/CanRemoveSubscribersGroup"
         is_archived:
           type: boolean
           description: |
@@ -24515,25 +24559,26 @@ components:
         - type: string
         - type: integer
       example: "20"
-    CanRemoveSubscribersGroupId:
-      description: |
-        ID of the [user group](/api/get-user-groups) whose members are
-        allowed to unsubscribe others from the channel. Note that a user
-        who is a member of the specified user group must also [have
-        access](/help/channel-permissions) to the channel in order to
-        unsubscribe others.
+    CanRemoveSubscribersGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to remove subscribers from this channel.
 
-        This setting can currently only be set to user groups that are
-        system groups, except for the system groups named
-        `"role:internet"` and `"role:owners"`.
+            Note that a user who is a member of the specified user group must
+            also [have access](/help/channel-permissions) to the channel in
+            order to unsubscribe others.
 
-        **Changes**: Before Zulip 8.0 (feature level 197),
-        the `can_remove_subscribers_group` setting
-        was named `can_remove_subscribers_group_id`.
+            **Changes**: Prior to Zulip 10.0 (feature level 320), this value was
+            always the integer ID of a system group.
 
-        New in Zulip 7.0 (feature level 161).
-      type: integer
-      example: 20
+            Before Zulip 8.0 (feature level 197), the `can_remove_subscribers_group`
+            setting was named `can_remove_subscribers_group_id`.
+
+            New in Zulip 6.0 (feature level 142).
+
+            [setting-values]: /api/group-setting-values
     LinkifierPattern:
       description: |
         The [Python regular

@@ -191,7 +191,7 @@ class SubscriptionStreamDict(TypedDict):
     """
 
     audible_notifications: bool | None
-    can_remove_subscribers_group: int
+    can_remove_subscribers_group: int | AnonymousSettingGroupDict
     color: str
     creator_id: int | None
     date_created: int
@@ -245,7 +245,7 @@ class DefaultStreamDict(TypedDict):
     """
 
     is_archived: bool
-    can_remove_subscribers_group: int
+    can_remove_subscribers_group: int | AnonymousSettingGroupDict
     creator_id: int | None
     date_created: int
     description: str

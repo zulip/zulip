@@ -40,13 +40,18 @@ from zerver.lib.streams import (
     can_access_stream_user_ids,
     check_basic_stream_access,
     get_occupied_streams,
+    get_setting_values_for_group_settings,
     get_stream_permission_policy_name,
     render_stream_description,
     send_stream_creation_event,
     stream_to_dict,
 )
 from zerver.lib.subscription_info import get_subscribers_query
-from zerver.lib.types import APISubscriptionDict
+from zerver.lib.types import AnonymousSettingGroupDict, APISubscriptionDict
+from zerver.lib.user_groups import (
+    get_group_setting_value_for_api,
+    get_group_setting_value_for_audit_log_data,
+)
 from zerver.lib.users import (
     get_subscribers_of_target_user_subscriptions,
     get_users_involved_in_dms_with_target_users,
@@ -349,13 +354,21 @@ def send_subscription_add_events(
                 subscribers = list(subscriber_dict[stream.id])
             stream_subscribers_dict[stream.id] = subscribers
 
+    setting_group_ids = set()
+    for sub_info in sub_info_list:
+        stream = sub_info.stream
+        for setting_name in Stream.stream_permission_group_settings:
+            setting_group_ids.add(getattr(stream, setting_name + "_id"))
+
+    setting_groups_dict = get_setting_values_for_group_settings(list(setting_group_ids))
+
     for user_id, sub_infos in info_by_user.items():
         sub_dicts: list[APISubscriptionDict] = []
         for sub_info in sub_infos:
             stream = sub_info.stream
             stream_subscribers = stream_subscribers_dict[stream.id]
             subscription = sub_info.sub
-            stream_dict = stream_to_dict(stream, recent_traffic)
+            stream_dict = stream_to_dict(stream, recent_traffic, setting_groups_dict)
             # This is verbose as we cannot unpack existing TypedDict
             # to initialize another TypedDict while making mypy happy.
             # https://github.com/python/mypy/issues/5382
@@ -447,6 +460,14 @@ def send_stream_creation_events_for_previously_inaccessible_streams(
     stream_ids = set(altered_user_dict.keys())
     recent_traffic = get_streams_traffic(stream_ids, realm)
 
+    setting_group_ids = set()
+    for stream_id in stream_ids:
+        stream = stream_dict[stream_id]
+        for setting_name in Stream.stream_permission_group_settings:
+            setting_group_ids.add(getattr(stream, setting_name + "_id"))
+
+    setting_groups_dict = get_setting_values_for_group_settings(list(setting_group_ids))
+
     for stream_id, stream_users_ids in altered_user_dict.items():
         stream = stream_dict[stream_id]
 
@@ -467,7 +488,9 @@ def send_stream_creation_events_for_previously_inaccessible_streams(
             notify_user_ids = list(stream_users_ids & altered_guests)
 
         if notify_user_ids:
-            send_stream_creation_event(realm, stream, notify_user_ids, recent_traffic)
+            send_stream_creation_event(
+                realm, stream, notify_user_ids, recent_traffic, setting_groups_dict
+            )
 
 
 def send_peer_subscriber_events(
@@ -1561,15 +1584,29 @@ def do_change_stream_group_based_setting(
     setting_name: str,
     user_group: UserGroup,
     *,
+    old_setting_api_value: int | AnonymousSettingGroupDict | None = None,
     acting_user: UserProfile | None = None,
 ) -> None:
     old_user_group = getattr(stream, setting_name)
-    old_user_group_id = None
-    if old_user_group is not None:
-        old_user_group_id = old_user_group.id
 
     setattr(stream, setting_name, user_group)
     stream.save()
+
+    if old_setting_api_value is None:
+        # Most production callers will have computed this as part of
+        # verifying whether there's an actual change to make, but it
+        # feels quite clumsy to have to pass it from unit tests, so we
+        # compute it here if not provided by the caller.
+        old_setting_api_value = get_group_setting_value_for_api(old_user_group)
+    new_setting_api_value = get_group_setting_value_for_api(user_group)
+
+    if not hasattr(old_user_group, "named_user_group") and hasattr(user_group, "named_user_group"):
+        # We delete the UserGroup which the setting was set to
+        # previously if it does not have any linked NamedUserGroup
+        # object, as it is not used anywhere else. A new UserGroup
+        # object would be created if the setting is later set to
+        # a combination of users and groups.
+        old_user_group.delete()
 
     RealmAuditLog.objects.create(
         realm=stream.realm,
@@ -1578,8 +1615,12 @@ def do_change_stream_group_based_setting(
         event_type=AuditLogEventType.CHANNEL_GROUP_BASED_SETTING_CHANGED,
         event_time=timezone_now(),
         extra_data={
-            RealmAuditLog.OLD_VALUE: old_user_group_id,
-            RealmAuditLog.NEW_VALUE: user_group.id,
+            RealmAuditLog.OLD_VALUE: get_group_setting_value_for_audit_log_data(
+                old_setting_api_value
+            ),
+            RealmAuditLog.NEW_VALUE: get_group_setting_value_for_audit_log_data(
+                new_setting_api_value
+            ),
             "property": setting_name,
         },
     )
@@ -1587,7 +1628,7 @@ def do_change_stream_group_based_setting(
         op="update",
         type="stream",
         property=setting_name,
-        value=user_group.id,
+        value=new_setting_api_value,
         stream_id=stream.id,
         name=stream.name,
     )
