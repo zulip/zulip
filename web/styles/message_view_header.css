@@ -66,6 +66,12 @@
         text-overflow: ellipsis;
     }
 
+    .message-header-archived {
+        color: var(--color-text-message-header-archived);
+        cursor: default;
+        padding-left: 5px;
+    }
+
     .narrow_description {
         /* Flexbox's baseline alignment is responsible for
            matching the description's baseline to the title.

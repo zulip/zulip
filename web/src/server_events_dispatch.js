@@ -28,6 +28,7 @@ import * as message_edit from "./message_edit";
 import * as message_events from "./message_events";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
+import * as message_view_header from "./message_view_header";
 import * as muted_users_ui from "./muted_users_ui";
 import * as narrow_state from "./narrow_state";
 import * as narrow_title from "./narrow_title";
@@ -603,6 +604,7 @@ export function dispatch_normal_event(event) {
                         );
                         stream_data.delete_sub(stream.stream_id);
                         stream_settings_ui.remove_stream(stream.stream_id);
+                        message_view_header.maybe_rerender_title_area_for_stream(stream);
                         if (was_subscribed) {
                             stream_list.remove_sidebar_row(stream.stream_id);
                             if (stream.stream_id === compose_state.selected_recipient_id) {
@@ -631,6 +633,7 @@ export function dispatch_normal_event(event) {
                             message_lists.current.update_trailing_bookend(true);
                         }
                     }
+                    message_live_update.rerender_messages_view();
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
                 default:

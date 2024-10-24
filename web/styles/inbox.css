@@ -479,6 +479,10 @@
             }
         }
     }
+
+    .inbox-header-stream-archived {
+        color: var(--color-text-message-header-archived);
+    }
 }
 
 #inbox-view {
