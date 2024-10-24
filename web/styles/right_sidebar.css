@@ -116,7 +116,7 @@ $user_status_emoji_width: 24px;
 }
 
 .buddy-list-section {
-    margin-bottom: 0;
+    margin: 0;
     overflow-x: hidden;
     list-style-position: inside; /* Draw the bullets inside our box */
     line-height: var(--line-height-sidebar-row);
