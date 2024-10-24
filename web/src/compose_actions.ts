@@ -120,6 +120,7 @@ function clear_box(): void {
     compose_validate.clear_topic_resolved_warning();
     compose_validate.clear_stream_wildcard_warnings($("#compose_banners"));
     compose_validate.set_user_acknowledged_stream_wildcard_flag(false);
+    compose_banner.clear_split_messages_info_banner();
 
     compose_state.set_recipient_edited_manually(false);
     compose_state.set_is_content_unedited_restored_draft(false);
