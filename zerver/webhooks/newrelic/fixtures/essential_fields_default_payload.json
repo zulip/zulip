@@ -1,0 +1,11 @@
+{
+	"issueUrl": "https://radar-api.service.newrelic.com/accounts/1/issues/0ea2df1c-adab-45d2-aae0-042b609d2322?notifier=SLACK",
+	"title": "PIETER-UBUNTU query result is > 2.0 for 1 minutes on 'High CPU'",
+	"priority": "CRITICAL",
+	"totalIncidents": 1,
+	"state": "CREATED",
+	"createdAt": 1713592289021,
+	"updatedAt": 1713592289021,
+	"alertPolicyNames": ["Golden Signals"],
+	"alertConditionNames": ["High CPU"]
+}
