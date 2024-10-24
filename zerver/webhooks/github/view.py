@@ -3,6 +3,7 @@ from collections.abc import Callable
 from datetime import datetime, timezone
 
 from django.http import HttpRequest, HttpResponse
+from pydantic import Json
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
@@ -899,6 +900,7 @@ def api_github_webhook(
     payload: JsonBodyPayload[WildValue],
     branches: str | None = None,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
+    ignore_private_repositories: Json[bool] = False,
 ) -> HttpResponse:
     """
     GitHub sends the event as an HTTP header.  We have our
@@ -907,6 +909,15 @@ def api_github_webhook(
     refine it based on the payload.
     """
     header_event = validate_extract_webhook_http_header(request, "X-GitHub-Event", "GitHub")
+
+    # Check if the repository is private and skip processing if ignore_private_repositories is True
+    if (
+        "repository" in payload
+        and payload["repository"]["private"].tame(check_bool)
+        and ignore_private_repositories
+    ):
+        # Ignore private repository events
+        return json_success(request)
 
     event = get_zulip_event_name(header_event, payload, branches)
     if event is None:

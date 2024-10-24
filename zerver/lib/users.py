@@ -130,7 +130,9 @@ def check_valid_bot_config(
         for integration in WEBHOOK_INTEGRATIONS:
             if integration.name == service_name:
                 # key: validator
-                config_options = {c[1]: c[2] for c in integration.config_options}
+                config_options = {
+                    option.name: option.validator for option in integration.config_options
+                }
                 break
         if not config_options:
             raise JsonableError(

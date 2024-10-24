@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 314**
+
+* [`POST /register`](/api/register-queue): Updated `realm_incoming_webhook_bots`
+to use `WebhookConfigOption` structure, which includes a
+`key`, `label`, and `validator` for bot configuration options.
+
 **Feature level 313**
 
 * [`PATCH /users/{user_id}`](/api/update-user): Added `new_email` field to
