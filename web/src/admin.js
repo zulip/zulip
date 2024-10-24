@@ -8,6 +8,7 @@ import * as bot_data from "./bot_data";
 import * as demo_organizations_ui from "./demo_organizations_ui";
 import {$t, get_language_name, language_list} from "./i18n";
 import {page_params} from "./page_params";
+import * as people from "./people";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as settings from "./settings";
 import * as settings_bots from "./settings_bots";
@@ -109,6 +110,7 @@ export function build_page() {
     const options = {
         custom_profile_field_types: realm.custom_profile_field_types,
         full_name: current_user.full_name,
+        profile_picture: people.small_avatar_url_for_person(current_user),
         realm_name: realm.realm_name,
         realm_org_type: realm.realm_org_type,
         realm_available_video_chat_providers: realm.realm_available_video_chat_providers,

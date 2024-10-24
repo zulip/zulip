@@ -143,6 +143,10 @@ $user_status_emoji_width: 24px;
         &.highlighted_user {
             background-color: var(--color-buddy-list-highlighted-user);
             box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+
+            .user_circle {
+                outline: 1px solid var(--color-buddy-list-highlighted-user);
+            }
         }
     }
 
@@ -159,6 +163,15 @@ $user_status_emoji_width: 24px;
                line-height values. */
             margin-top: -2.5px;
         }
+    }
+
+    .user_sidebar_entry.with_avatar .user_circle {
+        display: inline-block;
+        position: absolute;
+        width: 0.4em;
+        height: 0.4em;
+        top: 1.7em;
+        left: 1.7em;
     }
 
     .empty-list-message {
@@ -241,6 +254,13 @@ $user_status_emoji_width: 24px;
     align-items: baseline;
 }
 
+.user_sidebar_entry.with_avatar .selectable_sidebar_block {
+    grid-template:
+        "row-content markers-and-controls" var(--line-height-sidebar-row-with-avatars)
+        "row-content ." auto / minmax(0, 1fr)
+        minmax(0, auto);
+}
+
 .user-presence-link {
     grid-area: row-content;
 
@@ -249,6 +269,26 @@ $user_status_emoji_width: 24px;
         color: var(--color-text-sidebar-row);
         text-decoration: none;
     }
+}
+
+.information-settings .profile-with-avatar,
+.user_sidebar_entry.with_avatar .user-presence-link {
+    line-height: var(--line-height-sidebar-row-with-avatars);
+    display: grid;
+    grid-template: "avatar row-content" var(--right-sidebar-avatar-width) / auto minmax(
+            0,
+            1fr
+        );
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.information-settings .profile-with-avatar {
+    margin: 5px 0;
+}
+
+.user_sidebar_entry.with_avatar .user-presence-link {
+    margin: 3px;
 }
 
 .my_user_status {
