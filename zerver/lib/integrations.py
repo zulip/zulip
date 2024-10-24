@@ -203,6 +203,7 @@ class WebhookIntegration(Integration):
         doc: str | None = None,
         stream_name: str | None = None,
         legacy: bool = False,
+        legacy_names: list[str] | None = None,
         config_options: Sequence[WebhookConfigOption] = [],
         dir_name: str | None = None,
     ) -> None:
@@ -227,6 +228,11 @@ class WebhookIntegration(Integration):
         if url is None:
             url = self.DEFAULT_URL.format(name=name)
         self.url = url
+        self.urls = [url]
+        if legacy_names is not None:
+            self.urls.extend(
+                self.DEFAULT_URL.format(name=legacy_name) for legacy_name in legacy_names
+            )
 
         if doc is None:
             doc = self.DEFAULT_DOC_PATH.format(name=name, ext="md")
@@ -247,8 +253,8 @@ class WebhookIntegration(Integration):
         return function(request)
 
     @property
-    def url_object(self) -> URLPattern:
-        return path(self.url, self.view)
+    def url_objects(self) -> list[URLPattern]:
+        return [path(url, self.view) for url in self.urls]
 
 
 def split_fixture_path(path: str) -> tuple[str, str]:
