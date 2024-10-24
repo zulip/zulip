@@ -6,6 +6,7 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import {buddy_list} from "./buddy_list";
 import {media_breakpoints_num} from "./css_variables";
+import {reorder_left_sidebar_navigation_list} from "./left_sidebar_navigation_area";
 import {localstorage} from "./localstorage";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
@@ -13,7 +14,6 @@ import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
-import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as spectators from "./spectators";
 import {current_user} from "./state_data";
@@ -217,17 +217,13 @@ export function initialize_left_sidebar(): void {
     const rendered_sidebar = render_left_sidebar({
         is_guest: current_user.is_guest,
         development_environment: page_params.development_environment,
-        is_inbox_home_view:
-            user_settings.web_home_view === settings_config.web_home_view_values.inbox.code,
-        is_all_messages_home_view:
-            user_settings.web_home_view === settings_config.web_home_view_values.all_messages.code,
-        is_recent_view_home_view:
-            user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
         hide_unread_counts: settings_data.should_mask_unread_count(false),
         is_spectator: page_params.is_spectator,
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);
+    // make sure home-view order persists
+    reorder_left_sidebar_navigation_list(user_settings.web_home_view);
 }
 
 export function initialize_right_sidebar(): void {

@@ -88,7 +88,7 @@ run_test("update_count_in_dom", () => {
 
     make_elem($(".top_left_inbox"), "<home-count>");
 
-    make_elem($(".selected-home-view"), "<home-count>");
+    make_elem($(left_sidebar_navigation_area.get_home_view_li()), "<home-count>");
 
     make_elem($(".top_left_starred_messages"), "<starred-count>");
 
