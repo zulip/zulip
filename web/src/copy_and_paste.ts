@@ -364,12 +364,29 @@ function image_to_zulip_markdown(
     // Using Zulip's link like syntax for images
     return src ? "[" + title + "](" + src + ")" : (node.getAttribute("alt") ?? "");
 }
-
 function within_single_element(html_fragment: HTMLElement): boolean {
+    // Filter out non-element nodes by checking if the node is an HTMLElement or TextNode with non-whitespace content
+    const validElements = [...html_fragment.childNodes].filter((node) => {
+        if (node instanceof HTMLElement) {
+            return node.nodeName !== "BR" && node.nodeName !== "META";
+        } else if (node.nodeType === (globalThis.Node ? globalThis.Node.TEXT_NODE : 3)) {
+            // Check if textContent is not null and contains non-whitespace content
+            return node.textContent?.trim() !== "";
+        }
+        return false;
+    });
+
+    // Calculate the total count without considering <meta> tags
+    const totalElementsCount = validElements.length;
+
+    // Ensure that validElements[0] exists before accessing innerHTML/textContent
+    const firstElement = validElements[0];
     return (
-        html_fragment.childNodes.length === 1 &&
-        html_fragment.firstElementChild !== null &&
-        html_fragment.firstElementChild.innerHTML !== ""
+        totalElementsCount === 1 &&
+        firstElement !== undefined &&
+        (firstElement instanceof HTMLElement
+            ? firstElement.innerHTML.trim() !== ""
+            : firstElement.textContent?.trim() !== "")
     );
 }
 
@@ -404,17 +421,14 @@ export function paste_handler_converter(paste_html: string): string {
     assert(copied_html_fragment !== null);
     const copied_within_single_element = within_single_element(copied_html_fragment);
     const outer_elements_to_retain = ["PRE", "UL", "OL", "A", "CODE"];
-    // If the entire selection copied is within a single HTML element (like an
-    // `h1`), we don't want to retain its styling, except when it is needed to
-    // identify the intended structure of the copied content.
+    const firstChild = copied_html_fragment.firstElementChild;
     if (
         copied_within_single_element &&
-        copied_html_fragment.firstElementChild !== null &&
-        !outer_elements_to_retain.includes(copied_html_fragment.firstElementChild.nodeName)
+        firstChild !== null &&
+        !outer_elements_to_retain.includes(firstChild.nodeName)
     ) {
-        paste_html = copied_html_fragment.firstElementChild.innerHTML;
+        paste_html = firstChild.innerHTML;
     }
-
     // turning off escaping (for now) to remove extra `/`
     TurndownService.prototype.escape = (string) => string;
 
@@ -519,7 +533,6 @@ export function paste_handler_converter(paste_html: string): string {
             return "";
         },
     });
-
     // We override the original upstream implementation of this rule to make
     // several tweaks:
     // - We turn any single line code blocks into inline markdown code.
