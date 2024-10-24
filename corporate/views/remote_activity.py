@@ -29,20 +29,20 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
 
     query = SQL(
         """
-        with mobile_push_forwarded_count as (
+        with remote_server_push_forwarded_count as (
             select
                 server_id,
-                sum(coalesce(value, 0)) as push_forwarded_count
+                sum(coalesce(value, 0)) as server_push_forwarded_count
             from zilencer_remoteinstallationcount
             where
                 property = 'mobile_pushes_forwarded::day'
                 and end_time >= current_timestamp(0) - interval '7 days'
             group by server_id
         ),
-        remote_push_devices as (
+        remote_server_push_devices as (
             select
                 server_id,
-                count(distinct(user_id, user_uuid)) as push_user_count
+                count(distinct(user_id, user_uuid)) as server_push_user_count
             from zilencer_remotepushdevicetoken
             group by server_id
         ),
@@ -68,6 +68,23 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
                 is_system_bot_realm = False
                 and realm_deactivated = False
             group by server_id, id, name, org_type
+        ),
+        remote_realm_push_devices as (
+            select
+                remote_realm_id,
+                count(distinct(user_id, user_uuid)) as realm_push_user_count
+            from zilencer_remotepushdevicetoken
+            group by remote_realm_id
+        ),
+        remote_realm_push_forwarded_count as (
+            select
+                remote_realm_id,
+                sum(coalesce(value, 0)) as realm_push_forwarded_count
+            from zilencer_remoterealmcount
+            where
+                property = 'mobile_pushes_forwarded::day'
+                and end_time >= current_timestamp(0) - interval '7 days'
+            group by remote_realm_id
         )
         select
             rserver.id,
@@ -80,16 +97,20 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
             rserver.contact_email,
             rserver.last_version,
             rserver.last_audit_log_update,
-            push_user_count,
-            push_forwarded_count,
+            server_push_user_count,
+            realm_push_user_count,
+            server_push_forwarded_count,
+            realm_push_forwarded_count,
             realm_type
         from zilencer_remotezulipserver rserver
-        left join mobile_push_forwarded_count on mobile_push_forwarded_count.server_id = rserver.id
-        left join remote_push_devices on remote_push_devices.server_id = rserver.id
+        left join remote_server_push_forwarded_count on remote_server_push_forwarded_count.server_id = rserver.id
+        left join remote_server_push_devices on remote_server_push_devices.server_id = rserver.id
         left join remote_realms on remote_realms.server_id = rserver.id
         left join remote_server_audit_log on remote_server_audit_log.server_id = rserver.id
+        left join remote_realm_push_devices on remote_realm_push_devices.remote_realm_id = realm_id
+        left join remote_realm_push_forwarded_count on remote_realm_push_forwarded_count.remote_realm_id = realm_id
         where not deactivated
-        order by push_user_count DESC NULLS LAST
+        order by server_push_user_count DESC NULLS LAST
     """
     )
 
@@ -102,8 +123,8 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         "Server contact email",
         "Server Zulip version",
         "Server last audit log update (UTC)",
-        "Server mobile users",
-        "Server mobile pushes",
+        "Mobile users",
+        "Mobile pushes",
         "Realm organization type",
         "Plan name",
         "Plan status",
@@ -120,6 +141,10 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
     REALM_CREATED = 2
     SERVER_HOST = 3
     REALM_HOST = 4
+    SERVER_PUSH_USER_COUNT = 9
+    REALM_PUSH_USER_COUNT = 10
+    SERVER_PUSH_FORWARDED = 11
+    REALM_PUSH_FORWARDED = 12
 
     # Column constants:
     DATE_CREATED = 2
@@ -153,12 +178,16 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
             ids_string = f"{server_id}"
         row.insert(SERVER_AND_REALM_IDS, ids_string)
 
-        # Set date created data
-        # For remote realm row, remove server created value;
-        # for remote server row, remove realm created value
+        # Remove extra mobile user/push data and set created date
+        # For remote realm row, remove server push data and created date;
+        # for remote server row, remove realm push data and created date.
         if realm_id is not None:
+            row.pop(SERVER_PUSH_FORWARDED)
+            row.pop(SERVER_PUSH_USER_COUNT)
             row.pop(SERVER_CREATED)
         else:
+            row.pop(REALM_PUSH_FORWARDED)
+            row.pop(REALM_PUSH_USER_COUNT)
             row.pop(REALM_CREATED)
 
         # Get server_host for support link
