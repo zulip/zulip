@@ -82,9 +82,9 @@ function get_message_for_message_content($content: JQuery): Message | undefined 
 // This enables mentions to display inline, while adjusting
 // the outer element's font-size for better appearance on
 // lines of message text.
-function wrap_mention_content_in_dom_element(element: HTMLElement): HTMLElement {
+function wrap_mention_content_in_dom_element(element: HTMLElement, is_bot = false): HTMLElement {
     const mention_text = $(element).text();
-    $(element).html(render_mention_content_wrapper({mention_text}));
+    $(element).html(render_mention_content_wrapper({mention_text, is_bot}));
     return element;
 }
 
@@ -94,6 +94,7 @@ export function set_name_in_mention_element(
     name: string,
     user_id?: number,
 ): void {
+    const user_is_bot = user_id !== undefined && people.is_valid_bot_user(user_id);
     if (user_id !== undefined && people.should_add_guest_user_indicator(user_id)) {
         let display_text;
         if (!$(element).hasClass("silent")) {
@@ -112,7 +113,7 @@ export function set_name_in_mention_element(
         $(element).text("@" + name);
     }
 
-    wrap_mention_content_in_dom_element(element);
+    wrap_mention_content_in_dom_element(element, user_is_bot);
 }
 
 export const update_elements = ($content: JQuery): void => {
@@ -134,6 +135,8 @@ export const update_elements = ($content: JQuery): void => {
     $content.find(".user-mention").each(function (): void {
         const user_id = get_user_id_for_mention_button(this);
         const message = get_message_for_message_content($content);
+        const user_is_bot =
+            user_id !== undefined && user_id !== "*" && people.is_valid_bot_user(user_id);
         // We give special highlights to the mention buttons
         // that refer to the current user.
         if (user_id === "*" && message && message.stream_wildcard_mentioned) {
@@ -174,7 +177,7 @@ export const update_elements = ($content: JQuery): void => {
             set_name_in_mention_element(this, person.full_name, user_id);
         }
 
-        wrap_mention_content_in_dom_element(this);
+        wrap_mention_content_in_dom_element(this, user_is_bot);
     });
 
     $content.find(".topic-mention").each(function (): void {
