@@ -182,6 +182,6 @@ A summary of the search filters above is available in the Zulip app.
 ## Related articles
 
 * [Configure multi-language search](/help/configure-multi-language-search)
-* [Search people](/help/user-list#search-people)
+* [Filter users](/help/user-list#filter-users)
 * [Link to a message or
   conversation](/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere)
