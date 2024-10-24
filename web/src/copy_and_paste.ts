@@ -436,6 +436,33 @@ export function paste_handler_converter(paste_html: string): string {
             return "~~" + content + "~~";
         },
     });
+    turndownService.addRule("katex", {
+        filter(node: Node) {
+            if (node instanceof Element) {
+                const closest_display = node.closest(".katex-display");
+                const has_mathml = node.querySelector(".katex-mathml") !== null;
+                return closest_display !== null && has_mathml;
+            }
+            return false;
+        },
+        replacement(content: string, node: Node) {
+            assert(node instanceof HTMLElement);
+            const display_element = node.closest(".katex-display") ?? node;
+            const annotation_element = display_element.querySelector(
+                '.katex-mathml annotation[encoding="application/x-tex"]',
+            );
+            if (!annotation_element?.textContent) {
+                // This shouldn't happen with Zulip markup.
+                return content;
+            }
+            const latex_content = annotation_element.textContent.trim();
+            const is_multi_line = latex_content.includes("\n");
+            if (is_multi_line) {
+                return `\`\`\`math\n${latex_content}\n\`\`\`\n`;
+            }
+            return `$$${latex_content}$$`;
+        },
+    });
     turndownService.addRule("links", {
         filter: ["a"],
         replacement(content, node) {
