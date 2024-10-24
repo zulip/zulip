@@ -1,11 +1,23 @@
-<li data-user-id="{{user_id}}" class="user_sidebar_entry {{#if is_current_user}}user_sidebar_entry_me {{/if}} narrow-filter {{#if faded}} user-fade {{/if}}">
+<li data-user-id="{{user_id}}" class="user_sidebar_entry {{#if user_list_style.WITH_AVATAR}}with_avatar{{/if}} {{#if is_current_user}}user_sidebar_entry_me {{/if}} narrow-filter {{#if faded}} user-fade {{/if}}">
     <div class="selectable_sidebar_block">
-        <span class="{{user_circle_class}} user_circle"></span>
+        {{#unless user_list_style.WITH_AVATAR}}<span class="{{user_circle_class}} user_circle"></span>{{/unless}}
         <a class="user-presence-link"
           href="{{href}}"
           data-user-id="{{user_id}}"
           data-name="{{name}}">
             {{#if user_list_style.WITH_STATUS}}
+                <div class="user-name-and-status-wrapper">
+                    <div class="user-name-and-status-emoji">
+                        {{> user_full_name}}
+                        {{> status_emoji status_emoji_info}}
+                    </div>
+                    <span class="status-text">{{status_text}}</span>
+                </div>
+            {{else if user_list_style.WITH_AVATAR}}
+                <div class="user-profile-picture">
+                    <img loading="lazy" src="{{profile_picture}}"/>
+                    <span class="{{user_circle_class}} user_circle"></span>
+                </div>
                 <div class="user-name-and-status-wrapper">
                     <div class="user-name-and-status-emoji">
                         {{> user_full_name}}

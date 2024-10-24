@@ -276,6 +276,7 @@
        the smaller line-height. */
     --line-height-sidebar-row-prominent: 1.7142em; /* 24px / 14px em */
     --line-height-sidebar-row: 1.5714em; /* 22px / 14px em */
+    --line-height-sidebar-row-with-avatars: 1.2857em; /* 18px / 14px em */
 
     /* Right sidebar */
     --right-sidebar-padding-right: 8px;
@@ -283,6 +284,8 @@
        space created by the padding-left on .right-sidebar,
        which separates the right sidebar from the message area. */
     --right-sidebar-padding-left: 2px;
+    --right-sidebar-avatar-width: 2em;
+    --right-sidebar-avatar-height: var(--right-sidebar-avatar-width);
 
     /* Tippy popover related values */
     --navbar-popover-menu-min-width: 230px;

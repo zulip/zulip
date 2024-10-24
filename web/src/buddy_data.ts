@@ -172,6 +172,7 @@ export type BuddyUserInfo = {
     href: string;
     name: string;
     user_id: number;
+    profile_picture: string;
     status_emoji_info: user_status.UserStatusEmojiInfo | undefined;
     is_current_user: boolean;
     num_unread: number;
@@ -204,6 +205,7 @@ export function info_for(user_id: number): BuddyUserInfo {
         name: person.full_name,
         user_id,
         status_emoji_info,
+        profile_picture: people.small_avatar_url_for_person(person),
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
         user_circle_class,

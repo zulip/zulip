@@ -999,10 +999,10 @@ div.focused-message-list {
     background-color: transparent;
 }
 
+.information-settings .user-profile-picture,
+.user_sidebar_entry.with_avatar .user-profile-picture,
 .inline_profile_picture {
     display: inline-block;
-    width: var(--message-box-avatar-width);
-    height: var(--message-box-avatar-height);
     /* Don't inherit the line-height from message-avatar;
        this preserves the dimensions and rounded corners
        on the image itself. */
@@ -1015,6 +1015,17 @@ div.focused-message-list {
     &.guest-avatar::after {
         outline: 2px solid hsl(0deg 0% 100%);
     }
+}
+
+.inline_profile_picture {
+    width: var(--message-box-avatar-width);
+    height: var(--message-box-avatar-height);
+}
+
+.information-settings .user-profile-picture,
+.user_sidebar_entry.with_avatar .user-profile-picture {
+    width: var(--right-sidebar-avatar-width);
+    height: var(--right-sidebar-avatar-height);
 }
 
 .home-error-bar {
