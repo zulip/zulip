@@ -114,6 +114,10 @@ exists, and can be accessed by the user, then it will return messages
 with the `channel`/`topic`/`dm` operators corresponding to the current
 conversation containing that message, and replacing any such filters
 included in the narrow.
+However, if the specified ID does not exist, or can not be accessed by
+the user, then if the remaining narrow terms can identify a conversation
+i.e., contain `channel` and `topic` terms or `dm` term, then messages
+corresponding to the remaining narrow terms is returned.
 
 The [help center](/help/search-for-messages#search-by-message-id) also
 documents the `near` operator for searching for messages by ID, but
