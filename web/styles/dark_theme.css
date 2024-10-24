@@ -313,7 +313,15 @@
     .popover a {
         color: inherit;
     }
+  
+    .active .autocomplete_secondary {
+        opacity: 0.6;
+        color: hsl(0deg 0% 100%);
+        text-decoration: underline;
+    }
 
+    /* these are converting grey things to "new grey" */
+    :disabled,
     /* these are converting grey things to "new grey".
        :disabled rules are exploded for CSS selector performance reasons. */
     button:disabled,
