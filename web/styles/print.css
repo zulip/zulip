@@ -12,9 +12,8 @@
     #page_loading_indicator,
     #message_feed_errors_container,
     #bottom_whitespace,
-    #mark_read_on_scroll_state_banner,
-    #mark_read_on_scroll_state_banner_place_holder,
     .trailing_bookend,
+    #message-list-navigation,
     #compose {
         display: none;
     }

@@ -12,6 +12,7 @@ import * as compose_recipient from "./compose_recipient.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
+import * as message_list_navigation from "./message_list_navigation.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_view from "./message_view.ts";
 import * as message_view_header from "./message_view_header.ts";
@@ -280,10 +281,7 @@ export function mark_unsubscribed(sub: StreamSubscription): void {
         // currently viewed stream.
         assert(message_lists.current !== undefined);
         message_lists.current.update_trailing_bookend(true);
-
-        // This update would likely be better implemented by having it
-        // disappear whenever no unread messages remain.
-        unread_ui.hide_unread_banner();
+        message_list_navigation.update();
 
         activity_ui.build_user_sidebar();
     }
