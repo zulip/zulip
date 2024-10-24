@@ -398,6 +398,12 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         stream_name="desk",
     ),
     WebhookIntegration("dropbox", ["productivity"], display_name="Dropbox"),
+    WebhookIntegration(
+        "dropboxsign",
+        ["productivity", "hr"],
+        display_name="Dropbox Sign",
+        legacy_names=["hellosign"],
+    ),
     WebhookIntegration("errbit", ["monitoring"], display_name="Errbit"),
     WebhookIntegration("flock", ["customer-support"], display_name="Flock"),
     WebhookIntegration("freshdesk", ["customer-support"]),
@@ -433,7 +439,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("greenhouse", ["hr"], display_name="Greenhouse"),
     WebhookIntegration("groove", ["customer-support"], display_name="Groove"),
     WebhookIntegration("harbor", ["deployment", "productivity"], display_name="Harbor"),
-    WebhookIntegration("hellosign", ["productivity", "hr"], display_name="HelloSign"),
     WebhookIntegration("helloworld", ["misc"], display_name="Hello World"),
     WebhookIntegration("heroku", ["deployment"], display_name="Heroku"),
     WebhookIntegration("homeassistant", ["misc"], display_name="Home Assistant"),
@@ -743,6 +748,13 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "deskdotcom": [ScreenshotConfig("static_text.txt", "009.png", "desk", use_basic_auth=True)],
     "dialogflow": [ScreenshotConfig("weather_app.json", extra_params={"email": "iago@zulip.com"})],
     "dropbox": [ScreenshotConfig("file_updated.json")],
+    "dropboxsign": [
+        ScreenshotConfig(
+            "signatures_signed_by_one_signatory.json",
+            payload_as_query_param=True,
+            payload_param_name="json",
+        )
+    ],
     "errbit": [ScreenshotConfig("error_message.json")],
     "flock": [ScreenshotConfig("messages.json")],
     "freshdesk": [
@@ -762,13 +774,6 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "greenhouse": [ScreenshotConfig("candidate_stage_change.json", image_name="000.png")],
     "groove": [ScreenshotConfig("ticket_started.json")],
     "harbor": [ScreenshotConfig("scanning_completed.json")],
-    "hellosign": [
-        ScreenshotConfig(
-            "signatures_signed_by_one_signatory.json",
-            payload_as_query_param=True,
-            payload_param_name="json",
-        )
-    ],
     "helloworld": [ScreenshotConfig("hello.json")],
     "heroku": [ScreenshotConfig("deploy.txt")],
     "homeassistant": [ScreenshotConfig("reqwithtitle.json", image_name="003.png")],
