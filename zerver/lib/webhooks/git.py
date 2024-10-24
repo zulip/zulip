@@ -58,10 +58,7 @@ ISSUE_LABELED_OR_UNLABELED_MESSAGE_TEMPLATE_WITH_TITLE = "[{user_name}]({user_ur
 ISSUE_MILESTONED_OR_DEMILESTONED_MESSAGE_TEMPLATE = "[{user_name}]({user_url}) {action} milestone [{milestone_name}]({milestone_url}) {preposition} [issue #{id}]({url})."
 ISSUE_MILESTONED_OR_DEMILESTONED_MESSAGE_TEMPLATE_WITH_TITLE = "[{user_name}]({user_url}) {action} milestone [{milestone_name}]({milestone_url}) {preposition} [issue #{id} {title}]({url})."
 
-PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = "{user_name} {action} [{type}{id}]({url})"
-PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE_WITH_TITLE = (
-    "{user_name} {action} [{type}{id} {title}]({url})"
-)
+PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = "{user_name} {action}{assignee} [{type}{id}{title}]({url})"
 PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE = "(assigned to {assignee})"
 PULL_REQUEST_REVIEWER_INFO_TEMPLATE = "(assigned reviewers: {reviewer})"
 PULL_REQUEST_BRANCH_INFO_TEMPLATE = "from `{target}` to `{base}`"
@@ -204,6 +201,7 @@ def get_pull_request_event_message(
     message: str | None = None,
     assignee: str | None = None,
     assignees: list[dict[str, Any]] | None = None,
+    assignee_updated: str | None = None,
     reviewer: str | None = None,
     type: str = "PR",
     title: str | None = None,
@@ -214,13 +212,14 @@ def get_pull_request_event_message(
         "type": type,
         "url": url,
         "id": f" #{number}" if number is not None else "",
-        "title": title,
+        "title": f" {title}" if title is not None else "",
+        "assignee": {
+            "assigned": f" {assignee_updated} to",
+            "unassigned": f" {assignee_updated} from",
+        }.get(action, ""),
     }
 
-    if title is not None:
-        main_message = PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE_WITH_TITLE.format(**kwargs)
-    else:
-        main_message = PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE.format(**kwargs)
+    main_message = PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE.format(**kwargs)
 
     if target_branch and base_branch:
         branch_info = PULL_REQUEST_BRANCH_INFO_TEMPLATE.format(
@@ -270,6 +269,7 @@ def get_issue_event_message(
     message: str | None = None,
     assignee: str | None = None,
     assignees: list[dict[str, Any]] | None = None,
+    assignee_updated: str | None = None,
     title: str | None = None,
 ) -> str:
     return get_pull_request_event_message(
@@ -280,6 +280,7 @@ def get_issue_event_message(
         message=message,
         assignee=assignee,
         assignees=assignees,
+        assignee_updated=assignee_updated,
         type="issue",
         title=title,
     )

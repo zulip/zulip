@@ -386,14 +386,15 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("pull_request__assigned", expected_topic_name, expected_message)
 
     def test_pull_request_unassigned_msg(self) -> None:
-        expected_message = (
-            "eeshangarg unassigned [PR #1](https://github.com/zulip-test-org/helloworld/pull/1)."
-        )
-        self.check_webhook(
-            "pull_request__unassigned",
-            "helloworld / PR #1 Mention that Zulip rocks!",
-            expected_message,
-        )
+        expected_message = "eeshangarg unassigned eeshangarg from [PR #1](https://github.com/zulip-test-org/helloworld/pull/1)."
+        expected_topic_name = "helloworld / PR #1 Mention that Zulip rocks!"
+        self.check_webhook("pull_request__unassigned", expected_topic_name, expected_message)
+
+    def test_pull_request_unassigned_msg_with_custom_topic_in_url(self) -> None:
+        self.url = self.build_webhook_url(topic="notifications")
+        expected_topic_name = "notifications"
+        expected_message = "eeshangarg unassigned eeshangarg from [PR #1 Mention that Zulip rocks!](https://github.com/zulip-test-org/helloworld/pull/1)"
+        self.check_webhook("pull_request__unassigned", expected_topic_name, expected_message)
 
     def test_pull_request_ready_for_review_msg(self) -> None:
         expected_message = "**Hypro999** has marked [PR #2](https://github.com/Hypro999/temp-test-github-webhook/pull/2) as ready for review."

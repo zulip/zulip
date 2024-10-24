@@ -92,20 +92,16 @@ def get_assigned_or_unassigned_pull_request_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
     pull_request = payload["pull_request"]
-    assignee = pull_request.get("assignee")
-    if assignee:
-        stringified_assignee = assignee["login"].tame(check_string)
+    assignee = payload["assignee"]["login"].tame(check_string)
 
-    base_message = get_pull_request_event_message(
+    return get_pull_request_event_message(
         user_name=get_sender_name(payload),
         action=payload["action"].tame(check_string),
         url=pull_request["html_url"].tame(check_string),
         number=pull_request["number"].tame(check_int),
         title=pull_request["title"].tame(check_string) if include_title else None,
+        assignee_updated=assignee,
     )
-    if assignee:
-        return base_message.replace("assigned", f"assigned {stringified_assignee} to", 1)
-    return base_message
 
 
 def get_closed_pull_request_body(helper: Helper) -> str:
@@ -155,8 +151,7 @@ def get_issue_body(helper: Helper) -> str:
     include_title = helper.include_title
     action = payload["action"].tame(check_string)
     issue = payload["issue"]
-    has_assignee = "assignee" in payload
-    base_message = get_issue_event_message(
+    return get_issue_event_message(
         user_name=get_sender_name(payload),
         action=action,
         url=issue["html_url"].tame(check_string),
@@ -167,16 +162,10 @@ def get_issue_body(helper: Helper) -> str:
             else issue["body"].tame(check_none_or(check_string))
         ),
         title=issue["title"].tame(check_string) if include_title else None,
+        assignee_updated=payload["assignee"]["login"].tame(check_string)
+        if "assignee" in payload
+        else None,
     )
-
-    if has_assignee:
-        stringified_assignee = payload["assignee"]["login"].tame(check_string)
-        if action == "assigned":
-            return base_message.replace("assigned", f"assigned {stringified_assignee} to", 1)
-        elif action == "unassigned":
-            return base_message.replace("unassigned", f"unassigned {stringified_assignee} from", 1)
-
-    return base_message
 
 
 def get_issue_comment_body(helper: Helper) -> str:
