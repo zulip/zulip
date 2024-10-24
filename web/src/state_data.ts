@@ -86,6 +86,7 @@ export const user_schema = z
         is_owner: z.boolean(),
         is_admin: z.boolean(),
         is_guest: z.boolean(),
+        is_deleted: z.boolean().optional(),
         is_moderator: z.boolean().optional(),
         is_billing_admin: z.boolean().optional(),
         role: z.number(),

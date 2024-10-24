@@ -97,6 +97,7 @@ def do_delete_user(user_profile: UserProfile, *, acting_user: UserProfile | None
             full_name=f"Deleted User {user_id}",
             active=False,
             is_mirror_dummy=True,
+            is_deleted=True,
             force_date_joined=date_joined,
         )
         subs_to_recreate = [

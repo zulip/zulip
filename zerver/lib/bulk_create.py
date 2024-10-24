@@ -59,6 +59,7 @@ def bulk_create_users(
             full_name,
             bot_owner,
             False,
+            False,
             tos_version,
             timezone,
             default_language=realm.default_language,
