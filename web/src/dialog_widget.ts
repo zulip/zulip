@@ -25,9 +25,9 @@ function current_dialog_widget_selector(): string {
 }
 
 /*
- *  Look for confirm_dialog in settings_user_groups
- *  to see an example of how to use this widget.  It's
- *  pretty simple to use!
+ *  Look for dialog_widget or confirm_dialog in various
+ *  'web/src/' files to see examples of how to use this widget.
+ *  It's pretty simple to use!
  *
  *  Some things to note:
  *      1) We create DOM on the fly, and we remove
