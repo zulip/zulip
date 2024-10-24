@@ -443,8 +443,8 @@ input.settings_text_input {
 .grey-box {
     margin: 0;
     padding: 5px 10px;
-    background-color: hsl(0deg 0% 98%);
-    border: 1px solid hsl(0deg 0% 87%);
+    background-color: var(--color-background-modal-bar);
+    border: 1px solid var(--color-border-modal-bar);
     border-radius: 4px;
 
     list-style-type: none;
@@ -1004,7 +1004,8 @@ input.settings_text_input {
         padding-top: 4px;
         padding-bottom: 8px;
         text-align: center;
-        border-bottom: 1px solid hsl(0deg 0% 87%);
+        background-color: var(--color-background-modal-bar);
+        border-bottom: 1px solid var(--color-border-modal-bar);
 
         & h1 {
             margin: 0;
