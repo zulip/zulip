@@ -11,9 +11,11 @@
             <a href="{{url}}" title="{{name}}" class="stream-name">{{name}}</a>
 
             <div class="left-sidebar-controls">
+                {{#if can_post_messages}}
                 <div class="channel-new-topic-button tippy-zulip-tooltip hidden-for-spectators" data-tippy-content="{{t 'New topic'}}" data-stream-id="{{id}}">
                     <i class="channel-new-topic-icon zulip-icon zulip-icon-square-plus" aria-hidden="true"></i>
                 </div>
+                {{/if}}
             </div>
 
             <div class="stream-markers-and-unreads">

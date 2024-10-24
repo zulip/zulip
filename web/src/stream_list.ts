@@ -445,6 +445,7 @@ export function set_in_home_view(stream_id: number, in_home: boolean): void {
 function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
     const name = sub.name;
     const is_muted = stream_data.is_muted(sub.stream_id);
+    const can_post_messages = stream_data.can_post_messages_in_stream(sub);
     const args = {
         name,
         id: sub.stream_id,
@@ -455,6 +456,7 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
         color: sub.color,
         pin_to_top: sub.pin_to_top,
         hide_unread_count: settings_data.should_mask_unread_count(is_muted),
+        can_post_messages,
     };
     const $list_item = $(render_stream_sidebar_row(args));
     return $list_item;
