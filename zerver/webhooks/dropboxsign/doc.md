@@ -1,6 +1,6 @@
-# Zulip HelloSign integration
+# Zulip Dropbox Sign integration
 
-Configuring the HelloSign integration is easy!
+Configuring the Dropbox Sign integration is easy!
 
 {start_tabs}
 
@@ -8,8 +8,7 @@ Configuring the HelloSign integration is easy!
 
 1. {!generate-webhook-url-basic.md!}
 
-1. Go to your HelloSign account **Settings**. Select **Integrations**,
-   and click on **API**.
+1. Go to your Dropbox Sign account **Settings**, and click on **API**.
 
 1. Set **Account Callback** to the URL generated above. Click **Test**
    to send a test notification to your Zulip organization.
@@ -18,7 +17,7 @@ Configuring the HelloSign integration is easy!
 
 {!congrats.md!}
 
-![](/static/images/integrations/hellosign/001.png)
+![](/static/images/integrations/dropboxsign/001.png)
 
 ### Related documentation
 
