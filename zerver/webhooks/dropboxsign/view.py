@@ -7,7 +7,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.validator import WildValue, check_string
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
 
 IS_AWAITING_SIGNATURE = "is awaiting the signature of {awaiting_recipients}"
@@ -56,9 +56,9 @@ def get_recipients_text(recipients: list[str]) -> str:
     return recipients_text
 
 
-@webhook_view("HelloSign")
+@webhook_view("Dropbox Sign")
 @typed_endpoint
-def api_hellosign_webhook(
+def api_dropboxsign_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
@@ -67,6 +67,10 @@ def api_hellosign_webhook(
     if "signature_request" in payload:
         body = get_message_body(payload)
         topic_name = payload["signature_request"]["title"].tame(check_string)
+        check_send_webhook_message(request, user_profile, topic_name, body)
+    elif payload["event"]["event_type"] == "callback_test":
+        body = get_setup_webhook_message("Dropbox Sign")
+        topic_name = "Dropbox Sign"
         check_send_webhook_message(request, user_profile, topic_name, body)
 
     return json_success(request, data={"msg": "Hello API Event Received"})
