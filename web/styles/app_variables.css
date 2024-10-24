@@ -1038,6 +1038,17 @@
     --background-color-active-dropdown-item: hsl(220deg 12% 4.9% / 5%);
     --background-color-active-typeahead-item: hsl(221.14deg 89.74% 92.35%);
     --color-typeahead-option-label: var(--grey-500);
+
+    /* Message list navigation buttons */
+    --color-message-list-navigation-medium-attention-text: hsl(
+        229deg 9% 36% / 100%
+    );
+    --color-message-list-navigation-medium-attention-background-hover: hsl(
+        229deg 9% 36% / 7%
+    );
+    --color-message-list-navigation-medium-attention-background-active: hsl(
+        229deg 9% 36% / 11%
+    );
 }
 
 %dark-theme {
@@ -1542,6 +1553,17 @@
         226.35deg 82.53% 55.1% / 38.82%
     );
     --color-typeahead-option-label: var(--grey-400);
+
+    /* Message list navigation buttons */
+    --color-message-list-navigation-medium-attention-text: hsl(
+        229deg 10% 70% / 100%
+    );
+    --color-message-list-navigation-medium-attention-background-hover: hsl(
+        230deg 9% 60% / 14%
+    );
+    --color-message-list-navigation-medium-attention-background-active: hsl(
+        230deg 9% 60% / 18%
+    );
 }
 
 @media screen {

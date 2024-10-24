@@ -63,6 +63,7 @@ import * as message_actions_popover from "./message_actions_popover";
 import * as message_edit_history from "./message_edit_history";
 import * as message_fetch from "./message_fetch";
 import * as message_list_hover from "./message_list_hover";
+import * as message_list_navigation from "./message_list_navigation";
 import * as message_list_tooltips from "./message_list_tooltips";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
@@ -221,7 +222,7 @@ export function initialize_kitchen_sink_stuff() {
         if (delta < 0 && message_viewport.at_rendered_top()) {
             navigate.up();
         } else if (delta > 0 && message_viewport.at_rendered_bottom()) {
-            navigate.down();
+            navigate.down(false, true);
         }
 
         message_viewport.set_last_movement_direction(delta);
@@ -660,7 +661,7 @@ export function initialize_everything(state_data) {
 
     // All overlays, and also activity_ui, must be initialized before hashchange.js
     hashchange.initialize();
-
+    message_list_navigation.init();
     emoji_picker.initialize();
     user_group_popover.initialize();
     user_card_popover.initialize();
