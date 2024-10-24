@@ -1,4 +1,3 @@
-import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
@@ -8,6 +7,7 @@ import render_left_sidebar_stream_actions_popover from "../templates/popovers/le
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
+import {clipboard_handler} from "./clipboard_handler";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
@@ -31,6 +31,7 @@ import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
+
 // In this module, we manage stream popovers
 // that pop up from the left sidebar.
 let stream_popover_instance = null;
@@ -206,15 +207,19 @@ function build_stream_popover(opts) {
                 // In theory this should clean up the old color picker,
                 // but this seems a bit flaky -- the new colorpicker
                 // doesn't fire until you click a button, but the buttons
-                // have been hidden.  We work around this by just manually
+                // have been hidden. We work around this by just manually
                 // fixing it up here.
                 $colorpicker.parent().find(".sp-container").removeClass("sp-buttons-disabled");
                 $(e.currentTarget).hide();
                 e.stopPropagation();
             });
-
-            new ClipboardJS($popper.find(".copy_stream_link")[0]).on("success", () => {
-                popover_menus.hide_current_popover_if_visible(instance);
+            // copy the link to the stream
+            $popper.on("click", ".copy_stream_link", () => {
+                clipboard_handler(
+                    $(".copy_stream_link"),
+                    popover_menus.hide_current_popover_if_visible,
+                    instance,
+                );
             });
         },
         onHidden() {
