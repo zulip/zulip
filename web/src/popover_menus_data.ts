@@ -11,6 +11,7 @@ import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
+import {get_messages_in_topic} from "./message_util";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -61,6 +62,7 @@ type TopicPopoverContext = {
     url: string;
     visibility_policy: number | false;
     all_visibility_policies: AllVisibilityPolicies;
+    topic_has_messages: boolean;
 };
 
 type VisibilityChangePopoverContext = {
@@ -245,6 +247,7 @@ export function get_topic_popover_content_context({
     const visibility_policy = user_topics.get_topic_visibility_policy(sub.stream_id, topic_name);
     const all_visibility_policies = user_topics.all_visibility_policies;
     const is_spectator = page_params.is_spectator;
+    const topic_has_messages = get_messages_in_topic(sub.stream_id, topic_name).length > 0;
     return {
         stream_name: sub.name,
         stream_id: sub.stream_id,
@@ -261,6 +264,7 @@ export function get_topic_popover_content_context({
         url,
         visibility_policy,
         all_visibility_policies,
+        topic_has_messages,
     };
 }
 
