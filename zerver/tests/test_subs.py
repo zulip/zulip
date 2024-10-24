@@ -570,10 +570,31 @@ class TestCreateStreams(ZulipTestCase):
             allow_fail=True,
             subdomain="zulip",
         )
-        self.assert_json_error(
-            result, "'can_remove_subscribers_group' must be a system user group."
+        self.assert_json_success(result)
+        stream = get_stream("new_stream3", realm)
+        self.assertEqual(stream.can_remove_subscribers_group.id, hamletcharacters_group.id)
+
+        subscriptions = [{"name": "new_stream4", "description": "Fourth new stream"}]
+        result = self.common_subscribe_to_streams(
+            user,
+            subscriptions,
+            {
+                "can_remove_subscribers_group": orjson.dumps(
+                    {"direct_members": [user.id], "direct_subgroups": [moderators_system_group.id]}
+                ).decode()
+            },
+            allow_fail=True,
+            subdomain="zulip",
+        )
+        self.assert_json_success(result)
+        stream = get_stream("new_stream4", realm)
+        self.assertEqual(list(stream.can_remove_subscribers_group.direct_members.all()), [user])
+        self.assertEqual(
+            list(stream.can_remove_subscribers_group.direct_subgroups.all()),
+            [moderators_system_group],
         )
 
+        subscriptions = [{"name": "new_stream5", "description": "Fifth new stream"}]
         internet_group = NamedUserGroup.objects.get(
             name="role:internet", is_system_group=True, realm=realm
         )
@@ -2273,14 +2294,22 @@ class StreamAdminTest(ZulipTestCase):
         self.login("shiva")
         result = self.client_patch(
             f"/json/streams/{stream.id}",
-            {"can_remove_subscribers_group": orjson.dumps(moderators_system_group.id).decode()},
+            {
+                "can_remove_subscribers_group": orjson.dumps(
+                    {"new": moderators_system_group.id}
+                ).decode()
+            },
         )
         self.assert_json_error(result, "Must be an organization administrator")
 
         self.login("iago")
         result = self.client_patch(
             f"/json/streams/{stream.id}",
-            {"can_remove_subscribers_group": orjson.dumps(moderators_system_group.id).decode()},
+            {
+                "can_remove_subscribers_group": orjson.dumps(
+                    {"new": moderators_system_group.id}
+                ).decode()
+            },
         )
         self.assert_json_success(result)
         stream = get_stream("stream_name1", realm)
@@ -2290,10 +2319,56 @@ class StreamAdminTest(ZulipTestCase):
         hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
         result = self.client_patch(
             f"/json/streams/{stream.id}",
-            {"can_remove_subscribers_group": orjson.dumps(hamletcharacters_group.id).decode()},
+            {
+                "can_remove_subscribers_group": orjson.dumps(
+                    {"new": hamletcharacters_group.id}
+                ).decode()
+            },
         )
-        self.assert_json_error(
-            result, "'can_remove_subscribers_group' must be a system user group."
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", realm)
+        self.assertEqual(stream.can_remove_subscribers_group.id, hamletcharacters_group.id)
+
+        # Test changing it to anonymous group.
+        hamlet = self.example_user("hamlet")
+
+        # Test passing incorrect old value.
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {
+                "can_remove_subscribers_group": orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [hamlet.id],
+                            "direct_subgroups": [moderators_system_group.id],
+                        },
+                        "old": moderators_system_group.id,
+                    }
+                ).decode()
+            },
+        )
+        self.assert_json_error(result, "'old' value does not match the expected value.")
+
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {
+                "can_remove_subscribers_group": orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [hamlet.id],
+                            "direct_subgroups": [moderators_system_group.id],
+                        },
+                        "old": hamletcharacters_group.id,
+                    }
+                ).decode()
+            },
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", realm)
+        self.assertEqual(list(stream.can_remove_subscribers_group.direct_members.all()), [hamlet])
+        self.assertEqual(
+            list(stream.can_remove_subscribers_group.direct_subgroups.all()),
+            [moderators_system_group],
         )
 
         internet_group = NamedUserGroup.objects.get(
@@ -2301,7 +2376,7 @@ class StreamAdminTest(ZulipTestCase):
         )
         result = self.client_patch(
             f"/json/streams/{stream.id}",
-            {"can_remove_subscribers_group": orjson.dumps(internet_group.id).decode()},
+            {"can_remove_subscribers_group": orjson.dumps({"new": internet_group.id}).decode()},
         )
         self.assert_json_error(
             result,
@@ -2313,7 +2388,7 @@ class StreamAdminTest(ZulipTestCase):
         )
         result = self.client_patch(
             f"/json/streams/{stream.id}",
-            {"can_remove_subscribers_group": orjson.dumps(owners_group.id).decode()},
+            {"can_remove_subscribers_group": orjson.dumps({"new": owners_group.id}).decode()},
         )
         self.assert_json_error(
             result,
@@ -2325,7 +2400,7 @@ class StreamAdminTest(ZulipTestCase):
         )
         result = self.client_patch(
             f"/json/streams/{stream.id}",
-            {"can_remove_subscribers_group": orjson.dumps(nobody_group.id).decode()},
+            {"can_remove_subscribers_group": orjson.dumps({"new": nobody_group.id}).decode()},
         )
         self.assert_json_error(
             result,
@@ -2337,14 +2412,22 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.make_stream("stream_name2", invite_only=True)
         result = self.client_patch(
             f"/json/streams/{stream.id}",
-            {"can_remove_subscribers_group": orjson.dumps(moderators_system_group.id).decode()},
+            {
+                "can_remove_subscribers_group": orjson.dumps(
+                    {"new": moderators_system_group.id}
+                ).decode()
+            },
         )
         self.assert_json_error(result, "Invalid channel ID")
 
         self.subscribe(user_profile, "stream_name2")
         result = self.client_patch(
             f"/json/streams/{stream.id}",
-            {"can_remove_subscribers_group": orjson.dumps(moderators_system_group.id).decode()},
+            {
+                "can_remove_subscribers_group": orjson.dumps(
+                    {"new": moderators_system_group.id}
+                ).decode()
+            },
         )
         self.assert_json_success(result)
         stream = get_stream("stream_name2", realm)
@@ -2676,7 +2759,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=18,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2693,7 +2776,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=18,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -2862,6 +2945,17 @@ class StreamAdminTest(ZulipTestCase):
 
         self.subscribe(self.example_user("shiva"), stream.name)
         check_unsubscribing_user(self.example_user("shiva"), leadership_group)
+
+        # Test changing setting to anonymous group.
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [hamlet],
+            [leadership_group],
+        )
+        check_unsubscribing_user(self.example_user("othello"), setting_group, expect_fail=True)
+        check_unsubscribing_user(self.example_user("desdemona"), setting_group, expect_fail=True)
+        check_unsubscribing_user(self.example_user("hamlet"), setting_group)
+        check_unsubscribing_user(self.example_user("iago"), setting_group)
+        check_unsubscribing_user(self.example_user("shiva"), setting_group)
 
     def test_remove_invalid_user(self) -> None:
         """
@@ -4707,7 +4801,7 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_sub = ["multi_user_stream"]
         with (
             self.capture_send_event_calls(expected_num_events=5) as events,
-            self.assert_database_query_count(37),
+            self.assert_database_query_count(40),
         ):
             self.common_subscribe_to_streams(
                 self.test_user,
@@ -4733,7 +4827,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Now add ourselves
         with (
             self.capture_send_event_calls(expected_num_events=2) as events,
-            self.assert_database_query_count(14),
+            self.assert_database_query_count(16),
         ):
             self.common_subscribe_to_streams(
                 self.test_user,
@@ -5027,7 +5121,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Sends 3 peer-remove events, 2 unsubscribe events
         # and 2 stream delete events for private streams.
         with (
-            self.assert_database_query_count(16),
+            self.assert_database_query_count(17),
             self.assert_memcached_count(3),
             self.capture_send_event_calls(expected_num_events=7) as events,
         ):
@@ -5098,7 +5192,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Verify that peer_event events are never sent in Zephyr
         # realm. This does generate stream creation events from
         # send_stream_creation_events_for_previously_inaccessible_streams.
-        with self.assert_database_query_count(num_streams + 11):
+        with self.assert_database_query_count(num_streams + 13):
             with self.capture_send_event_calls(expected_num_events=num_streams + 1) as events:
                 self.common_subscribe_to_streams(
                     mit_user,
@@ -5179,7 +5273,7 @@ class SubscriptionAPITest(ZulipTestCase):
         test_user_ids = [user.id for user in test_users]
 
         with (
-            self.assert_database_query_count(16),
+            self.assert_database_query_count(18),
             self.assert_memcached_count(3),
             mock.patch("zerver.views.streams.send_messages_for_new_subscribers"),
         ):
@@ -5547,7 +5641,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(37):
+        with self.assert_database_query_count(40):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[0]],
@@ -5555,7 +5649,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(39):
+        with self.assert_database_query_count(42):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[1]],
@@ -5567,7 +5661,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(48):
+        with self.assert_database_query_count(51):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[2]],
@@ -6047,7 +6141,7 @@ class GetSubscribersTest(ZulipTestCase):
             polonius.id,
         ]
 
-        with self.assert_database_query_count(43):
+        with self.assert_database_query_count(45):
             self.common_subscribe_to_streams(
                 self.user_profile,
                 streams,
@@ -6095,7 +6189,7 @@ class GetSubscribersTest(ZulipTestCase):
         for user in [cordelia, othello, polonius]:
             self.assert_user_got_subscription_notification(user, msg)
 
-        with self.assert_database_query_count(4):
+        with self.assert_database_query_count(5):
             subscribed_streams, _ = gather_subscriptions(
                 self.user_profile, include_subscribers=True
             )
@@ -6170,7 +6264,7 @@ class GetSubscribersTest(ZulipTestCase):
         create_private_streams()
 
         def get_never_subscribed() -> list[NeverSubscribedStreamDict]:
-            with self.assert_database_query_count(4):
+            with self.assert_database_query_count(5):
                 sub_data = gather_subscriptions_helper(self.user_profile)
                 self.verify_sub_fields(sub_data)
             never_subscribed = sub_data.never_subscribed
@@ -6367,7 +6461,7 @@ class GetSubscribersTest(ZulipTestCase):
             subdomain="zephyr",
         )
 
-        with self.assert_database_query_count(3):
+        with self.assert_database_query_count(4):
             subscribed_streams, _ = gather_subscriptions(mit_user_profile, include_subscribers=True)
 
         self.assertGreaterEqual(len(subscribed_streams), 2)

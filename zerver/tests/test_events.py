@@ -4538,6 +4538,26 @@ class SubscribeActionTest(BaseAction):
                 acting_user=self.example_user("hamlet"),
             )
         check_stream_update("events[0]", events[0])
+        self.assertEqual(events[0]["value"], moderators_group.id)
+
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [self.user_profile],
+            [moderators_group],
+        )
+        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
+            do_change_stream_group_based_setting(
+                stream,
+                "can_remove_subscribers_group",
+                setting_group,
+                acting_user=self.example_user("hamlet"),
+            )
+        check_stream_update("events[0]", events[0])
+        self.assertEqual(
+            events[0]["value"],
+            AnonymousSettingGroupDict(
+                direct_members=[self.user_profile.id], direct_subgroups=[moderators_group.id]
+            ),
+        )
 
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it
         stream = self.make_stream("private", self.user_profile.realm, invite_only=True)

@@ -20,6 +20,18 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 320**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): `can_remove_subscribers_group`
+  field can now either be an ID of a named user group with the permission,
+  or an object describing the set of users and groups with the permission.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): The
+  `can_remove_subscribers_group` parameter can now either be an ID of a
+  named user group or an object describing a set of users and groups.
+
 **Feature level 319**
 
 * [Markdown message

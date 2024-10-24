@@ -16,9 +16,14 @@ from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
 )
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
-from zerver.lib.streams import get_web_public_streams_queryset, subscribed_to_stream
+from zerver.lib.streams import (
+    get_setting_values_for_group_settings,
+    get_web_public_streams_queryset,
+    subscribed_to_stream,
+)
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import (
+    AnonymousSettingGroupDict,
     APIStreamDict,
     NeverSubscribedStreamDict,
     RawStreamDict,
@@ -26,6 +31,7 @@ from zerver.lib.types import (
     SubscriptionInfo,
     SubscriptionStreamDict,
 )
+from zerver.lib.user_groups import get_group_setting_value_for_api
 from zerver.models import Realm, Stream, Subscription, UserProfile
 from zerver.models.streams import get_all_streams
 
@@ -43,7 +49,9 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
     for stream in get_web_public_streams_queryset(realm):
         # Add Stream fields.
         is_archived = stream.deactivated
-        can_remove_subscribers_group_id = stream.can_remove_subscribers_group_id
+        can_remove_subscribers_group = get_group_setting_value_for_api(
+            stream.can_remove_subscribers_group
+        )
         creator_id = stream.creator_id
         date_created = datetime_to_timestamp(stream.date_created)
         description = stream.description
@@ -76,7 +84,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
         sub = SubscriptionStreamDict(
             is_archived=is_archived,
             audible_notifications=audible_notifications,
-            can_remove_subscribers_group=can_remove_subscribers_group_id,
+            can_remove_subscribers_group=can_remove_subscribers_group,
             color=color,
             creator_id=creator_id,
             date_created=date_created,
@@ -118,7 +126,9 @@ def build_unsubscribed_sub_from_stream_dict(
 
 
 def build_stream_api_dict(
-    raw_stream_dict: RawStreamDict, recent_traffic: dict[int, int] | None
+    raw_stream_dict: RawStreamDict,
+    recent_traffic: dict[int, int] | None,
+    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict],
 ) -> APIStreamDict:
     # Add a few computed fields not directly from the data models.
     if recent_traffic is not None:
@@ -133,9 +143,13 @@ def build_stream_api_dict(
     # migration.
     is_announcement_only = raw_stream_dict["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
 
+    can_remove_subscribers_group = setting_groups_dict[
+        raw_stream_dict["can_remove_subscribers_group_id"]
+    ]
+
     return APIStreamDict(
         is_archived=raw_stream_dict["deactivated"],
-        can_remove_subscribers_group=raw_stream_dict["can_remove_subscribers_group_id"],
+        can_remove_subscribers_group=can_remove_subscribers_group,
         creator_id=raw_stream_dict["creator_id"],
         date_created=datetime_to_timestamp(raw_stream_dict["date_created"]),
         description=raw_stream_dict["description"],
@@ -471,6 +485,13 @@ def gather_subscriptions_helper(
     }
     all_streams_map: dict[int, RawStreamDict] = {stream["id"]: stream for stream in all_streams}
 
+    setting_group_ids = set()
+    for stream in all_streams:
+        for setting_name in Stream.stream_permission_group_settings:
+            setting_group_ids.add(stream[setting_name + "_id"])
+
+    setting_groups_dict = get_setting_values_for_group_settings(list(setting_group_ids))
+
     sub_dicts_query: Iterable[RawSubscriptionDict] = (
         get_stream_subscriptions_for_user(user_profile)
         .values(
@@ -505,7 +526,9 @@ def gather_subscriptions_helper(
         stream_id = get_stream_id(sub_dict)
         sub_unsub_stream_ids.add(stream_id)
         raw_stream_dict = all_streams_map[stream_id]
-        stream_api_dict = build_stream_api_dict(raw_stream_dict, recent_traffic)
+        stream_api_dict = build_stream_api_dict(
+            raw_stream_dict, recent_traffic, setting_groups_dict
+        )
         stream_dict = build_stream_dict_for_sub(
             user=user_profile,
             sub_dict=sub_dict,
