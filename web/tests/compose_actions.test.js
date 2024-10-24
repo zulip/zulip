@@ -96,7 +96,7 @@ const start = compose_actions.start;
 const cancel = compose_actions.cancel;
 const respond_to_message = compose_reply.respond_to_message;
 const reply_with_mention = compose_reply.reply_with_mention;
-const quote_and_reply = compose_reply.quote_and_reply;
+const quote_message = compose_reply.quote_message;
 
 function assert_visible(sel) {
     assert.ok($(sel).visible());
@@ -387,7 +387,7 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     assert.equal(syntax_to_insert, "@**Bob Roberts|40**");
 });
 
-test("quote_and_reply", ({disallow, override, override_rewire}) => {
+test("quote_message", ({disallow, override, override_rewire}) => {
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_reply, "selection_within_message_id", () => undefined);
     override(realm, "realm_direct_message_permission_group", nobody.id);
@@ -443,10 +443,16 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
         assert.equal(mode, "block");
     });
 
-    const opts = {
+    let opts = {
         reply_type: "personal",
         message_id: 100,
     };
+
+    override_rewire(compose_state, "topic", (topic) => {
+        if (opts.forward_message) {
+            assert.equal(topic, "");
+        }
+    });
 
     $("textarea#compose-textarea").caret = noop;
     $("textarea#compose-textarea").attr("id", "compose-textarea");
@@ -455,12 +461,33 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
     expected_replacement =
         "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n```quote\nTesting.\n```";
 
-    quote_and_reply(opts);
+    quote_message(opts);
 
     success_function({
         raw_content: "Testing.",
     });
     assert.ok(replaced);
+
+    opts = {
+        reply_type: "personal",
+        message_id: 100,
+        forward_message: true,
+    };
+    replaced = false;
+
+    override(compose_ui, "insert_and_scroll_into_view", noop);
+
+    quote_message(opts);
+
+    success_function({
+        raw_content: "Testing.",
+    });
+    assert.ok(replaced);
+
+    opts = {
+        reply_type: "personal",
+        message_id: 100,
+    };
 
     selected_message = {
         type: "stream",
@@ -473,10 +500,21 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
 
     replaced = false;
     disallow(channel, "get");
-    quote_and_reply(opts);
+    quote_message(opts);
     assert.ok(replaced);
 
-    delete opts.message_id;
+    opts = {
+        reply_type: "personal",
+        message_id: 100,
+        forward_message: true,
+    };
+    replaced = false;
+    quote_message(opts);
+    assert.ok(replaced);
+
+    opts = {
+        reply_type: "personal",
+    };
     override(message_lists.current, "selected_id", () => 100);
     override(message_lists.current, "selected_message", () => selected_message);
 
@@ -492,7 +530,15 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
     replaced = false;
     expected_replacement =
         "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n````quote\n```\nmultiline code block\nshoudln't mess with quotes\n```\n````";
-    quote_and_reply(opts);
+    quote_message(opts);
+    assert.ok(replaced);
+
+    opts = {
+        reply_type: "personal",
+        forward_message: true,
+    };
+    replaced = false;
+    quote_message(opts);
     assert.ok(replaced);
 });
 

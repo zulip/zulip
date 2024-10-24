@@ -127,7 +127,7 @@
       "expected_output": "<blockquote>\n<p>Text in<br>\nmultiple lines.</p>\n</blockquote>\n<blockquote>\n<p>Text in a single line.</p>\n</blockquote>"
     },
     {
-      "name": "multiple_blockquote_with_quote_and_reply",
+      "name": "multiple_blockquote_with_quote_message",
       "input": "Hamlet said:\n~~~quote\nCan we talk ?\n~~~\n> Yes !!\n\nWelcome to Open Source.",
       "expected_output": "<p>Hamlet said:</p>\n<blockquote>\n<p>Can we talk ?</p>\n</blockquote>\n<blockquote>\n<p>Yes !!</p>\n</blockquote>\n<p>Welcome to Open Source.</p>",
       "text_content": "Hamlet said:\n[…]\nWelcome to Open Source."
@@ -1049,7 +1049,7 @@
       "marked_expected_output": "<div class=\"codehilite\" data-code-language=\"PHP\"><pre><span></span><code>  $var = function($var, 'string');\n</code></pre></div>\n<p>PHP</p>\n<div class=\"codehilite\" data-code-language=\"CSS+PHP\"><pre><span></span><code>  $var = function($var, 'string');\n</code></pre></div>\n<p>CSS + PHP</p>\n<div class=\"codehilite\" data-code-language=\"HTML+PHP\"><pre><span></span><code>  $var = function($var, 'string');\n</code></pre></div>\n<p>HTML + PHP</p>\n<div class=\"codehilite\" data-code-language=\"JavaScript+PHP\"><pre><span></span><code>  $var = function($var, 'string');\n</code></pre></div>\n<p>JAVASCRIPT + PHP</p>\n<div class=\"codehilite\" data-code-language=\"XML+PHP\"><pre><span></span><code>  $var = function($var, 'string');\n</code></pre></div>\n<p>XML + PHP</p>\n<div class=\"codehilite\" data-code-language=\"PHP\"><pre><span></span><code>  &lt;?php\n  $var = function($var, 'string');\n</code></pre></div>\n<p>WITH MARKER</p>"
     },
     {
-      "name": "normal_quote_and_reply",
+      "name": "normal_quote_message",
       "input": "@_**Zoe|7** [said](http://zulip.testserver/#narrow/channel/13-social/topic/party/near/103):\n```quote\nHow are you?\n```\n\nGreat",
       "expected_output": "<p><span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> <a href=\"#narrow/channel/13-social/topic/party/near/103\">said</a>:</p>\n<blockquote>\n<p>How are you?</p>\n</blockquote>\n<p>Great</p>",
       "marked_expected_output": "<p><span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> <a href=\"http://zulip.testserver/#narrow/channel/13-social/topic/party/near/103\">said</a>:</p>\n<blockquote>\n<p>How are you?</p>\n</blockquote>\n<p>Great</p>",

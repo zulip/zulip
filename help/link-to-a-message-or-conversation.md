@@ -56,7 +56,7 @@ or [channel](/help/move-content-to-another-channel) or
 if its [topic is resolved](/help/resolve-a-topic).
 
 Zulip uses the same permanent link syntax when [quoting a
-message](/help/quote-and-reply).
+message](/help/quote-or-forward-a-message).
 
 {start_tabs}
 

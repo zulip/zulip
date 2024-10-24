@@ -6,6 +6,7 @@ import * as fenced_code from "../shared/src/fenced_code";
 
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
+import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as copy_and_paste from "./copy_and_paste";
@@ -215,12 +216,13 @@ function get_quote_target(opts: {message_id?: number; quote_content?: string}): 
     return {message_id, message, quote_content};
 }
 
-export function quote_and_reply(opts: {
+export function quote_message(opts: {
     message_id: number;
     quote_content?: string;
     keep_composebox_empty?: boolean;
     reply_type?: "personal";
     trigger?: string;
+    forward_message?: boolean;
 }): void {
     const {message_id, message, quote_content} = get_quote_target(opts);
     const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
@@ -232,21 +234,30 @@ export function quote_and_reply(opts: {
         ? $(last_focused_compose_type_input)
         : $<HTMLTextAreaElement>("textarea#compose-textarea");
 
-    if ($textarea.attr("id") === "compose-textarea" && !compose_state.has_message_content()) {
-        // The user has not started typing a message,
-        // but is quoting into the compose box,
-        // so we will re-open the compose box.
-        // (If you did re-open the compose box, you
-        // are prone to glitches where you select the
-        // text, plus it's a complicated codepath that
-        // can have other unintended consequences.)
-        respond_to_message({
-            ...opts,
-            keep_composebox_empty: true,
+    if (opts.forward_message) {
+        compose_actions.start({
+            message_type: "stream",
+            topic: "",
+            keep_composebox_empty: opts.keep_composebox_empty,
+            content: quoting_placeholder,
         });
-    }
+    } else {
+        if ($textarea.attr("id") === "compose-textarea" && !compose_state.has_message_content()) {
+            // The user has not started typing a message,
+            // but is quoting into the compose box,
+            // so we will re-open the compose box.
+            // (If you did re-open the compose box, you
+            // are prone to glitches where you select the
+            // text, plus it's a complicated codepath that
+            // can have other unintended consequences.)
+            respond_to_message({
+                ...opts,
+                keep_composebox_empty: true,
+            });
+        }
 
-    compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
+        compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
+    }
 
     function replace_content(message: Message, raw_content: string): void {
         // Final message looks like:
@@ -267,6 +278,10 @@ export function quote_and_reply(opts: {
 
         compose_ui.replace_syntax(quoting_placeholder, content, $textarea);
         compose_ui.autosize_textarea($textarea);
+
+        if (opts.forward_message) {
+            compose_recipient.open_compose_recipient_dropdown();
+        }
     }
 
     if (message && quote_content) {
