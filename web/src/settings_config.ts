@@ -77,11 +77,10 @@ export const user_list_style_values = {
         code: 2,
         description: $t({defaultMessage: "Show status text"}),
     },
-    // The `with_avatar` design in still in discussion.
-    // with_avatar: {
-    //     code: 3,
-    //     description: $t({defaultMessage: "Show status text and avatar"}),
-    // },
+    with_avatar: {
+        code: 3,
+        description: $t({defaultMessage: "Show avatar"}),
+    },
 };
 
 export const web_animate_image_previews_values = {

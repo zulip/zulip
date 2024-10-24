@@ -999,6 +999,8 @@ div.focused-message-list {
     background-color: transparent;
 }
 
+.information-settings .user-profile-picture,
+.user_sidebar_entry.with_avatar .user-profile-picture,
 .inline_profile_picture {
     display: inline-block;
     width: var(--message-box-avatar-width);
