@@ -8,6 +8,8 @@
 
 ## How to start a new topic
 
+Zulip lets you start a new conversation in any channel, no matter where you are.
+
 {!how-to-start-a-new-topic.md!}
 
 ## Further reading

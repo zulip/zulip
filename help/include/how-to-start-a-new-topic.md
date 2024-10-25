@@ -1,30 +1,36 @@
 {start_tabs}
 
-{tab|desktop-web}
+{tab|via-left-sidebar}
 
-1. Click the **Start new conversation** button at the bottom of the app, or
-   use the <kbd>C</kbd> keyboard shortcut.
+1. Click the **plus** (<i class="zulip-icon zulip-icon-square-plus"></i>) button next
+   to the name of the channel where you'd like to start a conversation.
 
-1. _(optional)_ You can change the destination channel for your message using
-   the dropdown in the top left of the compose box. You can start typing to
-   filter channels.
-
-1. Enter a topic name. Auto-complete will provide suggestions for previously
-   used topics.
+1. Enter a topic name. Think about finishing the sentence: “Hey, can we chat about… ?”
 
 {!compose-and-send-message.md!}
 
-!!! tip ""
+!!! keyboard_tip ""
 
-    You can click on the
-    **Clear topic** (<i class="zulip-icon zulip-icon-close"></i>) icon
-    near the upper right of the compose box to erase the topic name.
+    You can also use the <kbd>C</kbd> keyboard shortcut to start a new topic in
+    the channel you're viewing.
 
-!!! warn ""
+{tab|via-compose-box}
 
-    In Zulip, you can compose a message to a different place than the one you
-    are viewing. In this situation, the message feed will fade to indicate
-    what's going on.
+1. Click the **Start new conversation** button at the bottom of the app.
+
+1. _(optional)_ You can change the destination channel for your message using
+   the dropdown in the top left of the compose box. Start typing to filter
+   channels.
+
+1. Enter a topic name. Think about finishing the sentence: “Hey, can we chat
+   about… ?”
+
+{!compose-and-send-message.md!}
+
+!!! keyboard_tip ""
+
+    You can also use the <kbd>C</kbd> keyboard shortcut to start a new topic in
+    the channel you're viewing.
 
 {tab|mobile}
 
