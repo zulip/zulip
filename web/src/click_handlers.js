@@ -515,8 +515,9 @@ export function initialize() {
     // BUDDY LIST TOOLTIPS (not displayed on touch devices)
     $(".buddy-list-section").on("mouseenter", ".selectable_sidebar_block", (e) => {
         e.stopPropagation();
-        const $elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
-        const user_id_string = $elem.attr("data-user-id");
+        const user_id_string = $(e.currentTarget)
+            .closest(".user_sidebar_entry")
+            .attr("data-user-id");
         const title_data = buddy_data.get_title_data(user_id_string, false);
 
         // `target_node` is the `ul` element since it stays in DOM even after updates.
@@ -531,28 +532,26 @@ export function initialize() {
             );
         }
 
-        do_render_buddy_list_tooltip(
-            $elem.parent(),
-            title_data,
-            get_target_node,
-            check_reference_removed,
-        );
+        const $elem = $(e.currentTarget)
+            .closest(".user_sidebar_entry")
+            .find(".selectable_sidebar_block");
+        do_render_buddy_list_tooltip($elem, title_data, get_target_node, check_reference_removed);
 
         /*
            The following implements a little tooltip giving the name for status emoji
            when hovering them in the right sidebar. This requires special logic, to avoid
            conflicting with the main tooltip or showing duplicate tooltips.
         */
-        $(".user-presence-link .status-emoji-name").off("mouseenter").off("mouseleave");
-        $(".user-presence-link .status-emoji-name").on("mouseenter", () => {
-            const instance = $elem.parent()[0]._tippy;
+        $(".user_sidebar_entry .status-emoji-name").off("mouseenter").off("mouseleave");
+        $(".user_sidebar_entry .status-emoji-name").on("mouseenter", () => {
+            const instance = $elem[0]._tippy;
             if (instance && instance.state.isVisible) {
                 instance.destroy();
             }
         });
-        $(".user-presence-link .status-emoji-name").on("mouseleave", () => {
+        $(".user_sidebar_entry .status-emoji-name").on("mouseleave", () => {
             do_render_buddy_list_tooltip(
-                $elem.parent(),
+                $elem,
                 title_data,
                 get_target_node,
                 check_reference_removed,

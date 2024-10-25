@@ -526,7 +526,7 @@ function get_user_card_popover_for_message_items() {
 // Functions related to the user card popover in the user sidebar.
 
 function toggle_sidebar_user_card_popover($target) {
-    const user_id = elem_to_user_id($target.find("a"));
+    const user_id = elem_to_user_id($target);
     const user = people.get_by_user_id(user_id);
 
     // Hiding popovers may mutate current_user_sidebar_user_id.
