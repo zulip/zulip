@@ -100,6 +100,30 @@ export function generate_pill_html(item: CombinedPill): string {
     return stream_pill.generate_pill_html(item);
 }
 
+function set_up_handlers_for_add_button_state(
+    pill_widget: CombinedPillContainer,
+    $pill_container: JQuery,
+): void {
+    const $pill_widget_input = $pill_container.find(".input");
+    const $pill_widget_button = $pill_container.parent().find(".add-users-button");
+
+    // Disable the add button first time the pill container is created.
+    $pill_widget_button.prop("disabled", true);
+
+    // If all the pills are removed, disable the add button.
+    pill_widget.onPillRemove(() =>
+        $pill_widget_button.prop("disabled", pill_widget.items().length === 0),
+    );
+    // Disable the add button when there is no pending text that can be converted
+    // into a pill and the number of existing pills is zero.
+    $pill_widget_input.on("input", () =>
+        $pill_widget_button.prop(
+            "disabled",
+            !pill_widget.is_pending() && pill_widget.items().length === 0,
+        ),
+    );
+}
+
 export function create({
     $pill_container,
     get_potential_subscribers,
@@ -141,23 +165,7 @@ export function create({
 
     set_up_pill_typeahead(opts);
 
-    const $pill_widget_input = $pill_container.find(".input");
-    const $pill_widget_button = $pill_container.parent().find(".add-users-button");
-    // Disable the add button first time the pill container is created.
-    $pill_widget_button.prop("disabled", true);
-
-    // If all the pills are removed, disable the add button.
-    pill_widget.onPillRemove(() =>
-        $pill_widget_button.prop("disabled", pill_widget.items().length === 0),
-    );
-    // Disable the add button when there is no pending text that can be converted
-    // into a pill and the number of existing pills is zero.
-    $pill_widget_input.on("input", () =>
-        $pill_widget_button.prop(
-            "disabled",
-            !pill_widget.is_pending() && pill_widget.items().length === 0,
-        ),
-    );
+    set_up_handlers_for_add_button_state(pill_widget, $pill_container);
 
     return pill_widget;
 }
