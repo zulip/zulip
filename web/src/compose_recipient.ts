@@ -73,6 +73,7 @@ export function update_narrow_to_recipient_visibility(): void {
             compose_state.has_full_recipient()
         ) {
             $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
+            $("#compose-recipient").toggleClass("muted-recipient-row", false);
             return;
         }
     } else if (message_type === "private") {
@@ -83,10 +84,12 @@ export function update_narrow_to_recipient_visibility(): void {
             compose_state.has_full_recipient()
         ) {
             $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
+            $("#compose-recipient").toggleClass("muted-recipient-row", false);
             return;
         }
     }
     $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", false);
+    $("#compose-recipient").toggleClass("muted-recipient-row", true);
 }
 
 function update_fade(): void {
