@@ -263,8 +263,13 @@ function focus_compose_recipient(): void {
     $("#compose_select_recipient_widget_wrapper").trigger("focus");
 }
 
+function on_show_callback(): void {
+    $("#compose_select_recipient_widget").addClass("widget-open");
+}
+
 // NOTE: Since tippy triggers this on `mousedown` it is always triggered before say a `click` on `textarea`.
 function on_hidden_callback(): void {
+    $("#compose_select_recipient_widget").removeClass("widget-open");
     if (!compose_select_recipient_dropdown_widget.item_clicked) {
         // If the dropdown was NOT closed due to selecting an item,
         // don't do anything.
@@ -300,6 +305,7 @@ export function initialize(): void {
         on_exit_with_escape_callback: focus_compose_recipient,
         // We want to focus on topic box if dropdown was closed via selecting an item.
         focus_target_on_hidden: false,
+        on_show_callback,
         on_hidden_callback,
         dropdown_input_visible_selector: "#compose_select_recipient_widget_wrapper",
         prefer_top_start_placement: true,
