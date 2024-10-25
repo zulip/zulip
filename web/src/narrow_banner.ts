@@ -12,6 +12,7 @@ import * as people from "./people";
 import * as spectators from "./spectators";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
+import {has_muted_topics} from "./user_topics";
 import * as util from "./util";
 
 const SPECTATOR_STREAM_NARROW_BANNER = {
@@ -124,6 +125,14 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
                   },
               ),
     };
+
+    const muted_banner = {
+        title: $t({
+            defaultMessage:
+                "This feed is empty, because you have muted all the topics in this channel.",
+        }),
+    };
+
     const default_banner_for_multiple_filters = $t({defaultMessage: "No search results."});
 
     const current_filter = narrow_state.filter();
@@ -137,11 +146,12 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
     const first_operator = first_term.operator;
     const first_operand = first_term.operand;
     const num_terms = current_filter.terms().length;
+    // Retrieve the list of topic operands from the current filter
+    const topics = current_filter.operands("topic");
 
     if (num_terms !== 1) {
         // For invalid-multi-operator narrows, we display an invalid narrow message
         const streams = current_filter.operands("channel");
-        const topics = current_filter.operands("topic");
 
         // No message can have multiple streams
         if (streams.length > 1) {
@@ -309,6 +319,10 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
                             "This channel doesn't exist, or you are not allowed to view it.",
                     }),
                 };
+            }
+            // Check if there are muted topics in the specified stream and no topics in the stream
+            if (has_muted_topics(Number.parseInt(first_operand, 10), topics.length)) {
+                return muted_banner;
             }
             // else fallthrough to default case
             break;
