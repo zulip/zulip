@@ -25,8 +25,6 @@ else:
 
 
 class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
-    hashed_static_avatar_file_map: dict[str, str] = {}
-
     def process_static_avatars_name(
         self,
         name: str,
@@ -64,21 +62,20 @@ class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
             return f"{base_name}-{extension}"
 
         if name.endswith("-medium.png"):
-            # This logic relies on the fact that the medium files will
-            # be hashed first due to the "-medium" string, which places
-            # them earlier in the naming order. So, adhering to the
-            # medium file naming convention is crucial for this logic.
-            hashed_medium_file: str = reformat_medium_filename(
+            hashed_medium_file = reformat_medium_filename(
                 super().hashed_name(name, content, filename)
             )
-
-            default_file = name.replace("-medium.png", ".png")
-            hashed_default_file = hashed_medium_file.replace("-medium.png", ".png")
-
-            self.hashed_static_avatar_file_map[default_file] = hashed_default_file
             return hashed_medium_file
-        assert name in self.hashed_static_avatar_file_map
-        return self.hashed_static_avatar_file_map[name]
+        else:
+            medium_name = name.replace(".png", "-medium.png")
+            from django.core.files import File
+
+            with File(open(self.path(medium_name), "rb")) as medium_content:
+                hashed_medium_file = reformat_medium_filename(
+                    super().hashed_name(medium_name, medium_content, filename)
+                )
+                hashed_default_file = hashed_medium_file.replace("-medium.png", ".png")
+                return hashed_default_file
 
     @override
     def hashed_name(
