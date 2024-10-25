@@ -1165,6 +1165,10 @@ textarea.new_message_textarea {
     &.dropdown-widget-button {
         padding: 0 6px;
         border-radius: 4px;
+
+        &.widget-open {
+            background-color: var(--color-background-dropdown-widget-button);
+        }
     }
 
     .dropdown_widget_value {
