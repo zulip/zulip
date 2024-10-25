@@ -809,18 +809,11 @@ export function small_avatar_url_for_person(person: User): string {
     }
 
     if (person.avatar_url === null) {
-        return gravatar_url_for_email(person.email);
+        person.avatar_url = gravatar_url_for_email(person.email);
+        return person.avatar_url;
     }
 
     return `/avatar/${person.user_id}`;
-}
-
-function medium_gravatar_url_for_email(email: string): string {
-    const hash = md5(email.toLowerCase());
-    const avatar_url = "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
-    const url = new URL(avatar_url, window.location.origin);
-    url.search += (url.search ? "&" : "") + "s=500";
-    return url.href;
 }
 
 export function medium_avatar_url_for_person(person: User): string {
@@ -829,7 +822,15 @@ export function medium_avatar_url_for_person(person: User): string {
      * gravatar and server endpoints here. */
 
     if (person.avatar_url === null) {
-        return medium_gravatar_url_for_email(person.email);
+        person.avatar_url = gravatar_url_for_email(person.email);
+    }
+
+    if (person.avatar_url !== undefined) {
+        const url = new URL(person.avatar_url, window.location.origin);
+        if (url.origin === "https://secure.gravatar.com") {
+            url.search += (url.search ? "&" : "") + "s=500";
+            return url.href;
+        }
     }
 
     // We need to attach a version to the URL as a cache-breaker so that the browser
