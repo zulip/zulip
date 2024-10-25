@@ -196,38 +196,5 @@ function make_zjquery() {
     return zjquery;
 }
 
-const $ = new Proxy(make_zjquery(), {
-    set(obj, prop, value) {
-        if (obj[prop] && obj[prop]._patched_with_override) {
-            obj[prop] = value;
-            return true;
-        }
-
-        if (value._patched_with_override) {
-            obj[prop] = value;
-            return true;
-        }
-
-        /* istanbul ignore next */
-        throw new Error(`
-            Please don't modify $.${prop} if you are using zjquery.
-
-            You can do this instead:
-
-                override($, "${prop}", () => {...});
-
-            Or you can do this if you don't actually
-            need zjquery and just want to simulate one function.
-
-                mock_cjs("jquery", {
-                    ${prop}(...) {...},
-                });
-
-            It's also possible that you are testing code with
-            node tests when it would be a better strategy to
-            use puppeteer tests.
-        `);
-    },
-});
-
+const $ = Object.freeze(make_zjquery());
 module.exports = $; // eslint-disable-line no-jquery/variable-pattern
