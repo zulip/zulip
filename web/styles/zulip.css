@@ -28,8 +28,10 @@ body {
     /* The line-height used in most of the UI should be at least
        its legacy value, but should expand with larger base
        line-height values. */
-    line-height: max(var(--legacy-body-line-height-unitless),
-            var(--base-line-height-unitless));
+    line-height: max(
+        var(--legacy-body-line-height-unitless),
+        var(--base-line-height-unitless)
+    );
     font-family: "Source Sans 3 VF", sans-serif;
     color: var(--color-text-default);
     background-color: var(--color-background);
@@ -44,7 +46,6 @@ body {
     }
 
     &.fluid_layout_width {
-
         .header-main,
         .app .app-main,
         #compose-container {
@@ -351,7 +352,6 @@ p.n-margin {
 }
 
 body.has-overlay-scrollbar {
-
     /* Move simplebar scrollbar to the left so that
        browser scrollbar doesn't overlap with it. */
     .app-main .column-right .simplebar-track.simplebar-vertical {
@@ -456,17 +456,29 @@ body.has-overlay-scrollbar {
         }
 
         & .login_button {
-            color: var(--color-navbar-spectator-medium-attention-brand-button-text);
-            background-color: var(--color-navbar-spectator-medium-attention-brand-button-background);
+            color: var(
+                --color-navbar-spectator-medium-attention-brand-button-text
+            );
+            background-color: var(
+                --color-navbar-spectator-medium-attention-brand-button-background
+            );
 
             &:hover {
-                color: var(--color-navbar-spectator-medium-attention-brand-button-text);
-                background-color: var(--color-navbar-spectator-medium-attention-brand-button-background-hover);
+                color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-background-hover
+                );
             }
 
             &:active {
-                color: var(--color-navbar-spectator-medium-attention-brand-button-text);
-                background-color: var(--color-navbar-spectator-medium-attention-brand-button-background-active);
+                color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-background-active
+                );
             }
         }
 
@@ -518,7 +530,9 @@ body.has-overlay-scrollbar {
 #message_feed_container,
 .app-main .column-left .left-sidebar,
 .app-main .column-right .right-sidebar {
-    padding-top: calc(var(--navbar-fixed-height) + var(--header-padding-bottom));
+    padding-top: calc(
+        var(--navbar-fixed-height) + var(--header-padding-bottom)
+    );
 }
 
 .app-main {
@@ -550,7 +564,9 @@ body.has-overlay-scrollbar {
 .column-middle,
 #compose-content {
     margin-right: var(--right-sidebar-width);
-    margin-left: calc(var(--left-sidebar-width) + var(--left-sidebar-padding-left));
+    margin-left: calc(
+        var(--left-sidebar-width) + var(--left-sidebar-padding-left)
+    );
     position: relative;
 }
 
@@ -569,7 +585,7 @@ label {
 /* Bootstrap's focus outline uses -webkit-focus-ring-color which doesn't exist in Firefox */
 a:not(:active):focus,
 button:focus,
-label.checkbox input[type="checkbox"]:focus~.rendered-checkbox,
+label.checkbox input[type="checkbox"]:focus ~ .rendered-checkbox,
 i.fa:focus,
 i.zulip-icon:focus-visible,
 [role="button"]:focus {
@@ -579,7 +595,6 @@ i.zulip-icon:focus-visible,
 
 /* List of text-like input types taken from Bootstrap */
 input {
-
     &[type="text"],
     &[type="password"],
     &[type="datetime"],
@@ -942,7 +957,7 @@ div.focused-message-list {
             vertical-align: baseline;
         }
 
-        &+label.checkbox {
+        & + label.checkbox {
             margin-top: 10px;
         }
     }
@@ -966,11 +981,15 @@ div.focused-message-list {
         font-variant: all-small-caps;
 
         &:hover {
-            background-color: var(--color-show-more-less-button-background-hover);
+            background-color: var(
+                --color-show-more-less-button-background-hover
+            );
         }
 
         &:active {
-            background-color: var(--color-show-more-less-button-background-active);
+            background-color: var(
+                --color-show-more-less-button-background-active
+            );
             scale: 0.98;
         }
     }
@@ -1016,7 +1035,9 @@ div.focused-message-list {
     /* Calculate right margin so that title and description
        elements can truncate and not collide with or run underneath
        with the search section. */
-    margin-right: calc(var(--search-box-width) + var(--navbar-content-righthand-offset));
+    margin-right: calc(
+        var(--search-box-width) + var(--navbar-content-righthand-offset)
+    );
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -1446,7 +1467,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 }
 
 .flatpickr-calendar {
-
     /* Hide the up and down arrows in the Flatpickr datepicker year */
     .flatpickr-months .numInputWrapper span {
         display: none;
@@ -1589,7 +1609,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     @extend %hide-right-sidebar;
 
     &.fluid_layout_width {
-
         #compose-content,
         .app-main .column-middle {
             margin-right: 7px;
@@ -1632,7 +1651,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     @extend %hide-left-sidebar;
 
     &.fluid_layout_width {
-
         #compose-content,
         .app-main .column-middle {
             margin-left: 7px;
@@ -1641,7 +1659,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 }
 
 body:not(.hide-left-sidebar) {
-
     /* User can clearly see the unread count in the left sidebar. So,
        we don't need an indicator here as it will only serve as a disctraction. */
     #header-container .column-left .left-sidebar-toggle-unreadcount {
@@ -1670,7 +1687,6 @@ body:not(.hide-left-sidebar) {
     }
 
     .hide-left-sidebar {
-
         #compose-content,
         .app-main .column-middle {
             margin-left: 7px;
@@ -1739,7 +1755,6 @@ body:not(.hide-left-sidebar) {
 }
 
 @media (height < $short_navbar_cutoff_height) {
-
     .app-main .column-right.expanded .right-sidebar,
     .app-main .column-left.expanded .left-sidebar {
         margin-top: var(--navbar-fixed-height);
@@ -1780,7 +1795,10 @@ body:not(.hide-left-sidebar) {
         height: var(--header-height);
     }
 
-    nav .column-left .left-sidebar-toggle-button .left-sidebar-toggle-unreadcount {
+    nav
+        .column-left
+        .left-sidebar-toggle-button
+        .left-sidebar-toggle-unreadcount {
         top: 5px;
         left: 16px;
     }
