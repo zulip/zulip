@@ -318,6 +318,10 @@ export function check_group_can_be_subgroup(
     // This logic could be optimized if we maintained a reverse map
     // from each group to the groups containing it, which might be a
     // useful data structure for other code paths as well.
+    if (subgroup.deactivated) {
+        return false;
+    }
+
     const already_subgroup_ids = target_user_group.direct_subgroup_ids;
     if (subgroup.id === target_user_group.id) {
         return false;
