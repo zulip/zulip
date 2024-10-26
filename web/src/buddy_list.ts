@@ -287,8 +287,23 @@ export class BuddyList extends BuddyListConf {
 
         $("#buddy-list-users-matching-view-container .view-all-subscribers-link").remove();
         $("#buddy-list-other-users-container .view-all-users-link").remove();
-        if (!buddy_data.get_is_searching_users()) {
+        if (buddy_data.get_is_searching_users()) {
+            // Show all sections when searching users
+            this.set_section_collapse(".buddy-list-section-container", false);
+        } else {
             this.render_view_user_list_links();
+            this.set_section_collapse(
+                "#buddy-list-participants-container",
+                this.participants_is_collapsed,
+            );
+            this.set_section_collapse(
+                "#buddy-list-users-matching-view-container",
+                this.users_matching_view_is_collapsed,
+            );
+            this.set_section_collapse(
+                "#buddy-list-other-users-container",
+                this.other_users_is_collapsed,
+            );
         }
 
         // Ensure the "other" section is visible when headers are collapsed,
