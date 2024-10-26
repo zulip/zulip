@@ -20457,7 +20457,30 @@ paths:
                 contentType: application/json
       responses:
         "200":
-          $ref: "#/components/responses/SimpleSuccess"
+          description: |
+            A success response containing the unique ID of the user group.
+            This field provides a straightforward way to reference the
+            newly created user group.
+
+            **Changes**: New in Zulip 10.0 (feature level 317).
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - required:
+                      - group_id
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      group_id:
+                        type: integer
+                        description: |
+                          The unique ID of the created user group.
+                    example: {"msg": "", "result": "success", "group_id": 123}
+
         "400":
           description: Bad request.
           content:
