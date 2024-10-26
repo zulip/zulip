@@ -84,6 +84,15 @@ export function add_new_messages_data(
     return msg_list_data.add_messages(messages);
 }
 
+export function get_count_of_messages_in_topic_sent_after_current_message(
+    stream_id: number,
+    topic: string,
+    message_id: number,
+): number {
+    const all_messages = get_messages_in_topic(stream_id, topic);
+    return all_messages.filter((msg) => msg.id >= message_id).length;
+}
+
 export function get_messages_in_topic(stream_id: number, topic: string): Message[] {
     return all_messages_data
         .all_messages()

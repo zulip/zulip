@@ -19,6 +19,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
+import * as message_util from "./message_util.ts";
 import * as message_view from "./message_view.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -586,6 +587,74 @@ export async function build_move_topic_to_stream_popover(
         $("#move_topic_form .move_messages_edit_topic").trigger("focus");
     }
 
+    // The following logic is correct only when
+    // both message_lists.current.data.fetch_status.has_found_newest
+    // and message_lists.current.data.fetch_status.has_found_oldest are true;
+    // otherwise, we cannot be certain of the correct count.
+    function get_count_of_messages_to_be_moved(
+        selected_option: string,
+        message_id?: number,
+    ): number {
+        if (selected_option === "change_one") {
+            return 1;
+        }
+        if (selected_option === "change_later" && message_id !== undefined) {
+            return message_util.get_count_of_messages_in_topic_sent_after_current_message(
+                current_stream_id,
+                topic_name,
+                message_id,
+            );
+        }
+        return message_util.get_messages_in_topic(current_stream_id, topic_name).length;
+    }
+
+    function update_move_messages_count_text(selected_option: string, message_id?: number): void {
+        const message_move_count = get_count_of_messages_to_be_moved(selected_option, message_id);
+        const is_topic_narrowed = narrow_state.narrowed_by_topic_reply();
+        const is_stream_narrowed = narrow_state.narrowed_by_stream_reply();
+        const is_same_stream = narrow_state.stream_id() === current_stream_id;
+        const is_same_topic = narrow_state.topic() === topic_name;
+
+        const can_have_exact_count_in_narrow =
+            (is_stream_narrowed && is_same_stream) ||
+            (is_topic_narrowed && is_same_stream && is_same_topic);
+        let exact_message_count = false;
+        if (selected_option === "change_one") {
+            exact_message_count = true;
+        } else if (can_have_exact_count_in_narrow) {
+            const has_found_newest = message_lists.current?.data.fetch_status.has_found_newest();
+            const has_found_oldest = message_lists.current?.data.fetch_status.has_found_oldest();
+
+            if (selected_option === "change_later" && has_found_newest) {
+                exact_message_count = true;
+            }
+            if (selected_option === "change_all" && has_found_newest && has_found_oldest) {
+                exact_message_count = true;
+            }
+        }
+
+        let message_text;
+        if (exact_message_count) {
+            message_text = $t(
+                {
+                    defaultMessage:
+                        "{count, plural, one {# message} other {# messages}} will be moved.",
+                },
+                {count: message_move_count},
+            );
+        } else {
+            message_text = $t(
+                {
+                    defaultMessage:
+                        "At least {count, plural, one {# message} other {# messages}} will be moved.",
+                },
+                {count: message_move_count},
+            );
+        }
+
+        $("#move_messages_count").text(message_text);
+    }
+
     function move_topic_post_render(): void {
         $("#move_topic_modal .dialog_submit_button").prop("disabled", true);
 
@@ -635,6 +704,18 @@ export async function build_move_topic_to_stream_popover(
         $("#move_topic_modal .move_messages_edit_topic").on("input", () => {
             update_submit_button_disabled_state(current_stream_id);
         });
+
+        if (!args.from_message_actions_popover) {
+            update_move_messages_count_text("change_all");
+        } else {
+            let selected_option = String($("#message_move_select_options").val());
+            update_move_messages_count_text(selected_option, message?.id);
+
+            $("#message_move_select_options").on("change", function () {
+                selected_option = String($(this).val());
+                update_move_messages_count_text(selected_option, message?.id);
+            });
+        }
     }
 
     function focus_on_move_modal_render(): void {
