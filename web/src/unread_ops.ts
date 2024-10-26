@@ -253,7 +253,7 @@ function process_newly_read_message(
 
 export function mark_as_unread_from_here(message_id: number): void {
     assert(message_lists.current !== undefined);
-    const narrow = JSON.stringify(message_lists.current.data.filter.terms());
+    const narrow = message_lists.current.data.filter.get_stringified_narrow_for_server_query();
     message_lists.current.prevent_reading();
 
     // If we have already fully fetched the current view, we can
