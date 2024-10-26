@@ -142,29 +142,33 @@ function get_num_unread(user_id: number): number {
 }
 
 export function user_last_seen_time_status(user_id: number): string {
+    // Check if the user is deactivated
+    if (people.get_non_active_human_ids().includes(user_id)) {
+        // Determine if user is a bot or human
+        const user = people.get_by_user_id(user_id);
+        if (user.is_bot) {
+            return $t({defaultMessage: "This bot has been deactivated."});
+        } else {
+            return $t({defaultMessage: "This user has been deactivated."});
+        }
+    }
     const status = presence.get_status(user_id);
     if (status === "active") {
         return $t({defaultMessage: "Active now"});
     }
 
     if (status === "idle") {
-        // When we complete our presence API rewrite to have the data
-        // plumbed, we may want to change this to also mention when
-        // they were last active.
         return $t({defaultMessage: "Idle"});
     }
 
     const last_active_date = presence.last_active_date(user_id);
     if (realm.realm_is_zephyr_mirror_realm) {
-        // We don't send presence data to clients in Zephyr mirroring realms
         return $t({defaultMessage: "Activity unknown"});
     } else if (last_active_date === undefined) {
-        // There are situations where the client has incomplete presence
-        // history on a user. This can happen when users are deactivated,
-        // or when the user's last activity is older than what we fetch.
         assert(page_params.presence_history_limit_days_for_web_app === 365);
         return $t({defaultMessage: "Not active in the last year"});
     }
+
     return timerender.last_seen_status_from_date(last_active_date);
 }
 
