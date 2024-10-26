@@ -1782,4 +1782,18 @@ export class Filter {
 
         return false;
     }
+
+    get_stringified_narrow_for_server_query(): string {
+        return JSON.stringify(
+            this._terms.map((term) => {
+                if (term.operator === "channel") {
+                    return {
+                        ...term,
+                        operand: Number.parseInt(term.operand, 10),
+                    };
+                }
+                return term;
+            }),
+        );
+    }
 }
