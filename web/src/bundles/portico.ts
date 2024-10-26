@@ -6,3 +6,4 @@ import "../portico/tippyjs.ts";
 import "../../third/bootstrap/css/bootstrap.portico.css";
 import "../../styles/portico/portico_styles.css";
 import "tippy.js/dist/tippy.css";
+import "../../styles/app_variables.css";

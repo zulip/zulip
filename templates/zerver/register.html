@@ -143,12 +143,14 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                 </div>
                 {% elif password_required %}
                 <div class="input-box password-div">
+                    <div class="password-label-container">
+                        <span><label for="id_password">{{ _('Password') }}</label></span>
+                        <span id="password-limit-indicator" class="limit-indicator" data-tippy-content="{{ _('Maximum password length: 100 characters') }}" data-tippy-placement="top"></span>
+                    </div>
                     <input id="id_password" class="required" type="password" name="password" autocomplete="new-password"
                       value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
-                      maxlength="{{ MAX_PASSWORD_LENGTH }}"
                       data-min-length="{{password_min_length}}"
                       data-min-guesses="{{password_min_guesses}}" required />
-                    <label for="id_password" class="inline-block">{{ _('Password') }}</label>
                     <i class="fa fa-eye-slash password_visibility_toggle" role="button" tabindex="0"></i>
                     {% if full_name %}
                     <span class="help-inline">
@@ -252,7 +254,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                 </div>
                 {% endif %}
                 <div class="register-button-box">
-                    <button class="register-button" type="submit">
+                    <button class="register-button" id="signup-button" type="submit">
                         <span>{{ _('Sign up') }}</span>
                         <object class="loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                     </button>

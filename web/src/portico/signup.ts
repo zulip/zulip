@@ -2,6 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
+import render_compose_limit_indicator from "../../templates/compose_limit_indicator.hbs";
 import * as common from "../common.ts";
 import {$t} from "../i18n.ts";
 import {password_quality, password_warning} from "../password_quality.ts";
@@ -342,3 +343,49 @@ $(() => {
         }
     });
 });
+
+const $password_elem = $<HTMLInputElement>("input#id_password");
+const $new_password1_elem = $<HTMLInputElement>("input#id_new_password1");
+
+if ($password_elem.length) {
+    $password_elem.on("input", () => {
+        check_overflow_password($password_elem);
+    });
+}
+
+if ($new_password1_elem.length) {
+    $new_password1_elem.on("input", () => {
+        check_overflow_password($new_password1_elem);
+    });
+}
+
+export function check_overflow_password($password_elem: JQuery<HTMLInputElement>): void {
+    const password = $password_elem.val()!;
+    const max_length = 100;
+    const remaining_characters = max_length - password.length;
+
+    const $indicator = $password_elem.closest(".input-box").find(".limit-indicator");
+    const $button = $password_elem.closest("form").find("button[type='submit']");
+
+    const password_too_long = password.length > max_length;
+    $button.prop("disabled", password_too_long);
+
+    // Update the limit indicator
+    if (password_too_long) {
+        $indicator.addClass("over_limit");
+        $indicator.html(
+            render_compose_limit_indicator({
+                remaining_characters,
+            }),
+        );
+    } else if (remaining_characters <= 20) {
+        $indicator.removeClass("over_limit");
+        $indicator.html(
+            render_compose_limit_indicator({
+                remaining_characters,
+            }),
+        );
+    } else {
+        $indicator.text("");
+    }
+}
