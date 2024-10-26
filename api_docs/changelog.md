@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 317**
+
+* [`POST /user_groups/create`](/api/create-user-group):
+  Added `group_id` to the success response of the user group creation
+  endpoint, enabling clients to easily access the unique identifier
+  of the newly created user group.
+
 **Feature level 316**
 
 * `PATCH /realm`, [`GET /events`](/api/get-events),
