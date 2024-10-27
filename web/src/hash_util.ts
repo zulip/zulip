@@ -293,7 +293,7 @@ export function validate_group_settings_hash(hash: string): string {
 
 export function decode_stream_topic_from_url(
     url_str: string,
-): {stream_id: number; topic_name?: string} | null {
+): {stream_id: number; topic_name?: string; message_id?: string} | null {
     try {
         const url = new URL(url_str);
         if (url.origin !== window.location.origin || !url.hash.startsWith("#narrow")) {
@@ -303,9 +303,8 @@ export function decode_stream_topic_from_url(
         if (terms === undefined) {
             return null;
         }
-        if (terms.length > 2) {
+        if (terms.length > 3) {
             // The link should only contain stream and topic,
-            // near/ links are not transformed.
             return null;
         }
         // This check is important as a malformed url
@@ -324,7 +323,13 @@ export function decode_stream_topic_from_url(
         if (terms[1]?.operator !== "topic") {
             return null;
         }
-        return {stream_id, topic_name: terms[1].operand};
+        if (terms.length === 2) {
+            return {stream_id, topic_name: terms[1].operand};
+        }
+        if (terms[2]?.operator !== "near") {
+            return null;
+        }
+        return {stream_id, topic_name: terms[1].operand, message_id: terms[2].operand};
     } catch {
         return null;
     }

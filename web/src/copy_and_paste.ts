@@ -673,20 +673,33 @@ export function try_stream_topic_syntax_text(text: string): string | null {
     assert(stream !== undefined);
     const stream_name = stream.name;
     if (topic_link_util.will_produce_broken_stream_topic_link(stream_name)) {
-        return topic_link_util.get_fallback_markdown_link(stream_name, stream_topic.topic_name);
+        return topic_link_util.get_fallback_markdown_link(
+            stream_name,
+            stream_topic.topic_name,
+            stream_topic.message_id,
+        );
     }
 
     if (
         stream_topic.topic_name !== undefined &&
         topic_link_util.will_produce_broken_stream_topic_link(stream_topic.topic_name)
     ) {
-        return topic_link_util.get_fallback_markdown_link(stream_name, stream_topic.topic_name);
+        return topic_link_util.get_fallback_markdown_link(
+            stream_name,
+            stream_topic.topic_name,
+            stream_topic.message_id,
+        );
     }
 
     let syntax_text = "#**" + stream_name;
     if (stream_topic.topic_name) {
         syntax_text += ">" + stream_topic.topic_name;
     }
+
+    if (stream_topic.message_id !== undefined) {
+        syntax_text += "@" + stream_topic.message_id;
+    }
+
     syntax_text += "**";
     return syntax_text;
 }
