@@ -529,6 +529,7 @@ test("set_up", ({override, override_rewire}) => {
     };
 
     override_rewire(settings_org, "init_dropdown_widgets", noop);
+    override_rewire(settings_org, "initialize_group_setting_widgets", noop);
     $("#id_realm_message_content_edit_limit_minutes").set_parent(
         $.create("<stub edit limit custom input parent>"),
     );

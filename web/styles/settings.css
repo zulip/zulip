@@ -814,6 +814,22 @@ input[type="checkbox"] {
     }
 }
 
+.org-permissions-form .pill-container {
+    /* 319px + 2 * (2px padding) + 2 * (1px border) = 325px, which is the total
+    width of dropdown widget buttons */
+    min-width: 319px;
+    background-color: hsl(0deg 0% 100%);
+
+    .input {
+        flex-grow: 1;
+
+        &:first-child:empty::before {
+            opacity: 0.5;
+            content: attr(data-placeholder);
+        }
+    }
+}
+
 .progressive-table-wrapper {
     position: relative;
     max-height: calc(95vh - 220px);

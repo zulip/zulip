@@ -135,7 +135,7 @@ export function set_up_group_setting_typeahead(
     opts: {
         setting_name: string;
         setting_type: "realm" | "stream" | "group";
-        group: UserGroup | undefined;
+        group?: UserGroup | undefined;
     },
 ): void {
     const bootstrap_typeahead_input: TypeaheadInputElement = {

@@ -105,6 +105,29 @@ export function maybe_disable_widgets(): void {
         .addClass("control-label-disabled");
 }
 
+export function enable_or_disable_group_permission_settings(): void {
+    if (current_user.is_owner) {
+        const $permission_pill_container_elements = $("#organization-permissions").find(
+            ".pill-container",
+        );
+        $permission_pill_container_elements.find(".input").prop("contenteditable", true);
+        $permission_pill_container_elements
+            .closest(".input-group")
+            .removeClass("group_setting_disabled");
+        settings_components.enable_opening_typeahead_on_clicking_label(
+            $("#organization-permissions"),
+        );
+        return;
+    }
+
+    const $permission_pill_container_elements = $("#organization-permissions").find(
+        ".pill-container",
+    );
+    $permission_pill_container_elements.find(".input").prop("contenteditable", false);
+    $permission_pill_container_elements.closest(".input-group").addClass("group_setting_disabled");
+    settings_components.disable_opening_typeahead_on_clicking_label($("#organization-permissions"));
+}
+
 type OrganizationSettingsOptions = {
     common_policy_values: SettingOptionValueWithKey[];
     wildcard_mention_policy_values: SettingOptionValueWithKey[];
@@ -551,7 +574,6 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_signup_announcements_stream_id":
         case "realm_zulip_update_announcements_stream_id":
         case "realm_default_code_block_language":
-        case "realm_create_multiuse_invite_group":
         case "realm_direct_message_initiator_group":
         case "realm_direct_message_permission_group":
         case "realm_can_add_custom_emoji_group":
@@ -570,6 +592,15 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
                 property_value,
             );
             break;
+        case "realm_create_multiuse_invite_group": {
+            const pill_widget = settings_components.get_group_setting_widget(property_name);
+            assert(pill_widget !== null);
+            settings_components.set_group_setting_widget_value(
+                pill_widget,
+                group_setting_value_schema.parse(property_value),
+            );
+            break;
+        }
         case "realm_default_language":
             assert(typeof property_value === "string");
             $("#org-notifications .language_selection_widget .language_selection_button span").attr(
@@ -917,6 +948,9 @@ export function set_up_dropdown_widget_for_realm_group_settings(): void {
     );
 
     for (const setting_name of realm_group_permission_settings) {
+        if (setting_name === "create_multiuse_invite_group") {
+            continue;
+        }
         const get_setting_options = (): UserGroupForDropdownListWidget[] =>
             user_groups.get_realm_user_groups_for_dropdown_list_widget(setting_name, "realm");
         let dropdown_list_item_click_callback:
@@ -1114,6 +1148,15 @@ export function register_save_discard_widget_handlers(
     );
 }
 
+function initialize_group_setting_widgets(): void {
+    settings_components.create_realm_group_setting_widget({
+        $pill_container: $("#id_realm_create_multiuse_invite_group"),
+        setting_name: "create_multiuse_invite_group",
+    });
+
+    enable_or_disable_group_permission_settings();
+}
+
 export function build_page(): void {
     meta.loaded = true;
 
@@ -1123,6 +1166,8 @@ export function build_page(): void {
     init_dropdown_widgets();
     // Populate realm domains
     populate_realm_domains_label(realm.realm_domains);
+
+    initialize_group_setting_widgets();
 
     // Populate authentication methods table
 
