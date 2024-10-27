@@ -306,6 +306,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
+    # UserGroup which is allowed to move messages between topics.
+    can_move_messages_between_topics_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # Who in the organization is allowed to edit topics of any message.
     edit_topic_policy = models.PositiveSmallIntegerField(default=EditTopicPolicyEnum.EVERYONE)
 
@@ -787,6 +792,15 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             default_group_name=SystemGroups.MEMBERS,
             id_field_name="can_move_messages_between_channels_group_id",
         ),
+        can_move_messages_between_topics_group=GroupPermissionSetting(
+            require_system_group=not settings.ALLOW_GROUP_VALUED_SETTINGS,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+            id_field_name="can_move_messages_between_topics_group_id",
+        ),
         direct_message_initiator_group=GroupPermissionSetting(
             require_system_group=not settings.ALLOW_GROUP_VALUED_SETTINGS,
             allow_internet_group=False,
@@ -1203,6 +1217,8 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "can_manage_all_groups__named_user_group",
         "can_move_messages_between_channels_group",
         "can_move_messages_between_channels_group__named_user_group",
+        "can_move_messages_between_topics_group",
+        "can_move_messages_between_topics_group__named_user_group",
         "direct_message_initiator_group",
         "direct_message_initiator_group__named_user_group",
         "direct_message_permission_group",

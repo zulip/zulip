@@ -138,6 +138,7 @@ class HomeTest(ZulipTestCase):
         "realm_can_delete_own_message_group",
         "realm_can_manage_all_groups",
         "realm_can_move_messages_between_channels_group",
+        "realm_can_move_messages_between_topics_group",
         "realm_create_multiuse_invite_group",
         "realm_create_private_stream_policy",
         "realm_create_public_stream_policy",

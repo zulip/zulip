@@ -71,18 +71,7 @@ function user_has_permission(policy_value: number): boolean {
         return true;
     }
 
-    if (page_params.is_spectator) {
-        return false;
-    }
-
-    /* At present, by_everyone is not present in common_policy_values,
-     * but we include a check for it here, so that code using
-     * common_message_policy_values or other supersets can use this function. */
-    if (policy_value === settings_config.common_message_policy_values.by_everyone.code) {
-        return true;
-    }
-
-    if (current_user.is_guest) {
+    if (page_params.is_spectator || current_user.is_guest) {
         return false;
     }
 
@@ -262,7 +251,11 @@ export function user_can_add_custom_emoji(): boolean {
 }
 
 export function user_can_move_messages_to_another_topic(): boolean {
-    return user_has_permission(realm.realm_edit_topic_policy);
+    return user_has_permission_for_group_setting(
+        realm.realm_can_move_messages_between_topics_group,
+        "can_move_messages_between_topics_group",
+        "realm",
+    );
 }
 
 export function user_can_delete_any_message(): boolean {
