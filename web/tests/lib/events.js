@@ -1164,6 +1164,14 @@ exports.fixtures = {
         visibility_policy: 1,
     },
 
+    user_topic_with_followed_policy_change: {
+        type: "user_topic",
+        stream_id: 101,
+        topic_name: "js",
+        last_updated: fake_now,
+        visibility_policy: 3,
+    },
+
     web_reload_client: {
         type: "web_reload_client",
         immediate: true,

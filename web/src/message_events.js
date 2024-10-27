@@ -47,6 +47,34 @@ function filter_has_term_type(filter, term_type) {
     );
 }
 
+export function discard_cached_lists_with_term_type(term_type) {
+    // Discards cached MessageList and MessageListData which have
+    // `term_type` and `not-term_type`.
+    assert(!term_type.includes("not-"));
+
+    // We loop over rendered message lists and cached message data separately since
+    // they are separately maintained and can have different items.
+    for (const msg_list of message_lists.all_rendered_message_lists()) {
+        // We never want to discard the current message list.
+        if (msg_list === message_lists.current) {
+            continue;
+        }
+
+        const filter = msg_list.data.filter;
+        if (filter_has_term_type(filter, term_type)) {
+            message_lists.delete_message_list(msg_list);
+            message_list_data_cache.remove(filter);
+        }
+    }
+
+    for (const msg_list_data of message_lists.non_rendered_data()) {
+        const filter = msg_list_data.filter;
+        if (filter_has_term_type(filter, term_type)) {
+            message_list_data_cache.remove(filter);
+        }
+    }
+}
+
 export function update_current_view_for_topic_visibility() {
     // If we have rendered message list / cached data based on topic
     // visibility policy, we need to rerender it to reflect the changes. It

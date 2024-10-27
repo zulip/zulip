@@ -90,6 +90,7 @@ import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
+import * as user_topics from "./user_topics";
 import * as user_topics_ui from "./user_topics_ui";
 
 export function dispatch_normal_event(event) {
@@ -1017,11 +1018,23 @@ export function dispatch_normal_event(event) {
             }
             break;
 
-        case "user_topic":
+        case "user_topic": {
+            const previous_topic_visibility = user_topics.get_topic_visibility_policy(
+                event.stream_id,
+                event.topic_name,
+            );
             user_topics_ui.handle_topic_updates(
                 event,
                 message_events.update_current_view_for_topic_visibility(),
             );
+            // Discard cached message lists if `event` topic was / is followed.
+            if (
+                event.visibility_policy === user_topics.all_visibility_policies.FOLLOWED ||
+                previous_topic_visibility === user_topics.all_visibility_policies.FOLLOWED
+            ) {
+                message_events.discard_cached_lists_with_term_type("is-followed");
+            }
             break;
+        }
     }
 }

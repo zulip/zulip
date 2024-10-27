@@ -379,6 +379,20 @@ run_test("muted_topics", ({override}) => {
     assert_same(args.user_topic, event);
 });
 
+run_test("followed_topic", ({override}) => {
+    const event = event_fixtures.user_topic_with_followed_policy_change;
+
+    const stub = make_stub();
+    const discard_msg_list_stub = make_stub();
+    override(user_topics_ui, "handle_topic_updates", stub.f);
+    override(message_events, "discard_cached_lists_with_term_type", discard_msg_list_stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    assert.equal(discard_msg_list_stub.num_calls, 1);
+    const args = stub.get_args("user_topic");
+    assert_same(args.user_topic, event);
+});
+
 run_test("muted_users", ({override}) => {
     const event = event_fixtures.muted_users;
 
