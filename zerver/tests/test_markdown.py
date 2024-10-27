@@ -3108,6 +3108,28 @@ class MarkdownStreamMentionTests(ZulipTestCase):
             ".</p>",
         )
 
+    def test_message_id_multiple(self) -> None:
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        sender_user_profile = self.example_user("othello")
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        content = "As mentioned in #**Denmark>danish@123** and #**Denmark>danish@456**."
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            "<p>As mentioned in "
+            f'<a class="message-link" '
+            f'href="/#narrow/channel/{denmark.id}-{denmark.name}/topic/danish/near/123">'
+            f"#Denmark &gt; danish @ 💬</a>"
+            " and "
+            f'<a class="message-link" '
+            f'href="/#narrow/channel/{denmark.id}-{denmark.name}/topic/danish/near/456">'
+            f"#Denmark &gt; danish @ 💬</a>"
+            ".</p>",
+        )
+
     def test_possible_stream_names(self) -> None:
         content = """#**test here**
             This mentions #**Denmark** too.
