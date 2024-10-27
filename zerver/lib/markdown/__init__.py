@@ -1984,7 +1984,7 @@ class UserGroupMentionPattern(CompiledInlineProcessor):
         return None, None, None
 
 
-class StreamPattern(CompiledInlineProcessor):
+class StreamTopicMessageProcessor(CompiledInlineProcessor):
     def find_stream_id(self, name: str) -> int | None:
         db_data: DbData | None = self.zmd.zulip_db_data
         if db_data is None:
@@ -1992,6 +1992,8 @@ class StreamPattern(CompiledInlineProcessor):
         stream_id = db_data.stream_names.get(name)
         return stream_id
 
+
+class StreamPattern(StreamTopicMessageProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
@@ -2016,14 +2018,7 @@ class StreamPattern(CompiledInlineProcessor):
         return el, m.start(), m.end()
 
 
-class StreamTopicPattern(CompiledInlineProcessor):
-    def find_stream_id(self, name: str) -> int | None:
-        db_data: DbData | None = self.zmd.zulip_db_data
-        if db_data is None:
-            return None
-        stream_id = db_data.stream_names.get(name)
-        return stream_id
-
+class StreamTopicPattern(StreamTopicMessageProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
