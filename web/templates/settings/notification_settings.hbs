@@ -29,7 +29,12 @@
             <tbody>
                 {{#each general_settings}}
                     <tr>
-                        <td>{{ this.label }}</td>
+                        <td>
+                            {{ this.label }}
+                            {{#if this.help_link}}
+                                {{> ../help_link_widget link=this.help_link }}
+                            {{/if}}
+                        </td>
                         {{#each this.notification_settings}}
                             {{> notification_settings_checkboxes
                               setting_name=this.setting_name
