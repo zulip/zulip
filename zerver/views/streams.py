@@ -519,6 +519,59 @@ def compose_views(thunks: list[Callable[[], HttpResponse]]) -> dict[str, Any]:
     return json_dict
 
 
+def get_just_unsubscribed_message_content(acting_user: UserProfile, channel_names: set[str]) -> str:
+    subscriptions = sorted(channel_names)
+    if len(subscriptions) == 1:
+        return _("{user_full_name} unsubscribed you from the channel {channel_name}.").format(
+            user_full_name=f"@_**{acting_user.full_name}|{acting_user.id}**",
+            channel_name=f"#**{subscriptions[0]}**",
+        )
+
+    message = _("{user_full_name} unsubscribed you from the following channels:").format(
+        user_full_name=f"@_**{acting_user.full_name}|{acting_user.id}**",
+    )
+    message += "\n\n"
+    for channel_name in subscriptions:
+        message += f"* #**{channel_name}**\n"
+    return message
+
+
+def send_messages_for_unsubscribers(
+    acting_user: UserProfile,
+    unsubscribed_users: set[UserProfile],
+    unsubscribed_channels_by_user: dict[str, list[str]],
+    id_to_user_profile: dict[str, UserProfile],
+) -> None:
+    """
+    Send notifications to users when they are unsubscribed from channels.
+    """
+    bot_ids = {str(user.id) for user in unsubscribed_users if user.is_bot}
+    notifications = []
+
+    sender = get_system_bot(settings.NOTIFICATION_BOT, acting_user.realm_id)
+    if unsubscribed_channels_by_user:
+        for user_id, unsubscribed_channel_names in unsubscribed_channels_by_user.items():
+            if user_id == str(acting_user.id) or user_id in bot_ids:
+                continue
+
+            recipient_user = id_to_user_profile[user_id]
+            msg = get_just_unsubscribed_message_content(
+                acting_user=acting_user,
+                channel_names=set(unsubscribed_channel_names),
+            )
+
+            notifications.append(
+                internal_prep_private_message(
+                    sender=sender,
+                    recipient_user=recipient_user,
+                    content=msg,
+                    mention_backend=MentionBackend(acting_user.realm.id),
+                )
+            )
+    if notifications:
+        do_send_messages(notifications, mark_as_read=[acting_user.id])
+
+
 @typed_endpoint
 def remove_subscriptions_backend(
     request: HttpRequest,
@@ -549,16 +602,30 @@ def remove_subscriptions_backend(
         unsubscribing_others=unsubscribing_others,
     )
 
+    id_to_user_profile: dict[str, UserProfile] = {}
     result: dict[str, list[str]] = dict(removed=[], not_removed=[])
+    unsubscribed_channels_by_user_dict: dict[str, list[str]] = defaultdict(list)
     (removed, not_subscribed) = bulk_remove_subscriptions(
         realm, people_to_unsub, streams, acting_user=user_profile
     )
 
-    for subscriber, removed_stream in removed:
-        result["removed"].append(removed_stream.name)
+    for subscriber, removed_channel in removed:
+        user_id = str(subscriber.id)
+        result["removed"].append(removed_channel.name)
+        unsubscribed_channels_by_user_dict[user_id].append(removed_channel.name)
+        id_to_user_profile[user_id] = subscriber
     for subscriber, not_subscribed_stream in not_subscribed:
         result["not_removed"].append(not_subscribed_stream.name)
 
+    for user_id, channels in unsubscribed_channels_by_user_dict.items():
+        channels.sort()
+
+    send_messages_for_unsubscribers(
+        acting_user=user_profile,
+        unsubscribed_users=people_to_unsub,
+        unsubscribed_channels_by_user=unsubscribed_channels_by_user_dict,
+        id_to_user_profile=id_to_user_profile,
+    )
     return json_success(request, data=result)
 
 

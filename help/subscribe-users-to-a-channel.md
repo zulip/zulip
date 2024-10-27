@@ -107,6 +107,7 @@ subscribe the user.
       You do not have to send the message you are composing for
       the user to be subscribed this way.
 
+{!automated-dm-channel-remove.md!}
 ## Related articles
 
 * [Introduction to channels](/help/introduction-to-channels)
