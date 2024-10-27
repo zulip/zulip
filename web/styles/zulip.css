@@ -1261,7 +1261,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     }
 }
 
-#custom-expiration-time-input,
+.custom-time-input-value,
 #invite-user-form {
     margin: 0;
 }
@@ -1285,7 +1285,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     width: 100%;
 }
 
-#custom-expiration-time-input {
+.custom-time-input-value {
     width: 5ch;
     margin-right: 15px;
 
@@ -1307,7 +1307,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     }
 }
 
-#custom-expiration-time-unit {
+.custom-time-input-unit {
     width: auto;
 }
 
