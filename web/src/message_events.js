@@ -103,6 +103,157 @@ export function update_current_view_for_topic_visibility() {
     return false;
 }
 
+function update_msg_list_data_for_msg_property_change(
+    message_ids,
+    property_term_type,
+    property_value,
+    msg_list_data,
+) {
+    const msg_list = message_lists.rendered_message_lists.get(
+        msg_list_data.rendered_message_list_id,
+    );
+    const filter = msg_list_data.filter;
+    const filter_term_types = filter.sorted_term_types();
+    if (
+        // Check if current filter relies on the changed message property.
+        !filter_term_types.includes(property_term_type) &&
+        !filter_term_types.includes(`not-${property_term_type}`)
+    ) {
+        return;
+    }
+
+    // We need the message objects to determine if they match the filter.
+    const messages_to_fetch = [];
+    const messages = [];
+    for (const message_id of message_ids) {
+        const message = message_store.get(message_id);
+        if (message !== undefined) {
+            messages.push(message);
+        } else {
+            if (
+                (filter_term_types.includes(property_term_type) && !property_value) ||
+                (filter_term_types.includes(`not-${property_term_type}`) && property_value)
+            ) {
+                // If the message is not cached, that means it is not present in the message list.
+                // Also, the message is not supposed to be in the message list as per the filter and
+                // it's property value. So, we don't need to fetch the message.
+                return;
+            }
+
+            const first_id = msg_list.first().id;
+            const last_id = msg_list.last().id;
+            const has_found_newest = msg_list_data.fetch_status.has_found_newest();
+            const has_found_oldest = msg_list_data.fetch_status.has_found_oldest();
+
+            if (message_id > first_id && message_id < last_id) {
+                // Need to insert message middle of the list.
+                messages_to_fetch.push(message_id);
+            } else if (message_id < first_id && has_found_oldest) {
+                // Need to insert message at the start of list.
+                messages_to_fetch.push(message_id);
+            } else if (message_id > last_id && has_found_newest) {
+                // Need to insert message at the end of list.
+                messages_to_fetch.push(message_id);
+            }
+        }
+    }
+
+    if (!filter.can_apply_locally()) {
+        // Only live update for rendered message lists.
+        if (msg_list) {
+            channel.get({
+                url: "/json/messages",
+                data: {
+                    message_ids: JSON.stringify(message_ids),
+                    narrow: JSON.stringify(filter.terms()),
+                },
+                success(data) {
+                    const messages_to_add = [];
+                    const messages_to_remove = new Set(message_ids);
+                    for (const raw_message of data.messages) {
+                        messages_to_remove.delete(raw_message.id);
+                        let message = message_store.get(raw_message.id);
+                        if (!message) {
+                            message = message_helper.process_new_message(raw_message);
+                        }
+                        messages_to_add.push(message);
+                    }
+                    msg_list_data.remove([...messages_to_remove]);
+                    msg_list_data.add_messages(messages_to_add);
+                    msg_list?.rerender();
+                },
+            });
+        } else {
+            message_list_data_cache.remove(filter);
+        }
+    } else if (messages_to_fetch.length > 0) {
+        // Fetch the message and update the view.
+        channel.get({
+            url: "/json/messages",
+            data: {
+                message_ids: JSON.stringify(messages_to_fetch),
+                // We don't filter by narrow here since we can
+                // apply the filter locally and the fetched message
+                // can be used to update other message lists and
+                // cached message data structures as well.
+            },
+            success(data) {
+                // `messages_to_fetch` might already be cached locally when
+                // we reach here but `message_helper.process_new_message`
+                // already handles that case.
+                for (const raw_message of data.messages) {
+                    message_helper.process_new_message(raw_message);
+                }
+                update_msg_list_data_for_msg_property_change(
+                    message_ids,
+                    property_term_type,
+                    property_value,
+                    msg_list_data,
+                );
+            },
+        });
+    } else {
+        // We have all the messages locally, so we can update the view.
+        //
+        // Special case: For starred messages view, we don't remove
+        // messages that are no longer starred to avoid
+        // implementing an undo mechanism for that view.
+        // TODO: A cleaner way to implement this might be to track which things
+        // have been unstarred in the starred messages view in this visit
+        // to the view, and have those stay.
+        if (
+            property_term_type === "is-starred" &&
+            _.isEqual(filter.sorted_term_types(), ["is-starred"])
+        ) {
+            msg_list?.add_messages(messages);
+            if (msg_list === undefined) {
+                msg_list_data.add_messages(messages);
+            }
+            return;
+        }
+
+        // In most cases, we are only working to update a single message.
+        if (messages.length === 1) {
+            const message = messages[0];
+            if (filter.predicate()(message)) {
+                msg_list?.add_messages(messages);
+                if (msg_list === undefined) {
+                    msg_list_data.add_messages(messages);
+                }
+            } else {
+                msg_list?.remove_and_rerender(message_ids);
+                if (msg_list === undefined) {
+                    msg_list_data.remove(message_ids);
+                }
+            }
+        } else {
+            msg_list_data.remove(message_ids);
+            msg_list_data.add_messages(messages);
+            msg_list?.rerender();
+        }
+    }
+}
+
 export let update_views_filtered_on_message_property = (
     message_ids,
     property_term_type,
@@ -132,132 +283,21 @@ export let update_views_filtered_on_message_property = (
     }
 
     for (const msg_list of message_lists.all_rendered_message_lists()) {
-        const filter = msg_list.data.filter;
-        const filter_term_types = filter.sorted_term_types();
-        if (
-            // Check if current filter relies on the changed message property.
-            !filter_term_types.includes(property_term_type) &&
-            !filter_term_types.includes(`not-${property_term_type}`)
-        ) {
-            continue;
-        }
+        update_msg_list_data_for_msg_property_change(
+            message_ids,
+            property_term_type,
+            property_value,
+            msg_list.data,
+        );
+    }
 
-        // We need the message objects to determine if they match the filter.
-        const messages_to_fetch = [];
-        const messages = [];
-        for (const message_id of message_ids) {
-            const message = message_store.get(message_id);
-            if (message !== undefined) {
-                messages.push(message);
-            } else {
-                if (
-                    (filter_term_types.includes(property_term_type) && !property_value) ||
-                    (filter_term_types.includes(`not-${property_term_type}`) && property_value)
-                ) {
-                    // If the message is not cached, that means it is not present in the message list.
-                    // Also, the message is not supposed to be in the message list as per the filter and
-                    // it's property value. So, we don't need to fetch the message.
-                    continue;
-                }
-
-                const first_id = msg_list.first().id;
-                const last_id = msg_list.last().id;
-                const has_found_newest = msg_list.data.fetch_status.has_found_newest();
-                const has_found_oldest = msg_list.data.fetch_status.has_found_oldest();
-
-                if (message_id > first_id && message_id < last_id) {
-                    // Need to insert message middle of the list.
-                    messages_to_fetch.push(message_id);
-                } else if (message_id < first_id && has_found_oldest) {
-                    // Need to insert message at the start of list.
-                    messages_to_fetch.push(message_id);
-                } else if (message_id > last_id && has_found_newest) {
-                    // Need to insert message at the end of list.
-                    messages_to_fetch.push(message_id);
-                }
-            }
-        }
-
-        if (!filter.can_apply_locally()) {
-            channel.get({
-                url: "/json/messages",
-                data: {
-                    message_ids: JSON.stringify(message_ids),
-                    narrow: JSON.stringify(filter.terms()),
-                },
-                success(data) {
-                    const messages_to_add = [];
-                    const messages_to_remove = new Set(message_ids);
-                    for (const raw_message of data.messages) {
-                        messages_to_remove.delete(raw_message.id);
-                        let message = message_store.get(raw_message.id);
-                        if (!message) {
-                            message = message_helper.process_new_message(raw_message);
-                        }
-                        messages_to_add.push(message);
-                    }
-                    msg_list.data.remove([...messages_to_remove]);
-                    msg_list.data.add_messages(messages_to_add);
-                    msg_list.rerender();
-                },
-            });
-        } else if (messages_to_fetch.length > 0) {
-            // Fetch the message and update the view.
-            channel.get({
-                url: "/json/messages",
-                data: {
-                    message_ids: JSON.stringify(messages_to_fetch),
-                    // We don't filter by narrow here since we can
-                    // apply the filter locally and the fetched message
-                    // can be used to update other message lists and
-                    // cached message data structures as well.
-                },
-                // eslint-disable-next-line no-loop-func
-                success(data) {
-                    // `messages_to_fetch` might already be cached locally when
-                    // we reach here but `message_helper.process_new_message`
-                    // already handles that case.
-                    for (const raw_message of data.messages) {
-                        message_helper.process_new_message(raw_message);
-                    }
-                    update_views_filtered_on_message_property(
-                        message_ids,
-                        property_term_type,
-                        property_value,
-                    );
-                },
-            });
-        } else {
-            // We have all the messages locally, so we can update the view.
-            //
-            // Special case: For starred messages view, we don't remove
-            // messages that are no longer starred to avoid
-            // implementing an undo mechanism for that view.
-            // TODO: A cleaner way to implement this might be to track which things
-            // have been unstarred in the starred messages view in this visit
-            // to the view, and have those stay.
-            if (
-                property_term_type === "is-starred" &&
-                _.isEqual(filter.sorted_term_types(), ["is-starred"])
-            ) {
-                msg_list.add_messages(messages);
-                continue;
-            }
-
-            // In most cases, we are only working to update a single message.
-            if (messages.length === 1) {
-                const message = messages[0];
-                if (filter.predicate()(message)) {
-                    msg_list.add_messages(messages);
-                } else {
-                    msg_list.remove_and_rerender(message_ids);
-                }
-            } else {
-                msg_list.data.remove(message_ids);
-                msg_list.data.add_messages(messages);
-                msg_list.rerender();
-            }
-        }
+    for (const msg_list_data of message_lists.non_rendered_data()) {
+        update_msg_list_data_for_msg_property_change(
+            message_ids,
+            property_term_type,
+            property_value,
+            msg_list_data,
+        );
     }
 };
 
@@ -360,17 +400,6 @@ export function update_messages(events) {
     let any_message_content_edited = false;
     let local_cache_missing_messages = false;
 
-    // Clear message list data cache since the local data for the
-    // filters might no longer be accurate.
-    //
-    // TODO: Add logic to update the message list data cache.
-    // Special care needs to be taken to ensure that the cache is
-    // updated correctly when the message is moved to a different
-    // stream or topic. Also, we need to update message lists like
-    // `is:starred`, `is:mentioned`, etc. when the message flags are
-    // updated.
-    message_list_data_cache.clear();
-
     for (const event of events) {
         const anchor_message = message_store.get(event.message_id);
         if (anchor_message !== undefined) {
@@ -460,6 +489,15 @@ export function update_messages(events) {
                 messages_to_rerender.push(anchor_message);
             }
         } else {
+            // Clear message list data cache since the local data for the
+            // filters might no longer be accurate.
+            //
+            // TODO: Add logic to update the message list data cache.
+            // Special care needs to be taken to ensure that the cache is
+            // updated correctly when the message is moved to a different
+            // stream or topic.
+            message_list_data_cache.clear();
+
             const going_forward_change = ["change_later", "change_all"].includes(
                 event.propagate_mode,
             );
