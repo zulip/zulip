@@ -311,43 +311,6 @@ export const wildcard_mention_policy_values = {
     },
 };
 
-export const common_message_policy_values = {
-    by_everyone: {
-        order: 1,
-        code: 5,
-        description: $t({defaultMessage: "Admins, moderators, members and guests"}),
-    },
-    by_members: {
-        order: 2,
-        code: 1,
-        description: $t({defaultMessage: "Admins, moderators and members"}),
-    },
-    by_full_members: {
-        order: 3,
-        code: 3,
-        description: $t({defaultMessage: "Admins, moderators and full members"}),
-    },
-    by_moderators_only: {
-        order: 4,
-        code: 4,
-        description: $t({defaultMessage: "Admins and moderators"}),
-    },
-    by_admins_only: {
-        order: 5,
-        code: 2,
-        description: $t({defaultMessage: "Admins only"}),
-    },
-};
-
-export const edit_topic_policy_values = {
-    ...common_message_policy_values,
-    nobody: {
-        order: 6,
-        code: 6,
-        description: $t({defaultMessage: "Nobody"}),
-    },
-};
-
 export const time_limit_dropdown_values = [
     {
         text: $t({defaultMessage: "Any time"}),

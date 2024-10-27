@@ -163,66 +163,6 @@ test_policy(
     settings_data.user_can_invite_users_by_email,
 );
 
-function test_message_policy(label, policy, validation_func) {
-    run_test(label, ({override}) => {
-        override(current_user, "is_admin", true);
-        override(realm, policy, settings_config.common_message_policy_values.by_admins_only.code);
-        assert.equal(validation_func(), true);
-
-        override(current_user, "is_admin", false);
-        override(current_user, "is_moderator", true);
-        assert.equal(validation_func(), false);
-
-        override(
-            realm,
-            policy,
-            settings_config.common_message_policy_values.by_moderators_only.code,
-        );
-        assert.equal(validation_func(), true);
-
-        override(current_user, "is_moderator", false);
-        assert.equal(validation_func(), false);
-
-        override(current_user, "is_guest", true);
-        override(realm, policy, settings_config.common_message_policy_values.by_everyone.code);
-        assert.equal(validation_func(), true);
-
-        override(realm, policy, settings_config.common_message_policy_values.by_members.code);
-        assert.equal(validation_func(), false);
-
-        override(current_user, "is_guest", false);
-        assert.equal(validation_func(), true);
-
-        override(realm, policy, settings_config.common_message_policy_values.by_full_members.code);
-        override(current_user, "user_id", 30);
-        isaac.date_joined = new Date(Date.now());
-        override(realm, "realm_waiting_period_threshold", 10);
-        settings_data.initialize(isaac.date_joined);
-        assert.equal(validation_func(), false);
-
-        isaac.date_joined = new Date(Date.now() - 20 * 86400000);
-        settings_data.initialize(isaac.date_joined);
-        assert.equal(validation_func(), true);
-    });
-}
-
-test_message_policy(
-    "user_can_move_messages_to_another_topic",
-    "realm_edit_topic_policy",
-    settings_data.user_can_move_messages_to_another_topic,
-);
-
-run_test("user_can_move_messages_to_another_topic_nobody_case", ({override}) => {
-    override(current_user, "is_admin", true);
-    override(current_user, "is_guest", false);
-    override(
-        realm,
-        "realm_edit_topic_policy",
-        settings_config.edit_topic_policy_values.nobody.code,
-    );
-    assert.equal(settings_data.user_can_move_messages_to_another_topic(), false);
-});
-
 test_realm_group_settings(
     "realm_can_add_custom_emoji_group",
     settings_data.user_can_add_custom_emoji,
@@ -241,6 +181,11 @@ test_realm_group_settings(
 test_realm_group_settings(
     "realm_can_move_messages_between_channels_group",
     settings_data.user_can_move_messages_between_streams,
+);
+
+test_realm_group_settings(
+    "realm_can_move_messages_between_topics_group",
+    settings_data.user_can_move_messages_to_another_topic,
 );
 
 run_test("using_dark_theme", ({override}) => {

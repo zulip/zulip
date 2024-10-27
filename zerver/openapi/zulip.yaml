@@ -4515,6 +4515,20 @@ paths:
                                             In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
                                             `move_messages_between_streams_policy` enum.
                                         - $ref: "#/components/schemas/GroupSettingValue"
+                                    can_move_messages_between_topics_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to move messages from one topic to another
+                                            within a channel in the organization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 316). Previously, this
+                                            permission was controlled by the enum `edit_topic_policy`. Values were
+                                            1=Members, 2=Admins, 3=Full members, 4=Moderators, 5=Everyone, 6=Nobody.
+
+                                            In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
+                                            `edit_topic_policy` enum.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_manage_all_groups:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -8303,7 +8317,7 @@ paths:
 
         - `allow_message_editing`
         - `can_move_messages_between_channels_group`
-        - `edit_topic_policy`
+        - `can_move_messages_between_topics_group`
         - `message_content_edit_limit_seconds`
         - `move_messages_within_stream_limit_seconds`
         - `move_messages_between_streams_limit_seconds`
@@ -8312,6 +8326,10 @@ paths:
         [`POST /register`](/api/register-queue) response or in the documentation
         of the [`realm op: update_dict`](/api/get-events#realm-update_dict)
         event in [`GET /events`](/api/get-events).
+
+        **Changes**: In Zulip 10.0 (feature level 316), `edit_topic_policy`
+        was removed and replaced by `can_move_messages_between_topics_group`
+        realm setting.
 
         **Changes**: In Zulip 10.0 (feature level 310), `move_messages_between_streams_policy`
         was removed and replaced by `can_move_messages_between_channels_group`
@@ -16350,6 +16368,22 @@ paths:
 
                               In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
                               `move_messages_between_streams_policy` enum.
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                      realm_can_move_messages_between_topics_group:
+                        allOf:
+                          - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to move messages from one topic to another
+                              within a channel in the organization.
+
+                              **Changes**: New in Zulip 10.0 (feature level 316). Previously, this
+                              permission was controlled by the enum `edit_topic_policy`. Values were
+                              1=Members, 2=Admins, 3=Full members, 4=Moderators, 5=Everyone, 6=Nobody.
+
+                              In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
+                              `edit_topic_policy` enum.
                           - $ref: "#/components/schemas/GroupSettingValue"
                       realm_bot_creation_policy:
                         type: integer

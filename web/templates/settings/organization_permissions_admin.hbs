@@ -191,12 +191,11 @@
                 </h3>
                 {{> settings_save_discard_widget section_name="moving-msgs" }}
             </div>
-            <div class="input-group">
-                <label for="realm_edit_topic_policy" class="settings-field-label">{{t "Who can move messages to another topic" }}</label>
-                <select name="realm_edit_topic_policy" id="id_realm_edit_topic_policy" class="prop-element move-message-policy-setting settings_select bootstrap-focus-style" data-setting-widget-type="number">
-                    {{> dropdown_options_widget option_values=edit_topic_policy_values}}
-                </select>
-            </div>
+
+            {{> ../dropdown_widget_with_label
+              widget_name="realm_can_move_messages_between_topics_group"
+              label=(t 'Who can move messages to another topic')
+              value_type="number" }}
 
             <div class="input-group time-limit-setting">
                 <label for="realm_move_messages_within_stream_limit_seconds" class="settings-field-label">{{t "Time limit for editing topics" }} <i>({{t "does not apply to moderators and administrators" }})</i></label>

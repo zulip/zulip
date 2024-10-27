@@ -439,19 +439,11 @@ function test_discard_changes_button({override}, discard_changes) {
     };
 
     override(realm, "realm_allow_edit_history", true);
-    override(
-        realm,
-        "realm_edit_topic_policy",
-        settings_config.common_message_policy_values.by_everyone.code,
-    );
     override(realm, "realm_allow_message_editing", true);
     override(realm, "realm_message_content_edit_limit_seconds", 3600);
     override(realm, "realm_message_content_delete_limit_seconds", 120);
 
     const $allow_edit_history = $("#id_realm_allow_edit_history").prop("checked", false);
-    const $edit_topic_policy = $("#id_realm_edit_topic_policy").val(
-        settings_config.common_message_policy_values.by_admins_only.code,
-    );
     const $msg_edit_limit_setting = $("#id_realm_message_content_edit_limit_seconds").val(
         "custom_period",
     );
@@ -468,7 +460,6 @@ function test_discard_changes_button({override}, discard_changes) {
     $allow_edit_history.attr("id", "id_realm_allow_edit_history");
     $msg_edit_limit_setting.attr("id", "id_realm_message_content_edit_limit_seconds");
     $msg_delete_limit_setting.attr("id", "id_realm_message_content_delete_limit_seconds");
-    $edit_topic_policy.attr("id", "id_realm_edit_topic_policy");
     $message_content_edit_limit_minutes.attr("id", "id_realm_message_content_edit_limit_minutes");
     $message_content_delete_limit_minutes.attr(
         "id",
@@ -480,7 +471,6 @@ function test_discard_changes_button({override}, discard_changes) {
         $allow_edit_history,
         $msg_edit_limit_setting,
         $msg_delete_limit_setting,
-        $edit_topic_policy,
     ]);
 
     const {$discard_button, $save_button_controls, props} = createSaveButtons("msg-editing");
@@ -494,10 +484,6 @@ function test_discard_changes_button({override}, discard_changes) {
     discard_changes.call({to_$: () => $(".save-discard-widget-button.discard-button")}, ev);
 
     assert.equal($allow_edit_history.prop("checked"), true);
-    assert.equal(
-        $edit_topic_policy.val(),
-        settings_config.common_message_policy_values.by_everyone.code,
-    );
     assert.equal($msg_edit_limit_setting.val(), "3600");
     assert.equal($message_content_edit_limit_minutes.val(), "60");
     assert.equal($msg_delete_limit_setting.val(), "120");

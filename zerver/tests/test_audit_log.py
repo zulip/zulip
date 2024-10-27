@@ -31,6 +31,7 @@ from zerver.actions.realm_linkifiers import (
 )
 from zerver.actions.realm_playgrounds import check_add_realm_playground, do_remove_realm_playground
 from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
     do_deactivate_realm,
     do_reactivate_realm,
     do_set_realm_authentication_methods,
@@ -89,7 +90,7 @@ from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realm_emoji import EmojiInfo, get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
-from zerver.models.realms import EditTopicPolicyEnum, RealmDomainDict, get_realm, get_realm_domains
+from zerver.models.realms import RealmDomainDict, get_realm, get_realm_domains
 from zerver.models.streams import get_stream
 
 
@@ -546,14 +547,24 @@ class TestRealmAuditLog(ZulipTestCase):
             1,
         )
 
+        administrators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        everyone_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+
         value_expected = {
-            RealmAuditLog.OLD_VALUE: EditTopicPolicyEnum.EVERYONE,
-            RealmAuditLog.NEW_VALUE: EditTopicPolicyEnum.ADMINS_ONLY,
-            "property": "edit_topic_policy",
+            RealmAuditLog.OLD_VALUE: everyone_system_group.id,
+            RealmAuditLog.NEW_VALUE: administrators_system_group.id,
+            "property": "can_move_messages_between_topics_group",
         }
 
-        do_set_realm_property(
-            realm, "edit_topic_policy", EditTopicPolicyEnum.ADMINS_ONLY, acting_user=user
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_topics_group",
+            administrators_system_group,
+            acting_user=user,
         )
         self.assertEqual(
             RealmAuditLog.objects.filter(

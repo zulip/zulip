@@ -111,8 +111,8 @@ export function is_topic_editable(message: Message, edit_limit_seconds_buffer = 
     }
 
     // Organization admins and moderators can edit message topics indefinitely,
-    // irrespective of the topic editing deadline, if edit_topic_policy allows
-    // them to do so.
+    // irrespective of the topic editing deadline, if they are in the
+    // can_move_messages_between_topics_group.
     if (current_user.is_admin || current_user.is_moderator) {
         return true;
     }
