@@ -52,7 +52,6 @@ from zerver.models.realms import (
     BotCreationPolicyEnum,
     CommonPolicyEnum,
     DigestWeekdayEnum,
-    EditTopicPolicyEnum,
     InviteToRealmPolicyEnum,
     OrgTypeEnum,
     WildcardMentionPolicyEnum,
@@ -116,7 +115,6 @@ def update_realm(
         ApiParamConfig("message_content_delete_limit_seconds"),
     ] = None,
     allow_message_editing: Json[bool] | None = None,
-    edit_topic_policy: Json[EditTopicPolicyEnum] | None = None,
     mandatory_topics: Json[bool] | None = None,
     message_content_edit_limit_seconds_raw: Annotated[
         Json[int | str] | None, ApiParamConfig("message_content_edit_limit_seconds")

@@ -82,7 +82,6 @@ def do_set_realm_property(
     # These settings have a different event format due to their history.
     message_edit_settings = [
         "allow_message_editing",
-        "edit_topic_policy",
         "message_content_edit_limit_seconds",
     ]
     if name in message_edit_settings:

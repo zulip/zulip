@@ -106,15 +106,6 @@ class CommonPolicyEnum(IntEnum):
     MODERATORS_ONLY = 4
 
 
-class EditTopicPolicyEnum(IntEnum):
-    MEMBERS_ONLY = 1
-    ADMINS_ONLY = 2
-    FULL_MEMBERS_ONLY = 3
-    MODERATORS_ONLY = 4
-    EVERYONE = 5
-    NOBODY = 6
-
-
 class InviteToRealmPolicyEnum(IntEnum):
     MEMBERS_ONLY = 1
     ADMINS_ONLY = 2
@@ -268,8 +259,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         field.value for field in CreateWebPublicStreamPolicyEnum
     ]
 
-    EDIT_TOPIC_POLICY_TYPES = [field.value for field in EditTopicPolicyEnum]
-
     DEFAULT_MOVE_MESSAGE_LIMIT_SECONDS = 7 * SECONDS_PER_DAY
 
     move_messages_within_stream_limit_seconds = models.PositiveIntegerField(
@@ -310,9 +299,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     can_move_messages_between_topics_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
-
-    # Who in the organization is allowed to edit topics of any message.
-    edit_topic_policy = models.PositiveSmallIntegerField(default=EditTopicPolicyEnum.EVERYONE)
 
     # Who in the organization is allowed to invite other users to organization.
     invite_to_realm_policy = models.PositiveSmallIntegerField(
@@ -654,7 +640,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         digest_emails_enabled=bool,
         digest_weekday=int,
         disallow_disposable_email_addresses=bool,
-        edit_topic_policy=int,
         email_changes_disabled=bool,
         emails_restricted_to_domains=bool,
         enable_guest_user_indicator=bool,
