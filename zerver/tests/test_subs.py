@@ -2552,6 +2552,20 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.archive_stream(priv_stream)
 
+    def assert_user_got_unsubscription_notification(
+        self, user: UserProfile, expected_msg: str
+    ) -> None:
+        # verify that the user was sent a message informing them about the subscription
+        realm = user.realm
+        msg = most_recent_message(user)
+        self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
+        self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
+
+        def non_ws(s: str) -> str:
+            return s.replace("\n", "").replace(" ", "")
+
+        self.assertEqual(non_ws(msg.content), non_ws(expected_msg))
+
     def attempt_unsubscribe_of_principal(
         self,
         target_users: list[UserProfile],
@@ -2631,16 +2645,60 @@ class StreamAdminTest(ZulipTestCase):
         those you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=33,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
             invite_only=False,
             target_users_subbed=True,
         )
+        user_profile = self.example_user("iago")
+        unsubscription_notification_message = f"""
+        @_**{user_profile.full_name}|{user_profile.id}** unsubscribed you from the channel #**hümbüǵ**.
+        """
         json = self.assert_json_success(result)
         self.assert_length(json["removed"], 1)
         self.assert_length(json["not_removed"], 0)
+        self.assert_user_got_unsubscription_notification(
+            self.example_user("cordelia"), unsubscription_notification_message
+        )
+
+    def test_realm_admin_remove_others_from_multiple_public_streams(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login_user(user_profile)
+
+        target_users = [self.example_user(name) for name in ["cordelia", "prospero", "hamlet"]]
+        principals = [user.id for user in target_users]
+        public_channels_to_unsubscribe = []
+
+        for i in range(1, 5):
+            channel_name = f"channel_{i}"
+            self.make_stream(channel_name, invite_only=False)
+            public_channels_to_unsubscribe.append(channel_name)
+            self.subscribe(user_profile, channel_name)
+            for user in target_users:
+                self.subscribe(user, channel_name)
+
+        result = self.client_delete(
+            "/json/users/me/subscriptions",
+            {
+                "subscriptions": orjson.dumps(public_channels_to_unsubscribe).decode(),
+                "principals": orjson.dumps(principals).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        unsubscription_notification_message = f"""
+        @_**{user_profile.full_name}|{user_profile.id}** unsubscribed you from the following channels:
+        """
+        unsubscription_notification_message += "\n\n"
+        for channel_name in public_channels_to_unsubscribe:
+            unsubscription_notification_message += f"* #**{channel_name}**\n"
+
+        for target_user in target_users:
+            self.assert_user_got_unsubscription_notification(
+                target_user, unsubscription_notification_message
+            )
 
     def test_realm_admin_remove_multiple_users_from_stream(self) -> None:
         """
@@ -2658,8 +2716,8 @@ class StreamAdminTest(ZulipTestCase):
             for name in ["cordelia", "prospero", "iago", "hamlet", "outgoing_webhook_bot"]
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=24,
-            cache_count=8,
+            query_count=56,
+            cache_count=27,
             target_users=target_users,
             is_realm_admin=True,
             is_subbed=True,
@@ -2676,7 +2734,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=33,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2693,7 +2751,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=33,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -2719,7 +2777,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=33,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2733,7 +2791,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=19,
+            query_count=43,
             target_users=[self.example_user("cordelia"), self.example_user("prospero")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2747,7 +2805,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_remove_unsubbed_user_along_with_subbed(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=16,
+            query_count=17,
             target_users=[self.example_user("cordelia"), self.example_user("iago")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2764,7 +2822,7 @@ class StreamAdminTest(ZulipTestCase):
         fails gracefully.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=9,
+            query_count=10,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -2780,7 +2838,7 @@ class StreamAdminTest(ZulipTestCase):
         webhook_bot = self.example_user("webhook_bot")
         do_change_bot_owner(webhook_bot, bot_owner=user_profile, acting_user=user_profile)
         result = self.attempt_unsubscribe_of_principal(
-            query_count=14,
+            query_count=15,
             target_users=[webhook_bot],
             is_realm_admin=False,
             is_subbed=True,
