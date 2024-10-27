@@ -190,16 +190,37 @@ function role_selected_handler(
     widget.render();
 }
 
-function get_roles(): {
-    unique_id: number;
-    name: string;
-}[] {
+function count_users_by_role(user_ids: number[]): Record<number, number> {
+    const role_counts: Record<number, number> = {};
+
+    for (const user_id of user_ids) {
+        const user = people.get_by_user_id(user_id);
+        const role_code = user.role;
+
+        role_counts[role_code] = (role_counts[role_code] ?? 0) + 1;
+    }
+
+    return role_counts;
+}
+
+function get_roles_with_counts(user_ids: number[]): {unique_id: number; name: string}[] {
+    const role_counts = count_users_by_role(user_ids);
     return [
-        {unique_id: 0, name: $t({defaultMessage: "All roles"})},
+        {
+            unique_id: 0,
+            name: $t({defaultMessage: "All roles ({count})"}, {count: user_ids.length}),
+        },
         ...Object.values(settings_config.user_role_values)
             .map((user_role_value) => ({
                 unique_id: user_role_value.code,
-                name: user_role_value.description,
+                name: $t(
+                    // This translation is a noop except for RTL languages
+                    {defaultMessage: "{description} ({count})"},
+                    {
+                        description: user_role_value.description,
+                        count: role_counts[user_role_value.code] ?? 0,
+                    },
+                ),
             }))
             .reverse(),
     ];
@@ -208,11 +229,12 @@ function get_roles(): {
 function create_role_filter_dropdown(
     $events_container: JQuery,
     section: UserSettingsSection,
+    user_ids: number[],
 ): void {
     new dropdown_widget.DropdownWidget({
         widget_name: section.dropdown_widget_name,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
-        get_options: get_roles,
+        get_options: () => get_roles_with_counts(user_ids),
         $events_container,
         item_click_callback: role_selected_handler,
         default_id: section.filters.role_code,
@@ -231,9 +253,14 @@ function populate_users(): void {
     }
 
     active_section.create_table(active_user_ids);
+    create_role_filter_dropdown($("#admin-user-list"), active_section, active_user_ids);
+
     deactivated_section.create_table(deactivated_user_ids);
-    create_role_filter_dropdown($("#admin-user-list"), active_section);
-    create_role_filter_dropdown($("#admin-deactivated-users-list"), deactivated_section);
+    create_role_filter_dropdown(
+        $("#admin-deactivated-users-list"),
+        deactivated_section,
+        deactivated_user_ids,
+    );
 }
 
 function reset_scrollbar($sel: JQuery): () => void {
