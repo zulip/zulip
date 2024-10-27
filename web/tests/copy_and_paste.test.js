@@ -33,17 +33,20 @@ run_test("try_stream_topic_syntax_text", () => {
         ],
 
         ["http://different.origin.com/#narrow/channel/4-Rome/topic/old.20FAILED.20EXPORT"],
-
+        [
+            "http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic/old.20FAILED.20EXPORT/near/100",
+            "#**Rome>old FAILED EXPORT@100**",
+        ],
         // malformed urls
         ["http://zulip.zulipdev.com/narrow/channel/4-Rome/topic/old.20FAILED.20EXPORT"],
         ["http://zulip.zulipdev.com/#not_narrow/channel/4-Rome/topic/old.20FAILED.20EXPORT"],
         ["http://zulip.zulipdev.com/#narrow/not_stream/4-Rome/topic/old.20FAILED.20EXPORT"],
         ["http://zulip.zulipdev.com/#narrow/channel/4-Rome/not_topic/old.20FAILED.20EXPORT"],
-        ["http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic/old.20FAILED.20EXPORT/near/100"],
         ["http://zulip.zulipdev.com/#narrow/channel/4-Rome/", "#**Rome**"],
         ["http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic"],
         ["http://zulip.zulipdev.com/#narrow/topic/cheese"],
         ["http://zulip.zulipdev.com/#narrow/topic/pizza/stream/Rome"],
+        ["http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic/old.20FAILED.20EXPORT/near/"],
 
         // When a url containing characters which are known to produce broken
         // #**stream>topic** urls is pasted, a normal markdown link syntax is produced.
@@ -66,6 +69,10 @@ run_test("try_stream_topic_syntax_text", () => {
         [
             "http://zulip.zulipdev.com/#narrow/stream/5-Romeo.60s-lair/topic/normal",
             "[#Romeo&#96;s lair > normal](#narrow/channel/5-Romeo.60s-lair/topic/normal)",
+        ],
+        [
+            "http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/100.25.20profits.60/near/20",
+            "[#Rome > 100% profits&#96; @ 💬](#narrow/channel/4-Rome/topic/100.25.20profits.60/near/20)",
         ],
     ];
 
