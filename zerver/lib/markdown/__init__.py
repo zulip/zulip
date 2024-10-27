@@ -194,6 +194,31 @@ def get_compiled_stream_topic_link_regex() -> Pattern[str]:
     )
 
 
+STREAM_TOPIC_MESSAGE_LINK_REGEX = rf"""
+                     {BEFORE_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
+                     \#\*\*                          # and after hash sign followed by double asterisks
+                         (?P<stream_name>[^\*>]+)    # stream name can contain anything except >
+                         >                           # > acts as separator
+                         (?P<topic_name>[^\*]+)      # topic name can contain anything
+                         @
+                         (?P<message_id>\d+)         # message id
+                     \*\*                            # ends by double asterisks
+                   """
+
+
+@lru_cache(None)
+def get_compiled_stream_topic_message_link_regex() -> Pattern[str]:
+    # Not using verbose_compile as it adds ^(.*?) and
+    # (.*?)$ which cause extra overhead of matching
+    # pattern which is not required.
+    # With new InlineProcessor these extra patterns
+    # are not required.
+    return re.compile(
+        STREAM_TOPIC_MESSAGE_LINK_REGEX,
+        re.DOTALL | re.VERBOSE,
+    )
+
+
 @lru_cache(None)
 def get_web_link_regex() -> Pattern[str]:
     # We create this one time, but not at startup.  So the
@@ -2041,6 +2066,29 @@ class StreamTopicPattern(StreamTopicMessageProcessor):
         return el, m.start(), m.end()
 
 
+class StreamTopicMessagePattern(StreamTopicMessageProcessor):
+    @override
+    def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
+        self, m: Match[str], data: str
+    ) -> tuple[Element | str | None, int | None, int | None]:
+        stream_name = m.group("stream_name")
+        topic_name = m.group("topic_name")
+        message_id = m.group("message_id")
+
+        stream_id = self.find_stream_id(stream_name)
+        if stream_id is None or topic_name is None:
+            return None, None, None
+        el = Element("a")
+        el.set("class", "message-link")
+        stream_url = encode_stream(stream_id, stream_name)
+        topic_url = hash_util_encode(topic_name)
+        link = f"/#narrow/channel/{stream_url}/topic/{topic_url}/near/{message_id}"
+        el.set("href", link)
+        text = f"#{stream_name} > {topic_name} @ 💬"
+        el.text = markdown.util.AtomicString(text)
+        return el, m.start(), m.end()
+
+
 def possible_linked_stream_names(content: str) -> set[str]:
     return {
         *re.findall(STREAM_LINK_REGEX, content, re.VERBOSE),
@@ -2305,6 +2353,11 @@ class ZulipMarkdown(markdown.Markdown):
         )
         reg.register(UserMentionPattern(mention.MENTIONS_RE, self), "usermention", 95)
         reg.register(Tex(TEX_RE, self), "tex", 90)
+        reg.register(
+            StreamTopicMessagePattern(get_compiled_stream_topic_message_link_regex(), self),
+            "stream_topic_message",
+            89,
+        )
         reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), "topic", 87)
         reg.register(StreamPattern(get_compiled_stream_link_regex(), self), "stream", 85)
         reg.register(Timestamp(TIMESTAMP_RE), "timestamp", 75)
