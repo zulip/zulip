@@ -43,7 +43,7 @@ export function get_fallback_markdown_link(stream_name: string, topic_name?: str
     assert(stream_id !== undefined);
     const escape = html_escape_markdown_syntax_characters;
     if (topic_name !== undefined) {
-        return `[#${escape(stream_name)}>${escape(topic_name)}](${internal_url.by_stream_topic_url(stream_id, topic_name, () => stream_name)})`;
+        return `[#${escape(stream_name)} > ${escape(topic_name)}](${internal_url.by_stream_topic_url(stream_id, topic_name, () => stream_name)})`;
     }
     return `[#${escape(stream_name)}](${internal_url.by_stream_url(stream_id, () => stream_name)})`;
 }

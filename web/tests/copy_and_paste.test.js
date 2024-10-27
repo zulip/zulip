@@ -49,23 +49,23 @@ run_test("try_stream_topic_syntax_text", () => {
         // #**stream>topic** urls is pasted, a normal markdown link syntax is produced.
         [
             "http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/100.25.20profits.60",
-            "[#Rome>100% profits&#96;](#narrow/channel/4-Rome/topic/100.25.20profits.60)",
+            "[#Rome > 100% profits&#96;](#narrow/channel/4-Rome/topic/100.25.20profits.60)",
         ],
         [
             "http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/100.25.20*profits",
-            "[#Rome>100% &#42;profits](#narrow/channel/4-Rome/topic/100.25.20*profits)",
+            "[#Rome > 100% &#42;profits](#narrow/channel/4-Rome/topic/100.25.20*profits)",
         ],
         [
             "http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/.24.24 100.25.20profits",
-            "[#Rome>&#36;&#36; 100% profits](#narrow/channel/4-Rome/topic/.24.24.20100.25.20profits)",
+            "[#Rome > &#36;&#36; 100% profits](#narrow/channel/4-Rome/topic/.24.24.20100.25.20profits)",
         ],
         [
             "http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/>100.25.20profits",
-            "[#Rome>&gt;100% profits](#narrow/channel/4-Rome/topic/.3E100.25.20profits)",
+            "[#Rome > &gt;100% profits](#narrow/channel/4-Rome/topic/.3E100.25.20profits)",
         ],
         [
             "http://zulip.zulipdev.com/#narrow/stream/5-Romeo.60s-lair/topic/normal",
-            "[#Romeo&#96;s lair>normal](#narrow/channel/5-Romeo.60s-lair/topic/normal)",
+            "[#Romeo&#96;s lair > normal](#narrow/channel/5-Romeo.60s-lair/topic/normal)",
         ],
     ];
 
