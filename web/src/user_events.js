@@ -87,6 +87,7 @@ export const update_person = function update(person) {
         if (people.is_my_user_id(person.user_id) && current_user.is_owner !== person_obj.is_owner) {
             current_user.is_owner = person_obj.is_owner;
             settings_org.maybe_disable_widgets();
+            settings_org.enable_or_disable_group_permission_settings();
             settings.update_lock_icon_in_sidebar();
         }
 

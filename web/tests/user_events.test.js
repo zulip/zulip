@@ -43,6 +43,7 @@ mock_esm("../src/settings_linkifiers", {
 });
 mock_esm("../src/settings_org", {
     maybe_disable_widgets() {},
+    enable_or_disable_group_permission_settings() {},
 });
 mock_esm("../src/settings_profile_fields", {
     maybe_disable_widgets() {},

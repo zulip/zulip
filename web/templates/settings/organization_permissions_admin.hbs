@@ -23,10 +23,15 @@
                     </select>
                 </div>
 
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_create_multiuse_invite_group"
-                  label=(t 'Who can create reusable invitation links')
-                  value_type="number"}}
+                <div class="input-group">
+                    <label class="group-setting-label">{{t "Who can create reusable invitation links" }}</label>
+                    <div class="pill-container person_picker prop-element" id="id_realm_create_multiuse_invite_group" data-setting-widget-type="group-setting-type">
+                        <div class="input" contenteditable="true"
+                          data-placeholder="{{t 'Add roles, groups or users' }}">
+                            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+                        </div>
+                    </div>
+                </div>
 
                 <div class="input-group">
                     <label for="realm_org_join_restrictions" class="settings-field-label">{{t "Restrict email domains of new users" }}</label>
