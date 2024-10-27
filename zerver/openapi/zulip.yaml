@@ -4357,7 +4357,11 @@ paths:
                                   description: |
                                     An object containing the properties that have changed.
 
-                                    **Changes**: In Zulip 7.0 (feature level 183), the
+                                    **Changes**: In Zulip 10.0 (feature level 316), `edit_topic_policy`
+                                    property was removed and replaced by `can_move_messages_between_topics_group`
+                                    realm setting.
+
+                                    In Zulip 7.0 (feature level 183), the
                                     `community_topic_editing_limit_seconds` property was removed.
                                     It was documented as potentially returned as a changed property
                                     in this event, but in fact it was only ever returned in the
@@ -4633,27 +4637,6 @@ paths:
                                       description: |
                                         Whether the organization disallows disposable email
                                         addresses.
-                                    edit_topic_policy:
-                                      type: integer
-                                      description: |
-                                        The [policy][permission-level] for which users can edit topics of any message.
-
-                                        - 1 = Members only
-                                        - 2 = Admins only
-                                        - 3 = [Full members][calc-full-member] only
-                                        - 4 = Moderators only
-                                        - 5 = Everyone
-                                        - 6 = Nobody
-
-                                        See [`PATCH /messages/{message_id}`](/api/update-message) for details and history
-                                        of how message editing permissions work.
-
-                                        **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
-
-                                        New in Zulip 5.0 (feature level 75).
-
-                                        [permission-level]: /api/roles-and-permissions#permission-levels
-                                        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                                     email_changes_disabled:
                                       type: boolean
                                       description: |
@@ -16928,29 +16911,6 @@ paths:
                           history of how message editing permissions work.
 
                           [config-message-editing]: /help/restrict-message-editing-and-deletion
-                      realm_edit_topic_policy:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          The [policy][permission-level] for which users can edit topics of any message.
-
-                          - 1 = Members only
-                          - 2 = Admins only
-                          - 3 = [Full members][calc-full-member] only
-                          - 4 = Moderators only
-                          - 5 = Everyone
-                          - 6 = Nobody
-
-                          See [`PATCH /messages/{message_id}`](/api/update-message) for details and
-                          history of how message editing permissions work.
-
-                          **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
-
-                          New in Zulip 5.0 (feature level 75).
-
-                          [permission-level]: /api/roles-and-permissions#permission-levels
-                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_message_content_edit_limit_seconds:
                         type: integer
                         nullable: true

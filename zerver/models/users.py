@@ -817,7 +817,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         from zerver.models import Realm
 
         if policy_name not in Realm.REALM_PERMISSION_GROUP_SETTINGS and policy_name not in [
-            "edit_topic_policy",
             "invite_to_stream_policy",
             "invite_to_realm_policy",
         ]:

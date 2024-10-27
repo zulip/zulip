@@ -28,6 +28,10 @@ format used by the Zulip server that they are interacting with.
   [group-setting value](/api/group-setting-values) describing the set of users
   with permission to move messages from one topic to another within a channel
   in the organization.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `edit_topic_policy` property, as the permission to move messages between
+  topics in the organization is now controlled by
+  `can_move_messages_between_topics_group` setting.
 
 **Feature level 315**
 
