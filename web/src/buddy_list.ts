@@ -285,15 +285,12 @@ export class BuddyList extends BuddyListConf {
         // in already-sorted order.
         this.all_user_ids = opts.all_user_ids;
 
-        this.fill_screen_with_content();
-
         $("#buddy-list-users-matching-view-container .view-all-subscribers-link").remove();
         $("#buddy-list-other-users-container .view-all-users-link").remove();
         if (!buddy_data.get_is_searching_users()) {
             this.render_view_user_list_links();
         }
 
-        this.render_section_headers();
         // Ensure the "other" section is visible when headers are collapsed,
         // because we're hiding its header so there's no way to collapse or
         // uncollapse the list in this view. Ensure we're showing/hiding as
@@ -302,7 +299,9 @@ export class BuddyList extends BuddyListConf {
             "#buddy-list-other-users-container",
             this.render_data.hide_headers ? false : this.other_users_is_collapsed,
         );
+
         this.update_empty_list_placeholders();
+        this.fill_screen_with_content();
     }
 
     update_empty_list_placeholders(): void {
