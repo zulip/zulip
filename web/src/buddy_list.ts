@@ -294,17 +294,15 @@ export class BuddyList extends BuddyListConf {
         }
 
         this.render_section_headers();
-        if (this.render_data.hide_headers) {
-            // Ensure the section isn't collapsed, because we're hiding its header
-            // so there's no way to collapse or uncollapse the list in this view.
-            $("#buddy-list-other-users-container").toggleClass("collapsed", false);
-        } else {
-            $("#buddy-list-other-users-container").toggleClass(
-                "collapsed",
-                this.other_users_is_collapsed,
-            );
-            this.update_empty_list_placeholders();
-        }
+        // Ensure the "other" section is visible when headers are collapsed,
+        // because we're hiding its header so there's no way to collapse or
+        // uncollapse the list in this view. Ensure we're showing/hiding as
+        // the user specified otherwise.
+        this.set_section_collapse(
+            "#buddy-list-other-users-container",
+            this.render_data.hide_headers ? false : this.other_users_is_collapsed,
+        );
+        this.update_empty_list_placeholders();
     }
 
     update_empty_list_placeholders(): void {
@@ -482,18 +480,22 @@ export class BuddyList extends BuddyListConf {
         );
     }
 
+    set_section_collapse(container_selector: string, is_collapsed: boolean): void {
+        $(container_selector).toggleClass("collapsed", is_collapsed);
+        $(`${container_selector} .buddy-list-section-toggle`).toggleClass(
+            "rotate-icon-down",
+            !is_collapsed,
+        );
+        $(`${container_selector} .buddy-list-section-toggle`).toggleClass(
+            "rotate-icon-right",
+            is_collapsed,
+        );
+    }
+
     toggle_participants_section(): void {
         this.participants_is_collapsed = !this.participants_is_collapsed;
-        $("#buddy-list-participants-container").toggleClass(
-            "collapsed",
-            this.participants_is_collapsed,
-        );
-        $("#buddy-list-participants-container .buddy-list-section-toggle").toggleClass(
-            "rotate-icon-down",
-            !this.participants_is_collapsed,
-        );
-        $("#buddy-list-participants-container .buddy-list-section-toggle").toggleClass(
-            "rotate-icon-right",
+        this.set_section_collapse(
+            "#buddy-list-participants-container",
             this.participants_is_collapsed,
         );
 
@@ -504,16 +506,8 @@ export class BuddyList extends BuddyListConf {
 
     toggle_users_matching_view_section(): void {
         this.users_matching_view_is_collapsed = !this.users_matching_view_is_collapsed;
-        $("#buddy-list-users-matching-view-container").toggleClass(
-            "collapsed",
-            this.users_matching_view_is_collapsed,
-        );
-        $("#buddy-list-users-matching-view-container .buddy-list-section-toggle").toggleClass(
-            "rotate-icon-down",
-            !this.users_matching_view_is_collapsed,
-        );
-        $("#buddy-list-users-matching-view-container .buddy-list-section-toggle").toggleClass(
-            "rotate-icon-right",
+        this.set_section_collapse(
+            "#buddy-list-users-matching-view-container",
             this.users_matching_view_is_collapsed,
         );
 
@@ -524,16 +518,8 @@ export class BuddyList extends BuddyListConf {
 
     toggle_other_users_section(): void {
         this.other_users_is_collapsed = !this.other_users_is_collapsed;
-        $("#buddy-list-other-users-container").toggleClass(
-            "collapsed",
-            this.other_users_is_collapsed,
-        );
-        $("#buddy-list-other-users-container .buddy-list-section-toggle").toggleClass(
-            "rotate-icon-down",
-            !this.other_users_is_collapsed,
-        );
-        $("#buddy-list-other-users-container .buddy-list-section-toggle").toggleClass(
-            "rotate-icon-right",
+        this.set_section_collapse(
+            "#buddy-list-other-users-container",
             this.other_users_is_collapsed,
         );
 
