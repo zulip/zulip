@@ -487,6 +487,7 @@ def notify_created_bot(user_profile: UserProfile) -> None:
     send_event_on_commit(user_profile.realm, event, bot_owner_user_ids(user_profile))
 
 
+@transaction.atomic(durable=True)
 def do_create_user(
     email: str,
     password: str | None,
@@ -516,88 +517,85 @@ def do_create_user(
     if settings.BILLING_ENABLED:
         from corporate.lib.stripe import RealmBillingSession
 
-    with transaction.atomic():
-        user_profile = create_user(
-            email=email,
-            password=password,
-            realm=realm,
-            full_name=full_name,
-            role=role,
-            bot_type=bot_type,
-            bot_owner=bot_owner,
-            tos_version=tos_version,
-            timezone=timezone,
-            avatar_source=avatar_source,
-            default_language=default_language,
-            default_sending_stream=default_sending_stream,
-            default_events_register_stream=default_events_register_stream,
-            default_all_public_streams=default_all_public_streams,
-            source_profile=source_profile,
-            enable_marketing_emails=enable_marketing_emails,
-            email_address_visibility=email_address_visibility,
-        )
+    user_profile = create_user(
+        email=email,
+        password=password,
+        realm=realm,
+        full_name=full_name,
+        role=role,
+        bot_type=bot_type,
+        bot_owner=bot_owner,
+        tos_version=tos_version,
+        timezone=timezone,
+        avatar_source=avatar_source,
+        default_language=default_language,
+        default_sending_stream=default_sending_stream,
+        default_events_register_stream=default_events_register_stream,
+        default_all_public_streams=default_all_public_streams,
+        source_profile=source_profile,
+        enable_marketing_emails=enable_marketing_emails,
+        email_address_visibility=email_address_visibility,
+    )
 
-        event_time = user_profile.date_joined
-        if not acting_user:
-            acting_user = user_profile
+    event_time = user_profile.date_joined
+    if not acting_user:
+        acting_user = user_profile
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        acting_user=acting_user,
+        modified_user=user_profile,
+        event_type=AuditLogEventType.USER_CREATED,
+        event_time=event_time,
+        extra_data={
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+        },
+    )
+    maybe_enqueue_audit_log_upload(user_profile.realm)
+
+    if realm_creation:
+        # If this user just created a realm, make sure they are
+        # properly tagged as the creator of the realm.
+        realm_creation_audit_log = (
+            RealmAuditLog.objects.filter(event_type=AuditLogEventType.REALM_CREATED, realm=realm)
+            .order_by("id")
+            .last()
+        )
+        assert realm_creation_audit_log is not None
+        realm_creation_audit_log.acting_user = user_profile
+        realm_creation_audit_log.save(update_fields=["acting_user"])
+
+    if settings.BILLING_ENABLED:
+        billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
+        billing_session.update_license_ledger_if_needed(event_time)
+
+    system_user_group = get_system_user_group_for_user(user_profile)
+    UserGroupMembership.objects.create(user_profile=user_profile, user_group=system_user_group)
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        modified_user=user_profile,
+        modified_user_group=system_user_group,
+        event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+        event_time=event_time,
+        acting_user=acting_user,
+    )
+
+    if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
+        full_members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.FULL_MEMBERS,
+            realm=user_profile.realm,
+            is_system_group=True,
+        )
+        UserGroupMembership.objects.create(
+            user_profile=user_profile, user_group=full_members_system_group
+        )
         RealmAuditLog.objects.create(
             realm=user_profile.realm,
-            acting_user=acting_user,
             modified_user=user_profile,
-            event_type=AuditLogEventType.USER_CREATED,
-            event_time=event_time,
-            extra_data={
-                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-            },
-        )
-        maybe_enqueue_audit_log_upload(user_profile.realm)
-
-        if realm_creation:
-            # If this user just created a realm, make sure they are
-            # properly tagged as the creator of the realm.
-            realm_creation_audit_log = (
-                RealmAuditLog.objects.filter(
-                    event_type=AuditLogEventType.REALM_CREATED, realm=realm
-                )
-                .order_by("id")
-                .last()
-            )
-            assert realm_creation_audit_log is not None
-            realm_creation_audit_log.acting_user = user_profile
-            realm_creation_audit_log.save(update_fields=["acting_user"])
-
-        if settings.BILLING_ENABLED:
-            billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
-            billing_session.update_license_ledger_if_needed(event_time)
-
-        system_user_group = get_system_user_group_for_user(user_profile)
-        UserGroupMembership.objects.create(user_profile=user_profile, user_group=system_user_group)
-        RealmAuditLog.objects.create(
-            realm=user_profile.realm,
-            modified_user=user_profile,
-            modified_user_group=system_user_group,
+            modified_user_group=full_members_system_group,
             event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
             event_time=event_time,
             acting_user=acting_user,
         )
-
-        if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
-            full_members_system_group = NamedUserGroup.objects.get(
-                name=SystemGroups.FULL_MEMBERS,
-                realm=user_profile.realm,
-                is_system_group=True,
-            )
-            UserGroupMembership.objects.create(
-                user_profile=user_profile, user_group=full_members_system_group
-            )
-            RealmAuditLog.objects.create(
-                realm=user_profile.realm,
-                modified_user=user_profile,
-                modified_user_group=full_members_system_group,
-                event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
-                event_time=event_time,
-                acting_user=acting_user,
-            )
 
     # Note that for bots, the caller will send an additional event
     # with bot-specific info like services.
