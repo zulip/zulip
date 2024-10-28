@@ -1181,6 +1181,18 @@ textarea.new_message_textarea {
     width: 100%;
 }
 
+/* For now, we're restricting muted recipient row styles
+   to stream topics only, as restyling DM pills will
+   will take additional work. */
+.muted-recipient-row:not(.compose-recipient-direct-selected) {
+
+
+    #compose_recipient_box {
+        background-color: red;
+    }
+
+}
+
 .compose-send-or-save-button {
     border-radius: 4px;
     border: 0;
