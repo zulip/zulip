@@ -73,10 +73,15 @@
                 {{> settings_save_discard_widget section_name="stream-permissions" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_can_create_public_channel_group"
-                  label=(t 'Who can create public channels')
-                  value_type="number"}}
+                <div class="input-group">
+                    <label class="group-setting-label">{{t "Who can create public channels" }}</label>
+                    <div class="pill-container person_picker prop-element" id="id_realm_can_create_public_channel_group" data-setting-widget-type="group-setting-type">
+                        <div class="input" contenteditable="true"
+                          data-placeholder="{{t 'Add roles, groups or users' }}">
+                            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+                        </div>
+                    </div>
+                </div>
 
                 {{> upgrade_tip_widget }}
                 {{> settings_checkbox
@@ -92,10 +97,15 @@
                   label=(t 'Who can create web-public channels')
                   value_type="number"}}
 
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_can_create_private_channel_group"
-                  label=(t 'Who can create private channels')
-                  value_type="number"}}
+                <div class="input-group">
+                    <label class="group-setting-label">{{t "Who can create private channels" }}</label>
+                    <div class="pill-container person_picker prop-element" id="id_realm_can_create_private_channel_group" data-setting-widget-type="group-setting-type">
+                        <div class="input" contenteditable="true"
+                          data-placeholder="{{t 'Add roles, groups or users' }}">
+                            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+                        </div>
+                    </div>
+                </div>
 
                 <div class="input-group">
                     <label for="realm_invite_to_stream_policy" class="settings-field-label">{{t "Who can add users to channels" }}</label>
