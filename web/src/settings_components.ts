@@ -1476,23 +1476,21 @@ type group_setting_name =
 export function create_group_setting_widget({
     $pill_container,
     setting_name,
-    setting_type,
     group,
 }: {
     $pill_container: JQuery;
     setting_name: group_setting_name;
-    setting_type: "realm" | "stream" | "group";
     group?: UserGroup;
 }): GroupSettingPillContainer {
-    const pill_widget = group_setting_pill.create_pills(
-        $pill_container,
+    const pill_widget = group_setting_pill.create_pills($pill_container, setting_name, "group");
+    const opts: {
+        setting_name: string;
+        group: UserGroup | undefined;
+        setting_type: "group";
+    } = {
         setting_name,
-        setting_type,
-    );
-    const opts = {
-        setting_name,
-        setting_type,
         group,
+        setting_type: "group",
     };
     group_setting_pill.set_up_pill_typeahead({pill_widget, $pill_container, opts});
 
