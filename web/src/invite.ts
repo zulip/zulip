@@ -38,6 +38,7 @@ let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
 let pills: email_pill.EmailPillWidget;
 let stream_pill_widget: stream_pill.StreamPillWidget;
+let guest_invite_stream_ids: number[] = [];
 
 function reset_error_messages(): void {
     $("#dialog_error").hide().text("").removeClass(common.status_classes);
@@ -327,6 +328,9 @@ function update_guest_visible_users_count(): void {
     assert(!Number.isNaN(invite_as));
 
     const guest_role_selected = invite_as === settings_config.user_role_values.guest.code;
+    if (guest_role_selected) {
+        guest_invite_stream_ids = stream_pill.get_stream_ids(stream_pill_widget);
+    }
     if (!guest_role_selected || settings_data.guests_can_access_all_other_users()) {
         $("#guest_visible_users_container").hide();
         return;
@@ -394,7 +398,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             stream_pill_widget = invite_stream_picker_pill.create($stream_pill_container);
         }
 
-        $("#invite_as, #invite_streams_container .input, #invite_select_default_streams").on(
+        $("#invite_streams_container .input, #invite_select_default_streams").on(
             "change",
             update_guest_visible_users_count,
         );
@@ -472,6 +476,27 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         $("#invite_select_default_streams").on("change", () => {
             set_streams_to_join_list_visibility();
+        });
+
+        $("#invite_as").on("change", () => {
+            const invite_as_value = Number.parseInt(String($("#invite_as").val()), 10);
+            stream_pill_widget.clear();
+
+            if (invite_as_value === settings_config.user_role_values.guest.code) {
+                $("input#invite_select_default_streams").prop("checked", false);
+                $(".add_streams_container").show();
+                for (const stream_id of guest_invite_stream_ids) {
+                    const sub = stream_data.get_sub_by_id(stream_id);
+                    if (sub) {
+                        stream_pill.append_stream(sub, stream_pill_widget, false);
+                    }
+                }
+            } else {
+                $("input#invite_select_default_streams").prop("checked", true);
+                invite_stream_picker_pill.add_default_stream_pills(stream_pill_widget);
+                $(".add_streams_container").hide();
+            }
+            update_guest_visible_users_count();
         });
 
         if (!user_has_email_set) {

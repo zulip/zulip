@@ -55,5 +55,6 @@ export function create($stream_pill_container: JQuery): stream_pill.StreamPillWi
     });
     add_default_stream_pills(pill_widget);
     set_up_pill_typeahead({pill_widget, $pill_container: $stream_pill_container});
+    $stream_pill_container.data("pill_widget", pill_widget);
     return pill_widget;
 }
