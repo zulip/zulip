@@ -350,17 +350,25 @@
                     </select>
                 </div>
 
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_can_create_groups"
-                  label=(t 'Who can create user groups')
-                  value_type="number"
-                  is_setting_disabled=(not is_owner)}}
+                <div class="input-group">
+                    <label class="group-setting-label">{{t "Who can create user groups" }}</label>
+                    <div class="pill-container person_picker prop-element" id="id_realm_can_create_groups" data-setting-widget-type="group-setting-type">
+                        <div class="input" contenteditable="true"
+                          data-placeholder="{{t 'Add roles, groups or users' }}">
+                            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+                        </div>
+                    </div>
+                </div>
 
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_can_manage_all_groups"
-                  label=(t 'Who can manage user groups')
-                  value_type="number"
-                  is_setting_disabled=(not is_owner)}}
+                <div class="input-group">
+                    <label class="group-setting-label">{{t "Who can manage user groups" }}</label>
+                    <div class="pill-container person_picker prop-element" id="id_realm_can_manage_all_groups" data-setting-widget-type="group-setting-type">
+                        <div class="input" contenteditable="true"
+                          data-placeholder="{{t 'Add roles, groups or users' }}">
+                            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+                        </div>
+                    </div>
+                </div>
 
                 {{> ../dropdown_widget_with_label
                   widget_name="realm_can_add_custom_emoji_group"

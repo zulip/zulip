@@ -480,11 +480,9 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["can_remove_subscribers_group", null],
     ["realm_can_access_all_users_group", null],
     ["realm_can_add_custom_emoji_group", null],
-    ["realm_can_create_groups", null],
     ["realm_can_create_web_public_channel_group", null],
     ["realm_can_delete_any_message_group", null],
     ["realm_can_delete_own_message_group", null],
-    ["realm_can_manage_all_groups", null],
     ["realm_can_move_messages_between_channels_group", null],
     ["realm_direct_message_initiator_group", null],
     ["realm_direct_message_permission_group", null],
@@ -800,18 +798,18 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_default_code_block_language":
         case "realm_can_access_all_users_group":
         case "realm_can_add_custom_emoji_group":
-        case "realm_can_create_groups":
         case "realm_can_create_web_public_channel_group":
         case "realm_can_delete_any_message_group":
         case "realm_can_delete_own_message_group":
-        case "realm_can_manage_all_groups":
         case "realm_can_move_messages_between_channels_group":
         case "realm_direct_message_initiator_group":
         case "realm_direct_message_permission_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
+        case "realm_can_create_groups":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
+        case "realm_can_manage_all_groups":
         case "realm_create_multiuse_invite_group": {
             const pill_widget = get_group_setting_widget(property_name);
             assert(pill_widget !== null);
@@ -1428,8 +1426,10 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["can_leave_group", null],
     ["can_manage_group", null],
     ["can_mention_group", null],
+    ["realm_can_create_groups", null],
     ["realm_can_create_public_channel_group", null],
     ["realm_can_create_private_channel_group", null],
+    ["realm_can_manage_all_groups", null],
     ["realm_create_multiuse_invite_group", null],
 ]);
 
@@ -1532,8 +1532,10 @@ export function create_group_setting_widget({
 }
 
 type realm_group_setting_name =
+    | "can_create_groups"
     | "can_create_public_channel_group"
     | "can_create_private_channel_group"
+    | "can_manage_all_groups"
     | "create_multiuse_invite_group";
 export function create_realm_group_setting_widget({
     $pill_container,
