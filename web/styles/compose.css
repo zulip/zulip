@@ -1219,6 +1219,102 @@ textarea.new_message_textarea {
     width: 100%;
 }
 
+/* We declare the transition matters outside the
+   .mute-recipient-row selector, so that these do
+   not fire when the compose box first opens. */
+.compose-box-open .muted-recipient-row {
+    #compose_select_recipient_widget,
+    #compose_recipient_box {
+        transition: 250ms ease;
+        transition-delay: 150ms;
+        transition-property: background-color, border-color;
+    }
+
+    &#compose-recipient {
+        .decorated-channel-name,
+        .zulip-icon-chevron-down,
+        .conversation-arrow,
+        #stream_message_recipient_topic {
+            transition: 250ms ease;
+            transition-delay: 150ms;
+            transition-property: opacity;
+        }
+    }
+}
+/* Should a user activate the topic box, we don't want the
+   channel-picker to fade up slowly, so we unset transitions
+   entirely in the absence of the .muted-recipient-row class. */
+.compose-box-open {
+    #compose_select_recipient_widget,
+    #compose_recipient_box {
+        transition: unset;
+    }
+
+    #compose-recipient {
+        .decorated-channel-name,
+        .zulip-icon-chevron-down,
+        .conversation-arrow,
+        #stream_message_recipient_topic {
+            transition: unset;
+        }
+    }
+}
+
+/* For now, we're restricting muted recipient-row styles
+   to stream topics only, as restyling DM pills will
+   will take additional work. */
+.muted-recipient-row:not(.compose-recipient-direct-selected) {
+    &#compose-recipient {
+        .decorated-channel-name,
+        .conversation-arrow,
+        #stream_message_recipient_topic {
+            opacity: 0.7;
+        }
+
+        .zulip-icon-chevron-down {
+            opacity: 0;
+        }
+    }
+
+    #compose_select_recipient_widget,
+    #compose_recipient_box {
+        background-color: transparent;
+        border-color: transparent;
+
+        /* We don't want to trigger the recipient-box-wide hover
+           effects when someone is just hovering the new-topic
+           button. */
+        &:not(:has(#recipient_box_clear_topic_button:hover)):hover {
+            background-color: var(
+                --color-compose-recipient-box-background-color
+            );
+            border-color: var(--color-compose-recipient-box-border-color);
+            opacity: 1;
+
+            .decorated-channel-name,
+            .zulip-icon-chevron-down,
+            .conversation-arrow,
+            #stream_message_recipient_topic {
+                opacity: 1;
+            }
+        }
+
+        #recipient_box_clear_topic_button:hover {
+            opacity: 1;
+        }
+    }
+
+    #compose_select_recipient_widget.widget-open {
+        background-color: var(--color-background-dropdown-widget-button);
+        border-color: var(--color-compose-recipient-box-border-color);
+
+        .decorated-channel-name,
+        .zulip-icon-chevron-down {
+            opacity: 1;
+        }
+    }
+}
+
 .compose-send-or-save-button {
     border-radius: 4px;
     border: 0;
