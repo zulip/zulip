@@ -452,7 +452,6 @@ export class BuddyList extends BuddyListConf {
                     id: "buddy-list-participants-section-heading",
                     header_text: $t({defaultMessage: "In this conversation"}),
                     user_count: get_formatted_sub_count(this.participant_user_ids.length),
-                    toggle_class: "toggle-participants",
                     is_collapsed: this.participants_is_collapsed,
                 }),
             ),
@@ -466,7 +465,6 @@ export class BuddyList extends BuddyListConf {
                     user_count: get_formatted_sub_count(
                         total_human_subscribers_count - this.participant_user_ids.length,
                     ),
-                    toggle_class: "toggle-users-matching-view",
                     is_collapsed: this.users_matching_view_is_collapsed,
                 }),
             ),
@@ -478,7 +476,6 @@ export class BuddyList extends BuddyListConf {
                     id: "buddy-list-other-users-section-heading",
                     header_text: $t({defaultMessage: "Others"}),
                     user_count: get_formatted_sub_count(other_users_count),
-                    toggle_class: "toggle-other-users",
                     is_collapsed: this.other_users_is_collapsed,
                 }),
             ),
@@ -491,11 +488,11 @@ export class BuddyList extends BuddyListConf {
             "collapsed",
             this.participants_is_collapsed,
         );
-        $("#buddy-list-participants-container .toggle-participants").toggleClass(
+        $("#buddy-list-participants-container .buddy-list-section-toggle").toggleClass(
             "rotate-icon-down",
             !this.participants_is_collapsed,
         );
-        $("#buddy-list-participants-container .toggle-participants").toggleClass(
+        $("#buddy-list-participants-container .buddy-list-section-toggle").toggleClass(
             "rotate-icon-right",
             this.participants_is_collapsed,
         );
@@ -511,11 +508,11 @@ export class BuddyList extends BuddyListConf {
             "collapsed",
             this.users_matching_view_is_collapsed,
         );
-        $("#buddy-list-users-matching-view-container .toggle-users-matching-view").toggleClass(
+        $("#buddy-list-users-matching-view-container .buddy-list-section-toggle").toggleClass(
             "rotate-icon-down",
             !this.users_matching_view_is_collapsed,
         );
-        $("#buddy-list-users-matching-view-container .toggle-users-matching-view").toggleClass(
+        $("#buddy-list-users-matching-view-container .buddy-list-section-toggle").toggleClass(
             "rotate-icon-right",
             this.users_matching_view_is_collapsed,
         );
@@ -531,11 +528,11 @@ export class BuddyList extends BuddyListConf {
             "collapsed",
             this.other_users_is_collapsed,
         );
-        $("#buddy-list-other-users-container .toggle-other-users").toggleClass(
+        $("#buddy-list-other-users-container .buddy-list-section-toggle").toggleClass(
             "rotate-icon-down",
             !this.other_users_is_collapsed,
         );
-        $("#buddy-list-other-users-container .toggle-other-users").toggleClass(
+        $("#buddy-list-other-users-container .buddy-list-section-toggle").toggleClass(
             "rotate-icon-right",
             this.other_users_is_collapsed,
         );
