@@ -24,6 +24,7 @@ import * as input_pill from "./input_pill";
 import * as invite_stream_picker_pill from "./invite_stream_picker_pill";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
+import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
@@ -293,19 +294,6 @@ function set_expires_on_text(): void {
     }
 }
 
-function set_custom_time_inputs_visibility(): void {
-    const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
-    if ($expires_in.val() === "custom") {
-        $("#custom-expiration-time-input").val(custom_expiration_time_input);
-        $<HTMLSelectOneElement>("select:not([multiple])#custom-expiration-time-unit").val(
-            custom_expiration_time_unit,
-        );
-        $("#custom-invite-expiration-time").show();
-    } else {
-        $("#custom-invite-expiration-time").hide();
-    }
-}
-
 function set_streams_to_join_list_visibility(): void {
     const realm_has_default_streams = stream_data.get_default_stream_ids().length !== 0;
     const hide_streams_list =
@@ -385,7 +373,11 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         const user_has_email_set = !settings_data.user_email_not_configured();
 
-        set_custom_time_inputs_visibility();
+        settings_components.set_custom_time_inputs_visibility(
+            $expires_in,
+            custom_expiration_time_unit,
+            custom_expiration_time_input,
+        );
         set_expires_on_text();
 
         if (settings_data.user_can_subscribe_other_users()) {
@@ -439,7 +431,11 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         pills.onTextInputHook(toggle_invite_submit_button);
 
         $expires_in.on("change", () => {
-            set_custom_time_inputs_visibility();
+            settings_components.set_custom_time_inputs_visibility(
+                $expires_in,
+                custom_expiration_time_unit,
+                custom_expiration_time_input,
+            );
             set_expires_on_text();
             toggle_invite_submit_button();
         });
