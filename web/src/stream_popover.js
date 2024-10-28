@@ -491,6 +491,16 @@ export async function build_move_topic_to_stream_popover(
             current_stream_id,
             old_topic_name,
             (message_id) => {
+                if (message_id === undefined) {
+                    // There are no messages in the given topic, so we show an error banner
+                    // and return, preventing any attempts to move a non-existent topic.
+                    dialog_widget.hide_dialog_spinner();
+                    ui_report.client_error(
+                        $t_html({defaultMessage: "There are no messages to move."}),
+                        $("#move_topic_modal #dialog_error"),
+                    );
+                    return;
+                }
                 message_edit.move_topic_containing_message_to_stream(
                     message_id,
                     select_stream_id,
