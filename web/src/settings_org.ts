@@ -120,6 +120,31 @@ export function enable_or_disable_group_permission_settings(): void {
         return;
     }
 
+    if (current_user.is_admin) {
+        const $permission_pill_container_elements = $("#organization-permissions").find(
+            ".pill-container",
+        );
+        $permission_pill_container_elements.find(".input").prop("contenteditable", true);
+        $permission_pill_container_elements
+            .closest(".input-group")
+            .removeClass("group_setting_disabled");
+        settings_components.enable_opening_typeahead_on_clicking_label(
+            $("#organization-permissions"),
+        );
+
+        // Admins are not allowed to update organization joining settings.
+        const owner_editable_settings = ["realm_create_multiuse_invite_group"];
+        for (const setting_name of owner_editable_settings) {
+            const $permission_pill_container = $(`#id_${CSS.escape(setting_name)}`);
+            $permission_pill_container.find(".input").prop("contenteditable", false);
+            $permission_pill_container.closest(".input-group").addClass("group_setting_disabled");
+            settings_components.disable_opening_typeahead_on_clicking_label(
+                $permission_pill_container.closest(".input-group"),
+            );
+        }
+        return;
+    }
+
     const $permission_pill_container_elements = $("#organization-permissions").find(
         ".pill-container",
     );
@@ -579,8 +604,6 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_can_add_custom_emoji_group":
         case "realm_can_access_all_users_group":
         case "realm_can_create_groups":
-        case "realm_can_create_public_channel_group":
-        case "realm_can_create_private_channel_group":
         case "realm_can_create_web_public_channel_group":
         case "realm_can_delete_any_message_group":
         case "realm_can_delete_own_message_group":
@@ -592,6 +615,8 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
                 property_value,
             );
             break;
+        case "realm_can_create_public_channel_group":
+        case "realm_can_create_private_channel_group":
         case "realm_create_multiuse_invite_group": {
             const pill_widget = settings_components.get_group_setting_widget(property_name);
             assert(pill_widget !== null);
@@ -947,8 +972,13 @@ export function set_up_dropdown_widget_for_realm_group_settings(): void {
         realm.server_supported_permission_settings.realm,
     );
 
+    const settings_using_pills_ui = new Set([
+        "can_create_public_channel_group",
+        "can_create_private_channel_group",
+        "create_multiuse_invite_group",
+    ]);
     for (const setting_name of realm_group_permission_settings) {
-        if (setting_name === "create_multiuse_invite_group") {
+        if (settings_using_pills_ui.has(setting_name)) {
             continue;
         }
         const get_setting_options = (): UserGroupForDropdownListWidget[] =>
@@ -1152,6 +1182,14 @@ function initialize_group_setting_widgets(): void {
     settings_components.create_realm_group_setting_widget({
         $pill_container: $("#id_realm_create_multiuse_invite_group"),
         setting_name: "create_multiuse_invite_group",
+    });
+    settings_components.create_realm_group_setting_widget({
+        $pill_container: $("#id_realm_can_create_public_channel_group"),
+        setting_name: "can_create_public_channel_group",
+    });
+    settings_components.create_realm_group_setting_widget({
+        $pill_container: $("#id_realm_can_create_private_channel_group"),
+        setting_name: "can_create_private_channel_group",
     });
 
     enable_or_disable_group_permission_settings();
