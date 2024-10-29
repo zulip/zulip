@@ -3,7 +3,7 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import render_confirm_mark_all_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.hbs";
+import render_confirm_mark_messages_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
@@ -11,7 +11,7 @@ import * as confirm_dialog from "./confirm_dialog.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {Filter} from "./filter.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as message_flags from "./message_flags.ts";
 import * as message_lists from "./message_lists.ts";
@@ -50,16 +50,36 @@ export function is_window_focused(): boolean {
     return window_focused;
 }
 
-export function confirm_mark_all_as_read(): void {
-    const html_body = render_confirm_mark_all_as_read();
+export function confirm_mark_messages_as_read(): void {
+    const html_body = render_confirm_mark_messages_as_read();
 
     const modal_id = confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Choose messages to mark as read"}),
         html_body,
         on_click() {
-            mark_all_as_read(modal_id);
+            handle_mark_messages_as_read(modal_id);
         },
         loading_spinner: true,
+    });
+
+    // When the user clicks on "Mark messages as read," the dialog box opens with a
+    // dropdown that, by default, displays the count of unread messages in
+    // topics that the user does not follow.
+    const default_messages_count = unread.get_counts().unfollowed_topic_unread_messages_count;
+    $("#message_count").text(update_message_count_text(default_messages_count));
+
+    // When the user selects another option from the dropdown, this section is executed.
+    $("#mark_as_read_option").on("change", function () {
+        const selected_option = $(this).val();
+        let messages_count;
+        if (selected_option === "muted_topics") {
+            messages_count = unread.get_counts().muted_topic_unread_messages_count;
+        } else if (selected_option === "topics_not_followed") {
+            messages_count = default_messages_count;
+        } else {
+            messages_count = unread.get_unread_message_count();
+        }
+        $("#message_count").text(update_message_count_text(messages_count));
     });
 }
 
@@ -71,6 +91,16 @@ const update_flags_for_narrow_response_schema = z.object({
     found_oldest: z.boolean(),
     found_newest: z.boolean(),
 });
+
+function update_message_count_text(count: number): string {
+    return $t(
+        {
+            defaultMessage:
+                "{count, plural, one {# message} other {# messages}} will be marked as read.",
+        },
+        {count},
+    );
+}
 
 function bulk_update_read_flags_for_narrow(
     narrow: NarrowTerm[],
@@ -263,6 +293,18 @@ function bulk_update_read_flags_for_narrow(
             }
         },
     });
+}
+
+function handle_mark_messages_as_read(modal_id: string): void {
+    const selected_option = $("#mark_as_read_option").val();
+
+    if (selected_option === "muted_topics") {
+        mark_muted_topic_messages_as_read(modal_id);
+    } else if (selected_option === "topics_not_followed") {
+        mark_unfollowed_topic_messages_as_read(modal_id);
+    } else {
+        mark_all_as_read(modal_id);
+    }
 }
 
 function process_newly_read_message(
@@ -637,7 +679,7 @@ export function mark_stream_as_read(stream_id: number): void {
     );
 }
 
-export function mark_topic_as_read(stream_id: number, topic: string): void {
+export function mark_topic_as_read(stream_id: number, topic: string, modal_id?: string): void {
     bulk_update_read_flags_for_narrow(
         [
             {operator: "is", operand: "unread", negated: false},
@@ -645,6 +687,8 @@ export function mark_topic_as_read(stream_id: number, topic: string): void {
             {operator: "topic", operand: topic},
         ],
         "add",
+        {},
+        modal_id,
     );
 }
 
@@ -660,6 +704,31 @@ export function mark_topic_as_unread(stream_id: number, topic: string): void {
 
 export function mark_all_as_read(modal_id?: string): void {
     bulk_update_read_flags_for_narrow(all_unread_messages_narrow, "add", {}, modal_id);
+}
+
+export function mark_muted_topic_messages_as_read(modal_id?: string): void {
+    bulk_update_read_flags_for_narrow(
+        [
+            {operator: "is", operand: "unread", negated: false},
+            {operator: "in", operand: "home", negated: true},
+        ],
+        "add",
+        {},
+        modal_id,
+    );
+}
+
+export function mark_unfollowed_topic_messages_as_read(modal_id?: string): void {
+    bulk_update_read_flags_for_narrow(
+        [
+            {operator: "is", operand: "unread", negated: false},
+            {operator: "is", operand: "followed", negated: true},
+            {operator: "is", operand: "dm", negated: true},
+        ],
+        "add",
+        {},
+        modal_id,
+    );
 }
 
 export function mark_pm_as_read(user_ids_string: string): void {
