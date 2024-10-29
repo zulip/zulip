@@ -38,6 +38,10 @@
     anyone else from a group, even if they belong to a group that has permissions
     to do so.
 
+!!! tip ""
+
+    Users who can add members to a group can always join the group.
+
 {start_tabs}
 
 {tab|desktop-web}
