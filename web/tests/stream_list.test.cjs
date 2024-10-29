@@ -393,9 +393,7 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     $stream_li1.hide();
     $stream_li2.attr("data-stream-id", "99");
 
-    $.create("#stream_filters li.narrow-filter", {
-        children: [elem($stream_li1), elem($stream_li2)],
-    });
+    $.set_results("#stream_filters li.narrow-filter", [elem($stream_li1), elem($stream_li2)]);
 
     mock_template("filter_topics.hbs", false, () => "<filter-topics-stub>");
     let filter_topics_appended = false;

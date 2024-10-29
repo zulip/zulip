@@ -75,9 +75,9 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
         key_no += 1;
     }
 
-    const children = test_items.map((test_item) => ({to_$: () => test_item.$stub}));
+    const elements = test_items.map((test_item) => ({to_$: () => test_item.$stub}));
 
-    $.create(".markdown kbd", {children});
+    $.create(".markdown kbd", {elements});
 
     common.adjust_mac_kbd_tags(".markdown kbd");
 

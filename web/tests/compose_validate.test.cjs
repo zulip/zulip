@@ -152,10 +152,9 @@ function test_ui(label, f) {
 }
 
 function stub_message_row($textarea) {
-    const $stub = $.create("message_row_stub");
+    const $stub = $.set_results("message_row_stub", []);
     $textarea.closest = (selector) => {
         assert.equal(selector, ".message_row");
-        $stub.length = 0;
         return $stub;
     };
 }
