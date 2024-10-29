@@ -367,6 +367,10 @@ select.settings_select {
     & label.checkbox + label {
         cursor: pointer;
     }
+
+    .message_count {
+        margin: 10px 0 0;
+    }
 }
 
 /* Class for displaying an input with an
