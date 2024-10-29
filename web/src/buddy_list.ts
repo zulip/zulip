@@ -312,10 +312,13 @@ export class BuddyList extends BuddyListConf {
 
         let matching_view_empty_list_message;
         let other_users_empty_list_message;
+        // Only visible when searching, since we usually hide an empty participants section
+        let participants_empty_list_message;
 
         if (buddy_data.get_is_searching_users()) {
             matching_view_empty_list_message = $t({defaultMessage: "No matching users."});
             other_users_empty_list_message = $t({defaultMessage: "No matching users."});
+            participants_empty_list_message = $t({defaultMessage: "No matching users."});
         } else {
             if (has_inactive_users_matching_view) {
                 matching_view_empty_list_message = $t({defaultMessage: "No active users."});
@@ -351,6 +354,13 @@ export class BuddyList extends BuddyListConf {
             "#buddy-list-other-users",
             other_users_empty_list_message,
         );
+
+        if (participants_empty_list_message) {
+            add_or_update_empty_list_placeholder(
+                "#buddy-list-participants",
+                participants_empty_list_message,
+            );
+        }
     }
 
     update_section_header_counts(): void {
@@ -563,6 +573,10 @@ export class BuddyList extends BuddyListConf {
 
         this.$participants_list = $(this.participants_list_selector);
         if (participants.length) {
+            // Remove the empty list message before adding users
+            if ($(`${this.participants_list_selector} .empty-list-message`).length > 0) {
+                this.$participants_list.empty();
+            }
             const participants_html = this.items_to_html({
                 items: participants,
             });
