@@ -6,6 +6,7 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import {buddy_list} from "./buddy_list";
 import {media_breakpoints_num} from "./css_variables";
+import {reorder_left_sidebar_navigation_list} from "./left_sidebar_navigation_area";
 import {localstorage} from "./localstorage";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
@@ -228,6 +229,8 @@ export function initialize_left_sidebar(): void {
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);
+    // make sure home-view and left_sidebar order persists
+    reorder_left_sidebar_navigation_list(user_settings.web_home_view);
 }
 
 export function initialize_right_sidebar(): void {
