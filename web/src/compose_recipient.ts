@@ -3,7 +3,8 @@
 import $ from "jquery";
 import _, {isNumber} from "lodash";
 import assert from "minimalistic-assert";
-import type * as tippy from "tippy.js";
+import type {Instance} from "tippy.js";
+import tippy from "tippy.js";
 
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 
@@ -73,6 +74,7 @@ export function update_narrow_to_recipient_visibility(): void {
             compose_state.has_full_recipient()
         ) {
             $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
+            show_tippy_tooltip();
             return;
         }
     } else if (message_type === "private") {
@@ -83,10 +85,28 @@ export function update_narrow_to_recipient_visibility(): void {
             compose_state.has_full_recipient()
         ) {
             $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
+            show_tippy_tooltip();
             return;
         }
     }
     $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", false);
+}
+
+function show_tippy_tooltip(): void {
+    const arrow_element = document.querySelector(".conversation-arrow");
+    if (!arrow_element) return;
+    if (localStorage.getItem("conversation_tooltip")) return;
+    let instance = (arrow_element as HTMLElement & {_tippy?: Instance})._tippy;
+    if (!instance) {
+        instance = tippy(arrow_element, {
+            content: "Go to conversation",
+            trigger: "manual",
+            placement: "top",
+        });
+    }
+    instance.show();
+    localStorage.setItem("conversation_tooltip", "true");
+    arrow_element.addEventListener("click", () => instance.hide(), {once: true});
 }
 
 function update_fade(): void {
@@ -234,7 +254,7 @@ export function possibly_update_stream_name_in_compose(stream_id: number): void 
     }
 }
 
-function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance): void {
+function item_click_callback(event: JQuery.ClickEvent, dropdown: Instance): void {
     const recipient_id_str = $(event.currentTarget).attr("data-unique-id");
     assert(recipient_id_str !== undefined);
     let recipient_id: string | number = recipient_id_str;
