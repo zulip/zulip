@@ -273,10 +273,6 @@ export function build_page() {
 
         tippy.default($("#realm_can_access_all_users_group_widget_container")[0], opts);
     }
-
-    settings_org.check_disable_direct_message_initiator_group_dropdown(
-        realm.realm_direct_message_permission_group,
-    );
 }
 
 export function launch(section, user_settings_tab) {

@@ -321,9 +321,7 @@ export function dispatch_normal_event(event) {
                                     key === "direct_message_initiator_group" ||
                                     key === "direct_message_permission_group"
                                 ) {
-                                    settings_org.check_disable_direct_message_initiator_group_dropdown(
-                                        realm.realm_direct_message_permission_group,
-                                    );
+                                    settings_org.check_disable_direct_message_initiator_group_widget();
                                     compose_closed_ui.update_buttons_for_private();
                                     compose_recipient.check_posting_policy_for_compose_box();
                                 }
