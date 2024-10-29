@@ -142,8 +142,6 @@ export function build_page() {
         language_list,
         realm_default_language_name: get_language_name(realm.realm_default_language),
         realm_default_language_code: realm.realm_default_language,
-        realm_direct_message_initiator_group_id: realm.realm_direct_message_initiator_group,
-        realm_direct_message_permission_group_id: realm.realm_direct_message_permission_group,
         realm_waiting_period_threshold: realm.realm_waiting_period_threshold,
         realm_new_stream_announcements_stream_id: realm.realm_new_stream_announcements_stream_id,
         realm_signup_announcements_stream_id: realm.realm_signup_announcements_stream_id,
@@ -184,9 +182,6 @@ export function build_page() {
         realm_invite_required: realm.realm_invite_required,
         can_create_user_groups: settings_data.user_can_create_user_groups(),
         policy_values: settings_config.common_policy_values,
-        realm_can_delete_any_message_group: realm.realm_can_delete_any_message_group,
-        realm_can_delete_own_message_group: realm.realm_can_delete_own_message_group,
-        realm_can_add_custom_emoji_group: realm.realm_can_add_custom_emoji_group,
         realm_can_add_custom_emoji_group_name: user_groups.get_user_group_from_id(
             realm.realm_can_add_custom_emoji_group,
         ).name,
