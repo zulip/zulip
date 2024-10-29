@@ -929,7 +929,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
 def convert_html_to_markdown(html: str) -> str:
     # html2text is GPL licensed, so run it as a subprocess.
     markdown = subprocess.check_output(
-        [os.path.join(sys.prefix, "bin", "html2text")], input=html, text=True
+        [os.path.join(sys.prefix, "bin", "html2text"), "--unicode-snob"], input=html, text=True
     ).strip()
 
     # We want images to get linked and inline previewed, but html2text will turn
