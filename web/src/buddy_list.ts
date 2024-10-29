@@ -330,27 +330,27 @@ export class BuddyList extends BuddyListConf {
             }
         }
 
-        $("#buddy-list-users-matching-view").attr(
-            "data-search-results-empty",
-            matching_view_empty_list_message,
-        );
-        if ($("#buddy-list-users-matching-view .empty-list-message").length) {
-            const empty_list_widget_html = render_empty_list_widget_for_list({
-                empty_list_message: matching_view_empty_list_message,
-            });
-            $("#buddy-list-users-matching-view").html(empty_list_widget_html);
+        function add_or_update_empty_list_placeholder(selector: string, message: string): void {
+            if (
+                $(selector).children().length === 0 ||
+                $(`${selector} .empty-list-message`).length
+            ) {
+                const empty_list_widget_html = render_empty_list_widget_for_list({
+                    empty_list_message: message,
+                });
+                $(selector).html(empty_list_widget_html);
+            }
         }
 
-        $("#buddy-list-other-users").attr(
-            "data-search-results-empty",
+        add_or_update_empty_list_placeholder(
+            "#buddy-list-users-matching-view",
+            matching_view_empty_list_message,
+        );
+
+        add_or_update_empty_list_placeholder(
+            "#buddy-list-other-users",
             other_users_empty_list_message,
         );
-        if ($("#buddy-list-other-users .empty-list-message").length) {
-            const empty_list_widget_html = render_empty_list_widget_for_list({
-                empty_list_message: other_users_empty_list_message,
-            });
-            $("#buddy-list-other-users").html(empty_list_widget_html);
-        }
     }
 
     update_section_header_counts(): void {
