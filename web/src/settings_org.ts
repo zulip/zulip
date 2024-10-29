@@ -605,7 +605,6 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_signup_announcements_stream_id":
         case "realm_zulip_update_announcements_stream_id":
         case "realm_default_code_block_language":
-        case "realm_can_add_custom_emoji_group":
         case "realm_can_access_all_users_group":
         case "realm_can_create_web_public_channel_group":
         case "realm_can_delete_any_message_group":
@@ -618,6 +617,7 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
                 property_value,
             );
             break;
+        case "realm_can_add_custom_emoji_group":
         case "realm_can_create_groups":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
@@ -980,6 +980,7 @@ export function set_up_dropdown_widget_for_realm_group_settings(): void {
     );
 
     const settings_using_pills_ui = new Set([
+        "can_add_custom_emoji_group",
         "can_create_groups",
         "can_create_public_channel_group",
         "can_create_private_channel_group",
@@ -1215,6 +1216,10 @@ function initialize_group_setting_widgets(): void {
         $pill_container: $("#id_realm_direct_message_permission_group"),
         setting_name: "direct_message_permission_group",
         pill_update_callback: check_disable_direct_message_initiator_group_widget,
+    });
+    settings_components.create_realm_group_setting_widget({
+        $pill_container: $("#id_realm_can_add_custom_emoji_group"),
+        setting_name: "can_add_custom_emoji_group",
     });
 
     enable_or_disable_group_permission_settings();

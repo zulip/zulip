@@ -338,10 +338,9 @@
                   setting_name="realm_can_manage_all_groups"
                   label=(t 'Who can manage user groups')}}
 
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_can_add_custom_emoji_group"
-                  label=(t 'Who can add custom emoji')
-                  value_type="number"}}
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_add_custom_emoji_group"
+                  label=(t 'Who can add custom emoji')}}
             </div>
         </div>
     </form>

@@ -478,7 +478,6 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_default_code_block_language", null],
     ["can_remove_subscribers_group", null],
     ["realm_can_access_all_users_group", null],
-    ["realm_can_add_custom_emoji_group", null],
     ["realm_can_create_web_public_channel_group", null],
     ["realm_can_delete_any_message_group", null],
     ["realm_can_delete_own_message_group", null],
@@ -795,7 +794,6 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_zulip_update_announcements_stream_id":
         case "realm_default_code_block_language":
         case "realm_can_access_all_users_group":
-        case "realm_can_add_custom_emoji_group":
         case "realm_can_create_web_public_channel_group":
         case "realm_can_delete_any_message_group":
         case "realm_can_delete_own_message_group":
@@ -803,6 +801,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_can_move_messages_between_topics_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
+        case "realm_can_add_custom_emoji_group":
         case "realm_can_create_groups":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
@@ -1469,6 +1468,7 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["can_leave_group", null],
     ["can_manage_group", null],
     ["can_mention_group", null],
+    ["realm_can_add_custom_emoji_group", null],
     ["realm_can_create_groups", null],
     ["realm_can_create_public_channel_group", null],
     ["realm_can_create_private_channel_group", null],
@@ -1577,6 +1577,7 @@ export function create_group_setting_widget({
 }
 
 type realm_group_setting_name =
+    | "can_add_custom_emoji_group"
     | "can_create_groups"
     | "can_create_public_channel_group"
     | "can_create_private_channel_group"
