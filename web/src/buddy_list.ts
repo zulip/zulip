@@ -367,7 +367,7 @@ export class BuddyList extends BuddyListConf {
         const {total_human_subscribers_count, other_users_count, all_participant_ids} =
             this.render_data;
         const subscriber_section_user_count =
-            total_human_subscribers_count - this.participant_user_ids.length;
+            total_human_subscribers_count - all_participant_ids.size;
 
         const formatted_participants_count = get_formatted_sub_count(all_participant_ids.size);
         const formatted_sub_users_count = get_formatted_sub_count(subscriber_section_user_count);
@@ -458,7 +458,7 @@ export class BuddyList extends BuddyListConf {
                 render_section_header({
                     id: "buddy-list-participants-section-heading",
                     header_text: $t({defaultMessage: "In this conversation"}),
-                    user_count: get_formatted_sub_count(this.participant_user_ids.length),
+                    user_count: get_formatted_sub_count(all_participant_ids.size),
                     is_collapsed: this.participants_is_collapsed,
                 }),
             ),
@@ -470,7 +470,7 @@ export class BuddyList extends BuddyListConf {
                     id: "buddy-list-users-matching-view-section-heading",
                     header_text,
                     user_count: get_formatted_sub_count(
-                        total_human_subscribers_count - this.participant_user_ids.length,
+                        total_human_subscribers_count - all_participant_ids.size,
                     ),
                     is_collapsed: this.users_matching_view_is_collapsed,
                 }),
