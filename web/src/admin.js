@@ -21,7 +21,6 @@ import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
 import * as settings_users from "./settings_users";
 import {current_user, realm} from "./state_data";
-import * as user_groups from "./user_groups";
 
 const admin_settings_label = {
     // Organization profile
@@ -182,9 +181,6 @@ export function build_page() {
         realm_invite_required: realm.realm_invite_required,
         can_create_user_groups: settings_data.user_can_create_user_groups(),
         policy_values: settings_config.common_policy_values,
-        realm_can_add_custom_emoji_group_name: user_groups.get_user_group_from_id(
-            realm.realm_can_add_custom_emoji_group,
-        ).name,
         ...settings_org.get_organization_settings_options(),
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
         web_mark_read_on_scroll_policy_values:
