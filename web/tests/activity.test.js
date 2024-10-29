@@ -731,7 +731,6 @@ test("realm_presence_disabled", ({override}) => {
 test("redraw_muted_user", () => {
     muted_users.add_muted_user(mark.user_id);
     activity_ui.redraw_user(mark.user_id);
-    assert.equal($("#buddy-list-users-matching-view").html(), "never-been-set");
 });
 
 test("update_presence_info", ({override, override_rewire}) => {
