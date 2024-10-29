@@ -79,7 +79,7 @@ type BuddyListRenderData = {
     other_users_count: number;
     total_human_users: number;
     hide_headers: boolean;
-    participant_ids_set: Set<number>;
+    all_participant_ids: Set<number>;
 };
 
 function get_render_data(): BuddyListRenderData {
@@ -90,7 +90,7 @@ function get_render_data(): BuddyListRenderData {
     const total_human_users = people.get_active_human_count();
     const other_users_count = total_human_users - total_human_subscribers_count;
     const hide_headers = should_hide_headers(current_sub, pm_ids_set);
-    const participant_ids_set = buddy_data.get_conversation_participants();
+    const all_participant_ids = buddy_data.get_conversation_participants();
 
     return {
         current_sub,
@@ -99,7 +99,7 @@ function get_render_data(): BuddyListRenderData {
         other_users_count,
         total_human_users,
         hide_headers,
-        participant_ids_set,
+        all_participant_ids,
     };
 }
 
@@ -364,12 +364,12 @@ export class BuddyList extends BuddyListConf {
     }
 
     update_section_header_counts(): void {
-        const {total_human_subscribers_count, other_users_count, participant_ids_set} =
+        const {total_human_subscribers_count, other_users_count, all_participant_ids} =
             this.render_data;
         const subscriber_section_user_count =
             total_human_subscribers_count - this.participant_user_ids.length;
 
-        const formatted_participants_count = get_formatted_sub_count(participant_ids_set.size);
+        const formatted_participants_count = get_formatted_sub_count(all_participant_ids.size);
         const formatted_sub_users_count = get_formatted_sub_count(subscriber_section_user_count);
         const formatted_other_users_count = get_formatted_sub_count(other_users_count);
 
@@ -385,7 +385,7 @@ export class BuddyList extends BuddyListConf {
 
         $("#buddy-list-participants-section-heading").attr(
             "data-user-count",
-            participant_ids_set.size,
+            all_participant_ids.size,
         );
         $("#buddy-list-users-matching-view-section-heading").attr(
             "data-user-count",
@@ -398,11 +398,11 @@ export class BuddyList extends BuddyListConf {
     }
 
     render_section_headers(): void {
-        const {hide_headers, participant_ids_set} = this.render_data;
+        const {hide_headers, all_participant_ids} = this.render_data;
         // We only show the participants list if it has members, so even if we're not
         // changing filters and only updating user counts for the current filter, that
         // can affect if we show/hide this section.
-        const show_participants_list = !hide_headers && participant_ids_set.size;
+        const show_participants_list = !hide_headers && all_participant_ids.size;
         $("#buddy-list-participants-container").toggleClass("no-display", !show_participants_list);
 
         // If we're not changing filters, this just means some users were added or
@@ -444,7 +444,7 @@ export class BuddyList extends BuddyListConf {
 
         let header_text;
         if (current_sub) {
-            if (participant_ids_set.size) {
+            if (all_participant_ids.size) {
                 header_text = $t({defaultMessage: "Others in this channel"});
             } else {
                 header_text = $t({defaultMessage: "In this channel"});
@@ -558,7 +558,7 @@ export class BuddyList extends BuddyListConf {
 
         for (const item of items) {
             if (buddy_data.user_matches_narrow(item.user_id, pm_ids_set, current_sub?.stream_id)) {
-                if (this.render_data.participant_ids_set.has(item.user_id)) {
+                if (this.render_data.all_participant_ids.has(item.user_id)) {
                     participants.push(item);
                     this.participant_user_ids.push(item.user_id);
                 } else {
@@ -822,7 +822,7 @@ export class BuddyList extends BuddyListConf {
                     list_user_id,
                     current_sub,
                     pm_ids_set,
-                    this.render_data.participant_ids_set,
+                    this.render_data.all_participant_ids,
                 ) < 0,
         );
         return i === -1 ? user_id_list.length : i;
@@ -934,7 +934,7 @@ export class BuddyList extends BuddyListConf {
             current_sub?.stream_id,
         );
         let user_id_list;
-        if (this.render_data.participant_ids_set.has(user_id)) {
+        if (this.render_data.all_participant_ids.has(user_id)) {
             user_id_list = this.participant_user_ids;
         } else if (is_subscribed_user) {
             user_id_list = this.users_matching_view_ids;
@@ -959,7 +959,7 @@ export class BuddyList extends BuddyListConf {
             html,
             new_user_id,
             is_subscribed_user,
-            is_participant_user: this.render_data.participant_ids_set.has(user_id),
+            is_participant_user: this.render_data.all_participant_ids.has(user_id),
         });
     }
 
