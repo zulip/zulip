@@ -676,11 +676,7 @@ li.active-sub-filter {
 
 #left-sidebar-navigation-list {
     margin-bottom: var(--left-sidebar-sections-vertical-gutter);
-    /* We display this as a grid only to control
-       the order of home views, using a single
-       named grid area. */
     display: grid;
-    grid-template-areas: "selected-home-view";
     line-height: var(--line-height-sidebar-row);
     /* Explicitly ensure parity with the line-height
        for the sake of low-resolution screens, whose
@@ -696,19 +692,6 @@ li.active-sub-filter {
             white-space: nowrap;
         }
     }
-}
-
-.selected-home-view {
-    /* This bumps the selected view to the
-       top of the grid (expanded list).
-       Others items will auto place in the
-       remaining auto-generated grid rows. */
-    grid-area: selected-home-view;
-    /* The condensed view is a flexbox, so
-       here we'll use a negative order to
-       bump the selected home view to the
-       start of the flexbox (lefthand side). */
-    order: -1;
 }
 
 .top_left_starred_messages .unread_count,

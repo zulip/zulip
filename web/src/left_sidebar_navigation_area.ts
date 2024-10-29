@@ -207,48 +207,52 @@ export function highlight_all_messages_view(): void {
     }, 0);
 }
 
-function handle_home_view_order(home_view: string): void {
-    // Remove class and tabindex from current home view
-    const $current_home_view = $(".selected-home-view");
-    $current_home_view.removeClass("selected-home-view");
-    $current_home_view.find("a").removeAttr("tabindex");
-
-    const $all_messages_rows = $(".top_left_all_messages");
-    const $recent_views_rows = $(".top_left_recent_view");
-    const $inbox_rows = $(".top_left_inbox");
-
-    const res = unread.get_counts();
-
-    // Add the class and tabindex to the matching home view
-    if (home_view === settings_config.web_home_view_values.all_messages.code) {
-        $all_messages_rows.addClass("selected-home-view");
-        $all_messages_rows.find("a").attr("tabindex", 0);
-    } else if (home_view === settings_config.web_home_view_values.recent_topics.code) {
-        $recent_views_rows.addClass("selected-home-view");
-        $recent_views_rows.find("a").attr("tabindex", 0);
-    } else {
-        // Inbox is home view.
-        $inbox_rows.addClass("selected-home-view");
-        $inbox_rows.find("a").attr("tabindex", 0);
+export function get_view_rows_by_view_name(view: string): JQuery {
+    if (view === settings_config.web_home_view_values.all_messages.code) {
+        return $(".top_left_all_messages");
     }
-    update_dom_with_unread_counts(res, true);
+
+    if (view === settings_config.web_home_view_values.recent_topics.code) {
+        return $(".top_left_recent_view");
+    }
+
+    return $(".top_left_inbox");
+}
+
+// Reorder <li> views elements in the DOM based on the current home_view.
+// Called twice: on initial page load and when home_view changes.
+export function reorder_left_sidebar_navigation_list(home_view: string): void {
+    const $left_sidebar = $("#left-sidebar-navigation-list");
+    const $left_sidebar_condensed = $("#left-sidebar-navigation-list-condensed");
+
+    // First, re-order the views back to the original default order, to preserve the relative order.
+    for (const key of Object.keys(settings_config.web_home_view_values).reverse()) {
+        if (key !== home_view) {
+            const $view = get_view_rows_by_view_name(key);
+            $view.eq(1).prependTo($left_sidebar);
+            $view.eq(0).prependTo($left_sidebar_condensed);
+        }
+    }
+
+    // Detach the selected home_view and inserts it at the beginning of the navigation list.
+    const $selected_home_view = get_view_rows_by_view_name(home_view);
+    $selected_home_view.eq(1).prependTo($left_sidebar);
+    $selected_home_view.eq(0).prependTo($left_sidebar_condensed);
 }
 
 export function handle_home_view_changed(new_home_view: string): void {
-    const $recent_view_sidebar_menu_icon = $(".recent-view-sidebar-menu-icon");
-    const $all_messages_sidebar_menu_icon = $(".all-messages-sidebar-menu-icon");
-    if (new_home_view === settings_config.web_home_view_values.all_messages.code) {
-        $recent_view_sidebar_menu_icon.removeClass("hide");
-        $all_messages_sidebar_menu_icon.addClass("hide");
-    } else if (new_home_view === settings_config.web_home_view_values.recent_topics.code) {
-        $recent_view_sidebar_menu_icon.addClass("hide");
-        $all_messages_sidebar_menu_icon.removeClass("hide");
-    } else {
-        // Inbox is home view.
-        $recent_view_sidebar_menu_icon.removeClass("hide");
-        $all_messages_sidebar_menu_icon.removeClass("hide");
-    }
-    handle_home_view_order(new_home_view);
+    const $current_home_view = $(".selected-home-view");
+    const $new_home_view = get_view_rows_by_view_name(new_home_view);
+    const res = unread.get_counts();
+
+    // Remove class from current home view
+    $current_home_view.removeClass("selected-home-view");
+
+    // Add the class to the matching home view
+    $new_home_view.addClass("selected-home-view");
+
+    reorder_left_sidebar_navigation_list(new_home_view);
+    update_dom_with_unread_counts(res, true);
 }
 
 export function initialize(): void {

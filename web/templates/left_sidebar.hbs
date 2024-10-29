@@ -1,12 +1,12 @@
 <div class="left-sidebar" id="left-sidebar" role="navigation">
     <div id="left-sidebar-navigation-area" class="left-sidebar-navigation-area">
         <div id="views-label-container" class="showing-expanded-navigation {{#if is_spectator}}remove-pointer-for-spectator{{/if}}">
-            <i id="toggle-top-left-navigation-area-icon" class="zulip-icon zulip-icon-heading-triangle-right sidebar-heading-icon rotate-icon-down views-tooltip-target hidden-for-spectators" aria-hidden="true"></i>
+            <i id="toggle-top-left-navigation-area-icon" class="zulip-icon zulip-icon-heading-triangle-right sidebar-heading-icon rotate-icon-down views-tooltip-target hidden-for-spectators" aria-hidden="true" tabindex="0" role="button"></i>
             {{~!-- squash whitespace --~}}
             <h4 class="left-sidebar-title"><span class="views-tooltip-target">{{t 'VIEWS' }}</span></h4>
             <ul id="left-sidebar-navigation-list-condensed" class="filters">
                 <li class="top_left_inbox left-sidebar-navigation-condensed-item {{#if is_inbox_home_view}}selected-home-view{{/if}}">
-                    <a href="#inbox" {{#if is_inbox_home_view}}tabindex="0"{{/if}} class="tippy-views-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="inbox-tooltip-template">
+                    <a href="#inbox" class="tippy-views-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="inbox-tooltip-template">
                         <span class="filter-icon">
                             <i class="zulip-icon zulip-icon-inbox" aria-hidden="true"></i>
                         </span>
@@ -14,7 +14,7 @@
                     </a>
                 </li>
                 <li class="top_left_recent_view left-sidebar-navigation-condensed-item {{#if is_recent_view_home_view}}selected-home-view{{/if}}">
-                    <a href="#recent" {{#if is_recent_view_home_view}}tabindex="0"{{/if}} class="tippy-views-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="recent-conversations-tooltip-template">
+                    <a href="#recent" class="tippy-views-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="recent-conversations-tooltip-template">
                         <span class="filter-icon">
                             <i class="zulip-icon zulip-icon-recent" aria-hidden="true"></i>
                         </span>
@@ -22,7 +22,7 @@
                     </a>
                 </li>
                 <li class="top_left_all_messages left-sidebar-navigation-condensed-item {{#if is_all_messages_home_view}}selected-home-view{{/if}}">
-                    <a href="#feed" {{#if is_all_messages_home_view}}tabindex="0"{{/if}} class="home-link tippy-views-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="all-message-tooltip-template">
+                    <a href="#feed" class="home-link tippy-views-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="all-message-tooltip-template">
                         <span class="filter-icon">
                             <i class="zulip-icon zulip-icon-all-messages" aria-hidden="true"></i>
                         </span>
@@ -52,7 +52,7 @@
         </div>
         <ul id="left-sidebar-navigation-list" class="left-sidebar-navigation-list filters">
             <li class="top_left_inbox top_left_row hidden-for-spectators {{#if is_inbox_home_view}}selected-home-view{{/if}}">
-                <a href="#inbox" {{#if is_inbox_home_view}}tabindex="0"{{/if}} class="left-sidebar-navigation-label-container tippy-views-tooltip" data-tooltip-template-id="inbox-tooltip-template">
+                <a href="#inbox" class="left-sidebar-navigation-label-container tippy-views-tooltip" data-tooltip-template-id="inbox-tooltip-template">
                     <span class="filter-icon">
                         <i class="zulip-icon zulip-icon-inbox" aria-hidden="true"></i>
                     </span>
@@ -63,7 +63,7 @@
                 <span class="arrow sidebar-menu-icon inbox-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
             </li>
             <li class="top_left_recent_view top_left_row {{#if is_recent_view_home_view}}selected-home-view{{/if}}">
-                <a href="#recent" {{#if is_recent_view_home_view}}tabindex="0"{{/if}} class="left-sidebar-navigation-label-container tippy-views-tooltip" data-tooltip-template-id="recent-conversations-tooltip-template">
+                <a href="#recent" class="left-sidebar-navigation-label-container tippy-views-tooltip" data-tooltip-template-id="recent-conversations-tooltip-template">
                     <span class="filter-icon">
                         <i class="zulip-icon zulip-icon-recent" aria-hidden="true"></i>
                     </span>
@@ -71,12 +71,12 @@
                     <span class="left-sidebar-navigation-label">{{t 'Recent conversations' }}</span>
                     <span class="unread_count"></span>
                 </a>
-                <span class="arrow sidebar-menu-icon recent-view-sidebar-menu-icon hidden-for-spectators {{#if is_recent_view_home_view}}hide{{/if}}">
+                <span class="arrow sidebar-menu-icon recent-view-sidebar-menu-icon hidden-for-spectators">
                     <i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i>
                 </span>
             </li>
             <li class="top_left_all_messages top_left_row {{#if is_all_messages_home_view}}selected-home-view{{/if}}">
-                <a href="#feed" {{#if is_all_messages_home_view}}tabindex="0"{{/if}} class="home-link left-sidebar-navigation-label-container tippy-views-tooltip" data-tooltip-template-id="all-message-tooltip-template">
+                <a href="#feed" class="home-link left-sidebar-navigation-label-container tippy-views-tooltip" data-tooltip-template-id="all-message-tooltip-template">
                     <span class="filter-icon">
                         <i class="zulip-icon zulip-icon-all-messages" aria-hidden="true"></i>
                     </span>
@@ -84,7 +84,7 @@
                     <span class="left-sidebar-navigation-label">{{t 'Combined feed' }}</span>
                     <span class="unread_count"></span>
                 </a>
-                <span class="arrow sidebar-menu-icon all-messages-sidebar-menu-icon hidden-for-spectators {{#if is_all_messages_home_view}}hide{{/if}}">
+                <span class="arrow sidebar-menu-icon all-messages-sidebar-menu-icon hidden-for-spectators">
                     <i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i>
                 </span>
             </li>
