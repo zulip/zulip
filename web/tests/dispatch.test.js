@@ -466,7 +466,7 @@ run_test("realm settings", ({override}) => {
     override(current_user, "is_admin", true);
     override(realm, "realm_date_created", new Date("2023-01-01Z"));
 
-    override(settings_org, "check_disable_direct_message_initiator_group_dropdown", noop);
+    override(settings_org, "check_disable_direct_message_initiator_group_widget", noop);
     override(settings_org, "sync_realm_settings", noop);
     override(settings_bots, "update_bot_permissions_ui", noop);
     override(settings_emoji, "update_custom_emoji_ui", noop);

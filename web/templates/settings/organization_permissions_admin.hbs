@@ -113,15 +113,14 @@
                 </h3>
                 {{> settings_save_discard_widget section_name="direct-message-permissions" }}
             </div>
-            {{> ../dropdown_widget_with_label
-              widget_name="realm_direct_message_permission_group"
-              label=(t 'Who can authorize a direct message conversation')
-              value_type="number" }}
 
-            {{> ../dropdown_widget_with_label
-              widget_name="realm_direct_message_initiator_group"
-              label=(t 'Who can start a direct message conversation')
-              value_type="number" }}
+            {{> group_setting_value_pill_input
+              setting_name="realm_direct_message_permission_group"
+              label=(t 'Who can authorize a direct message conversation')}}
+
+            {{> group_setting_value_pill_input
+              setting_name="realm_direct_message_initiator_group"
+              label=(t 'Who can start a direct message conversation')}}
         </div>
 
         <div id="org-msg-editing" class="settings-subsection-parent">
