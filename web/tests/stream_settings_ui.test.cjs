@@ -248,7 +248,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         $(sub_row).detach = () => sub_row;
     }
 
-    $.create("#channels_overlay_container .stream-row", {children: sub_stubs});
+    $.set_results("#channels_overlay_container .stream-row", sub_stubs);
 
     const $no_streams_message = $(".no-streams-to-show");
     const $child_element = $(".subscribed_streams_tab_empty_text");

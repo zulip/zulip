@@ -247,20 +247,20 @@ function FakeElement(selector, opts) {
         },
     };
 
-    if (opts.children) {
-        $self.map = (f) => opts.children.map((i, elem) => f(elem, i));
+    if (opts.elements) {
+        $self.map = (f) => opts.elements.map((i, element) => f(element, i));
         $self.each = (f) => {
-            for (const child of opts.children) {
-                f.call(child);
+            for (const element of opts.elements) {
+                f.call(element);
             }
         };
-        $self[Symbol.iterator] = () => opts.children.values();
+        $self[Symbol.iterator] = () => opts.elements.values();
 
-        for (const [i, child] of opts.children.entries()) {
-            $self[i] = child;
+        for (const [i, element] of opts.elements.entries()) {
+            $self[i] = element;
         }
 
-        $self.length = opts.children.length;
+        $self.length = opts.elements.length;
     }
 
     if (selector[0] === "<") {

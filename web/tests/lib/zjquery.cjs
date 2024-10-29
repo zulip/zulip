@@ -133,6 +133,8 @@ function make_zjquery() {
         return $elem;
     };
 
+    zjquery.set_results = (selector, elements) => zjquery.create(selector, {elements});
+
     /* istanbul ignore next */
     zjquery.state = function () {
         // useful for debugging

@@ -19,10 +19,9 @@ class FakeComposeBox {
             $(".message-limit-indicator"),
         );
 
-        const $message_row_stub = $.create("message_row_stub");
+        const $message_row_stub = $.set_results("message_row_stub", []);
         this.$content_textarea.closest = (selector) => {
             assert.equal(selector, ".message_row");
-            $message_row_stub.length = 0;
             return $message_row_stub;
         };
 

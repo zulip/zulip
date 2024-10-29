@@ -624,8 +624,8 @@ test("format_drafts", ({override, mock_template}) => {
 
     override(messages_overlay_ui, "set_initial_element", noop);
 
-    $.create(".drafts-list", {children: []});
-    $.create("#drafts_table .overlay-message-row", {children: []});
+    $.set_results(".drafts-list", []);
+    $.set_results("#drafts_table .overlay-message-row", []);
     $(".draft-selection-checkbox").filter = () => [];
     drafts_overlay_ui.launch();
 });
@@ -773,8 +773,8 @@ test("filter_drafts", ({override, mock_template}) => {
     override(user_pill, "get_user_ids", () => [aaron.user_id]);
     compose_state.set_message_type("private");
 
-    $.create(".drafts-list", {children: []});
-    $.create("#drafts_table .overlay-message-row", {children: []});
+    $.set_results(".drafts-list", []);
+    $.set_results("#drafts_table .overlay-message-row", []);
     $(".draft-selection-checkbox").filter = () => [];
     drafts_overlay_ui.launch();
 });
