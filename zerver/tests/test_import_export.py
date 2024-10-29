@@ -42,7 +42,13 @@ from zerver.lib import upload
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.bot_lib import StateHandler
-from zerver.lib.export import Record, do_export_realm, do_export_user, export_usermessages_batch
+from zerver.lib.export import (
+    MigrationStatusJson,
+    Record,
+    do_export_realm,
+    do_export_user,
+    export_usermessages_batch,
+)
 from zerver.lib.import_realm import do_import_realm, get_incoming_message_ids
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
@@ -334,6 +340,20 @@ class ExportFile(ZulipTestCase):
         db_paths = {user_avatar_path(user) + ".original"}
         self.assertEqual(exported_paths, db_paths)
 
+    def verify_migration_status_json(self) -> None:
+        # This function asserts that the generated migration_status.json
+        # is structurally familiar for it to be used for assertion at
+        # import_realm.py. Hence, it doesn't really matter if the individual
+        # apps' migrations in migration_status.json fixture are outdated.
+        exported: MigrationStatusJson = read_json("migration_status.json")
+        fixture: MigrationStatusJson = orjson.loads(
+            self.fixture_data("migration_status.json", "import_fixtures")
+        )
+        for app, migrations in fixture["migrations_by_app"].items():
+            self.assertTrue(
+                set(migrations).issubset(set(exported["migrations_by_app"].get(app, []))),
+            )
+
 
 class RealmImportExportTest(ExportFile):
     def create_user_and_login(self, email: str, realm: Realm) -> None:
@@ -392,6 +412,7 @@ class RealmImportExportTest(ExportFile):
         self.verify_avatars(user)
         self.verify_emojis(user, is_s3=False)
         self.verify_realm_logo_and_icon()
+        self.verify_migration_status_json()
 
     def test_public_only_export_files_private_uploads_not_included(self) -> None:
         """
@@ -439,6 +460,7 @@ class RealmImportExportTest(ExportFile):
         self.verify_avatars(user)
         self.verify_emojis(user, is_s3=True)
         self.verify_realm_logo_and_icon()
+        self.verify_migration_status_json()
 
     def test_zulip_realm(self) -> None:
         realm = Realm.objects.get(string_id="zulip")

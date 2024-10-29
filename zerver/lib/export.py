@@ -31,6 +31,7 @@ from django.utils.timezone import now as timezone_now
 import zerver.lib.upload
 from analytics.models import RealmCount, StreamCount, UserCount
 from scripts.lib.zulip_tools import overwrite_symlink
+from version import ZULIP_VERSION
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -97,11 +98,18 @@ SourceFilter: TypeAlias = Callable[[Record], bool]
 
 CustomFetch: TypeAlias = Callable[[TableData, Context], None]
 
+AppMigrations: TypeAlias = dict[str, list[str]]
+
 
 class MessagePartial(TypedDict):
     zerver_message: list[Record]
     zerver_userprofile_ids: list[int]
     realm_id: int
+
+
+class MigrationStatusJson(TypedDict):
+    migrations_by_app: AppMigrations
+    zulip_version: str
 
 
 MESSAGE_BATCH_CHUNK_SIZE = 1000
@@ -2093,6 +2101,8 @@ def do_export_realm(
         export_full_with_consent=export_type == RealmExport.EXPORT_FULL_WITH_CONSENT,
     )
 
+    do_common_export_processes(output_dir)
+
     logging.info("Finished exporting %s", realm.string_id)
     create_soft_link(source=output_dir, in_progress=False)
 
@@ -2594,3 +2604,33 @@ def get_realm_exports_serialized(realm: Realm) -> list[dict[str, Any]]:
             export_type=export.type,
         )
     return sorted(exports_dict.values(), key=lambda export_dict: export_dict["id"])
+
+
+def get_migrations_by_app() -> AppMigrations:
+    from django.db import DEFAULT_DB_ALIAS, connections
+    from django.db.migrations.recorder import MigrationRecorder
+
+    recorder = MigrationRecorder(connections[DEFAULT_DB_ALIAS])
+    applied = recorder.applied_migrations()
+    migrations_by_app: AppMigrations = {}
+    for app_name, migration_name in applied:
+        migrations_by_app.setdefault(app_name, []).append(migration_name)
+    return migrations_by_app
+
+
+def export_migration_status(output_dir: str) -> None:
+    migration_status_json = MigrationStatusJson(
+        migrations_by_app=get_migrations_by_app(), zulip_version=ZULIP_VERSION
+    )
+    output_file = os.path.join(output_dir, "migration_status.json")
+    with open(output_file, "wb") as f:
+        f.write(orjson.dumps(migration_status_json, option=orjson.OPT_INDENT_2))
+
+
+def do_common_export_processes(output_dir: str) -> None:
+    # Performs common task(s) necessary for preparing Zulip data exports.
+    # This function is typically shared with migration tools in the
+    # `zerver/data_import` directory.
+
+    logging.info("Exporting migration status")
+    export_migration_status(output_dir)
