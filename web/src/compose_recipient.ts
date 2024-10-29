@@ -3,7 +3,8 @@
 import $ from "jquery";
 import _, {isNumber} from "lodash";
 import assert from "minimalistic-assert";
-import type * as tippy from "tippy.js";
+import type {Instance} from "tippy.js";
+import tippy from "tippy.js";
 
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 
@@ -19,6 +20,7 @@ import * as dropdown_widget from "./dropdown_widget.ts";
 import type {Option} from "./dropdown_widget.ts";
 import {$t} from "./i18n.ts";
 import * as narrow_state from "./narrow_state.ts";
+import {ONE_TIME_NOTICES_TO_DISPLAY} from "./onboarding_steps.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
@@ -73,6 +75,7 @@ export let update_narrow_to_recipient_visibility = (): void => {
             compose_state.has_full_recipient()
         ) {
             $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
+            show_tippy_tooltip();
             return;
         }
     } else if (message_type === "private") {
@@ -83,6 +86,7 @@ export let update_narrow_to_recipient_visibility = (): void => {
             compose_state.has_full_recipient()
         ) {
             $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
+            show_tippy_tooltip();
             return;
         }
     }
@@ -93,6 +97,33 @@ export function rewire_update_narrow_to_recipient_visibility(
     value: typeof update_narrow_to_recipient_visibility,
 ): void {
     update_narrow_to_recipient_visibility = value;
+}
+
+function show_tippy_tooltip(): void {
+    const arrow_element = document.querySelector(".conversation-arrow");
+    if (!arrow_element) {
+        return;
+    }
+
+    if (ONE_TIME_NOTICES_TO_DISPLAY.has("conversation_tooltip")) {
+        return;
+    }
+    const instance = tippy(arrow_element, {
+        content: "Go to conversation",
+        trigger: "manual",
+        placement: "top",
+    });
+
+    instance.show();
+    ONE_TIME_NOTICES_TO_DISPLAY.add("conversation_tooltip");
+
+    arrow_element.addEventListener(
+        "click",
+        () => {
+            instance.hide();
+        },
+        {once: true},
+    );
 }
 
 function update_fade(): void {
@@ -252,7 +283,7 @@ export function possibly_update_stream_name_in_compose(stream_id: number): void 
     }
 }
 
-function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance): void {
+function item_click_callback(event: JQuery.ClickEvent, dropdown: Instance): void {
     const recipient_id_str = $(event.currentTarget).attr("data-unique-id");
     assert(recipient_id_str !== undefined);
     let recipient_id: string | number = recipient_id_str;
