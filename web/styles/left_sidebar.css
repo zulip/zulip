@@ -25,6 +25,10 @@
     text-overflow: ellipsis;
 }
 
+#left-sidebar .unread_count {
+    user-select: none;
+}
+
 .sidebar-topic-check,
 .topic-markers-and-unreads {
     cursor: pointer;
