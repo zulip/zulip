@@ -86,6 +86,7 @@ function createSaveButtons(subsection) {
 
     $save_button_controls.closest = () => $stub_save_button_header;
     $stub_save_button_header.set_find_results(".time-limit-setting", []);
+    $stub_save_button_header.set_find_results(".pill-container", []);
     $stub_save_button_header.set_find_results(".subsection-changes-save button", $stub_save_button);
 
     return {
