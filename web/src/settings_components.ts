@@ -1353,6 +1353,40 @@ function should_disable_save_button_for_time_limit_settings(
     return disable_save_btn;
 }
 
+function should_disable_save_button_for_group_settings(settings: string[]): boolean {
+    for (const setting_name of settings) {
+        let group_setting_config;
+        if (setting_name.startsWith("realm_")) {
+            const setting_name_without_prefix = /^realm_(.*)$/.exec(setting_name)![1]!;
+            group_setting_config = group_permission_settings.get_group_permission_setting_config(
+                setting_name_without_prefix,
+                "realm",
+            );
+        } else {
+            // We do not have any stream settings using the new UI currently,
+            // so we know that this block will be called for group setting only.
+            group_setting_config = group_permission_settings.get_group_permission_setting_config(
+                setting_name,
+                "group",
+            );
+        }
+        assert(group_setting_config !== undefined);
+        if (group_setting_config.allow_nobody_group) {
+            continue;
+        }
+
+        const pill_widget = get_group_setting_widget(setting_name);
+        assert(pill_widget !== null);
+
+        const setting_value = get_group_setting_widget_value(pill_widget);
+        const nobody_group = user_groups.get_user_group_from_name("role:nobody")!;
+        if (setting_value === nobody_group.id) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function enable_or_disable_save_button($subsection_elem: JQuery): void {
     const time_limit_settings = [...$subsection_elem.find(".time-limit-setting")];
 
@@ -1379,6 +1413,15 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
             if (tippy_instance) {
                 tippy_instance.destroy();
             }
+        }
+    }
+
+    if (!disable_save_btn) {
+        const group_settings = [...$subsection_elem.find(".pill-container")].map((elem) =>
+            extract_property_name($(elem)),
+        );
+        if (group_settings.length) {
+            disable_save_btn = should_disable_save_button_for_group_settings(group_settings);
         }
     }
 
