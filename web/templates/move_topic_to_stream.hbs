@@ -1,20 +1,34 @@
 {{#unless (or from_message_actions_popover only_topic_edit)}}
-<p class="white-space-preserve-wrap">{{#tr}}Move all messages in <strong>{{topic_name}}</strong>{{/tr}} to:</p>
+<p class="white-space-preserve-wrap">{{#tr}}Move all messages in <strong>{topic_name}</strong>{{/tr}} to:</p>
 {{/unless}}
 <form id="move_topic_form">
     {{#if only_topic_edit }}
-    <p>{{t "Rename topic to:"}}</p>
+    <p>{{t "Rename topic to:" }}</p>
     {{else if from_message_actions_popover}}
+    <p>{{t "Move messages to:" }}</p>
     {{/if}}
     <div class="topic_stream_edit_header">
+<<<<<<< HEAD
+        
+        <!-- Channel Label and Dropdown -->
         {{#unless only_topic_edit}}
             <label for="move-topic-stream" class="form-label">{{t "Channel"}}</label>
             {{> dropdown_widget_wrapper widget_name="move_topic_to_stream"}}
         {{/unless}}
+
+        <!-- Topic Label and Input with Dynamic Width -->
         <label for="new_topic_name" class="form-label">{{t "Topic"}}</label>
-        <input name="new_topic_name" type="text" class="move_messages_edit_topic modal_text_input" autocomplete="off" value="{{topic_name}}" {{#if disable_topic_input}}disabled{{/if}} />
+        <input 
+          name="new_topic_name" 
+          type="text" 
+          class="move_messages_edit_topic modal_text_input" 
+          autocomplete="off" 
+          value="{{topic_name}}" 
+          {{#if disable_topic_input}}disabled{{/if}} />
+        
         <input name="old_topic_name" type="hidden" value="{{topic_name}}" />
         <input name="current_stream_id" type="hidden" value="{{current_stream_id}}" />               
+
         {{#if from_message_actions_popover}}
           <label for="message-range" class="form-label-bold">{{t "Which messages to move?"}}</label>
           <select class="message_edit_topic_propagate modal_select bootstrap-focus-style">
@@ -22,17 +36,32 @@
               <option value="change_later" {{#if (eq message_placement "intermediate")}}selected{{/if}}>{{t "Move this and all following messages in this topic"}}</option>
               <option value="change_all" {{#if (eq message_placement "first")}}selected{{/if}}>{{t "Move all messages in this topic"}}</option>
           </select>
+=======
+        {{#unless only_topic_edit}}
+        {{> dropdown_widget_wrapper widget_name="move_topic_to_stream"}}
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        {{/unless}}
+        <input name="new_topic_name" type="text" class="move_messages_edit_topic modal_text_input" autocomplete="off" value="{{topic_name}}" {{#if disable_topic_input}}disabled{{/if}} />
+        <input name="old_topic_name" type="hidden" value="{{topic_name}}" />
+        <input name="current_stream_id" type="hidden" value="{{current_stream_id}}" />
+        {{#if from_message_actions_popover}}
+        <select class="message_edit_topic_propagate modal_select bootstrap-focus-style">
+            <option value="change_one" {{#if (eq message_placement "last")}}selected{{/if}}> {{t "Move only this message" }}</option>
+            <option value="change_later" {{#if (eq message_placement "intermediate")}}selected{{/if}}> {{t "Move this and all following messages in this topic" }}</option>
+            <option value="change_all" {{#if (eq message_placement "first")}}selected{{/if}}> {{t "Move all messages in this topic" }}</option>
+        </select>
+>>>>>>> parent of 710c76026a (Update move_topic_to_stream.hbs)
         {{/if}}
         <div class="topic_move_breadcrumb_messages">
             <label class="checkbox">
                 <input class="send_notification_to_new_thread" name="send_notification_to_new_thread" type="checkbox" {{#if notify_new_thread}}checked="checked"{{/if}} />
                 <span class="rendered-checkbox"></span>
-                {{t "Send automated notice to new topic"}}
+                {{t "Send automated notice to new topic" }}
             </label>
             <label class="checkbox">
                 <input class="send_notification_to_old_thread" name="send_notification_to_old_thread" type="checkbox" {{#if notify_old_thread}}checked="checked"{{/if}} />
                 <span class="rendered-checkbox"></span>
-                {{t "Send automated notice to old topic"}}
+                {{t "Send automated notice to old topic" }}
             </label>
         </div>
     </div>
