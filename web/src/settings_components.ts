@@ -1637,6 +1637,22 @@ export function create_realm_group_setting_widget({
     });
 }
 
+export function set_time_input_formatted_text(
+    $time_select_elem: JQuery,
+    formatted_text: string,
+): void {
+    if ($time_select_elem.val() === "custom") {
+        $time_select_elem.parent().find(".time-input-formatted-description").hide();
+        $time_select_elem
+            .parent()
+            .find(".custom-time-input-formatted-description")
+            .text(formatted_text);
+    } else {
+        $time_select_elem.parent().find(".time-input-formatted-description").show();
+        $time_select_elem.parent().find(".time-input-formatted-description").text(formatted_text);
+    }
+}
+
 export function set_custom_time_inputs_visibility(
     $time_select_elem: JQuery,
     time_unit: string,
