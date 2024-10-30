@@ -173,10 +173,9 @@
                 {{> settings_save_discard_widget section_name="moving-msgs" }}
             </div>
 
-            {{> ../dropdown_widget_with_label
-              widget_name="realm_can_move_messages_between_topics_group"
-              label=(t 'Who can move messages to another topic')
-              value_type="number" }}
+            {{> group_setting_value_pill_input
+              setting_name="realm_can_move_messages_between_topics_group"
+              label=(t 'Who can move messages to another topic')}}
 
             <div class="input-group time-limit-setting">
                 <label for="realm_move_messages_within_stream_limit_seconds" class="settings-field-label">{{t "Time limit for editing topics" }} <i>({{t "does not apply to moderators and administrators" }})</i></label>
@@ -196,10 +195,9 @@
                 </div>
             </div>
 
-            {{> ../dropdown_widget_with_label
-              widget_name="realm_can_move_messages_between_channels_group"
-              label=(t 'Who can move messages to another channel')
-              value_type="number" }}
+            {{> group_setting_value_pill_input
+              setting_name="realm_can_move_messages_between_channels_group"
+              label=(t 'Who can move messages to another channel')}}
 
             <div class="input-group time-limit-setting">
                 <label for="realm_move_messages_between_streams_limit_seconds" class="settings-field-label">{{t "Time limit for moving messages between channels" }} <i>({{t "does not apply to moderators and administrators" }})</i></label>
