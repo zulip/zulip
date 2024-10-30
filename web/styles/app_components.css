@@ -1366,23 +1366,19 @@ input.settings_text_input {
 .text-error {
     color: hsl(1.06deg 44.66% 50.39%);
 }
-
 .topic_stream_edit_header {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
-
 .form-label {
     display: block;
 }
-
 .form-label-bold {
     font-weight: bold;
     margin-top: 8px;
     display: block;
 }
-
 .modal_text_input {
     width: auto;
     min-width: 200px;
