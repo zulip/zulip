@@ -20,7 +20,9 @@ import * as realm_logo from "./realm_logo";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import {
     type MessageMoveTimeLimitSetting,
+    type RealmGroupSettingName,
     type SettingOptionValueWithKey,
+    realm_group_setting_name_schema,
     realm_setting_property_schema,
     realm_user_settings_default_properties_schema,
     simple_dropdown_realm_settings_schema,
@@ -877,26 +879,14 @@ function set_up_dropdown_widget(
 }
 
 export function set_up_dropdown_widget_for_realm_group_settings(): void {
-    const realm_group_permission_settings = Object.keys(
+    const realm_group_permission_settings = Object.entries(
         realm.server_supported_permission_settings.realm,
     );
 
-    const settings_using_pills_ui = new Set([
-        "can_add_custom_emoji_group",
-        "can_create_groups",
-        "can_create_public_channel_group",
-        "can_create_private_channel_group",
-        "can_delete_any_message_group",
-        "can_delete_own_message_group",
-        "can_manage_all_groups",
-        "can_move_messages_between_channels_group",
-        "can_move_messages_between_topics_group",
-        "create_multiuse_invite_group",
-        "direct_message_initiator_group",
-        "direct_message_permission_group",
-    ]);
-    for (const setting_name of realm_group_permission_settings) {
-        if (settings_using_pills_ui.has(setting_name)) {
+    for (const [setting_name, setting_config] of realm_group_permission_settings) {
+        if (!setting_config.require_system_group) {
+            // For settings that do not require system groups,
+            // we use pills UI.
             continue;
         }
         const get_setting_options = (): UserGroupForDropdownListWidget[] =>
@@ -1065,55 +1055,27 @@ export function register_save_discard_widget_handlers(
 }
 
 function initialize_group_setting_widgets(): void {
-    settings_components.create_realm_group_setting_widget({
-        $pill_container: $("#id_realm_create_multiuse_invite_group"),
-        setting_name: "create_multiuse_invite_group",
-    });
-    settings_components.create_realm_group_setting_widget({
-        $pill_container: $("#id_realm_can_create_public_channel_group"),
-        setting_name: "can_create_public_channel_group",
-    });
-    settings_components.create_realm_group_setting_widget({
-        $pill_container: $("#id_realm_can_create_private_channel_group"),
-        setting_name: "can_create_private_channel_group",
-    });
-    settings_components.create_realm_group_setting_widget({
-        $pill_container: $("#id_realm_can_create_groups"),
-        setting_name: "can_create_groups",
-    });
-    settings_components.create_realm_group_setting_widget({
-        $pill_container: $("#id_realm_can_manage_all_groups"),
-        setting_name: "can_manage_all_groups",
-    });
-    settings_components.create_realm_group_setting_widget({
-        $pill_container: $("#id_realm_direct_message_initiator_group"),
-        setting_name: "direct_message_initiator_group",
-    });
-    settings_components.create_realm_group_setting_widget({
-        $pill_container: $("#id_realm_direct_message_permission_group"),
-        setting_name: "direct_message_permission_group",
-        pill_update_callback: check_disable_direct_message_initiator_group_widget,
-    });
-    settings_components.create_realm_group_setting_widget({
-        $pill_container: $("#id_realm_can_add_custom_emoji_group"),
-        setting_name: "can_add_custom_emoji_group",
-    });
-    settings_components.create_realm_group_setting_widget({
-        $pill_container: $("#id_realm_can_move_messages_between_channels_group"),
-        setting_name: "can_move_messages_between_channels_group",
-    });
-    settings_components.create_realm_group_setting_widget({
-        $pill_container: $("#id_realm_can_move_messages_between_topics_group"),
-        setting_name: "can_move_messages_between_topics_group",
-    });
-    settings_components.create_realm_group_setting_widget({
-        $pill_container: $("#id_realm_can_delete_any_message_group"),
-        setting_name: "can_delete_any_message_group",
-    });
-    settings_components.create_realm_group_setting_widget({
-        $pill_container: $("#id_realm_can_delete_own_message_group"),
-        setting_name: "can_delete_own_message_group",
-    });
+    const realm_group_permission_settings = Object.entries(
+        realm.server_supported_permission_settings.realm,
+    );
+    for (const [setting_name, setting_config] of realm_group_permission_settings) {
+        if (setting_config.require_system_group) {
+            continue;
+        }
+
+        const opts: {
+            $pill_container: JQuery;
+            setting_name: RealmGroupSettingName;
+            pill_update_callback?: () => void;
+        } = {
+            $pill_container: $(`#id_realm_${CSS.escape(setting_name)}`),
+            setting_name: realm_group_setting_name_schema.parse(setting_name),
+        };
+        if (setting_name === "direct_message_permission_group") {
+            opts.pill_update_callback = check_disable_direct_message_initiator_group_widget;
+        }
+        settings_components.create_realm_group_setting_widget(opts);
+    }
 
     enable_or_disable_group_permission_settings();
     check_disable_direct_message_initiator_group_widget();
