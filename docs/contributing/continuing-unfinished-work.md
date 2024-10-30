@@ -12,6 +12,7 @@ are the steps required:
 1. [Find work to be completed.](#find-work-to-be-completed)
 1. [Review existing work and feedback.](#review-existing-work-and-feedback)
 1. [Decide how to use prior work.](#decide-how-to-use-prior-work)
+1. [Credit prior work in your commit history.](#credit-prior-work-in-your-commit-history)
 1. [Present your pull request.](#present-your-pull-request)
 
 ## Find work to be completed
@@ -47,6 +48,7 @@ If prior work looks like a good start:
 1. Carefully address any open feedback from reviewers.
 1. Make any other changes you think are needed, including completing any parts
    of the work that had not been finished.
+1. Make sure the work of others is [properly credited](#credit-prior-work-in-your-commit-history).
 1. [Self-review](../contributing/code-reviewing.md), test, and revise the work,
    including potentially [splitting out](../contributing/commit-discipline.md)
    preparatory commits to make it easier to read. You should be proud of the
@@ -58,6 +60,21 @@ Otherwise, you can:
 1. Make your own changes from scratch.
 1. Go through reviewer feedback on prior work. Would any of it apply to the
    changes you're proposing? Be sure to address it if so.
+
+## Credit prior work in your commit history
+
+When you use or build upon someone else's unmerged work, it is both professionally
+and ethically necessary to [properly credit][coauthor-git-guide] their contributions
+in the commit history of work that you submit.
+
+The most direct way to credit someone else's work is with a `Co-authored-by:` line
+after a blank line at the end of your commit message:
+
+    Co-authored-by: Greg Price <greg@zulip.com>
+
+You may find it necessary to make use of tools such as `git commit --amend -C` or
+`git commit --amend --reset-author` in instances where you squash commits in such a
+way that preserves the wrong authorship information.
 
 ## Present your pull request
 
@@ -73,12 +90,9 @@ putting together your pull request, there are a few key points to keep in mind.
   - Test the work carefully, even if others have tested it before. There may be
     problems that the reviewers missed, or that were introduced by rebasing across other changes.
 
-- **Give credit where credit is due.** In the commit message for any commits
-  that use somebody else's work, [credit][coauthor-git-guide] co-authors by
-  adding a `Co-authored-by:` line after a blank line at the end of your commit
-  message:
-
-      Co-authored-by: Greg Price <greg@zulip.com>
+- **Give credit where credit is due.** Reviewers should be able to examine your
+  commit history and see that you have [properly credited](#credit-prior-work-in-your-commit-history)
+  the work of others.
 
 - **Explain the relationship between your PR and prior work** in the description
   for your pull request.
