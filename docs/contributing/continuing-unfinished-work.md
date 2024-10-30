@@ -1,9 +1,9 @@
 # Continuing unfinished work
 
-Sometimes, work on an issue is started, but not brought to completion. This may
-happen for a variety of reasons — the contributor working on the project gets
-busy, maintainers cannot prioritize reviewing the work, a contributor doesn't
-have the skills required to complete the project, there is
+Sometimes, work is started on an issue or PR, but not brought to completion.
+This may happen for a variety of reasons — the contributor working on the
+project gets busy, maintainers cannot prioritize reviewing the work, a
+contributor doesn't have the skills required to complete the project, there is
 an unexpected technical challenge or blocker, etc.
 
 Completing work that someone else has started is a great way to contribute! Here
@@ -18,12 +18,14 @@ are the steps required:
 
 In Zulip's server and web app [repository](https://github.com/zulip/zulip), pull
 requests that have significant work towards something valuable are often tagged
-with a [completion candidate label][completion-candidate] label. You can review
-this label for issues that you find interesting and have the skills to complete.
+with a [completion candidate][completion-candidate] label. You can review
+this label for unfinished work that you find interesting and have the skills to
+complete.
 
-In general, it's common to see one or more pull request linked to an issue
+Note that it's common to see one or more pull requests linked to an issue
 you're interested in. The guidelines below apply regardless of whether you
-intentionally set out to find work to complete.
+intentionally set out to find work to complete or simply find yourself
+building on someone else's work.
 
 ## Review existing work and feedback
 
