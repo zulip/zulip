@@ -274,6 +274,7 @@ def process_new_human_user(
     default_stream_groups: Sequence[DefaultStreamGroup] = [],
     realm_creation: bool = False,
     add_initial_stream_subscriptions: bool = True,
+    settings_imported_from_existing_account: bool = False,
 ) -> None:
     # subscribe to default/invitation streams and
     # fill in some recent historical messages
@@ -349,9 +350,13 @@ def process_new_human_user(
         flags=F("flags").bitor(UserMessage.flags.starred)
     )
 
-    # The 'visibility_policy_banner' is only displayed to existing users.
-    # Mark it as read for a new user.
-    OnboardingStep.objects.create(user=user_profile, onboarding_step="visibility_policy_banner")
+    # If the user selected to import settings from existing account,
+    # 'copy_onboarding_steps' function already did the needed copying.
+    # Skip this operation in that case.
+    if not settings_imported_from_existing_account:
+        # The 'visibility_policy_banner' is only displayed to existing users.
+        # Mark it as read for a new user.
+        OnboardingStep.objects.create(user=user_profile, onboarding_step="visibility_policy_banner")
 
 
 def notify_created_user(user_profile: UserProfile, notify_user_ids: list[int]) -> None:
@@ -626,6 +631,7 @@ def do_create_user(
             default_stream_groups=default_stream_groups,
             realm_creation=realm_creation,
             add_initial_stream_subscriptions=add_initial_stream_subscriptions,
+            settings_imported_from_existing_account=source_profile is not None,
         )
 
     return user_profile
