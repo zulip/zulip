@@ -725,10 +725,13 @@ export function check_overflow_text(): number {
     const max_length = realm.max_message_length;
     const remaining_characters = max_length - text.length;
     const $indicator = $("#compose-limit-indicator");
+    const $textarea = $("textarea#compose-textarea");
 
     if (text.length > max_length) {
+        $indicator.removeClass("approaching-limit");
+        $textarea.removeClass("approaching-limit");
         $indicator.addClass("over-limit");
-        $("textarea#compose-textarea").addClass("over-limit");
+        $textarea.addClass("over-limit");
         $indicator.html(
             render_compose_limit_indicator({
                 remaining_characters,
@@ -737,7 +740,10 @@ export function check_overflow_text(): number {
         set_message_too_long(true);
     } else if (remaining_characters <= 900) {
         $indicator.removeClass("over-limit");
-        $("textarea#compose-textarea").removeClass("over-limit");
+        $textarea.removeClass("over-limit");
+        $indicator.addClass("approaching-limit");
+        $textarea.addClass("approaching-limit");
+
         $indicator.html(
             render_compose_limit_indicator({
                 remaining_characters,
@@ -746,7 +752,8 @@ export function check_overflow_text(): number {
         set_message_too_long(false);
     } else {
         $indicator.text("");
-        $("textarea#compose-textarea").removeClass("over-limit");
+        $textarea.removeClass("over-limit");
+        $textarea.removeClass("approaching-limit");
 
         set_message_too_long(false);
     }

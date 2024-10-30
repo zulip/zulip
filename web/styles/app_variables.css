@@ -675,6 +675,8 @@
     /* Compose box colors */
     --color-compose-box-background: hsl(232deg 30% 92%);
     --color-compose-message-content-background: hsl(0deg 0% 100%);
+    --color-compose-message-content-background-warning: hsl(50deg 75% 92%);
+    --color-compose-message-content-background-error: hsl(3deg 35% 90%);
     --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
     --color-compose-send-button-background: hsl(240deg 96% 68%);
     --color-compose-send-button-background-interactive: hsl(240deg 41% 50%);
@@ -742,6 +744,13 @@
     --color-message-formatting-controls-container: hsl(232deg 30% 96%);
     --color-message-content-container-border: hsl(0deg 0% 0% / 10%);
     --color-message-content-container-border-focus: hsl(0deg 0% 57%);
+    --color-message-content-container-border-warning: hsl(038deg 70% 50%);
+    --color-message-content-container-border-error: hsl(0deg 76% 65%);
+    --color-message-content-container-border-invalid: hsl(3deg 57% 33%);
+    --color-message-content-container-shadow-warning: 0 0 0 1pt
+        hsl(038deg 70% 50%);
+    --color-message-content-container-shadow-error: 0 0 0 1pt hsl(0deg 76% 65%);
+    --color-message-content-container-shadow-invalid: 0 0 2px hsl(3deg 57% 33%);
     --color-compose-control-button-background-hover: hsl(0deg 0% 0% / 5%);
     --color-compose-focus-ring: var(--color-outline-focus);
 
@@ -1230,6 +1239,8 @@
         var(--color-compose-box-background),
         hsl(0deg 0% 0%) 20%
     );
+    --color-compose-message-content-background-warning: hsl(50deg 75% 12%);
+    --color-compose-message-content-background-error: hsl(3deg 50% 12%);
     --color-compose-send-button-focus-shadow: hsl(0deg 0% 100% / 80%);
     --color-compose-send-control-button: hsl(240deg 30% 70%);
     --color-compose-send-control-button-background: transparent;

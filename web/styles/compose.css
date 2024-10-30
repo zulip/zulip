@@ -329,7 +329,14 @@
 
     &:has(.new_message_textarea.over-limit),
     &:has(.new_message_textarea.over-limit:focus) {
-        box-shadow: 0 0 0 1pt hsl(0deg 76% 65%);
+        border-color: var(--color-message-content-container-border-error);
+        box-shadow: var(--color-message-content-container-shadow-error);
+    }
+
+    &:has(.new_message_textarea.approaching-limit),
+    &:has(.new_message_textarea.approaching-limit:focus) {
+        border-color: var(--color-message-content-container-border-warning);
+        box-shadow: var(--color-message-content-container-shadow-warning);
     }
 
     &:has(.new_message_textarea.over-limit.flash) {
@@ -338,8 +345,8 @@
 
     &:has(.new_message_textarea.invalid),
     &:has(.new_message_textarea.invalid:focus) {
-        border-color: hsl(3deg 57% 33%);
-        box-shadow: 0 0 2px hsl(3deg 57% 33%);
+        border-color: var(--color-message-content-container-border-invalid);
+        box-shadow: var(--color-message-content-container-shadow-invalid);
     }
 }
 
@@ -400,6 +407,16 @@
     padding-right: var(--composebox-buttons-width);
     background-color: var(--color-compose-message-content-background);
     color: var(--color-text-default);
+
+    &.over-limit {
+        background-color: var(--color-compose-message-content-background-error);
+    }
+
+    &.approaching-limit {
+        background-color: var(
+            --color-compose-message-content-background-warning
+        );
+    }
 }
 
 .surround-formatting-buttons-row {
