@@ -40,7 +40,7 @@
                 <option {{#if this.default }}selected{{/if}} name="expires_in" value="{{this.value}}">{{this.description}}</option>
             {{/each}}
         </select>
-        <p id="expires_on"></p>
+        <p class="time-input-formatted-description"></p>
         <div id="custom-invite-expiration-time" class="dependent-settings-block custom-time-input-container">
             <label for="expires_in" class="modal-field-label">{{t "Custom time" }}</label>
             <input type="text" autocomplete="off" name="custom-expiration-time" id="custom-expiration-time-input" class="custom-time-input-value inline-block" value="" maxlength="3"/>
@@ -49,7 +49,7 @@
                     <option name="custom_time_choice" class="custom_time_choice" value="{{this.name}}">{{this.description}}</option>
                 {{/each}}
             </select>
-            <p id="custom_expires_on"></p>
+            <p class="custom-time-input-formatted-description"></p>
         </div>
     </div>
     <div class="input-group">

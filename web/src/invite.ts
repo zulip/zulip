@@ -284,18 +284,6 @@ function valid_to(): string {
     return $t({defaultMessage: "Expires on {date} at {time}"}, {date, time});
 }
 
-function set_expires_on_text(): void {
-    const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
-    const valid_to_text = valid_to();
-    if ($expires_in.val() === "custom") {
-        $("#expires_on").hide();
-        $("#custom_expires_on").text(valid_to_text);
-    } else {
-        $("#expires_on").show();
-        $("#expires_on").text(valid_to_text);
-    }
-}
-
 function set_streams_to_join_list_visibility(): void {
     const realm_has_default_streams = stream_data.get_default_stream_ids().length !== 0;
     const hide_streams_list =
@@ -380,7 +368,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             custom_expiration_time_unit,
             custom_expiration_time_input,
         );
-        set_expires_on_text();
+        const valid_to_text = valid_to();
+        settings_components.set_time_input_formatted_text($expires_in, valid_to_text);
 
         if (settings_data.user_can_subscribe_other_users()) {
             set_streams_to_join_list_visibility();
@@ -438,7 +427,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                 custom_expiration_time_unit,
                 custom_expiration_time_input,
             );
-            set_expires_on_text();
+            const valid_to_text = valid_to();
+            settings_components.set_time_input_formatted_text($expires_in, valid_to_text);
             toggle_invite_submit_button();
         });
 
@@ -456,7 +446,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             custom_expiration_time_unit = $<HTMLSelectOneElement>(
                 "select:not([multiple])#custom-expiration-time-unit",
             ).val()!;
-            set_expires_on_text();
+            const valid_to_text = valid_to();
+            settings_components.set_time_input_formatted_text($expires_in, valid_to_text);
             toggle_invite_submit_button();
         });
 
