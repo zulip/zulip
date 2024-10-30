@@ -185,10 +185,10 @@ export function stream_settings(sub) {
     const check_realm_setting =
         settings_config.all_notifications(user_settings).disabled_notification_settings;
 
-    const settings = Object.keys(settings_labels).map((setting) => {
+    return settings_labels.map(([setting, label]) => {
         const ret = {
             name: setting,
-            label: settings_labels[setting],
+            label,
             disabled_realm_setting: check_realm_setting[setting],
             is_disabled: check_realm_setting[setting],
             has_global_notification_setting: has_global_notification_setting(setting),
@@ -206,7 +206,6 @@ export function stream_settings(sub) {
         ret.is_checked = sub[setting] && !check_realm_setting[setting];
         return ret;
     });
-    return settings;
 }
 
 function setup_dropdown(sub, slim_sub) {
