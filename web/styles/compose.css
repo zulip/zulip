@@ -905,7 +905,7 @@ textarea.new_message_textarea {
     align-items: stretch;
     flex: 1 1 0;
     border: 1px solid var(--color-compose-recipient-box-border-color);
-    border-radius: 3px;
+    border-radius: 4px;
     transition: border-color 0.2s ease;
     background: var(--color-compose-recipient-box-background-color);
 
