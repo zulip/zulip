@@ -268,19 +268,10 @@ html {
     }
 }
 
-.find-account-page-container h3,
-.forgot-password-container h3 {
-    margin-top: 0;
-
-    font-weight: 300;
-    font-size: 2em;
-}
-
 .forgot-password-container {
     width: 503px;
 
-    & h3,
-    form {
+    & form {
         margin-bottom: 0;
     }
 }
