@@ -1,3 +1,7 @@
+# Duplicate of database migration 0576, because the original used the
+# wrong path for servers using the local file upload backend, and
+# many servers had already upgraded to 9.2 where it was backported.
+
 import os
 from functools import reduce
 from operator import or_
@@ -117,7 +121,7 @@ class Migration(migrations.Migration):
     atomic = False
     dependencies = [
         # Because this will be backported to 9.x, we only depend on the last migration in 9.x
-        ("zerver", "0558_realmuserdefault_web_animate_image_previews_and_more"),
+        ("zerver", "0576_backfill_imageattachment"),
     ]
 
     operations = [
