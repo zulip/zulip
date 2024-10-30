@@ -6,29 +6,29 @@
     <p>{{t "Rename topic to:"}}</p>
     {{else if from_message_actions_popover}}
     {{/if}}
-    <div class="topic_stream_edit_header" style="display: flex; flex-direction: column; gap: 12px;">
+    <div class="topic_stream_edit_header">
         
         <!-- Channel Label and Dropdown -->
         {{#unless only_topic_edit}}
-            <label for="move-topic-stream" style="display: block;">{{t "Channel"}}</label>
+            <label for="move-topic-stream" class="form-label">{{t "Channel"}}</label>
             {{> dropdown_widget_wrapper widget_name="move_topic_to_stream"}}
         {{/unless}}
 
         <!-- Topic Label and Input with Dynamic Width -->
-        <label for="new_topic_name" style="display: block;">{{t "Topic"}}</label>
+        <label for="new_topic_name" class="form-label">{{t "Topic"}}</label>
         <input 
           name="new_topic_name" 
           type="text" 
           class="move_messages_edit_topic modal_text_input" 
           autocomplete="off" 
           value="{{topic_name}}" 
-          style="width: auto; min-width: 200px;" 
           {{#if disable_topic_input}}disabled{{/if}} />
         
         <input name="old_topic_name" type="hidden" value="{{topic_name}}" />
         <input name="current_stream_id" type="hidden" value="{{current_stream_id}}" />               
+
         {{#if from_message_actions_popover}}
-          <label for="message-range" style="font-weight: bold; margin-top: 8px; display: block;">{{t "Which messages to move?"}}</label>
+          <label for="message-range" class="form-label-bold">{{t "Which messages to move?"}}</label>
           <select class="message_edit_topic_propagate modal_select bootstrap-focus-style">
               <option value="change_one" {{#if (eq message_placement "last")}}selected{{/if}}>{{t "Move only this message"}}</option>
               <option value="change_later" {{#if (eq message_placement "intermediate")}}selected{{/if}}>{{t "Move this and all following messages in this topic"}}</option>
