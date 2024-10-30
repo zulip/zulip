@@ -345,8 +345,7 @@
     #custom-expiration-time-input,
     #organization-permissions .dropdown-widget-button,
     #organization-settings .dropdown-widget-button,
-    #stream-advanced-configurations .dropdown-widget-button,
-    #compose_recipient_box {
+    #stream-advanced-configurations .dropdown-widget-button {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
         color: inherit;
