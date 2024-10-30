@@ -1366,19 +1366,35 @@ input.settings_text_input {
 .text-error {
     color: hsl(1.06deg 44.66% 50.39%);
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2b23a2f382ec577f39ccadb2824f1ef7164efda4
 .topic_stream_edit_header {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
+<<<<<<< HEAD
 .form-label {
     display: block;
 }
+=======
+
+.form-label {
+    display: block;
+}
+
+>>>>>>> 2b23a2f382ec577f39ccadb2824f1ef7164efda4
 .form-label-bold {
     font-weight: bold;
     margin-top: 8px;
     display: block;
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2b23a2f382ec577f39ccadb2824f1ef7164efda4
 .modal_text_input {
     width: auto;
     min-width: 200px;
