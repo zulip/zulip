@@ -647,15 +647,18 @@ export const general_notifications_table_labels = {
         "email",
         "all_mentions",
     ],
-    stream: {
-        is_muted: $t({defaultMessage: "Mute channel"}),
-        desktop_notifications: $t({defaultMessage: "Visual desktop notifications"}),
-        audible_notifications: $t({defaultMessage: "Audible desktop notifications"}),
-        push_notifications: $t({defaultMessage: "Mobile notifications"}),
-        email_notifications: $t({defaultMessage: "Email notifications"}),
-        pin_to_top: $t({defaultMessage: "Pin channel to top of left sidebar"}),
-        wildcard_mentions_notify: $t({defaultMessage: "Notifications for @all/@everyone mentions"}),
-    },
+    stream: [
+        ["is_muted", $t({defaultMessage: "Mute channel"})],
+        ["desktop_notifications", $t({defaultMessage: "Visual desktop notifications"})],
+        ["audible_notifications", $t({defaultMessage: "Audible desktop notifications"})],
+        ["push_notifications", $t({defaultMessage: "Mobile notifications"})],
+        ["email_notifications", $t({defaultMessage: "Email notifications"})],
+        ["pin_to_top", $t({defaultMessage: "Pin channel to top of left sidebar"})],
+        [
+            "wildcard_mentions_notify",
+            $t({defaultMessage: "Notifications for @all/@everyone mentions"}),
+        ],
+    ] as const,
 };
 
 export const stream_specific_notification_settings: (keyof StreamSpecificNotificationSettings)[] = [
