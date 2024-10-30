@@ -513,8 +513,6 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_default_code_block_language":
         case "realm_can_access_all_users_group":
         case "realm_can_create_web_public_channel_group":
-        case "realm_can_delete_any_message_group":
-        case "realm_can_delete_own_message_group":
             assert(typeof property_value === "string" || typeof property_value === "number");
             settings_components.set_dropdown_list_widget_setting_value(
                 property_name,
@@ -525,6 +523,8 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_can_create_groups":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
+        case "realm_can_delete_any_message_group":
+        case "realm_can_delete_own_message_group":
         case "realm_can_manage_all_groups":
         case "realm_can_move_messages_between_channels_group":
         case "realm_can_move_messages_between_topics_group":
@@ -886,6 +886,8 @@ export function set_up_dropdown_widget_for_realm_group_settings(): void {
         "can_create_groups",
         "can_create_public_channel_group",
         "can_create_private_channel_group",
+        "can_delete_any_message_group",
+        "can_delete_own_message_group",
         "can_manage_all_groups",
         "can_move_messages_between_channels_group",
         "can_move_messages_between_topics_group",
@@ -1103,6 +1105,14 @@ function initialize_group_setting_widgets(): void {
     settings_components.create_realm_group_setting_widget({
         $pill_container: $("#id_realm_can_move_messages_between_topics_group"),
         setting_name: "can_move_messages_between_topics_group",
+    });
+    settings_components.create_realm_group_setting_widget({
+        $pill_container: $("#id_realm_can_delete_any_message_group"),
+        setting_name: "can_delete_any_message_group",
+    });
+    settings_components.create_realm_group_setting_widget({
+        $pill_container: $("#id_realm_can_delete_own_message_group"),
+        setting_name: "can_delete_own_message_group",
     });
 
     enable_or_disable_group_permission_settings();

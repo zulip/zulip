@@ -226,15 +226,13 @@
                 {{> settings_save_discard_widget section_name="msg-deletion" }}
             </div>
             <div class="inline-block organization-settings-parent">
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_can_delete_any_message_group"
-                  label=(t 'Who can delete any message')
-                  value_type="number" }}
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_delete_any_message_group"
+                  label=(t 'Who can delete any message')}}
 
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_can_delete_own_message_group"
-                  label=(t 'Who can delete their own messages')
-                  value_type="number" }}
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_delete_own_message_group"
+                  label=(t 'Who can delete their own messages')}}
 
                 <div class="input-group time-limit-setting">
                     <label for="realm_message_content_delete_limit_seconds" class="settings-field-label">
