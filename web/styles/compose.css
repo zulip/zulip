@@ -1432,6 +1432,14 @@ textarea.new_message_textarea {
     justify-content: flex-start;
     height: var(--compose-recipient-box-min-height);
 
+    &:focus-visible {
+        outline: 0;
+
+        #compose_select_recipient_widget {
+            border-color: var(--color-compose-recipient-box-has-focus);
+        }
+    }
+
     .dropdown_widget_value {
         flex-grow: 1;
         text-overflow: ellipsis;
