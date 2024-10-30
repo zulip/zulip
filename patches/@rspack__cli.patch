@@ -1,0 +1,32 @@
+diff --git a/dist/cli.js b/dist/cli.js
+index ec3f6d8396e91802e6ad7a3a1c108241049b59e5..ab5e46db8fce93ee07283d87894aaccbb46d87c7 100644
+--- a/dist/cli.js
++++ b/dist/cli.js
+@@ -203,6 +203,13 @@ class RspackCLI {
+     }
+     async loadConfig(options) {
+         let loadedConfig = (await (0, loadConfig_1.loadRspackConfig)(options));
++        if (typeof loadedConfig === "function") {
++            loadedConfig = loadedConfig(options.argv?.env, options.argv);
++            // if return promise we should await its result
++            if (typeof loadedConfig.then === "function") {
++                loadedConfig = await loadedConfig;
++            }
++        }
+         if (options.configName) {
+             const notFoundConfigNames = [];
+             loadedConfig = options.configName.map((configName) => {
+@@ -230,13 +237,6 @@ class RspackCLI {
+                 process.exit(2);
+             }
+         }
+-        if (typeof loadedConfig === "function") {
+-            loadedConfig = loadedConfig(options.argv?.env, options.argv);
+-            // if return promise we should await its result
+-            if (typeof loadedConfig.then === "function") {
+-                loadedConfig = await loadedConfig;
+-            }
+-        }
+         return loadedConfig;
+     }
+     isMultipleCompiler(compiler) {
