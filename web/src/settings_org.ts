@@ -271,90 +271,8 @@ function set_msg_edit_limit_dropdown(): void {
     settings_components.set_time_limit_setting("realm_message_content_edit_limit_seconds");
 }
 
-function message_move_limit_setting_enabled(
-    related_setting_name:
-        | "realm_can_move_messages_between_topics_group"
-        | "realm_can_move_messages_between_channels_group",
-): boolean {
-    const user_group_id = settings_components.get_dropdown_list_widget_setting_value(
-        $(`#id_${related_setting_name}`),
-    );
-    assert(typeof user_group_id === "number");
-    const user_group_name = user_groups.get_user_group_from_id(user_group_id).name;
-    if (
-        user_group_name === "role:administrators" ||
-        user_group_name === "role:moderators" ||
-        user_group_name === "role:nobody"
-    ) {
-        return false;
-    }
-
-    return true;
-}
-
-function enable_or_disable_related_message_move_time_limit_setting(
-    setting_name: MessageMoveTimeLimitSetting,
-    disable_setting: boolean,
-): void {
-    const $setting_elem = $(`#id_${CSS.escape(setting_name)}`);
-    const $custom_input_elem = $setting_elem.parent().find(".time-limit-custom-input");
-
-    settings_ui.disable_sub_setting_onchange(disable_setting, $setting_elem.attr("id")!, true);
-    settings_ui.disable_sub_setting_onchange(disable_setting, $custom_input_elem.attr("id")!, true);
-}
-
 function set_msg_move_limit_setting(property_name: MessageMoveTimeLimitSetting): void {
     settings_components.set_time_limit_setting(property_name);
-
-    let disable_setting;
-    if (property_name === "realm_move_messages_within_stream_limit_seconds") {
-        disable_setting = message_move_limit_setting_enabled(
-            "realm_can_move_messages_between_topics_group",
-        );
-    } else {
-        disable_setting = message_move_limit_setting_enabled(
-            "realm_can_move_messages_between_channels_group",
-        );
-    }
-    enable_or_disable_related_message_move_time_limit_setting(property_name, disable_setting);
-}
-
-function message_delete_limit_setting_enabled(): boolean {
-    // This function is used to check whether the time-limit setting
-    // should be enabled. The setting is disabled when every user
-    // who is allowed to delete their own messages is also allowed
-    // to delete any message in the organization.
-    const realm_can_delete_own_message_group_id =
-        settings_components.get_dropdown_list_widget_setting_value(
-            $("#id_realm_can_delete_own_message_group"),
-        );
-    const realm_can_delete_any_message_group_id =
-        settings_components.get_dropdown_list_widget_setting_value(
-            $("#id_realm_can_delete_any_message_group"),
-        );
-    assert(typeof realm_can_delete_any_message_group_id === "number");
-    const can_delete_any_message_subgroups = user_groups.get_recursive_subgroups(
-        user_groups.get_user_group_from_id(realm_can_delete_any_message_group_id),
-    );
-    assert(can_delete_any_message_subgroups !== undefined);
-    can_delete_any_message_subgroups.add(realm_can_delete_any_message_group_id);
-    assert(typeof realm_can_delete_own_message_group_id === "number");
-    return !can_delete_any_message_subgroups.has(realm_can_delete_own_message_group_id);
-}
-
-function check_disable_message_delete_limit_setting_dropdown(): void {
-    settings_ui.disable_sub_setting_onchange(
-        message_delete_limit_setting_enabled(),
-        "id_realm_message_content_delete_limit_seconds",
-        true,
-    );
-    if ($("#id_realm_message_content_delete_limit_minutes").length) {
-        settings_ui.disable_sub_setting_onchange(
-            message_delete_limit_setting_enabled(),
-            "id_realm_message_content_delete_limit_minutes",
-            true,
-        );
-    }
 }
 
 function set_msg_delete_limit_dropdown(): void {
@@ -549,18 +467,6 @@ function update_dependent_subsettings(property_name: string): void {
     switch (property_name) {
         case "realm_allow_message_editing":
             update_message_edit_sub_settings(realm.realm_allow_message_editing);
-            break;
-        case "realm_can_delete_any_message_group":
-            check_disable_message_delete_limit_setting_dropdown();
-            break;
-        case "realm_can_delete_own_message_group":
-            check_disable_message_delete_limit_setting_dropdown();
-            break;
-        case "realm_can_move_messages_between_channels_group":
-            set_msg_move_limit_setting("realm_move_messages_between_streams_limit_seconds");
-            break;
-        case "realm_can_move_messages_between_topics_group":
-            set_msg_move_limit_setting("realm_move_messages_within_stream_limit_seconds");
             break;
         case "realm_org_join_restrictions":
             set_org_join_restrictions_dropdown();
@@ -926,7 +832,6 @@ function set_up_dropdown_widget(
     setting_name: keyof Realm,
     setting_options: () => dropdown_widget.Option[],
     setting_type: string,
-    custom_dropdown_widget_callback?: (current_value: string | number | undefined) => void,
 ): void {
     const $save_discard_widget_container = $(`#id_${CSS.escape(setting_name)}`).closest(
         ".settings-subsection-parent",
@@ -955,9 +860,6 @@ function set_up_dropdown_widget(
             settings_components.save_discard_realm_settings_widget_status_handler(
                 $save_discard_widget_container,
             );
-            if (custom_dropdown_widget_callback !== undefined) {
-                custom_dropdown_widget_callback(this_widget.current_value);
-            }
         },
         default_id: z.union([z.string(), z.number()]).parse(realm[setting_name]),
         unique_id_type,
@@ -995,39 +897,10 @@ export function set_up_dropdown_widget_for_realm_group_settings(): void {
         }
         const get_setting_options = (): UserGroupForDropdownListWidget[] =>
             user_groups.get_realm_user_groups_for_dropdown_list_widget(setting_name, "realm");
-        let dropdown_list_item_click_callback:
-            | ((current_value: string | number | undefined) => void)
-            | undefined;
-        switch (setting_name) {
-            case "can_delete_any_message_group":
-            case "can_delete_own_message_group": {
-                dropdown_list_item_click_callback =
-                    check_disable_message_delete_limit_setting_dropdown;
-
-                break;
-            }
-            case "can_move_messages_between_channels_group": {
-                dropdown_list_item_click_callback = () => {
-                    set_msg_move_limit_setting("realm_move_messages_between_streams_limit_seconds");
-                };
-
-                break;
-            }
-            case "can_move_messages_between_topics_group": {
-                dropdown_list_item_click_callback = () => {
-                    set_msg_move_limit_setting("realm_move_messages_within_stream_limit_seconds");
-                };
-
-                break;
-            }
-            // No default
-        }
-
         set_up_dropdown_widget(
             realm_schema.keyof().parse("realm_" + setting_name),
             get_setting_options,
             "group",
-            dropdown_list_item_click_callback,
         );
     }
 }
@@ -1435,8 +1308,6 @@ export function build_page(): void {
             },
         });
     }
-
-    check_disable_message_delete_limit_setting_dropdown();
 
     realm_icon.build_realm_icon_widget(upload_realm_logo_or_icon);
     if (realm.zulip_plan_is_not_limited) {
