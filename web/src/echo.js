@@ -447,6 +447,7 @@ export function process_from_server(messages) {
                 // message content, but in practice, there's no harm to just
                 // doing it unconditionally.
                 msg_list.view.rerender_messages(msgs_to_rerender_or_add_to_narrow);
+                msg_list.add_messages(msgs_to_rerender_or_add_to_narrow, {});
             }
         }
     }
