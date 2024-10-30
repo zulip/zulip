@@ -48,6 +48,7 @@ message_lists.current = {
         },
     },
     change_message_id: noop,
+    add_messages: noop,
 };
 const home_msg_list = {
     view: {
@@ -63,6 +64,7 @@ const home_msg_list = {
     },
     preserver_rendered_state: true,
     change_message_id: noop,
+    add_messages: noop,
 };
 message_lists.all_rendered_message_lists = () => [home_msg_list, message_lists.current];
 
