@@ -51,7 +51,7 @@ python-digitalocean
 pip-tools<6.3.0  # https://github.com/jazzband/pip-tools/pull/1455 breaks our hack for installing specific commits from Git
 
 # zulip's linting framework - zulint
-https://github.com/zulip/zulint/archive/a070f3a349bc0c7ce09ad097b1d3e419b42a6126.zip#egg=zulint==1.0.0+git
+https://github.com/zulip/zulint/archive/9be0a32bf75a9d8738b005f0b880567fff64e943.zip#egg=zulint==1.0.0+git
 
 -r mypy.in
 

@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 318  # Last bumped for `WebhookConfigOption` configuration u
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (295, 1)  # bumped 2024-10-23 for stylelint-high-performance-animation
+PROVISION_VERSION = (296, 0)  # bumped 2024-10-31 to upgrade Python requirements
