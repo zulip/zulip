@@ -68,7 +68,20 @@ export const web_channel_default_view_values = {
     },
 };
 
-export const user_list_style_values = {
+export const user_list_style_values: {
+    compact: {
+        code: number;
+        description: string;
+    };
+    with_status: {
+        code: number;
+        description: string;
+    };
+    with_avatar?: {
+        code: number;
+        description: string;
+    };
+} = {
     compact: {
         code: 1,
         description: $t({defaultMessage: "Compact"}),
@@ -77,11 +90,14 @@ export const user_list_style_values = {
         code: 2,
         description: $t({defaultMessage: "Show status text"}),
     },
-    with_avatar: {
+};
+
+if (page_params.development_environment) {
+    user_list_style_values.with_avatar = {
         code: 3,
         description: $t({defaultMessage: "Show avatar"}),
-    },
-};
+    };
+}
 
 export const web_animate_image_previews_values = {
     always: {
