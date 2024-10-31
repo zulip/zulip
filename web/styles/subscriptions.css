@@ -696,28 +696,34 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-.group_setting_disabled {
-    cursor: not-allowed;
-    /* This ensures that we do not see the not allowed cursor in the
-       extra space of a div */
-    width: fit-content;
-
-    /* This specific rules are needed to override the default settings
-       of these elements */
-    .pill-container,
-    .group-setting-label {
+.org-permissions-form,
+.group-permissions {
+    .group_setting_disabled {
         cursor: not-allowed;
-    }
+        /* This ensures that we do not see the not allowed cursor in the
+           extra space of a div */
+        width: fit-content;
 
-    .pill-container {
-        .pill {
-            .exit {
-                display: none;
-            }
+        /* This specific rules are needed to override the default settings
+           of these elements */
+        .pill-container,
+        .group-setting-label {
+            cursor: not-allowed;
         }
 
-        .input {
-            pointer-events: none;
+        .pill-container {
+            background-color: hsl(0deg 0% 93%);
+            opacity: 0.7;
+
+            .pill {
+                .exit {
+                    display: none;
+                }
+            }
+
+            .input {
+                pointer-events: none;
+            }
         }
     }
 }
