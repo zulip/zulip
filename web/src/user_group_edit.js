@@ -88,7 +88,9 @@ function update_add_members_elements(group) {
 
     if (settings_data.can_add_members_to_user_group(group.id)) {
         $input_element.prop("contenteditable", true);
-        $button_element.prop("disabled", false);
+        if (user_group_edit_members.pill_widget.items().length !== 0) {
+            $button_element.prop("disabled", false);
+        }
         $button_element.css("pointer-events", "");
         $add_members_container[0]._tippy?.destroy();
         $add_members_container.removeClass("add_members_disabled");
