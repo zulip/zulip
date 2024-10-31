@@ -181,7 +181,9 @@
         }
 
         &:focus {
-            background-color: hsl(0deg 0% 80%);
+            background-color: var(
+                --color-background-recent-filters-button-focus
+            );
             outline: 0;
         }
 
@@ -190,14 +192,18 @@
             opacity: 0.5;
 
             &:hover {
-                background-color: hsl(0deg 0% 100%);
-                border-color: hsl(0deg 0% 80%);
+                background-color: var(
+                    --color-background-recent-filters-button-disabled
+                );
+                border-color: var(
+                    --color-border-recent-filters-button-disabled
+                );
             }
         }
     }
 
     .button-recent-selected {
-        background-color: hsl(0deg 11% 93%);
+        background-color: var(--color-background-recent-view-selected);
     }
 
     .unread_count {
@@ -316,15 +322,16 @@
     .recent_view_participant_overflow {
         border: 0;
         border-radius: 6px;
-        color: hsl(0deg 0% 100%);
+        color: var(--color-recent-view-participant-overflow-text);
         display: block;
         height: 24px;
         text-align: center;
-        background-color: hsl(0deg 0% 88%);
+        background-color: var(
+            --color-background-recent-view-participant-overflow
+        );
     }
 
     .recent_view_participant_overflow {
-        color: hsl(0deg 0% 0%);
         line-height: 24px;
     }
 
@@ -356,7 +363,7 @@
     }
 
     & thead th {
-        background-color: hsl(0deg 0% 100%);
+        background-color: var(--color-background-recent-view-table-thead-th);
         color: inherit;
         border-top: 1px solid hsl(0deg 0% 0% / 20%) !important;
         border-bottom: 1px solid hsl(0deg 0% 0% / 20%) !important;
@@ -384,7 +391,9 @@
 
         &[data-sort]:hover {
             cursor: pointer;
-            background-color: hsl(0deg 0% 95%);
+            background-color: var(
+                --color-background-recent-view-table-thead-sort-header
+            );
             transition: background-color 100ms ease-in-out;
 
             &:not(.active)::after {

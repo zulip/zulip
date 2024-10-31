@@ -698,6 +698,14 @@
     --color-background-recent-view-unread-row-hover: hsl(210deg 100% 97%);
     --color-recent-view-link: hsl(205deg 47% 42%);
     --color-recent-view-link-hover: hsl(214deg 40% 58%);
+    --color-background-recent-filters-button-focus: hsl(0deg 0% 80%);
+    --color-background-recent-filters-button-disabled: hsl(0deg 0% 100%);
+    --color-border-recent-filters-button-disabled: hsl(0deg 0% 80%);
+    --color-recent-view-participant-overflow-text: hsl(0deg 0% 0%);
+    --color-background-recent-view-participant-overflow: hsl(0deg 0% 88%);
+    --color-background-recent-view-selected: hsl(0deg 11% 93%);
+    --color-background-recent-view-table-thead-th: hsl(0deg 0% 100%);
+    --color-background-recent-view-table-thead-sort-header: hsl(0deg 0% 95%);
 
     /* Compose box colors */
     --color-compose-box-background: hsl(232deg 30% 92%);
@@ -1458,6 +1466,14 @@
     --color-background-recent-view-unread-row-hover: hsl(212deg 30% 22% / 60%);
     --color-recent-view-link: hsl(206deg 89% 74%);
     --color-recent-view-link-hover: hsl(208deg 64% 52%);
+    --color-background-recent-filters-button-focus: hsl(0deg 0% 0% / 50%);
+    --color-background-recent-filters-button-disabled: hsl(0deg 0% 0% / 50%);
+    --color-border-recent-filters-button-disabled: hsl(0deg 0% 0%);
+    --color-recent-view-participant-overflow-text: hsl(0deg 0% 100%);
+    --color-background-recent-view-participant-overflow: hsl(211deg 18% 25%);
+    --color-background-recent-view-selected: hsl(228deg 11% 17%);
+    --color-background-recent-view-table-thead-th: hsl(228deg 11% 17%);
+    --color-background-recent-view-table-thead-sort-header: hsl(211deg 29% 14%);
 
     /* Compose box colors */
     --color-compose-box-background: hsl(228deg 11% 17%);
