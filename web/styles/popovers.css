@@ -653,6 +653,8 @@ ul.popover-group-menu-member-list {
                 /* Ensure equal height for rows with a remove-subscription-button and
                    those without one. */
                 height: 34px;
+                display: flex;
+                justify-content: space-between;
 
                 &:last-of-type {
                     border-bottom: none;
