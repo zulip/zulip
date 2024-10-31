@@ -589,7 +589,8 @@ ul.popover-group-menu-member-list {
         }
 
         .stream-privacy {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
         }
 
         .filter-icon i {
