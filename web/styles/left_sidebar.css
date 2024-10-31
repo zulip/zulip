@@ -1098,11 +1098,12 @@ li.top_left_scheduled_messages {
 
 .topic_search_section {
     grid-template-columns:
-        var(--left-sidebar-toggle-width-offset) 0 0 minmax(0, 1fr) minmax(
+        var(--left-sidebar-toggle-width-offset) 0 0 [filter-box-start] minmax(
             0,
-            max-content
+            1fr
         )
-        30px 0;
+        minmax(0, max-content)
+        30px [filter-box-end] 0;
 }
 
 .topic-box .zero_count {
@@ -1157,7 +1158,7 @@ li.top_left_scheduled_messages {
 }
 
 .topic-list-filter {
-    grid-area: row-content;
+    grid-area: filter-box;
 }
 
 #filter-topic-input:placeholder-shown + #clear_search_topic_button {
