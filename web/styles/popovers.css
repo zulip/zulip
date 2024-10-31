@@ -669,6 +669,11 @@ ul.popover-group-menu-member-list {
                         padding-right: 10px;
                     }
 
+                    &.subscription_list_stream {
+                        display: flex;
+                        align-items: center;
+                    }
+
                     &.remove_subscription {
                         text-align: right;
                     }
