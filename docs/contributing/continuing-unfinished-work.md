@@ -63,18 +63,58 @@ Otherwise, you can:
 
 ## Credit prior work in your commit history
 
-When you use or build upon someone else's unmerged work, it is both professionally
-and ethically necessary to [properly credit][coauthor-git-guide] their contributions
-in the commit history of work that you submit.
+When you use or build upon someone else's unmerged work, it is both
+professionally and ethically necessary to [properly
+credit][coauthor-git-guide] their contributions in the commit history
+of work that you submit. Git, used properly, does a good job of
+preserving commits originally authorship information.
 
-The most direct way to credit someone else's work is with a `Co-authored-by:` line
-after a blank line at the end of your commit message:
+However, it's normal to find yourself making changes to commits
+originally authored by others contributors, whether resolving merge
+conflicts when doing `git rebase` or fixing bugs to create an
+atomically correct commit compliant with Zulip's [commit
+guidelines](../contributing/commit-discipline.md).
+
+When you do that, it's your responsibility to ensure the resulting
+commit series correctly credits the work of everyone who materially
+contributed to it. The most direct way to credit the work of someone
+beyond the commit's author maintained in the Git metadata is
+`Co-authored-by:` line after a blank line at the end of your commit
+message:
 
     Co-authored-by: Greg Price <greg@zulip.com>
 
-You may find it necessary to make use of tools such as `git commit --amend -C` or
-`git commit --amend --reset-author` in instances where you squash commits in such a
-way that preserves the wrong authorship information.
+Be careful to type it precisely, because software parses these commit
+message records in generating statistics. You should add such a line
+in two scenarios:
+
+- If your own work was squashed into a commit originally authored by
+  another contributor, add such a line crediting yourself.
+- If you used another contributor's work in generating your own
+  commit, add such a line crediting the other contributor(s).
+
+Sometimes, you make a mistake when rebasing and accidentally squash
+commits in a way that messes up Git's authorship records. Often,
+undoing the rebase change via `git reflog` is the best way to correct
+such mistakes, but there are two other Git commands that can be used
+to correct Git's primary authorship information after the fact:
+
+- `git commit --amend --reset-author` will replace the Git commit
+  metadata (date, author, etc.) of the currently checked out commit
+  with yourself. This is useful to correct a commit that incorrectly
+  shows someone else as the author of your work.
+- `git commit --amend -C <commit_id>` will replace the commit metadata
+  (date, author, etc.) on a commit with that of the provided commit
+  ID. This is useful if you accidentally made someone else's commit
+  show yourself as the author, or lost a useful commit message via
+  accidental squashing. (You can usually find the right commit ID to
+  use with `git reflog` or from GitHub).
+
+As an aside, maintainers who modify commits before merging them are
+credited via Git's "Committer" records (visible with `git show
+--pretty=fuller`, for example). As a result, they may not bother with
+adding a separate `Co-authored-by` record on commits that they revise
+as part of merging a pull request.
 
 ## Present your pull request
 
