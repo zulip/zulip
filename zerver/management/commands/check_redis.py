@@ -1,6 +1,7 @@
 import logging
 import time
 from collections.abc import Callable
+from functools import partial
 from typing import Any
 
 from django.conf import settings
@@ -8,7 +9,6 @@ from django.core.management.base import CommandError, CommandParser
 from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.partial import partial
 from zerver.lib.rate_limiter import RateLimitedUser, client
 from zerver.models.users import get_user_profile_by_id
 

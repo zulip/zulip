@@ -1,6 +1,6 @@
 from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
-from functools import lru_cache
+from functools import lru_cache, partial
 from typing import Any
 from urllib.parse import urlsplit
 
@@ -13,7 +13,6 @@ from requests.models import PreparedRequest, Response
 from typing_extensions import override
 from urllib3.util import Retry
 
-from zerver.lib.partial import partial
 from zerver.lib.queue import queue_json_publish
 from zerver.models import Client, Realm, UserProfile
 from zerver.tornado.sharding import (

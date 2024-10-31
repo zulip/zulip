@@ -6,6 +6,7 @@ from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from collections.abc import Set as AbstractSet
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from functools import partial
 from typing import Any, Protocol, TypeAlias, TypeVar
 
 import orjson
@@ -18,7 +19,6 @@ from django.utils.timezone import now as timezone_now
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.mime_types import guess_extension
-from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
 from zerver.lib.upload.base import INLINE_MIME_TYPES

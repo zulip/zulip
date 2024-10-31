@@ -6,6 +6,7 @@ import time
 from abc import ABC, abstractmethod
 from collections import deque
 from collections.abc import Callable, MutableSequence
+from functools import partial
 from types import FrameType
 from typing import Any, TypeVar
 
@@ -17,7 +18,6 @@ from typing_extensions import override
 
 from zerver.lib.context_managers import lockfile
 from zerver.lib.db_connections import reset_queries
-from zerver.lib.partial import partial
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.queue import SimpleQueueClient

@@ -3,6 +3,7 @@ import os
 import secrets
 from collections.abc import Callable, Iterator
 from datetime import datetime
+from functools import partial
 from typing import IO, TYPE_CHECKING, Any, Literal
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
@@ -14,7 +15,6 @@ from django.conf import settings
 from django.utils.http import content_disposition_header
 from typing_extensions import override
 
-from zerver.lib.partial import partial
 from zerver.lib.thumbnail import resize_avatar, resize_logo
 from zerver.lib.upload.base import INLINE_MIME_TYPES, StreamingSourceWithSize, ZulipUploadBackend
 from zerver.models import Realm, RealmEmoji, UserProfile

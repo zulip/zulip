@@ -54,7 +54,6 @@ rules:
 
   - id: dont-import-models-in-migrations
     patterns:
-      - pattern-not: from zerver.lib.partial import partial
       - pattern-not: from zerver.lib.mime_types import $X
       - pattern-not: from zerver.lib.redis_utils import get_redis_client
       - pattern-not: from zerver.lib.utils import generate_api_key
@@ -306,12 +305,6 @@ rules:
               if ... .count():
                   ...
     message: 'Use ".exists()" instead; it is more efficient'
-    languages: [python]
-    severity: ERROR
-
-  - id: functools-partial
-    pattern: functools.partial
-    message: "Replace functools.partial with zerver.lib.partial.partial for type safety"
     languages: [python]
     severity: ERROR
 

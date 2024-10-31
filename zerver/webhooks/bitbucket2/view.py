@@ -1,13 +1,13 @@
 # Webhooks for external integrations.
 import re
 import string
+from functools import partial
 from typing import Protocol
 
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
-from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_bool, check_int, check_string

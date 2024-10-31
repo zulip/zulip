@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from functools import partial
 from html.parser import HTMLParser
 
 from django.http import HttpRequest, HttpResponse
@@ -6,7 +7,6 @@ from typing_extensions import override
 
 from zerver.decorator import return_success_on_head_request, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
-from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_none_or, check_string
