@@ -281,8 +281,6 @@ SCIM_CONFIG: dict[str, SCIMConfigDict] = {
     }
 }
 
-ALLOW_GROUP_VALUED_SETTINGS = True
-
 # This override disables the grace period for undoing resolving/unresolving
 # a topic in tests.
 # This allows tests to not worry about the special behavior during the grace period.
