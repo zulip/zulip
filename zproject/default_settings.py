@@ -667,12 +667,6 @@ SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS = 60
 
 CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION: Callable[..., Any] | None = None
 
-# Whether we allow settings to be set to a collection of users and
-# groups as described in api_docs/group-setting-values.md. Set to
-# False in production, as we can only handle named user groups in the
-# web app settings UI.
-ALLOW_GROUP_VALUED_SETTINGS = False
-
 # Grace period during which we don't send a resolve/unresolve
 # notification to a stream and also delete the previous counter
 # notification.
