@@ -49,7 +49,14 @@
             <form id="send_message_form" action="/json/messages" method="post">
                 <div class="compose_table">
                     <div id="compose_top">
-                        <div id="compose-recipient">
+                        {{!-- We start with the muted-recipient-row class
+                        on the template to avoid showing the transition
+                        when the compose box first opens. Note that this
+                        class is immediately removed when it's not used,
+                        so, for example, opening the compose box from
+                        Inbox view does not cause any flash of unwanted
+                        styling. --}}
+                        <div id="compose-recipient" class="muted-recipient-row">
                             {{> dropdown_widget_wrapper
                               widget_name="compose_select_recipient"}}
                             <div class="topic-marker-container">
