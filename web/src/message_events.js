@@ -39,17 +39,21 @@ import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
 
+function filter_has_term_type(filter, term_type) {
+    return (
+        filter !== undefined &&
+        (filter.sorted_term_types().includes(term_type) ||
+            filter.sorted_term_types().includes(`not-${term_type}`))
+    );
+}
+
 export function update_current_view_for_topic_visibility() {
     // If we have rendered message list / cached data based on topic
     // visibility policy, we need to rerender it to reflect the changes. It
     // is easier to just load the narrow from scratch, instead of asking server
     // for relevant messages in the updated topic.
     const filter = message_lists.current?.data.filter;
-    if (
-        filter !== undefined &&
-        (filter.sorted_term_types().includes("is-followed") ||
-            filter.sorted_term_types().includes("not-is-followed"))
-    ) {
+    if (filter_has_term_type(filter, "is-followed")) {
         // Use `set_timeout to call after we update the topic
         // visibility policy locally.
         // Calling this outside `user_topics_ui` to avoid circular imports.
