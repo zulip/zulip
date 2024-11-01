@@ -439,7 +439,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             }
         });
 
-        $("#custom-invite-expiration-time").on("change", () => {
+        $("#custom-expiration-time-input, #custom-expiration-time-unit").on("change", () => {
             custom_expiration_time_input = util.check_time_input(
                 $<HTMLInputElement>("input#custom-expiration-time-input").val()!,
             );
