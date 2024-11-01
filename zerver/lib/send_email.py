@@ -378,7 +378,7 @@ def send_future_email(
         # For logging the email
 
     assert (to_user_ids is None) ^ (to_emails is None)
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         email = ScheduledEmail.objects.create(
             type=EMAIL_TYPES[template_name],
             scheduled_timestamp=timezone_now() + delay,

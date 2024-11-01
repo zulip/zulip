@@ -173,7 +173,7 @@ def check_invite_limit(realm: Realm, num_invitees: int) -> None:
             )
 
 
-@transaction.atomic
+@transaction.atomic(durable=True)
 def do_invite_users(
     user_profile: UserProfile,
     invitee_emails: Collection[str],
@@ -414,7 +414,7 @@ def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
     notify_invites_changed(realm, changed_invite_referrer=multiuse_invite.referred_by)
 
 
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def do_send_user_invite_email(
     prereg_user: PreregistrationUser,
     *,
