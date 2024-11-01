@@ -30,8 +30,14 @@ export function adjust_mac_kbd_tags(kbd_elem_class: string): void {
         return;
     }
 
-    $(kbd_elem_class).each(function () {
+    const $elements = $(kbd_elem_class);
+
+    $elements.each(function (index) {
         let key_text = $(this).text();
+
+        if (key_text === "Ctrl" && $elements.eq(index + 1).text() === "[") {
+            return;
+        }
 
         // We use data-mac-key attribute to override the default key in case
         // of exceptions. Currently, there are 2 shortcuts (for navigating back
