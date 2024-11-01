@@ -67,10 +67,10 @@ When you use or build upon someone else's unmerged work, it is both
 professionally and ethically necessary to [properly
 credit][coauthor-git-guide] their contributions in the commit history
 of work that you submit. Git, used properly, does a good job of
-preserving commits originally authorship information.
+preserving the original authorship of commits.
 
 However, it's normal to find yourself making changes to commits
-originally authored by others contributors, whether resolving merge
+originally authored by other contributors, whether resolving merge
 conflicts when doing `git rebase` or fixing bugs to create an
 atomically correct commit compliant with Zulip's [commit
 guidelines](../contributing/commit-discipline.md).
