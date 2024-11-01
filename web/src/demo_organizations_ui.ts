@@ -1,4 +1,5 @@
 import $ from "jquery";
+import {z} from "zod";
 
 import render_convert_demo_organization_form from "../templates/settings/convert_demo_organization_form.hbs";
 import render_demo_organization_warning from "../templates/settings/demo_organization_warning.hbs";
@@ -11,9 +12,11 @@ import {get_demo_organization_deadline_days_remaining} from "./navbar_alerts";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
+import type {RequestOpts} from "./settings_ui";
 import {current_user, realm} from "./state_data";
+import type {HTMLSelectOneElement} from "./types";
 
-export function insert_demo_organization_warning() {
+export function insert_demo_organization_warning(): void {
     const days_remaining = get_demo_organization_deadline_days_remaining();
     const rendered_demo_organization_warning = render_demo_organization_warning({
         is_demo_organization: realm.demo_organization_scheduled_deletion_date,
@@ -23,7 +26,7 @@ export function insert_demo_organization_warning() {
     $(".organization-box").find(".settings-section").prepend($(rendered_demo_organization_warning));
 }
 
-export function handle_demo_organization_conversion() {
+export function handle_demo_organization_conversion(): void {
     $(".convert-demo-organization-button").on("click", () => {
         if (!current_user.is_owner) {
             return;
@@ -39,7 +42,7 @@ export function handle_demo_organization_conversion() {
             realm_org_type_values: settings_org.get_org_type_dropdown_options(),
         });
 
-        function demo_organization_conversion_post_render() {
+        function demo_organization_conversion_post_render(): void {
             const $convert_submit_button = $(
                 "#demo-organization-conversion-modal .dialog_submit_button",
             );
@@ -53,8 +56,10 @@ export function handle_demo_organization_conversion() {
             } else {
                 // Disable submit button if either form field blank.
                 $("#convert-demo-organization-form").on("input change", () => {
-                    const string_id = $("#new_subdomain").val().trim();
-                    const org_type = $("#add_organization_type").val();
+                    const string_id = $<HTMLInputElement>("input#new_subdomain").val()!.trim();
+                    const org_type = $<HTMLSelectOneElement>(
+                        "select:not([multiple])#add_organization_type",
+                    ).val()!;
                     $convert_submit_button.prop(
                         "disabled",
                         string_id === "" ||
@@ -65,15 +70,16 @@ export function handle_demo_organization_conversion() {
             }
         }
 
-        function submit_subdomain() {
+        function submit_subdomain(): void {
             const $string_id = $("#new_subdomain");
             const $organization_type = $("#add_organization_type");
             const data = {
                 string_id: $string_id.val(),
                 org_type: $organization_type.val(),
             };
-            const opts = {
-                success_continuation(data) {
+            const opts: RequestOpts = {
+                success_continuation(raw_data) {
+                    const data = z.object({realm_url: z.string()}).parse(raw_data);
                     window.location.href = data.realm_url;
                 },
             };
