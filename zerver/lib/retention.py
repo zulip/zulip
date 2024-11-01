@@ -141,7 +141,7 @@ def run_archiving(
     message_count = 0
     while True:
         start_time = time.time()
-        with transaction.atomic():
+        with transaction.atomic(savepoint=False):
             archive_transaction = ArchiveTransaction.objects.create(type=type, realm=realm)
             new_chunk = move_rows(
                 Message,
@@ -396,6 +396,7 @@ def archive_stream_messages(
     logger.info("Done. Archived %s messages.", message_count)
 
 
+@transaction.atomic(durable=True)
 def archive_messages(chunk_size: int = MESSAGE_BATCH_SIZE) -> None:
     logger.info("Starting the archiving process with chunk_size %s", chunk_size)
 
