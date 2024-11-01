@@ -2197,7 +2197,7 @@ class BillingSession(ABC):
 
     # event_time should roughly be timezone_now(). Not designed to handle
     # event_times in the past or future
-    @transaction.atomic
+    @transaction.atomic(savepoint=False)
     def make_end_of_cycle_updates_if_needed(
         self, plan: CustomerPlan, event_time: datetime
     ) -> tuple[CustomerPlan | None, LicenseLedger | None]:
