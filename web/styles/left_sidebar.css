@@ -81,11 +81,10 @@
         margin: 3px 0;
 
         .clear_search_button {
-            grid-area: row-content;
-            justify-self: self-end;
+            grid-area: clear-button;
             /* Override app-component positioning. */
             position: static;
-            padding-right: 4px;
+            padding: 0;
         }
     }
 
@@ -1098,12 +1097,11 @@ li.top_left_scheduled_messages {
 
 .topic_search_section {
     grid-template-columns:
-        var(--left-sidebar-toggle-width-offset) 0 0 [filter-box-start] minmax(
-            0,
-            1fr
-        )
+        var(--left-sidebar-toggle-width-offset) 0 0
+        [filter-box-start] minmax(0, 1fr)
         minmax(0, max-content)
-        30px [filter-box-end] 0;
+        [clear-button-start] var(--left-sidebar-vdots-width)
+        [clear-button-end filter-box-end] 0;
 }
 
 .topic-box .zero_count {
