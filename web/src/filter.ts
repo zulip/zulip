@@ -1772,6 +1772,7 @@ export class Filter {
             "not-in-home",
             "in-all",
             "not-in-all",
+            "search",
         ]);
 
         for (const term of term_types) {
