@@ -163,6 +163,7 @@ test("start", ({override, override_rewire, mock_template}) => {
 
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
+    override_rewire(compose_recipient, "maybe_mute_recipient_row", noop);
     override_rewire(stream_data, "can_post_messages_in_stream", () => true);
     mock_template("inline_decorated_channel_name.hbs", false, noop);
 
@@ -312,6 +313,7 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
 
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
+    override_rewire(compose_recipient, "maybe_mute_recipient_row", noop);
     override_private_message_recipient({override});
     mock_template("inline_decorated_channel_name.hbs", false, noop);
 
@@ -366,6 +368,7 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     mock_banners();
     compose_state.set_message_type("stream");
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
+    override_rewire(compose_recipient, "maybe_mute_recipient_row", noop);
     override_rewire(compose_actions, "complete_starting_tasks", noop);
     override_rewire(compose_actions, "clear_textarea", noop);
     const $elem = $("#send_message_form");
@@ -428,6 +431,7 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
 
 test("quote_message", ({disallow, override, override_rewire}) => {
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
+    override_rewire(compose_recipient, "maybe_mute_recipient_row", noop);
     override_rewire(compose_reply, "selection_within_message_id", () => undefined);
     const $elem = $("#send_message_form");
     const $textarea = $("textarea#compose-textarea");
