@@ -4006,6 +4006,7 @@ class RealmBillingSession(BillingSession):
             return customer
 
     @override
+    @transaction.atomic(savepoint=False)
     def do_change_plan_type(
         self, *, tier: int | None, is_sponsored: bool = False, background_update: bool = False
     ) -> None:
@@ -4404,7 +4405,7 @@ class RemoteRealmBillingSession(BillingSession):
         return customer
 
     @override
-    @transaction.atomic
+    @transaction.atomic(savepoint=False)
     def do_change_plan_type(
         self, *, tier: int | None, is_sponsored: bool = False, background_update: bool = False
     ) -> None:  # nocoverage
@@ -4841,7 +4842,7 @@ class RemoteServerBillingSession(BillingSession):
         return customer
 
     @override
-    @transaction.atomic
+    @transaction.atomic(savepoint=False)
     def do_change_plan_type(
         self, *, tier: int | None, is_sponsored: bool = False, background_update: bool = False
     ) -> None:
