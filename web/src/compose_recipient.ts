@@ -58,6 +58,14 @@ function composing_to_current_private_message_narrow(): boolean {
     );
 }
 
+export function maybe_mute_recipient_row(): void {
+    if (composing_to_current_topic_narrow() && compose_state.has_full_recipient()) {
+        $("#compose-recipient").toggleClass("mute-recipient-row", true);
+    } else {
+        $("#compose-recipient").toggleClass("mute-recipient-row", false);
+    }
+}
+
 export let update_narrow_to_recipient_visibility = (): void => {
     const message_type = compose_state.get_message_type();
     if (message_type === "stream") {
@@ -111,6 +119,7 @@ export function update_on_recipient_change(): void {
     update_fade();
     update_narrow_to_recipient_visibility();
     compose_validate.warn_if_guest_in_dm_recipient();
+    maybe_mute_recipient_row();
     drafts.update_compose_draft_count();
     check_posting_policy_for_compose_box();
     compose_validate.validate_and_update_send_button_status();
@@ -194,6 +203,7 @@ export function update_compose_for_message_type(opts: ComposeTriggeredOptions): 
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
     compose_banner.clear_uploads();
+    maybe_mute_recipient_row();
 }
 
 export let on_compose_select_recipient_update = (): void => {
@@ -295,6 +305,7 @@ function on_hidden_callback(): void {
 export function handle_middle_pane_transition(): void {
     if (compose_state.composing()) {
         update_narrow_to_recipient_visibility();
+        maybe_mute_recipient_row();
     }
 }
 
