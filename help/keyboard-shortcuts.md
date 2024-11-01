@@ -32,9 +32,9 @@ in the Zulip app to add more to your repertoire as needed.
   <kbd>Ctrl</kbd> + <kbd>V</kbd>, and press <kbd>Ctrl</kbd> + <kbd>Z</kbd> to
   remove formatting.
 
-* **Cancel compose and save draft**: <kbd>Esc</kbd> or <kbd>Ctrl</kbd> +
-  <kbd>[</kbd> — Close the compose box and save the unsent message as a
-  draft.
+* **Cancel compose and save draft**: <kbd>Esc</kbd> or
+  <kbd data-mac-key="Ctrl">Ctrl</kbd> + <kbd>[</kbd> — Close the compose box
+  and save the unsent message as a draft.
 
 * **View drafts**: <kbd>D</kbd> — Use the arrow keys and <kbd>Enter</kbd>
   to restore a draft. Press <kbd>D</kbd> again to close.
@@ -54,8 +54,8 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Toggle keyboard shortcuts view**: <kbd>?</kbd>
 
-* **Go to your home view**: <kbd>Ctrl</kbd> + <kbd>[</kbd> (or
-  <kbd>Esc</kbd>, [if enabled][disable-escape])
+* **Go to your home view**: <kbd data-mac-key="Ctrl">Ctrl</kbd> + <kbd>[</kbd>
+  (or <kbd>Esc</kbd>, [if enabled][disable-escape])
   until you are in your [home view](/help/configure-home-view).
 
 [disable-escape]: /help/configure-home-view#configure-whether-esc-navigates-to-the-home-view
@@ -158,8 +158,9 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Toggle preview mode**: <kbd>Alt</kbd> + <kbd>P</kbd>
 
-* **Cancel compose and save draft**: <kbd>Esc</kbd> or <kbd>Ctrl</kbd> +
-  <kbd>[</kbd> — Close the compose box and save the unsent message as a draft.
+* **Cancel compose and save draft**: <kbd>Esc</kbd> or
+  <kbd data-mac-key="Ctrl">Ctrl</kbd> + <kbd>[</kbd> — Close the compose box
+  and save the unsent message as a draft.
 
 ## Message actions
 
