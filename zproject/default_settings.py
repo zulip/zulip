@@ -74,6 +74,8 @@ FAKE_LDAP_NUM_USERS = 8
 AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL: dict[str, Any] | None = None
 LDAP_SYNCHRONIZED_GROUPS_BY_REALM: dict[str, list[str]] = {}
 AUTH_LDAP_GROUP_TYPE: LDAPGroupType = GroupOfUniqueNamesType()
+LDAP_GROUP_DESCRIPTION_ATTR: str | None = None
+AUTH_LDAP_GROUP_SEARCH: Optional["LDAPSearch"] = None
 
 # Social auth; we support providing values for some of these
 # settings in zulip-secrets.conf instead of settings.py in development.
