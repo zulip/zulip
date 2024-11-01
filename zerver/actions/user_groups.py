@@ -366,7 +366,7 @@ def do_send_subgroups_update_event(
     send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def add_subgroups_to_user_group(
     user_group: NamedUserGroup,
     subgroups: list[NamedUserGroup],
@@ -406,7 +406,7 @@ def add_subgroups_to_user_group(
     do_send_subgroups_update_event("add_subgroups", user_group, subgroup_ids)
 
 
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def remove_subgroups_from_user_group(
     user_group: NamedUserGroup,
     subgroups: list[NamedUserGroup],
