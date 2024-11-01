@@ -208,12 +208,17 @@ export function dispatch_normal_event(event) {
             const realm_settings = {
                 allow_edit_history: noop,
                 allow_message_editing: noop,
-                edit_topic_policy: noop,
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
                 bot_creation_policy: settings_bots.update_bot_permissions_ui,
+                can_add_custom_emoji_group: noop,
+                can_create_groups: noop,
+                can_create_private_channel_group: noop,
+                can_create_public_channel_group: noop,
                 can_delete_any_message_group: noop,
                 can_delete_own_message_group: noop,
+                can_manage_all_groups: noop,
                 can_move_messages_between_channels_group: noop,
+                can_move_messages_between_topics_group: noop,
                 create_multiuse_invite_group: noop,
                 invite_to_stream_policy: noop,
                 default_code_block_language: noop,
@@ -316,14 +321,12 @@ export function dispatch_normal_event(event) {
                                     key === "direct_message_initiator_group" ||
                                     key === "direct_message_permission_group"
                                 ) {
-                                    settings_org.check_disable_direct_message_initiator_group_dropdown(
-                                        realm.realm_direct_message_permission_group,
-                                    );
+                                    settings_org.check_disable_direct_message_initiator_group_widget();
                                     compose_closed_ui.update_buttons_for_private();
                                     compose_recipient.check_posting_policy_for_compose_box();
                                 }
 
-                                if (key === "edit_topic_policy") {
+                                if (key === "can_move_messages_between_topics_group") {
                                     message_live_update.rerender_messages_view();
                                 }
 
@@ -746,6 +749,9 @@ export function dispatch_normal_event(event) {
                 break;
             }
 
+            // TODO/typescript: Move privacy_setting_name_schema and PrivacySettingName
+            // here from `settings_account` when this file is converted to typescript,
+            // and use them instead of `privacy_settings`.
             const privacy_settings = [
                 "send_stream_typing_notifications",
                 "send_private_typing_notifications",

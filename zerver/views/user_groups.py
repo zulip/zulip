@@ -101,8 +101,7 @@ def add_user_group(
             add_subgroups_to_user_group(
                 context.supergroup, context.direct_subgroups, acting_user=user_profile
             )
-
-    return json_success(request)
+    return json_success(request, data={"group_id": user_group.id})
 
 
 @require_member_or_admin

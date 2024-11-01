@@ -466,7 +466,7 @@ run_test("realm settings", ({override}) => {
     override(current_user, "is_admin", true);
     override(realm, "realm_date_created", new Date("2023-01-01Z"));
 
-    override(settings_org, "check_disable_direct_message_initiator_group_dropdown", noop);
+    override(settings_org, "check_disable_direct_message_initiator_group_widget", noop);
     override(settings_org, "sync_realm_settings", noop);
     override(settings_bots, "update_bot_permissions_ui", noop);
     override(settings_emoji, "update_custom_emoji_ui", noop);
@@ -588,10 +588,10 @@ run_test("realm settings", ({override}) => {
     override(realm, "realm_create_multiuse_invite_group", 1);
     override(realm, "realm_allow_message_editing", false);
     override(realm, "realm_message_content_edit_limit_seconds", 0);
-    override(realm, "realm_edit_topic_policy", 3);
     override(realm, "realm_authentication_methods", {Google: {enabled: false, available: true}});
     override(realm, "realm_can_add_custom_emoji_group", 1);
     override(realm, "realm_can_create_public_channel_group", 1);
+    override(realm, "realm_can_move_messages_between_topics_group", 1);
     override(realm, "realm_direct_message_permission_group", 1);
     override(realm, "realm_plan_type", 2);
     override(realm, "realm_upload_quota_mib", 5000);
@@ -601,12 +601,12 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_create_multiuse_invite_group, 3);
     assert_same(realm.realm_allow_message_editing, true);
     assert_same(realm.realm_message_content_edit_limit_seconds, 5);
-    assert_same(realm.realm_edit_topic_policy, 4);
     assert_same(realm.realm_authentication_methods, {
         Google: {enabled: true, available: true},
     });
     assert_same(realm.realm_can_add_custom_emoji_group, 3);
     assert_same(realm.realm_can_create_public_channel_group, 3);
+    assert_same(realm.realm_can_move_messages_between_topics_group, 3);
     assert_same(realm.realm_direct_message_permission_group, 3);
     assert_same(realm.realm_plan_type, 3);
     assert_same(realm.realm_upload_quota_mib, 50000);

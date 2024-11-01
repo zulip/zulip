@@ -1,10 +1,10 @@
 # After editing this file, you MUST afterward run
 # /tools/update-locked-requirements to update requirements/dev.txt.
 # See requirements/README.md for more detail.
-mypy
+mypy[faster-cache]
 
 boto3-stubs[s3,ses,sns,sqs]
-https://github.com/zulip/django-stubs/archive/a006b9993130cc2c1e80f2eb55d959422337554a.zip#egg=django-stubs==5.1.0+git  # https://github.com/typeddjango/django-stubs/pull/2408, https://github.com/typeddjango/django-stubs/pull/2411
+django-stubs
 lxml-stubs
 SQLAlchemy[mypy]
 types-beautifulsoup4

@@ -287,16 +287,17 @@ export const realm_schema = z.object({
     realm_bot_creation_policy: z.number(),
     realm_bot_domain: z.string(),
     realm_can_access_all_users_group: z.number(),
-    realm_can_add_custom_emoji_group: z.number(),
-    realm_can_create_groups: z.number(),
-    realm_can_create_public_channel_group: z.number(),
-    realm_can_create_private_channel_group: z.number(),
+    realm_can_add_custom_emoji_group: group_setting_value_schema,
+    realm_can_create_groups: group_setting_value_schema,
+    realm_can_create_public_channel_group: group_setting_value_schema,
+    realm_can_create_private_channel_group: group_setting_value_schema,
     realm_can_create_web_public_channel_group: z.number(),
-    realm_can_delete_any_message_group: z.number(),
-    realm_can_delete_own_message_group: z.number(),
-    realm_can_manage_all_groups: z.number(),
-    realm_can_move_messages_between_channels_group: z.number(),
-    realm_create_multiuse_invite_group: z.number(),
+    realm_can_delete_any_message_group: group_setting_value_schema,
+    realm_can_delete_own_message_group: group_setting_value_schema,
+    realm_can_manage_all_groups: group_setting_value_schema,
+    realm_can_move_messages_between_channels_group: group_setting_value_schema,
+    realm_can_move_messages_between_topics_group: group_setting_value_schema,
+    realm_create_multiuse_invite_group: group_setting_value_schema,
     realm_date_created: z.number(),
     realm_default_code_block_language: z.string(),
     realm_default_external_accounts: z.record(
@@ -312,8 +313,8 @@ export const realm_schema = z.object({
     realm_description: z.string(),
     realm_digest_emails_enabled: z.boolean(),
     realm_digest_weekday: z.number(),
-    realm_direct_message_initiator_group: z.number(),
-    realm_direct_message_permission_group: z.number(),
+    realm_direct_message_initiator_group: group_setting_value_schema,
+    realm_direct_message_permission_group: group_setting_value_schema,
     realm_disallow_disposable_email_addresses: z.boolean(),
     realm_domains: z.array(
         z.object({
@@ -321,7 +322,6 @@ export const realm_schema = z.object({
             allow_subdomains: z.boolean(),
         }),
     ),
-    realm_edit_topic_policy: z.number(),
     realm_email_auth_enabled: z.boolean(),
     realm_email_changes_disabled: z.boolean(),
     realm_emails_restricted_to_domains: z.boolean(),
@@ -342,7 +342,15 @@ export const realm_schema = z.object({
             display_name: z.string(),
             name: z.string(),
             all_event_types: z.nullable(z.array(z.string())),
-            // We currently ignore the `config` field in these objects.
+            config_options: z
+                .array(
+                    z.object({
+                        key: z.string(),
+                        label: z.string(),
+                        validator: z.string(),
+                    }),
+                )
+                .optional(),
         }),
     ),
     realm_inline_image_preview: z.boolean(),

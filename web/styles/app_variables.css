@@ -671,6 +671,20 @@
     --color-compose-send-control-button-focus-shadow: var(
         --color-compose-send-button-focus-shadow
     );
+    --color-compose-recipient-box-text-color: inherit;
+    --color-compose-recipient-box-background-color: hsl(0deg 0% 100%);
+    /* Because of how the background color is assigned on
+       recipient-row elements, we need here to mix down the
+       border color from the compose text area,
+       --color-message-content-container-border,
+       with the compose box's background color,
+       --color-compose-box-background. */
+    --color-compose-recipient-box-border-color: color-mix(
+        in srgb,
+        hsl(0deg 0% 0%) 10%,
+        hsl(232deg 20% 92%)
+    );
+    --color-compose-recipient-box-has-focus: hsl(0deg 0% 57%);
     --color-compose-collapsed-reply-button-area-background: hsl(0deg 0% 100%);
     --color-compose-collapsed-reply-button-area-background-interactive: var(
         --color-compose-collapsed-reply-button-area-background
@@ -1192,6 +1206,10 @@
     --color-compose-send-control-button-focus-shadow: var(
         --color-compose-send-button-focus-shadow
     );
+    --color-compose-recipient-box-text-color: inherit;
+    --color-compose-recipient-box-background-color: hsl(0deg 0% 0% / 20%);
+    --color-compose-recipient-box-border-color: hsl(0deg 0% 0% / 80%);
+    --color-compose-recipient-box-has-focus: hsl(0deg 0% 100% / 27%);
     --color-compose-collapsed-reply-button-area-background: hsl(
         0deg 0% 0% / 20%
     );

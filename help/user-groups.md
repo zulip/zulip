@@ -2,6 +2,8 @@
 
 {!user-groups-intro.md!}
 
+{!user-groups-applications.md!}
+
 ## Browse and join user groups
 
 {start_tabs}

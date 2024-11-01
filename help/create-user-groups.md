@@ -2,6 +2,13 @@
 
 {!user-groups-intro.md!}
 
+Many organizations find it helpful to create groups for:
+
+- Each team, e.g., “mobile”, “design”, or “IT”.
+- Leadership roles, e.g., “managers”, “engineering-leads”.
+
+{!user-groups-applications.md!}
+
 ## How to create a user group
 
 {!how-to-create-a-user-group.md!}

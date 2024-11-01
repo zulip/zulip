@@ -4,6 +4,9 @@ export PYTHONWARNINGS=error
 
 PYTHONWARNINGS+=',ignore::ResourceWarning'
 
+# https://github.com/python/cpython/pull/96629
+PYTHONWARNINGS+=',default:check_home argument is deprecated and ignored.:DeprecationWarning:distutils.command.install'
+
 # https://github.com/disqus/django-bitfield/pull/135
 PYTHONWARNINGS+=',default:Attribute s is deprecated and will be removed in Python 3.14; use value instead:DeprecationWarning:__main__'
 
@@ -31,7 +34,6 @@ PYTHONWARNINGS+=',default:DEPRECATION::pip._internal.models.link'
 PYTHONWARNINGS+=',default:Unimplemented abstract methods:DeprecationWarning:pip._internal.metadata.importlib._dists'
 PYTHONWARNINGS+=',default:module '\''sre_constants'\'' is deprecated:DeprecationWarning:pip._vendor.pyparsing'
 PYTHONWARNINGS+=',default:Creating a LegacyVersion has been deprecated and will be removed in the next major release:DeprecationWarning:pip._vendor.packaging.version'
-PYTHONWARNINGS+=',default:'\''cgi'\'' is deprecated and slated for removal in Python 3.13:DeprecationWarning:pip._internal.index.collector'
 PYTHONWARNINGS+=',default:path is deprecated.:DeprecationWarning:pip._vendor.certifi.core'
 PYTHONWARNINGS+=',default:ssl.PROTOCOL_TLS is deprecated:DeprecationWarning:pip._vendor.urllib3.util.ssl_'
 PYTHONWARNINGS+=',default:Creating a LegacyVersion has been deprecated and will be removed in the next major release:DeprecationWarning:pip._vendor.packaging.specifiers'

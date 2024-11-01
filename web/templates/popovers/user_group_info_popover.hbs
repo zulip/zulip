@@ -9,7 +9,7 @@
                 <div class="popover-group-menu-description">{{group_description}}</div>
             </div>
         </li>
-        {{#if members_count}}
+        {{#if (or members.length subgroups.length)}}
             <li role="none" class="popover-menu-list-item text-item italic">
                 {{#tr}}
                 {members_count, plural, =1 {1 member} other {# members}}

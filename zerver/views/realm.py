@@ -52,7 +52,6 @@ from zerver.models.realms import (
     BotCreationPolicyEnum,
     CommonPolicyEnum,
     DigestWeekdayEnum,
-    EditTopicPolicyEnum,
     InviteToRealmPolicyEnum,
     OrgTypeEnum,
     WildcardMentionPolicyEnum,
@@ -116,7 +115,6 @@ def update_realm(
         ApiParamConfig("message_content_delete_limit_seconds"),
     ] = None,
     allow_message_editing: Json[bool] | None = None,
-    edit_topic_policy: Json[EditTopicPolicyEnum] | None = None,
     mandatory_topics: Json[bool] | None = None,
     message_content_edit_limit_seconds_raw: Annotated[
         Json[int | str] | None, ApiParamConfig("message_content_edit_limit_seconds")
@@ -143,6 +141,7 @@ def update_realm(
     can_create_web_public_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_manage_all_groups: Json[GroupSettingChangeRequest] | None = None,
     can_move_messages_between_channels_group: Json[GroupSettingChangeRequest] | None = None,
+    can_move_messages_between_topics_group: Json[GroupSettingChangeRequest] | None = None,
     direct_message_initiator_group: Json[GroupSettingChangeRequest] | None = None,
     direct_message_permission_group: Json[GroupSettingChangeRequest] | None = None,
     invite_to_stream_policy: Json[CommonPolicyEnum] | None = None,

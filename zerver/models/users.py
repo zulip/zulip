@@ -817,7 +817,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         from zerver.models import Realm
 
         if policy_name not in Realm.REALM_PERMISSION_GROUP_SETTINGS and policy_name not in [
-            "edit_topic_policy",
             "invite_to_stream_policy",
             "invite_to_realm_policy",
         ]:
@@ -897,7 +896,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         return self.has_permission("can_manage_all_groups")
 
     def can_move_messages_to_another_topic(self) -> bool:
-        return self.has_permission("edit_topic_policy")
+        return self.has_permission("can_move_messages_between_topics_group")
 
     def can_add_custom_emoji(self) -> bool:
         return self.has_permission("can_add_custom_emoji_group")

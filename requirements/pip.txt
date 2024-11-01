@@ -13,8 +13,8 @@ wheel==0.44.0 \
     # via -r requirements/pip.in
 
 # The following packages are considered to be unsafe in a requirements file:
-https://github.com/zulip/pip/archive/39e8b5ecfcd8d19872f103d680713bc8e9de9d00.zip#egg=pip==20.3.4+git \
-    --hash=sha256:2c8ae0783fea3e2b98b422d443b19c443779f0881882f905e0728be7b4043d1b
+https://github.com/zulip/pip/archive/50e61dcc78d0da8a041e4fecc566f40b2b0604df.zip#egg=pip==20.3.4+git \
+    --hash=sha256:35e47938b7e2a91523359b54a53c62fc2aeed5adaaba24437a33cbd9a4641574
     # via -r requirements/pip.in
 setuptools==71.0.0 \
     --hash=sha256:98da3b8aca443b9848a209ae4165e2edede62633219afa493a58fbba57f72e2e \

@@ -76,10 +76,6 @@ html {
     color: hsl(0deg 0% 67%);
 }
 
-.find-account-page-container #find_account i {
-    font-size: 0.8em;
-}
-
 .app-main {
     .login-page-header {
         font-size: 1.5em;
@@ -132,6 +128,10 @@ html {
     &.find-account-page-container {
         width: 500px;
         font-weight: 400;
+    }
+
+    .find-account-form-tip {
+        font-size: 0.8em;
     }
 
     &.goto-account-page-container {
@@ -268,19 +268,10 @@ html {
     }
 }
 
-.find-account-page-container h3,
-.forgot-password-container h3 {
-    margin-top: 0;
-
-    font-weight: 300;
-    font-size: 2em;
-}
-
 .forgot-password-container {
     width: 503px;
 
-    & h3,
-    form {
+    & form {
         margin-bottom: 0;
     }
 }

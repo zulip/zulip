@@ -1,4 +1,6 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import render_change_email_modal from "../templates/change_email_modal.hbs";
 import render_demo_organization_add_email_modal from "../templates/demo_organization_add_email_modal.hbs";
@@ -7,11 +9,11 @@ import render_settings_api_key_modal from "../templates/settings/api_key_modal.h
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
 import * as avatar from "./avatar";
-import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
 import {csrf_token} from "./csrf";
 import * as custom_profile_fields_ui from "./custom_profile_fields_ui";
+import type {PillUpdateField} from "./custom_profile_fields_ui";
 import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
@@ -29,13 +31,17 @@ import * as ui_report from "./ui_report";
 import * as ui_util from "./ui_util";
 import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_pill from "./user_pill";
+import type {UserPillWidget} from "./user_pill";
 import * as user_profile from "./user_profile";
 import {user_settings} from "./user_settings";
+import * as util from "./util";
 
-let password_quality; // Loaded asynchronously
+let password_quality:
+    | ((password: string, $bar: JQuery | undefined, $password_field: JQuery) => boolean)
+    | undefined; // Loaded asynchronously
 let user_avatar_widget_created = false;
 
-export function update_email(new_email) {
+export function update_email(new_email: string): void {
     const $email_input = $("#change_email_button");
 
     if ($email_input) {
@@ -43,7 +49,7 @@ export function update_email(new_email) {
     }
 }
 
-export function update_full_name(new_full_name) {
+export function update_full_name(new_full_name: string): void {
     // Arguably, this should work more like how the `update_email`
     // flow works, where we update the name in the modal on open,
     // rather than updating it here, but this works.
@@ -53,7 +59,7 @@ export function update_full_name(new_full_name) {
     }
 }
 
-export function update_name_change_display() {
+export function update_name_change_display(): void {
     if ($("#user_details_section").length === 0) {
         return;
     }
@@ -67,7 +73,7 @@ export function update_name_change_display() {
     }
 }
 
-export function update_email_change_display() {
+export function update_email_change_display(): void {
     if ($("#user_details_section").length === 0) {
         return;
     }
@@ -81,24 +87,27 @@ export function update_email_change_display() {
     }
 }
 
-function display_avatar_upload_complete() {
+function display_avatar_upload_complete(): void {
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
     $("#user-avatar-upload-widget .image-upload-text").show();
     $("#user-avatar-upload-widget .image-delete-button").show();
 }
 
-function display_avatar_upload_started() {
+function display_avatar_upload_started(): void {
     $("#user-avatar-source").hide();
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "visible"});
     $("#user-avatar-upload-widget .image-upload-text").hide();
     $("#user-avatar-upload-widget .image-delete-button").hide();
 }
 
-function upload_avatar($file_input) {
+function upload_avatar($file_input: JQuery<HTMLInputElement>): void {
     const form_data = new FormData();
 
+    assert(csrf_token !== undefined);
     form_data.append("csrfmiddlewaretoken", csrf_token);
-    for (const [i, file] of Array.prototype.entries.call($file_input[0].files)) {
+    const files = util.the($file_input).files;
+    assert(files !== null);
+    for (const [i, file] of [...files].entries()) {
         form_data.append("file-" + i, file);
     }
     display_avatar_upload_started();
@@ -119,16 +128,17 @@ function upload_avatar($file_input) {
             if (current_user.avatar_source === "G") {
                 $("#user-avatar-source").show();
             }
-            if (xhr.responseJSON?.msg) {
+            const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+            if (parsed.success) {
                 const $error = $("#user-avatar-upload-widget .image_file_input_error");
-                $error.text(xhr.responseJSON.msg);
+                $error.text(parsed.data.msg);
                 $error.show();
             }
         },
     });
 }
 
-export function update_avatar_change_display() {
+export function update_avatar_change_display(): void {
     if ($("#user-avatar-upload-widget").length === 0) {
         return;
     }
@@ -137,7 +147,7 @@ export function update_avatar_change_display() {
         $("#user-avatar-upload-widget .image_upload_button").addClass("hide");
         $("#user-avatar-upload-widget .image-disabled").removeClass("hide");
     } else {
-        if (user_avatar_widget_created === false) {
+        if (!user_avatar_widget_created) {
             avatar.build_user_avatar_widget(upload_avatar);
             user_avatar_widget_created = true;
         }
@@ -146,7 +156,7 @@ export function update_avatar_change_display() {
     }
 }
 
-export function update_account_settings_display() {
+export function update_account_settings_display(): void {
     if ($("#user_details_section").length === 0) {
         return;
     }
@@ -156,7 +166,7 @@ export function update_account_settings_display() {
     update_avatar_change_display();
 }
 
-export function maybe_update_deactivate_account_button() {
+export function maybe_update_deactivate_account_button(): void {
     if (!current_user.is_owner) {
         return;
     }
@@ -173,7 +183,7 @@ export function maybe_update_deactivate_account_button() {
     }
 }
 
-export function update_send_read_receipts_tooltip() {
+export function update_send_read_receipts_tooltip(): void {
     if (realm.realm_enable_read_receipts) {
         $("#send_read_receipts_label .settings-info-icon").hide();
     } else {
@@ -181,49 +191,51 @@ export function update_send_read_receipts_tooltip() {
     }
 }
 
-function settings_change_error(message_html, xhr) {
+function settings_change_error(message_html: string, xhr?: JQuery.jqXHR): void {
     ui_report.error(message_html, xhr, $("#account-settings-status").expectOne());
 }
 
-function update_custom_profile_field(field, method) {
-    let field_id;
+function update_custom_profile_field(
+    field: CustomProfileFieldData,
+    method: channel.AjaxRequestHandler,
+): void {
+    let data;
     if (method === channel.del) {
-        field_id = field;
+        data = JSON.stringify([field.id]);
     } else {
-        field_id = field.id;
+        data = JSON.stringify([field]);
     }
 
     const $spinner_element = $(
-        `.custom_user_field[data-field-id="${CSS.escape(field_id)}"] .custom-field-status`,
+        `.custom_user_field[data-field-id="${CSS.escape(field.id.toString())}"] .custom-field-status`,
     ).expectOne();
-    settings_ui.do_settings_change(
-        method,
-        "/json/users/me/profile_data",
-        {data: JSON.stringify([field])},
-        $spinner_element,
-    );
+    settings_ui.do_settings_change(method, "/json/users/me/profile_data", {data}, $spinner_element);
 }
 
-function update_user_custom_profile_fields(fields, method) {
-    if (method === undefined) {
-        blueslip.error("Undefined method in update_user_custom_profile_fields");
-    }
+type CustomProfileFieldData = {
+    id: number;
+    value?: number[] | string;
+};
 
+function update_user_custom_profile_fields(
+    fields: CustomProfileFieldData[],
+    method: channel.AjaxRequestHandler,
+): void {
     for (const field of fields) {
         update_custom_profile_field(field, method);
     }
 }
 
-function update_user_type_field(field, pills) {
+function update_user_type_field(field: PillUpdateField, pills: UserPillWidget): void {
     const user_ids = user_pill.get_user_ids(pills);
     if (user_ids.length < 1) {
-        update_user_custom_profile_fields([field.id], channel.del);
+        update_user_custom_profile_fields([{id: field.id}], channel.del);
     } else {
         update_user_custom_profile_fields([{id: field.id, value: user_ids}], channel.patch);
     }
 }
 
-export function add_custom_profile_fields_to_settings() {
+export function add_custom_profile_fields_to_settings(): void {
     if (!overlays.settings_open()) {
         return;
     }
@@ -231,7 +243,9 @@ export function add_custom_profile_fields_to_settings() {
     const element_id = "#profile-settings .custom-profile-fields-form";
     $(element_id).empty();
 
-    const pill_update_handler = (field, pills) => update_user_type_field(field, pills);
+    const pill_update_handler = (field: PillUpdateField, pills: UserPillWidget): void => {
+        update_user_type_field(field, pills);
+    };
 
     custom_profile_fields_ui.append_custom_profile_fields(element_id, people.my_current_user_id());
     custom_profile_fields_ui.initialize_custom_user_type_fields(
@@ -244,14 +258,25 @@ export function add_custom_profile_fields_to_settings() {
     custom_profile_fields_ui.initialize_custom_pronouns_type_fields(element_id);
 }
 
-export function hide_confirm_email_banner() {
+export function hide_confirm_email_banner(): void {
     if (!overlays.settings_open()) {
         return;
     }
     $("#account-settings-status").hide();
 }
 
-export function update_privacy_settings_box(property) {
+// TODO/typescript: Move these to server_events_dispatch when it's converted to typescript.
+export const privacy_setting_name_schema = z.enum([
+    "send_stream_typing_notifications",
+    "send_private_typing_notifications",
+    "send_read_receipts",
+    "presence_enabled",
+    "email_address_visibility",
+    "allow_private_data_export",
+]);
+export type PrivacySettingName = z.infer<typeof privacy_setting_name_schema>;
+
+export function update_privacy_settings_box(property: PrivacySettingName): void {
     if (!overlays.settings_open()) {
         return;
     }
@@ -261,19 +286,24 @@ export function update_privacy_settings_box(property) {
     settings_components.set_input_element_value($input_elem, user_settings[property]);
 }
 
-export function set_up() {
+export function set_up(
+    load_password_quality: () => Promise<
+        (password: string, $bar: JQuery | undefined, $password_field: JQuery) => boolean
+    >,
+): void {
     // Add custom profile fields elements to user account settings.
     add_custom_profile_fields_to_settings();
     $("#account-settings-status").hide();
 
-    const setup_api_key_modal = () => {
-        function request_api_key(data) {
+    const setup_api_key_modal = (): void => {
+        function request_api_key(data: {password?: string}): void {
             channel.post({
                 url: "/json/fetch_api_key",
                 data,
                 success(data) {
                     $("#get_api_key_password").val("");
-                    $("#api_key_value").text(data.api_key);
+                    const api_key = z.object({api_key: z.string()}).parse(data).api_key;
+                    $("#api_key_value").text(api_key);
                     // The display property on the error bar is set to important
                     // so instead of making display: none !important we just
                     // remove it.
@@ -303,14 +333,15 @@ export function set_up() {
             {tippy_tooltips: true},
         );
 
-        function do_get_api_key() {
+        function do_get_api_key(): void {
             $("#api_key_status").hide();
-            const data = {};
-            data.password = $("#get_api_key_password").val();
+            const data = {
+                password: $<HTMLInputElement>("input#get_api_key_password").val()!,
+            };
             request_api_key(data);
         }
 
-        if (realm.realm_password_auth_enabled === false) {
+        if (!realm.realm_password_auth_enabled) {
             // Skip the password prompt step, since the user doesn't have one.
             request_api_key({});
         } else {
@@ -339,11 +370,13 @@ export function set_up() {
                 url: "/api/v1/users/me/api_key/regenerate",
                 headers: {Authorization: authorization_header},
                 success(data) {
-                    $("#api_key_value").text(data.api_key);
+                    const api_key = z.object({api_key: z.string()}).parse(data).api_key;
+                    $("#api_key_value").text(api_key);
                 },
                 error(xhr) {
-                    if (xhr.responseJSON?.msg) {
-                        $("#user_api_key_error").text(xhr.responseJSON.msg).show();
+                    const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+                    if (parsed.success) {
+                        $("#user_api_key_error").text(parsed.data.msg).show();
                     }
                 },
             });
@@ -383,7 +416,7 @@ export function set_up() {
         e.stopPropagation();
     });
 
-    function clear_password_change() {
+    function clear_password_change(): void {
         // Clear the password boxes so that passwords don't linger in the DOM
         // for an XSS attacker to find.
         common.reset_password_toggle_icons(
@@ -398,7 +431,7 @@ export function set_up() {
         password_quality?.("", $("#pw_strength .bar"), $("#new_password"));
     }
 
-    function change_password_post_render() {
+    function change_password_post_render(): void {
         $("#change_password_modal")
             .find("[data-micromodal-close]")
             .on("click", () => {
@@ -417,11 +450,11 @@ export function set_up() {
         clear_password_change();
     }
 
-    $("#change_password").on("click", async (e) => {
+    $("#change_password").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
-        function validate_input() {
+        function validate_input(): boolean {
             const old_password = $("#old_password").val();
             const new_password = $("#new_password").val();
 
@@ -463,26 +496,29 @@ export function set_up() {
             },
         });
 
-        if (realm.realm_password_auth_enabled !== false) {
+        if (realm.realm_password_auth_enabled) {
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
-            password_quality = (await import("./password_quality")).password_quality;
-            $("#pw_strength .bar").removeClass("hide");
+            void (async () => {
+                password_quality = await load_password_quality();
+                $("#pw_strength .bar").removeClass("hide");
 
-            $("#new_password").on("input", () => {
-                const $field = $("#new_password");
-                password_quality($field.val(), $("#pw_strength .bar"), $field);
-            });
+                $("#new_password").on("input", () => {
+                    const $field = $<HTMLInputElement>("input#new_password");
+                    assert(password_quality !== undefined);
+                    password_quality($field.val()!, $("#pw_strength .bar"), $field);
+                });
+            })();
         }
     });
 
-    function do_change_password() {
+    function do_change_password(): void {
         const $change_password_error = $("#change_password_modal").find("#dialog_error");
         $change_password_error.hide();
 
         const data = {
             old_password: $("#old_password").val(),
-            new_password: $("#new_password").val(),
+            new_password: $<HTMLInputElement>("input#new_password").val()!,
         };
 
         const $new_pw_field = $("#new_password");
@@ -512,7 +548,6 @@ export function set_up() {
                 channel.set_password_change_in_progress(false);
             },
             $error_msg_element: $change_password_error,
-            failure_msg_html: null,
         };
         settings_ui.do_settings_change(
             channel.patch,
@@ -527,9 +562,9 @@ export function set_up() {
     $("#full_name").on("change", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const data = {};
-
-        data.full_name = $("#full_name").val();
+        const data = {
+            full_name: $("#full_name").val(),
+        };
 
         settings_ui.do_settings_change(
             channel.patch,
@@ -539,10 +574,11 @@ export function set_up() {
         );
     });
 
-    function do_change_email() {
+    function do_change_email(): void {
         const $change_email_error = $("#change_email_modal").find("#dialog_error");
-        const data = {};
-        data.email = $("#change_email_form").find("input[name='email']").val();
+        const data = {
+            email: $("#change_email_form").find<HTMLInputElement>("input[name='email']").val(),
+        };
 
         const opts = {
             success_continuation() {
@@ -588,20 +624,21 @@ export function set_up() {
                 form_id: "change_email_form",
                 on_click: do_change_email,
                 on_shown() {
-                    ui_util.place_caret_at_end($("#change_email_form input")[0]);
+                    ui_util.place_caret_at_end(util.the($("#change_email_form input")));
                 },
                 update_submit_disabled_state_on_change: true,
             });
         }
     });
 
-    function do_demo_organization_add_email(e) {
+    function do_demo_organization_add_email(e: JQuery.ClickEvent): void {
         e.preventDefault();
         e.stopPropagation();
         const $change_email_error = $("#demo_organization_add_email_modal").find("#dialog_error");
-        const data = {};
-        data.email = $("#demo_organization_add_email").val();
-        data.full_name = $("#demo_organization_update_full_name").val();
+        const data = {
+            email: $<HTMLInputElement>("input#demo_organization_add_email").val(),
+            full_name: $("#demo_organization_update_full_name").val(),
+        };
 
         const opts = {
             success_continuation() {
@@ -638,10 +675,12 @@ export function set_up() {
         e.preventDefault();
         e.stopPropagation();
 
-        function demo_organization_add_email_post_render() {
+        function demo_organization_add_email_post_render(): void {
             // Disable submit button if either input is an empty string.
-            const $add_email_element = $("#demo_organization_add_email");
-            const $add_name_element = $("#demo_organization_update_full_name");
+            const $add_email_element = $<HTMLInputElement>("input#demo_organization_add_email");
+            const $add_name_element = $<HTMLInputElement>(
+                "input#demo_organization_update_full_name",
+            );
 
             const $demo_organization_submit_button = $(
                 "#demo_organization_add_email_modal .dialog_submit_button",
@@ -651,7 +690,8 @@ export function set_up() {
             $("#demo_organization_add_email_form input").on("input", () => {
                 $demo_organization_submit_button.prop(
                     "disabled",
-                    $add_email_element.val().trim() === "" || $add_name_element.val().trim() === "",
+                    $add_email_element.val()!.trim() === "" ||
+                        $add_name_element.val()!.trim() === "",
                 );
             });
         }
@@ -673,33 +713,40 @@ export function set_up() {
                 form_id: "demo_organization_add_email_form",
                 on_click: do_demo_organization_add_email,
                 on_shown() {
-                    ui_util.place_caret_at_end($("#demo_organization_add_email_form input")[0]);
+                    ui_util.place_caret_at_end(
+                        util.the($("#demo_organization_add_email_form input")),
+                    );
                 },
                 post_render: demo_organization_add_email_post_render,
             });
         }
     });
 
-    $("#profile-settings").on("click", ".custom_user_field .remove_date", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const $field = $(e.target).closest(".custom_user_field").expectOne();
-        const field_id = Number.parseInt($field.attr("data-field-id"), 10);
-        update_user_custom_profile_fields([field_id], channel.del);
-    });
+    $("#profile-settings").on(
+        "click",
+        ".custom_user_field .remove_date",
+        function (this: HTMLElement, e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const $field = $(this).closest(".custom_user_field").expectOne();
+            const field_id = Number.parseInt($field.attr("data-field-id")!, 10);
+            update_user_custom_profile_fields([{id: field_id}], channel.del);
+        },
+    );
 
-    $("#profile-settings").on("change", ".custom_user_field_value", function (e) {
-        const fields = [];
-        const value = $(this).val();
+    $("#profile-settings").on("change", ".custom_user_field_value", function (this: HTMLElement) {
+        const fields: CustomProfileFieldData[] = [];
+        const value = $(this).val()!;
+        assert(typeof value === "string");
         const field_id = Number.parseInt(
-            $(e.target).closest(".custom_user_field").attr("data-field-id"),
+            $(this).closest(".custom_user_field").attr("data-field-id")!,
             10,
         );
         if (value) {
             fields.push({id: field_id, value});
             update_user_custom_profile_fields(fields, channel.patch);
         } else {
-            fields.push(field_id);
+            fields.push({id: field_id});
             update_user_custom_profile_fields(fields, channel.del);
         }
     });
@@ -714,7 +761,7 @@ export function set_up() {
         e.preventDefault();
         e.stopPropagation();
 
-        function handle_confirm() {
+        function handle_confirm(): void {
             channel.del({
                 url: "/json/users/me",
                 success() {
@@ -738,9 +785,15 @@ export function set_up() {
                                 )}</a>`,
                         },
                     );
-                    let rendered_error_msg;
-                    if (xhr.responseJSON?.code === "CANNOT_DEACTIVATE_LAST_USER") {
-                        if (xhr.responseJSON.is_last_owner) {
+                    let rendered_error_msg = "";
+                    const parsed = z
+                        .object({
+                            code: z.literal("CANNOT_DEACTIVATE_LAST_USER"),
+                            is_last_owner: z.boolean(),
+                        })
+                        .safeParse(xhr.responseJSON);
+                    if (parsed.success) {
+                        if (parsed.data.is_last_owner) {
                             rendered_error_msg = error_last_owner;
                         } else {
                             rendered_error_msg = error_last_user;
@@ -782,7 +835,7 @@ export function set_up() {
 
     $("#user_timezone").val(user_settings.timezone);
 
-    $("#user_timezone").on("change", function (e) {
+    $<HTMLSelectElement>("select#user_timezone").on("change", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -796,13 +849,13 @@ export function set_up() {
         );
     });
 
-    $("#privacy_settings_box").on("change", "input", (e) => {
+    $("#privacy_settings_box").on("change", "input", function (this: HTMLInputElement, e) {
         e.preventDefault();
         e.stopPropagation();
 
-        const $input_elem = $(e.currentTarget);
-        const setting_name = $input_elem.attr("name");
-        const checked = $input_elem.prop("checked");
+        const $input_elem = $(this);
+        const setting_name = $input_elem.attr("name")!;
+        const checked = util.the($input_elem).checked;
 
         const data = {[setting_name]: checked};
         settings_ui.do_settings_change(
@@ -815,7 +868,7 @@ export function set_up() {
 
     $("#user_email_address_visibility").val(user_settings.email_address_visibility);
 
-    $("#user_email_address_visibility").on("change", function (e) {
+    $<HTMLSelectElement>("select#user_email_address_visibility").on("change", function (e) {
         e.preventDefault();
         e.stopPropagation();
 

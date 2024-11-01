@@ -6,7 +6,6 @@ import render_confirm_deactivate_custom_emoji from "../templates/confirm_dialog/
 import emoji_settings_warning_modal from "../templates/confirm_dialog/confirm_emoji_settings_warning.hbs";
 import render_add_emoji from "../templates/settings/add_emoji.hbs";
 import render_admin_emoji_list from "../templates/settings/admin_emoji_list.hbs";
-import render_settings_emoji_settings_tip from "../templates/settings/emoji_settings_tip.hbs";
 
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
@@ -19,10 +18,9 @@ import * as loading from "./loading";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as settings_data from "./settings_data";
-import {current_user, realm} from "./state_data";
+import {current_user} from "./state_data";
 import * as ui_report from "./ui_report";
 import * as upload_widget from "./upload_widget";
-import * as user_groups from "./user_groups";
 import * as util from "./util";
 
 const meta = {
@@ -44,12 +42,6 @@ function can_delete_emoji(emoji: ServerEmoji): boolean {
 }
 
 export function update_custom_emoji_ui(): void {
-    const rendered_tip = render_settings_emoji_settings_tip({
-        realm_can_add_custom_emoji_group_name: user_groups.get_user_group_from_id(
-            realm.realm_can_add_custom_emoji_group,
-        ).name,
-    });
-    $("#emoji-settings").find(".emoji-settings-tip-container").html(rendered_tip);
     if (!settings_data.user_can_add_custom_emoji()) {
         $(".add-emoji-text").hide();
         $("#add-custom-emoji-button").hide();
@@ -58,11 +50,7 @@ export function update_custom_emoji_ui(): void {
     } else {
         $(".add-emoji-text").show();
         $("#add-custom-emoji-button").show();
-        if (current_user.is_admin) {
-            $("#emoji-settings .emoji-settings-tip-container").show();
-        } else {
-            $("#emoji-settings .emoji-settings-tip-container").hide();
-        }
+        $("#emoji-settings .emoji-settings-tip-container").hide();
         $(".org-settings-list li[data-section='emoji-settings'] .locked").hide();
     }
 

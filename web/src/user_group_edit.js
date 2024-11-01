@@ -88,7 +88,9 @@ function update_add_members_elements(group) {
 
     if (settings_data.can_add_members_to_user_group(group.id)) {
         $input_element.prop("contenteditable", true);
-        $button_element.prop("disabled", false);
+        if (user_group_edit_members.pill_widget.items().length !== 0) {
+            $button_element.prop("disabled", false);
+        }
         $button_element.css("pointer-events", "");
         $add_members_container[0]._tippy?.destroy();
         $add_members_container.removeClass("add_members_disabled");
@@ -154,35 +156,30 @@ function show_general_settings(group) {
     settings_components.create_group_setting_widget({
         $pill_container: $edit_container.find(".can-add-members-group-container .pill-container"),
         setting_name: "can_add_members_group",
-        setting_type: "group",
         group,
     });
 
     settings_components.create_group_setting_widget({
         $pill_container: $edit_container.find(".can-manage-group-container .pill-container"),
         setting_name: "can_manage_group",
-        setting_type: "group",
         group,
     });
 
     settings_components.create_group_setting_widget({
         $pill_container: $edit_container.find(".can-join-group-container .pill-container"),
         setting_name: "can_join_group",
-        setting_type: "group",
         group,
     });
 
     settings_components.create_group_setting_widget({
         $pill_container: $edit_container.find(".can-leave-group-container .pill-container"),
         setting_name: "can_leave_group",
-        setting_type: "group",
         group,
     });
 
     settings_components.create_group_setting_widget({
         $pill_container: $edit_container.find(".can-mention-group-container .pill-container"),
         setting_name: "can_mention_group",
-        setting_type: "group",
         group,
     });
     update_general_panel_ui(group);

@@ -20,6 +20,33 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 318**
+
+* [`POST /register`](/api/register-queue): Updated
+  `realm_incoming_webhook_bots` with a new `config_options` key,
+  defining which options should be offered when creating URLs for this
+  integration.
+
+**Feature level 317**
+
+* [`POST /user_groups/create`](/api/create-user-group):
+  Added `group_id` to the success response of the user group creation
+  endpoint, enabling clients to easily access the unique identifier
+  of the newly created user group.
+
+**Feature level 316**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_move_messages_between_topics_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to move messages from one topic to another within a channel
+  in the organization.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `edit_topic_policy` property, as the permission to move messages between
+  topics in the organization is now controlled by
+  `can_move_messages_between_topics_group` setting.
+
 **Feature level 315**
 
 * [POST /register](/api/register-queue), [`GET

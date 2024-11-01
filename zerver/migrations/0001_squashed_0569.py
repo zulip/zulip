@@ -30,6 +30,15 @@ class LegacyCommonMessagePolicyEnum(IntEnum):
     EVERYONE = 5
 
 
+class LegacyEditTopicPolicyEnum(IntEnum):
+    MEMBERS_ONLY = 1
+    ADMINS_ONLY = 2
+    FULL_MEMBERS_ONLY = 3
+    MODERATORS_ONLY = 4
+    EVERYONE = 5
+    NOBODY = 6
+
+
 def get_fts_sql() -> str:
     if settings.POSTGRESQL_MISSING_DICTIONARIES:
         fts_sql = """
@@ -743,9 +752,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "edit_topic_policy",
-                    models.PositiveSmallIntegerField(
-                        default=zerver.models.realms.EditTopicPolicyEnum["EVERYONE"]
-                    ),
+                    models.PositiveSmallIntegerField(default=LegacyEditTopicPolicyEnum["EVERYONE"]),
                 ),
                 (
                     "invite_to_realm_policy",

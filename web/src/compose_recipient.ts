@@ -259,7 +259,7 @@ function get_options_for_recipient_widget(): Option[] {
         name: $t({defaultMessage: "Direct message"}),
     };
 
-    if (!user_groups.is_empty_group(realm.realm_direct_message_permission_group)) {
+    if (!user_groups.is_setting_group_empty(realm.realm_direct_message_permission_group)) {
         options.unshift(direct_messages_option);
     } else {
         options.push(direct_messages_option);

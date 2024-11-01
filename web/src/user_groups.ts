@@ -266,6 +266,24 @@ export function is_empty_group(user_group_id: number): boolean {
     return true;
 }
 
+export function is_setting_group_empty(setting_group: GroupSettingValue): boolean {
+    if (typeof setting_group === "number") {
+        return is_empty_group(setting_group);
+    }
+
+    if (setting_group.direct_members.length > 0) {
+        return false;
+    }
+
+    for (const subgroup_id of setting_group.direct_subgroups) {
+        if (!is_empty_group(subgroup_id)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 export function get_user_groups_of_user(user_id: number): UserGroup[] {
     const user_groups_realm = get_realm_user_groups();
     const groups_of_user = user_groups_realm.filter((group) =>

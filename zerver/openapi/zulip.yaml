@@ -4357,7 +4357,11 @@ paths:
                                   description: |
                                     An object containing the properties that have changed.
 
-                                    **Changes**: In Zulip 7.0 (feature level 183), the
+                                    **Changes**: In Zulip 10.0 (feature level 316), `edit_topic_policy`
+                                    property was removed and replaced by `can_move_messages_between_topics_group`
+                                    realm setting.
+
+                                    In Zulip 7.0 (feature level 183), the
                                     `community_topic_editing_limit_seconds` property was removed.
                                     It was documented as potentially returned as a changed property
                                     in this event, but in fact it was only ever returned in the
@@ -4515,6 +4519,20 @@ paths:
                                             In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
                                             `move_messages_between_streams_policy` enum.
                                         - $ref: "#/components/schemas/GroupSettingValue"
+                                    can_move_messages_between_topics_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to move messages from one topic to another
+                                            within a channel in the organization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 316). Previously, this
+                                            permission was controlled by the enum `edit_topic_policy`. Values were
+                                            1=Members, 2=Admins, 3=Full members, 4=Moderators, 5=Everyone, 6=Nobody.
+
+                                            In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
+                                            `edit_topic_policy` enum.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_manage_all_groups:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -4619,27 +4637,6 @@ paths:
                                       description: |
                                         Whether the organization disallows disposable email
                                         addresses.
-                                    edit_topic_policy:
-                                      type: integer
-                                      description: |
-                                        The [policy][permission-level] for which users can edit topics of any message.
-
-                                        - 1 = Members only
-                                        - 2 = Admins only
-                                        - 3 = [Full members][calc-full-member] only
-                                        - 4 = Moderators only
-                                        - 5 = Everyone
-                                        - 6 = Nobody
-
-                                        See [`PATCH /messages/{message_id}`](/api/update-message) for details and history
-                                        of how message editing permissions work.
-
-                                        **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
-
-                                        New in Zulip 5.0 (feature level 75).
-
-                                        [permission-level]: /api/roles-and-permissions#permission-levels
-                                        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                                     email_changes_disabled:
                                       type: boolean
                                       description: |
@@ -8303,7 +8300,7 @@ paths:
 
         - `allow_message_editing`
         - `can_move_messages_between_channels_group`
-        - `edit_topic_policy`
+        - `can_move_messages_between_topics_group`
         - `message_content_edit_limit_seconds`
         - `move_messages_within_stream_limit_seconds`
         - `move_messages_between_streams_limit_seconds`
@@ -8312,6 +8309,10 @@ paths:
         [`POST /register`](/api/register-queue) response or in the documentation
         of the [`realm op: update_dict`](/api/get-events#realm-update_dict)
         event in [`GET /events`](/api/get-events).
+
+        **Changes**: In Zulip 10.0 (feature level 316), `edit_topic_policy`
+        was removed and replaced by `can_move_messages_between_topics_group`
+        realm setting.
 
         **Changes**: In Zulip 10.0 (feature level 310), `move_messages_between_streams_policy`
         was removed and replaced by `can_move_messages_between_channels_group`
@@ -14713,8 +14714,8 @@ paths:
                                 such filtering.
 
                                 **Changes**: New in Zulip 8.0 (feature level 207).
-                            config:
-                              $ref: "#/components/schemas/BotConfiguration"
+                            config_options:
+                              $ref: "#/components/schemas/WebhookConfigOption"
                       recent_private_conversations:
                         description: |
                           Present if `recent_private_conversations` is present in `fetch_event_types`.
@@ -16351,6 +16352,22 @@ paths:
                               In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
                               `move_messages_between_streams_policy` enum.
                           - $ref: "#/components/schemas/GroupSettingValue"
+                      realm_can_move_messages_between_topics_group:
+                        allOf:
+                          - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to move messages from one topic to another
+                              within a channel in the organization.
+
+                              **Changes**: New in Zulip 10.0 (feature level 316). Previously, this
+                              permission was controlled by the enum `edit_topic_policy`. Values were
+                              1=Members, 2=Admins, 3=Full members, 4=Moderators, 5=Everyone, 6=Nobody.
+
+                              In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
+                              `edit_topic_policy` enum.
+                          - $ref: "#/components/schemas/GroupSettingValue"
                       realm_bot_creation_policy:
                         type: integer
                         description: |
@@ -16894,29 +16911,6 @@ paths:
                           history of how message editing permissions work.
 
                           [config-message-editing]: /help/restrict-message-editing-and-deletion
-                      realm_edit_topic_policy:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          The [policy][permission-level] for which users can edit topics of any message.
-
-                          - 1 = Members only
-                          - 2 = Admins only
-                          - 3 = [Full members][calc-full-member] only
-                          - 4 = Moderators only
-                          - 5 = Everyone
-                          - 6 = Nobody
-
-                          See [`PATCH /messages/{message_id}`](/api/update-message) for details and
-                          history of how message editing permissions work.
-
-                          **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
-
-                          New in Zulip 5.0 (feature level 75).
-
-                          [permission-level]: /api/roles-and-permissions#permission-levels
-                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_message_content_edit_limit_seconds:
                         type: integer
                         nullable: true
@@ -20463,7 +20457,30 @@ paths:
                 contentType: application/json
       responses:
         "200":
-          $ref: "#/components/responses/SimpleSuccess"
+          description: |
+            A success response containing the unique ID of the user group.
+            This field provides a straightforward way to reference the
+            newly created user group.
+
+            **Changes**: New in Zulip 10.0 (feature level 317).
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - required:
+                      - group_id
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      group_id:
+                        type: integer
+                        description: |
+                          The unique ID of the created user group.
+                    example: {"msg": "", "result": "success", "group_id": 123}
+
         "400":
           description: Bad request.
           content:
@@ -21973,6 +21990,36 @@ components:
         description: |
           `{config_key}`: Description/value of the configuration data key.
         type: string
+    WebhookConfigOption:
+      type: array
+      description: |
+        An array of configuration options where each option is an
+        object containing a unique identifier, a human-readable name,
+        and a validation function name hinting how to verify the
+        correct input format.
+
+        This is an unstable API expected to be used only by the Zulip web
+        apps. Please discuss in chat.zulip.org before using it.
+
+        **Changes**: New in Zulip 10.0 (feature level 318).
+      items:
+        type: object
+        additionalProperties: false
+        properties:
+          key:
+            type: string
+            description: |
+              A key for the configuration option to use in generated URLs.
+          label:
+            type: string
+            description: |
+              A human-readable label of the configuration option.
+          validator:
+            type: string
+            description: |
+              The name of the validator function for the configuration
+              option. Currently generated values are `check_bool` and
+              `check_str`.
     CustomProfileField:
       type: object
       additionalProperties: false

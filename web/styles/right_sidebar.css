@@ -363,38 +363,59 @@ $user_status_emoji_width: 24px;
     grid-template-rows: var(--line-height-sidebar-row-prominent);
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    margin-right: var(--width-simplebar-scroll-hover);
+    margin-bottom: 10px;
 
     #userlist-header-search {
         display: grid;
         grid-template-rows: var(--line-height-sidebar-row-prominent);
-        grid-template-columns: minmax(0, 1fr) 20px;
+        grid-template-columns: minmax(0, 1fr) 30px;
         align-items: center;
-    }
 
-    #userlist-title {
-        margin: 0;
-    }
+        & .user-list-filter {
+            grid-area: 1 / 1 / 2 / 3;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            /* Prevent text from colliding with #clear_search_button */
+            padding-right: 28px;
+            height: var(--line-height-sidebar-row-prominent);
+            box-sizing: border-box;
+        }
 
-    #user_filter_icon {
-        opacity: 0.5;
-        justify-self: center;
+        #clear_search_people_button {
+            grid-area: 1 / 2 / 2 / 3;
+            padding: 0;
+            background: none;
+            color: var(--color-text-clear-search-button);
+            display: grid;
 
-        &:hover {
-            opacity: 1;
-            cursor: pointer;
+            &:hover {
+                color: var(--color-text-clear-search-button-hover);
+            }
+
+            &:focus,
+            &:focus-visible,
+            &:active {
+                box-shadow: none;
+                outline: none;
+            }
+
+            .zulip-icon-close {
+                align-self: center;
+            }
         }
     }
 
-    /* hovering over the userlist-header creates the same highlight effect as hovering over the user_filter_icon */
-    &:hover > #user_filter_icon {
-        opacity: 1;
-        cursor: pointer;
-    }
-
     #buddy-list-menu-icon {
+        color: var(--color-vdots-visible);
         justify-content: center;
         display: grid;
+        width: 25px;
+        margin-left: 5px;
+
+        &:hover {
+            color: var(--color-vdots-hover);
+        }
     }
 }
 
@@ -407,30 +428,4 @@ $user_status_emoji_width: 24px;
        a scaling margin-top by subtracting the em-unit line height
        from the legacy value. */
     margin-top: calc(25px - (var(--legacy-body-line-height-unitless) * 1em));
-}
-
-#user_search_section {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 28px;
-    grid-template-rows: var(--line-height-sidebar-row-prominent);
-    white-space: nowrap;
-    margin-bottom: 10px;
-
-    & .user-list-filter {
-        grid-area: 1 / 1 / 2 / 3;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        /* Prevent text from colliding with .clear_search_button */
-        padding-right: 28px;
-        /* Push back against inherited styles; let CSS Grid be in
-           charge of the height. */
-        height: auto;
-    }
-
-    .clear_search_button {
-        grid-area: 1 / 2 / 2 / 3;
-        position: static;
-        padding: 0;
-    }
 }

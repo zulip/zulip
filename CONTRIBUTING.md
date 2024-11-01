@@ -134,9 +134,14 @@ repository](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3
 alone.
 
 You can look through issues tagged with the "help wanted" label, which is used
-to indicate the issues that are ready for contributions. Some repositories also
-use the "good first issue" label to tag issues that are especially approachable
-for new contributors.
+to indicate the issues that are open for contributions. You'll be able to claim
+unassigned issues, which you can find using the `no:assignee` filter in GitHub.
+You can also pick up issues that are assigned but are no longer being worked on.
+
+Some repositories use the "good first issue" label to tag issues that are
+especially approachable for new contributors.
+
+Here are some handy links for issues to look through:
 
 - [Server and web app](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
 - Mobile apps: no "help wanted" label, but see the
@@ -155,20 +160,28 @@ changes to tests).
 
 We recommend the following process for finding an issue to work on:
 
-1. Read the description of an issue tagged with the "help wanted" label and make
-   sure you understand it.
-2. If it seems promising, poke around the product
+1. Find an issue tagged with the "help wanted" label that is either unassigned,
+   or looks to be abandoned.
+1. Read the description of the issue and make sure you understand it.
+1. If it seems promising, poke around the product
    (on [chat.zulip.org](https://chat.zulip.org) or in the development
    environment) until you know how the piece being
    described fits into the bigger picture. If after some exploration the
    description seems confusing or ambiguous, post a question on the GitHub
    issue, as others may benefit from the clarification as well.
-3. When you find an issue you like, try to get started working on it. See if you
+1. When you find an issue you like, try to get started working on it. See if you
    can find the part of the code you'll need to modify (`git grep` is your
    friend!) and get some idea of how you'll approach the problem.
-4. If you feel lost, that's OK! Go through these steps again with another issue.
+1. If you feel lost, that's OK! Go through these steps again with another issue.
    There's plenty to work on, and the exploration you do will help you learn
    more about the project.
+
+An assigned issue can be considered abandoned if:
+
+- There is no recent contributor activity.
+- There are no open PRs, or an open PR needs work in order to be ready for
+  review. For example, a PR may need to be updated to address reviewer feedback
+  or to pass tests.
 
 Note that you are _not_ claiming an issue while you are iterating through steps
 1-4. _Before you claim an issue_, you should be confident that you will be able to
@@ -204,9 +217,10 @@ are set up with a GitHub workflow bot called
 requests in order to create a better workflow for Zulip contributors.
 
 To claim an issue in these repositories, simply post a comment that says
-`@zulipbot claim` to the issue thread. If the issue is tagged with a [help
-wanted](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
-label, Zulipbot will immediately assign the issue to you.
+`@zulipbot claim` to the issue thread. If the issue is [tagged with a help
+wanted label and is not assigned to someone
+else](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22+no%3Aassignee),
+Zulipbot will immediately assign the issue to you.
 
 Note that new contributors can only claim one issue until their first pull request is
 merged. This is to encourage folks to finish ongoing work before starting
