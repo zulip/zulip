@@ -23,11 +23,11 @@
 ## Setting up your organization
 * [Migrating from other chat tools](/help/migrating-from-other-chat-tools)
 * [Create your organization profile](/help/create-your-organization-profile)
+* [Create user groups](/help/create-user-groups)
 * [Customize organization settings](/help/customize-organization-settings)
 * [Create channels](/help/create-channels)
 * [Customize settings for new users](/help/customize-settings-for-new-users)
 * [Invite users to join](/help/invite-users-to-join)
-* [Create user groups](/help/create-user-groups)
 * [Set up integrations](/help/set-up-integrations)
 
 ## Account basics
@@ -168,7 +168,6 @@
 # Zulip administration
 
 ## Organization basics
-* [Review your organization's settings](/help/review-your-organization-settings)
 * [Organization type](/help/organization-type)
 * [Communities directory](/help/communities-directory)
 * [Import from Mattermost](/help/import-from-mattermost)

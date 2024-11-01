@@ -116,6 +116,9 @@ you will need to upgrade your plan.
 1. [Create your organization profile](/help/create-your-organization-profile),
    which is displayed on your organization's registration and login pages.
 
+1. [Create user groups](/help/create-user-groups), which offer a flexible way to
+   manage permissions.
+
 1. Review [organization permissions](/help/roles-and-permissions), such as who
    can invite users, create channels, etc.
 

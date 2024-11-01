@@ -2,6 +2,8 @@
 
 {!user-groups-intro.md!}
 
+{!user-groups-applications.md!}
+
 ## Create a user group
 
 !!! tip ""
@@ -61,6 +63,10 @@
 {end_tabs}
 
 ## Add groups and users to a group
+
+You can add users to a group, or add a group to any other group. Nesting groups
+makes them easier to maintain. For example, moving a user from one team group to
+another can automatically update what department group they belong to.
 
 {start_tabs}
 

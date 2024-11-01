@@ -1,5 +1,7 @@
-Review the settings for your organization to set everything up how you
-want it to be.
+Review the settings for your organization to set everything up how you want it
+to be.
+
+{!user-groups-intro.md!}
 
 {start_tabs}
 
