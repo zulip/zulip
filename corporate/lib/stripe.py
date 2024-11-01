@@ -5231,7 +5231,7 @@ def ensure_customer_does_not_have_active_plan(customer: Customer) -> None:
         raise UpgradeWithExistingPlanError
 
 
-@transaction.atomic
+@transaction.atomic(durable=True)
 def do_reactivate_remote_server(remote_server: RemoteZulipServer) -> None:
     """
     Utility function for reactivating deactivated registrations.
@@ -5253,7 +5253,7 @@ def do_reactivate_remote_server(remote_server: RemoteZulipServer) -> None:
     )
 
 
-@transaction.atomic
+@transaction.atomic(durable=True)
 def do_deactivate_remote_server(
     remote_server: RemoteZulipServer, billing_session: RemoteServerBillingSession
 ) -> None:

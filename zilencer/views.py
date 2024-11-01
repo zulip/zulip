@@ -1035,7 +1035,7 @@ def get_human_user_realm_uuids(
     return billable_realm_uuids
 
 
-@transaction.atomic
+@transaction.atomic(durable=True)
 def handle_customer_migration_from_server_to_realm(
     server: RemoteZulipServer,
 ) -> None:

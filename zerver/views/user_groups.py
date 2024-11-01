@@ -207,7 +207,7 @@ def edit_user_group(
 
 
 @typed_endpoint
-@transaction.atomic
+@transaction.atomic(durable=True)
 def deactivate_user_group(
     request: HttpRequest,
     user_profile: UserProfile,
