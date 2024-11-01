@@ -1,11 +1,11 @@
 # Roles and permissions
 
-## User roles
-
 User roles make it convenient to configure different permissions for different
 users in your organization. You can decide what role a user will have when you
 [send them an invitation](/help/invite-new-users), and later [change a user's
 role](/help/roles-and-permissions#change-a-users-role) if needed.
+
+{!user-groups-intro.md!}
 
 !!! tip ""
 
@@ -65,6 +65,7 @@ role](/help/roles-and-permissions#change-a-users-role) if needed.
 ## Related articles
 
 * [Change a user's role](/help/change-a-users-role)
+* [User groups](/help/user-groups)
 * [Channel permissions](/help/channel-permissions)
 * [Inviting new users](/help/invite-new-users)
 * [Zulip Cloud billing](/help/zulip-cloud-billing)
