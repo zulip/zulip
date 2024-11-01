@@ -13,6 +13,7 @@ import * as echo_state from "./echo_state";
 import * as local_message from "./local_message";
 import * as markdown from "./markdown";
 import * as message_events_util from "./message_events_util";
+import * as message_list_data_cache from "./message_list_data_cache";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
@@ -558,6 +559,16 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
                 // doing it unconditionally.
                 msg_list.view.rerender_messages(msgs_to_rerender_or_add_to_narrow);
                 msg_list.add_messages(msgs_to_rerender_or_add_to_narrow, {});
+            }
+        }
+
+        for (const msg_list_data of message_lists.non_rendered_data()) {
+            if (!msg_list_data.filter.can_apply_locally()) {
+                // Ideally we would ask server to if messages matches filter
+                // but it is not worth doing so for every new message.
+                message_list_data_cache.remove(msg_list_data.filter);
+            } else {
+                msg_list_data.add_messages(msgs_to_rerender_or_add_to_narrow);
             }
         }
     }
