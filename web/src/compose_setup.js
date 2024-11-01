@@ -598,6 +598,11 @@ export function initialize() {
         const $input = $("input#stream_message_recipient_topic");
         compose_recipient.update_topic_displayed_text($input.val(), true);
         compose_recipient.update_compose_area_placeholder_text();
+        // Once the topic input has been focused, we no longer treat
+        // the recipient row as muted, as we assume the user is
+        // doing something that requires keeping attention called
+        // to the recipient row
+        compose_recipient.unmute_recipient_row();
 
         $("input#stream_message_recipient_topic").one("blur", () => {
             compose_recipient.update_topic_displayed_text($input.val());
