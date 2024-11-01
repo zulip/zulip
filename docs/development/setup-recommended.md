@@ -179,7 +179,7 @@ WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
    - Go to **Settings** > **General**.
    - Under "File sharing implementation," select `osxfs (legacy)` from the dropdown menu.
    - This setting ensures compatibility with containerized file sharing on macOS.
-   :::
+     :::
 
 :::{tab-item} Ubuntu/Debian
 :sync: os-ubuntu
