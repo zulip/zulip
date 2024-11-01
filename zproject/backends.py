@@ -81,6 +81,7 @@ from zerver.actions.user_groups import (
     bulk_add_members_to_user_groups,
     bulk_remove_members_from_user_groups,
     check_add_user_group_core,
+    do_update_user_group_description,
 )
 from zerver.actions.user_settings import (
     do_change_full_name,
@@ -1102,6 +1103,12 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             raise ZulipLDAPError(str(e)) from e
 
     def sync_groups_from_ldap(self, user_profile: UserProfile, ldap_user: _LDAPUser) -> None:
+        """
+        Syncs the user's memberships in the Zulip groups configured for syncing
+        in LDAP_SYNCHRONIZED_GROUPS_BY_REALM with the corresponding LDAP groups.
+        Additionally, when LDAP_GROUP_DESCRIPTION_ATTR is configured, syncs each
+        Zulip group's description with its LDAP group description.
+        """
         if user_profile.realm.string_id not in settings.LDAP_SYNCHRONIZED_GROUPS_BY_REALM:
             return
 
@@ -1123,6 +1130,43 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 # for this note to no longer be helpful.
                 create_missing_groups=True,
             )
+
+            if settings.LDAP_GROUP_DESCRIPTION_ATTR is None:
+                # Syncing of group descriptions is not configured.
+                return
+
+            ldap_group_descriptions_dict = ldap_user._get_group_descriptions()
+            zulip_groups_by_name = {
+                group.name: group
+                for group in NamedUserGroup.objects.filter(
+                    # We only need to fetch the groups for which the user is a member
+                    # of the corresponding LDAP group. We don't have ldap description data for other
+                    # groups, so they won't be subject to syncing anyway.
+                    realm=user_profile.realm,
+                    name__in=intended_group_names,
+                )
+            }
+
+            for group_name, ldap_description in ldap_group_descriptions_dict.items():
+                if group_name not in intended_group_names:
+                    continue
+
+                user_group = zulip_groups_by_name.get(group_name)
+                if user_group is None:
+                    continue
+
+                if ldap_description is not None and user_group.description != ldap_description:
+                    # Sanity assert: make sure we didn't get some strange data from LDAP.
+                    assert isinstance(ldap_description, str)
+
+                    ldap_logger.debug(
+                        "Updating group description for %s from %s to %s",
+                        group_name,
+                        user_group.description,
+                        ldap_description,
+                    )
+                    do_update_user_group_description(user_group, ldap_description, acting_user=None)
+
         except Exception as e:
             raise ZulipLDAPError(str(e)) from e
 
@@ -1435,6 +1479,33 @@ class ZulipLDAPUser(_LDAPUser):
             groups.get_group_dns()
 
         return groups
+
+    def _get_group_descriptions(self) -> dict[str, str | None]:
+        if not settings.LDAP_GROUP_DESCRIPTION_ATTR:
+            return {}
+        ldap_group_descriptions: dict[str, str | None] = {}
+        self._groups: _LDAPUserGroups = self._get_groups()
+        group_infos: list[tuple[str, dict[str, list[str]]]] = self._groups._get_group_infos()
+        for group_info in group_infos:
+            group_name: str = self._groups._group_type.group_name_from_info(group_info)
+            if group_name is not None:
+                group_description = self.group_description_from_info(group_info)
+                ldap_group_descriptions[group_name] = group_description
+        return ldap_group_descriptions
+
+    def group_description_from_info(
+        self, group_info: tuple[str, dict[str, list[str]]]
+    ) -> str | None:
+        assert settings.LDAP_GROUP_DESCRIPTION_ATTR is not None
+        try:
+            description_list = group_info[1][settings.LDAP_GROUP_DESCRIPTION_ATTR]
+            description = description_list[0] if description_list else None
+        except (KeyError, IndexError):
+            description = None
+
+        # Ensure we're returning the correct type.
+        assert description is None or isinstance(description, str)
+        return description
 
 
 class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
