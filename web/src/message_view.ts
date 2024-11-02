@@ -692,7 +692,34 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                 then_select_offset = opts.then_select_offset;
             }
 
-            {
+            if (select_immediately) {
+                // We can skip the initial fetch since we already have a
+                // message we can render and select and sufficient messages
+                // rendered in the view to provide context around the anchor.
+                //
+                // We don't populate message list from locally cached data
+                // if the stream / topic filter needs to be adjusted to
+                // avoid populating messages for the wrong topic.
+                assert(!filter.requires_adjustment_for_moved_with_target);
+                const has_found_newest = msg_list.data.fetch_status.has_found_newest();
+                const has_found_oldest = msg_list.data.fetch_status.has_found_oldest();
+                const has_complete_history = has_found_newest && has_found_oldest;
+                const has_enough_context =
+                    msg_list.num_items() >= message_fetch.consts.narrow_min_num_message_for_context;
+
+                // We don't need to fetch messages if we have enough context or
+                // complete message history since `scroll_finished`
+                // automatically fetch messages if user
+                // is near the end of rendered messages.
+                if (!has_complete_history && !has_enough_context) {
+                    message_fetch.fetch_more_if_required_for_current_msg_list(
+                        has_found_oldest,
+                        has_found_newest,
+                        true,
+                        true,
+                    );
+                }
+            } else {
                 let anchor;
 
                 // Either we're trying to center the narrow around a
