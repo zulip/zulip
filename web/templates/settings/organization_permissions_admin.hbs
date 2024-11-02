@@ -106,6 +106,24 @@
             </div>
         </div>
 
+        <div id="org-group-permissions" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Group permissions" }}
+                    {{> ../help_link_widget link="/help/manage-user-groups" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="group-permissions" }}
+            </div>
+            <div class="m-10 inline-block organization-permissions-parent">
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_manage_all_groups"
+                  label=(t 'Who can administer all user groups')}}
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_create_groups"
+                  label=(t 'Who can create user groups')}}
+            </div>
+        </div>
+
         <div id="org-direct-message-permissions" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Direct message permissions" }}
@@ -325,14 +343,6 @@
                         {{> dropdown_options_widget option_values=bot_creation_policy_values}}
                     </select>
                 </div>
-
-                {{> group_setting_value_pill_input
-                  setting_name="realm_can_create_groups"
-                  label=(t 'Who can create user groups')}}
-
-                {{> group_setting_value_pill_input
-                  setting_name="realm_can_manage_all_groups"
-                  label=(t 'Who can administer all user groups')}}
 
                 {{> group_setting_value_pill_input
                   setting_name="realm_can_add_custom_emoji_group"
