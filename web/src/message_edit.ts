@@ -346,7 +346,7 @@ export function hide_message_edit_spinner($row: JQuery): void {
 }
 
 export function show_message_edit_spinner($row: JQuery): void {
-    loading.show_spinner($row, $row.find(".modal__spinner"));
+    loading.show_button_spinner($row, $row.find(".modal__spinner"));
     $row.find(".message_edit_save span").hide();
     $row.find(".message_edit_save").addClass("message-edit-button-disabled");
     $row.find(".message_edit_cancel").addClass("message-edit-button-disabled");

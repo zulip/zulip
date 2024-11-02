@@ -432,7 +432,8 @@ test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
 
     const fake_compose_box = new FakeComposeBox();
 
-    override(loading, "show_button_spinner", ($spinner) => {
+    override(loading, "show_button_spinner", ($button_element, $spinner) => {
+        assert.equal($button_element.selector, ".compose-submit-button");
         assert.equal($spinner.selector, fake_compose_box.compose_spinner_selector());
         show_button_spinner_called = true;
     });
@@ -480,7 +481,8 @@ test_ui("finish", ({override, override_rewire}) => {
     override_rewire(compose_banner, "clear_message_sent_banners", noop);
 
     let show_button_spinner_called = false;
-    override(loading, "show_button_spinner", ($spinner) => {
+    override(loading, "show_button_spinner", ($button_element, $spinner) => {
+        assert.equal($button_element.selector, ".compose-submit-button");
         assert.equal($spinner.selector, fake_compose_box.compose_spinner_selector());
         show_button_spinner_called = true;
     });
