@@ -47,6 +47,7 @@ function test_with(fixture) {
     all_messages_data.rewire_all_messages_data({
         fetch_status: {
             has_found_newest: () => fixture.has_found_newest,
+            has_found_oldest: () => fixture.has_found_newest,
         },
         visibly_empty: () => fixture.visibly_empty,
         all_messages() {
@@ -60,6 +61,9 @@ function test_with(fixture) {
         last() {
             assert.notEqual(fixture.all_messages, undefined);
             return fixture.all_messages.at(-1);
+        },
+        filter: {
+            equals: () => false,
         },
     });
 
@@ -89,6 +93,7 @@ run_test("near after unreads", () => {
             msg_id: 37,
         },
         has_found_newest: false,
+        has_found_oldest: false,
         all_messages: [
             {id: 37, topic: "whatever"},
             {id: 42, topic: "whatever"},
@@ -116,6 +121,7 @@ run_test("near not in message list", () => {
             msg_id: 46,
         },
         has_found_newest: false,
+        has_found_oldest: false,
         all_messages: [
             {id: 41, topic: "whatever"},
             {id: 45, topic: "whatever"},
@@ -141,6 +147,7 @@ run_test("near before unreads", () => {
             msg_id: 43,
         },
         has_found_newest: false,
+        has_found_oldest: false,
         all_messages: [
             {id: 42, topic: "whatever"},
             {id: 43, topic: "whatever"},
@@ -165,6 +172,7 @@ run_test("near with no unreads", () => {
             flavor: "not_found",
         },
         has_found_newest: false,
+        has_found_oldest: false,
         visibly_empty: true,
         expected_id_info: {
             target_id: 42,
@@ -185,6 +193,7 @@ run_test("is private with no target", () => {
             msg_id: 550,
         },
         has_found_newest: true,
+        has_found_oldest: false,
         all_messages: [
             {id: 450, type: "private", to_user_ids: "1,2"},
             {id: 500, type: "private", to_user_ids: "1,2"},
@@ -209,6 +218,7 @@ run_test("dm with target outside of range", () => {
             flavor: "not_found",
         },
         has_found_newest: false,
+        has_found_oldest: false,
         all_messages: [{id: 999}],
         expected_id_info: {
             target_id: 5,
@@ -228,6 +238,7 @@ run_test("is:private with no unreads before fetch", () => {
             flavor: "not_found",
         },
         has_found_newest: false,
+        has_found_oldest: false,
         visibly_empty: true,
         expected_id_info: {
             target_id: undefined,
@@ -248,6 +259,7 @@ run_test("is:private with target and no unreads", () => {
             flavor: "not_found",
         },
         has_found_newest: true,
+        has_found_oldest: false,
         visibly_empty: false,
         all_messages: [
             {id: 350},
@@ -273,6 +285,7 @@ run_test("is:mentioned with no unreads and no matches", () => {
             flavor: "not_found",
         },
         has_found_newest: true,
+        has_found_oldest: false,
         all_messages: [],
         expected_id_info: {
             target_id: undefined,
@@ -292,6 +305,7 @@ run_test("is:alerted with no unreads and one match", () => {
             flavor: "not_found",
         },
         has_found_newest: true,
+        has_found_oldest: false,
         all_messages: [
             {id: 55, topic: "whatever", alerted: true},
             {id: 57, topic: "whatever", alerted: false},
@@ -316,6 +330,7 @@ run_test("is:resolved with one unread", () => {
             msg_id: 56,
         },
         has_found_newest: true,
+        has_found_oldest: false,
         all_messages: [
             {id: 55, type: "stream", topic: resolved_topic_name},
             {id: 56, type: "stream", topic: resolved_topic_name},
@@ -340,6 +355,7 @@ run_test("is:resolved with no unreads", () => {
             flavor: "not_found",
         },
         has_found_newest: true,
+        has_found_oldest: false,
         all_messages: [
             {id: 55, type: "stream", topic: resolved_topic_name},
             {id: 57, type: "stream", topic: "foo"},
@@ -407,6 +423,7 @@ run_test("stream, no unread, not in all_messages", () => {
             flavor: "not_found",
         },
         has_found_newest: true,
+        has_found_oldest: false,
         visibly_empty: false,
         all_messages: [{id: 400}, {id: 500}],
         expected_id_info: {
@@ -430,6 +447,7 @@ run_test("search, stream, not in all_messages", () => {
             flavor: "cannot_compute",
         },
         has_found_newest: true,
+        has_found_oldest: false,
         visibly_empty: false,
         all_messages: [{id: 400}, {id: 500}],
         expected_id_info: {
@@ -459,6 +477,7 @@ run_test("stream/topic not in all_messages", () => {
             msg_id: 2,
         },
         has_found_newest: true,
+        has_found_oldest: false,
         all_messages: [{id: 900}, {id: 1100}],
         expected_id_info: {
             target_id: 1000,
@@ -482,6 +501,7 @@ run_test("final corner case", () => {
             flavor: "not_found",
         },
         has_found_newest: true,
+        has_found_oldest: false,
         visibly_empty: false,
         all_messages: [
             {id: 400, topic: "whatever"},

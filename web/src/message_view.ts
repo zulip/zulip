@@ -978,6 +978,34 @@ export function maybe_add_local_messages(opts: {
             // below), but the server doesn't support that query.
             id_info.final_select_id = id_info.target_id;
         }
+
+        // If we have cached data for the same narrow, we can try to find the
+        // message we want to select locally.
+        if (superset_data.filter.equals(filter) && !load_local_messages(msg_data, superset_data)) {
+            return;
+        }
+
+        // Even for the `cannot_compute` case, we can render locally
+        // under specific conditions.
+        if (
+            // If we locally have the message user wants to select.
+            id_info.target_id &&
+            msg_data.get(id_info.target_id) &&
+            // We don't want to accidentally mark old unreads as read,
+            // so we only render if cannot mark messages read in this view
+            // which is commonly the case in this code path.
+            !filter.can_mark_messages_read()
+        ) {
+            id_info.local_select_id = id_info.target_id;
+        } else if (
+            id_info.target_id === undefined &&
+            // Our goal here is to select the first unread id. We can only do
+            // so if we have the complete data for the narrow.
+            msg_data.fetch_status.has_found_newest() &&
+            msg_data.fetch_status.has_found_oldest()
+        ) {
+            id_info.local_select_id = msg_data.first_unread_message_id();
+        }
         // if we can't compute a next unread id, just return without
         // setting local_select_id, so that we go to the server.
         return;
