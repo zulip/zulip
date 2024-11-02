@@ -339,16 +339,14 @@ export function stream_and_topic_exist_in_edit_history(
 }
 
 export function hide_message_edit_spinner($row: JQuery): void {
-    $row.find(".loader").hide();
+    $row.find(".modal__spinner").hide();
     $row.find(".message_edit_save span").show();
     $row.find(".message_edit_save").removeClass("message-edit-button-disabled");
     $row.find(".message_edit_cancel").removeClass("message-edit-button-disabled");
 }
 
 export function show_message_edit_spinner($row: JQuery): void {
-    // Always show the white spinner like we
-    // do for send button in compose box.
-    loading.show_button_spinner($row.find(".loader"), true);
+    loading.show_spinner($row, $row.find(".modal__spinner"));
     $row.find(".message_edit_save span").hide();
     $row.find(".message_edit_save").addClass("message-edit-button-disabled");
     $row.find(".message_edit_cancel").addClass("message-edit-button-disabled");
