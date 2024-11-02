@@ -628,6 +628,11 @@ export function update_messages(events) {
                 //       with data fetched from the server (which is already updated)
                 //       when we move to new narrow and what data is locally available.
                 if (changed_narrow) {
+                    // Remove outdated cached data to avoid repopulating from it.
+                    // We are yet to update the cached message list data for
+                    // the moved topics.
+                    // TODO: Update the cache instead of discarding it.
+                    message_list_data_cache.remove(new_filter);
                     const terms = new_filter.terms();
                     const opts = {
                         trigger: "stream/topic change",
