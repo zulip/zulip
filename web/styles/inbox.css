@@ -18,6 +18,13 @@
             text-decoration: none;
         }
 
+        .unread_mention_info {
+            margin: 0;
+            opacity: 0.7;
+            position: relative;
+            top: 0.22em;
+        }
+
         .unread_count {
             opacity: 1;
             outline: 0 solid var(--color-background-unread-counter);
