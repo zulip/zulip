@@ -423,8 +423,11 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     override_rewire(compose_banner, "clear_message_sent_banners", noop);
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
-    override(loading, "show_button_spinner", ($spinner) => {
-        assert.equal($spinner.selector, ".compose-submit-button .loader");
+    override(loading, "show_button_spinner", ($button_element, $spinner) => {
+        // Check that the correct button and spinner elements are passed
+        assert.equal($button_element.selector, ".compose-submit-button");
+        assert.equal($spinner.selector, ".compose-submit-button .modal__spinner");
+
         show_button_spinner_called = true;
     });
 
@@ -473,8 +476,11 @@ test_ui("finish", ({override, override_rewire}) => {
     override(document, "to_$", () => $("document-stub"));
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     let show_button_spinner_called = false;
-    override(loading, "show_button_spinner", ($spinner) => {
-        assert.equal($spinner.selector, ".compose-submit-button .loader");
+    override(loading, "show_button_spinner", ($button_element, $spinner) => {
+        // Check that the correct button and spinner elements are passed
+        assert.equal($button_element.selector, ".compose-submit-button");
+        assert.equal($spinner.selector, ".compose-submit-button .modal__spinner");
+
         show_button_spinner_called = true;
     });
 
