@@ -103,6 +103,114 @@ export function update_current_view_for_topic_visibility() {
     return false;
 }
 
+function update_cached_lists_for_stream_or_topic_change(
+    old_stream_id,
+    new_stream_id,
+    old_topic,
+    new_topic,
+    message_ids,
+    msg_list_data,
+) {
+    const msg_list = message_lists.rendered_message_lists.get(
+        msg_list_data.rendered_message_list_id,
+    );
+    const filter = msg_list_data.filter;
+    assert(old_stream_id !== undefined);
+    assert(old_topic !== undefined);
+    assert(new_stream_id !== undefined || new_topic !== undefined);
+    let moved_message_stream_id_str = old_stream_id.toString();
+    let moved_message_topic = old_topic;
+    if (new_stream_id !== undefined) {
+        moved_message_stream_id_str = sub_store.get(new_stream_id).stream_id.toString();
+    }
+
+    if (new_topic !== undefined) {
+        moved_message_topic = new_topic;
+    }
+
+    // We don't need to do anything if the moved messages
+    // cannot be part of the data filter before or after move.
+    if (
+        !filter.can_newly_match_moved_messages(old_stream_id.toString(), old_topic) &&
+        !filter.can_newly_match_moved_messages(moved_message_stream_id_str, moved_message_topic)
+    ) {
+        return;
+    }
+
+    // We need the message objects to determine if they match the filter.
+    const messages_to_fetch = [];
+    const messages = [];
+    for (const message_id of message_ids) {
+        const message = message_store.get(message_id);
+        if (message !== undefined) {
+            messages.push(message);
+        } else {
+            const first_id = msg_list.first().id;
+            const last_id = msg_list.last().id;
+            const has_found_newest = msg_list_data.fetch_status.has_found_newest();
+            const has_found_oldest = msg_list_data.fetch_status.has_found_oldest();
+
+            if (message_id > first_id && message_id < last_id) {
+                // Need to insert message middle of the list.
+                messages_to_fetch.push(message_id);
+            } else if (message_id < first_id && has_found_oldest) {
+                // Need to insert message at the start of list.
+                messages_to_fetch.push(message_id);
+            } else if (message_id > last_id && has_found_newest) {
+                // Need to insert message at the end of list.
+                messages_to_fetch.push(message_id);
+            }
+        }
+    }
+
+    if (!filter.can_apply_locally()) {
+        // It is important to remove the cached data for the filter first
+        // to avoid populating the message list again from outdated data.
+        message_list_data_cache.remove(filter);
+        if (msg_list && msg_list === message_lists.current) {
+            message_view.show(filter.terms(), {
+                then_select_id: msg_list.selected_id(),
+                trigger: "stream/topic change",
+                force_rerender: true,
+            });
+        }
+    } else if (messages_to_fetch.length > 0) {
+        // Fetch the message and update the view.
+        channel.get({
+            url: "/json/messages",
+            data: {
+                message_ids: JSON.stringify(messages_to_fetch),
+                // We don't filter by narrow here since we can
+                // apply the filter locally and the fetched message
+                // can be used to update other message lists and
+                // cached message data structures as well.
+            },
+            success(data) {
+                // `messages_to_fetch` might already be cached locally when
+                // we reach here but `message_helper.process_new_message`
+                // already handles that case.
+                for (const raw_message of data.messages) {
+                    message_helper.process_new_message(raw_message);
+                }
+
+                update_cached_lists_for_stream_or_topic_change(
+                    old_stream_id,
+                    new_stream_id,
+                    old_topic,
+                    new_topic,
+                    message_ids,
+                    msg_list_data,
+                );
+            },
+        });
+    } else {
+        // We have all the messages locally, so we can update the view.
+        msg_list_data.remove(message_ids);
+        msg_list_data.add_messages(messages);
+        msg_list?.rerender();
+    }
+}
+
 function update_msg_list_data_for_msg_property_change(
     message_ids,
     property_term_type,
@@ -397,10 +505,8 @@ export function insert_new_messages(messages, sent_by_this_client, deliver_local
 export function update_messages(events) {
     const messages_to_rerender = [];
     let changed_narrow = false;
-    let refreshed_current_narrow = false;
     let changed_compose = false;
     let any_message_content_edited = false;
-    let local_cache_missing_messages = false;
 
     for (const event of events) {
         const anchor_message = message_store.get(event.message_id);
@@ -491,15 +597,6 @@ export function update_messages(events) {
                 messages_to_rerender.push(anchor_message);
             }
         } else {
-            // Clear message list data cache since the local data for the
-            // filters might no longer be accurate.
-            //
-            // TODO: Add logic to update the message list data cache.
-            // Special care needs to be taken to ensure that the cache is
-            // updated correctly when the message is moved to a different
-            // stream or topic.
-            message_list_data_cache.clear();
-
             const going_forward_change = ["change_later", "change_all"].includes(
                 event.propagate_mode,
             );
@@ -519,11 +616,6 @@ export function update_messages(events) {
                 const message = message_store.get(message_id);
                 if (message !== undefined) {
                     event_messages.push(message);
-                } else {
-                    // If we don't have the message locally, we need to
-                    // refresh the current narrow after the update to fetch
-                    // the updated messages.
-                    local_cache_missing_messages = true;
                 }
             }
             // The event.message_ids received from the server are not in sorted order.
@@ -677,69 +769,33 @@ export function update_messages(events) {
                 }
             }
 
-            // If a message was moved to the current narrow and we don't have
-            // the message cached, we need to refresh the narrow to display the message.
-            if (!changed_narrow && local_cache_missing_messages && current_filter) {
-                let moved_message_stream_id_str = old_stream_id.toString();
-                let moved_message_topic = orig_topic;
-                if (stream_changed) {
-                    moved_message_stream_id_str = sub_store.get(new_stream_id).stream_id.toString();
-                }
-
-                if (topic_edited) {
-                    moved_message_topic = new_topic;
-                }
-
-                if (
-                    current_filter.can_newly_match_moved_messages(
-                        moved_message_stream_id_str,
-                        moved_message_topic,
-                    )
-                ) {
-                    refreshed_current_narrow = true;
-                    message_view.show(current_filter.terms(), {
-                        then_select_id: current_selected_id,
-                        trigger: "stream/topic change",
-                        force_rerender: true,
-                    });
-                }
-            }
-
             // Ensure messages that are no longer part of this
             // narrow are deleted and messages that are now part
             // of this narrow are added to the message_list.
-            //
-            // TODO: Update cached message list data objects as well.
             for (const list of message_lists.all_rendered_message_lists()) {
-                if (
-                    list === message_lists.current &&
-                    (changed_narrow || refreshed_current_narrow)
-                ) {
+                if (list === message_lists.current && changed_narrow) {
                     continue;
                 }
 
-                const event_msg_ids = event_messages.map((msg) => msg.id);
-                if (list.data.filter.can_apply_locally()) {
-                    // Remove add messages and add them back to the list to
-                    // allow event muted messages which were previously part
-                    // of the message list but hidden could be rerendered again.
-                    list.data.remove(event_msg_ids);
-                    list.data.add_messages(event_messages);
-                    list.rerender();
-                } else {
-                    // Remove existing message that were updated, since
-                    // they may not be a part of the filter now. Also,
-                    // this will help us rerender them via
-                    // maybe_add_narrowed_messages, if they were
-                    // simply updated.
-                    list.remove_and_rerender(event_msg_ids);
-                    // For filters that cannot be processed locally, ask server.
-                    message_events_util.maybe_add_narrowed_messages(
-                        event_messages,
-                        list,
-                        message_util.add_messages,
-                    );
-                }
+                update_cached_lists_for_stream_or_topic_change(
+                    old_stream_id,
+                    new_stream_id,
+                    orig_topic,
+                    new_topic,
+                    event.message_ids,
+                    list.data,
+                );
+            }
+
+            for (const msg_list_data of message_lists.non_rendered_data()) {
+                update_cached_lists_for_stream_or_topic_change(
+                    old_stream_id,
+                    new_stream_id,
+                    orig_topic,
+                    new_topic,
+                    event.message_ids,
+                    msg_list_data,
+                );
             }
         }
 
