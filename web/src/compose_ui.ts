@@ -1213,7 +1213,7 @@ export function hide_compose_spinner(): void {
 
 export function show_compose_spinner(): void {
     compose_spinner_visible = true;
-    loading.show_spinner(
+    loading.show_button_spinner(
         $(".compose-submit-button"),
         $(".compose-submit-button .modal__spinner"),
     );

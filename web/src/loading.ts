@@ -81,7 +81,7 @@ export function destroy_indicator($container: JQuery): void {
     $container.css({width: 0, height: 0});
 }
 
-export function show_spinner($button_element: JQuery, $spinner: JQuery): void {
+export function show_button_spinner($button_element: JQuery, $spinner: JQuery): void {
     const span_width = $button_element.find(".submit-button-text").width();
     const span_height = $button_element.find(".submit-button-text").height();
 
@@ -96,7 +96,7 @@ export function show_spinner($button_element: JQuery, $spinner: JQuery): void {
     });
 }
 
-export function hide_spinner($button_element: JQuery, $spinner: JQuery): void {
+export function hide_button_spinner($button_element: JQuery, $spinner: JQuery): void {
     // Show the span
     $button_element.find(".submit-button-text").show();
 
