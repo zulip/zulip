@@ -66,7 +66,7 @@ let initial_backfill_for_all_messages_done = false;
 export let initial_narrow_pointer: number | undefined;
 export let initial_narrow_offset: number | undefined;
 
-const consts = {
+export const consts = {
     // Because most views are centered on the first unread message,
     // the user has a higher probability of wanting to scroll down
     // than, so extra fetched history after the cursor is more likely
@@ -76,6 +76,10 @@ const consts = {
     // for a larger number of messages after the cursor is cheap.
     narrow_before: 60,
     narrow_after: 150,
+
+    // Number of messages that a message list restored from cached
+    // message list data should have to maintain sufficient context.
+    narrow_min_num_message_for_context: 100,
 
     // Batch sizes when at the top/bottom of a narrowed view.
     narrowed_view_backward_batch_size: 100,
