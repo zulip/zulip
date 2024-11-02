@@ -1,6 +1,10 @@
 <li data-user-id="{{user_id}}" class="user_sidebar_entry {{#if is_current_user}}user_sidebar_entry_me {{/if}} narrow-filter {{#if faded}} user-fade {{/if}}">
     <div class="selectable_sidebar_block">
-        <span class="{{user_circle_class}} user_circle"></span>
+        {{#if (eq user_circle_class "user_circle_deactivated")}}
+            <span class="fa fa-ban user_circle_deactivated"></span>
+        {{else}}
+            <span class="{{user_circle_class}} user_circle"></span>
+        {{/if}}
         <a class="user-presence-link"
           href="{{href}}"
           data-user-id="{{user_id}}"

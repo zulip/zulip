@@ -404,6 +404,18 @@ export function get_full_names_for_poll_option(user_ids: number[]): string {
     return get_display_full_names(user_ids).join(", ");
 }
 
+export const is_person_active = (user_id: number): boolean => {
+    if (!people_by_user_id_dict.has(user_id)) {
+        blueslip.error("No user found", {user_id});
+    }
+
+    if (cross_realm_dict.has(user_id)) {
+        return true;
+    }
+
+    return active_user_dict.has(user_id);
+};
+
 export function get_display_full_name(user_id: number): string {
     const person = get_user_by_id_assert_valid(user_id);
 
@@ -417,6 +429,14 @@ export function get_display_full_name(user_id: number): string {
 
     if (should_add_guest_user_indicator(user_id)) {
         return $t({defaultMessage: "{name} (guest)"}, {name: person.full_name});
+    }
+
+    if (
+        !is_person_active(user_id) &&
+        !person.is_inaccessible_user &&
+        !person.is_missing_server_data
+    ) {
+        return $t({defaultMessage: "User Deactivated"});
     }
 
     return person.full_name;
@@ -1401,18 +1421,6 @@ export function add_active_user(person: User): void {
     _add_user(person);
     non_active_user_dict.delete(person.user_id);
 }
-
-export const is_person_active = (user_id: number): boolean => {
-    if (!people_by_user_id_dict.has(user_id)) {
-        blueslip.error("No user found", {user_id});
-    }
-
-    if (cross_realm_dict.has(user_id)) {
-        return true;
-    }
-
-    return active_user_dict.has(user_id);
-};
 
 export function add_cross_realm_user(person: User): void {
     if (!people_dict.has(person.email)) {
