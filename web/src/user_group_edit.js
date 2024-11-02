@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import render_confirm_delete_user from "../templates/confirm_dialog/confirm_delete_user.hbs";
+import render_group_info_banner from "../templates/modal_banner/user_group_info_banner.hbs";
 import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.hbs";
 import render_cannot_deactivate_group_banner from "../templates/user_group_settings/cannot_deactivate_group_banner.hbs";
 import render_change_user_group_info_modal from "../templates/user_group_settings/change_user_group_info_modal.hbs";
@@ -11,6 +12,7 @@ import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as components from "./components";
+import * as compose_banner from "./compose_banner";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import * as hash_util from "./hash_util";
@@ -865,6 +867,18 @@ export function setup_page(callback) {
             $("#groups_overlay_container"),
         );
         $groups_overlay_container.html(groups_overlay_html);
+
+        const context = {
+            banner_type: compose_banner.INFO,
+            classname: "group_info",
+            hide_close_button: true,
+            button_text: $t({defaultMessage: "Learn more"}),
+            button_link: "/help/user-groups",
+        };
+
+        $("#groups_overlay_container .nothing-selected .group-info-banner").html(
+            render_group_info_banner(context),
+        );
 
         // Initially as the overlay is build with empty right panel,
         // active_group_id is undefined.

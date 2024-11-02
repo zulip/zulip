@@ -63,19 +63,15 @@
                     <div id="stream_settings_title" class="stream-info-title">{{t 'Channel settings' }}</div>
                 </div>
                 <div class="nothing-selected">
-                    <button type="button" class="create_stream_button animated-purple-button" {{#unless can_create_streams}}disabled{{/unless}}>{{t 'Create channel' }}</button>
-                    {{#if can_create_streams}}
-                    <span class="settings-empty-option-text">
-                        {{#tr}}
-                            First time? Read our <z-link>guidelines</z-link> for creating and naming channels.
-                            {{#*inline "z-link"}}<a href="/help/create-channels" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
-                        {{/tr}}
-                    </span>
-                    {{else}}
-                    <span class="settings-empty-option-text">
-                        {{t 'You do not have permission to create channels in this organization.' }}
-                    </span>
-                    {{/if}}
+                    <div class="stream-info-banner"></div>
+                    <div class="create-stream-button-container">
+                        <button type="button" class="create_stream_button animated-purple-button" {{#unless can_create_streams}}disabled{{/unless}}>{{t 'Create channel' }}</button>
+                        {{#unless can_create_streams}}
+                        <span class="settings-empty-option-text">
+                            {{t 'You do not have permission to create channels in this organization.' }}
+                        </span>
+                        {{/unless}}
+                    </div>
                 </div>
                 <div id="stream_settings" class="settings" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
                     {{!-- edit stream here --}}
