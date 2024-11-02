@@ -50,13 +50,17 @@
                     <div id="user_group_settings_title" class="user-group-info-title">{{t 'User group settings' }}</div>
                 </div>
                 <div class="nothing-selected">
+                    <button type="button" class="create_user_group_button animated-purple-button" {{#unless can_create_user_groups}}disabled{{/unless}}>{{t 'Create user group' }}</button>
                     {{#if can_create_user_groups}}
-                    <button type="button" class="create_user_group_button animated-purple-button">{{t 'Create user group' }}</button>
                     <span class="settings-empty-option-text">
                         {{#tr}}
                             First time? Read our <z-link>guidelines</z-link> for creating user groups.
                             {{#*inline "z-link"}}<a href="/help/user-groups" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
                         {{/tr}}
+                    </span>
+                    {{else}}
+                    <span class="settings-empty-option-text">
+                        {{t 'You do not have permission to create user groups.' }}
                     </span>
                     {{/if}}
                 </div>
