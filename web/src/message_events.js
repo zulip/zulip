@@ -893,8 +893,31 @@ export function update_messages(events) {
         // edited. We should replace any_message_content_edited with
         // passing two sets to rerender_messages; the set of all that
         // are changed, and the set with content changes.
-        for (const list of message_lists.all_rendered_message_lists()) {
-            list.view.rerender_messages(messages_to_rerender, any_message_content_edited);
+
+        for (const msg_list of message_lists.all_rendered_message_lists()) {
+            if (any_message_content_edited && !msg_list.data.filter.can_apply_locally()) {
+                // We need to live update any search based views since the
+                // new content change will affect the message we need to render.
+                message_events_util.maybe_add_narrowed_messages(
+                    messages_to_rerender,
+                    msg_list,
+                    message_util.add_new_messages,
+                );
+            } else {
+                // In theory, we could just rerender messages where there were
+                // changes in either the rounded timestamp we display or the
+                // message content, but in practice, there's no harm to just
+                // doing it unconditionally.
+                msg_list.view.rerender_messages(messages_to_rerender, any_message_content_edited);
+            }
+        }
+
+        for (const msg_list_data of message_lists.non_rendered_data()) {
+            if (any_message_content_edited && !msg_list_data.filter.can_apply_locally()) {
+                // Ideally we would ask server to if messages matches filter
+                // but it is not worth doing so for every message edit.
+                message_list_data_cache.remove(msg_list_data.filter);
+            }
         }
     }
 
