@@ -633,6 +633,11 @@ input[type="checkbox"] {
             font-weight: bold;
             word-break: break-all;
         }
+
+        .zulip-icon {
+            top: 4px;
+            position: relative;
+        }
     }
 }
 
