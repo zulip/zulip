@@ -169,7 +169,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     function reset() {
         $("textarea#compose-textarea").val("foobarfoobar");
         $("textarea#compose-textarea").trigger("blur");
-        $(".compose-submit-button .loader").show();
+        $(".compose-submit-button .modal__spinner").show();
         draft_deleted = false;
         reify_message_id_checked = false;
     }
@@ -221,7 +221,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
 
     assert.equal($("textarea#compose-textarea").val(), "");
     assert.ok($("textarea#compose-textarea").is_focused());
-    assert.ok(!$(".compose-submit-button .loader").visible());
+    assert.ok(!$(".compose-submit-button .modal__spinner").visible());
     assert.ok(reify_message_id_checked);
     assert.ok(draft_deleted);
 
@@ -246,7 +246,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
 
     assert.equal($("textarea#compose-textarea").val(), "");
     assert.ok($("textarea#compose-textarea").is_focused());
-    assert.ok(!$(".compose-submit-button .loader").visible());
+    assert.ok(!$(".compose-submit-button .modal__spinner").visible());
     assert.ok(reify_message_id_checked);
     assert.ok(draft_deleted);
 });
@@ -339,7 +339,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 
         $("textarea#compose-textarea").val("[foobar](/user_uploads/123456)");
         $("textarea#compose-textarea").trigger("blur");
-        $(".compose-submit-button .loader").show();
+        $(".compose-submit-button .modal__spinner").show();
 
         compose.send_message();
 
@@ -351,7 +351,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.deepEqual(stub_state, state);
         assert.equal($("textarea#compose-textarea").val(), "");
         assert.ok($("textarea#compose-textarea").is_focused());
-        assert.ok(!$(".compose-submit-button .loader").visible());
+        assert.ok(!$(".compose-submit-button .modal__spinner").visible());
     })();
 
     // This is the additional setup which is common to both the tests below.
@@ -394,7 +394,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         stub_state = initialize_state_stub_dict();
         $("textarea#compose-textarea").val("foobarfoobar");
         $("textarea#compose-textarea").trigger("blur");
-        $(".compose-submit-button .loader").show();
+        $(".compose-submit-button .modal__spinner").show();
         $("textarea#compose-textarea").off("select");
         echo_error_msg_checked = false;
         override_rewire(echo, "try_deliver_locally", noop);
@@ -413,7 +413,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.ok(banner_rendered);
         assert.equal($("textarea#compose-textarea").val(), "foobarfoobar");
         assert.ok($("textarea#compose-textarea").is_focused());
-        assert.ok(!$(".compose-submit-button .loader").visible());
+        assert.ok(!$(".compose-submit-button .modal__spinner").visible());
     })();
 });
 
@@ -486,14 +486,14 @@ test_ui("finish", ({override, override_rewire}) => {
         $("#compose_invite_users").show();
         $("#compose-send-button").prop("disabled", false);
         $("#compose-send-button").trigger("focus");
-        $(".compose-submit-button .loader").hide();
+        $(".compose-submit-button .modal__spinner").hide();
         $("textarea#compose-textarea").off("select");
         $("textarea#compose-textarea").val("");
         override_rewire(compose_ui, "compose_spinner_visible", false);
         const res = compose.finish();
         assert.equal(res, false);
         assert.ok(!$("#compose_banners .recipient_not_subscribed").visible());
-        assert.ok(!$(".compose-submit-button .loader").visible());
+        assert.ok(!$(".compose-submit-button .modal__spinner").visible());
         assert.ok(show_button_spinner_called);
     })();
 
