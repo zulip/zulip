@@ -103,6 +103,36 @@ export function load_messages_around_anchor(
     });
 }
 
+export function fetch_more_if_required_for_current_msg_list(
+    has_found_oldest: boolean,
+    has_found_newest: boolean,
+    looking_for_new_msgs: boolean,
+    looking_for_old_msgs: boolean,
+): void {
+    assert(message_lists.current !== undefined);
+    if (message_lists.current.is_combined_feed_view) {
+        return;
+    }
+
+    if (has_found_oldest && has_found_newest) {
+        // Even after loading more messages, we have
+        // no messages to display in this narrow.
+        narrow_banner.show_empty_narrow_message();
+        compose_closed_ui.update_buttons_for_private();
+        compose_recipient.check_posting_policy_for_compose_box();
+    }
+
+    if (looking_for_old_msgs && !has_found_oldest) {
+        maybe_load_older_messages({
+            msg_list: message_lists.current,
+            msg_list_data: message_lists.current.data,
+        });
+    }
+    if (looking_for_new_msgs && !has_found_newest) {
+        maybe_load_newer_messages({msg_list: message_lists.current});
+    }
+}
+
 function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): void {
     const raw_messages = data.messages;
 
@@ -136,29 +166,22 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
     if (
         message_lists.current !== undefined &&
         opts.msg_list === message_lists.current &&
-        !opts.msg_list.is_combined_feed_view &&
-        opts.msg_list.visibly_empty()
-    ) {
         // The view appears to be empty. However, because in stream
         // narrows, we fetch messages including those that might be
         // hidden by topic muting, it's possible that we received all
         // the messages we requested, and all of them are in muted
         // topics, but there are older messages for this stream that
         // we need to ask the server for.
-        if (has_found_oldest && has_found_newest) {
-            // Even after loading more messages, we have
-            // no messages to display in this narrow.
-            narrow_banner.show_empty_narrow_message();
-            compose_closed_ui.update_buttons_for_private();
-            compose_recipient.check_posting_policy_for_compose_box();
-        }
-
-        if (opts.num_before > 0 && !has_found_oldest) {
-            maybe_load_older_messages({msg_list: opts.msg_list, msg_list_data: opts.msg_list.data});
-        }
-        if (opts.num_after > 0 && !has_found_newest) {
-            maybe_load_newer_messages({msg_list: opts.msg_list});
-        }
+        message_lists.current.visibly_empty()
+    ) {
+        const looking_for_new_msgs = opts.num_after > 0;
+        const looking_for_old_msgs = opts.num_before > 0;
+        fetch_more_if_required_for_current_msg_list(
+            has_found_oldest,
+            has_found_newest,
+            looking_for_new_msgs,
+            looking_for_old_msgs,
+        );
     }
 
     if (opts.cont !== undefined) {
