@@ -863,6 +863,14 @@ h4.user_group_setting_subsection_title {
                 margin-right: 3px;
                 text-decoration: none;
             }
+
+            .deactivate {
+                height: 100%;
+
+                .icon-container {
+                    display: flex;
+                }
+            }
         }
     }
 
