@@ -21,7 +21,11 @@
         </div>
         <a href="{{preview_url}}" class="button small rounded tippy-zulip-delayed-tooltip" id="preview-stream-button" role="button" data-tooltip-template-id="view-stream-tooltip-template" data-tippy-placement="bottom" {{#unless should_display_preview_button }}style="display: none"{{/unless}}><i class="fa fa-eye"></i></a>
         {{#if is_realm_admin}}
-        <button class="button small rounded btn-danger deactivate tippy-zulip-delayed-tooltip" type="button" name="delete_button" data-tippy-content="{{t 'Archive channel'}}"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
+        <button class="button small rounded btn-danger deactivate tippy-zulip-delayed-tooltip" type="button" name="delete_button" data-tippy-content="{{t 'Archive channel'}}">
+            <span class="icon-container">
+                <i class="zulip-icon zulip-icon-archive" aria-hidden="true"></i>
+            </span>
+        </button>
         {{/if}}
     </div>
     {{/with}}

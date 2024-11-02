@@ -23,7 +23,7 @@ archiving them where appropriate.
 
 1. Select a channel.
 
-1. Click the **trash** <i class="fa fa-trash-o"></i> icon near the top right
+1. Click the **archive** <i class="zulip-icon zulip-icon-archive"></i> icon near the top right
    corner of the channel settings panel.
 
 1. Approve by clicking **Confirm**.
@@ -32,8 +32,8 @@ archiving them where appropriate.
 
     You can also hover over a channel in the left sidebar, click on the
     **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>), and
-    select **Channel settings** to access the **trash**
-    <i class="fa fa-trash-o"></i> icon.
+    select **Channel settings** to access the **archive**
+    <i class="zulip-icon zulip-icon-archive"></i> icon.
 
 {end_tabs}
 
