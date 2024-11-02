@@ -365,9 +365,9 @@ h4.user_group_setting_subsection_title {
 
     .left .no-streams-to-show,
     .left .no-groups-to-show,
-    .right .nothing-selected {
+    .right .nothing-selected .create-stream-button-container,
+    .right .nothing-selected .create-group-button-container {
         display: block;
-        margin-top: calc(45vh - 75px);
         text-align: center;
         font-size: 1em;
         margin-left: 2em;
@@ -375,6 +375,28 @@ h4.user_group_setting_subsection_title {
 
         .settings-empty-option-text {
             color: hsl(0deg 0% 67%);
+        }
+    }
+
+    .left .no-streams-to-show,
+    .left .no-groups-to-show {
+        margin-top: calc(45vh - 75px);
+    }
+
+    .right .nothing-selected {
+        padding: 5px 5px 0;
+
+        .stream-info-banner a,
+        .group-info-banner a {
+            color: inherit;
+        }
+
+        .create-stream-button-container {
+            margin-top: calc(45vh - 128px);
+        }
+
+        .create-group-button-container {
+            margin-top: calc(45vh - 134px);
         }
     }
 
@@ -398,12 +420,11 @@ h4.user_group_setting_subsection_title {
     .right {
         width: calc(50% + 1px);
 
-        .nothing-selected {
-            & button {
-                padding: 6px 10px 8px;
-                display: block;
-                margin: 0 auto 10px;
-            }
+        .nothing-selected .create_stream_button,
+        .nothing-selected .create_user_group_button {
+            padding: 6px 10px 8px;
+            display: block;
+            margin: 0 auto 10px;
         }
 
         .display-type {

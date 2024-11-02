@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 
 import render_stream_creation_confirmation_banner from "../templates/modal_banner/stream_creation_confirmation_banner.hbs";
+import render_stream_info_banner from "../templates/modal_banner/stream_info_banner.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
 import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
@@ -704,6 +705,18 @@ export function setup_page(callback) {
             // Debounce filtering in case a user is typing quickly
             throttled_redraw_left_panel();
         });
+
+        const context = {
+            banner_type: compose_banner.INFO,
+            classname: "stream_info",
+            hide_close_button: true,
+            button_text: $t({defaultMessage: "Learn more"}),
+            button_link: "/help/introduction-to-channels",
+        };
+
+        $("#channels_overlay_container .nothing-selected .stream-info-banner").html(
+            render_stream_info_banner(context),
+        );
 
         // When hitting Enter in the stream creation box, we open the
         // "create stream" UI with the stream name prepopulated.  This
