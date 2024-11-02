@@ -913,6 +913,7 @@ function load_local_messages(msg_data: MessageListData, superset_data: MessageLi
 
     const in_msgs = superset_data.all_messages();
     msg_data.add_messages(in_msgs);
+    msg_data.fetch_status.copy_status(superset_data.fetch_status);
 
     return !msg_data.visibly_empty();
 }
