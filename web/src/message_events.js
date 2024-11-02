@@ -316,6 +316,8 @@ export function insert_new_messages(messages, sent_by_this_client, deliver_local
 
     for (const msg_list_data of message_lists.non_rendered_data()) {
         if (!msg_list_data.filter.can_apply_locally()) {
+            // Ideally we would ask server to if messages matches filter
+            // but it is not worth doing so for every new message.
             message_list_data_cache.remove(msg_list_data.filter);
         } else {
             message_util.add_new_messages_data(messages, msg_list_data);
