@@ -3,7 +3,7 @@
 Zulip automatically saves the content of your message as a draft when you close
 the compose box, ensuring that you never lose your work. When you start
 composing, the most recently edited draft for the conversation you are composing
-to automatically appears in the compose box. Drafts are saved for 30 days.
+to automatically appears in the compose box.
 
 !!! warn ""
 
