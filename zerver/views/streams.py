@@ -569,13 +569,13 @@ def you_were_just_subscribed_message(
     if len(subscriptions) == 1:
         with override_language(recipient_user.default_language):
             return _("{user_full_name} subscribed you to the channel {channel_name}.").format(
-                user_full_name=f"@**{acting_user.full_name}|{acting_user.id}**",
+                user_full_name=f"@_**{acting_user.full_name}|{acting_user.id}**",
                 channel_name=f"#**{subscriptions[0]}**",
             )
 
     with override_language(recipient_user.default_language):
         message = _("{user_full_name} subscribed you to the following channels:").format(
-            user_full_name=f"@**{acting_user.full_name}|{acting_user.id}**",
+            user_full_name=f"@_**{acting_user.full_name}|{acting_user.id}**",
         )
     message += "\n\n"
     for channel_name in subscriptions:
