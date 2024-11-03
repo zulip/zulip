@@ -34,11 +34,14 @@ import * as stream_settings_api from "./stream_settings_api";
 import * as stream_settings_components from "./stream_settings_components";
 import * as stream_settings_containers from "./stream_settings_containers";
 import * as stream_settings_data from "./stream_settings_data";
+import {stream_specific_notification_settings_schema} from "./stream_types";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
+
+const notification_labels_schema = stream_specific_notification_settings_schema.keyof();
 
 export function setup_subscriptions_tab_hash(tab_key_value) {
     if ($("#subscription_overlay .right").hasClass("show")) {
@@ -159,17 +162,10 @@ function show_subscription_settings(sub) {
     });
 }
 
-function has_global_notification_setting(setting_label) {
-    if (setting_label.includes("_notifications")) {
-        return true;
-    } else if (setting_label.includes("_notify")) {
-        return true;
-    }
-    return false;
-}
-
 function is_notification_setting(setting_label) {
-    return has_global_notification_setting(setting_label) || setting_label === "is_muted";
+    return (
+        notification_labels_schema.safeParse(setting_label).success || setting_label === "is_muted"
+    );
 }
 
 export function stream_settings(sub) {
@@ -178,14 +174,15 @@ export function stream_settings(sub) {
         settings_config.all_notifications(user_settings).disabled_notification_settings;
 
     return settings_labels.map(([setting, label]) => {
+        const notification_setting = notification_labels_schema.safeParse(setting);
         const ret = {
             name: setting,
             label,
             disabled_realm_setting: check_realm_setting[setting],
             is_disabled: check_realm_setting[setting],
-            has_global_notification_setting: has_global_notification_setting(setting),
+            has_global_notification_setting: notification_setting.success,
         };
-        if (has_global_notification_setting(setting)) {
+        if (notification_setting.success) {
             // This block ensures we correctly display to users the
             // current state of stream-level notification settings
             // with a value of `null`, which inherit the user's global
@@ -331,9 +328,12 @@ function stream_setting_changed(e) {
     const sub = get_sub_for_target(e.target);
     const $status_element = $(e.target).closest(".subsection-parent").find(".alert-notification");
     const setting = e.target.name;
-    if (has_global_notification_setting(setting) && sub[setting] === null) {
+    const notification_setting = notification_labels_schema.safeParse(setting);
+    if (notification_setting.success && sub[setting] === null) {
         sub[setting] =
-            user_settings[settings_config.generalize_stream_notification_setting[setting]];
+            user_settings[
+                settings_config.generalize_stream_notification_setting[notification_setting.data]
+            ];
     }
     stream_settings_api.set_stream_property(
         sub,
