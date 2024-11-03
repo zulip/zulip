@@ -75,6 +75,23 @@
                 top: -0.5px;
             }
         }
+
+        .recipient_bar_controls {
+            opacity: 0;
+        }
+
+        /* Show the bar controls on hover and when the bar is sticky */
+        &:hover {
+            .recipient_bar_controls {
+                opacity: 1;
+            }
+        }
+
+        &.sticky_header {
+            .recipient_bar_controls {
+                opacity: 1;
+            }
+        }
     }
 }
 

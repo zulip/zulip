@@ -888,6 +888,13 @@ div.focused-message-list {
     display: block;
 }
 
+/* In conversation view, always show the recipient bar action buttons */
+div.focused-message-list.is-conversation-view .recipient_row {
+    & .recipient_bar_controls {
+        opacity: 1;
+    }
+}
+
 .rtl {
     direction: rtl;
 }
