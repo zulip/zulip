@@ -114,6 +114,8 @@ def do_change_user_delivery_email(
 ) -> None:
     delete_user_profile_caches([user_profile], user_profile.realm_id)
 
+    old_email = user_profile.delivery_email  # Armazene o email antigo
+
     user_profile.delivery_email = new_email
     if user_profile.email_address_is_realm_public():
         user_profile.email = new_email
@@ -121,22 +123,16 @@ def do_change_user_delivery_email(
     else:
         user_profile.save(update_fields=["delivery_email"])
 
-    # We notify all the users who have access to delivery email.
+    # Notificar os usuários com acesso ao email de entrega.
     payload = dict(user_id=user_profile.id, delivery_email=new_email)
     event = dict(type="realm_user", op="update", person=payload)
     delivery_email_visible_user_ids = get_users_with_access_to_real_email(user_profile)
-
     send_event_on_commit(user_profile.realm, event, delivery_email_visible_user_ids)
 
     if user_profile.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
-        # If the user is using Gravatar to manage their email address,
-        # their Gravatar just changed, and we need to notify other
-        # clients.
         notify_avatar_url_change(user_profile)
 
     if user_profile.email_address_is_realm_public():
-        # Additionally, if we're also changing the publicly visible
-        # email, we send a new_email event as well.
         send_user_email_update_event(user_profile)
 
     event_time = timezone_now()
@@ -146,8 +142,12 @@ def do_change_user_delivery_email(
         modified_user=user_profile,
         event_type=AuditLogEventType.USER_EMAIL_CHANGED,
         event_time=event_time,
+        # store the old and new email in the extra_data field
+        extra_data={
+            "old_value": old_email,
+            "new_value": new_email
+        }
     )
-
 
 def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> None:
     old_email = user_profile.delivery_email

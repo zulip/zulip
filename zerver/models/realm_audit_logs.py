@@ -232,6 +232,9 @@ class RealmAuditLog(AbstractRealmAuditLog):
         on_delete=CASCADE,
     )
     event_last_message_id = models.IntegerField(null=True)
+    # This field is used to store the old and new values of the field that was changed.
+    old_value = models.TextField(null=True, blank=True)
+    new_value = models.TextField(null=True, blank=True)
 
     class Meta:
         ordering = ["id"]

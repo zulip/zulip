@@ -277,6 +277,7 @@ class TestRealmAuditLog(ZulipTestCase):
     def test_change_email(self) -> None:
         now = timezone_now()
         user = self.example_user("hamlet")
+        old_email = user.delivery_email  # store the old email
         new_email = "test@example.com"
         do_change_user_delivery_email(user, new_email, acting_user=user)
         self.assertEqual(
@@ -286,16 +287,17 @@ class TestRealmAuditLog(ZulipTestCase):
             1,
         )
         self.assertEqual(new_email, user.delivery_email)
-
-        # Test the RealmAuditLog stringification
         audit_entry = RealmAuditLog.objects.get(
             event_type=AuditLogEventType.USER_EMAIL_CHANGED, event_time__gte=now
         )
         self.assertTrue(
             repr(audit_entry).startswith(
-                f"<RealmAuditLog: {AuditLogEventType.USER_EMAIL_CHANGED.name} "
+            f"<RealmAuditLog: {AuditLogEventType.USER_EMAIL_CHANGED.name} "
             )
         )
+        # verify the extra_data field 
+        self.assertEqual(audit_entry.extra_data["old_value"], old_email)
+        self.assertEqual(audit_entry.extra_data["new_value"], new_email)
 
     def test_change_avatar_source(self) -> None:
         now = timezone_now()
