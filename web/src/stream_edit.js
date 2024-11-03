@@ -83,17 +83,7 @@ function get_stream_id(target) {
 
 function get_sub_for_target(target) {
     const stream_id = get_stream_id(target);
-    if (!stream_id) {
-        blueslip.error("Cannot find stream id for target");
-        return undefined;
-    }
-
-    const sub = sub_store.get(stream_id);
-    if (!sub) {
-        blueslip.error("get_sub_for_target() failed id lookup", {stream_id});
-        return undefined;
-    }
-    return sub;
+    return sub_store.get(stream_id);
 }
 
 export function open_edit_panel_for_row(stream_row) {
@@ -339,10 +329,6 @@ function stream_setting_changed(e) {
     const sub = get_sub_for_target(e.target);
     const $status_element = $(e.target).closest(".subsection-parent").find(".alert-notification");
     const setting = e.target.name;
-    if (!sub) {
-        blueslip.error("undefined sub in stream_setting_changed()");
-        return;
-    }
     if (has_global_notification_setting(setting) && sub[setting] === null) {
         sub[setting] =
             user_settings[settings_config.generalize_stream_notification_setting[setting]];
@@ -608,23 +594,9 @@ export function initialize() {
         e.stopPropagation();
 
         const stream_id = get_stream_id(e.target);
-        if (!stream_id) {
-            ui_report.client_error(
-                $t_html({defaultMessage: "Invalid channel ID"}),
-                $(".stream_change_property_info"),
-            );
-            return;
-        }
 
         function do_archive_stream() {
             const stream_id = Number($(".dialog_submit_button").attr("data-stream-id"));
-            if (!stream_id) {
-                ui_report.client_error(
-                    $t_html({defaultMessage: "Invalid channel ID"}),
-                    $(".stream_change_property_info"),
-                );
-                return;
-            }
             const $row = $(".stream-row.active");
             archive_stream(stream_id, $(".stream_change_property_info"), $row);
         }
