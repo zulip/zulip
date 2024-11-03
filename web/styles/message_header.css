@@ -80,6 +80,11 @@
             opacity: 0;
         }
 
+        /* When any of the actions are focused, don't hide them */
+        .recipient_bar_controls:focus-within {
+            opacity: 1;
+        }
+
         /* Show the bar controls on hover and when the bar is sticky */
         &:hover {
             .recipient_bar_controls {

@@ -902,6 +902,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
 .topic_edit {
     display: none;
     line-height: 22px;
+    visibility: visible;
 
     .alert {
         display: inline-block;
