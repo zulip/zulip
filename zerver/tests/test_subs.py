@@ -6055,7 +6055,7 @@ class GetSubscribersTest(ZulipTestCase):
             )
 
         msg = f"""
-            @**King Hamlet|{hamlet.id}** subscribed you to the following channels:
+            @_**King Hamlet|{hamlet.id}** subscribed you to the following channels:
 
             * #**stream_0**
             * #**stream_1**
@@ -6090,7 +6090,7 @@ class GetSubscribersTest(ZulipTestCase):
         )
 
         msg = f"""
-            @**King Hamlet|{hamlet.id}** subscribed you to the channel #**stream_invite_only_1**.
+            @_**King Hamlet|{hamlet.id}** subscribed you to the channel #**stream_invite_only_1**.
             """
         for user in [cordelia, othello, polonius]:
             self.assert_user_got_subscription_notification(user, msg)
