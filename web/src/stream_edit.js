@@ -703,7 +703,7 @@ export function initialize() {
             }
             dialog_widget.launch({
                 html_heading: $t_html({defaultMessage: "Confirm changing access permissions"}),
-                html_body: render_confirm_stream_privacy_change_modal,
+                html_body: render_confirm_stream_privacy_change_modal(),
                 id: "confirm_stream_privacy_change",
                 html_submit_button: $t_html({defaultMessage: "Confirm"}),
                 on_click() {
