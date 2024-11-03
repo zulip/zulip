@@ -22,7 +22,11 @@ from pydantic import AfterValidator, Json, NonNegativeInt
 
 from confirmation.models import Confirmation, confirmation_url
 from confirmation.settings import STATUS_USED
-from corporate.lib.activity import format_optional_datetime, remote_installation_stats_link
+from corporate.lib.activity import (
+    format_optional_datetime,
+    realm_support_link,
+    remote_installation_stats_link,
+)
 from corporate.lib.billing_types import BillingModality
 from corporate.models import CustomerPlan
 from zerver.actions.create_realm import do_change_realm_subdomain
@@ -90,6 +94,13 @@ class DemoRequestForm(forms.Form):
     role = forms.CharField(max_length=MAX_INPUT_LENGTH)
     organization_name = forms.CharField(max_length=MAX_INPUT_LENGTH)
     organization_type = forms.CharField()
+    organization_website = forms.URLField(required=True, assume_scheme="https")
+    expected_user_count = forms.CharField(max_length=MAX_INPUT_LENGTH)
+    message = forms.CharField(widget=forms.Textarea)
+
+
+class SalesRequestForm(forms.Form):
+    MAX_INPUT_LENGTH = 50
     organization_website = forms.URLField(required=True, assume_scheme="https")
     expected_user_count = forms.CharField(max_length=MAX_INPUT_LENGTH)
     message = forms.CharField(widget=forms.Textarea)
@@ -183,6 +194,59 @@ def demo_request(request: HttpRequest) -> HttpResponse:
             return response
 
     response = render(request, "corporate/support/demo_request.html", context=context)
+    return response
+
+
+@zulip_login_required
+@typed_endpoint_without_parameters
+def sales_support_request(request: HttpRequest) -> HttpResponse:
+    from corporate.lib.stripe import BILLING_SUPPORT_EMAIL
+
+    assert request.user.is_authenticated
+
+    if not request.user.is_realm_admin:
+        return render(request, "404.html", status=404)
+
+    context = {
+        "MAX_INPUT_LENGTH": SalesRequestForm.MAX_INPUT_LENGTH,
+        "user_email": request.user.delivery_email,
+        "user_full_name": request.user.full_name,
+    }
+
+    if request.POST:
+        post_data = request.POST.copy()
+        form = SalesRequestForm(post_data)
+
+        if form.is_valid():
+            rate_limit_request_by_ip(request, domain="sends_email_by_ip")
+
+            email_context = {
+                "full_name": request.user.full_name,
+                "email": request.user.delivery_email,
+                "role": UserProfile.ROLE_ID_TO_API_NAME[request.user.role],
+                "organization_name": request.user.realm.name,
+                "organization_type": get_org_type_display_name(request.user.realm.org_type),
+                "organization_website": form.cleaned_data["organization_website"],
+                "expected_user_count": form.cleaned_data["expected_user_count"],
+                "message": form.cleaned_data["message"],
+                "support_link": realm_support_link(request.user.realm.string_id),
+            }
+
+            send_email(
+                "zerver/emails/sales_support_request",
+                to_emails=[BILLING_SUPPORT_EMAIL],
+                from_name="Sales support request",
+                from_address=FromAddress.tokenized_no_reply_address(),
+                reply_to_email=email_context["email"],
+                context=email_context,
+            )
+
+            response = render(
+                request, "corporate/support/support_request_thanks.html", context=context
+            )
+            return response
+
+    response = render(request, "corporate/support/sales_support_request.html", context=context)
     return response
 
 

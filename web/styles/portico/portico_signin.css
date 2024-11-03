@@ -1461,3 +1461,12 @@ button#register_auth_button_gitlab {
     margin-top: 5px;
     display: none;
 }
+
+#sales-support-form-bottom-info {
+    padding: 0;
+
+    .not-editable-realm-field {
+        margin: 0;
+        padding: 0;
+    }
+}
