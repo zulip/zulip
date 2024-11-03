@@ -173,10 +173,27 @@ WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
 :::{tab-item} macOS
 :sync: os-mac
 
-1. Install [Vagrant][vagrant-dl] (latest).
-2. Install [Docker Desktop](https://docs.docker.com/desktop/mac/install/) (latest).
-3. Open the Docker desktop app's settings panel, and choose `osxfs (legacy)` under "Choose file sharing implementation for your containers."
-   :::
+1. Install Vagrant (Latest Version)
+
+   - Visit the [Vagrant download page](https://www.vagrantup.com/downloads).
+   - Download the latest version for macOS.
+   - Open the downloaded `.dmg` file and drag the Vagrant icon into your Applications folder to install it.
+
+2. Install Docker Desktop (Latest Version)
+
+   - Go to the [Docker Desktop installation page](https://docs.docker.com/desktop/mac/install/).
+   - Click on the **Download for Mac** button to download the latest version for your macOS.
+   - Once downloaded, open the `.dmg` file and drag the Docker icon into your Applications folder to install.
+
+3. Configure Docker Desktop Settings
+   - Launch the Docker Desktop application from your Applications folder.
+   - Click the Docker whale icon in the menu bar and select **Settings**.
+   - In the Settings window, navigate to the **General** tab.
+   - Under the General tab, locate the file sharing implementation section.
+   - Check the box for **`osxfs (legacy)`**.
+   - Click **Apply & Restart** to save your changes and restart Docker Desktop.
+
+:::
 
 :::{tab-item} Ubuntu/Debian
 :sync: os-ubuntu
