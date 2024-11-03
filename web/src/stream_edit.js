@@ -305,8 +305,8 @@ export function update_muting_rendering(sub) {
     $edit_container.find(".mute-note").toggleClass("hide-mute-note", !sub.is_muted);
 }
 
-function stream_notification_reset(e) {
-    const sub = get_sub_for_target(e.target);
+function stream_notification_reset(elem) {
+    const sub = get_sub_for_target(elem);
     const data = [{stream_id: sub.stream_id, property: "is_muted", value: false}];
     for (const [per_stream_setting_name, global_setting_name] of Object.entries(
         settings_config.generalize_stream_notification_setting,
@@ -320,14 +320,14 @@ function stream_notification_reset(e) {
 
     stream_settings_api.bulk_set_stream_property(
         data,
-        $(e.target).closest(".subsection-parent").find(".alert-notification"),
+        $(elem).closest(".subsection-parent").find(".alert-notification"),
     );
 }
 
-function stream_setting_changed(e) {
-    const sub = get_sub_for_target(e.target);
-    const $status_element = $(e.target).closest(".subsection-parent").find(".alert-notification");
-    const setting = e.target.name;
+function stream_setting_changed(elem) {
+    const sub = get_sub_for_target(elem);
+    const $status_element = $(elem).closest(".subsection-parent").find(".alert-notification");
+    const setting = elem.name;
     const notification_setting = notification_labels_schema.safeParse(setting);
     if (notification_setting.success && sub[setting] === null) {
         sub[setting] =
@@ -337,7 +337,7 @@ function stream_setting_changed(e) {
     }
     stream_settings_api.set_stream_property(
         sub,
-        {property: setting, value: e.target.checked},
+        {property: setting, value: elem.checked},
         $status_element,
     );
 }
@@ -444,10 +444,10 @@ export function initialize() {
         stream_settings_components.sub_or_unsub(sub);
     });
 
-    $("#channels_overlay_container").on("click", "#open_stream_info_modal", (e) => {
+    $("#channels_overlay_container").on("click", "#open_stream_info_modal", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        const stream_id = get_stream_id(e.target);
+        const stream_id = get_stream_id(this);
         const stream = sub_store.get(stream_id);
         const template_data = {
             stream_name: stream.name,
@@ -513,8 +513,8 @@ export function initialize() {
         },
     );
 
-    function save_stream_info(e) {
-        const sub = get_sub_for_target(e.currentTarget);
+    function save_stream_info() {
+        const sub = get_sub_for_target(this);
 
         const url = `/json/streams/${sub.stream_id}`;
         const data = {};
@@ -531,11 +531,11 @@ export function initialize() {
         dialog_widget.submit_api_request(channel.patch, url, data);
     }
 
-    $("#channels_overlay_container").on("click", ".copy_email_button", (e) => {
+    $("#channels_overlay_container").on("click", ".copy_email_button", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
-        const stream_id = get_stream_id(e.target);
+        const stream_id = get_stream_id(this);
 
         channel.get({
             url: "/json/streams/" + stream_id + "/email_address",
@@ -556,24 +556,28 @@ export function initialize() {
     $("#channels_overlay_container").on(
         "click",
         ".subsection-parent .reset-stream-notifications-button",
-        stream_notification_reset,
+        function on_click() {
+            stream_notification_reset(this);
+        },
     );
 
     $("#channels_overlay_container").on(
         "change",
         ".sub_setting_checkbox .sub_setting_control",
-        stream_setting_changed,
+        function on_change() {
+            stream_setting_changed(this);
+        },
     );
 
     // This handler isn't part of the normal edit interface; it's the convenient
     // checkmark in the subscriber list.
-    $("#channels_overlay_container").on("click", ".sub_unsub_button", (e) => {
-        if ($(e.currentTarget).hasClass("disabled")) {
+    $("#channels_overlay_container").on("click", ".sub_unsub_button", function (e) {
+        if ($(this).hasClass("disabled")) {
             // We do not allow users to subscribe themselves to private streams.
             return;
         }
 
-        const sub = get_sub_for_target(e.target);
+        const sub = get_sub_for_target(this);
         // Makes sure we take the correct stream_row.
         const $stream_row = $(
             `#channels_overlay_container div.stream-row[data-stream-id='${CSS.escape(
@@ -591,11 +595,11 @@ export function initialize() {
         e.stopPropagation();
     });
 
-    $("#channels_overlay_container").on("click", ".deactivate", (e) => {
+    $("#channels_overlay_container").on("click", ".deactivate", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
-        const stream_id = get_stream_id(e.target);
+        const stream_id = get_stream_id(this);
 
         function do_archive_stream() {
             const stream_id = Number($(".dialog_submit_button").attr("data-stream-id"));
@@ -640,34 +644,34 @@ export function initialize() {
         $(".dialog_submit_button").attr("data-stream-id", stream_id);
     });
 
-    $("#channels_overlay_container").on("click", ".stream-row", function (e) {
-        if ($(e.target).closest(".check, .subscription_settings").length === 0) {
+    $("#channels_overlay_container").on("click", ".stream-row", function () {
+        if ($(this).closest(".check, .subscription_settings").length === 0) {
             open_edit_panel_for_row(this);
         }
     });
 
-    $("#channels_overlay_container").on("change", ".stream_message_retention_setting", (e) => {
-        const message_retention_setting_dropdown_value = e.target.value;
+    $("#channels_overlay_container").on("change", ".stream_message_retention_setting", function () {
+        const message_retention_setting_dropdown_value = this.value;
         settings_components.change_element_block_display_property(
             "stream_message_retention_custom_input",
             message_retention_setting_dropdown_value === "custom_period",
         );
     });
 
-    $("#channels_overlay_container").on("change input", "input, select, textarea", (e) => {
+    $("#channels_overlay_container").on("change input", "input, select, textarea", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
-        if ($(e.target).hasClass("no-input-change-detection")) {
+        if ($(this).hasClass("no-input-change-detection")) {
             // This is to prevent input changes detection in elements
             // within a subsection whose changes should not affect the
             // visibility of the discard button
             return false;
         }
 
-        const stream_id = get_stream_id(e.target);
+        const stream_id = get_stream_id(this);
         const sub = sub_store.get(stream_id);
-        const $subsection = $(e.target).closest(".settings-subsection-parent");
+        const $subsection = $(this).closest(".settings-subsection-parent");
         settings_components.save_discard_stream_settings_widget_status_handler($subsection, sub);
         if (sub && $subsection.attr("id") === "stream_permission_settings") {
             stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
@@ -678,10 +682,10 @@ export function initialize() {
     $("#channels_overlay_container").on(
         "click",
         ".subsection-header .subsection-changes-save button",
-        (e) => {
+        function (e) {
             e.preventDefault();
             e.stopPropagation();
-            const $save_button = $(e.currentTarget);
+            const $save_button = $(this);
             const $subsection_elem = $save_button.closest(".settings-subsection-parent");
 
             const stream_id = Number(
@@ -717,16 +721,16 @@ export function initialize() {
     $("#channels_overlay_container").on(
         "click",
         ".subsection-header .subsection-changes-discard button",
-        (e) => {
+        function (e) {
             e.preventDefault();
             e.stopPropagation();
 
             const stream_id = Number(
-                $(e.target).closest(".subscription_settings.show").attr("data-stream-id"),
+                $(this).closest(".subscription_settings.show").attr("data-stream-id"),
             );
             const sub = sub_store.get(stream_id);
 
-            const $subsection = $(e.target).closest(".settings-subsection-parent");
+            const $subsection = $(this).closest(".settings-subsection-parent");
             settings_org.discard_stream_settings_subsection_changes($subsection, sub);
             if ($subsection.attr("id") === "stream_permission_settings") {
                 stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
