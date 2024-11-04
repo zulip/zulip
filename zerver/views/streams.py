@@ -468,7 +468,7 @@ def compose_views(thunks: list[Callable[[], HttpResponse]]) -> dict[str, Any]:
     """
 
     json_dict: dict[str, Any] = {}
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         for thunk in thunks:
             response = thunk()
             json_dict.update(orjson.loads(response.content))

@@ -9,6 +9,7 @@ from unittest import mock
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
@@ -4016,7 +4017,9 @@ class SubscriptionRestApiTest(ZulipTestCase):
         def thunk2() -> HttpResponse:
             raise JsonableError("random failure")
 
-        with self.assertRaises(JsonableError):
+        with transaction.atomic(), self.assertRaises(JsonableError):
+            # The atomic() wrapper helps to avoid JsonableError breaking
+            # the test's transaction.
             compose_views([thunk1, thunk2])
 
         user_profile = self.example_user("hamlet")
