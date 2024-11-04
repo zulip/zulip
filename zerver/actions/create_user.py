@@ -659,7 +659,7 @@ def do_activate_mirror_dummy_user(
     if settings.BILLING_ENABLED:
         from corporate.lib.stripe import RealmBillingSession
 
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         change_user_is_active(user_profile, True)
         user_profile.is_mirror_dummy = False
         user_profile.set_unusable_password()
