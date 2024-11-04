@@ -336,18 +336,13 @@ def update_user_backend(
     return json_success(request)
 
 
-def avatar(
+def avatar_by_id(
     request: HttpRequest,
     maybe_user_profile: UserProfile | AnonymousUser,
-    email_or_id: str,
+    user_id: int,
     medium: bool = False,
 ) -> HttpResponse:
-    """Accepts an email address or user ID and returns the avatar"""
-    is_email = False
-    try:
-        int(email_or_id)
-    except ValueError:
-        is_email = True
+    """Accepts a user ID and returns the avatar"""
 
     if not maybe_user_profile.is_authenticated:
         # Allow anonymous access to avatars only if spectators are
@@ -356,27 +351,14 @@ def avatar(
         if not realm.allow_web_public_streams_access():
             raise MissingAuthenticationError
 
-        # We only allow the ID format for accessing a user's avatar
-        # for spectators. This is mainly for defense in depth, since
-        # email_address_visibility should mean spectators only
-        # interact with fake email addresses anyway.
-        if is_email:
-            raise MissingAuthenticationError
-
         if settings.RATE_LIMITING:
-            unique_avatar_key = f"{realm.id}/{email_or_id}/{medium}"
+            unique_avatar_key = f"{realm.id}/{user_id}/{medium}"
             rate_limit_spectator_attachment_access_by_file(unique_avatar_key)
     else:
         realm = maybe_user_profile.realm
 
     try:
-        if is_email:
-            avatar_user_profile = get_user_including_cross_realm(email_or_id, realm)
-        else:
-            avatar_user_profile = get_user_by_id_in_realm_including_cross_realm(
-                int(email_or_id), realm
-            )
-
+        avatar_user_profile = get_user_by_id_in_realm_including_cross_realm(user_id, realm)
         url: str | None = None
         if maybe_user_profile.is_authenticated and not check_can_access_user(
             avatar_user_profile, maybe_user_profile
@@ -387,8 +369,42 @@ def avatar(
             url = avatar_url(avatar_user_profile, medium=medium)
         assert url is not None
     except UserProfile.DoesNotExist:
+        url = get_avatar_for_inaccessible_user()
+
+    assert url is not None
+    if request.META["QUERY_STRING"]:
+        url = append_url_query_string(url, request.META["QUERY_STRING"])
+    return redirect(url)
+
+
+def avatar_by_email(
+    request: HttpRequest,
+    maybe_user_profile: UserProfile | AnonymousUser,
+    email: str,
+    medium: bool = False,
+) -> HttpResponse:
+    """Accepts an email address and returns the avatar"""
+
+    if not maybe_user_profile.is_authenticated:
+        # We only allow the ID format for accessing a user's avatar
+        # for spectators. This is mainly for defense in depth, since
+        # email_address_visibility should mean spectators only
+        # interact with fake email addresses anyway.
+        raise MissingAuthenticationError
+
+    realm = maybe_user_profile.realm
+
+    try:
+        avatar_user_profile = get_user_including_cross_realm(email, realm)
+        url: str | None = None
+        if not check_can_access_user(avatar_user_profile, maybe_user_profile):
+            url = get_avatar_for_inaccessible_user()
+        else:
+            # If there is a valid user account passed in, use its avatar
+            url = avatar_url(avatar_user_profile, medium=medium)
+        assert url is not None
+    except UserProfile.DoesNotExist:
         # If there is no such user, treat it as a new gravatar
-        email = email_or_id
         avatar_version = 1
         url = get_gravatar_url(email, avatar_version, medium)
 
@@ -399,9 +415,16 @@ def avatar(
 
 
 def avatar_medium(
-    request: HttpRequest, maybe_user_profile: UserProfile | AnonymousUser, email_or_id: str
+    request: HttpRequest,
+    maybe_user_profile: UserProfile | AnonymousUser,
+    email: str | None = None,
+    user_id: int | None = None,
 ) -> HttpResponse:
-    return avatar(request, maybe_user_profile, email_or_id, medium=True)
+    if email:
+        return avatar_by_email(request, maybe_user_profile, email, medium=True)
+    else:
+        assert user_id is not None
+        return avatar_by_id(request, maybe_user_profile, user_id, medium=True)
 
 
 def get_stream_name(stream: Stream | None) -> str | None:
