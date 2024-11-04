@@ -4540,7 +4540,7 @@ class RemoteRealmBillingSession(BillingSession):
     def process_downgrade(
         self, plan: CustomerPlan, background_update: bool = False
     ) -> None:  # nocoverage
-        with transaction.atomic():
+        with transaction.atomic(savepoint=False):
             old_plan_type = self.remote_realm.plan_type
             new_plan_type = RemoteRealm.PLAN_TYPE_SELF_MANAGED
             self.remote_realm.plan_type = new_plan_type
@@ -4967,7 +4967,7 @@ class RemoteServerBillingSession(BillingSession):
     def process_downgrade(
         self, plan: CustomerPlan, background_update: bool = False
     ) -> None:  # nocoverage
-        with transaction.atomic():
+        with transaction.atomic(savepoint=False):
             old_plan_type = self.remote_server.plan_type
             new_plan_type = RemoteZulipServer.PLAN_TYPE_SELF_MANAGED
             self.remote_server.plan_type = new_plan_type
