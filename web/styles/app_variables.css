@@ -611,16 +611,30 @@
     --color-background-active-popover-menu: hsl(220deg 12% 5% / 7%);
     --color-border-popover-menu: hsl(0deg 0% 0% / 40%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
-    --color-background-unread-counter: hsl(105deg 2% 50%);
+    --color-background-unread-counter-prominent: hsl(240deg 10% 50% / 70%);
+    --color-background-unread-counter-normal: hsl(240deg 10% 50% / 25%);
+    --color-background-unread-counter-quiet: transparent;
+    --color-unread-counter-prominent: hsl(0deg 0% 100%);
+    --color-unread-counter-normal: hsl(0deg 0% 0% / 90%);
+    --color-unread-counter-quiet: hsl(240deg 15% 50%);
+    /* Legacy unread-counter color value. */
+    --color-background-unread-counter: var(
+        --color-background-unread-counter-prominent
+    );
+    --color-unread-counter-muted: hsl(240deg 10% 50% / 35%);
     --color-border-add-subscription-button-focus: hsl(0deg 0% 20%);
-    /* There's no alpha channel here, but this keeps
-       the variable names in line. */
-    --color-background-unread-counter-no-alpha: var(
-        --color-background-unread-counter
+    /* When unreads are hovered on the condensed
+       views, they should not have an alpha.
+       The first color corresponds to
+       --color-background-unread-counter-prominent.
+       The second color aligns with light mode's
+       --color-background. */
+    --color-background-unread-counter-no-alpha: color-mix(
+        in srgb,
+        hsl(240deg 10% 50%) 70%,
+        hsl(0deg 0% 94%)
     );
-    --color-background-unread-counter-dot: var(
-        --color-background-unread-counter
-    );
+    --color-background-unread-counter-dot: hsl(240deg 30% 40%);
     --color-border-unread-counter: var(--color-background-unread-counter);
     --color-border-unread-counter-popover-menu: inherit;
     --color-background-tab-picker-container: hsl(0deg 0% 0% / 7%);
@@ -1142,7 +1156,6 @@
     --color-background-active-popover-menu: hsl(220deg 12% 95% / 7%);
     --color-border-popover-menu: hsl(0deg 0% 0%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 100% / 20%);
-    --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
     /* When unreads are hovered on the condensed
        views, they should not have an alpha.
 
@@ -1152,10 +1165,21 @@
        an rgb() value by PostCSS Preset Env. */
     --color-background-unread-counter-no-alpha: color-mix(
         in srgb,
-        hsl(105deg 2% 50%) 50%,
+        hsl(240deg 10% 50%) 35%,
         hsl(0deg 0% 11%)
     );
-    --color-background-unread-counter-dot: hsl(105deg 2% 50% / 90%);
+    --color-background-unread-counter-dot: hsl(240deg 35% 68%);
+    --color-background-unread-counter-prominent: hsl(240deg 18.37% 34.42%);
+    --color-background-unread-counter-normal: hsl(240deg 10% 50% / 35%);
+    --color-background-unread-counter-quiet: transparent;
+    --color-unread-counter-prominent: hsl(0deg 0% 100%);
+    --color-unread-counter-normal: hsl(0deg 0% 100% / 85%);
+    --color-unread-counter-quiet: hsl(240deg 15% 60%);
+    /* Legacy unread-counter color value. */
+    --color-background-unread-counter: var(
+        --color-background-unread-counter-prominent
+    );
+    --color-unread-counter-muted: hsl(240deg 10% 50% / 35%);
     --color-border-unread-counter: hsl(105deg 2% 50%);
     --color-border-unread-counter-popover-menu: var(
         --color-border-unread-counter
