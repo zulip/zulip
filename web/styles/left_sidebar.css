@@ -71,7 +71,7 @@
     /* Masked unreads display as flex when revealed. */
     align-items: center;
     justify-content: center;
-    color: var(--color-masked-unread-marker);
+    color: var(--color-unread-counter-muted);
     width: var(--left-sidebar-single-digit-unread-width);
 }
 
@@ -719,9 +719,8 @@ li.active-sub-filter {
 .top_left_drafts .unread_count,
 .top_left_scheduled_messages .unread_count,
 .condensed-views-popover-menu .unread_count {
-    background-color: unset;
-    color: inherit;
-    border: 0.5px solid var(--color-border-unread-counter);
+    background-color: var(--color-background-unread-counter-quiet);
+    color: var(--color-unread-counter-quiet);
 }
 
 /* Don't show unread counts on views... */
