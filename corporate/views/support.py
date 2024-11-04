@@ -98,7 +98,7 @@ class DemoRequestForm(forms.Form):
 @zulip_login_required
 @typed_endpoint_without_parameters
 def support_request(request: HttpRequest) -> HttpResponse:
-    from corporate.lib.support import get_realm_support_url
+    from corporate.lib.stripe import build_support_url
 
     user = request.user
     assert user.is_authenticated
@@ -119,7 +119,7 @@ def support_request(request: HttpRequest) -> HttpResponse:
                 "realm_string_id": user.realm.string_id,
                 "request_subject": form.cleaned_data["request_subject"],
                 "request_message": form.cleaned_data["request_message"],
-                "support_url": get_realm_support_url(user.realm),
+                "support_url": build_support_url("support", user.realm.string_id),
                 "user_role": user.get_role_name(),
             }
             # Sent to the server's support team, so this email is not user-facing.
