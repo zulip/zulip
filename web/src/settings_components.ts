@@ -1203,14 +1203,17 @@ export function save_discard_realm_settings_widget_status_handler($subsection: J
 
 export function save_discard_stream_settings_widget_status_handler(
     $subsection: JQuery,
-    sub: StreamSubscription,
+    sub: StreamSubscription | undefined,
 ): void {
     $subsection.find(".subsection-failed-status p").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
-    const show_change_process_button = properties_elements.some((elem) =>
-        check_stream_settings_property_changed(elem, sub),
-    );
+    let show_change_process_button = false;
+    if (sub !== undefined) {
+        show_change_process_button = properties_elements.some((elem) =>
+            check_stream_settings_property_changed(elem, sub),
+        );
+    }
 
     const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");
     const button_state = show_change_process_button ? "unsaved" : "discarded";
@@ -1222,6 +1225,7 @@ export function save_discard_stream_settings_widget_status_handler(
     // making it private unless they subscribe.
     if (
         button_state === "unsaved" &&
+        sub &&
         !sub.invite_only &&
         !sub.subscribed &&
         switching_to_private(properties_elements)
