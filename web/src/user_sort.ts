@@ -21,7 +21,7 @@ export function sort_email(a: User, b: User): number {
     return compare_a_b(email_a.toLowerCase(), email_b.toLowerCase());
 }
 
-export function sort_role(a: User, b: User): number {
+export function sort_role<T extends {role: number}>(a: T, b: T): number {
     return compare_a_b(a.role, b.role);
 }
 

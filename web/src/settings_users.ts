@@ -1,4 +1,6 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
+import type * as tippy from "tippy.js";
 
 import render_admin_user_list from "../templates/settings/admin_user_list.hbs";
 
@@ -8,9 +10,11 @@ import * as channel from "./channel";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
 import {$t} from "./i18n";
+import type {ListWidget as ListWidgetType} from "./list_widget";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as people from "./people";
+import type {User} from "./people";
 import * as presence from "./presence";
 import * as scroll_util from "./scroll_util";
 import * as settings_bots from "./settings_bots";
@@ -30,7 +34,18 @@ export const deactivated_user_list_dropdown_widget_name = "deactivated_user_list
 let should_redraw_active_users_list = false;
 let should_redraw_deactivated_users_list = false;
 
-const active_section = {
+type UserSettingsSection = {
+    dropdown_widget_name: string;
+    filters: {
+        text_search: string;
+        role_code: number;
+    };
+    handle_events: () => void;
+    create_table: (active_users: number[]) => void;
+    list_widget: ListWidgetType<number, User> | undefined;
+};
+
+const active_section: UserSettingsSection = {
     dropdown_widget_name: active_user_list_dropdown_widget_name,
     filters: {
         text_search: "",
@@ -42,7 +57,7 @@ const active_section = {
     list_widget: undefined,
 };
 
-const deactivated_section = {
+const deactivated_section: UserSettingsSection = {
     dropdown_widget_name: deactivated_user_list_dropdown_widget_name,
     filters: {
         text_search: "",
@@ -59,34 +74,34 @@ const bots_section = {
     create_table: bots_create_table,
 };
 
-function sort_bot_email(a, b) {
-    function email(bot) {
-        return (bot.display_email || "").toLowerCase();
+function sort_bot_email(a: BotInfo, b: BotInfo): number {
+    function email(bot: BotInfo): string {
+        return (bot.display_email ?? "").toLowerCase();
     }
 
     return util.compare_a_b(email(a), email(b));
 }
 
-function sort_bot_owner(a, b) {
-    function owner_name(bot) {
+function sort_bot_owner(a: BotInfo, b: BotInfo): number {
+    function owner_name(bot: BotInfo): string {
         return (bot.bot_owner_full_name || "").toLowerCase();
     }
 
     return util.compare_a_b(owner_name(a), owner_name(b));
 }
 
-function sort_last_active(a, b) {
+function sort_last_active(a: User, b: User): number {
     return util.compare_a_b(
-        presence.last_active_date(a.user_id) || 0,
-        presence.last_active_date(b.user_id) || 0,
+        presence.last_active_date(a.user_id) ?? 0,
+        presence.last_active_date(b.user_id) ?? 0,
     );
 }
 
-function get_user_info_row(user_id) {
-    return $(`tr.user_row[data-user-id='${CSS.escape(user_id)}']`);
+function get_user_info_row(user_id: number): JQuery {
+    return $(`tr.user_row[data-user-id='${CSS.escape(user_id.toString())}']`);
 }
 
-export function allow_sorting_deactivated_users_list_by_email() {
+export function allow_sorting_deactivated_users_list_by_email(): boolean {
     const deactivated_users = people.get_non_active_realm_users();
     const deactivated_humans_with_visible_email = deactivated_users.filter(
         (user) => !user.is_bot && user.delivery_email,
@@ -95,7 +110,7 @@ export function allow_sorting_deactivated_users_list_by_email() {
     return deactivated_humans_with_visible_email.length !== 0;
 }
 
-export function update_view_on_deactivate(user_id) {
+export function update_view_on_deactivate(user_id: number): void {
     const $row = get_user_info_row(user_id);
     if ($row.length === 0) {
         return;
@@ -114,7 +129,7 @@ export function update_view_on_deactivate(user_id) {
     should_redraw_deactivated_users_list = true;
 }
 
-export function update_view_on_reactivate(user_id) {
+export function update_view_on_reactivate(user_id: number): void {
     const $row = get_user_info_row(user_id);
     if ($row.length === 0) {
         return;
@@ -132,24 +147,40 @@ export function update_view_on_reactivate(user_id) {
     should_redraw_deactivated_users_list = true;
 }
 
-function failed_listing_users() {
+function failed_listing_users(): void {
     loading.destroy_indicator($("#subs_page_loading_indicator"));
     const user_id = people.my_current_user_id();
     blueslip.error("Error while listing users for user_id", {user_id});
 }
 
-function add_value_to_filters(section, key, value) {
-    section.filters[key] = value;
+function add_value_to_filters(
+    section: UserSettingsSection,
+    key: "role_code" | "text_search",
+    value: number | string,
+): void {
+    if (key === "role_code") {
+        assert(typeof value === "number");
+        section.filters[key] = value;
+    } else {
+        assert(typeof value === "string");
+        section.filters[key] = value;
+    }
     // This hard_redraw will rerun the relevant predicate function
     // and in turn apply the new filters.
+    assert(section.list_widget !== undefined);
     section.list_widget.hard_redraw();
 }
 
-function role_selected_handler(event, dropdown, widget) {
+function role_selected_handler(
+    this: HTMLElement,
+    event: JQuery.ClickEvent,
+    dropdown: tippy.Instance,
+    widget: dropdown_widget.DropdownWidget,
+): void {
     event.preventDefault();
     event.stopPropagation();
 
-    const role_code = Number($(event.currentTarget).attr("data-unique-id"));
+    const role_code = Number($(this).attr("data-unique-id"));
     if (widget.widget_name === active_section.dropdown_widget_name) {
         add_value_to_filters(active_section, "role_code", role_code);
     } else if (widget.widget_name === deactivated_section.dropdown_widget_name) {
@@ -160,7 +191,10 @@ function role_selected_handler(event, dropdown, widget) {
     widget.render();
 }
 
-function get_roles() {
+function get_roles(): {
+    unique_id: number;
+    name: string;
+}[] {
     return [
         {unique_id: 0, name: $t({defaultMessage: "All roles"})},
         ...Object.values(settings_config.user_role_values)
@@ -172,7 +206,10 @@ function get_roles() {
     ];
 }
 
-function create_role_filter_dropdown($events_container, section) {
+function create_role_filter_dropdown(
+    $events_container: JQuery,
+    section: UserSettingsSection,
+): void {
     new dropdown_widget.DropdownWidget({
         widget_name: section.dropdown_widget_name,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
@@ -186,7 +223,7 @@ function create_role_filter_dropdown($events_container, section) {
     }).setup();
 }
 
-function populate_users() {
+function populate_users(): void {
     const active_user_ids = people.get_realm_active_human_user_ids();
     const deactivated_user_ids = people.get_non_active_human_ids();
 
@@ -200,13 +237,13 @@ function populate_users() {
     create_role_filter_dropdown($("#admin-deactivated-users-list"), deactivated_section);
 }
 
-function reset_scrollbar($sel) {
+function reset_scrollbar($sel: JQuery): () => void {
     return function () {
         scroll_util.reset_scrollbar($sel);
     };
 }
 
-function bot_owner_full_name(owner_id) {
+function bot_owner_full_name(owner_id: number | null): string | undefined {
     if (!owner_id) {
         return undefined;
     }
@@ -219,48 +256,73 @@ function bot_owner_full_name(owner_id) {
     return bot_owner.full_name;
 }
 
-function bot_info(bot_user_id) {
+type BotInfo = {
+    is_bot: boolean;
+    role: number;
+    is_active: boolean;
+    user_id: number;
+    full_name: string;
+    user_role_text: string | undefined;
+    img_src: string;
+    bot_type: string | undefined;
+    bot_owner_full_name: string;
+    no_owner: boolean;
+    is_current_user: boolean;
+    can_modify: boolean;
+    cannot_deactivate: boolean;
+    cannot_edit: boolean;
+    display_email: string;
+} & (
+    | {
+          bot_owner_id: number;
+          is_bot_owner_active: boolean;
+          owner_img_src: string;
+      }
+    | {
+          bot_owner_id: null;
+      }
+);
+
+function bot_info(bot_user_id: number): BotInfo {
     const bot_user = people.get_by_user_id(bot_user_id);
+    assert(bot_user.is_bot);
+
     const owner_id = bot_user.bot_owner_id;
+    const owner_full_name = bot_owner_full_name(owner_id);
 
-    const info = {};
-
-    info.is_bot = true;
-    info.role = bot_user.role;
-    info.is_active = people.is_person_active(bot_user.user_id);
-    info.user_id = bot_user.user_id;
-    info.full_name = bot_user.full_name;
-    info.bot_owner_id = owner_id;
-    info.user_role_text = people.get_user_type(bot_user_id);
-    info.img_src = people.small_avatar_url_for_person(bot_user);
-
-    // Convert bot type id to string for viewing to the users.
-    info.bot_type = settings_data.bot_type_id_to_string(bot_user.bot_type);
-
-    info.bot_owner_full_name = bot_owner_full_name(owner_id);
-
-    if (!info.bot_owner_full_name) {
-        info.no_owner = true;
-        info.bot_owner_full_name = $t({defaultMessage: "No owner"});
-    }
-
-    info.is_current_user = false;
-    info.can_modify = current_user.is_admin;
-    info.cannot_deactivate = bot_user.is_system_bot;
-    info.cannot_edit = bot_user.is_system_bot;
-
-    // It's always safe to show the real email addresses for bot users
-    info.display_email = bot_user.email;
-
-    if (owner_id) {
-        info.is_bot_owner_active = people.is_person_active(owner_id);
-        info.owner_img_src = people.small_avatar_url_for_person(people.get_by_user_id(owner_id));
-    }
-
-    return info;
+    return {
+        is_bot: true,
+        role: bot_user.role,
+        is_active: people.is_person_active(bot_user.user_id),
+        user_id: bot_user.user_id,
+        full_name: bot_user.full_name,
+        user_role_text: people.get_user_type(bot_user_id),
+        img_src: people.small_avatar_url_for_person(bot_user),
+        // Convert bot type id to string for viewing to the users.
+        bot_type: settings_data.bot_type_id_to_string(bot_user.bot_type),
+        bot_owner_full_name: owner_full_name ?? $t({defaultMessage: "No owner"}),
+        no_owner: !owner_full_name,
+        is_current_user: false,
+        can_modify: current_user.is_admin,
+        cannot_deactivate: bot_user.is_system_bot ?? false,
+        cannot_edit: bot_user.is_system_bot ?? false,
+        // It's always safe to show the real email addresses for bot users
+        display_email: bot_user.email,
+        ...(owner_id
+            ? {
+                  bot_owner_id: owner_id,
+                  is_bot_owner_active: people.is_person_active(owner_id),
+                  owner_img_src: people.small_avatar_url_for_person(
+                      people.get_by_user_id(owner_id),
+                  ),
+              }
+            : {
+                  bot_owner_id: null,
+              }),
+    };
 }
 
-function get_last_active(user) {
+function get_last_active(user: User): string {
     const last_active_date = presence.last_active_date(user.user_id);
 
     if (!last_active_date) {
@@ -269,39 +331,48 @@ function get_last_active(user) {
     return timerender.render_now(last_active_date).time_str;
 }
 
-function human_info(person) {
-    const info = {};
-
-    info.is_bot = false;
-    info.user_role_text = people.get_user_type(person.user_id);
-    info.is_active = people.is_person_active(person.user_id);
-    info.user_id = person.user_id;
-    info.full_name = person.full_name;
-    info.bot_owner_id = person.bot_owner_id;
-
-    info.can_modify = current_user.is_admin;
-    info.is_current_user = people.is_my_user_id(person.user_id);
-    info.cannot_deactivate =
-        person.is_owner && (!current_user.is_owner || people.is_current_user_only_owner());
-    info.display_email = person.delivery_email;
-    info.img_src = people.small_avatar_url_for_person(person);
-
-    // TODO: This is not shown in deactivated users table and it is
-    // controlled by `display_last_active_column` We might just want
-    // to show this for deactivated users, too, even though it might
-    // usually just be undefined.
-    info.last_active_date = get_last_active(person);
-
-    return info;
+function human_info(person: User): {
+    is_bot: false;
+    user_role_text: string | undefined;
+    is_active: boolean;
+    user_id: number;
+    full_name: string;
+    bot_owner_id: number | null;
+    can_modify: boolean;
+    is_current_user: boolean;
+    cannot_deactivate: boolean;
+    display_email: string | null;
+    img_src: string;
+    last_active_date: string;
+} {
+    return {
+        is_bot: false,
+        user_role_text: people.get_user_type(person.user_id),
+        is_active: people.is_person_active(person.user_id),
+        user_id: person.user_id,
+        full_name: person.full_name,
+        bot_owner_id: person.is_bot ? person.bot_owner_id : null,
+        can_modify: current_user.is_admin,
+        is_current_user: people.is_my_user_id(person.user_id),
+        cannot_deactivate:
+            person.is_owner && (!current_user.is_owner || people.is_current_user_only_owner()),
+        display_email: person.delivery_email,
+        img_src: people.small_avatar_url_for_person(person),
+        // TODO: This is not shown in deactivated users table and it is
+        // controlled by `display_last_active_column` We might just want
+        // to show this for deactivated users, too, even though it might
+        // usually just be undefined.
+        last_active_date: get_last_active(person),
+    };
 }
 
-function set_text_search_value($table, value) {
+function set_text_search_value($table: JQuery, value: string): void {
     $table.closest(".user-settings-section").find(".search").val(value);
 }
 
-let bot_list_widget;
+let bot_list_widget: ListWidgetType<number, BotInfo>;
 
-function bots_create_table() {
+function bots_create_table(): void {
     loading.make_indicator($("#admin_page_bots_loading_indicator"), {
         text: $t({defaultMessage: "Loading…"}),
     });
@@ -313,7 +384,7 @@ function bots_create_table() {
         name: "admin_bot_list",
         get_item: bot_info,
         modifier_html: render_admin_user_list,
-        html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id)}']`),
+        html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id.toString())}']`),
         filter: {
             $element: $bots_table.closest(".settings-section").find(".search"),
             predicate(item, value) {
@@ -339,15 +410,16 @@ function bots_create_table() {
     $bots_table.show();
 }
 
-function active_create_table(active_users) {
+function active_create_table(active_users: number[]): void {
     const $users_table = $("#admin_users_table");
     active_section.list_widget = ListWidget.create($users_table, active_users, {
         name: "users_table_list",
         get_item: people.get_by_user_id,
         modifier_html(item) {
-            const info = human_info(item);
-            info.display_last_active_column = true;
-            return render_admin_user_list(info);
+            return render_admin_user_list({
+                ...human_info(item),
+                display_last_active_column: true,
+            });
         },
         filter: {
             predicate(person) {
@@ -372,7 +444,7 @@ function active_create_table(active_users) {
     $("#admin_users_table").show();
 }
 
-function deactivated_create_table(deactivated_users) {
+function deactivated_create_table(deactivated_users: number[]): void {
     const $deactivated_users_table = $("#admin_deactivated_users_table");
     deactivated_section.list_widget = ListWidget.create(
         $deactivated_users_table,
@@ -381,9 +453,10 @@ function deactivated_create_table(deactivated_users) {
             name: "deactivated_users_table_list",
             get_item: people.get_by_user_id,
             modifier_html(item) {
-                const info = human_info(item);
-                info.display_last_active_column = false;
-                return render_admin_user_list(info);
+                return render_admin_user_list({
+                    ...human_info(item),
+                    display_last_active_column: false,
+                });
             },
             filter: {
                 predicate(person) {
@@ -411,7 +484,7 @@ function deactivated_create_table(deactivated_users) {
     $("#admin_deactivated_users_table").show();
 }
 
-export function update_bot_data(bot_user_id) {
+export function update_bot_data(bot_user_id: number): void {
     if (!bot_list_widget) {
         return;
     }
@@ -419,7 +492,10 @@ export function update_bot_data(bot_user_id) {
     bot_list_widget.render_item(bot_info(bot_user_id));
 }
 
-export function update_user_data(user_id, new_data) {
+export function update_user_data(
+    user_id: number,
+    new_data: {full_name?: string; role?: number},
+): void {
     const $user_row = get_user_info_row(user_id);
 
     if ($user_row.length === 0) {
@@ -439,7 +515,7 @@ export function update_user_data(user_id, new_data) {
     }
 }
 
-export function redraw_bots_list() {
+export function redraw_bots_list(): void {
     if (!bot_list_widget) {
         return;
     }
@@ -451,7 +527,7 @@ export function redraw_bots_list() {
     bot_list_widget.replace_list_data(bot_user_ids);
 }
 
-function redraw_users_list(user_section, user_list) {
+function redraw_users_list(user_section: UserSettingsSection, user_list: number[]): void {
     if (!user_section.list_widget) {
         return;
     }
@@ -459,7 +535,7 @@ function redraw_users_list(user_section, user_list) {
     user_section.list_widget.replace_list_data(user_list);
 }
 
-export function redraw_deactivated_users_list() {
+export function redraw_deactivated_users_list(): void {
     if (!should_redraw_deactivated_users_list) {
         return;
     }
@@ -468,7 +544,7 @@ export function redraw_deactivated_users_list() {
     should_redraw_deactivated_users_list = false;
 }
 
-export function redraw_active_users_list() {
+export function redraw_active_users_list(): void {
     if (!should_redraw_active_users_list) {
         return;
     }
@@ -477,7 +553,7 @@ export function redraw_active_users_list() {
     should_redraw_active_users_list = false;
 }
 
-function start_data_load() {
+function start_data_load(): void {
     loading.make_indicator($("#admin_page_users_loading_indicator"), {
         text: $t({defaultMessage: "Loading…"}),
     });
@@ -490,7 +566,7 @@ function start_data_load() {
     populate_users();
 }
 
-function handle_deactivation($tbody) {
+function handle_deactivation($tbody: JQuery): void {
     $tbody.on("click", ".deactivate", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active` in `settings.js`.
@@ -505,7 +581,7 @@ function handle_deactivation($tbody) {
             url = "/json/users/me";
         }
 
-        function handle_confirm() {
+        function handle_confirm(): void {
             let data = {};
             if ($(".send_email").is(":checked")) {
                 data = {
@@ -513,30 +589,31 @@ function handle_deactivation($tbody) {
                 };
             }
 
-            const opts = {};
             if (user_id === current_user.user_id) {
-                opts.success_continuation = () => {
-                    window.location.href = "/login/";
-                };
+                dialog_widget.submit_api_request(channel.del, url, data, {
+                    success_continuation() {
+                        window.location.href = "/login/";
+                    },
+                });
+            } else {
+                dialog_widget.submit_api_request(channel.del, url, data);
             }
-
-            dialog_widget.submit_api_request(channel.del, url, data, opts);
         }
 
         user_deactivation_ui.confirm_deactivation(user_id, handle_confirm, true);
     });
 }
 
-function handle_bot_deactivation($tbody) {
+function handle_bot_deactivation($tbody: JQuery): void {
     $tbody.on("click", ".deactivate", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
         const $button_elem = $(e.target);
         const $row = $button_elem.closest(".user_row");
-        const bot_id = Number.parseInt($row.attr("data-user-id"), 10);
+        const bot_id = Number.parseInt($row.attr("data-user-id")!, 10);
 
-        function handle_confirm() {
+        function handle_confirm(): void {
             const url = "/json/bots/" + encodeURIComponent(bot_id);
             dialog_widget.submit_api_request(channel.del, url, {});
         }
@@ -545,7 +622,7 @@ function handle_bot_deactivation($tbody) {
     });
 }
 
-function handle_reactivation($tbody) {
+function handle_reactivation($tbody: JQuery): void {
     $tbody.on("click", ".reactivate", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -553,9 +630,9 @@ function handle_reactivation($tbody) {
         // Go up the tree until we find the user row, then grab the email element
         const $button_elem = $(e.target);
         const $row = $button_elem.closest(".user_row");
-        const user_id = Number.parseInt($row.attr("data-user-id"), 10);
+        const user_id = Number.parseInt($row.attr("data-user-id")!, 10);
 
-        function handle_confirm() {
+        function handle_confirm(): void {
             const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
             dialog_widget.submit_api_request(channel.post, url, {});
         }
@@ -564,12 +641,12 @@ function handle_reactivation($tbody) {
     });
 }
 
-function handle_edit_form($tbody) {
-    $tbody.on("click", ".open-user-form", (e) => {
+function handle_edit_form($tbody: JQuery): void {
+    $tbody.on("click", ".open-user-form", function (this: HTMLElement, e) {
         e.stopPropagation();
         e.preventDefault();
 
-        const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
+        const user_id = Number.parseInt($(this).attr("data-user-id")!, 10);
         if (people.is_my_user_id(user_id)) {
             browser_history.go_to_location("#settings/profile");
             return;
@@ -580,20 +657,20 @@ function handle_edit_form($tbody) {
     });
 }
 
-function handle_filter_change($tbody, section) {
+function handle_filter_change($tbody: JQuery, section: UserSettingsSection): void {
     // This duplicates the built-in search filter live-update logic in
     // ListWidget for the input.list_widget_filter event type, but we
     // can't use that, because we're also filtering on Role with our
     // custom predicate.
     $tbody
         .closest(".user-settings-section")
-        .find(".search")
-        .on("input.list_widget_filter", function () {
+        .find<HTMLInputElement>(".search")
+        .on("input.list_widget_filter", function (this: HTMLInputElement) {
             add_value_to_filters(section, "text_search", this.value.toLocaleLowerCase());
         });
 }
 
-function active_handle_events() {
+function active_handle_events(): void {
     const $tbody = $("#admin_users_table").expectOne();
 
     handle_filter_change($tbody, active_section);
@@ -602,7 +679,7 @@ function active_handle_events() {
     handle_edit_form($tbody);
 }
 
-function deactivated_handle_events() {
+function deactivated_handle_events(): void {
     const $tbody = $("#admin_deactivated_users_table").expectOne();
 
     handle_filter_change($tbody, deactivated_section);
@@ -611,7 +688,7 @@ function deactivated_handle_events() {
     handle_edit_form($tbody);
 }
 
-function bots_handle_events() {
+function bots_handle_events(): void {
     const $tbody = $("#admin_bots_table").expectOne();
 
     handle_bot_deactivation($tbody);
@@ -619,14 +696,14 @@ function bots_handle_events() {
     handle_edit_form($tbody);
 }
 
-export function set_up_humans() {
+export function set_up_humans(): void {
     start_data_load();
     active_section.handle_events();
     deactivated_section.handle_events();
     setting_invites.set_up();
 }
 
-export function set_up_bots() {
+export function set_up_bots(): void {
     bots_section.handle_events();
     bots_section.create_table();
 

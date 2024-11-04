@@ -231,7 +231,7 @@ EXEMPT_FILES = make_set(
         "web/src/settings_toggle.js",
         "web/src/settings_ui.ts",
         "web/src/settings_user_topics.ts",
-        "web/src/settings_users.js",
+        "web/src/settings_users.ts",
         "web/src/setup.ts",
         "web/src/sidebar_ui.ts",
         "web/src/spectators.ts",
