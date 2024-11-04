@@ -1094,7 +1094,7 @@ class BillingSession(ABC):
             metadata=stripe_customer_data.metadata,
         )
         event_time = timestamp_to_datetime(stripe_customer.created)
-        with transaction.atomic():
+        with transaction.atomic(durable=True):
             self.write_to_audit_log(BillingSessionEventType.STRIPE_CUSTOMER_CREATED, event_time)
             customer = self.update_or_create_customer(stripe_customer.id)
         return customer
@@ -1793,7 +1793,7 @@ class BillingSession(ABC):
 
         # TODO: The correctness of this relies on user creation, deactivation, etc being
         # in a transaction.atomic() with the relevant RealmAuditLog entries
-        with transaction.atomic():
+        with transaction.atomic(durable=True):
             # We get the current license count here in case the number of billable
             # licenses has changed since the upgrade process began.
             current_licenses_count = self.get_billable_licenses_for_customer(
@@ -2912,7 +2912,7 @@ class BillingSession(ABC):
         if status is not None:
             if status == CustomerPlan.ACTIVE:
                 assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
-                with transaction.atomic():
+                with transaction.atomic(durable=True):
                     # Switch to a different plan was cancelled. We end the next plan
                     # and set the current one as active.
                     if plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
@@ -3412,7 +3412,7 @@ class BillingSession(ABC):
             raise BillingError("Form validation error", message=message)
 
         request_context = self.get_sponsorship_request_session_specific_context()
-        with transaction.atomic():
+        with transaction.atomic(durable=True):
             # Ensures customer is created first before updating sponsorship status.
             self.update_customer_sponsorship_status(True)
             sponsorship_request = ZulipSponsorshipRequest(

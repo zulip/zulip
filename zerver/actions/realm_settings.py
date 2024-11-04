@@ -516,7 +516,7 @@ def do_deactivate_realm(
     if settings.BILLING_ENABLED:
         from corporate.lib.stripe import RealmBillingSession
 
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         realm.deactivated = True
         realm.save(update_fields=["deactivated"])
 
@@ -575,7 +575,7 @@ def do_reactivate_realm(realm: Realm) -> None:
         return
 
     realm.deactivated = False
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         realm.save(update_fields=["deactivated"])
 
         event_time = timezone_now()

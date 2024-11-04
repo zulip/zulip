@@ -61,7 +61,7 @@ def do_change_realm_subdomain(
     # deleting, clear that state.
     realm.demo_organization_scheduled_deletion_date = None
     realm.string_id = new_subdomain
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         realm.save(update_fields=["string_id", "demo_organization_scheduled_deletion_date"])
         RealmAuditLog.objects.create(
             realm=realm,
@@ -232,7 +232,7 @@ def do_create_realm(
     # is required to do so correctly.
     kwargs["push_notifications_enabled"] = sends_notifications_directly()
 
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         realm = Realm(string_id=string_id, name=name, **kwargs)
         if is_demo_organization:
             realm.demo_organization_scheduled_deletion_date = realm.date_created + timedelta(
