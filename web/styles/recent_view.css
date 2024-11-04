@@ -45,7 +45,6 @@
         align-items: center;
 
         .recent-view-table-link,
-        .recent-view-table-unread-count,
         & > .zulip-icon {
             outline: 0;
         }
@@ -191,7 +190,13 @@
         margin-right: 1px;
         margin-left: 1px;
         align-self: center;
-        background-color: hsl(105deg 2% 50%);
+        opacity: 1;
+        outline: 0 solid var(--color-background-unread-counter);
+        transition: outline-width 0.1s ease;
+
+        &:hover {
+            outline-width: 1.5px;
+        }
     }
 
     .unread_mention_info:not(:empty) {
