@@ -468,6 +468,7 @@ def remove_subgroups_from_group_backend(
 
 @require_member_or_admin
 @typed_endpoint
+@transaction.atomic(durable=True)
 def update_subgroups_of_user_group(
     request: HttpRequest,
     user_profile: UserProfile,
