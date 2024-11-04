@@ -11932,7 +11932,7 @@ paths:
                     The [home view](/help/configure-home-view) used when opening a new
                     Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-                    - "recent_topics" - Recent conversations view
+                    - "recent" - Recent conversations view
                     - "inbox" - Inbox view
                     - "all_messages" - Combined feed view
 
@@ -15192,7 +15192,7 @@ paths:
                               The [home view](/help/configure-home-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-                              - "recent_topics" - Recent conversations view
+                              - "recent" - Recent conversations view
                               - "inbox" - Inbox view
                               - "all_messages" - Combined feed view
 
@@ -16091,7 +16091,7 @@ paths:
                           The [home view](/help/configure-home-view) in Zulip, represented
                           as the URL suffix after `#` to be rendered when Zulip loads.
 
-                          Currently supported values are `all_messages` and `recent_topics`.
+                          Currently supported values are `all_messages` and `recent`.
 
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
@@ -17719,7 +17719,7 @@ paths:
                               The [home view](/help/configure-home-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-                              - "recent_topics" - Recent conversations view
+                              - "recent" - Recent conversations view
                               - "inbox" - Inbox view
                               - "all_messages" - Combined feed view
 
@@ -18911,7 +18911,7 @@ paths:
                     The [home view](/help/configure-home-view) used when opening a new
                     Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-                    - "recent_topics" - Recent conversations view
+                    - "recent" - Recent conversations view
                     - "inbox" - Inbox view
                     - "all_messages" - Combined feed view
 

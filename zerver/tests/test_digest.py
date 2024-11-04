@@ -18,7 +18,7 @@ from zerver.lib.digest import (
     enqueue_emails,
     gather_new_streams,
     get_hot_topics,
-    get_recent_topics,
+    get_recent,
     get_recently_created_streams,
     get_user_stream_map,
 )
@@ -60,7 +60,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         one_click_unsubscribe_link(othello, "digest")
 
         # Clear the LRU cache on the stream topics
-        get_recent_topics.cache_clear()
+        get_recent.cache_clear()
         with self.assert_database_query_count(10):
             bulk_handle_digest_email([othello.id], cutoff)
 
@@ -84,8 +84,8 @@ class TestDigestEmailMessages(ZulipTestCase):
         iago = self.example_user("iago")
         with self.assert_database_query_count(10):
             bulk_handle_digest_email([iago.id], cutoff)
-        self.assertEqual(get_recent_topics.cache_info().hits, 3)
-        self.assertEqual(get_recent_topics.cache_info().currsize, 6)
+        self.assertEqual(get_recent.cache_info().hits, 3)
+        self.assertEqual(get_recent.cache_info().currsize, 6)
 
         # Two users in the same batch, with only one new stream from
         # the above.
@@ -93,14 +93,14 @@ class TestDigestEmailMessages(ZulipTestCase):
         prospero = self.example_user("prospero")
         with self.assert_database_query_count(9):
             bulk_handle_digest_email([cordelia.id, prospero.id], cutoff)
-        self.assertEqual(get_recent_topics.cache_info().hits, 7)
-        self.assertEqual(get_recent_topics.cache_info().currsize, 7)
+        self.assertEqual(get_recent.cache_info().hits, 7)
+        self.assertEqual(get_recent.cache_info().currsize, 7)
 
         # If we use a different cutoff, it clears the cache.
         with self.assert_database_query_count(12):
             bulk_handle_digest_email([cordelia.id, prospero.id], cutoff + 1)
-        self.assertEqual(get_recent_topics.cache_info().hits, 1)
-        self.assertEqual(get_recent_topics.cache_info().currsize, 4)
+        self.assertEqual(get_recent.cache_info().hits, 1)
+        self.assertEqual(get_recent.cache_info().currsize, 4)
 
     def test_bulk_handle_digest_email_skips_deactivated_users(self) -> None:
         """
@@ -179,7 +179,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         # This code is run when we call `confirmation.models.create_confirmation_link`.
         # To trigger this, we call the one_click_unsubscribe_link function below.
         one_click_unsubscribe_link(polonius, "digest")
-        get_recent_topics.cache_clear()
+        get_recent.cache_clear()
         with self.assert_database_query_count(9):
             bulk_handle_digest_email([polonius.id], cutoff)
 
@@ -241,7 +241,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         with mock.patch("zerver.lib.digest.send_future_email") as mock_send_future_email:
             digest_user_ids = [user.id for user in digest_users]
 
-            get_recent_topics.cache_clear()
+            get_recent.cache_clear()
             with self.assert_database_query_count(16), self.assert_memcached_count(0):
                 bulk_handle_digest_email(digest_user_ids, cutoff)
 

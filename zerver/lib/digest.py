@@ -156,15 +156,15 @@ last_realm_id: int | None = None
 last_cutoff: float | None = None
 
 
-def maybe_clear_recent_topics_cache(realm_id: int, cutoff: float) -> None:
+def maybe_clear_recent_cache(realm_id: int, cutoff: float) -> None:
     # As an optimization, we clear the digest caches when we switch to
     # a new realm or cutoff value.  Since these values are part of the
     # cache key, this is not necessary for correctness -- it merely
     # helps reduce the memory footprint of the cache.
     global last_realm_id, last_cutoff
     if last_realm_id != realm_id or last_cutoff != cutoff:
-        logger.info("Flushing stream cache: %s", get_recent_topics.cache_info())
-        get_recent_topics.cache_clear()
+        logger.info("Flushing stream cache: %s", get_recent.cache_info())
+        get_recent.cache_clear()
     last_realm_id = realm_id
     last_cutoff = cutoff
 
@@ -172,7 +172,7 @@ def maybe_clear_recent_topics_cache(realm_id: int, cutoff: float) -> None:
 # We cache both by stream-id and cutoff, which ensures the per-stream
 # cache also does not contain data from old digests
 @functools.lru_cache(maxsize=5000)
-def get_recent_topics(
+def get_recent(
     realm_id: int,
     stream_id: int,
     cutoff_date: datetime,
@@ -341,7 +341,7 @@ def bulk_get_digest_context(
     # Convert from epoch seconds to a datetime object.
     cutoff_date = datetime.fromtimestamp(int(cutoff), tz=timezone.utc)
 
-    maybe_clear_recent_topics_cache(realm.id, cutoff)
+    maybe_clear_recent_cache(realm.id, cutoff)
 
     stream_id_map = get_slim_stream_id_map(realm)
     recently_created_streams = get_recently_created_streams(realm, cutoff_date)
@@ -352,11 +352,11 @@ def bulk_get_digest_context(
     for user in users:
         stream_ids = user_stream_map[user.id]
 
-        recent_topics = []
+        recent = []
         for stream_id in stream_ids:
-            recent_topics += get_recent_topics(realm.id, stream_id, cutoff_date)
+            recent += get_recent(realm.id, stream_id, cutoff_date)
 
-        hot_topics = get_hot_topics(recent_topics, stream_ids)
+        hot_topics = get_hot_topics(recent, stream_ids)
 
         context = common_context(user)
 
