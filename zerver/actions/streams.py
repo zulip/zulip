@@ -979,7 +979,7 @@ def bulk_remove_subscriptions(
     streams_to_unsubscribe = [sub_info.stream for sub_info in subs_to_deactivate]
     # We do all the database changes in a transaction to ensure
     # RealmAuditLog entries are atomically created when making changes.
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         Subscription.objects.filter(
             id__in=sub_ids_to_deactivate,
         ).update(active=False)
