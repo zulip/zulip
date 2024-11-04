@@ -40,6 +40,7 @@ import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
+import * as util from "./util";
 
 const notification_labels_schema = stream_specific_notification_settings_schema.keyof();
 
@@ -405,15 +406,16 @@ function show_stream_email_address_modal(address) {
     });
     $("#show-sender").prop("checked", true);
 
-    const clipboard = new ClipboardJS("#copy_email_address_modal .dialog_submit_button", {
+    const submit_button = util.the($("#copy_email_address_modal .dialog_submit_button"));
+    const clipboard = new ClipboardJS(submit_button, {
         text() {
             return address;
         },
     });
 
     // Show a tippy tooltip when the stream email address copied
-    clipboard.on("success", (e) => {
-        show_copied_confirmation(e.trigger);
+    clipboard.on("success", () => {
+        show_copied_confirmation(submit_button);
     });
 
     $("#copy_email_address_modal .tag-checkbox").on("change", () => {
