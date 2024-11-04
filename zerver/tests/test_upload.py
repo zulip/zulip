@@ -1275,6 +1275,14 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
                 "Not logged in: API authentication or user session required",
                 status_code=401,
             )
+            # Disallow access by id for spectators with unauthenticated access
+            # when realm public streams is false.
+            response = self.client_get(f"/avatar/{cordelia.id}", {"foo": "bar"})
+            self.assert_json_error(
+                response,
+                "Not logged in: API authentication or user session required",
+                status_code=401,
+            )
 
         # Allow unauthenticated/spectator requests by ID.
         response = self.client_get(f"/avatar/{cordelia.id}", {"foo": "bar"})
@@ -1297,6 +1305,12 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         self.assertTrue(redirect_url.endswith("images/unknown-user-avatar.png?foo=bar"))
 
         response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
+        self.assertEqual(302, response.status_code)
+        redirect_url = response["Location"]
+        self.assertTrue(redirect_url.endswith("images/unknown-user-avatar.png?foo=bar"))
+
+        invalid_user_id = 999
+        response = self.client_get(f"/avatar/{invalid_user_id}", {"foo": "bar"})
         self.assertEqual(302, response.status_code)
         redirect_url = response["Location"]
         self.assertTrue(redirect_url.endswith("images/unknown-user-avatar.png?foo=bar"))
