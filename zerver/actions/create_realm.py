@@ -9,7 +9,6 @@ from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 
 from confirmation import settings as confirmation_settings
-from zerver.actions.message_send import internal_send_stream_message
 from zerver.actions.realm_settings import (
     do_add_deactivated_redirect,
     do_change_realm_plan_type,
@@ -19,7 +18,7 @@ from zerver.lib.bulk_create import create_users
 from zerver.lib.push_notifications import sends_notifications_directly
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
-from zerver.lib.streams import ensure_stream, get_signups_stream
+from zerver.lib.streams import ensure_stream
 from zerver.lib.user_groups import (
     create_system_user_groups_for_realm,
     get_role_based_system_groups_dict,
@@ -32,19 +31,12 @@ from zerver.models import (
     RealmAuditLog,
     RealmAuthenticationMethod,
     RealmUserDefault,
-    Stream,
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import (
-    CommonPolicyEnum,
-    InviteToRealmPolicyEnum,
-    get_org_type_display_name,
-    get_realm,
-)
-from zerver.models.users import get_system_bot
+from zerver.models.realms import CommonPolicyEnum, InviteToRealmPolicyEnum
 from zproject.backends import all_default_backend_names
 
 
@@ -369,32 +361,12 @@ def do_create_realm(
         prereg_realm.created_realm = realm
         prereg_realm.save(update_fields=["status", "created_realm"])
 
-    # Send a notification to the admin realm when a new organization registers.
     if settings.CORPORATE_ENABLED:
-        from corporate.lib.support import get_realm_support_url
+        # Send a notification to the admin realm when a new organization registers.
+        from corporate.lib.stripe import RealmBillingSession
 
-        admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
-        sender = get_system_bot(settings.NOTIFICATION_BOT, admin_realm.id)
-
-        support_url = get_realm_support_url(realm)
-        organization_type = get_org_type_display_name(realm.org_type)
-
-        message = f"[{realm.name}]({support_url}) ([{realm.display_subdomain}]({realm.url})). Organization type: {organization_type}"
-        topic_name = "new organizations"
-
-        try:
-            signups_stream = get_signups_stream(admin_realm)
-
-            internal_send_stream_message(
-                sender,
-                signups_stream,
-                topic_name,
-                message,
-            )
-        except Stream.DoesNotExist:  # nocoverage
-            # If the signups stream hasn't been created in the admin
-            # realm, don't auto-create it to send to it; just do nothing.
-            pass
+        billing_session = RealmBillingSession(user=None, realm=realm)
+        billing_session.send_realm_created_internal_admin_message()
 
     setup_realm_internal_bots(realm)
     return realm

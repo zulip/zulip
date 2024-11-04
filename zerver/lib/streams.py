@@ -835,11 +835,6 @@ def get_stream_by_narrow_operand_access_unchecked(operand: str | int, realm: Rea
     return get_stream_by_id_in_realm(operand, realm)
 
 
-def get_signups_stream(realm: Realm) -> Stream:
-    # This one-liner helps us work around a lint rule.
-    return get_stream("signups", realm)
-
-
 def ensure_stream(
     realm: Realm,
     stream_name: str,
