@@ -165,7 +165,7 @@ def get_or_create_direct_message_group(id_list: list[int]) -> DirectMessageGroup
     from zerver.models import Subscription, UserProfile
 
     direct_message_group_hash = get_direct_message_group_hash(id_list)
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         (direct_message_group, created) = DirectMessageGroup.objects.get_or_create(
             huddle_hash=direct_message_group_hash,
             group_size=len(id_list),
