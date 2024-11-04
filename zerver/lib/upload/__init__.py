@@ -158,7 +158,7 @@ def upload_message_attachment(
         str(target_realm.id), sanitize_name(uploaded_file_name)
     )
 
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         upload_backend.upload_message_attachment(
             path_id,
             uploaded_file_name,

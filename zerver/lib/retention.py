@@ -596,7 +596,7 @@ def restore_data_from_archive(archive_transaction: ArchiveTransaction) -> int:
     # so that when we log "Finished", the process has indeed finished - and that happens only after
     # leaving the atomic block - Django does work committing the changes to the database when
     # the block ends.
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         msg_ids = restore_messages_from_archive(archive_transaction.id)
         restore_models_with_message_key_from_archive(archive_transaction.id)
         restore_attachments_from_archive(archive_transaction.id)

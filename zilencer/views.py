@@ -211,7 +211,7 @@ def register_remote_server(
             _("A server with hostname {hostname} already exists").format(hostname=hostname)
         )
 
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         if remote_server is None:
             created = True
             remote_server = RemoteZulipServer.objects.create(
