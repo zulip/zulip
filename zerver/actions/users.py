@@ -486,7 +486,7 @@ def do_deactivate_user(
         for profile in bot_profiles:
             do_deactivate_user(profile, _cascade=False, acting_user=acting_user)
 
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         if user_profile.realm.is_zephyr_mirror_realm:  # nocoverage
             # For zephyr mirror users, we need to make them a mirror dummy
             # again; otherwise, other users won't get the correct behavior
