@@ -284,7 +284,7 @@ labels.
 
 ### Common questions
 
-- **What if somebody is already working on the issue I want do claim?** There
+- **What if somebody is already working on the issue I want to claim?** There
   are lots of issue to work on! If somebody else is actively working on the
   issue, you can find a different one, or help with
   reviewing their work.
