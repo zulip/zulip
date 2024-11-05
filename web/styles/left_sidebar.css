@@ -791,6 +791,30 @@ li.top_left_scheduled_messages {
     }
 }
 
+/* Low-attention unreads have no bounding box,
+   so their counters should be aligned on the
+   same baseline as the navigation label. */
+.top_left_starred_messages,
+.top_left_drafts,
+.top_left_scheduled_messages {
+    .left-sidebar-navigation-label-container {
+        align-items: baseline;
+    }
+
+    .left-sidebar-navigation-label {
+        @media screen and (resolution <= 1x) {
+            /* Owing to the baseline alignment in this
+               area, we don't need the low-res line-height
+               adjustment. */
+            line-height: inherit;
+        }
+    }
+
+    .filter-icon {
+        align-self: center;
+    }
+}
+
 .top_left_starred_messages {
     &.hide_starred_message_count {
         .masked_unread_count {
