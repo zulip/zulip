@@ -25,15 +25,22 @@
     border-color: hsl(0deg 0% 50%);
 }
 
+.user_circle_deactivated {
+    text-align: center;
+    font-size: 14px;
+}
+
 .user_circle_empty_line {
     border-color: hsl(0deg 0% 50%);
 
     &::after {
         content: "";
         background: hsl(0deg 0% 50%);
-        height: 1.5px; /* 1px is too thin, 2px is too thick */
+        height: 1.5px;
+        /* 1px is too thin, 2px is too thick */
         width: 6px;
         display: block;
-        margin: 3.25px auto 0; /* (total height - line height) / 2 = 3.25px */
+        margin: 3.25px auto 0;
+        /* (total height - line height) / 2 = 3.25px */
     }
 }

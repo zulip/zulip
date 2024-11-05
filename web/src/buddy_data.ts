@@ -48,8 +48,10 @@ export function get_user_circle_class(user_id: number): string {
             return "user_circle_green";
         case "idle":
             return "user_circle_idle";
-        default:
+        case "offline":
             return "user_circle_empty";
+        default:
+            return "user_circle_deactivated";
     }
 }
 
@@ -66,8 +68,10 @@ export function level(user_id: number): number {
             return 1;
         case "idle":
             return 2;
-        default:
+        case "offline":
             return 3;
+        default:
+            return 4;
     }
 }
 
@@ -189,6 +193,7 @@ export type BuddyUserInfo = {
 export function info_for(user_id: number): BuddyUserInfo {
     const user_circle_class = get_user_circle_class(user_id);
     const person = people.get_by_user_id(user_id);
+    const is_deactivated = people.is_person_active(user_id);
 
     const status_emoji_info = user_status.get_status_emoji(user_id);
     const status_text = user_status.get_status_text(user_id);
@@ -201,7 +206,7 @@ export function info_for(user_id: number): BuddyUserInfo {
 
     return {
         href: hash_util.pm_with_url(person.email),
-        name: person.full_name,
+        name: is_deactivated ? person.full_name : $t({defaultMessage: "User Deactivated"}),
         user_id,
         status_emoji_info,
         is_current_user: people.is_my_user_id(user_id),
@@ -350,11 +355,6 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
             // Bots should never appear in the right sidebar.  This
             // case should never happen, since bots cannot have
             // presence data.
-            return false;
-        }
-
-        if (!people.is_person_active(user_id)) {
-            // Deactivated users are hidden from the right sidebar entirely.
             return false;
         }
 

@@ -166,6 +166,10 @@ test("user_circle, level", ({override}) => {
     assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user_circle_idle");
     assert.equal(buddy_data.level(fred.user_id), 2);
 
+    set_presence(fred.user_id, "deactivated");
+    assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user_circle_deactivated");
+    assert.equal(buddy_data.level(fred.user_id), 4);
+
     set_presence(fred.user_id, undefined);
     assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user_circle_empty");
     assert.equal(buddy_data.level(fred.user_id), 3);
@@ -248,8 +252,8 @@ test("filters deactivated users", () => {
     assert.deepEqual(user_ids, []);
 
     user_ids = buddy_data.get_filtered_and_sorted_user_ids();
-    assert.equal(user_ids.includes(selma.user_id), false);
-    assert.ok(!buddy_data.matches_filter("selm", selma.user_id));
+    assert.equal(user_ids.includes(selma.user_id), true);
+    assert.ok(buddy_data.matches_filter("selm", selma.user_id));
 });
 
 test("muted users excluded from search", () => {
@@ -534,6 +538,8 @@ test("compare_function", () => {
 
 test("user_last_seen_time_status", ({override}) => {
     page_params.presence_history_limit_days_for_web_app = 365;
+    people.add_active_user(old_user);
+
     set_presence(selma.user_id, "active");
     set_presence(me.user_id, "active");
 
@@ -544,6 +550,7 @@ test("user_last_seen_time_status", ({override}) => {
         buddy_data.user_last_seen_time_status(old_user.user_id),
         "translated: Activity unknown",
     );
+
     override(realm, "realm_is_zephyr_mirror_realm", false);
     assert.equal(
         buddy_data.user_last_seen_time_status(old_user.user_id),
