@@ -12,6 +12,11 @@
             {{> ../stream_settings/stream_description
               rendered_description=stream.rendered_description}}
         </li>
+        <li role="none" class="popover-menu-list-item text-item italic">
+            {{#tr}}
+            {subscribers_count, plural, =0 {No subscribers} =1 {1 subscriber} other {# subscribers}}
+            {{/tr}}
+        </li>
         <li role="separator" class="popover-menu-separator hidden-for-spectators"></li>
         <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
             <a role="menuitem" class="open_stream_settings popover-menu-link" tabindex="0">
