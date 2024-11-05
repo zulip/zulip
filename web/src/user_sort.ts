@@ -1,13 +1,5 @@
 import type {User} from "./people";
-
-export function compare_a_b(a: number | string, b: number | string): number {
-    if (a > b) {
-        return 1;
-    } else if (a === b) {
-        return 0;
-    }
-    return -1;
-}
+import {compare_a_b} from "./util";
 
 export function sort_email(a: User, b: User): number {
     const email_a = a.delivery_email;

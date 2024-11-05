@@ -488,3 +488,12 @@ export function the<T>(items: T[] | JQuery<T>): T {
     }
     return items[0]!;
 }
+
+export function compare_a_b<T>(a: T, b: T): number {
+    if (a > b) {
+        return 1;
+    } else if (a === b) {
+        return 0;
+    }
+    return -1;
+}
