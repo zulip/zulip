@@ -691,10 +691,6 @@ li.active-sub-filter {
 
     .left-sidebar-navigation-label-container {
         .left-sidebar-navigation-label {
-            /* Again, for the sake of low-resolution screens,
-               we'll let the actual label take 1 as a line-height
-               value, and allow grid to handle the alignment. */
-            line-height: 1;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -775,6 +771,13 @@ li.top_left_scheduled_messages {
     .left-sidebar-navigation-label {
         grid-area: row-content;
         padding-right: var(--left-sidebar-before-unread-count-padding);
+
+        @media screen and (resolution <= 1x) {
+            /* For the sake of low-resolution screens,
+               we'll let the actual label take 1 as a line-height
+               value, and allow grid to handle the alignment. */
+            line-height: 1;
+        }
     }
 
     .unread_count {
