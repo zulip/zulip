@@ -2,7 +2,7 @@
     <div class="new-bot-form">
         <div class="input-group">
             <label for="bot_type" class="modal-field-label">
-                {{t "Bot type" }}
+                <span class="modal-field-label-text">{{t "Bot type" }}</span>
                 {{> ../help_link_widget link="/help/bots-overview#bot-type" }}
             </label>
             <select name="bot_type" id="create_bot_type" class="modal_select bootstrap-focus-style">
@@ -14,7 +14,9 @@
             </select>
         </div>
         <div class="input-group" id="service_name_list">
-            <label for="select_service_name" class="modal-field-label">{{t "Bot"}}</label>
+            <label for="select_service_name" class="modal-field-label">
+                <span class="modal-field-label-text">{{t "Bot"}}</span>
+            </label>
             <select name="service_name" id="select_service_name" class="modal_select bootstrap-focus-style">
                 {{#each realm_embedded_bots}}
                     <option value="{{this.name}}">{{this.name}}</option>
@@ -22,13 +24,17 @@
             </select>
         </div>
         <div class="input-group">
-            <label for="create_bot_name" class="modal-field-label">{{t "Name" }}</label>
+            <label for="create_bot_name" class="modal-field-label">
+                <span class="modal-field-label-text">{{t "Name" }}</span>
+            </label>
             <input type="text" name="bot_name" id="create_bot_name" class="required modal_text_input"
               maxlength=100 placeholder="{{t 'Cookie Bot' }}" value="" />
             <div><label for="create_bot_name" generated="true" class="text-error"></label></div>
         </div>
         <div class="input-group">
-            <label for="bot_short_name" class="modal-field-label">{{t "Bot email (a-z, 0-9, and dashes only)" }}</label>
+            <label for="bot_short_name" class="modal-field-label">
+                <span class="modal-field-label-text">{{t "Bot email (a-z, 0-9, and dashes only)" }}</span>
+            </label>
             <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part modal_text_input"
               placeholder="{{t 'cookie' }}" value="" />
             -bot@{{ realm_bot_domain }}
@@ -38,13 +44,17 @@
         </div>
         <div id="payload_url_inputbox">
             <div class="input-group">
-                <label for="create_payload_url" class="modal-field-label">{{t "Endpoint URL" }}</label>
+                <label for="create_payload_url" class="modal-field-label">
+                    <span class="modal-field-label-text">{{t "Endpoint URL" }}</span>
+                </label>
                 <input type="text" name="payload_url" id="create_payload_url" class="modal_text_input"
                   maxlength=2083 placeholder="https://hostname.example.com" value="" />
                 <div><label for="create_payload_url" generated="true" class="text-error"></label></div>
             </div>
             <div class="input-group">
-                <label for="interface_type" class="modal-field-label">{{t "Outgoing webhook message format" }}</label>
+                <label for="interface_type" class="modal-field-label">
+                    <span class="modal-field-label-text">{{t "Outgoing webhook message format" }}</span>
+                </label>
                 <select name="interface_type" id="create_interface_type" class="modal_select bootstrap-focus-style">
                     <option value="1">Zulip</option>
                     <option value="2">{{t "Slack compatible" }}</option>
@@ -60,7 +70,9 @@
             {{/each}}
         </div>
         <div class="input-group">
-            <label for="bot_avatar_file_input" class="modal-field-label">{{t "Avatar" }}</label>
+            <label for="bot_avatar_file_input" class="modal-field-label">
+                <span class="modal-field-label-text">{{t "Avatar" }}</span>
+            </label>
             <div id="bot_avatar_file"></div>
             <input type="file" name="bot_avatar_file_input" class="notvisible" id="bot_avatar_file_input" value="{{t 'Upload avatar' }}" />
             <div id="add_bot_preview_text">

@@ -50,7 +50,9 @@
                   label=admin_settings_label.realm_digest_emails_enabled}}
                 {{/if}}
                 <div class="input-group">
-                    <label for="realm_digest_weekday" class="settings-field-label">{{t "Day of the week to send digests" }}</label>
+                    <label for="realm_digest_weekday" class="settings-field-label">
+                        <span class="settings-field-label-text">{{t "Day of the week to send digests" }}</span>
+                    </label>
                     <select name="realm_digest_weekday"
                       id="id_realm_digest_weekday"
                       class="setting-widget prop-element settings_select bootstrap-focus-style"
@@ -79,7 +81,8 @@
 
             <div class="inline-block organization-settings-parent">
                 <div class="input-group time-limit-setting">
-                    <label for="id_realm_message_retention_days" class="settings-field-label">{{t "Message retention period" }}
+                    <label for="id_realm_message_retention_days" class="settings-field-label">
+                        <span class="settings-field-label-text">{{t "Message retention period" }}</span>
                     </label>
                     <select name="realm_message_retention_days"
                       id="id_realm_message_retention_days" class="prop-element settings_select bootstrap-focus-style"
@@ -91,7 +94,7 @@
 
                     <div class="dependent-settings-block">
                         <label for="id_realm_message_retention_custom_input" class="inline-block realm-time-limit-label">
-                            {{t 'Retention period (days)' }}:
+                            <span class="settings-field-label-text">{{t 'Retention period (days)' }}</span>:
                         </label>
                         <input type="text" id="id_realm_message_retention_custom_input" autocomplete="off"
                           name="realm_message_retention_custom_input"
@@ -111,7 +114,7 @@
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
                     <label for="realm_video_chat_provider" class="settings-field-label">
-                        {{t 'Call provider' }}
+                        <span class="settings-field-label-text">{{t 'Call provider' }}</span>
                         {{> ../help_link_widget link="/help/start-a-call" }}
                     </label>
                     <select name="realm_video_chat_provider" class ="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_video_chat_provider" data-setting-widget-type="number">
@@ -123,7 +126,7 @@
                     <div class="dependent-settings-block" id="realm_jitsi_server_url_setting">
                         <div>
                             <label for="id_realm_jitsi_server_url" class="settings-field-label">
-                                {{t "Jitsi server URL" }}
+                                <span class="settings-field-label-text">{{t "Jitsi server URL" }}</span>
                                 {{> ../help_link_widget link="/help/start-a-call#configure-a-self-hosted-instance-of-jitsi-meet" }}
                             </label>
                             <select name="realm_jitsi_server_url" id="id_realm_jitsi_server_url" class="setting-widget prop-element settings_select bootstrap-focus-style" data-setting-widget-type="jitsi-server-url-setting">
@@ -149,7 +152,7 @@
                 </div>
                 <div class="input-group">
                     <label for="realm_giphy_rating" class="settings-field-label">
-                        {{t 'GIPHY integration' }}
+                        <span class="settings-field-label-text">{{t 'GIPHY integration' }}</span>
                         {{> ../help_link_widget link=giphy_help_link }}
                     </label>
                     <select name="realm_giphy_rating" class ="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_giphy_rating" data-setting-widget-type="number" {{#if giphy_api_key_empty}}disabled{{/if}}>

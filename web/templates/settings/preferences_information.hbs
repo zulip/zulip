@@ -5,7 +5,9 @@
     </div>
 
     <div class="input-group">
-        <label class="settings-field-label">{{t "User list style" }}</label>
+        <label class="settings-field-label">
+            <span class="settings-field-label-text">{{t "User list style" }}</span>
+        </label>
         <div class="user_list_style_values grey-box prop-element" id="{{prefix}}user_list_style" data-setting-widget-type="radio-group" data-setting-choice-type="number">
             {{#each user_list_style_values}}
                 <label class="preferences-radio-choice-label">
@@ -50,14 +52,18 @@
     </div>
 
     <div class="input-group thinner setting-next-is-related">
-        <label for="web_animate_image_previews" class="settings-field-label">{{t "Play animated images" }}</label>
+        <label for="web_animate_image_previews" class="settings-field-label">
+            <span class="settings-field-label-text">{{t "Play animated images" }}</span>
+        </label>
         <select name="web_animate_image_previews" class="setting_web_animate_image_previews prop-element settings_select bootstrap-focus-style" id="{{prefix}}web_animate_image_previews" data-setting-widget-type="string">
             {{> dropdown_options_widget option_values=web_animate_image_previews_values}}
         </select>
     </div>
 
     <div class="input-group">
-        <label for="web_stream_unreads_count_display_policy" class="settings-field-label">{{t "Show unread counts for" }}</label>
+        <label for="web_stream_unreads_count_display_policy" class="settings-field-label">
+            <span class="settings-field-label-text">{{t "Show unread counts for" }}</span>
+        </label>
         <select name="web_stream_unreads_count_display_policy" class="setting_web_stream_unreads_count_display_policy prop-element bootstrap-focus-style settings_select" id="{{prefix}}web_stream_unreads_count_display_policy"  data-setting-widget-type="number">
             {{> dropdown_options_widget option_values=web_stream_unreads_count_display_policy_values}}
         </select>
@@ -73,7 +79,8 @@
     {{/each}}
 
     <div class="input-group">
-        <label for="demote_inactive_streams" class="settings-field-label">{{t "Demote inactive channels" }}
+        <label for="demote_inactive_streams" class="settings-field-label">
+            <span class="settings-field-label-text">{{t "Demote inactive channels" }}</span>
             {{> ../help_link_widget link="/help/manage-inactive-channels" }}
         </label>
         <select name="demote_inactive_streams" class="setting_demote_inactive_streams prop-element settings_select bootstrap-focus-style" id="{{prefix}}demote_inactive_streams"  data-setting-widget-type="number">

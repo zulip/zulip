@@ -20,7 +20,9 @@
     <div class="input-group">
         <div id="invite_users_option_tabs_container"></div>
         <div id="invitee_emails_container">
-            <label for="invitee_emails" class="modal-field-label">{{t "Emails (one on each line or comma-separated)" }}</label>
+            <label for="invitee_emails" class="modal-field-label">
+                <span class="modal-field-label-text">{{t "Emails (one on each line or comma-separated)" }}</span>
+            </label>
             <div class="pill-container">
                 <div class="input" contenteditable="true"></div>
             </div>
@@ -34,8 +36,10 @@
         </label>
     </div>
     <div class="input-group">
-        <label for="expires_in" class="modal-field-label">{{t "Invitation expires after" }}</label>
-        <select id="expires_in" name="expires_in" class="invite-user-select modal_select bootstrap-focus-style">
+        <label for="expires_in" class="modal-field-label">
+            <span class="modal-field-label-text">{{t "Invitation expires after" }}</span>
+        </label>
+        <select id="expires_in" class="invite-user-select modal_select bootstrap-focus-style">
             {{#each expires_in_options}}
                 <option {{#if this.default }}selected{{/if}} value="{{this.value}}">{{this.description}}</option>
             {{/each}}
@@ -53,7 +57,8 @@
         </div>
     </div>
     <div class="input-group">
-        <label for="invite_as" class="modal-field-label">{{t "Users join as" }}
+        <label for="invite_as" class="modal-field-label">
+            <span class="modal-field-label-text">{{t "Users join as" }}</span>
             {{> help_link_widget link="/help/roles-and-permissions" }}
         </label>
         <select id="invite_as" name="invite_as" class="invite-user-select modal_select bootstrap-focus-style">
@@ -70,7 +75,9 @@
     </div>
     {{#if can_subscribe_other_users}}
     <div>
-        <label>{{t "Channels they should join" }}</label>
+        <label class="modal-field-label">
+            <span class="modal-field-label-text">{{t "Channels they should join" }}</span>
+        </label>
         <div id="streams_to_add">
             {{#if show_select_default_streams_option}}
             <div class="select_default_streams">

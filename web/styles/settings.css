@@ -7,6 +7,11 @@ label {
     margin: 0;
 }
 
+.group-setting-label-text,
+.modal-field-label-text {
+    cursor: text;
+}
+
 label,
 h4,
 h3,
@@ -294,6 +299,10 @@ h3,
 
     .account-settings-heading {
         margin-right: 10px;
+    }
+
+    .group-setting-label {
+        cursor: text;
     }
 }
 
@@ -1634,6 +1643,10 @@ $option_title_width: 180px;
 
 .settings-field-label {
     margin-bottom: var(--margin-bottom-field-description);
+
+    .settings-field-label-text {
+        cursor: text;
+    }
 }
 
 .settings-profile-user-field-hint {

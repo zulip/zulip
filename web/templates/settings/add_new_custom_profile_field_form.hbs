@@ -1,7 +1,9 @@
 <form class="admin-profile-field-form" id="add-new-custom-profile-field-form">
     <div class="new-profile-field-form wrapper">
         <div class="input-group">
-            <label for="profile_field_type" class="modal-field-label">{{t "Type" }}</label>
+            <label for="profile_field_type" class="modal-field-label">
+                <span class="modal-field-label-text">{{t "Type" }}</span>
+            </label>
             <select id="profile_field_type" name="field_type" class="modal_select bootstrap-focus-style">
                 {{#each custom_profile_field_types}}
                     <option value='{{this.id}}'>{{this.name}}</option>
@@ -18,11 +20,15 @@
             </select>
         </div>
         <div class="input-group">
-            <label for="profile_field_name" class="modal-field-label">{{t "Label" }}</label>
+            <label for="profile_field_name" class="modal-field-label">
+                <span class="modal-field-label-text">{{t "Label" }}</span>
+            </label>
             <input type="text" id="profile_field_name" class="modal_text_input" name="name" autocomplete="off" maxlength="40" />
         </div>
         <div class="input-group">
-            <label for="profile_field_hint" class="modal-field-label">{{t "Hint (up to 80 characters)" }}</label>
+            <label for="profile_field_hint" class="modal-field-label">
+                <span class="modal-field-label-text">{{t "Hint (up to 80 characters)" }}</span>
+            </label>
             <input type="text" id="profile_field_hint" class="modal_text_input" name="hint" autocomplete="off" maxlength="80" />
             <div class="alert" id="admin-profile-field-hint-status"></div>
         </div>

@@ -5,7 +5,8 @@
     </div>
 
     <div class="input-group thinner setting-next-is-related">
-        <label for="web_home_view" class="settings-field-label">{{t "Home view" }}
+        <label for="web_home_view" class="settings-field-label">
+            <span class="settings-field-label-text">{{t "Home view" }}</span>
             {{> ../help_link_widget link="/help/configure-home-view" }}
         </label>
         <select name="web_home_view" class="setting_web_home_view prop-element settings_select bootstrap-focus-style" id="{{prefix}}web_home_view" data-setting-widget-type="string">
@@ -26,7 +27,8 @@
       prefix=prefix}}
 
     <div class="input-group">
-        <label for="web_mark_read_on_scroll_policy" class="settings-field-label">{{t "Automatically mark messages as read" }}
+        <label for="web_mark_read_on_scroll_policy" class="settings-field-label">
+            <span class="settings-field-label-text">{{t "Automatically mark messages as read" }}</span>
             {{> ../help_link_widget link="/help/marking-messages-as-read" }}
         </label>
         <select name="web_mark_read_on_scroll_policy" class="setting_web_mark_read_on_scroll_policy prop-element settings_select bootstrap-focus-style" id="{{prefix}}web_mark_read_on_scroll_policy"  data-setting-widget-type="number">
@@ -35,7 +37,9 @@
     </div>
 
     <div class="input-group">
-        <label for="web_channel_default_view" class="settings-field-label">{{t "Channel links in the left sidebar go to" }}</label>
+        <label for="web_channel_default_view" class="settings-field-label">
+            <span class="settings-field-label-text">{{t "Channel links in the left sidebar go to" }}</span>
+        </label>
         <select name="web_channel_default_view" class="setting_web_channel_default_view prop-element settings_select bootstrap-focus-style" id="{{prefix}}web_channel_default_view"  data-setting-widget-type="number">
             {{> dropdown_options_widget option_values=web_channel_default_view_values}}
         </select>

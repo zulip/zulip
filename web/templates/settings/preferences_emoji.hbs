@@ -5,7 +5,9 @@
     </div>
 
     <div class="input-group">
-        <label class="settings-field-label">{{t "Emoji theme" }}</label>
+        <label class="settings-field-label">
+            <span class="settings-field-label-text">{{t "Emoji theme" }}</span>
+        </label>
         <div class="emojiset_choices grey-box prop-element" id="{{prefix}}emojiset" data-setting-widget-type="radio-group" data-setting-choice-type="string">
             {{#each settings_object.emojiset_choices}}
                 <label class="preferences-radio-choice-label">

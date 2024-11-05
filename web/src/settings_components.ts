@@ -1451,9 +1451,9 @@ export function enable_opening_typeahead_on_clicking_label($container: JQuery): 
     const $group_setting_labels = $container.find(".group-setting-label");
     $group_setting_labels.on("click", (e) => {
         // Click opens the typeahead.
-        $(e.target).siblings(".pill-container").find(".input").expectOne().trigger("click");
+        const $pillContainer = $(e.target).closest(".input-group").find(".pill-container .input");
         // Focus puts the cursor into the input.
-        $(e.target).siblings(".pill-container").find(".input").expectOne().trigger("focus");
+        $pillContainer.trigger("click").trigger("focus");
     });
 }
 

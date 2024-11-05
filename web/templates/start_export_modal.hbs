@@ -12,7 +12,9 @@
 </p>
 <form id="start-export-form">
     <div class="input-group">
-        <label for="export_type" class="modal-field-label">{{t "Export type" }}</label>
+        <label for="export_type" class="modal-field-label">
+            <span class="modal-field-label-text">{{t "Export type" }}</span>
+        </label>
         <select id="export_type" class="modal_select bootstrap-focus-style">
             {{#each export_type_values}}
                 <option {{#if this.default }}selected{{/if}} value="{{this.value}}">{{this.description}}</option>

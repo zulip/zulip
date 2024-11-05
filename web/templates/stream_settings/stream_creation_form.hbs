@@ -7,8 +7,8 @@
             <div class="stream-creation-body">
                 <div class="configure_channel_settings stream_creation_container">
                     <section id="create_stream_title_container">
-                        <label for="create_stream_name">
-                            {{t "Channel name" }}
+                        <label for="create_stream_name" class="settings-field-label">
+                            <span class="settings-field-label-text">{{t "Channel name" }}</span>
                         </label>
                         <input type="text" name="stream_name" id="create_stream_name" class="settings_text_input"
                           placeholder="{{t 'Channel name' }}" value="" autocomplete="off" maxlength="{{ max_stream_name_length }}" />
@@ -17,7 +17,7 @@
                     </section>
                     <section id="create_stream_description_container">
                         <label for="create_stream_description" class="settings-field-label">
-                            {{t "Channel description" }}
+                            <span class="settings-field-label-text">{{t "Channel description" }}</span>
                             {{> ../help_link_widget link="/help/change-the-channel-description" }}
                         </label>
                         <input type="text" name="stream_description" id="create_stream_description" class="settings_text_input"
