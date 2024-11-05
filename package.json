@@ -1,6 +1,6 @@
 {
   "private": true,
-  "packageManager": "pnpm@9.12.0+sha512.4abf725084d7bcbafbd728bfc7bee61f2f791f977fd87542b3579dcb23504d170d46337945e4c66485cd12d588a0c0e570ed9c477e7ccdd8507cf05f3f92eaca",
+  "packageManager": "pnpm@9.12.3+sha512.cce0f9de9c5a7c95bef944169cc5dfe8741abfb145078c0d508b868056848a87c81e626246cb60967cbd7fd29a6c062ef73ff840d96b3c86c40ac92cf4a813ee",
   "dependencies": {
     "@babel/core": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
@@ -109,7 +109,7 @@
     "@types/lodash": "^4.14.172",
     "@types/micromodal": "^0.3.3",
     "@types/minimalistic-assert": "^1.0.1",
-    "@types/node": "^20.11.20",
+    "@types/node": "^22.9.0",
     "@types/plotly.js": "^2.12.20",
     "@types/sortablejs": "^1.15.1",
     "@types/spectrum": "^1.8.4",
@@ -152,7 +152,7 @@
     "swagger-parser": "^10.0.0",
     "ts-node": "^10.0.0",
     "typescript": "^5.0.2",
-    "vnu-jar": "^23.4.11",
+    "vnu-jar": "^24.10.17",
     "webpack-dev-server": "^5.0.2",
     "xvfb": "^0.4.0",
     "yaml": "^2.0.0-8",
@@ -164,7 +164,6 @@
       "source-map@^0.6": "npm:source-map-js@^1.2.1"
     },
     "patchedDependencies": {
-      "puppeteer-core": "patches/puppeteer-core.patch",
       "source-sans@3.46.0": "patches/source-sans@3.46.0.patch",
       "tippy.js@6.3.7": "patches/tippy.js@6.3.7.patch"
     }
