@@ -103,9 +103,9 @@ Zulip offers the following filters based on the location of the message.
 
 ### Search your important messages
 
-* `is:alerted`: Search messages that contain your [alert
-  words](/help/dm-mention-alert-notifications#alert-words). Messages are
-  included in the search results based on the alerts you had configured when you
+* `is:alerted`: Search messages that contain your [watched
+phrases](/help/dm-mention-alert-notifications#watched-phrases). Messages are
+  included in the search results based on the phrases you had configured when you
   received the message.
 * `is:mentioned`: Search messages where you were
   [mentioned](/help/mention-a-user-or-group).

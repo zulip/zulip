@@ -504,9 +504,9 @@ Do these tasks as Cordelia.
   - Create a bot with a generic avatar and send it a direct message
   - Create a bot with a custom avatar and send it a direct message
   - Change your API key
-- Alert words
-  - Create an alert word
-  - Have Hamlet send you a message that includes the alert word
+- Watched phrases
+  - Create a watched phrase
+  - Have Hamlet send you a message that includes the watched phrase
 - Zulip labs
   - Turn on auto-scroll to new messages (and have Hamlet send you one)
   - Turn on/off "Enable desktop notifications for new channels" and test.

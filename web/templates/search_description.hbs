@@ -34,7 +34,11 @@
             {{~!-- squash whitespace --~}}
             {{this.verb}}@-mentions
             {{~!-- squash whitespace --~}}
-        {{else if (or (eq this.operand "starred") (eq this.operand "alerted") (eq this.operand "unread"))}}
+        {{else if (eq this.operand "alerted")}}
+            {{~!-- squash whitespace --~}}
+            {{this.verb}}messages containing watched phrases
+            {{~!-- squash whitespace --~}}
+        {{else if (or (eq this.operand "starred") (eq this.operand "unread"))}}
             {{~!-- squash whitespace --~}}
             {{this.verb}}{{this.operand}} messages
             {{~!-- squash whitespace --~}}

@@ -225,7 +225,7 @@ paths:
                             - type: object
                               description: |
                                 Event sent to a user's clients when that user's set of configured
-                                [alert words](/help/dm-mention-alert-notifications#alert-words) have changed.
+                                [watched phrases](/help/dm-mention-alert-notifications#watched-phrases) have changed.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -237,7 +237,7 @@ paths:
                                 alert_words:
                                   type: array
                                   description: |
-                                    An array of strings, where each string is an alert word (or phrase)
+                                    An array of strings, where each string is a watched phrase
                                     configured by the user.
                                   items:
                                     type: string
@@ -2499,7 +2499,7 @@ paths:
                                     message with ID `message_id` following the edit.
 
                                     A client application should compare these to the original flags
-                                    to identify cases where a mention or alert word was added by the
+                                    to identify cases where a mention or watched phrase was added by the
                                     edit.
 
                                     **Changes**: In Zulip 8.0 (feature level 224), the `wildcard_mentioned`
@@ -8416,10 +8416,10 @@ paths:
                         <td><code>has_alert_word</code></td>
                         <td>
                             Whether the message contains any of the current user's
-                            <a href="/help/dm-mention-alert-notifications#alert-words">configured alert words</a>.
+                            <a href="/help/dm-mention-alert-notifications#watched-phrases">configured watched phrases</a>.
                             Cannot be changed by the user directly, but
                             can change if the message is edited to add/remove
-                            one of the current user's alert words.
+                            one of the current user's watched phrases.
                         </td>
                     </tr>
                     <tr>
@@ -10574,12 +10574,12 @@ paths:
   /users/me/alert_words:
     get:
       operationId: get-alert-words
-      summary: Get all alert words
+      summary: Get all watched phrases
       tags: ["users"]
       description: |
-        Get all of the user's configured [alert words][alert-words].
+        Get all of the user's configured [watched phrases][watched-phrases].
 
-        [alert-words]: /help/dm-mention-alert-notifications#alert-words
+        [watched-phrases]: /help/dm-mention-alert-notifications#watched-phrases
       responses:
         "200":
           description: Success.
@@ -10596,7 +10596,7 @@ paths:
                       alert_words:
                         type: array
                         description: |
-                          An array of strings, where each string is an alert word (or phrase)
+                          An array of strings, where each string is a watched phrase
                           configured by the user.
                         items:
                           type: string
@@ -10608,12 +10608,12 @@ paths:
                       }
     post:
       operationId: add-alert-words
-      summary: Add alert words
+      summary: Add watched phrases
       tags: ["users"]
       description: |
-        Add words (or phrases) to the user's set of configured [alert words][alert-words].
+        Add phrases to the user's set of configured [watched phrases][watched-phrases].
 
-        [alert-words]: /help/dm-mention-alert-notifications#alert-words
+        [watched-phrases]: /help/dm-mention-alert-notifications#watched-phrases
       requestBody:
         required: true
         content:
@@ -10624,10 +10624,10 @@ paths:
                 alert_words:
                   description: |
                     An array of strings to be added to the user's set of configured
-                    alert words. Strings already present in the user's set of alert words
+                    watched phrases. Strings already present in the user's set of watched phrases
                     already are ignored.
 
-                    Alert words are case insensitive.
+                    Watched phrases are case insensitive.
                   type: array
                   items:
                     type: string
@@ -10653,7 +10653,7 @@ paths:
                       alert_words:
                         type: array
                         description: |
-                          An array of strings, where each string is an alert word (or phrase)
+                          An array of strings, where each string is a watched phrase
                           configured by the user.
                         items:
                           type: string
@@ -10677,18 +10677,18 @@ paths:
                         "result": "error",
                       }
                     description: |
-                      An example JSON response for when a supplied alert word (or phrase)
+                      An example JSON response for when a supplied watched phrase
                       exceeds the character limit:
     delete:
       operationId: remove-alert-words
-      summary: Remove alert words
+      summary: Remove watched phrases
       tags: ["users"]
       description: |
-        Remove words (or phrases) from the user's set of configured [alert words][alert-words].
+        Remove phrases from the user's set of configured [watched phrases][watched-phrases].
 
-        Alert words are case insensitive.
+        Watched phrases are case insensitive.
 
-        [alert-words]: /help/dm-mention-alert-notifications#alert-words
+        [watched-phrases]: /help/dm-mention-alert-notifications#watched-phrases
       requestBody:
         required: true
         content:
@@ -10699,7 +10699,7 @@ paths:
                 alert_words:
                   description: |
                     An array of strings to be removed from the user's set of configured
-                    alert words. Strings that are not in the user's set of alert words
+                    watched phrases. Strings that are not in the user's set of watched phrases
                     are ignored.
                   type: array
                   items:
@@ -10726,7 +10726,7 @@ paths:
                       alert_words:
                         type: array
                         description: |
-                          An array of strings, where each string is an alert word (or phrase)
+                          An array of strings, where each string is a watched phrase
                           configured by the user.
                         items:
                           type: string
@@ -15503,7 +15503,7 @@ paths:
                         description: |
                           Present if `alert_words` is present in `fetch_event_types`.
 
-                          An array of strings, each an [alert word](/help/dm-mention-alert-notifications#alert-words)
+                          An array of strings, each a [watched phrase](/help/dm-mention-alert-notifications#watched-phrases)
                           that the current user has configured.
                         items:
                           type: string

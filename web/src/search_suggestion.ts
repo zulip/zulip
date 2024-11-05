@@ -736,7 +736,7 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
             },
             {
                 search_string: "is:alerted",
-                description_html: "alerted messages",
+                description_html: "messages containing watched phrases",
                 is_people: false,
                 incompatible_patterns: [{operator: "is", operand: "alerted"}],
             },

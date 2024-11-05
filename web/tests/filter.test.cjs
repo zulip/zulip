@@ -1711,7 +1711,7 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "is", operand: "alerted"}];
-    string = "alerted messages";
+    string = "messages containing watched phrases";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "is", operand: "resolved"}];
@@ -2584,7 +2584,7 @@ test("navbar_helpers", ({override}) => {
             terms: is_alerted,
             is_common_narrow: false,
             icon: undefined,
-            title: "translated: Alerted messages",
+            title: "translated: Messages containing watched phrases",
             redirect_url_with_search: "#",
         },
         {
