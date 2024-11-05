@@ -4,9 +4,9 @@ You can choose from several convenient options for hosting Zulip:
 
 - Follow these instructions to **install a self-hosted Zulip server on a system
   of your choice**.
+- Use Zulip's [Docker image](deployment.md#zulip-in-docker).
 - Use a preconfigured
   [DigitalOcean droplet](https://marketplace.digitalocean.com/apps/zulip?refcode=3ee45da8ee26)
-- Use Zulip's [experimental Docker image](deployment.md#zulip-in-docker).
 - Use [Zulip Cloud](https://zulip.com/plans/) hosting. Read our [guide to choosing between Zulip Cloud and
   self-hosting](https://zulip.com/help/zulip-cloud-or-self-hosting).
 
