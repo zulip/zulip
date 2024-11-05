@@ -262,12 +262,14 @@ $user_status_emoji_width: 24px;
 
     .selectable_sidebar_block {
         margin: 2px;
-        grid-template:
-            "row-content markers-and-controls" var(
-                --line-height-sidebar-row-with-avatars
-            )
-            "row-content ." auto / minmax(0, 1fr)
-            minmax(0, auto);
+    }
+
+    .unread_count:not(.hide) {
+        margin-right: 2px;
+    }
+
+    &.with_status .unread_count {
+        align-self: baseline;
     }
 }
 
@@ -285,10 +287,11 @@ $user_status_emoji_width: 24px;
 .user_sidebar_entry.with_avatar .selectable_sidebar_block {
     line-height: var(--line-height-sidebar-row-with-avatars);
     display: grid;
-    grid-template: "avatar row-content" var(--right-sidebar-avatar-width) / auto minmax(
-            0,
-            1fr
-        );
+    grid-template:
+        "avatar row-content markers-and-controls" var(
+            --right-sidebar-avatar-width
+        )
+        "avatar row-content ." auto / auto minmax(0, 1fr) minmax(0, auto);
     justify-content: flex-start;
     align-items: center;
 }

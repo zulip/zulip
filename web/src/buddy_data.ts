@@ -178,6 +178,7 @@ export type BuddyUserInfo = {
     num_unread: number;
     user_circle_class: string;
     status_text: string | undefined;
+    has_status_text: boolean;
     user_list_style: {
         COMPACT: boolean;
         WITH_STATUS: boolean;
@@ -210,6 +211,7 @@ export function info_for(user_id: number): BuddyUserInfo {
         num_unread: get_num_unread(user_id),
         user_circle_class,
         status_text,
+        has_status_text: Boolean(status_text),
         user_list_style,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
     };
