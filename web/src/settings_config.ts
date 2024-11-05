@@ -145,12 +145,13 @@ export const web_home_view_values = {
 };
 
 type ColorScheme = "automatic" | "dark" | "light";
-export type ColorSchemeValues = {
-    [key in ColorScheme]: {
+export type ColorSchemeValues = Record<
+    ColorScheme,
+    {
         code: number;
         description: string;
-    };
-};
+    }
+>;
 
 export const color_scheme_values = {
     automatic: {
