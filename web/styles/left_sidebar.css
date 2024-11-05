@@ -1058,14 +1058,6 @@ li.top_left_scheduled_messages {
     }
 }
 
-.condensed-views-popover-menu {
-    .unread_count {
-        margin: 1px 0 0 6px;
-        border-color: var(--color-border-unread-counter-popover-menu);
-        width: max-content;
-    }
-}
-
 .subscription_block {
     grid-template-columns:
         var(--left-sidebar-toggle-width-offset) var(

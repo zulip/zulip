@@ -1476,3 +1476,35 @@ ul.popover-menu-list {
         border: 1px solid var(--color-border-popover-hotkey-hint);
     }
 }
+
+.condensed-views-popover-menu {
+    .popover-menu-link:has(.label-and-unread-wrapper) {
+        align-items: center;
+
+        .popover-menu-icon {
+            margin-top: 1px;
+        }
+
+        .label-and-unread-wrapper {
+            /* Occupy the maximum width of the
+               parent flex container. */
+            flex: 1 0 max-content;
+            display: flex;
+            gap: 5px;
+            align-items: baseline;
+        }
+
+        .popover-menu-label {
+            margin-top: 0;
+        }
+
+        .unread_count {
+            margin: 0 0 0 6px;
+            border-color: var(--color-border-unread-counter-popover-menu);
+            width: max-content;
+            height: auto;
+            line-height: 1.2445em;
+            align-self: baseline;
+        }
+    }
+}

@@ -9,16 +9,20 @@
         <li role="none" class="link-item popover-menu-list-item condensed-views-popover-menu-drafts">
             <a href="#drafts" role="menuitem" class="popover-menu-link tippy-left-sidebar-tooltip" data-tooltip-template-id="drafts-tooltip-template" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-drafts" aria-hidden="true"></i>
-                <span class="popover-menu-label">{{t 'Drafts' }}</span>
-                <span class="unread_count"></span>
+                <span class="label-and-unread-wrapper">
+                    <span class="popover-menu-label">{{t 'Drafts' }}</span>
+                    <span class="unread_count"></span>
+                </span>
             </a>
         </li>
         {{#if has_scheduled_messages }}
         <li role="none" class="link-item popover-menu-list-item condensed-views-popover-menu-scheduled-messages">
             <a href="#scheduled" role="menuitem" class="popover-menu-link" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-calendar-days" aria-hidden="true"></i>
-                <span class="popover-menu-label">{{t 'Scheduled messages' }}</span>
-                <span class="unread_count"></span>
+                <span class="label-and-unread-wrapper">
+                    <span class="popover-menu-label">{{t 'Scheduled messages' }}</span>
+                    <span class="unread_count"></span>
+                </span>
             </a>
         </li>
         {{/if}}
