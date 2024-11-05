@@ -458,7 +458,7 @@ function toggle_user_card_popover_for_message(
 export function unsaved_message_user_mention_event_handler(e) {
     e.stopPropagation();
 
-    const id_string = $(e.target).attr("data-user-id");
+    const id_string = $(e.currentTarget).attr("data-user-id");
     // Do not open popover for @all mention
     if (id_string === "*") {
         return;
