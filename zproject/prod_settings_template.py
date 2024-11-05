@@ -763,10 +763,10 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # PROMOTE_SPONSORING_ZULIP = True
 
 ## Controls whether session cookies expire when the browser closes
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+# SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 ## Session cookie expiry in seconds after the last page load
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
+# SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
 
 ## Password strength requirements; learn about configuration at
 ## https://zulip.readthedocs.io/en/latest/production/security-model.html.
@@ -778,7 +778,7 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
 
 ## Controls whether or not Zulip will parse links starting with
 ## "file:///" as a hyperlink (useful if you have e.g. an NFS share).
-ENABLE_FILE_LINKS = False
+# ENABLE_FILE_LINKS = False
 
 ## By default, files uploaded by users and profile pictures are stored
 ## directly on the Zulip server.  You can configure files being instead
@@ -804,21 +804,21 @@ LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 ## Maximum allowed size of uploaded files, in megabytes. Set
 ## MAX_FILE_UPLOAD_SIZE to 0 to disable file uploads completely
 ## (including hiding upload-related options from UI).
-MAX_FILE_UPLOAD_SIZE = 100
+# MAX_FILE_UPLOAD_SIZE = 100
 
 ## Controls whether name changes are completely disabled for this
 ## installation.  This is useful when you're syncing names from an
 ## integrated LDAP/Active Directory.
-NAME_CHANGES_DISABLED = False
+# NAME_CHANGES_DISABLED = False
 
 ## Controls whether avatar changes are completely disabled for this
 ## installation.  This is useful when you're syncing avatars from an
 ## integrated LDAP/Active Directory.
-AVATAR_CHANGES_DISABLED = False
+# AVATAR_CHANGES_DISABLED = False
 
 ## Controls whether users who have not uploaded an avatar will receive an avatar
 ## from gravatar.com.
-ENABLE_GRAVATAR = True
+# ENABLE_GRAVATAR = True
 
 ## To override the default avatar image if ENABLE_GRAVATAR is False, place your
 ## custom default avatar image at /home/zulip/local-static/default-avatar.png
