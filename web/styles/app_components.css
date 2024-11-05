@@ -1119,6 +1119,10 @@ input.settings_text_input {
                 word-wrap: unset;
             }
 
+            .copy-overlay-message {
+                font-size: 1.2em;
+            }
+
             .restore-overlay-message {
                 cursor: pointer;
                 color: hsl(170deg 48% 54%);
