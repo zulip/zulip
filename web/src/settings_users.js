@@ -440,7 +440,10 @@ export function update_user_data(user_id, new_data) {
     }
 
     if (new_data.role !== undefined) {
-        $user_row.find(".user_role").text(people.get_user_type(user_id));
+        const user_type = people.get_user_type(user_id);
+        if (user_type) {
+            $user_row.find(".user_role").text(user_type);
+        }
     }
 }
 
