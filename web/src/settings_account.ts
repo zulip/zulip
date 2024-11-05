@@ -713,9 +713,7 @@ export function set_up(
                 form_id: "demo_organization_add_email_form",
                 on_click: do_demo_organization_add_email,
                 on_shown() {
-                    ui_util.place_caret_at_end(
-                        util.the($("#demo_organization_add_email_form input")),
-                    );
+                    ui_util.place_caret_at_end(util.the($("input#demo_organization_add_email")));
                 },
                 post_render: demo_organization_add_email_post_render,
             });
