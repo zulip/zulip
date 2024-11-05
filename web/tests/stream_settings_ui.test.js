@@ -20,6 +20,14 @@ mock_esm("../src/browser_history", {
     update() {},
 });
 
+mock_esm("../src/group_permission_settings", {
+    get_group_permission_setting_config() {
+        return {
+            allow_everyone_group: false,
+        };
+    },
+});
+
 mock_esm("../src/hash_parser", {
     get_current_hash_section: () => denmark_stream_id,
 });
@@ -31,11 +39,12 @@ const stream_settings_ui = zrequire("stream_settings_ui");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
-set_realm({});
+const realm = {};
+set_realm(realm);
 set_current_user({});
 initialize_user_settings({user_settings: {}});
 
-run_test("redraw_left_panel", ({mock_template}) => {
+run_test("redraw_left_panel", ({mock_template, override}) => {
     const admins_group = {
         name: "Admins",
         id: 1,
@@ -162,6 +171,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
     mock_template("stream_settings/browse_streams_list.hbs", false, (data) => {
         populated_subs = data.subscriptions;
     });
+    override(realm, "realm_can_invite_to_channel_group", admins_group.id);
 
     stream_settings_ui.render_left_panel_superset();
 
@@ -320,7 +330,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
     assert.ok($(".nothing-selected").visible());
 });
 
-run_test("close color container when scrolling", ({mock_template}) => {
+run_test("close color container when scrolling", ({mock_template, override}) => {
     // Test to see if logic of the colorpicker closing is correct
     const admins_group = {
         name: "Admins",
@@ -348,6 +358,7 @@ run_test("close color container when scrolling", ({mock_template}) => {
     mock_template("stream_settings/browse_streams_list.hbs", false, (data) => {
         data.subscriptions = populated_subs;
     });
+    override(realm, "realm_can_invite_to_channel_group", admins_group.id);
 
     stream_settings_ui.render_left_panel_superset();
 

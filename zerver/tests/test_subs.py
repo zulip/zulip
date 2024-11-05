@@ -120,7 +120,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import CommonPolicyEnum, get_realm
+from zerver.models.realms import get_realm
 from zerver.models.streams import get_default_stream_groups, get_stream
 from zerver.models.users import active_non_guest_user_ids, get_user, get_user_profile_by_id_in_realm
 from zerver.views.streams import compose_views
@@ -4545,12 +4545,23 @@ class SubscriptionAPITest(ZulipTestCase):
         enough.
         """
         user_profile = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+        shiva = self.example_user("shiva")
         invitee_user_id = user_profile.id
         realm = user_profile.realm
 
-        do_set_realm_property(
-            realm, "invite_to_stream_policy", CommonPolicyEnum.ADMINS_ONLY, acting_user=None
+        administrators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_invite_to_channel_group",
+            administrators_system_group,
+            acting_user=None,
+        )
+
         do_change_user_role(self.test_user, UserProfile.ROLE_MODERATOR, acting_user=None)
         result = self.common_subscribe_to_streams(
             self.test_user,
@@ -4565,9 +4576,17 @@ class SubscriptionAPITest(ZulipTestCase):
             self.test_user, ["stream1"], {"principals": orjson.dumps([invitee_user_id]).decode()}
         )
 
-        do_set_realm_property(
-            realm, "invite_to_stream_policy", CommonPolicyEnum.MODERATORS_ONLY, acting_user=None
+        moderators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_invite_to_channel_group",
+            moderators_system_group,
+            acting_user=None,
+        )
+
         do_change_user_role(self.test_user, UserProfile.ROLE_MEMBER, acting_user=None)
         # Make sure that we are checking the permission with a full member,
         # as full member is the user just below moderator in the role hierarchy.
@@ -4586,9 +4605,17 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.unsubscribe(user_profile, "stream2")
 
-        do_set_realm_property(
-            realm, "invite_to_stream_policy", CommonPolicyEnum.MEMBERS_ONLY, acting_user=None
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
         )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_invite_to_channel_group",
+            members_system_group,
+            acting_user=None,
+        )
+
         do_change_user_role(self.test_user, UserProfile.ROLE_GUEST, acting_user=None)
         result = self.common_subscribe_to_streams(
             self.test_user,
@@ -4606,10 +4633,14 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.unsubscribe(user_profile, "stream2")
 
-        do_set_realm_property(
+        full_members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
             realm,
-            "invite_to_stream_policy",
-            CommonPolicyEnum.FULL_MEMBERS_ONLY,
+            "can_invite_to_channel_group",
+            full_members_system_group,
             acting_user=None,
         )
         do_set_realm_property(realm, "waiting_period_threshold", 100000, acting_user=None)
@@ -4625,17 +4656,73 @@ class SubscriptionAPITest(ZulipTestCase):
         self.common_subscribe_to_streams(
             self.test_user, ["stream2"], {"principals": orjson.dumps([invitee_user_id]).decode()}
         )
+        self.unsubscribe(user_profile, "stream2")
 
-    def test_can_subscribe_other_users(self) -> None:
-        """
-        You can't subscribe other people to streams if you are a guest or your account is not old
-        enough.
-        """
+        # Test for checking setting for non-system user group.
+        user_group = check_add_user_group(realm, "new_group", [othello, shiva], acting_user=othello)
+        do_change_realm_permission_group_setting(
+            realm, "can_invite_to_channel_group", user_group, acting_user=None
+        )
 
-        def validation_func(user_profile: UserProfile) -> bool:
-            return user_profile.can_subscribe_other_users()
+        # Othello and Shiva are in the allowed user group, so can invite users to channel.
+        self.common_subscribe_to_streams(
+            othello,
+            ["stream2"],
+            {"principals": orjson.dumps([invitee_user_id]).decode()},
+        )
+        self.unsubscribe(user_profile, "stream2")
 
-        self.check_has_permission_policies("invite_to_stream_policy", validation_func)
+        self.common_subscribe_to_streams(
+            shiva,
+            ["stream2"],
+            {"principals": orjson.dumps([invitee_user_id]).decode()},
+        )
+        self.unsubscribe(user_profile, "stream2")
+
+        # Iago is not in the allowed user group, so cannot invite users to channel.
+        result = self.common_subscribe_to_streams(
+            iago,
+            ["stream2"],
+            {"principals": orjson.dumps([invitee_user_id]).decode()},
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        # Test for checking the setting for anonymous user group.
+        anonymous_user_group = self.create_or_update_anonymous_group_for_setting(
+            [othello],
+            [administrators_system_group],
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_invite_to_channel_group",
+            anonymous_user_group,
+            acting_user=None,
+        )
+
+        # Othello is the direct member of the anonymous user group, so can invite users to channel.
+        self.common_subscribe_to_streams(
+            othello,
+            ["stream2"],
+            {"principals": orjson.dumps([invitee_user_id]).decode()},
+        )
+        self.unsubscribe(user_profile, "stream2")
+        # Iago is in the `administrators_system_group` subgroup, so can invite users to channel.
+        self.common_subscribe_to_streams(
+            iago,
+            ["stream2"],
+            {"principals": orjson.dumps([invitee_user_id]).decode()},
+        )
+        self.unsubscribe(user_profile, "stream2")
+
+        # Shiva is not in the anonymous user group, so cannot invite users to channel.
+        result = self.common_subscribe_to_streams(
+            shiva,
+            ["stream2"],
+            {"principals": orjson.dumps([invitee_user_id]).decode()},
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Insufficient permission")
 
     def test_subscriptions_add_invalid_stream(self) -> None:
         """
@@ -4704,7 +4791,7 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_sub = ["multi_user_stream"]
         with (
             self.capture_send_event_calls(expected_num_events=5) as events,
-            self.assert_database_query_count(37),
+            self.assert_database_query_count(39),
         ):
             self.common_subscribe_to_streams(
                 self.test_user,
@@ -5176,7 +5263,7 @@ class SubscriptionAPITest(ZulipTestCase):
         test_user_ids = [user.id for user in test_users]
 
         with (
-            self.assert_database_query_count(16),
+            self.assert_database_query_count(18),
             self.assert_memcached_count(3),
             mock.patch("zerver.views.streams.send_messages_for_new_subscribers"),
         ):
@@ -5544,7 +5631,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(37):
+        with self.assert_database_query_count(39):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[0]],
@@ -5552,7 +5639,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(39):
+        with self.assert_database_query_count(41):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[1]],
@@ -5564,7 +5651,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(48):
+        with self.assert_database_query_count(50):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[2]],
@@ -6044,7 +6131,7 @@ class GetSubscribersTest(ZulipTestCase):
             polonius.id,
         ]
 
-        with self.assert_database_query_count(43):
+        with self.assert_database_query_count(45):
             self.common_subscribe_to_streams(
                 self.user_profile,
                 streams,

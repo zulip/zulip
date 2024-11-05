@@ -1303,7 +1303,7 @@ def apply_event(
                 )
 
             policy_permission_dict = {
-                "invite_to_stream_policy": "can_subscribe_other_users",
+                "can_invite_to_channel_group": "can_subscribe_other_users",
                 "invite_to_realm_policy": "can_invite_others_to_realm",
             }
 
@@ -1316,12 +1316,10 @@ def apply_event(
                         state[permission] = user_profile.has_permission(policy)
 
             if (
-                event["property"] in policy_permission_dict
-                and policy_permission_dict[event["property"]] in state
+                event["property"] == "invite_to_realm_policy"
+                and "can_invite_others_to_realm" in state
             ):
-                state[policy_permission_dict[event["property"]]] = user_profile.has_permission(
-                    event["property"]
-                )
+                state["can_invite_others_to_realm"] = user_profile.has_permission(event["property"])
         elif event["op"] == "update_dict":
             for key, value in event["data"].items():
                 if key == "max_file_upload_size_mib":
@@ -1375,6 +1373,11 @@ def apply_event(
                         state["can_create_private_streams"]
                         or state["can_create_public_streams"]
                         or state["can_create_web_public_streams"]
+                    )
+
+                if key == "can_invite_to_channel_group":
+                    state["can_subscribe_other_users"] = user_profile.has_permission(
+                        "can_invite_to_channel_group"
                     )
 
                 if key == "plan_type":

@@ -2,7 +2,7 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace");
+const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
 const peer_data = zrequire("peer_data");
@@ -10,10 +10,20 @@ const people = zrequire("people");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const stream_pill = zrequire("stream_pill");
+const user_groups = zrequire("user_groups");
+
+mock_esm("../src/group_permission_settings", {
+    get_group_permission_setting_config() {
+        return {
+            allow_everyone_group: false,
+        };
+    },
+});
 
 const current_user = {};
 set_current_user(current_user);
-set_realm({});
+const realm = {};
+set_realm(realm);
 
 const denmark = {
     stream_id: 101,
@@ -60,9 +70,20 @@ const me = {
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
+const members_group = {
+    name: "Everyone",
+    id: 3,
+    members: new Set([me.user_id]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+
+user_groups.initialize({realm_user_groups: [members_group]});
+
 run_test("create_item", ({override}) => {
     override(current_user, "user_id", me.user_id);
     override(current_user, "is_admin", true);
+    override(realm, "realm_can_invite_to_channel_group", members_group.id);
     function test_create_item(
         stream_name,
         current_items,

@@ -333,14 +333,14 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # UserGroup which is allowed to create groups.
     can_create_groups = models.ForeignKey("UserGroup", on_delete=models.RESTRICT, related_name="+")
 
-    # UserGroup which is allowed to manage all groups.
-    can_manage_all_groups = models.ForeignKey(
+    # UserGroup which is allowed to invite other users to streams.
+    can_invite_to_channel_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
-    # Who in the organization is allowed to invite other users to streams.
-    invite_to_stream_policy = models.PositiveSmallIntegerField(
-        default=CommonPolicyEnum.MEMBERS_ONLY
+    # UserGroup which is allowed to manage all groups.
+    can_manage_all_groups = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
     # UserGroup which is allowed to move messages between streams.
@@ -650,7 +650,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         inline_url_embed_preview=bool,
         invite_required=bool,
         invite_to_realm_policy=int,
-        invite_to_stream_policy=int,
         jitsi_server_url=(str, type(None)),
         mandatory_topics=bool,
         message_content_allowed_in_email_notifications=bool,
@@ -758,6 +757,15 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
             id_field_name="can_delete_own_message_group_id",
+        ),
+        can_invite_to_channel_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=False,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.MEMBERS,
+            id_field_name="can_invite_to_channel_group_id",
         ),
         can_manage_all_groups=GroupPermissionSetting(
             require_system_group=False,
@@ -1198,6 +1206,8 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "can_delete_any_message_group__named_user_group",
         "can_delete_own_message_group",
         "can_delete_own_message_group__named_user_group",
+        "can_invite_to_channel_group",
+        "can_invite_to_channel_group__named_user_group",
         "can_manage_all_groups",
         "can_manage_all_groups__named_user_group",
         "can_move_messages_between_channels_group",

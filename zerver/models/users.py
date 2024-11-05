@@ -816,10 +816,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         from zerver.lib.user_groups import user_has_permission_for_group_setting
         from zerver.models import Realm
 
-        if policy_name not in Realm.REALM_PERMISSION_GROUP_SETTINGS and policy_name not in [
-            "invite_to_stream_policy",
-            "invite_to_realm_policy",
-        ]:
+        if (
+            policy_name not in Realm.REALM_PERMISSION_GROUP_SETTINGS
+            and policy_name != "invite_to_realm_policy"
+        ):
             raise AssertionError("Invalid policy")
 
         if policy_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
@@ -878,7 +878,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         return self.has_permission("can_create_web_public_channel_group")
 
     def can_subscribe_other_users(self) -> bool:
-        return self.has_permission("invite_to_stream_policy")
+        return self.has_permission("can_invite_to_channel_group")
 
     def can_invite_users_by_email(self) -> bool:
         return self.has_permission("invite_to_realm_policy")

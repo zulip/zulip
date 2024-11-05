@@ -78,49 +78,6 @@ async function test_change_zulip_update_announcements_stream(page: Page): Promis
     await submit_announcements_stream_settings(page);
 }
 
-async function test_permissions_change_save_worked(page: Page): Promise<void> {
-    const saved_status = '#org-stream-permissions .save-button[data-status="saved"]';
-    await page.waitForSelector(saved_status, {
-        visible: true,
-    });
-    await page.waitForSelector(saved_status, {hidden: true});
-}
-
-async function submit_stream_permissions_change(page: Page): Promise<void> {
-    const save_button = "#org-stream-permissions .save-button";
-    await page.waitForSelector(save_button, {visible: true});
-    assert.strictEqual(
-        await common.get_text_from_selector(page, save_button),
-        "Save changes",
-        "Save button didn't appear for permissions change.",
-    );
-    await page.click(save_button);
-
-    await test_permissions_change_save_worked(page);
-}
-
-async function test_changing_create_streams_and_invite_to_stream_policies(
-    page: Page,
-): Promise<void> {
-    const policies = {
-        "invite to stream": "#id_realm_invite_to_stream_policy",
-    };
-    const policy_values = {
-        "admins only": 2,
-        "members and admins": 1,
-        "full members": 3,
-    };
-
-    for (const [policy, selector] of Object.entries(policies)) {
-        for (const [policy_value_name, policy_value] of Object.entries(policy_values)) {
-            console.log(`Test setting ${policy} policy to '${policy_value_name}'.`);
-            await page.waitForSelector(selector, {visible: true});
-            await page.select(selector, `${policy_value}`);
-            await submit_stream_permissions_change(page);
-        }
-    }
-}
-
 async function test_save_joining_organization_change_worked(page: Page): Promise<void> {
     const saved_status = '#org-join-settings .save-button[data-status="saved"]';
     await page.waitForSelector(saved_status, {
@@ -162,10 +119,6 @@ async function test_set_new_user_threshold_to_N_days(page: Page): Promise<void> 
 
 async function test_organization_permissions(page: Page): Promise<void> {
     await page.click("li[data-section='organization-permissions']");
-
-    // Test temporarily disabled 2024-02-07 due to nondeterminsitic failures.
-    // See https://chat.zulip.org/#narrow/channel/43-automated-testing/topic/main.20failing/near/1733342
-    console.log("Skipping", test_changing_create_streams_and_invite_to_stream_policies);
 
     // Test temporarily disabled 2024-02-25 due to nondeterminsitic failures.
     // See https://chat.zulip.org/#narrow/channel/43-automated-testing/topic/main.20failing/near/1743361

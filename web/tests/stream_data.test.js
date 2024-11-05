@@ -329,11 +329,7 @@ test("get_streams_for_user", ({override}) => {
     peer_data.set_subscribers(test.stream_id, [test_user.user_id]);
     peer_data.set_subscribers(world.stream_id, [me.user_id]);
 
-    override(
-        realm,
-        "realm_invite_to_stream_policy",
-        settings_config.common_policy_values.by_admins_only.code,
-    );
+    override(realm, "realm_can_invite_to_channel_group", everyone_group.id);
     assert.deepEqual(stream_data.get_streams_for_user(me.user_id).can_subscribe, [social, errors]);
 
     // test_user is subscribed to all three streams, but current user (me)
@@ -349,18 +345,7 @@ test("get_streams_for_user", ({override}) => {
     ]);
     assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, []);
     // Verify can subscribe if we're an administrator.
-    override(current_user, "is_admin", true);
-    assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, [
-        world,
-        errors,
-    ]);
-    override(current_user, "is_admin", false);
-
-    override(
-        realm,
-        "realm_invite_to_stream_policy",
-        settings_config.common_policy_values.by_members.code,
-    );
+    override(current_user, "user_id", me.user_id);
     assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, [
         world,
         errors,
@@ -423,6 +408,7 @@ test("admin_options", ({override}) => {
 
     // non-admins can't do anything
     override(current_user, "is_admin", false);
+    override(realm, "realm_can_invite_to_channel_group", everyone_group.id);
     let sub = make_sub();
     assert.ok(!is_realm_admin(sub));
     assert.ok(!can_change_stream_permissions(sub));
@@ -493,6 +479,7 @@ test("stream_settings", ({override}) => {
     stream_data.add_sub(amber);
     stream_data.add_sub(blue);
 
+    override(realm, "realm_can_invite_to_channel_group", everyone_group.id);
     let sub_rows = stream_settings_data.get_streams_for_settings_page();
     assert.equal(sub_rows[0].color, "blue");
     assert.equal(sub_rows[1].color, "amber");
@@ -1007,10 +994,12 @@ test("get_invite_stream_data", ({override}) => {
     people.init();
     people.add_active_user(me);
     people.initialize_current_user(me.user_id);
+    override(current_user, "user_id", me.user_id);
     override(current_user, "is_admin", true);
 
     stream_data.add_sub(orie);
     stream_data.set_realm_default_streams([orie]);
+    override(realm, "realm_can_invite_to_channel_group", everyone_group.id);
 
     const expected_list = [
         {
