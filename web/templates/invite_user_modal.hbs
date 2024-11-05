@@ -56,15 +56,15 @@
         <label for="invite_as" class="modal-field-label">{{t "Users join as" }}
             {{> help_link_widget link="/help/roles-and-permissions" }}
         </label>
-        <select id="invite_as" class="invite-user-select modal_select bootstrap-focus-style">
-            <option name="invite_as" value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
-            <option name="invite_as" selected="selected" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
+        <select id="invite_as" name="invite_as" class="invite-user-select modal_select bootstrap-focus-style">
+            <option value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
+            <option selected="selected" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
             {{#if is_admin}}
-            <option name="invite_as" value="{{ invite_as_options.moderator.code }}">{{t "Moderators" }}</option>
-            <option name="invite_as" value="{{ invite_as_options.admin.code }}">{{t "Administrators" }}</option>
+            <option value="{{ invite_as_options.moderator.code }}">{{t "Moderators" }}</option>
+            <option value="{{ invite_as_options.admin.code }}">{{t "Administrators" }}</option>
             {{/if}}
             {{#if is_owner}}
-            <option name="invite_as" value="{{ invite_as_options.owner.code }}">{{t "Owners" }}</option>
+            <option value="{{ invite_as_options.owner.code }}">{{t "Owners" }}</option>
             {{/if}}
         </select>
     </div>
