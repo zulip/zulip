@@ -225,7 +225,7 @@ EXEMPT_FILES = make_set(
         "web/src/settings_preferences.ts",
         "web/src/settings_profile_fields.ts",
         "web/src/settings_realm_domains.ts",
-        "web/src/settings_realm_user_settings_defaults.js",
+        "web/src/settings_realm_user_settings_defaults.ts",
         "web/src/settings_sections.js",
         "web/src/settings_streams.ts",
         "web/src/settings_toggle.js",

@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as audible_notifications from "./audible_notifications";
 import {
@@ -11,11 +12,14 @@ import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_org from "./settings_org";
 import * as settings_preferences from "./settings_preferences";
+import type {SettingsPanel} from "./settings_preferences";
 import {current_user} from "./state_data";
+import type {HTMLSelectOneElement} from "./types";
+import * as util from "./util";
 
-export const realm_default_settings_panel = {};
+export let realm_default_settings_panel: SettingsPanel | undefined;
 
-export function maybe_disable_widgets() {
+export function maybe_disable_widgets(): void {
     if (!current_user.is_admin) {
         $(".organization-box [data-name='organization-level-user-defaults']")
             .find("input, select")
@@ -32,7 +36,7 @@ export function maybe_disable_widgets() {
     }
 }
 
-export function update_page(property) {
+export function update_page(property: string): void {
     if (!overlays.settings_open()) {
         return;
     }
@@ -41,17 +45,22 @@ export function update_page(property) {
     if ($element.length) {
         const $subsection = $element.closest(".settings-subsection-parent");
         if ($subsection.find(".save-button-controls").hasClass("hide")) {
-            settings_org.discard_realm_default_property_element_changes($element[0]);
+            settings_org.discard_realm_default_property_element_changes(util.the($element));
         } else {
             settings_org.discard_realm_default_settings_subsection_changes($subsection);
         }
     }
 }
 
-export function set_up() {
+export function set_up(): void {
+    assert(realm_default_settings_panel !== undefined);
     const $container = $(realm_default_settings_panel.container);
-    const $notification_sound_elem = $("audio#realm-default-notification-sound-audio");
-    const $notification_sound_dropdown = $container.find(".setting_notification_sound");
+    const $notification_sound_elem = $<HTMLAudioElement>(
+        "audio#realm-default-notification-sound-audio",
+    );
+    const $notification_sound_dropdown = $container.find<HTMLSelectOneElement>(
+        ".setting_notification_sound",
+    );
 
     settings_preferences.set_up(realm_default_settings_panel);
 
@@ -61,15 +70,15 @@ export function set_up() {
     );
 
     $notification_sound_dropdown.on("change", () => {
-        const sound = $notification_sound_dropdown.val().toLowerCase();
+        const sound = $notification_sound_dropdown.val()!.toLowerCase();
         audible_notifications.update_notification_sound_source($notification_sound_elem, {
             notification_sound: sound,
         });
     });
 
     if (!page_params.development_environment) {
-        $("#realm_dense_mode").on("change", (e) => {
-            const val = $(e.target).prop("checked");
+        $<HTMLInputElement>("#realm_dense_mode").on("change", function (this: HTMLInputElement) {
+            const val = this.checked;
             if (val) {
                 $container.find(".information-density-settings").hide();
                 return;
@@ -99,10 +108,11 @@ export function set_up() {
     maybe_disable_widgets();
 }
 
-export function initialize() {
-    realm_default_settings_panel.container = "#realm-user-default-settings";
-    realm_default_settings_panel.settings_object = realm_user_settings_defaults;
-    realm_default_settings_panel.notification_sound_elem =
-        "audio#realm-default-notification-sound-audio";
-    realm_default_settings_panel.for_realm_settings = true;
+export function initialize(): void {
+    realm_default_settings_panel = {
+        container: "#realm-user-default-settings",
+        settings_object: realm_user_settings_defaults,
+        notification_sound_elem: "audio#realm-default-notification-sound-audio",
+        for_realm_settings: true,
+    };
 }
