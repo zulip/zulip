@@ -1210,17 +1210,21 @@ export function initialize() {
         const group = get_user_group_for_target(e.currentTarget);
 
         const url = `/json/user_groups/${group.id}`;
-        const data = {};
+        let name;
+        let description;
         const new_name = $("#change_user_group_name").val().trim();
         const new_description = $("#change_user_group_description").val().trim();
 
         if (new_name !== group.name) {
-            data.name = new_name;
+            name = new_name;
         }
         if (new_description !== group.description) {
-            data.description = new_description;
+            description = new_description;
         }
-
+        const data = {
+            name,
+            description,
+        };
         dialog_widget.submit_api_request(channel.patch, url, data);
     }
 
