@@ -650,6 +650,7 @@
     --color-buddy-list-highlighted-user: var(
         --color-background-hover-narrow-filter
     );
+    --color-buddy-list-avatar-loading: hsl(0deg 0% 0% / 10%);
     --color-border-sidebar: hsl(0deg 0% 87%);
     --color-text-sidebar-base: hsl(0deg 0% 0%);
     --color-border-sidebar-subheader: hsl(0deg 0% 0% / 15%);
@@ -1196,6 +1197,7 @@
     --color-buddy-list-highlighted-user: var(
         --color-background-hover-narrow-filter
     );
+    --color-buddy-list-avatar-loading: hsl(0deg 0% 100% / 10%);
     --color-border-sidebar: hsl(0deg 0% 0% / 20%);
     --color-text-sidebar-base: hsl(0deg 0% 100%);
     --color-border-sidebar-subheader: hsl(0deg 0% 100% / 15%);
