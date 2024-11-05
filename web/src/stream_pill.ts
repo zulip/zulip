@@ -2,7 +2,6 @@ import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
 
-import {$t} from "./i18n.ts";
 import type {InputPillContainer} from "./input_pill.ts";
 import * as peer_data from "./peer_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -18,14 +17,6 @@ export type StreamPill = {
 export type StreamPillWidget = InputPillContainer<StreamPill>;
 
 export type StreamPillData = StreamSubscription & {type: "stream"};
-
-function format_stream_name_and_subscriber_count(sub: StreamSubscription): string {
-    const sub_count = peer_data.get_subscriber_count(sub.stream_id);
-    return $t(
-        {defaultMessage: "{stream_name}: {sub_count} users"},
-        {stream_name: sub.name, sub_count},
-    );
-}
 
 export function create_item_from_stream_name(
     stream_name: string,
@@ -83,9 +74,6 @@ export function get_user_ids(pill_widget: StreamPillWidget | CombinedPillContain
 export function get_display_value_from_item(item: StreamPill): string {
     const stream = stream_data.get_sub_by_id(item.stream_id);
     assert(stream !== undefined);
-    if (item.show_subscriber_count) {
-        return format_stream_name_and_subscriber_count(stream);
-    }
     return stream.name;
 }
 
