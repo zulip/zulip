@@ -291,7 +291,7 @@ $user_status_emoji_width: 24px;
         "avatar row-content markers-and-controls" var(
             --right-sidebar-avatar-width
         )
-        "avatar row-content ." auto / auto minmax(0, 1fr) minmax(0, auto);
+        / auto minmax(0, 1fr) minmax(0, auto);
     justify-content: flex-start;
     align-items: center;
 }
