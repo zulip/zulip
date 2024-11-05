@@ -50,13 +50,21 @@ This copies to your clipboard a permanent link to the message,
 displayed in its thread (i.e. topic view for messages in a channel).
 Viewing a topic via a message link will never mark messages as read.
 
-These links will still work even when the message is
-[moved to another topic](/help/move-content-to-another-topic)
-or [channel](/help/move-content-to-another-channel) or
-if its [topic is resolved](/help/resolve-a-topic).
+These links will still work even when the message is [moved to another
+topic](/help/move-content-to-another-topic) or
+[channel](/help/move-content-to-another-channel), or if its [topic is
+resolved](/help/resolve-a-topic). Zulip uses the same permanent link syntax when
+[quoting a message](/help/quote-and-reply).
 
-Zulip uses the same permanent link syntax when [quoting a
-message](/help/quote-and-reply).
+When you paste a message link into the compose box, it gets automatically
+formatted to be easy to read:
+
+```
+#**channel name>topic name@message ID**
+```
+
+When you send your message, the link will appear as **#channel name>topic
+name@💬**.
 
 {start_tabs}
 
@@ -70,6 +78,12 @@ message](/help/quote-and-reply).
 
     If using Zulip in a browser, you can also click on the timestamp
     of a message, and copy the URL from your browser's address bar.
+
+!!! tip ""
+
+    When you paste a message link into Zulip, it is automatically
+    formatted for you. You can paste as plain text if you prefer with
+    <kbd data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>.
 
 {end_tabs}
 
