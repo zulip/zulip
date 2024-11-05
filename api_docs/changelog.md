@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 319**
+
+* [Markdown message
+  formatting](/api/message-formatting#links-to-channels-topics-and-messages): Added
+  new `message-link` format for special direct links to messages.
+
 **Feature level 318**
 
 * [`POST /register`](/api/register-queue): Updated
