@@ -44,7 +44,7 @@
         <div id="custom-invite-expiration-time" class="dependent-settings-block custom-time-input-container">
             <label class="modal-field-label">{{t "Custom time" }}</label>
             <input type="text" autocomplete="off" name="custom-expiration-time" id="custom-expiration-time-input" class="custom-time-input-value inline-block" value="" maxlength="3"/>
-            <select class="custom-time-input-unit invite-user-select modal_select bootstrap-focus-style" id="custom-expiration-time-unit">
+            <select id="custom-expiration-time-unit" name="custom-expiration-time-unit" class="custom-time-input-unit invite-user-select modal_select bootstrap-focus-style">
                 {{#each time_choices}}
                     <option value="{{this.name}}">{{this.description}}</option>
                 {{/each}}
