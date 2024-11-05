@@ -35,7 +35,7 @@ html {
     margin-top: 10px;
     font-weight: 400;
     font-size: 0.9em;
-    color: #808080;
+    color: gray;
 
     & a {
         color: hsl(164deg 100% 23%);
