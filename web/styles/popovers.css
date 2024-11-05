@@ -1186,12 +1186,16 @@ ul.popover-group-menu-member-list {
         flex-flow: row nowrap;
         align-items: flex-start;
         gap: 5px;
+        /* 3px at 15px/1em, 10px at 15px/1em */
         padding: 0.2em 0.6666em;
         /* 15px at 15px/1em */
         font-size: 1em;
         /* 16px at 15px/1em */
         line-height: 1.0667em;
-        min-height: 26px;
+        /* 26px at 16px/1em - this height was carried forward
+           despite the information density change in 15px > 16px,
+           so we calculate its height to the 16px em in use. */
+        min-height: 1.625em;
 
         .popover-menu-icon {
             /* 16px at 15px/1em */
