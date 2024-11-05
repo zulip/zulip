@@ -343,11 +343,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
-    # Who in the organization is allowed to invite other users to streams.
-    invite_to_stream_policy = models.PositiveSmallIntegerField(
-        default=CommonPolicyEnum.MEMBERS_ONLY
-    )
-
     # UserGroup which is allowed to move messages between streams.
     can_move_messages_between_channels_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
@@ -655,7 +650,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         inline_url_embed_preview=bool,
         invite_required=bool,
         invite_to_realm_policy=int,
-        invite_to_stream_policy=int,
         jitsi_server_url=(str, type(None)),
         mandatory_topics=bool,
         message_content_allowed_in_email_notifications=bool,

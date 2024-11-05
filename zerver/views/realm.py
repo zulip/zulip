@@ -50,7 +50,6 @@ from zerver.lib.validator import check_capped_url, check_string
 from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile
 from zerver.models.realms import (
     BotCreationPolicyEnum,
-    CommonPolicyEnum,
     DigestWeekdayEnum,
     InviteToRealmPolicyEnum,
     OrgTypeEnum,
@@ -145,7 +144,6 @@ def update_realm(
     can_move_messages_between_topics_group: Json[GroupSettingChangeRequest] | None = None,
     direct_message_initiator_group: Json[GroupSettingChangeRequest] | None = None,
     direct_message_permission_group: Json[GroupSettingChangeRequest] | None = None,
-    invite_to_stream_policy: Json[CommonPolicyEnum] | None = None,
     wildcard_mention_policy: Json[WildcardMentionPolicyEnum] | None = None,
     video_chat_provider: Json[int] | None = None,
     jitsi_server_url_raw: Annotated[

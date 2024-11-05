@@ -174,7 +174,6 @@ class HomeTest(ZulipTestCase):
         "realm_inline_url_embed_preview",
         "realm_invite_required",
         "realm_invite_to_realm_policy",
-        "realm_invite_to_stream_policy",
         "realm_is_zephyr_mirror_realm",
         "realm_jitsi_server_url",
         "realm_linkifiers",

@@ -816,10 +816,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         from zerver.lib.user_groups import user_has_permission_for_group_setting
         from zerver.models import Realm
 
-        if policy_name not in Realm.REALM_PERMISSION_GROUP_SETTINGS and policy_name not in [
-            "invite_to_stream_policy",
-            "invite_to_realm_policy",
-        ]:
+        if (
+            policy_name not in Realm.REALM_PERMISSION_GROUP_SETTINGS
+            and policy_name != "invite_to_realm_policy"
+        ):
             raise AssertionError("Invalid policy")
 
         if policy_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:

@@ -840,7 +840,6 @@ class RealmTest(ZulipTestCase):
 
         invalid_values = dict(
             bot_creation_policy=10,
-            invite_to_stream_policy=10,
             message_retention_days=10,
             video_chat_provider=10,
             giphy_rating=10,
@@ -1682,7 +1681,6 @@ class RealmAPITest(ZulipTestCase):
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[10, 20],
-            invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
             bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
             video_chat_provider=[
