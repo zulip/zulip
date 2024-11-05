@@ -516,10 +516,7 @@ run_test("realm settings", ({override}) => {
         assert.equal(realm[parameter_name], 1);
     }
 
-    let event = event_fixtures.realm__update__invite_to_stream_policy;
-    test_realm_integer(event, "realm_invite_to_stream_policy");
-
-    event = event_fixtures.realm__update__bot_creation_policy;
+    let event = event_fixtures.realm__update__bot_creation_policy;
     test_realm_integer(event, "realm_bot_creation_policy");
 
     event = event_fixtures.realm__update__invite_required;

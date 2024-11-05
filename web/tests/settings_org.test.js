@@ -104,8 +104,8 @@ function test_submit_settings_form(override, submit_form) {
         realm_bot_creation_policy: settings_bots.bot_creation_policy_values.restricted.code,
         realm_waiting_period_threshold: 1,
         realm_default_language: '"es"',
-        realm_invite_to_stream_policy: settings_config.common_policy_values.by_admins_only.code,
-        realm_invite_to_realm_policy: settings_config.common_policy_values.by_members.code,
+        realm_invite_to_realm_policy:
+            settings_config.email_invite_to_realm_policy_values.by_members.code,
     });
 
     override(global, "setTimeout", (func) => func());
@@ -132,11 +132,6 @@ function test_submit_settings_form(override, submit_form) {
 
     $("#id_realm_waiting_period_threshold").val(10);
 
-    const $invite_to_stream_policy_elem = $("#id_realm_invite_to_stream_policy");
-    $invite_to_stream_policy_elem.val("1");
-    $invite_to_stream_policy_elem.attr("id", "id_realm_invite_to_stream_policy");
-    $invite_to_stream_policy_elem.data = () => "number";
-
     const $bot_creation_policy_elem = $("#id_realm_bot_creation_policy");
     $bot_creation_policy_elem.val("1");
     $bot_creation_policy_elem.attr("id", "id_realm_bot_creation_policy");
@@ -151,7 +146,6 @@ function test_submit_settings_form(override, submit_form) {
     $subsection_elem.set_find_results(".prop-element", [
         $bot_creation_policy_elem,
         $invite_to_realm_policy_elem,
-        $invite_to_stream_policy_elem,
     ]);
 
     patched = false;
@@ -161,7 +155,6 @@ function test_submit_settings_form(override, submit_form) {
     let expected_value = {
         bot_creation_policy: 1,
         invite_to_realm_policy: 2,
-        invite_to_stream_policy: 1,
     };
     assert.deepEqual(data, expected_value);
 
@@ -305,18 +298,19 @@ function test_sync_realm_settings({override}) {
         override(
             realm,
             `realm_${property_name}`,
-            settings_config.common_policy_values.by_members.code,
+            settings_config.email_invite_to_realm_policy_values.by_members.code,
         );
-        $property_elem.val(settings_config.common_policy_values.by_members.code);
+        $property_elem.val(settings_config.email_invite_to_realm_policy_values.by_members.code);
 
-        for (const policy_value of Object.values(settings_config.common_policy_values)) {
+        for (const policy_value of Object.values(
+            settings_config.email_invite_to_realm_policy_values,
+        )) {
             override(realm, `realm_${property_name}`, policy_value.code);
             settings_org.sync_realm_settings(property_name);
             assert.equal($property_elem.val(), policy_value.code);
         }
     }
 
-    test_common_policy("invite_to_stream_policy");
     test_common_policy("invite_to_realm_policy");
 
     {
@@ -383,11 +377,11 @@ function test_sync_realm_settings({override}) {
             ".save-button-controls",
             save_button_stubs.$save_button_controls,
         );
-        $property_elem.val(settings_config.common_policy_values.by_admins_only.code);
+        $property_elem.val(settings_config.email_invite_to_realm_policy_values.by_admins_only.code);
         override(
             realm,
             "realm_invite_to_realm_policy",
-            settings_config.common_policy_values.by_members.code,
+            settings_config.email_invite_to_realm_policy_values.by_members.code,
         );
         save_button_stubs.$save_button_controls.removeClass("hide");
         $subsection_stub.set_find_results(".prop-element", [$property_elem]);
@@ -665,38 +659,6 @@ test("set_up", ({override, override_rewire}) => {
             ".subsection-header .subsection-changes-discard button",
         ),
     );
-});
-
-test("test get_organization_settings_options", () => {
-    const sorted_option_values = settings_org.get_organization_settings_options();
-    const sorted_common_policy_values = sorted_option_values.common_policy_values;
-    const expected_common_policy_values = [
-        {
-            key: "by_admins_only",
-            order: 1,
-            code: 2,
-            description: $t({defaultMessage: "Admins"}),
-        },
-        {
-            key: "by_moderators_only",
-            order: 2,
-            code: 4,
-            description: $t({defaultMessage: "Admins and moderators"}),
-        },
-        {
-            key: "by_full_members",
-            order: 3,
-            code: 3,
-            description: $t({defaultMessage: "Admins, moderators and full members"}),
-        },
-        {
-            key: "by_members",
-            order: 4,
-            code: 1,
-            description: $t({defaultMessage: "Admins, moderators and members"}),
-        },
-    ];
-    assert.deepEqual(sorted_common_policy_values, expected_common_policy_values);
 });
 
 test("test get_sorted_options_list", () => {

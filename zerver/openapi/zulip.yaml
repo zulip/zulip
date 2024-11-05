@@ -4505,6 +4505,16 @@ paths:
                                             setting controlled this permission; `true` corresponded to `Everyone`, and
                                             `false` to `Admins`.
                                         - $ref: "#/components/schemas/GroupSettingValue"
+                                    can_invite_to_channel_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to invite other users to channels in the organization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 319). Previously, this
+                                            permission was controlled by the enum `invite_to_stream_policy`. Values
+                                            were 1=Members, 2=Admins, 3=Full members, 4=Moderators.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_move_messages_between_channels_group:
                                       allOf:
                                         - description: |
@@ -16335,6 +16345,16 @@ paths:
                               Before Zulip 5.0 (feature level 101), the `allow_message_deleting` boolean
                               setting controlled this permission; `true` corresponded to `Everyone`, and
                               `false` to `Admins`.
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                      realm_can_invite_to_channel_group:
+                        allOf:
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to invite other users to channels in the organization.
+
+                              **Changes**: New in Zulip 10.0 (feature level 319). Previously, this
+                              permission was controlled by the enum `invite_to_stream_policy`. Values
+                              were 1=Members, 2=Admins, 3=Full members, 4=Moderators.
                           - $ref: "#/components/schemas/GroupSettingValue"
                       realm_can_move_messages_between_channels_group:
                         allOf:

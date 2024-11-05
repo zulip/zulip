@@ -62,7 +62,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import CommonPolicyEnum, InviteToRealmPolicyEnum, get_realm
+from zerver.models.realms import InviteToRealmPolicyEnum, get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 
@@ -114,13 +114,13 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
 
         self.assertEqual(realm.invite_to_realm_policy, InviteToRealmPolicyEnum.ADMINS_ONLY)
-        self.assertEqual(realm.invite_to_stream_policy, CommonPolicyEnum.MODERATORS_ONLY)
         realm = get_realm("test_education_non_profit")
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
         self.assertEqual(realm.can_create_groups.id, moderators_group.id)
         self.assertEqual(realm.can_move_messages_between_channels_group.id, moderators_group.id)
+        self.assertEqual(realm.can_invite_to_channel_group.id, moderators_group.id)
 
     def test_permission_for_education_for_profit_organization(self) -> None:
         realm = do_create_realm(
@@ -135,13 +135,13 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
 
         self.assertEqual(realm.invite_to_realm_policy, InviteToRealmPolicyEnum.ADMINS_ONLY)
-        self.assertEqual(realm.invite_to_stream_policy, CommonPolicyEnum.MODERATORS_ONLY)
         realm = get_realm("test_education_for_profit")
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
         self.assertEqual(realm.can_create_groups.id, moderators_group.id)
         self.assertEqual(realm.can_move_messages_between_channels_group.id, moderators_group.id)
+        self.assertEqual(realm.can_invite_to_channel_group.id, moderators_group.id)
 
     def test_realm_enable_spectator_access(self) -> None:
         realm = do_create_realm(

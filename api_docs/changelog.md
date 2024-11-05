@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 319**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_invite_to_channel_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to invite other users to the channel in the organization.
+
 **Feature level 318**
 
 * [`POST /register`](/api/register-queue): Updated

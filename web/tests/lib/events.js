@@ -309,13 +309,6 @@ exports.fixtures = {
         value: 2,
     },
 
-    realm__update__invite_to_stream_policy: {
-        type: "realm",
-        op: "update",
-        property: "invite_to_stream_policy",
-        value: 2,
-    },
-
     realm__update__name: {
         type: "realm",
         op: "update",

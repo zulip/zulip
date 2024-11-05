@@ -112,34 +112,54 @@ run_test("user_can_change_logo", ({override}) => {
 function test_policy(label, policy, validation_func) {
     run_test(label, ({override}) => {
         override(current_user, "is_admin", true);
-        override(realm, policy, settings_config.common_policy_values.by_admins_only.code);
+        override(
+            realm,
+            policy,
+            settings_config.email_invite_to_realm_policy_values.by_admins_only.code,
+        );
         assert.equal(validation_func(), true);
 
         override(current_user, "is_admin", false);
         assert.equal(validation_func(), false);
 
         override(current_user, "is_moderator", true);
-        override(realm, policy, settings_config.common_policy_values.by_moderators_only.code);
+        override(
+            realm,
+            policy,
+            settings_config.email_invite_to_realm_policy_values.by_moderators_only.code,
+        );
         assert.equal(validation_func(), true);
 
         override(current_user, "is_moderator", false);
         assert.equal(validation_func(), false);
 
         override(current_user, "is_guest", true);
-        override(realm, policy, settings_config.common_policy_values.by_members.code);
+        override(
+            realm,
+            policy,
+            settings_config.email_invite_to_realm_policy_values.by_members.code,
+        );
         assert.equal(validation_func(), false);
 
         override(current_user, "is_guest", false);
         assert.equal(validation_func(), true);
 
         page_params.is_spectator = true;
-        override(realm, policy, settings_config.common_policy_values.by_members.code);
+        override(
+            realm,
+            policy,
+            settings_config.email_invite_to_realm_policy_values.by_members.code,
+        );
         assert.equal(validation_func(), false);
 
         page_params.is_spectator = false;
         assert.equal(validation_func(), true);
 
-        override(realm, policy, settings_config.common_policy_values.by_full_members.code);
+        override(
+            realm,
+            policy,
+            settings_config.email_invite_to_realm_policy_values.by_full_members.code,
+        );
         override(current_user, "user_id", 30);
         isaac.date_joined = new Date(Date.now());
         settings_data.initialize(isaac.date_joined);
@@ -152,11 +172,6 @@ function test_policy(label, policy, validation_func) {
     });
 }
 
-test_policy(
-    "user_can_subscribe_other_users",
-    "realm_invite_to_stream_policy",
-    settings_data.user_can_subscribe_other_users,
-);
 test_policy(
     "user_can_invite_others_to_realm",
     "realm_invite_to_realm_policy",
@@ -176,6 +191,11 @@ test_realm_group_settings(
 test_realm_group_settings(
     "realm_can_delete_own_message_group",
     settings_data.user_can_delete_own_message,
+);
+
+test_realm_group_settings(
+    "realm_can_invite_to_channel_group",
+    settings_data.user_can_subscribe_other_users,
 );
 
 test_realm_group_settings(

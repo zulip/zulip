@@ -89,12 +89,10 @@
                   setting_name="realm_can_create_private_channel_group"
                   label=(t 'Who can create private channels')}}
 
-                <div class="input-group">
-                    <label for="realm_invite_to_stream_policy" class="settings-field-label">{{t "Who can add users to channels" }}</label>
-                    <select name="realm_invite_to_stream_policy" id="id_realm_invite_to_stream_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=common_policy_values}}
-                    </select>
-                </div>
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_invite_to_channel_group"
+                  label=(t 'Who can add users to channels')}}
+
                 <div class="input-group">
                     <label for="realm_wildcard_mention_policy" class="settings-field-label">{{t "Who can notify a large number of users with a wildcard mention" }}
                         {{> ../help_link_widget link="/help/restrict-wildcard-mentions" }}

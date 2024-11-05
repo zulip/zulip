@@ -294,6 +294,7 @@ export const realm_schema = z.object({
     realm_can_create_web_public_channel_group: z.number(),
     realm_can_delete_any_message_group: group_setting_value_schema,
     realm_can_delete_own_message_group: group_setting_value_schema,
+    realm_can_invite_to_channel_group: group_setting_value_schema,
     realm_can_manage_all_groups: group_setting_value_schema,
     realm_can_move_messages_between_channels_group: group_setting_value_schema,
     realm_can_move_messages_between_topics_group: group_setting_value_schema,
@@ -357,7 +358,6 @@ export const realm_schema = z.object({
     realm_inline_url_embed_preview: z.boolean(),
     realm_invite_required: z.boolean(),
     realm_invite_to_realm_policy: z.number(),
-    realm_invite_to_stream_policy: z.number(),
     realm_is_zephyr_mirror_realm: z.boolean(),
     realm_jitsi_server_url: z.nullable(z.string()),
     realm_linkifiers: z.array(
