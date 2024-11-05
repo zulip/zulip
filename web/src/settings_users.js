@@ -37,6 +37,9 @@ const active_section = {
         // 0 role_code signifies All roles for our filter.
         role_code: 0,
     },
+    handle_events: active_handle_events,
+    create_table: active_create_table,
+    list_widget: undefined,
 };
 
 const deactivated_section = {
@@ -46,9 +49,15 @@ const deactivated_section = {
         // 0 role_code signifies All roles for our filter.
         role_code: 0,
     },
+    handle_events: deactivated_handle_events,
+    create_table: deactivated_create_table,
+    list_widget: undefined,
 };
 
-const bots_section = {};
+const bots_section = {
+    handle_events: bots_handle_events,
+    create_table: bots_create_table,
+};
 
 function sort_bot_email(a, b) {
     function email(bot) {
@@ -297,7 +306,7 @@ function set_text_search_value($table, value) {
 
 let bot_list_widget;
 
-bots_section.create_table = () => {
+function bots_create_table() {
     loading.make_indicator($("#admin_page_bots_loading_indicator"), {
         text: $t({defaultMessage: "Loading…"}),
     });
@@ -336,9 +345,9 @@ bots_section.create_table = () => {
 
     loading.destroy_indicator($("#admin_page_bots_loading_indicator"));
     $bots_table.show();
-};
+}
 
-active_section.create_table = (active_users) => {
+function active_create_table(active_users) {
     const $users_table = $("#admin_users_table");
     active_section.list_widget = ListWidget.create($users_table, active_users, {
         name: "users_table_list",
@@ -369,9 +378,9 @@ active_section.create_table = (active_users) => {
     set_text_search_value($users_table, active_section.filters.text_search);
     loading.destroy_indicator($("#admin_page_users_loading_indicator"));
     $("#admin_users_table").show();
-};
+}
 
-deactivated_section.create_table = (deactivated_users) => {
+function deactivated_create_table(deactivated_users) {
     const $deactivated_users_table = $("#admin_deactivated_users_table");
     deactivated_section.list_widget = ListWidget.create(
         $deactivated_users_table,
@@ -408,7 +417,7 @@ deactivated_section.create_table = (deactivated_users) => {
     set_text_search_value($deactivated_users_table, deactivated_section.filters.text_search);
     loading.destroy_indicator($("#admin_page_deactivated_users_loading_indicator"));
     $("#admin_deactivated_users_table").show();
-};
+}
 
 export function update_bot_data(bot_user_id) {
     if (!bot_list_widget) {
@@ -589,31 +598,31 @@ function handle_filter_change($tbody, section) {
         });
 }
 
-active_section.handle_events = () => {
+function active_handle_events() {
     const $tbody = $("#admin_users_table").expectOne();
 
     handle_filter_change($tbody, active_section);
     handle_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
-};
+}
 
-deactivated_section.handle_events = () => {
+function deactivated_handle_events() {
     const $tbody = $("#admin_deactivated_users_table").expectOne();
 
     handle_filter_change($tbody, deactivated_section);
     handle_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
-};
+}
 
-bots_section.handle_events = () => {
+function bots_handle_events() {
     const $tbody = $("#admin_bots_table").expectOne();
 
     handle_bot_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
-};
+}
 
 export function set_up_humans() {
     start_data_load();
