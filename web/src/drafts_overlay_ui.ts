@@ -1,3 +1,4 @@
+import ClipboardJS from "clipboard";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
@@ -6,6 +7,7 @@ import render_draft_table_body from "../templates/draft_table_body.hbs";
 
 import * as browser_history from "./browser_history.ts";
 import * as compose_actions from "./compose_actions.ts";
+import {show_copied_confirmation} from "./copied_tooltip.ts";
 import type {FormattedDraft, LocalStorageDraft} from "./drafts.ts";
 import * as drafts from "./drafts.ts";
 import {$t} from "./i18n.ts";
@@ -16,6 +18,8 @@ import * as people from "./people.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
+
+const {draft_model} = drafts;
 
 function restore_draft(draft_id: string): void {
     const draft = drafts.draft_model.getDraft(draft_id);
@@ -226,6 +230,12 @@ export function launch(): void {
             update_bulk_delete_ui();
         });
 
+        $("#drafts_table .overlay_message_controls .copy-overlay-message").on("click", function () {
+            const $draft_row = $(this).closest(".overlay-message-row");
+            const draft_id = $draft_row.attr("data-draft-id")!;
+            copy_draft(draft_id);
+        });
+
         $(".select-drafts-button").on("click", (e) => {
             e.preventDefault();
             const $unchecked_checkboxes = $(".draft-selection-checkbox").filter(function () {
@@ -297,6 +307,28 @@ export function update_bulk_delete_ui(): void {
             $delete_selected_drafts_button.hide();
         }
     }
+}
+
+export function copy_draft(draft_id: string): void {
+    const draft = draft_model.getDraft(draft_id);
+    if (!draft) {
+        return;
+    }
+
+    const clipboard = new ClipboardJS(
+        "#drafts_table .overlay_message_controls .copy-overlay-message",
+        {
+            text() {
+                return draft.content;
+            },
+        },
+    );
+
+    clipboard.on("success", (e) => {
+        show_copied_confirmation(e.trigger, {
+            show_check_icon: true,
+        });
+    });
 }
 
 export function open_overlay(): void {
