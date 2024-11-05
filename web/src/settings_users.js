@@ -220,12 +220,7 @@ function bot_owner_full_name(owner_id) {
 }
 
 function bot_info(bot_user_id) {
-    const bot_user = people.maybe_get_user_by_id(bot_user_id);
-
-    if (!bot_user) {
-        return undefined;
-    }
-
+    const bot_user = people.get_by_user_id(bot_user_id);
     const owner_id = bot_user.bot_owner_id;
 
     const info = {};
@@ -322,9 +317,6 @@ function bots_create_table() {
         filter: {
             $element: $bots_table.closest(".settings-section").find(".search"),
             predicate(item, value) {
-                if (!item) {
-                    return false;
-                }
                 return (
                     item.full_name.toLowerCase().includes(value) ||
                     item.display_email.toLowerCase().includes(value)
