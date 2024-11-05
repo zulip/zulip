@@ -31,10 +31,11 @@ html {
 }
 
 .bottom-text {
-    text-align: center;
-    margin-top: 20px;
+    text-align: left;
+    margin-top: 10px;
     font-weight: 400;
     font-size: 0.9em;
+    color: grey;
 
     & a {
         color: hsl(164deg 100% 23%);
@@ -43,6 +44,10 @@ html {
             text-decoration: none;
             color: hsl(156deg 62% 61%);
         }
+    }
+
+    & p {
+        text-align: center;
     }
 }
 
@@ -1202,7 +1207,7 @@ button#register_auth_button_gitlab {
 
 .goto-account-page {
     #realm_redirect_subdomain {
-        text-align: right;
+        text-align: left;
         position: relative;
         padding-right: 10px;
     }
@@ -1215,8 +1220,11 @@ button#register_auth_button_gitlab {
     }
 
     #realm_redirect_description {
-        top: 15px;
+        top: 28px;
+        font-weight: 600;
+        font-size: 18px;
         position: relative;
+        text-align: left;
     }
 
     #enter-realm-button {
