@@ -25,9 +25,12 @@ global.DOMParser = dom.window.DOMParser;
 global.HTMLAnchorElement = dom.window.HTMLAnchorElement;
 global.HTMLElement = dom.window.HTMLElement;
 global.Window = dom.window.Window;
-global.navigator = {
-    userAgent: "node.js",
-};
+Object.defineProperty(global, "navigator", {
+    value: {
+        userAgent: "node.js",
+    },
+    writable: true,
+});
 
 require("@babel/register")({
     extensions: [".es6", ".es", ".jsx", ".js", ".mjs", ".ts"],
