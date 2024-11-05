@@ -443,3 +443,29 @@ run_test("the", () => {
     // were previously typed wrong but not breaking the app.
     assert.equal(util.the([]), undefined);
 });
+
+run_test("compare_a_b", () => {
+    const user1 = {
+        id: 1,
+        name: "sally",
+    };
+    const user2 = {
+        id: 2,
+        name: "jenny",
+    };
+    const user3 = {
+        id: 3,
+        name: "max",
+    };
+    const user4 = {
+        id: 4,
+        name: "max",
+    };
+    const unsorted = [user2, user1, user4, user3];
+
+    const sorted_by_id = [...unsorted].sort((a, b) => util.compare_a_b(a.id, b.id));
+    assert.deepEqual(sorted_by_id, [user1, user2, user3, user4]);
+
+    const sorted_by_name = [...unsorted].sort((a, b) => util.compare_a_b(a.name, b.name));
+    assert.deepEqual(sorted_by_name, [user2, user4, user3, user1]);
+});

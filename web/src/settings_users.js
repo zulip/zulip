@@ -22,6 +22,7 @@ import * as timerender from "./timerender";
 import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_profile from "./user_profile";
 import * as user_sort from "./user_sort";
+import * as util from "./util";
 
 export const active_user_list_dropdown_widget_name = "active_user_list_select_user_role";
 export const deactivated_user_list_dropdown_widget_name = "deactivated_user_list_select_user_role";
@@ -54,7 +55,7 @@ function sort_bot_email(a, b) {
         return (bot.display_email || "").toLowerCase();
     }
 
-    return user_sort.compare_a_b(email(a), email(b));
+    return util.compare_a_b(email(a), email(b));
 }
 
 function sort_bot_owner(a, b) {
@@ -62,11 +63,11 @@ function sort_bot_owner(a, b) {
         return (bot.bot_owner_full_name || "").toLowerCase();
     }
 
-    return user_sort.compare_a_b(owner_name(a), owner_name(b));
+    return util.compare_a_b(owner_name(a), owner_name(b));
 }
 
 function sort_last_active(a, b) {
-    return user_sort.compare_a_b(
+    return util.compare_a_b(
         presence.last_active_date(a.user_id) || 0,
         presence.last_active_date(b.user_id) || 0,
     );
