@@ -1,3 +1,4 @@
+import ClipboardJS from "clipboard";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
@@ -6,6 +7,7 @@ import render_draft_table_body from "../templates/draft_table_body.hbs";
 
 import * as browser_history from "./browser_history.ts";
 import * as compose_actions from "./compose_actions.ts";
+import {show_copied_confirmation} from "./copied_tooltip.ts";
 import type {FormattedDraft, LocalStorageDraft} from "./drafts.ts";
 import * as drafts from "./drafts.ts";
 import {$t} from "./i18n.ts";
@@ -223,6 +225,21 @@ export function launch(): void {
             const is_checked = is_checkbox_icon_checked($(e.target));
             toggle_checkbox_icon_state($(e.target), !is_checked);
             update_bulk_delete_ui();
+        });
+
+        new ClipboardJS("#drafts_table .overlay_message_controls .copy-overlay-message", {
+            text(trigger): string {
+                const draft_id = $(trigger).attr("data-draft-id")!;
+                const draft = drafts.draft_model.getDraft(draft_id);
+                if (!draft) {
+                    return "";
+                }
+                return draft.content ?? "";
+            },
+        }).on("success", (e) => {
+            show_copied_confirmation(e.trigger, {
+                show_check_icon: true,
+            });
         });
 
         $(".select-drafts-button").on("click", (e) => {
