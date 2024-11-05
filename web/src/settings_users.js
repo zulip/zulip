@@ -30,25 +30,25 @@ export const deactivated_user_list_dropdown_widget_name = "deactivated_user_list
 let should_redraw_active_users_list = false;
 let should_redraw_deactivated_users_list = false;
 
-const section = {
-    active: {
-        dropdown_widget_name: active_user_list_dropdown_widget_name,
-        filters: {
-            text_search: "",
-            // 0 role_code signifies All roles for our filter.
-            role_code: 0,
-        },
+const active_section = {
+    dropdown_widget_name: active_user_list_dropdown_widget_name,
+    filters: {
+        text_search: "",
+        // 0 role_code signifies All roles for our filter.
+        role_code: 0,
     },
-    deactivated: {
-        dropdown_widget_name: deactivated_user_list_dropdown_widget_name,
-        filters: {
-            text_search: "",
-            // 0 role_code signifies All roles for our filter.
-            role_code: 0,
-        },
-    },
-    bots: {},
 };
+
+const deactivated_section = {
+    dropdown_widget_name: deactivated_user_list_dropdown_widget_name,
+    filters: {
+        text_search: "",
+        // 0 role_code signifies All roles for our filter.
+        role_code: 0,
+    },
+};
+
+const bots_section = {};
 
 function sort_bot_email(a, b) {
     function email(bot) {
@@ -141,10 +141,10 @@ function role_selected_handler(event, dropdown, widget) {
     event.stopPropagation();
 
     const role_code = Number($(event.currentTarget).attr("data-unique-id"));
-    if (widget.widget_name === section.active.dropdown_widget_name) {
-        add_value_to_filters(section.active, "role_code", role_code);
-    } else if (widget.widget_name === section.deactivated.dropdown_widget_name) {
-        add_value_to_filters(section.deactivated, "role_code", role_code);
+    if (widget.widget_name === active_section.dropdown_widget_name) {
+        add_value_to_filters(active_section, "role_code", role_code);
+    } else if (widget.widget_name === deactivated_section.dropdown_widget_name) {
+        add_value_to_filters(deactivated_section, "role_code", role_code);
     }
 
     dropdown.hide();
@@ -185,10 +185,10 @@ function populate_users() {
         failed_listing_users();
     }
 
-    section.active.create_table(active_user_ids);
-    section.deactivated.create_table(deactivated_user_ids);
-    create_role_filter_dropdown($("#admin-user-list"), section.active);
-    create_role_filter_dropdown($("#admin-deactivated-users-list"), section.deactivated);
+    active_section.create_table(active_user_ids);
+    deactivated_section.create_table(deactivated_user_ids);
+    create_role_filter_dropdown($("#admin-user-list"), active_section);
+    create_role_filter_dropdown($("#admin-deactivated-users-list"), deactivated_section);
 }
 
 function reset_scrollbar($sel) {
@@ -297,7 +297,7 @@ function set_text_search_value($table, value) {
 
 let bot_list_widget;
 
-section.bots.create_table = () => {
+bots_section.create_table = () => {
     loading.make_indicator($("#admin_page_bots_loading_indicator"), {
         text: $t({defaultMessage: "Loading…"}),
     });
@@ -338,9 +338,9 @@ section.bots.create_table = () => {
     $bots_table.show();
 };
 
-section.active.create_table = (active_users) => {
+active_section.create_table = (active_users) => {
     const $users_table = $("#admin_users_table");
-    section.active.list_widget = ListWidget.create($users_table, active_users, {
+    active_section.list_widget = ListWidget.create($users_table, active_users, {
         name: "users_table_list",
         get_item: people.get_by_user_id,
         modifier_html(item) {
@@ -350,7 +350,7 @@ section.active.create_table = (active_users) => {
         },
         filter: {
             predicate(person) {
-                return people.predicate_for_user_settings_filters(person, section.active.filters);
+                return people.predicate_for_user_settings_filters(person, active_section.filters);
             },
             onupdate: reset_scrollbar($users_table),
         },
@@ -366,14 +366,14 @@ section.active.create_table = (active_users) => {
         $simplebar_container: $("#admin-active-users-list .progressive-table-wrapper"),
     });
 
-    set_text_search_value($users_table, section.active.filters.text_search);
+    set_text_search_value($users_table, active_section.filters.text_search);
     loading.destroy_indicator($("#admin_page_users_loading_indicator"));
     $("#admin_users_table").show();
 };
 
-section.deactivated.create_table = (deactivated_users) => {
+deactivated_section.create_table = (deactivated_users) => {
     const $deactivated_users_table = $("#admin_deactivated_users_table");
-    section.deactivated.list_widget = ListWidget.create(
+    deactivated_section.list_widget = ListWidget.create(
         $deactivated_users_table,
         deactivated_users,
         {
@@ -388,7 +388,7 @@ section.deactivated.create_table = (deactivated_users) => {
                 predicate(person) {
                     return people.predicate_for_user_settings_filters(
                         person,
-                        section.deactivated.filters,
+                        deactivated_section.filters,
                     );
                 },
                 onupdate: reset_scrollbar($deactivated_users_table),
@@ -405,7 +405,7 @@ section.deactivated.create_table = (deactivated_users) => {
         },
     );
 
-    set_text_search_value($deactivated_users_table, section.deactivated.filters.text_search);
+    set_text_search_value($deactivated_users_table, deactivated_section.filters.text_search);
     loading.destroy_indicator($("#admin_page_deactivated_users_loading_indicator"));
     $("#admin_deactivated_users_table").show();
 };
@@ -460,7 +460,7 @@ export function redraw_deactivated_users_list() {
         return;
     }
     const deactivated_user_ids = people.get_non_active_human_ids();
-    redraw_users_list(section.deactivated, deactivated_user_ids);
+    redraw_users_list(deactivated_section, deactivated_user_ids);
     should_redraw_deactivated_users_list = false;
 }
 
@@ -469,7 +469,7 @@ export function redraw_active_users_list() {
         return;
     }
     const active_user_ids = people.get_realm_active_human_user_ids();
-    redraw_users_list(section.active, active_user_ids);
+    redraw_users_list(active_section, active_user_ids);
     should_redraw_active_users_list = false;
 }
 
@@ -589,25 +589,25 @@ function handle_filter_change($tbody, section) {
         });
 }
 
-section.active.handle_events = () => {
+active_section.handle_events = () => {
     const $tbody = $("#admin_users_table").expectOne();
 
-    handle_filter_change($tbody, section.active);
+    handle_filter_change($tbody, active_section);
     handle_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
 };
 
-section.deactivated.handle_events = () => {
+deactivated_section.handle_events = () => {
     const $tbody = $("#admin_deactivated_users_table").expectOne();
 
-    handle_filter_change($tbody, section.deactivated);
+    handle_filter_change($tbody, deactivated_section);
     handle_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
 };
 
-section.bots.handle_events = () => {
+bots_section.handle_events = () => {
     const $tbody = $("#admin_bots_table").expectOne();
 
     handle_bot_deactivation($tbody);
@@ -617,14 +617,14 @@ section.bots.handle_events = () => {
 
 export function set_up_humans() {
     start_data_load();
-    section.active.handle_events();
-    section.deactivated.handle_events();
+    active_section.handle_events();
+    deactivated_section.handle_events();
     setting_invites.set_up();
 }
 
 export function set_up_bots() {
-    section.bots.handle_events();
-    section.bots.create_table();
+    bots_section.handle_events();
+    bots_section.create_table();
 
     $("#admin-bot-list .add-a-new-bot").on("click", (e) => {
         e.preventDefault();
