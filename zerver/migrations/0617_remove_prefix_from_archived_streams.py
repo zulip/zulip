@@ -32,7 +32,9 @@ def remove_prefix_from_archived_streams(
             continue
 
         # Check if there's an active stream or another archived stream with the new name
-        if not Stream.objects.filter(realm=archived_stream.realm, name__iexact=new_name).exists():
+        if not Stream.objects.filter(
+            realm_id=archived_stream.realm_id, name__iexact=new_name
+        ).exists():
             archived_stream.name = new_name
             archived_stream.save(update_fields=["name"])
 
