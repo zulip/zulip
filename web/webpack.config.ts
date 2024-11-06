@@ -17,7 +17,7 @@ import assets from "./webpack.assets.json";
 import dev_assets from "./webpack.dev-assets.json";
 
 const config = (
-    env: {minimize?: boolean; ZULIP_VERSION?: string} = {},
+    env: {minimize?: true; puppeteer_tests?: true; ZULIP_VERSION?: string} = {},
     argv: {mode?: string},
 ): webpack.Configuration[] => {
     const production: boolean = argv.mode === "production";
@@ -55,7 +55,7 @@ const config = (
             publicPath: production ? "/static/webpack-bundles/" : "/webpack/",
         }),
     ];
-    if (production) {
+    if (production && !env.puppeteer_tests) {
         plugins.push(
             new CompressionPlugin<ZopfliOptions>({
                 // Use zopfli to write pre-compressed versions of text files
