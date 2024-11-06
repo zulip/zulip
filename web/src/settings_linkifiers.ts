@@ -21,10 +21,6 @@ import * as util from "./util";
 
 type RealmLinkifiers = typeof realm.realm_linkifiers;
 
-const configure_linkifier_api_response_schema = z.object({
-    id: z.number(),
-});
-
 const meta = {
     loaded: false,
 };
@@ -258,21 +254,14 @@ export function build_page(): void {
             $linkifier_status.hide();
             $pattern_status.hide();
             $template_status.hide();
-            const linkifier: {[key in string]?: string} & {id?: number} = {};
-
-            for (const obj of $(this).serializeArray()) {
-                linkifier[obj.name] = obj.value;
-            }
 
             void channel.post({
                 url: "/json/realm/filters",
                 data: $(this).serialize(),
-                success(raw_data) {
-                    const data = configure_linkifier_api_response_schema.parse(raw_data);
+                success() {
                     $("#linkifier_pattern").val("");
                     $("#linkifier_template").val("");
                     $add_linkifier_button.prop("disabled", false);
-                    linkifier.id = data.id;
                     ui_report.success(
                         $t_html({defaultMessage: "Custom linkifier added!"}),
                         $linkifier_status,
