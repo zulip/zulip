@@ -628,6 +628,28 @@ export function initialize() {
         });
     });
 
+    $("body").on("click", ".subscription-link.unsubscribe", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const hash = window.location.hash;
+        const channel_part = hash.split("/channel/")[1].split("/topic/")[0];
+        if (channel_part) {
+            const [stream_id, stream_name] = channel_part.split("-");
+            window.location.hash = `#channels/${stream_id}/${stream_name}/personal`;
+        }
+    });
+
+    $("body").on("click", ".subscription-link.subscribe", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const hash = window.location.hash;
+        const channel_part = hash.split("/channel/")[1].split("/topic/")[0];
+        if (channel_part) {
+            const [stream_id, stream_name] = channel_part.split("-");
+            window.location.hash = `#channels/${stream_id}/${stream_name}/general`;
+        }
+    });
+
     // Recent conversations direct messages (Not displayed on small widths)
     $("body").on("mouseenter", ".recent_topic_stream .pm_status_icon", (e) => {
         e.stopPropagation();

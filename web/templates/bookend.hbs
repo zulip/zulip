@@ -25,16 +25,16 @@
                 {{/tr}}
             {{/if}}
         </span>
-    {{/if}}
+{{/if}}
     {{#if can_toggle_subscription}}
     <div class="sub_button_row">
-        <button class="button white rounded stream_sub_unsub_button {{#unless subscribed}}sea-green{{/unless}}" type="button" name="subscription">
+        <a href="javascript:void(0)" class="subscription-link {{#if subscribed}}unsubscribe{{else}}subscribe{{/if}}">
             {{#if subscribed}}
-            {{t 'Unsubscribe' }}
+                View in channel settings
             {{else}}
-            {{t 'Subscribe' }}
+                Manage channel settings
             {{/if}}
-        </button>
+        </a>
     </div>
-    {{/if}}
+{{/if}}
 </div>
