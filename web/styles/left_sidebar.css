@@ -694,14 +694,6 @@ li.active-sub-filter {
     }
 }
 
-.top_left_starred_messages .unread_count,
-.top_left_drafts .unread_count,
-.top_left_scheduled_messages .unread_count,
-.condensed-views-popover-menu .unread_count {
-    background-color: var(--color-background-unread-counter-quiet);
-    color: var(--color-unread-counter-quiet);
-}
-
 /* Don't show unread counts on views... */
 .top_left_my_reactions,
 .top_left_inbox,
