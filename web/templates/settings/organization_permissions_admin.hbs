@@ -16,7 +16,7 @@
                       prefix="id_"
                       is_checked=realm_invite_required
                       label=admin_settings_label.realm_invite_required}}
-                    <label for="realm_invite_to_realm_policy" class="settings-field-label">
+                    <label for="id_realm_invite_to_realm_policy" class="settings-field-label">
                         <span class="settings-field-label-text">{{t "Who can send email invitations to new users" }}</span>
                     </label>
                     <select name="realm_invite_to_realm_policy" id="id_realm_invite_to_realm_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
@@ -29,7 +29,7 @@
                   label=(t 'Who can create reusable invitation links')}}
 
                 <div class="input-group">
-                    <label for="realm_org_join_restrictions" class="settings-field-label">
+                    <label for="id_realm_org_join_restrictions" class="settings-field-label">
                         <span class="settings-field-label-text">{{t "Restrict email domains of new users" }}</span>
                     </label>
                     <select name="realm_org_join_restrictions" id="id_realm_org_join_restrictions" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">
@@ -45,7 +45,7 @@
                     </div>
                 </div>
                 <div class="input-group time-limit-setting">
-                    <label for="realm_waiting_period_threshold" class="settings-field-label">
+                    <label for="id_realm_waiting_period_threshold" class="settings-field-label">
                         <span class="settings-field-label-text">{{t "Waiting period before new members turn into full members" }}</span>
                         {{> ../help_link_widget link="/help/restrict-permissions-of-new-members" }}
                     </label>
@@ -95,7 +95,7 @@
                   label=(t 'Who can create private channels')}}
 
                 <div class="input-group">
-                    <label for="realm_invite_to_stream_policy" class="settings-field-label">
+                    <label for="id_realm_invite_to_stream_policy" class="settings-field-label">
                         <span class="settings-field-label-text">{{t "Who can add users to channels" }}</span>
                     </label>
                     <select name="realm_invite_to_stream_policy" id="id_realm_invite_to_stream_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
@@ -103,7 +103,7 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label for="realm_wildcard_mention_policy" class="settings-field-label">
+                    <label for="id_realm_wildcard_mention_policy" class="settings-field-label">
                         <span class="settings-field-label-text">{{t "Who can notify a large number of users with a wildcard mention" }}</span>
                         {{> ../help_link_widget link="/help/restrict-wildcard-mentions" }}
                     </label>
@@ -170,7 +170,7 @@
                   label=admin_settings_label.realm_allow_edit_history}}
 
                 <div class="input-group time-limit-setting">
-                    <label for="realm_message_content_edit_limit_seconds" class="settings-field-label">
+                    <label for="id_realm_message_content_edit_limit_seconds" class="settings-field-label">
                         <span class="settings-field-label-text">{{t "Time limit for editing messages" }}</span>
                     </label>
                     <select name="realm_message_content_edit_limit_seconds" id="id_realm_message_content_edit_limit_seconds" class="prop-element settings_select bootstrap-focus-style" {{#unless realm_allow_message_editing}}disabled{{/unless}} data-setting-widget-type="time-limit">
@@ -206,7 +206,7 @@
               label=(t 'Who can move messages to another topic')}}
 
             <div class="input-group time-limit-setting">
-                <label for="realm_move_messages_within_stream_limit_seconds" class="settings-field-label">
+                <label for="id_realm_invite_to_realm_policyrealm_move_messages_within_stream_limit_seconds" class="settings-field-label">
                     <span class="settings-field-label-text">{{t "Time limit for editing topics" }}
                         <i>({{t "does not apply to moderators and administrators" }})</i></span>
                 </label>
@@ -231,7 +231,7 @@
               label=(t 'Who can move messages to another channel')}}
 
             <div class="input-group time-limit-setting">
-                <label for="realm_move_messages_between_streams_limit_seconds" class="settings-field-label">
+                <label for="id_realm_move_messages_between_streams_limit_seconds" class="settings-field-label">
                     <span class="settings-field-label-text">{{t "Time limit for moving messages between channels" }}
                         <i>({{t "does not apply to moderators and administrators" }})</i></span>
                 </label>
@@ -269,7 +269,7 @@
                   label=(t 'Who can delete their own messages')}}
 
                 <div class="input-group time-limit-setting">
-                    <label for="realm_message_content_delete_limit_seconds" class="settings-field-label">
+                    <label for="id_realm_message_content_delete_limit_seconds" class="settings-field-label">
                         <span class="settings-field-label-text">{{t "Time limit for deleting messages" }}
                             <i>({{t "does not apply to users who can delete any message" }})</i></span>
                     </label>
@@ -355,7 +355,7 @@
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
-                    <label for="realm_bot_creation_policy" class="settings-field-label">
+                    <label for="id_realm_bot_creation_policy" class="settings-field-label">
                         <span class="settings-field-label-text">{{t "Who can add bots" }}</span>
                     </label>
                     <select name="realm_bot_creation_policy" class="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_bot_creation_policy" data-setting-widget-type="number">

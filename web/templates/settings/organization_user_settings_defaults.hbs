@@ -44,7 +44,7 @@
                 <span class="settings-field-label-text">{{t "Who can access user's email address" }}</span>
                 {{> ../help_link_widget link="/help/configure-email-visibility" }}
             </label>
-            <select name="email_address_visibility" class="email_address_visibility prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number"
+            <select id="email_address_visibility" name="email_address_visibility" class="email_address_visibility prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number"
               id="realm_email_address_visibility">
                 {{> dropdown_options_widget option_values=email_address_visibility_values}}
             </select>

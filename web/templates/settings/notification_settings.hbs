@@ -65,7 +65,7 @@
         </div>
 
         <div class="input-group">
-            <label for="automatically_follow_topics_policy" class="settings-field-label">
+            <label for="{{prefix}}automatically_follow_topics_policy" class="settings-field-label">
                 <span class="settings-field-label-text">{{ settings_label.automatically_follow_topics_policy }}</span>
                 {{> ../help_link_widget link="/help/follow-a-topic" }}
             </label>
@@ -76,7 +76,7 @@
         </div>
 
         <div class="input-group">
-            <label for="automatically_unmute_topics_in_muted_streams_policy" class="settings-field-label">
+            <label for="{{prefix}}automatically_unmute_topics_in_muted_streams_policy" class="settings-field-label">
                 <span class="settings-field-label-text">{{ settings_label.automatically_unmute_topics_in_muted_streams_policy }}</span>
                 {{> ../help_link_widget link="/help/mute-a-topic" }}
             </label>
@@ -134,7 +134,7 @@
         </div>
 
         <div class="input-group">
-            <label for="desktop_icon_count_display" class="settings-field-label">
+            <label for="{{prefix}}desktop_icon_count_display" class="settings-field-label">
                 <span class="settings-field-label-text">{{ settings_label.desktop_icon_count_display }}</span>
             </label>
             <select name="desktop_icon_count_display" class="setting_desktop_icon_count_display prop-element settings_select bootstrap-focus-style" id="{{prefix}}desktop_icon_count_display" data-setting-widget-type="number">
@@ -180,8 +180,7 @@
         </div>
 
         <div class="input-group time-limit-setting">
-
-            <label for="email_notifications_batching_period" class="settings-field-label">
+            <label for="{{prefix}}email_notifications_batching_period_seconds" class="settings-field-label">
                 <span class="settings-field-label-text">{{t "Delay before sending message notification emails" }}</span>
             </label>
             <select name="email_notifications_batching_period_seconds" class="setting_email_notifications_batching_period_seconds prop-element settings_select bootstrap-focus-style" id="{{prefix}}email_notifications_batching_period_seconds" data-setting-widget-type="time-limit">

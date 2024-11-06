@@ -7,7 +7,7 @@
             <form class="grid">
                 {{#if user_has_email_set}}
                 <div class="input-group">
-                    <label class="settings-field-label">
+                    <label class="settings-field-label" for="change_email_button">
                         <span class="settings-field-label-text">{{t "Email" }}</span>
                     </label>
                     <div id="change_email_button_container" class="{{#unless user_can_change_email}}disabled_setting_tooltip{{/unless}}">
@@ -44,7 +44,7 @@
             <form class="password-change-form grid">
                 {{#if user_can_change_password}}
                 <div>
-                    <label class="settings-field-label">
+                    <label class="settings-field-label" for="change_password">
                         <span class="settings-field-label-text">{{t "Password" }}</span>
                     </label>
                     <div class="input-group">
@@ -106,14 +106,12 @@
                   }}
             </div>
             <div class="input-group">
-                <label for="email_address_visibility" class="settings-field-label">
+                <label for="user_email_address_visibility" class="settings-field-label">
                     <span class="settings-field-label-text">{{t "Who can access your email address" }}</span>
                     {{> ../help_link_widget link="/help/configure-email-visibility" }}
                 </label>
                 <div id="user_email_address_dropdown_container" class="inline-block {{#unless user_has_email_set}}disabled_setting_tooltip{{/unless}}">
-                    <select name="email_address_visibility" class="email_address_visibility prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number"
-                      id="user_email_address_visibility" {{#unless user_has_email_set}}disabled="disabled"{{/unless}}>
-                        {{> dropdown_options_widget option_values=email_address_visibility_values}}
+                    <select name="email_address_visibility" class="email_address_visibility prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number" id="user_email_address_visibility" {{#unless user_has_email_set}}disabled="disabled"{{/unless}}>{{> dropdown_options_widget option_values=email_address_visibility_values}}
                     </select>
                 </div>
             </div>
