@@ -651,8 +651,9 @@
     --color-border-popover-menu: hsl(0deg 0% 0% / 40%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
     --color-background-unread-counter-prominent: hsl(240deg 10% 50% / 70%);
-    --color-background-unread-counter-normal: hsl(240deg 10% 50% / 25%);
+    --color-background-unread-counter-normal: hsl(240deg 10% 50% / 20%);
     --color-background-unread-counter-quiet: transparent;
+    --box-shadow-unread-counter-normal: inset 0 0 1px hsl(0deg 0% 0% / 30%);
     --color-unread-counter-prominent: hsl(0deg 0% 100%);
     --color-unread-counter-normal: hsl(0deg 0% 0% / 90%);
     --color-unread-counter-quiet: hsl(240deg 15% 50%);
@@ -1582,6 +1583,7 @@
     --color-background-unread-counter-prominent: hsl(240deg 18.37% 34.42%);
     --color-background-unread-counter-normal: hsl(240deg 10% 50% / 35%);
     --color-background-unread-counter-quiet: transparent;
+    --box-shadow-unread-counter-normal: none;
     --color-unread-counter-prominent: hsl(0deg 0% 100%);
     --color-unread-counter-normal: hsl(0deg 0% 100% / 85%);
     --color-unread-counter-quiet: hsl(240deg 15% 65%);
