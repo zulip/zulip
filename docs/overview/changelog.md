@@ -21,6 +21,10 @@ _Unreleased_
   synchronizing role, and otherwise functions like the old one, except Zulip
   custom profile fields are referred to with the prefix `custom__`. See the updated
   comment documentation in `/etc/zulip/settings.py` for details.
+- PostgreSQL 12 is no longer supported; if you are currently using it,
+  you will need to [upgrade
+  PostgreSQL](../production/upgrade.md#upgrading-postgresql) before
+  upgrading Zulip.
 
 ## Zulip Server 9.x series
 

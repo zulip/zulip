@@ -1,10 +1,13 @@
 # Webhooks for external integrations.
 import re
+from collections.abc import Callable
+from functools import wraps
 from itertools import zip_longest
 from typing import Literal, TypedDict, cast
 
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils.translation import gettext as _
+from typing_extensions import ParamSpec
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
@@ -25,9 +28,31 @@ from zerver.lib.validator import (
 from zerver.lib.webhooks.common import OptionalUserSpecifiedTopicStr, check_send_webhook_message
 from zerver.models import UserProfile
 
+ParamT = ParamSpec("ParamT")
+
+
+def slack_error_handler(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+    """
+    A decorator that catches JsonableError exceptions and returns a
+    Slack-compatible error response in the format:
+    {ok: false, error: "error message"}.
+    """
+
+    @wraps(view_func)
+    def wrapped_view(
+        request: HttpRequest, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> HttpResponse:
+        try:
+            return view_func(request, *args, **kwargs)
+        except JsonableError as error:
+            return JsonResponse({"ok": False, "error": error.msg}, status=error.http_status_code)
+
+    return wrapped_view
+
 
 @webhook_view("SlackIncoming")
 @typed_endpoint
+@slack_error_handler
 def api_slack_incoming_webhook(
     request: HttpRequest,
     user_profile: UserProfile,

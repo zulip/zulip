@@ -30,7 +30,6 @@ const electron_bridge = mock_esm("../src/electron_bridge");
 const padded_widget = mock_esm("../src/padded_widget");
 const pm_list = mock_esm("../src/pm_list");
 const popovers = mock_esm("../src/popovers");
-const resize = mock_esm("../src/resize");
 const settings_data = mock_esm("../src/settings_data");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 const scroll_util = mock_esm("../src/scroll_util");
@@ -137,7 +136,6 @@ function test(label, f) {
         });
 
         stub_buddy_list_elements();
-        helpers.override(buddy_list, "render_section_headers", noop);
         helpers.override(buddy_list, "render_view_user_list_links", noop);
 
         presence.presence_info.set(alice.user_id, {status: "active"});
@@ -271,13 +269,6 @@ test("presence_list_full_update", ({override, mock_template}) => {
     assert.equal(presence_rows[0].user_id, me.user_id);
 });
 
-function simulate_right_column_buddy_list() {
-    $("input.user-list-filter").closest = (selector) => {
-        assert.equal(selector, ".app-main [class^='column-']");
-        return $.create("right-sidebar").addClass("column-right");
-    };
-}
-
 test("direct_message_update_dom_counts", () => {
     const $count = $.create("alice-unread-count");
     const pm_key = alice.user_id.toString();
@@ -311,8 +302,6 @@ test("handlers", ({override, override_rewire, mock_template}) => {
     override(padded_widget, "update_padding", noop);
     override(popovers, "hide_all", noop);
     override(sidebar_ui, "hide_all", noop);
-    override(sidebar_ui, "show_userlist_sidebar", noop);
-    override(resize, "resize_sidebars", noop);
 
     // This is kind of weak coverage; we are mostly making sure that
     // keys and clicks got mapped to functions that don't crash.
@@ -368,18 +357,6 @@ test("handlers", ({override, override_rewire, mock_template}) => {
         };
 
         const handler = $("input.user-list-filter").get_on_handler("focus");
-        handler(e);
-    })();
-
-    (function test_click_header_filter() {
-        init();
-        const e = {};
-        const handler = $("#userlist-header-search").get_on_handler("click");
-
-        simulate_right_column_buddy_list();
-
-        handler(e);
-        // and click again
         handler(e);
     })();
 
@@ -524,9 +501,11 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
             user_id: 1,
             is_current_user: false,
             num_unread: 0,
+            profile_picture: "/avatar/1",
             user_circle_class: "user_circle_green",
             status_emoji_info: undefined,
             status_text: undefined,
+            has_status_text: false,
             user_list_style: {
                 COMPACT: false,
                 WITH_STATUS: true,
@@ -732,7 +711,6 @@ test("realm_presence_disabled", ({override}) => {
 test("redraw_muted_user", () => {
     muted_users.add_muted_user(mark.user_id);
     activity_ui.redraw_user(mark.user_id);
-    assert.equal($("#buddy-list-users-matching-view").html(), "never-been-set");
 });
 
 test("update_presence_info", ({override, override_rewire}) => {

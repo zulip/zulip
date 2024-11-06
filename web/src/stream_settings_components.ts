@@ -280,7 +280,10 @@ export function unsubscribe_from_private_stream(sub: StreamSubscription): void {
     });
 }
 
-export function sub_or_unsub(sub: StreamSubscription, $stream_row: JQuery): void {
+export function sub_or_unsub(
+    sub: StreamSubscription,
+    $stream_row: JQuery | undefined = undefined,
+): void {
     if (sub.subscribed) {
         // TODO: This next line should allow guests to access web-public streams.
         if (sub.invite_only || current_user.is_guest) {

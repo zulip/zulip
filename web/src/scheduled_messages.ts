@@ -14,7 +14,7 @@ type TimeKey =
     | "tomorrow_four_pm"
     | "monday_nine_am";
 
-type SendOption = {[key in TimeKey]?: {text: string; stamp: number}};
+type SendOption = Partial<Record<TimeKey, {text: string; stamp: number}>>;
 
 export const MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS = 5 * 60;
 

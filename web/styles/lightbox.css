@@ -59,7 +59,7 @@
         opacity: 0;
         pointer-events: none;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: opacity 0.2s ease;
     }
 
     &.show .exit {
@@ -183,7 +183,7 @@
             cursor: pointer;
 
             opacity: 0.5;
-            transition: all 0.3s ease;
+            transition: opacity 0.3s ease;
 
             &:hover {
                 opacity: 1;

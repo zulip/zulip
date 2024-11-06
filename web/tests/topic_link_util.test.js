@@ -47,31 +47,31 @@ run_test("stream_topic_link_syntax_test", () => {
     );
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("#**Sweden>t", "test `test` test"),
-        "[#Sweden>test &grave;test&grave; test](#narrow/channel/1-Sweden/topic/test.20.60test.60.20test)",
+        "[#Sweden > test &#96;test&#96; test](#narrow/channel/1-Sweden/topic/test.20.60test.60.20test)",
     );
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("#**Denmark>t", "test `test` test`s"),
-        "[#Denmark>test &grave;test&grave; test&grave;s](#narrow/channel/2-Denmark/topic/test.20.60test.60.20test.60s)",
+        "[#Denmark > test &#96;test&#96; test&#96;s](#narrow/channel/2-Denmark/topic/test.20.60test.60.20test.60s)",
     );
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("#**Sweden>typeah", "error due to *"),
-        "[#Sweden>error due to &#42;](#narrow/channel/1-Sweden/topic/error.20due.20to.20*)",
+        "[#Sweden > error due to &#42;](#narrow/channel/1-Sweden/topic/error.20due.20to.20*)",
     );
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("#**Sweden>t", "*asterisk"),
-        "[#Sweden>&#42;asterisk](#narrow/channel/1-Sweden/topic/*asterisk)",
+        "[#Sweden > &#42;asterisk](#narrow/channel/1-Sweden/topic/*asterisk)",
     );
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("#**Sweden>gibberish", "greaterthan>"),
-        "[#Sweden>greaterthan&gt;](#narrow/channel/1-Sweden/topic/greaterthan.3E)",
+        "[#Sweden > greaterthan&gt;](#narrow/channel/1-Sweden/topic/greaterthan.3E)",
     );
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("#**$$MONEY$$>t", "dollar"),
-        "[#&#36;&#36;MONEY&#36;&#36;>dollar](#narrow/channel/6-.24.24MONEY.24.24/topic/dollar)",
+        "[#&#36;&#36;MONEY&#36;&#36; > dollar](#narrow/channel/6-.24.24MONEY.24.24/topic/dollar)",
     );
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("#**Sweden>t", "swe$$dish"),
-        "[#Sweden>swe&#36;&#36;dish](#narrow/channel/1-Sweden/topic/swe.24.24dish)",
+        "[#Sweden > swe&#36;&#36;dish](#narrow/channel/1-Sweden/topic/swe.24.24dish)",
     );
     assert.equal(
         topic_link_util.get_fallback_markdown_link("Sweden"),
@@ -81,6 +81,11 @@ run_test("stream_topic_link_syntax_test", () => {
     assert.equal(
         topic_link_util.get_fallback_markdown_link("$$MONEY$$"),
         "[#&#36;&#36;MONEY&#36;&#36;](#narrow/channel/6-.24.24MONEY.24.24)",
+    );
+
+    assert.equal(
+        topic_link_util.get_stream_topic_link_syntax("#**Sweden>&ab", "&ab"),
+        "[#Sweden > &amp;ab](#narrow/channel/1-Sweden/topic/.26ab)",
     );
 
     // Only for full coverage of the module.

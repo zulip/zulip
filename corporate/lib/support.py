@@ -1,11 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Optional, TypedDict, Union
-from urllib.parse import urlencode, urljoin, urlunsplit
 
-from django.conf import settings
 from django.db.models import Sum
-from django.urls import reverse
 from django.utils.timezone import now as timezone_now
 
 from corporate.lib.stripe import (
@@ -30,7 +27,7 @@ from corporate.models import (
 )
 from zerver.models import Realm
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import get_org_type_display_name, get_realm
+from zerver.models.realms import get_org_type_display_name
 from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
     RemoteCustomerUserCount,
@@ -128,15 +125,6 @@ class CloudSupportData:
 
 def get_stripe_customer_url(stripe_id: str) -> str:
     return f"https://dashboard.stripe.com/customers/{stripe_id}"  # nocoverage
-
-
-def get_realm_support_url(realm: Realm) -> str:
-    support_realm_url = get_realm(settings.STAFF_SUBDOMAIN).url
-    support_url = urljoin(
-        support_realm_url,
-        urlunsplit(("", "", reverse("support"), urlencode({"q": realm.string_id}), "")),
-    )
-    return support_url
 
 
 def get_realm_user_data(realm: Realm) -> UserData:

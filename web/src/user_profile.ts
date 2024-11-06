@@ -88,21 +88,14 @@ const EMBEDDED_BOT_TYPE = "4";
 
 export function show_button_spinner($button: JQuery): void {
     const $spinner = $button.find(".modal__spinner");
-    const dialog_submit_button_span_width = $button.find("span").width();
-    const dialog_submit_button_span_height = $button.find("span").height();
     $button.prop("disabled", true);
-    $button.find("span").hide();
-    loading.make_indicator($spinner, {
-        width: dialog_submit_button_span_width,
-        height: dialog_submit_button_span_height,
-    });
+    loading.show_spinner($button, $spinner);
 }
 
 export function hide_button_spinner($button: JQuery): void {
     const $spinner = $button.find(".modal__spinner");
     $button.prop("disabled", false);
-    $button.find("span").show();
-    loading.destroy_indicator($spinner);
+    loading.hide_spinner($button, $spinner);
 }
 
 function compare_by_name(
@@ -920,7 +913,7 @@ function get_human_profile_data(fields_user_pills: Map<number, user_pill.UserPil
         to see how the form is built.
 
         TODO: Ideally, this logic would be cleaned up or deduplicated with
-        the settings_account.js logic.
+        the settings_account.ts logic.
     */
     const new_profile_data = [];
     $("#edit-user-form .custom_user_field_value").each(function () {

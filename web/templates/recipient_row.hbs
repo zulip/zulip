@@ -10,7 +10,12 @@
             </span>
 
             {{~! Recipient (e.g. stream/topic or topic) ~}}
-            {{~display_recipient~}}
+            <span class="message-header-stream-name">
+                {{~display_recipient~}}
+            </span>
+            {{#if is_archived}}
+            <span class="message-header-stream-archived"><i class="archived-indicator">({{t 'archived' }})</i></span>
+            {{/if}}
         </a>
         <span class="stream_topic_separator"><i class="zulip-icon zulip-icon-chevron-right"></i></span>
 
@@ -76,7 +81,7 @@
                 </span>
             {{/if}}
         </span>
-        <span class="recipient_row_date {{#if date_unchanged}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
+        <span class="recipient_row_date {{#if (and (not always_display_date) date_unchanged )}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
     </div>
 </div>
 {{else}}
@@ -96,7 +101,7 @@
             {{/tr~}}
         </span>
         </a>
-        <span class="recipient_row_date {{#if date_unchanged}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
+        <span class="recipient_row_date {{#if (and (not always_display_date) date_unchanged )}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
     </div>
 </div>
 {{/if}}

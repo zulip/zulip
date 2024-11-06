@@ -100,7 +100,7 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
     assert isinstance(email_change_object, EmailChangeStatus)
     new_email = email_change_object.new_email
     old_email = email_change_object.old_email
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         user_profile = UserProfile.objects.select_for_update().get(
             id=email_change_object.user_profile_id
         )

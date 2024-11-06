@@ -25,9 +25,9 @@ function current_dialog_widget_selector(): string {
 }
 
 /*
- *  Look for confirm_dialog in settings_user_groups
- *  to see an example of how to use this widget.  It's
- *  pretty simple to use!
+ *  Look for dialog_widget or confirm_dialog in various
+ *  'web/src/' files to see examples of how to use this widget.
+ *  It's pretty simple to use!
  *
  *  Some things to note:
  *      1) We create DOM on the fly, and we remove
@@ -88,12 +88,11 @@ type RequestOpts = {
 };
 
 export function hide_dialog_spinner(): void {
-    $(".dialog_submit_button span").show();
     const dialog_widget_selector = current_dialog_widget_selector();
+    const $spinner = $(`${dialog_widget_selector} .modal__spinner`);
     $(`${dialog_widget_selector} .modal__btn`).prop("disabled", false);
 
-    const $spinner = $(`${dialog_widget_selector} .modal__spinner`);
-    loading.destroy_indicator($spinner);
+    loading.hide_spinner($(".dialog_submit_button"), $spinner);
 }
 
 export function show_dialog_spinner(): void {
@@ -102,17 +101,8 @@ export function show_dialog_spinner(): void {
     $(`${dialog_widget_selector} .modal__btn`).prop("disabled", true);
 
     const $spinner = $(`${dialog_widget_selector} .modal__spinner`);
-    const dialog_submit_button_span_width = $(".dialog_submit_button span").width();
-    const dialog_submit_button_span_height = $(".dialog_submit_button span").height();
 
-    // Hide the submit button after computing its height, since submit
-    // buttons with long text might affect the size of the button.
-    $(".dialog_submit_button span").hide();
-
-    loading.make_indicator($spinner, {
-        width: dialog_submit_button_span_width,
-        height: dialog_submit_button_span_height,
-    });
+    loading.show_spinner($(".dialog_submit_button"), $spinner);
 }
 
 // Supports a callback to be called once the modal finishes closing.

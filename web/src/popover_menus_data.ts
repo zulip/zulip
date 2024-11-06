@@ -206,7 +206,10 @@ export function get_actions_popover_content_context(message_id: number): ActionP
     // `media_breakpoints.sm_min`, we need to include the reaction button in the
     // popover if it is not displayed.
     const should_display_add_reaction_option =
-        !message.is_me_message && !is_add_reaction_icon_visible() && not_spectator;
+        !message.is_me_message &&
+        !is_add_reaction_icon_visible() &&
+        not_spectator &&
+        !(stream_id && stream_data.is_stream_archived(stream_id));
 
     return {
         message_id: message.id,

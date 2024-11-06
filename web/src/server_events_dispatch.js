@@ -28,6 +28,7 @@ import * as message_edit from "./message_edit";
 import * as message_events from "./message_events";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
+import * as message_view_header from "./message_view_header";
 import * as muted_users_ui from "./muted_users_ui";
 import * as narrow_state from "./narrow_state";
 import * as narrow_title from "./narrow_title";
@@ -89,6 +90,7 @@ import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
+import * as user_topics from "./user_topics";
 import * as user_topics_ui from "./user_topics_ui";
 
 export function dispatch_normal_event(event) {
@@ -207,12 +209,17 @@ export function dispatch_normal_event(event) {
             const realm_settings = {
                 allow_edit_history: noop,
                 allow_message_editing: noop,
-                edit_topic_policy: noop,
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
                 bot_creation_policy: settings_bots.update_bot_permissions_ui,
+                can_add_custom_emoji_group: noop,
+                can_create_groups: noop,
+                can_create_private_channel_group: noop,
+                can_create_public_channel_group: noop,
                 can_delete_any_message_group: noop,
                 can_delete_own_message_group: noop,
+                can_manage_all_groups: noop,
                 can_move_messages_between_channels_group: noop,
+                can_move_messages_between_topics_group: noop,
                 create_multiuse_invite_group: noop,
                 invite_to_stream_policy: noop,
                 default_code_block_language: noop,
@@ -315,14 +322,12 @@ export function dispatch_normal_event(event) {
                                     key === "direct_message_initiator_group" ||
                                     key === "direct_message_permission_group"
                                 ) {
-                                    settings_org.check_disable_direct_message_initiator_group_dropdown(
-                                        realm.realm_direct_message_permission_group,
-                                    );
+                                    settings_org.check_disable_direct_message_initiator_group_widget();
                                     compose_closed_ui.update_buttons_for_private();
                                     compose_recipient.check_posting_policy_for_compose_box();
                                 }
 
-                                if (key === "edit_topic_policy") {
+                                if (key === "can_move_messages_between_topics_group") {
                                     message_live_update.rerender_messages_view();
                                 }
 
@@ -603,6 +608,7 @@ export function dispatch_normal_event(event) {
                         );
                         stream_data.delete_sub(stream.stream_id);
                         stream_settings_ui.remove_stream(stream.stream_id);
+                        message_view_header.maybe_rerender_title_area_for_stream(stream);
                         if (was_subscribed) {
                             stream_list.remove_sidebar_row(stream.stream_id);
                             if (stream.stream_id === compose_state.selected_recipient_id) {
@@ -631,6 +637,7 @@ export function dispatch_normal_event(event) {
                             message_lists.current.update_trailing_bookend(true);
                         }
                     }
+                    message_live_update.rerender_messages_view();
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
                 default:
@@ -743,6 +750,9 @@ export function dispatch_normal_event(event) {
                 break;
             }
 
+            // TODO/typescript: Move privacy_setting_name_schema and PrivacySettingName
+            // here from `settings_account` when this file is converted to typescript,
+            // and use them instead of `privacy_settings`.
             const privacy_settings = [
                 "send_stream_typing_notifications",
                 "send_private_typing_notifications",
@@ -1008,8 +1018,23 @@ export function dispatch_normal_event(event) {
             }
             break;
 
-        case "user_topic":
-            user_topics_ui.handle_topic_updates(event);
+        case "user_topic": {
+            const previous_topic_visibility = user_topics.get_topic_visibility_policy(
+                event.stream_id,
+                event.topic_name,
+            );
+            user_topics_ui.handle_topic_updates(
+                event,
+                message_events.update_current_view_for_topic_visibility(),
+            );
+            // Discard cached message lists if `event` topic was / is followed.
+            if (
+                event.visibility_policy === user_topics.all_visibility_policies.FOLLOWED ||
+                previous_topic_visibility === user_topics.all_visibility_policies.FOLLOWED
+            ) {
+                message_events.discard_cached_lists_with_term_type("is-followed");
+            }
             break;
+        }
     }
 }

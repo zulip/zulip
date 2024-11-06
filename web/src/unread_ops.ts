@@ -251,17 +251,9 @@ function process_newly_read_message(
     recent_view_ui.update_topic_unread_count(message);
 }
 
-export function mark_as_unread_from_here(
-    message_id: number,
-    include_anchor = true,
-    messages_marked_unread_till_now = 0,
-    num_after = INITIAL_BATCH_SIZE - 1,
-    narrow?: string,
-): void {
+export function mark_as_unread_from_here(message_id: number): void {
     assert(message_lists.current !== undefined);
-    if (narrow === undefined) {
-        narrow = JSON.stringify(message_lists.current.data.filter.terms());
-    }
+    const narrow = message_lists.current.data.filter.get_stringified_narrow_for_server_query();
     message_lists.current.prevent_reading();
 
     // If we have already fully fetched the current view, we can
@@ -271,17 +263,16 @@ export function mark_as_unread_from_here(
     if (message_lists.current.data.fetch_status.has_found_newest()) {
         message_ids_to_update = message_lists.current
             .all_messages()
-            .filter(
-                (msg) =>
-                    (include_anchor && msg.id >= message_id) ||
-                    (!include_anchor && msg.id > message_id),
-            )
+            .filter((msg) => msg.id >= message_id)
             .map((msg) => msg.id);
     }
 
     if (message_ids_to_update !== undefined && message_ids_to_update.length < 200) {
         do_mark_unread_by_ids(message_ids_to_update);
     } else {
+        const include_anchor = true;
+        const messages_marked_unread_till_now = 0;
+        const num_after = INITIAL_BATCH_SIZE - 1;
         do_mark_unread_by_narrow(
             message_id,
             include_anchor,

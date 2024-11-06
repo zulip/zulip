@@ -218,7 +218,8 @@ from zerver.views.user_settings import (
 from zerver.views.user_topics import update_muted_topic, update_user_topic
 from zerver.views.users import (
     add_bot_backend,
-    avatar,
+    avatar_by_email,
+    avatar_by_id,
     avatar_medium,
     create_user_backend,
     deactivate_bot_backend,
@@ -232,7 +233,8 @@ from zerver.views.users import (
     patch_bot_backend,
     reactivate_user_backend,
     regenerate_bot_api_key,
-    update_user_backend,
+    update_user_by_email_api,
+    update_user_by_id_api,
 )
 from zerver.views.video_calls import (
     complete_zoom_user,
@@ -316,11 +318,11 @@ v1_api_and_json_patterns = [
     rest_path(
         "users/<int:user_id>",
         GET=get_members_backend,
-        PATCH=update_user_backend,
+        PATCH=update_user_by_id_api,
         DELETE=deactivate_user_backend,
     ),
     rest_path("users/<int:user_id>/subscriptions/<int:stream_id>", GET=get_subscription_backend),
-    rest_path("users/<email>", GET=get_user_by_email),
+    rest_path("users/<email>", GET=get_user_by_email, PATCH=update_user_by_email_api),
     rest_path("bots", GET=get_bots_backend, POST=add_bot_backend),
     rest_path("bots/<int:bot_id>/api_key/regenerate", POST=regenerate_bot_api_key),
     rest_path("bots/<int:bot_id>", PATCH=patch_bot_backend, DELETE=deactivate_bot_backend),
@@ -679,11 +681,22 @@ urls += [
     # Avatars have the same constraint because their URLs are included
     # in API data structures used by both the mobile and web clients.
     rest_path(
-        "avatar/<email_or_id>",
-        GET=(avatar, {"override_api_url_scheme", "allow_anonymous_user_web"}),
+        "avatar/<int:user_id>",
+        GET=(avatar_by_id, {"override_api_url_scheme", "allow_anonymous_user_web"}),
     ),
     rest_path(
-        "avatar/<email_or_id>/medium",
+        "avatar/<email>",
+        GET=(avatar_by_email, {"override_api_url_scheme", "allow_anonymous_user_web"}),
+    ),
+    rest_path(
+        "avatar/<int:user_id>/medium",
+        GET=(
+            avatar_medium,
+            {"override_api_url_scheme", "allow_anonymous_user_web"},
+        ),
+    ),
+    rest_path(
+        "avatar/<email>/medium",
         GET=(
             avatar_medium,
             {"override_api_url_scheme", "allow_anonymous_user_web"},

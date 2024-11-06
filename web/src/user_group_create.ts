@@ -262,31 +262,26 @@ export function set_up_handlers(): void {
     can_add_members_group_widget = settings_components.create_group_setting_widget({
         $pill_container: $container.find(".can-add-members-group-container .pill-container"),
         setting_name: "can_add_members_group",
-        setting_type: "group",
     });
 
     const $pill_container = $container.find(".can-manage-group-container .pill-container");
     can_manage_group_widget = settings_components.create_group_setting_widget({
         $pill_container,
         setting_name: "can_manage_group",
-        setting_type: "group",
     });
 
     can_join_group_widget = settings_components.create_group_setting_widget({
         $pill_container: $container.find(".can-join-group-container .pill-container"),
         setting_name: "can_join_group",
-        setting_type: "group",
     });
 
     can_leave_group_widget = settings_components.create_group_setting_widget({
         $pill_container: $container.find(".can-leave-group-container .pill-container"),
         setting_name: "can_leave_group",
-        setting_type: "group",
     });
 
     can_mention_group_widget = settings_components.create_group_setting_widget({
         $pill_container: $container.find(".can-mention-group-container .pill-container"),
         setting_name: "can_mention_group",
-        setting_type: "group",
     });
 }

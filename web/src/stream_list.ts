@@ -227,7 +227,8 @@ export function create_initial_sidebar_rows(): void {
     // This code is slightly opaque, but it ends up building
     // up list items and attaching them to the "sub" data
     // structures that are kept in stream_data.js.
-    const subs = stream_data.subscribed_subs();
+    let subs = stream_data.subscribed_subs();
+    subs = subs.filter((sub) => !sub.is_archived);
 
     for (const sub of subs) {
         create_sidebar_row(sub);
@@ -445,6 +446,7 @@ export function set_in_home_view(stream_id: number, in_home: boolean): void {
 function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
     const name = sub.name;
     const is_muted = stream_data.is_muted(sub.stream_id);
+    const can_post_messages = stream_data.can_post_messages_in_stream(sub);
     const args = {
         name,
         id: sub.stream_id,
@@ -455,6 +457,7 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
         color: sub.color,
         pin_to_top: sub.pin_to_top,
         hide_unread_count: settings_data.should_mask_unread_count(is_muted),
+        can_post_messages,
     };
     const $list_item = $(render_stream_sidebar_row(args));
     return $list_item;
@@ -687,7 +690,7 @@ export function get_sidebar_stream_topic_info(filter: Filter): {
         return result;
     }
 
-    if (!stream_data.is_subscribed(stream_id)) {
+    if (!stream_data.is_subscribed(stream_id) || stream_data.is_stream_archived(stream_id)) {
         return result;
     }
 
@@ -846,6 +849,14 @@ export function set_event_handlers({
         e.stopPropagation();
 
         const stream_id = stream_id_for_elt($(e.target).parents("li"));
+        const current_narrow_stream_id = narrow_state.stream_id();
+        const current_topic = narrow_state.topic();
+
+        if (current_narrow_stream_id === stream_id && current_topic) {
+            const channel_feed_url = hash_util.by_stream_url(stream_id);
+            browser_history.go_to_location(channel_feed_url);
+            return;
+        }
 
         if (
             user_settings.web_channel_default_view ===

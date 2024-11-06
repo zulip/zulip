@@ -468,7 +468,7 @@ def compose_views(thunks: list[Callable[[], HttpResponse]]) -> dict[str, Any]:
     """
 
     json_dict: dict[str, Any] = {}
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         for thunk in thunks:
             response = thunk()
             json_dict.update(orjson.loads(response.content))
@@ -847,6 +847,7 @@ def get_streams_backend(
     include_public: Json[bool] = True,
     include_web_public: Json[bool] = False,
     include_subscribed: Json[bool] = True,
+    exclude_archived: Json[bool] = True,
     include_all_active: Json[bool] = False,
     include_default: Json[bool] = False,
     include_owner_subscribed: Json[bool] = False,
@@ -856,6 +857,7 @@ def get_streams_backend(
         include_public=include_public,
         include_web_public=include_web_public,
         include_subscribed=include_subscribed,
+        exclude_archived=exclude_archived,
         include_all_active=include_all_active,
         include_default=include_default,
         include_owner_subscribed=include_owner_subscribed,

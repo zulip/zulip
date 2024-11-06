@@ -93,6 +93,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
+from zerver.models.messages import ImageAttachment
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
@@ -335,6 +336,9 @@ class ExportFile(ZulipTestCase):
 
 
 class RealmImportExportTest(ExportFile):
+    def create_user_and_login(self, email: str, realm: Realm) -> None:
+        self.register(email, "test", subdomain=realm.subdomain)
+
     def export_realm(
         self,
         realm: Realm,
@@ -811,6 +815,32 @@ class RealmImportExportTest(ExportFile):
             )
             self.assertEqual(realm_emoji.name, "hawaii")
 
+        # We want to set up some image data to verify image attachment thumbnailing works correctly
+        # in the import.
+        # We'll create a new user to use as the sender of the messages with such images,
+        # so that we can easily find them after importing - by fetching messages sent
+        # by the thumbnailing_test_user_email account.
+        thumbnailing_test_user_email = "thumbnailing_test@zulip.com"
+        self.create_user_and_login(thumbnailing_test_user_email, original_realm)
+        thumbnailing_test_user = get_user_by_delivery_email(
+            thumbnailing_test_user_email, original_realm
+        )
+
+        # Send a message with the image. After the import, we'll verify that this message
+        # and the associated ImageAttachment have been created correctly.
+        image_path_id = self.upload_and_thumbnail_image("img.png")
+        self.send_stream_message(
+            sender=thumbnailing_test_user,
+            stream_name="Verona",
+            content=f"An [image](/user_uploads/{image_path_id})",
+        )
+        image_attachment = ImageAttachment.objects.get(path_id=image_path_id)
+        # Malform some ImageAttachment info. These shouldn't get exported (and certainly not imported!)
+        # anyway, so we can test that this misinformation doesn't make its way into the imported realm.
+        image_attachment.original_width_px = 9999
+        image_attachment.original_height_px = 9999
+        image_attachment.save()
+
         # Deactivate a user to ensure such a case is covered.
         do_deactivate_user(self.example_user("aaron"), acting_user=None)
 
@@ -1003,7 +1033,14 @@ class RealmImportExportTest(ExportFile):
 
         self.export_realm(original_realm, export_type=RealmExport.EXPORT_FULL_WITHOUT_CONSENT)
 
-        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+        with (
+            self.settings(BILLING_ENABLED=False),
+            self.assertLogs(level="INFO"),
+            # With captureOnCommitCallbacks we ensure that tasks delegated to the queue workers
+            # are executed immediately. We use this to make thumbnailing runs in the import
+            # process in this test.
+            self.captureOnCommitCallbacks(execute=True),
+        ):
             do_import_realm(get_output_dir(), "test-zulip")
 
         # Make sure our export/import didn't somehow leak info into the
@@ -1162,6 +1199,48 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(
             Message.objects.filter(realm=original_realm).count(),
             Message.objects.filter(realm=imported_realm).count(),
+        )
+
+        # Verify thumbnailing.
+        imported_thumbnailing_test_user = get_user_by_delivery_email(
+            thumbnailing_test_user_email, imported_realm
+        )
+        imported_messages_with_thumbnail = Message.objects.filter(
+            sender=imported_thumbnailing_test_user, realm=imported_realm
+        )
+        imported_message_with_thumbnail = imported_messages_with_thumbnail.latest("id")
+        attachment_with_thumbnail = Attachment.objects.get(
+            owner=imported_thumbnailing_test_user, messages=imported_message_with_thumbnail
+        )
+
+        path_id = attachment_with_thumbnail.path_id
+        # An ImageAttachment has been created in the import process.
+        imported_image_attachment = ImageAttachment.objects.get(
+            path_id=path_id, realm=imported_realm
+        )
+
+        # It figured out the dimensions correctly and didn't inherit the bad data in the
+        # original ImageAttachment.
+        self.assertEqual(imported_image_attachment.original_width_px, 128)
+        self.assertEqual(imported_image_attachment.original_height_px, 128)
+        # ImageAttachment.thumbnail_metadata contains information about thumbnails that actually
+        # got generated. By asserting it's not empty, we make sure thumbnailing ran for the image
+        # and that we didn't merely create the ImageAttachment row in the database.
+        self.assertNotEqual(len(imported_image_attachment.thumbnail_metadata), 0)
+        self.assertTrue(imported_image_attachment.thumbnail_metadata[0])
+
+        # Content and rendered_content got updated correctly, to point to the correct, new path_id
+        # and include the HTML for image preview using the thumbnail.
+        self.assertEqual(
+            imported_message_with_thumbnail.content, f"An [image](/user_uploads/{path_id})"
+        )
+        expected_rendered_preview = (
+            f'<p>An <a href="/user_uploads/{path_id}">image</a></p>\n'
+            f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
+            f'<img data-original-dimensions="128x128" src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
+        )
+        self.assertEqual(
+            imported_message_with_thumbnail.rendered_content, expected_rendered_preview
         )
 
     def test_import_message_edit_history(self) -> None:

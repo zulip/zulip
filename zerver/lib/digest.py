@@ -387,7 +387,7 @@ def get_digest_context(user: UserProfile, cutoff: float) -> dict[str, Any]:
     raise AssertionError("Unreachable")
 
 
-@transaction.atomic
+@transaction.atomic(durable=True)
 def bulk_handle_digest_email(user_ids: list[int], cutoff: float) -> None:
     # We go directly to the database to get user objects,
     # since inactive users are likely to not be in the cache.

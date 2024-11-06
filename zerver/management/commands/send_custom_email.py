@@ -85,6 +85,10 @@ class Command(ZulipBaseCommand):
             "--from-name",
             help="From line for the email. It can be declared in Markdown file in headers",
         )
+        parser.add_argument(
+            "--from-address",
+            help="From email address",
+        )
         parser.add_argument("--reply-to", help="Optional reply-to line for the email")
 
         parser.add_argument(

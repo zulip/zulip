@@ -212,7 +212,7 @@ export function narrow_for_user_id(opts: {user_id: number}): void {
     assert(narrow_by_email);
     narrow_by_email(email);
     assert(user_filter !== undefined);
-    user_filter.clear_and_hide_search();
+    user_filter.clear_search();
 }
 
 function keydown_enter_key(): void {
@@ -274,9 +274,9 @@ export function initiate_search(): void {
     }
 }
 
-export function escape_search(): void {
+export function clear_search(): void {
     if (user_filter) {
-        user_filter.clear_and_hide_search();
+        user_filter.clear_search();
     }
 }
 

@@ -12,14 +12,11 @@ from zerver.lib.thumbnail import MEDIUM_AVATAR_SIZE
 from zerver.lib.upload import get_avatar_url
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.models import UserProfile
+from zerver.models.users import is_cross_realm_bot_email
 
-SYSTEM_BOTS_AVATAR_FILES = {
-    # This is also used in zerver/lib/storage.py to ensure
-    # these files are hashed when served as static files.
-    settings.WELCOME_BOT: "images/welcome-bot.png",
-    settings.NOTIFICATION_BOT: "images/logo/zulip-icon-square.svg",
-    settings.EMAIL_GATEWAY_BOT: "images/email-gateway-bot.png",
-}
+STATIC_AVATARS_DIR = "images/static_avatars/"
+
+DEFAULT_AVATAR_FILE = "images/default-avatar.png"
 
 
 def avatar_url(
@@ -34,6 +31,36 @@ def avatar_url(
         medium=medium,
         client_gravatar=client_gravatar,
     )
+
+
+def get_system_bots_avatar_file_name(email: str) -> str:
+    system_bot_avatar_name_map = {
+        settings.WELCOME_BOT: "welcome-bot",
+        settings.NOTIFICATION_BOT: "notification-bot",
+        settings.EMAIL_GATEWAY_BOT: "emailgateway",
+    }
+    return urljoin(STATIC_AVATARS_DIR, system_bot_avatar_name_map.get(email, "unknown"))
+
+
+def get_static_avatar_url(email: str, medium: bool) -> str:
+    avatar_file_name = get_system_bots_avatar_file_name(email)
+    avatar_file_name += "-medium.png" if medium else ".png"
+
+    if settings.DEBUG:
+        # This find call may not be cheap, so we only do it in the
+        # development environment to do an assertion.
+        from django.contrib.staticfiles.finders import find
+
+        if not find(avatar_file_name):
+            raise AssertionError(f"Unknown avatar file for: {email}")
+    elif settings.STATIC_ROOT and not staticfiles_storage.exists(avatar_file_name):
+        # Fallback for the case where no avatar exists; this should
+        # never happen in practice. This logic cannot be executed
+        # while STATIC_ROOT is not defined, so the above STATIC_ROOT
+        # check is important.
+        return DEFAULT_AVATAR_FILE
+
+    return staticfiles_storage.url(avatar_file_name)
 
 
 def get_avatar_field(
@@ -63,9 +90,8 @@ def get_avatar_field(
     """
 
     # System bots have hardcoded avatars
-    system_bot_avatar = SYSTEM_BOTS_AVATAR_FILES.get(email)
-    if system_bot_avatar:
-        return staticfiles_storage.url(system_bot_avatar)
+    if is_cross_realm_bot_email(email):
+        return get_static_avatar_url(email, medium)
 
     """
     If our client knows how to calculate gravatar hashes, we

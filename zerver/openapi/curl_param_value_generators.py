@@ -23,7 +23,7 @@ from zerver.lib.upload import upload_message_attachment
 from zerver.lib.users import get_api_key
 from zerver.models import Client, Message, NamedUserGroup, UserPresence
 from zerver.models.realms import get_realm
-from zerver.models.users import get_user
+from zerver.models.users import UserProfile, get_user
 from zerver.openapi.openapi import Parameter
 
 GENERATOR_FUNCTIONS: dict[str, Callable[[], dict[str, object]]] = {}
@@ -126,7 +126,7 @@ def add_emoji_to_message() -> dict[str, object]:
 
     # The message ID here is hardcoded based on the corresponding value
     # for the example message IDs we use in zulip.yaml.
-    message_id = 47
+    message_id = 48
     emoji_name = "octopus"
     emoji_code = "1f419"
     reaction_type = "unicode_emoji"
@@ -249,6 +249,19 @@ def get_user_presence() -> dict[str, object]:
 def create_user() -> dict[str, object]:
     return {
         "email": helpers.nonreg_email("test"),
+    }
+
+
+@openapi_param_value_generator(["/users/{email]:patch", "/users/{user_id}:patch"])
+def new_email_value() -> dict[str, object]:
+    count = 0
+    exists = True
+    while exists:
+        email = f"new{count}@zulip.com"
+        exists = UserProfile.objects.filter(delivery_email=email).exists()
+        count += 1
+    return {
+        "new_email": email,
     }
 
 

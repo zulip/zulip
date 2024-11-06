@@ -394,14 +394,13 @@ run_test("get_custom_time_in_minutes", () => {
     assert.equal(util.get_custom_time_in_minutes("days", time_input), time_input * 24 * 60);
     assert.equal(util.get_custom_time_in_minutes("hours", time_input), time_input * 60);
     assert.equal(util.get_custom_time_in_minutes("minutes", time_input), time_input);
-    // Unknown time unit returns same time input
+    // Unknown time unit string throws an error, but we still return
+    // the time input that was passed to the function.
+    blueslip.expect("error", "Unexpected custom time unit: invalid");
     assert.equal(util.get_custom_time_in_minutes("invalid", time_input), time_input);
     /// NaN time input returns NaN
     const invalid_time_input = Number.NaN;
-    assert.equal(
-        util.get_custom_time_in_minutes("minutes", invalid_time_input),
-        invalid_time_input,
-    );
+    assert.equal(util.get_custom_time_in_minutes("hours", invalid_time_input), invalid_time_input);
 });
 
 run_test("check_and_validate_custom_time_input", () => {
@@ -443,4 +442,30 @@ run_test("the", () => {
     // unnecessarily breaking the app for places we refactored this that
     // were previously typed wrong but not breaking the app.
     assert.equal(util.the([]), undefined);
+});
+
+run_test("compare_a_b", () => {
+    const user1 = {
+        id: 1,
+        name: "sally",
+    };
+    const user2 = {
+        id: 2,
+        name: "jenny",
+    };
+    const user3 = {
+        id: 3,
+        name: "max",
+    };
+    const user4 = {
+        id: 4,
+        name: "max",
+    };
+    const unsorted = [user2, user1, user4, user3];
+
+    const sorted_by_id = [...unsorted].sort((a, b) => util.compare_a_b(a.id, b.id));
+    assert.deepEqual(sorted_by_id, [user1, user2, user3, user4]);
+
+    const sorted_by_name = [...unsorted].sort((a, b) => util.compare_a_b(a.name, b.name));
+    assert.deepEqual(sorted_by_name, [user2, user4, user3, user1]);
 });

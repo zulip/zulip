@@ -30,7 +30,7 @@ class zulip::profile::postgresql {
     group  => 'postgres',
   }
 
-  if $version in ['12','13','14'] {
+  if $version in ['13','14'] {
     $postgresql_conf_file = "${zulip::postgresql_base::postgresql_confdir}/postgresql.conf"
     file { $postgresql_conf_file:
       ensure  => file,

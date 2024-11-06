@@ -50,6 +50,7 @@ from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
 # These fields are used for "stream" events, and are included in the
 # larger "subscription" events that also contain personal settings.
 default_stream_fields = [
+    ("is_archived", bool),
     ("can_remove_subscribers_group", int),
     ("creator_id", OptionalType(int)),
     ("date_created", int),
@@ -1038,12 +1039,6 @@ message_content_edit_limit_seconds_data = DictType(
     ]
 )
 
-edit_topic_policy_data = DictType(
-    required_keys=[
-        ("edit_topic_policy", int),
-    ]
-)
-
 night_logo_data = DictType(
     required_keys=[
         ("night_logo_url", str),
@@ -1066,8 +1061,8 @@ group_setting_type = UnionType(
 group_setting_update_data_type = DictType(
     required_keys=[],
     optional_keys=[
-        ("create_multiuse_invite_group", int),
-        ("can_access_all_users_group", int),
+        ("create_multiuse_invite_group", group_setting_type),
+        ("can_access_all_users_group", group_setting_type),
         ("can_add_custom_emoji_group", group_setting_type),
         ("can_create_groups", group_setting_type),
         ("can_create_public_channel_group", group_setting_type),
@@ -1077,6 +1072,7 @@ group_setting_update_data_type = DictType(
         ("can_delete_own_message_group", group_setting_type),
         ("can_manage_all_groups", group_setting_type),
         ("can_move_messages_between_channels_group", group_setting_type),
+        ("can_move_messages_between_topics_group", group_setting_type),
         ("direct_message_initiator_group", group_setting_type),
         ("direct_message_permission_group", group_setting_type),
     ],
@@ -1094,7 +1090,6 @@ update_dict_data = UnionType(
     [
         allow_message_editing_data,
         authentication_data,
-        edit_topic_policy_data,
         icon_data,
         logo_data,
         message_content_edit_limit_seconds_data,
@@ -1129,8 +1124,6 @@ def check_realm_update_dict(
             sub_type = allow_message_editing_data
         elif "message_content_edit_limit_seconds" in event["data"]:
             sub_type = message_content_edit_limit_seconds_data
-        elif "edit_topic_policy" in event["data"]:
-            sub_type = edit_topic_policy_data
         elif "authentication_methods" in event["data"]:
             sub_type = authentication_data
         elif any(

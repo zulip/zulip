@@ -77,7 +77,6 @@
         line-height: 20px;
         color: var(--color-links);
         border-bottom: 1px solid var(--color-footer-background);
-        transition: border 0.4s ease-out;
     }
 
     & a,
@@ -172,7 +171,7 @@
         mask-position: center;
         mask-repeat: no-repeat;
         mask-image: var(--footer-social-icon);
-        transition: all 150ms ease-out;
+        transition: background-color 150ms ease-out;
 
         &:hover {
             background-color: hsl(238.6deg 84.31% 90%);

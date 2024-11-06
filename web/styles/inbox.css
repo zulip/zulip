@@ -19,10 +19,12 @@
         }
 
         .unread_count {
-            opacity: 0.7;
+            opacity: 1;
+            outline: 0 solid var(--color-background-unread-counter);
+            transition: outline-width 0.1s ease;
 
             &:hover {
-                opacity: 1;
+                outline-width: 1.5px;
             }
         }
 
@@ -79,7 +81,8 @@
                 font-size: 16px;
                 color: var(--color-icons-inbox);
                 opacity: 0.4;
-                transition: all 140ms;
+                transition: none 140ms;
+                transition-property: background-color, opacity, transform;
                 padding: 5px;
                 margin: 0;
                 /* = -Width of the button. */
@@ -477,6 +480,10 @@
                 }
             }
         }
+    }
+
+    .inbox-header-stream-archived {
+        color: var(--color-text-message-header-archived);
     }
 }
 

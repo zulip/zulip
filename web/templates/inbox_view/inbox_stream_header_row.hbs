@@ -9,6 +9,11 @@
                             {{> ../stream_privacy }}
                         </span>
                         <a tabindex="-1" href="{{stream_url}}">{{stream_name}}</a>
+                        {{#if is_archived}}
+                            <span class="inbox-header-stream-archived">
+                                <i class="archived-indicator">({{t 'archived' }})</i>
+                            </span>
+                        {{/if}}
                     </div>
                 </div>
                 <span class="unread_mention_info tippy-zulip-tooltip

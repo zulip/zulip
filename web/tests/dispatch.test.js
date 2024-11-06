@@ -34,6 +34,7 @@ const information_density = mock_esm("../src/information_density");
 const linkifiers = mock_esm("../src/linkifiers");
 const message_events = mock_esm("../src/message_events", {
     update_views_filtered_on_message_property: noop,
+    update_current_view_for_topic_visibility: noop,
 });
 const message_lists = mock_esm("../src/message_lists");
 const user_topics_ui = mock_esm("../src/user_topics_ui");
@@ -378,6 +379,20 @@ run_test("muted_topics", ({override}) => {
     assert_same(args.user_topic, event);
 });
 
+run_test("followed_topic", ({override}) => {
+    const event = event_fixtures.user_topic_with_followed_policy_change;
+
+    const stub = make_stub();
+    const discard_msg_list_stub = make_stub();
+    override(user_topics_ui, "handle_topic_updates", stub.f);
+    override(message_events, "discard_cached_lists_with_term_type", discard_msg_list_stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    assert.equal(discard_msg_list_stub.num_calls, 1);
+    const args = stub.get_args("user_topic");
+    assert_same(args.user_topic, event);
+});
+
 run_test("muted_users", ({override}) => {
     const event = event_fixtures.muted_users;
 
@@ -465,7 +480,7 @@ run_test("realm settings", ({override}) => {
     override(current_user, "is_admin", true);
     override(realm, "realm_date_created", new Date("2023-01-01Z"));
 
-    override(settings_org, "check_disable_direct_message_initiator_group_dropdown", noop);
+    override(settings_org, "check_disable_direct_message_initiator_group_widget", noop);
     override(settings_org, "sync_realm_settings", noop);
     override(settings_bots, "update_bot_permissions_ui", noop);
     override(settings_emoji, "update_custom_emoji_ui", noop);
@@ -587,10 +602,10 @@ run_test("realm settings", ({override}) => {
     override(realm, "realm_create_multiuse_invite_group", 1);
     override(realm, "realm_allow_message_editing", false);
     override(realm, "realm_message_content_edit_limit_seconds", 0);
-    override(realm, "realm_edit_topic_policy", 3);
     override(realm, "realm_authentication_methods", {Google: {enabled: false, available: true}});
     override(realm, "realm_can_add_custom_emoji_group", 1);
     override(realm, "realm_can_create_public_channel_group", 1);
+    override(realm, "realm_can_move_messages_between_topics_group", 1);
     override(realm, "realm_direct_message_permission_group", 1);
     override(realm, "realm_plan_type", 2);
     override(realm, "realm_upload_quota_mib", 5000);
@@ -600,12 +615,12 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_create_multiuse_invite_group, 3);
     assert_same(realm.realm_allow_message_editing, true);
     assert_same(realm.realm_message_content_edit_limit_seconds, 5);
-    assert_same(realm.realm_edit_topic_policy, 4);
     assert_same(realm.realm_authentication_methods, {
         Google: {enabled: true, available: true},
     });
     assert_same(realm.realm_can_add_custom_emoji_group, 3);
     assert_same(realm.realm_can_create_public_channel_group, 3);
+    assert_same(realm.realm_can_move_messages_between_topics_group, 3);
     assert_same(realm.realm_direct_message_permission_group, 3);
     assert_same(realm.realm_plan_type, 3);
     assert_same(realm.realm_upload_quota_mib, 50000);

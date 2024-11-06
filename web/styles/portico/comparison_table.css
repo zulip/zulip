@@ -95,7 +95,7 @@
             color: inherit;
             text-decoration: none;
             border-bottom: 1px solid hsl(0deg 0% 100% / 50%) !important;
-            transition: border 0.4s ease-out;
+            transition: border 0.4s ease-out; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
 
             &:hover {
                 border-bottom: 2px solid hsl(0deg 0% 100%) !important;
@@ -130,7 +130,7 @@
         align-items: center;
         border-radius: 3px;
         cursor: pointer;
-        transition: all 120ms ease-out;
+        transition: background-color 120ms ease-out;
     }
 
     .comparison-tab:hover {
@@ -139,7 +139,6 @@
     }
 
     .comparison-tab:active {
-        transition: all 120ms ease-out;
         background-color: hsl(0deg 0% 100% / 70%);
     }
 
@@ -178,7 +177,7 @@
     }
 
     .comparison-table tr {
-        transition: all 200ms ease-out;
+        transition: background-color 200ms ease-out;
     }
 
     .comparison-table tbody tr:hover {
@@ -199,7 +198,6 @@
         font-weight: 700;
         color: hsl(223deg 40% 30% / 100%);
         background: hsl(209deg 41% 94%);
-        transition: all 200ms ease-out;
     }
 
     .comparison-table th .icon {
@@ -226,11 +224,6 @@
         text-transform: uppercase;
         font-size: 15px;
         letter-spacing: 0.1ch;
-    }
-
-    .comparison-table th.sticky {
-        padding: 8px 2px;
-        border-radius: 0;
     }
 
     .comparison-table td {
@@ -345,8 +338,7 @@
     }
 
     @media (width <= 730px) {
-        .comparison-table th,
-        .comparison-table th.sticky {
+        .comparison-table th {
             font-size: 14px;
             line-height: 18px;
             box-sizing: border-box;
@@ -378,8 +370,7 @@
     }
 
     @media (width <= 500px) {
-        .comparison-table th,
-        .comparison-table th.sticky {
+        .comparison-table th {
             font-size: 13px;
             line-height: 14px;
         }
@@ -544,19 +535,10 @@
 
     .comparison-table th.comparison-table-feature {
         padding-top: 28px;
-        /* Don't apply transitions to the
-           padding. This prevents the "Features"
-           label from sliding into place when
-           switching over to the All view. */
-        transition: none;
     }
 
     .comparison-table td.stuck {
         padding-top: 24px;
-        /* Don't apply transitions to the
-           padding. This makes the stuck state
-           look more precise. */
-        transition: none;
     }
 
     @media (width <= 730px) {
