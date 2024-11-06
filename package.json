@@ -165,6 +165,7 @@
     },
     "patchedDependencies": {
       "source-sans@3.46.0": "patches/source-sans@3.46.0.patch",
+      "spectrum-colorpicker": "patches/spectrum-colorpicker.patch",
       "tippy.js@6.3.7": "patches/tippy.js@6.3.7.patch"
     }
   },

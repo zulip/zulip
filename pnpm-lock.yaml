@@ -11,6 +11,9 @@ patchedDependencies:
   source-sans@3.46.0:
     hash: 4n7ij66tzyhzaqnxsenbilrxr4
     path: patches/source-sans@3.46.0.patch
+  spectrum-colorpicker:
+    hash: falorxy7hsd4nie3r2irnpmxn4
+    path: patches/spectrum-colorpicker.patch
   tippy.js@6.3.7:
     hash: mlbmk5pq4q6iuwarqu6solgeeq
     path: patches/tippy.js@6.3.7.patch
@@ -240,7 +243,7 @@ importers:
         version: 3.46.0(patch_hash=4n7ij66tzyhzaqnxsenbilrxr4)
       spectrum-colorpicker:
         specifier: ^1.8.1
-        version: 1.8.1
+        version: 1.8.1(patch_hash=falorxy7hsd4nie3r2irnpmxn4)
       stackframe:
         specifier: ^1.3.4
         version: 1.3.4
@@ -18133,7 +18136,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  spectrum-colorpicker@1.8.1: {}
+  spectrum-colorpicker@1.8.1(patch_hash=falorxy7hsd4nie3r2irnpmxn4): {}
 
   sprintf-js@1.0.3: {}
 
