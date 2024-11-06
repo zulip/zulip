@@ -2,6 +2,8 @@
 
 {!user-groups-intro.md!}
 
+{!user-groups-applications.md!}
+
 ## Create a user group
 
 !!! tip ""
@@ -34,9 +36,13 @@
 
 !!! warn ""
 
-    Guests can never manage user groups, add anyone else to a group, or remove
+    Guests can never administer user groups, add anyone else to a group, or remove
     anyone else from a group, even if they belong to a group that has permissions
     to do so.
+
+!!! tip ""
+
+    Users who can add members to a group can always join the group.
 
 {start_tabs}
 
@@ -48,7 +54,7 @@
 
 1. Select the **General** tab on the right.
 
-1. Under **Group permissions**, configure **Who can manage this group**, **Who
+1. Under **Group permissions**, configure **Who can administer this group**, **Who
    can mention this group**, **Who can add members to this group**, **Who can join
    this group**, and **Who can leave this group**.
 
@@ -57,6 +63,10 @@
 {end_tabs}
 
 ## Add groups and users to a group
+
+You can add users to a group, or add a group to any other group. Nesting groups
+makes them easier to maintain. For example, moving a user from one team group to
+another can automatically update what department group they belong to.
 
 {start_tabs}
 
@@ -131,16 +141,17 @@ so.
 
 {end_tabs}
 
-## Configure who can manage user groups
+## Configure who can administer all user groups
 
 {!admin-only.md!}
 
-You can configure who can manage groups in your organization. Guests can never
-manage user groups, even if they belong to a group that has permissions to do
-so.
+You can configure who can administer all user groups in your
+organization. Guests can never administer user groups, even if they
+belong to a group that has permissions to do so.
 
-In addition, you can [give users permission](#configure-group-permissions) to
-manage a specific group.
+In addition, you can [give users
+permission](#configure-group-permissions) to administer a specific
+group.
 
 {start_tabs}
 
@@ -148,7 +159,7 @@ manage a specific group.
 
 {settings_tab|organization-permissions}
 
-1. Under **Other permissions**, configure **Who can manage user groups**.
+1. Under **Other permissions**, configure **Who can administer all user groups**.
 
 {!save-changes.md!}
 

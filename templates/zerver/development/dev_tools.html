@@ -88,6 +88,8 @@
                 <li><code>./manage.py mark_all_messages_unread</code>: Useful for testing reading messages.</li>
                 <li><code>./manage.py create_realm</code>: Add a new realm. Useful for testing onboarding.</li>
                 <li><code>./manage.py create_user</code>: Add a new user. Useful for testing onboarding.</li>
+                <li><code>./manage.py send_zulip_update_announcements</code>: Send <a href="https://zulip.com/help/configure-automated-notices#zulip-update-announcements">Zulip
+                update notices</a> drafted in `zerver/lib/zulip_update_announcements.py`.</li>
                 <li><code>./manage.py add_mock_conversation</code>: Add test messages, streams, images, emoji, etc.
                     into the dev environment. First edit zilencer/management/commands/add_mock_conversation.py
                     to add the data you're testing.

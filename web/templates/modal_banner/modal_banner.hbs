@@ -6,7 +6,13 @@
         <div class="banner_content">{{> @partial-block}}</div>
         {{/if}}
         {{#if button_text}}
+        {{#if button_link}}
+        <a href="{{button_link}}">
+            <button class="main-view-banner-action-button{{#if hide_close_button}} right_edge{{/if}}">{{button_text}}</button>
+        </a>
+        {{else}}
         <button class="main-view-banner-action-button{{#if hide_close_button}} right_edge{{/if}}">{{button_text}}</button>
+        {{/if}}
         {{/if}}
     </div>
     {{#unless hide_close_button}}

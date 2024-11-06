@@ -40,6 +40,7 @@ const fake_now = 1596713966;
 
 exports.test_streams = {
     devel: {
+        is_archived: false,
         name: "devel",
         description: ":devel fun:",
         rendered_description: "<b>devel fun</b>",
@@ -56,6 +57,7 @@ exports.test_streams = {
         can_remove_subscribers_group: 2,
     },
     test: {
+        is_archived: false,
         name: "test",
         description: "test desc",
         rendered_description: "test desc",
@@ -363,13 +365,13 @@ exports.fixtures = {
         data: {
             allow_message_editing: true,
             message_content_edit_limit_seconds: 5,
-            edit_topic_policy: 4,
             create_multiuse_invite_group: 3,
             authentication_methods: {
                 Google: {enabled: true, available: true},
             },
             can_add_custom_emoji_group: 3,
             can_create_public_channel_group: 3,
+            can_move_messages_between_topics_group: 3,
             direct_message_permission_group: 3,
             plan_type: 3,
             upload_quota_mib: 50000,
@@ -1160,6 +1162,14 @@ exports.fixtures = {
         topic_name: "js",
         last_updated: fake_now,
         visibility_policy: 1,
+    },
+
+    user_topic_with_followed_policy_change: {
+        type: "user_topic",
+        stream_id: 101,
+        topic_name: "js",
+        last_updated: fake_now,
+        visibility_policy: 3,
     },
 
     web_reload_client: {

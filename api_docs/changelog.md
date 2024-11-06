@@ -20,6 +20,81 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 319**
+
+* [Markdown message
+  formatting](/api/message-formatting#links-to-channels-topics-and-messages): Added
+  new `message-link` format for special direct links to messages.
+
+**Feature level 318**
+
+* [`POST /register`](/api/register-queue): Updated
+  `realm_incoming_webhook_bots` with a new `config_options` key,
+  defining which options should be offered when creating URLs for this
+  integration.
+
+**Feature level 317**
+
+* [`POST /user_groups/create`](/api/create-user-group):
+  Added `group_id` to the success response of the user group creation
+  endpoint, enabling clients to easily access the unique identifier
+  of the newly created user group.
+
+**Feature level 316**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_move_messages_between_topics_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to move messages from one topic to another within a channel
+  in the organization.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `edit_topic_policy` property, as the permission to move messages between
+  topics in the organization is now controlled by
+  `can_move_messages_between_topics_group` setting.
+
+**Feature level 315**
+
+* [POST /register](/api/register-queue), [`GET
+  /streams/{stream_id}`](/api/get-stream-by-id), [`GET
+  /events`](/api/get-events), [GET
+  /users/me/subscriptions](/api/get-subscriptions): The `is_archived`
+  property has been added to channel and subscription objects.
+
+* [`GET /streams`](/api/get-streams): The new parameter
+  `exclude_archived` controls whether archived channels should be
+  returned.
+
+* [`POST /register`](/api/register-queue): The new `archived_channels`
+  [client
+  capability](/api/register-queue#parameter-client_capabilities)
+  allows the client to specify whether it supports archived channels
+  being present in the response.
+
+**Feature level 314**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Anonymous groups are now accepted
+  by `create_multiuse_invite_group` realm setting, which is a now a
+  [group-setting value](/api/group-setting-values) instead of an
+  integer ID of the group.
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Anonymous groups are now accepted
+  by `can_access_all_users_group` realm setting, which is a now a
+  [group-setting value](/api/group-setting-values) instead of an
+  integer ID of the group.
+
+**Feature level 313**
+
+* [`PATCH /users/{user_id}`](/api/update-user): Added `new_email` field to
+  allow updating the email address of the target user. The requester must be
+  an organization administrator and have the `can_change_user_emails` special
+  permission.
+* [`PATCH /users/{email}`](/api/update-user-by-email): Added new endpoint,
+  which is a copy of [`PATCH /users/{user_id}`](/api/update-user), but the user
+  is specified by their email address, following the same rules as [`GET
+  /users/{email}`](/api/get-user-by-email).
+
 **Feature level 312**
 
 * [`GET /events`](/api/get-events): Added `realm_export_consent` event

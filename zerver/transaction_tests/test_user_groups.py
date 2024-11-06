@@ -28,7 +28,6 @@ def dev_update_subgroups(
     assert BARRIER is not None
     try:
         with (
-            transaction.atomic(),
             mock.patch("zerver.lib.user_groups.access_user_group_for_update") as m,
         ):
 

@@ -172,11 +172,13 @@ export type BuddyUserInfo = {
     href: string;
     name: string;
     user_id: number;
+    profile_picture: string;
     status_emoji_info: user_status.UserStatusEmojiInfo | undefined;
     is_current_user: boolean;
     num_unread: number;
     user_circle_class: string;
     status_text: string | undefined;
+    has_status_text: boolean;
     user_list_style: {
         COMPACT: boolean;
         WITH_STATUS: boolean;
@@ -204,10 +206,12 @@ export function info_for(user_id: number): BuddyUserInfo {
         name: person.full_name,
         user_id,
         status_emoji_info,
+        profile_picture: people.small_avatar_url_for_person(person),
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
         user_circle_class,
         status_text,
+        has_status_text: Boolean(status_text),
         user_list_style,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
     };
@@ -370,7 +374,7 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
         return user_ids;
     }
 
-    // If a query is present in "Search people", we return matches.
+    // If a query is present in "Filter users", we return matches.
     const persons = user_ids.map((user_id) => people.get_by_user_id(user_id));
     return [...people.filter_people_by_search_terms(persons, user_filter_text)];
 }
@@ -379,8 +383,7 @@ function get_filtered_user_id_list(
     user_filter_text: string,
     conversation_participants: Set<number>,
 ): number[] {
-    // We always want to show conversation participants even if they're inactive.
-    let base_user_id_list = [...conversation_participants];
+    let base_user_id_list = [];
 
     if (user_filter_text) {
         // If there's a filter, select from all users, not just those
@@ -418,7 +421,9 @@ function get_filtered_user_id_list(
     }
 
     const user_ids = filter_user_ids(user_filter_text, base_user_id_list);
-    return user_ids;
+    // Make sure all the participants are in the list, even if they're inactive.
+    const user_ids_set = new Set([...user_ids, ...conversation_participants]);
+    return [...user_ids_set];
 }
 
 export function get_conversation_participants(): Set<number> {

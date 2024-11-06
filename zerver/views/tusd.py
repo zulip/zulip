@@ -194,7 +194,7 @@ def handle_upload_pre_finish_hook(
                 StorageClass=settings.S3_UPLOADS_STORAGE_CLASS,
             )
 
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         create_attachment(
             filename,
             path_id,

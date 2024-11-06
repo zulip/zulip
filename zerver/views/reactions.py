@@ -12,7 +12,7 @@ from zerver.models import Reaction, UserProfile
 
 
 # transaction.atomic is required since we use FOR UPDATE queries in access_message
-@transaction.atomic
+@transaction.atomic(durable=True)
 @typed_endpoint
 def add_reaction(
     request: HttpRequest,
@@ -29,7 +29,7 @@ def add_reaction(
 
 
 # transaction.atomic is required since we use FOR UPDATE queries in access_message
-@transaction.atomic
+@transaction.atomic(durable=True)
 @typed_endpoint
 def remove_reaction(
     request: HttpRequest,

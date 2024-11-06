@@ -276,6 +276,7 @@
        the smaller line-height. */
     --line-height-sidebar-row-prominent: 1.7142em; /* 24px / 14px em */
     --line-height-sidebar-row: 1.5714em; /* 22px / 14px em */
+    --line-height-sidebar-row-with-avatars: 1.2857em; /* 18px / 14px em */
 
     /* Right sidebar */
     --right-sidebar-padding-right: 8px;
@@ -283,6 +284,8 @@
        space created by the padding-left on .right-sidebar,
        which separates the right sidebar from the message area. */
     --right-sidebar-padding-left: 2px;
+    --right-sidebar-avatar-width: 2em;
+    --right-sidebar-avatar-height: var(--right-sidebar-avatar-width);
 
     /* Tippy popover related values */
     --navbar-popover-menu-min-width: 230px;
@@ -585,7 +588,10 @@
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: hsl(0deg 0% 80%);
     --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
-    --color-background-modal: hsl(0deg 0% 98%);
+    --color-background-modal: #ededed;
+    --color-background-modal-bar: #f5f5f5;
+    --color-border-modal: color-mix(in srgb, #8c8c8c 25%, transparent);
+    --color-border-modal-bar: color-mix(in srgb, #c2c2c2 80%, transparent);
     --color-background-invitee-emails-pill-container: hsl(0deg 0% 100%);
     --color-unmuted-or-followed-topic-list-item: hsl(0deg 0% 20%);
     --color-topic-indent-border: hsl(0deg 0% 0% / 19%);
@@ -608,16 +614,30 @@
     --color-background-active-popover-menu: hsl(220deg 12% 5% / 7%);
     --color-border-popover-menu: hsl(0deg 0% 0% / 40%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
-    --color-background-unread-counter: hsl(105deg 2% 50%);
+    --color-background-unread-counter-prominent: hsl(240deg 10% 50% / 70%);
+    --color-background-unread-counter-normal: hsl(240deg 10% 50% / 25%);
+    --color-background-unread-counter-quiet: transparent;
+    --color-unread-counter-prominent: hsl(0deg 0% 100%);
+    --color-unread-counter-normal: hsl(0deg 0% 0% / 90%);
+    --color-unread-counter-quiet: hsl(240deg 15% 50%);
+    /* Legacy unread-counter color value. */
+    --color-background-unread-counter: var(
+        --color-background-unread-counter-prominent
+    );
+    --color-unread-counter-muted: hsl(240deg 10% 50% / 35%);
     --color-border-add-subscription-button-focus: hsl(0deg 0% 20%);
-    /* There's no alpha channel here, but this keeps
-       the variable names in line. */
-    --color-background-unread-counter-no-alpha: var(
-        --color-background-unread-counter
+    /* When unreads are hovered on the condensed
+       views, they should not have an alpha.
+       The first color corresponds to
+       --color-background-unread-counter-prominent.
+       The second color aligns with light mode's
+       --color-background. */
+    --color-background-unread-counter-no-alpha: color-mix(
+        in srgb,
+        hsl(240deg 10% 50%) 70%,
+        hsl(0deg 0% 94%)
     );
-    --color-background-unread-counter-dot: var(
-        --color-background-unread-counter
-    );
+    --color-background-unread-counter-dot: hsl(240deg 30% 40%);
     --color-border-unread-counter: var(--color-background-unread-counter);
     --color-border-unread-counter-popover-menu: inherit;
     --color-background-tab-picker-container: hsl(0deg 0% 0% / 7%);
@@ -668,6 +688,20 @@
     --color-compose-send-control-button-focus-shadow: var(
         --color-compose-send-button-focus-shadow
     );
+    --color-compose-recipient-box-text-color: inherit;
+    --color-compose-recipient-box-background-color: hsl(0deg 0% 100%);
+    /* Because of how the background color is assigned on
+       recipient-row elements, we need here to mix down the
+       border color from the compose text area,
+       --color-message-content-container-border,
+       with the compose box's background color,
+       --color-compose-box-background. */
+    --color-compose-recipient-box-border-color: color-mix(
+        in srgb,
+        hsl(0deg 0% 0%) 10%,
+        hsl(232deg 20% 92%)
+    );
+    --color-compose-recipient-box-has-focus: hsl(0deg 0% 57%);
     --color-compose-collapsed-reply-button-area-background: hsl(0deg 0% 100%);
     --color-compose-collapsed-reply-button-area-background-interactive: var(
         --color-compose-collapsed-reply-button-area-background
@@ -713,6 +747,7 @@
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
     --color-text-message-default: hsl(0deg 0% 15%);
+    --color-text-message-header-archived: hsl(0deg 0% 50%);
     --color-text-message-view-header: hsl(0deg 0% 20% / 100%);
     --color-text-message-header: hsl(0deg 0% 15%);
     /* Light and dark mode both use the same hover color on
@@ -761,6 +796,7 @@
     --color-kbd-background: hsl(0deg 0% 98%);
     --color-kbd-border: hsl(0deg 0% 80%);
     --color-kbd-text: hsl(0deg 0% 20%);
+    --color-kbd-enter-sends: hsl(0deg 0% 40%);
 
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 93%);
@@ -804,6 +840,9 @@
     --color-left-sidebar-navigation-icon: hsl(240deg 30% 40%);
     --color-left-sidebar-heads-up-icon: hsl(240deg 30% 40%);
     --color-left-sidebar-heads-up-icon-hover: hsl(240deg 100% 15%);
+    --color-left-sidebar-dm-partners-icon: var(
+        --color-left-sidebar-navigation-icon
+    );
     --background-color-left-sidebar-heads-up-icon-hover: hsl(
         240deg 100% 50% / 7%
     );
@@ -900,6 +939,9 @@
         4deg 75% 53% / 15%
     );
     --color-background-user-pill: hsla(0deg 0% 100% / 85%);
+    --color-background-compose-direct-recipient-pill-container: hsl(
+        0deg 0% 100%
+    );
 
     /* Inbox view constants - Values from Figma design */
     --height-inbox-search: 26px;
@@ -1094,7 +1136,10 @@
     --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: hsl(0deg 0% 30%);
-    --color-background-modal: hsl(212deg 28% 18%);
+    --color-background-modal: #242424;
+    --color-background-modal-bar: #333;
+    --color-border-modal: color-mix(in srgb, #fff 8%, transparent);
+    --color-border-modal-bar: color-mix(in srgb, #fff 5%, transparent);
     --color-background-invitee-emails-pill-container: hsl(0deg 0% 0% / 20%);
     --color-unmuted-or-followed-topic-list-item: hsl(236deg 33% 90%);
     --color-recipient-bar-controls-spinner: hsl(0deg 0% 100%);
@@ -1114,7 +1159,6 @@
     --color-background-active-popover-menu: hsl(220deg 12% 95% / 7%);
     --color-border-popover-menu: hsl(0deg 0% 0%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 100% / 20%);
-    --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
     /* When unreads are hovered on the condensed
        views, they should not have an alpha.
 
@@ -1124,10 +1168,21 @@
        an rgb() value by PostCSS Preset Env. */
     --color-background-unread-counter-no-alpha: color-mix(
         in srgb,
-        hsl(105deg 2% 50%) 50%,
+        hsl(240deg 10% 50%) 35%,
         hsl(0deg 0% 11%)
     );
-    --color-background-unread-counter-dot: hsl(105deg 2% 50% / 90%);
+    --color-background-unread-counter-dot: hsl(240deg 35% 68%);
+    --color-background-unread-counter-prominent: hsl(240deg 18.37% 34.42%);
+    --color-background-unread-counter-normal: hsl(240deg 10% 50% / 35%);
+    --color-background-unread-counter-quiet: transparent;
+    --color-unread-counter-prominent: hsl(0deg 0% 100%);
+    --color-unread-counter-normal: hsl(0deg 0% 100% / 85%);
+    --color-unread-counter-quiet: hsl(240deg 15% 60%);
+    /* Legacy unread-counter color value. */
+    --color-background-unread-counter: var(
+        --color-background-unread-counter-prominent
+    );
+    --color-unread-counter-muted: hsl(240deg 10% 50% / 35%);
     --color-border-unread-counter: hsl(105deg 2% 50%);
     --color-border-unread-counter-popover-menu: var(
         --color-border-unread-counter
@@ -1181,6 +1236,10 @@
     --color-compose-send-control-button-focus-shadow: var(
         --color-compose-send-button-focus-shadow
     );
+    --color-compose-recipient-box-text-color: inherit;
+    --color-compose-recipient-box-background-color: hsl(0deg 0% 0% / 20%);
+    --color-compose-recipient-box-border-color: hsl(0deg 0% 0% / 80%);
+    --color-compose-recipient-box-has-focus: hsl(0deg 0% 100% / 27%);
     --color-compose-collapsed-reply-button-area-background: hsl(
         0deg 0% 0% / 20%
     );
@@ -1276,6 +1335,7 @@
     --color-kbd-background: hsl(211deg 29% 14%);
     --color-kbd-border: hsl(211deg 29% 14%);
     --color-kbd-text: hsl(236deg 33% 90%);
+    --color-kbd-enter-sends: hsl(236deg 33% 90%);
 
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
@@ -1325,6 +1385,9 @@
     --color-left-sidebar-navigation-icon: hsl(240deg 35% 68%);
     --color-left-sidebar-heads-up-icon: hsl(240deg 35% 68%);
     --color-left-sidebar-heads-up-icon-hover: hsl(240deg 100% 90%);
+    --color-left-sidebar-dm-partners-icon: var(
+        --color-left-sidebar-navigation-icon
+    );
     --background-color-left-sidebar-heads-up-icon-hover: hsl(
         240deg 100% 75% / 20%
     );
@@ -1421,6 +1484,9 @@
     --color-close-deactivated-user-pill: hsl(7deg 100% 74%);
     --color-background-exit-hover-deactivated-user-pill: hsl(0deg 0% 100% / 7%);
     --color-background-user-pill: hsl(0deg 0% 0% / 40%);
+    --color-background-compose-direct-recipient-pill-container: hsl(
+        0deg 0% 0% / 20%
+    );
 
     /* Inbox view */
     --color-background-inbox: var(--color-background);

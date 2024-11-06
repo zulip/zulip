@@ -11,6 +11,7 @@ import * as stream_pill from "./stream_pill";
 import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper";
 import * as user_group_pill from "./user_group_pill";
 import * as user_groups from "./user_groups";
+import type {UserGroup} from "./user_groups";
 import * as user_pill from "./user_pill";
 
 export function create_item_from_text(
@@ -51,17 +52,28 @@ export function set_up_pill_typeahead({
     pill_widget,
     $pill_container,
     get_users,
+    get_user_groups,
 }: {
     pill_widget: CombinedPillContainer;
     $pill_container: JQuery;
     get_users: () => User[];
+    get_user_groups?: () => UserGroup[];
 }): void {
-    const opts = {
+    const opts: {
+        user_source: () => User[];
+        stream: boolean;
+        user_group: boolean;
+        user: boolean;
+        user_group_source?: () => UserGroup[];
+    } = {
         user_source: get_users,
         stream: true,
         user_group: true,
         user: true,
     };
+    if (get_user_groups !== undefined) {
+        opts.user_group_source = get_user_groups;
+    }
     pill_typeahead.set_up_combined($pill_container.find(".input"), pill_widget, opts);
 }
 
@@ -88,6 +100,30 @@ export function generate_pill_html(item: CombinedPill): string {
     return stream_pill.generate_pill_html(item);
 }
 
+export function set_up_handlers_for_add_button_state(
+    pill_widget: CombinedPillContainer,
+    $pill_container: JQuery,
+): void {
+    const $pill_widget_input = $pill_container.find(".input");
+    const $pill_widget_button = $pill_container.parent().find(".add-users-button");
+
+    // Disable the add button first time the pill container is created.
+    $pill_widget_button.prop("disabled", true);
+
+    // If all the pills are removed, disable the add button.
+    pill_widget.onPillRemove(() =>
+        $pill_widget_button.prop("disabled", pill_widget.items().length === 0),
+    );
+    // Disable the add button when there is no pending text that can be converted
+    // into a pill and the number of existing pills is zero.
+    $pill_widget_input.on("input", () =>
+        $pill_widget_button.prop(
+            "disabled",
+            !pill_widget.is_pending() && pill_widget.items().length === 0,
+        ),
+    );
+}
+
 export function create({
     $pill_container,
     get_potential_subscribers,
@@ -109,23 +145,7 @@ export function create({
 
     set_up_pill_typeahead({pill_widget, $pill_container, get_users});
 
-    const $pill_widget_input = $pill_container.find(".input");
-    const $pill_widget_button = $pill_container.parent().find(".add-users-button");
-    // Disable the add button first time the pill container is created.
-    $pill_widget_button.prop("disabled", true);
-
-    // If all the pills are removed, disable the add button.
-    pill_widget.onPillRemove(() =>
-        $pill_widget_button.prop("disabled", pill_widget.items().length === 0),
-    );
-    // Disable the add button when there is no pending text that can be converted
-    // into a pill and the number of existing pills is zero.
-    $pill_widget_input.on("input", () =>
-        $pill_widget_button.prop(
-            "disabled",
-            !pill_widget.is_pending() && pill_widget.items().length === 0,
-        ),
-    );
+    set_up_handlers_for_add_button_state(pill_widget, $pill_container);
 
     return pill_widget;
 }

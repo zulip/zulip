@@ -17,7 +17,7 @@ import * as settings_data from "./settings_data";
 import type {StateData, profile_datum_schema, user_schema} from "./state_data";
 import {current_user, realm} from "./state_data";
 import * as timerender from "./timerender";
-import {is_user_in_group} from "./user_groups";
+import {is_user_in_setting_group} from "./user_groups";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 
@@ -767,9 +767,8 @@ export function should_add_guest_user_indicator(user_id: number): boolean {
 }
 
 export function user_can_initiate_direct_message_thread(recipient_ids_string: string): boolean {
-    const direct_message_initiator_group_id = realm.realm_direct_message_initiator_group;
     const recipient_ids = user_ids_string_to_ids_array(recipient_ids_string);
-    if (is_user_in_group(direct_message_initiator_group_id, my_user_id)) {
+    if (is_user_in_setting_group(realm.realm_direct_message_initiator_group, my_user_id)) {
         return true;
     }
     for (const recipient of recipient_ids) {
@@ -781,9 +780,8 @@ export function user_can_initiate_direct_message_thread(recipient_ids_string: st
 }
 
 export function user_can_direct_message(recipient_ids_string: string): boolean {
-    const direct_message_permission_group_id = realm.realm_direct_message_permission_group;
     const recipient_ids = user_ids_string_to_ids_array(recipient_ids_string);
-    if (is_user_in_group(direct_message_permission_group_id, my_user_id)) {
+    if (is_user_in_setting_group(realm.realm_direct_message_permission_group, my_user_id)) {
         return true;
     }
 
@@ -792,7 +790,7 @@ export function user_can_direct_message(recipient_ids_string: string): boolean {
         if (is_valid_bot_user(recipient_id) || recipient_id === my_user_id) {
             continue;
         }
-        if (is_user_in_group(direct_message_permission_group_id, recipient_id)) {
+        if (is_user_in_setting_group(realm.realm_direct_message_permission_group, recipient_id)) {
             return true;
         }
         other_human_recipients_exist = true;
@@ -811,18 +809,11 @@ export function small_avatar_url_for_person(person: User): string {
     }
 
     if (person.avatar_url === null) {
-        return gravatar_url_for_email(person.email);
+        person.avatar_url = gravatar_url_for_email(person.email);
+        return person.avatar_url;
     }
 
     return `/avatar/${person.user_id}`;
-}
-
-function medium_gravatar_url_for_email(email: string): string {
-    const hash = md5(email.toLowerCase());
-    const avatar_url = "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
-    const url = new URL(avatar_url, window.location.origin);
-    url.search += (url.search ? "&" : "") + "s=500";
-    return url.href;
 }
 
 export function medium_avatar_url_for_person(person: User): string {
@@ -831,7 +822,15 @@ export function medium_avatar_url_for_person(person: User): string {
      * gravatar and server endpoints here. */
 
     if (person.avatar_url === null) {
-        return medium_gravatar_url_for_email(person.email);
+        person.avatar_url = gravatar_url_for_email(person.email);
+    }
+
+    if (person.avatar_url !== undefined) {
+        const url = new URL(person.avatar_url, window.location.origin);
+        if (url.origin === "https://secure.gravatar.com") {
+            url.search += (url.search ? "&" : "") + "s=500";
+            return url.href;
+        }
     }
 
     // We need to attach a version to the URL as a cache-breaker so that the browser

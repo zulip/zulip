@@ -23,10 +23,9 @@
                     </select>
                 </div>
 
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_create_multiuse_invite_group"
-                  label=(t 'Who can create reusable invitation links')
-                  value_type="number"}}
+                {{> group_setting_value_pill_input
+                  setting_name="realm_create_multiuse_invite_group"
+                  label=(t 'Who can create reusable invitation links')}}
 
                 <div class="input-group">
                     <label for="realm_org_join_restrictions" class="settings-field-label">{{t "Restrict email domains of new users" }}</label>
@@ -68,10 +67,9 @@
                 {{> settings_save_discard_widget section_name="stream-permissions" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_can_create_public_channel_group"
-                  label=(t 'Who can create public channels')
-                  value_type="number"}}
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_create_public_channel_group"
+                  label=(t 'Who can create public channels')}}
 
                 {{> upgrade_tip_widget }}
                 {{> settings_checkbox
@@ -87,10 +85,9 @@
                   label=(t 'Who can create web-public channels')
                   value_type="number"}}
 
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_can_create_private_channel_group"
-                  label=(t 'Who can create private channels')
-                  value_type="number"}}
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_create_private_channel_group"
+                  label=(t 'Who can create private channels')}}
 
                 <div class="input-group">
                     <label for="realm_invite_to_stream_policy" class="settings-field-label">{{t "Who can add users to channels" }}</label>
@@ -109,6 +106,24 @@
             </div>
         </div>
 
+        <div id="org-group-permissions" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Group permissions" }}
+                    {{> ../help_link_widget link="/help/manage-user-groups" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="group-permissions" }}
+            </div>
+            <div class="m-10 inline-block organization-permissions-parent">
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_manage_all_groups"
+                  label=(t 'Who can administer all user groups')}}
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_create_groups"
+                  label=(t 'Who can create user groups')}}
+            </div>
+        </div>
+
         <div id="org-direct-message-permissions" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Direct message permissions" }}
@@ -116,15 +131,14 @@
                 </h3>
                 {{> settings_save_discard_widget section_name="direct-message-permissions" }}
             </div>
-            {{> ../dropdown_widget_with_label
-              widget_name="realm_direct_message_permission_group"
-              label=(t 'Who can authorize a direct message conversation')
-              value_type="number" }}
 
-            {{> ../dropdown_widget_with_label
-              widget_name="realm_direct_message_initiator_group"
-              label=(t 'Who can start a direct message conversation')
-              value_type="number" }}
+            {{> group_setting_value_pill_input
+              setting_name="realm_direct_message_permission_group"
+              label=(t 'Who can authorize a direct message conversation')}}
+
+            {{> group_setting_value_pill_input
+              setting_name="realm_direct_message_initiator_group"
+              label=(t 'Who can start a direct message conversation')}}
         </div>
 
         <div id="org-msg-editing" class="settings-subsection-parent">
@@ -176,12 +190,10 @@
                 </h3>
                 {{> settings_save_discard_widget section_name="moving-msgs" }}
             </div>
-            <div class="input-group">
-                <label for="realm_edit_topic_policy" class="settings-field-label">{{t "Who can move messages to another topic" }}</label>
-                <select name="realm_edit_topic_policy" id="id_realm_edit_topic_policy" class="prop-element move-message-policy-setting settings_select bootstrap-focus-style" data-setting-widget-type="number">
-                    {{> dropdown_options_widget option_values=edit_topic_policy_values}}
-                </select>
-            </div>
+
+            {{> group_setting_value_pill_input
+              setting_name="realm_can_move_messages_between_topics_group"
+              label=(t 'Who can move messages to another topic')}}
 
             <div class="input-group time-limit-setting">
                 <label for="realm_move_messages_within_stream_limit_seconds" class="settings-field-label">{{t "Time limit for editing topics" }} <i>({{t "does not apply to moderators and administrators" }})</i></label>
@@ -201,10 +213,9 @@
                 </div>
             </div>
 
-            {{> ../dropdown_widget_with_label
-              widget_name="realm_can_move_messages_between_channels_group"
-              label=(t 'Who can move messages to another channel')
-              value_type="number" }}
+            {{> group_setting_value_pill_input
+              setting_name="realm_can_move_messages_between_channels_group"
+              label=(t 'Who can move messages to another channel')}}
 
             <div class="input-group time-limit-setting">
                 <label for="realm_move_messages_between_streams_limit_seconds" class="settings-field-label">{{t "Time limit for moving messages between channels" }} <i>({{t "does not apply to moderators and administrators" }})</i></label>
@@ -233,15 +244,13 @@
                 {{> settings_save_discard_widget section_name="msg-deletion" }}
             </div>
             <div class="inline-block organization-settings-parent">
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_can_delete_any_message_group"
-                  label=(t 'Who can delete any message')
-                  value_type="number" }}
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_delete_any_message_group"
+                  label=(t 'Who can delete any message')}}
 
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_can_delete_own_message_group"
-                  label=(t 'Who can delete their own messages')
-                  value_type="number" }}
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_delete_own_message_group"
+                  label=(t 'Who can delete their own messages')}}
 
                 <div class="input-group time-limit-setting">
                     <label for="realm_message_content_delete_limit_seconds" class="settings-field-label">
@@ -335,22 +344,9 @@
                     </select>
                 </div>
 
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_can_create_groups"
-                  label=(t 'Who can create user groups')
-                  value_type="number"
-                  is_setting_disabled=(not is_owner)}}
-
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_can_manage_all_groups"
-                  label=(t 'Who can manage user groups')
-                  value_type="number"
-                  is_setting_disabled=(not is_owner)}}
-
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_can_add_custom_emoji_group"
-                  label=(t 'Who can add custom emoji')
-                  value_type="number"}}
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_add_custom_emoji_group"
+                  label=(t 'Who can add custom emoji')}}
             </div>
         </div>
     </form>

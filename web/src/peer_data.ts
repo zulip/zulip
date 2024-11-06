@@ -43,7 +43,7 @@ export function potential_subscribers(stream_id: number): User[] {
         stream.  This may include some bots.
 
         We currently use it for typeahead in
-        stream_edit.js.
+        stream_edit.ts.
 
         This may be a superset of the actual
         subscribers that you can change in some cases

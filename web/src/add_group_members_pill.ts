@@ -1,11 +1,16 @@
+import assert from "minimalistic-assert";
+
 import * as add_subscribers_pill from "./add_subscribers_pill";
 import * as input_pill from "./input_pill";
 import * as keydown_util from "./keydown_util";
 import type {User} from "./people";
 import * as stream_pill from "./stream_pill";
 import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper";
+import * as user_group_components from "./user_group_components";
 import * as user_group_create_members_data from "./user_group_create_members_data";
 import * as user_group_pill from "./user_group_pill";
+import * as user_groups from "./user_groups";
+import type {UserGroup} from "./user_groups";
 import * as user_pill from "./user_pill";
 
 function get_pill_user_ids(pill_widget: CombinedPillContainer): number[] {
@@ -17,6 +22,80 @@ function get_pill_user_ids(pill_widget: CombinedPillContainer): number[] {
 function get_pill_group_ids(pill_widget: CombinedPillContainer): number[] {
     const group_user_ids = user_group_pill.get_group_ids(pill_widget);
     return group_user_ids;
+}
+
+export function create_item_from_text(
+    text: string,
+    current_items: CombinedPill[],
+): CombinedPill | undefined {
+    const funcs = [
+        stream_pill.create_item_from_stream_name,
+        user_group_pill.create_item_from_group_name,
+        user_pill.create_item_from_email,
+    ];
+
+    const stream_item = stream_pill.create_item_from_stream_name(text, current_items);
+    if (stream_item) {
+        return stream_item;
+    }
+
+    const group_item = user_group_pill.create_item_from_group_name(text, current_items);
+    if (group_item) {
+        const subgroup = user_groups.get_user_group_from_id(group_item.group_id);
+        const current_group_id = user_group_components.active_group_id;
+        assert(current_group_id !== undefined);
+        const current_group = user_groups.get_user_group_from_id(current_group_id);
+        if (user_groups.check_group_can_be_subgroup(subgroup, current_group)) {
+            return group_item;
+        }
+
+        return undefined;
+    }
+    for (const func of funcs) {
+        const item = func(text, current_items);
+        if (item) {
+            return item;
+        }
+    }
+    return undefined;
+}
+
+export function create({
+    $pill_container,
+    get_potential_members,
+    get_potential_groups,
+}: {
+    $pill_container: JQuery;
+    get_potential_members: () => User[];
+    get_potential_groups: () => UserGroup[];
+}): CombinedPillContainer {
+    const pill_widget = input_pill.create<CombinedPill>({
+        $container: $pill_container,
+        create_item_from_text,
+        get_text_from_item: add_subscribers_pill.get_text_from_item,
+        get_display_value_from_item: add_subscribers_pill.get_display_value_from_item,
+        generate_pill_html: add_subscribers_pill.generate_pill_html,
+    });
+    function get_users(): User[] {
+        const potential_members = get_potential_members();
+        return user_pill.filter_taken_users(potential_members, pill_widget);
+    }
+
+    function get_user_groups(): UserGroup[] {
+        const potential_groups = get_potential_groups();
+        return user_group_pill.filter_taken_groups(potential_groups, pill_widget);
+    }
+
+    add_subscribers_pill.set_up_pill_typeahead({
+        pill_widget,
+        $pill_container,
+        get_users,
+        get_user_groups,
+    });
+
+    add_subscribers_pill.set_up_handlers_for_add_button_state(pill_widget, $pill_container);
+
+    return pill_widget;
 }
 
 export function create_without_add_button({

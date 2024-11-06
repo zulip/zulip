@@ -91,3 +91,26 @@ export function show_button_spinner($elt: JQuery, using_dark_theme: boolean): vo
     }
     $elt.css("display", "inline-block");
 }
+
+export function show_spinner($button_element: JQuery, $spinner: JQuery): void {
+    const span_width = $button_element.find(".submit-button-text").width();
+    const span_height = $button_element.find(".submit-button-text").height();
+
+    // Hide the submit button after computing its height, since submit
+    // buttons with long text might affect the size of the button.
+    $button_element.find(".submit-button-text").hide();
+
+    // Create the loading indicator
+    make_indicator($spinner, {
+        width: span_width,
+        height: span_height,
+    });
+}
+
+export function hide_spinner($button_element: JQuery, $spinner: JQuery): void {
+    // Show the span
+    $button_element.find(".submit-button-text").show();
+
+    // Destroy the loading indicator
+    destroy_indicator($spinner);
+}

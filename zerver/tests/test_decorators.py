@@ -856,7 +856,7 @@ class InactiveUserTest(ZulipTestCase):
         form = OurAuthenticationForm(request, payload)
         with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.EmailAuthBackend",)):
             self.assertFalse(form.is_valid())
-            self.assertIn("Please enter a correct email", str(form.errors))
+            self.assertIn("Incorrect email or password.", str(form.errors))
 
         # Test a non-mirror-dummy deactivated user.
         user_profile.is_mirror_dummy = False

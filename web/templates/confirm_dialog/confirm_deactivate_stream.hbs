@@ -1,7 +1,15 @@
 <p>
+    {{#tr}}Archiving this channel will:{{/tr}}
+</p>
+<p>
+    <ul>
+        <li>{{#tr}}Remove it from the left sidebar for all users.{{/tr}}</li>
+        <li>{{#tr}}Prevent new messages from being sent to this channel.{{/tr}}</li>
+        <li>{{#tr}}Prevent messages in this channel from being edited, deleted, or moved.{{/tr}}</li>
+    </ul>
     {{#tr}}
-        Archiving channel <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.
-        {{#*inline "z-stream"}}<strong>{{{stream_name_with_privacy_symbol_html}}}</strong>{{/inline}}
+        Users can still search for messages in archived channels.<br/>
+        This action cannot be undone.
     {{/tr}}
 </p>
 {{#if is_announcement_stream}}

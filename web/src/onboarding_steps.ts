@@ -15,7 +15,7 @@ export function post_onboarding_step_as_read(onboarding_step_name: string): void
         data: {onboarding_step: onboarding_step_name},
         error(err) {
             if (err.readyState !== 0) {
-                blueslip.error("Failed to fetch onboarding steps", {
+                blueslip.error(`Failed to mark ${onboarding_step_name} as read.`, {
                     readyState: err.readyState,
                     status: err.status,
                     body: err.responseText,

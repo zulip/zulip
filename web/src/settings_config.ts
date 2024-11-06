@@ -68,7 +68,20 @@ export const web_channel_default_view_values = {
     },
 };
 
-export const user_list_style_values = {
+export const user_list_style_values: {
+    compact: {
+        code: number;
+        description: string;
+    };
+    with_status: {
+        code: number;
+        description: string;
+    };
+    with_avatar?: {
+        code: number;
+        description: string;
+    };
+} = {
     compact: {
         code: 1,
         description: $t({defaultMessage: "Compact"}),
@@ -77,12 +90,14 @@ export const user_list_style_values = {
         code: 2,
         description: $t({defaultMessage: "Show status text"}),
     },
-    // The `with_avatar` design in still in discussion.
-    // with_avatar: {
-    //     code: 3,
-    //     description: $t({defaultMessage: "Show status text and avatar"}),
-    // },
 };
+
+if (page_params.development_environment) {
+    user_list_style_values.with_avatar = {
+        code: 3,
+        description: $t({defaultMessage: "Show avatar"}),
+    };
+}
 
 export const web_animate_image_previews_values = {
     always: {
@@ -130,12 +145,13 @@ export const web_home_view_values = {
 };
 
 type ColorScheme = "automatic" | "dark" | "light";
-export type ColorSchemeValues = {
-    [key in ColorScheme]: {
+export type ColorSchemeValues = Record<
+    ColorScheme,
+    {
         code: number;
         description: string;
-    };
-};
+    }
+>;
 
 export const color_scheme_values = {
     automatic: {
@@ -304,43 +320,6 @@ export const wildcard_mention_policy_values = {
         code: 5,
         description: $t({defaultMessage: "Admins only"}),
     },
-    nobody: {
-        order: 6,
-        code: 6,
-        description: $t({defaultMessage: "Nobody"}),
-    },
-};
-
-export const common_message_policy_values = {
-    by_everyone: {
-        order: 1,
-        code: 5,
-        description: $t({defaultMessage: "Admins, moderators, members and guests"}),
-    },
-    by_members: {
-        order: 2,
-        code: 1,
-        description: $t({defaultMessage: "Admins, moderators and members"}),
-    },
-    by_full_members: {
-        order: 3,
-        code: 3,
-        description: $t({defaultMessage: "Admins, moderators and full members"}),
-    },
-    by_moderators_only: {
-        order: 4,
-        code: 4,
-        description: $t({defaultMessage: "Admins and moderators"}),
-    },
-    by_admins_only: {
-        order: 5,
-        code: 2,
-        description: $t({defaultMessage: "Admins only"}),
-    },
-};
-
-export const edit_topic_policy_values = {
-    ...common_message_policy_values,
     nobody: {
         order: 6,
         code: 6,
@@ -668,15 +647,18 @@ export const general_notifications_table_labels = {
         "email",
         "all_mentions",
     ],
-    stream: {
-        is_muted: $t({defaultMessage: "Mute channel"}),
-        desktop_notifications: $t({defaultMessage: "Visual desktop notifications"}),
-        audible_notifications: $t({defaultMessage: "Audible desktop notifications"}),
-        push_notifications: $t({defaultMessage: "Mobile notifications"}),
-        email_notifications: $t({defaultMessage: "Email notifications"}),
-        pin_to_top: $t({defaultMessage: "Pin channel to top of left sidebar"}),
-        wildcard_mentions_notify: $t({defaultMessage: "Notifications for @all/@everyone mentions"}),
-    },
+    stream: [
+        ["is_muted", $t({defaultMessage: "Mute channel"})],
+        ["desktop_notifications", $t({defaultMessage: "Visual desktop notifications"})],
+        ["audible_notifications", $t({defaultMessage: "Audible desktop notifications"})],
+        ["push_notifications", $t({defaultMessage: "Mobile notifications"})],
+        ["email_notifications", $t({defaultMessage: "Email notifications"})],
+        ["pin_to_top", $t({defaultMessage: "Pin channel to top of left sidebar"})],
+        [
+            "wildcard_mentions_notify",
+            $t({defaultMessage: "Notifications for @all/@everyone mentions"}),
+        ],
+    ] as const,
 };
 
 export const stream_specific_notification_settings: (keyof StreamSpecificNotificationSettings)[] = [

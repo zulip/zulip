@@ -76,10 +76,6 @@ html {
     color: hsl(0deg 0% 67%);
 }
 
-.find-account-page-container #find_account i {
-    font-size: 0.8em;
-}
-
 .app-main {
     .login-page-header {
         font-size: 1.5em;
@@ -132,6 +128,10 @@ html {
     &.find-account-page-container {
         width: 500px;
         font-weight: 400;
+    }
+
+    .find-account-form-tip {
+        font-size: 0.8em;
     }
 
     &.goto-account-page-container {
@@ -209,7 +209,7 @@ html {
 
         transition:
             color 0.3s ease,
-            border 0.3s ease;
+            border-color 0.3s ease;
 
         &:hover {
             color: hsl(156deg 62% 61%);
@@ -268,19 +268,10 @@ html {
     }
 }
 
-.find-account-page-container h3,
-.forgot-password-container h3 {
-    margin-top: 0;
-
-    font-weight: 300;
-    font-size: 2em;
-}
-
 .forgot-password-container {
     width: 503px;
 
-    & h3,
-    form {
+    & form {
         margin-bottom: 0;
     }
 }
@@ -428,7 +419,8 @@ html {
         border: none;
         border-radius: 4px;
 
-        transition: all 0.3s ease;
+        transition: none 0.3s ease;
+        transition-property: background-color, outline;
 
         &:hover {
             background-color: hsl(213deg 33% 31%);
@@ -547,7 +539,7 @@ html {
             background-color: hsl(0deg 0% 100%);
             color: hsl(0deg 0% 33%);
 
-            transition: border 0.3s ease;
+            transition: border-color 0.3s ease;
 
             &:focus:invalid {
                 box-shadow: none;
@@ -555,7 +547,7 @@ html {
             }
 
             &:focus {
-                border: 1px solid hsl(0deg 0% 53%);
+                border-color: hsl(0deg 0% 53%);
                 outline: 0;
             }
         }
@@ -571,7 +563,8 @@ html {
 
             margin-top: 1px;
 
-            transition: all 0.3s ease;
+            transition: none 0.3s ease;
+            transition-property: color, font-size, font-weight, transform; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
         }
 
         &.moving-label {

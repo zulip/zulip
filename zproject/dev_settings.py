@@ -211,9 +211,6 @@ ZULIP_SERVICES_URL = f"http://push.{EXTERNAL_HOST}"
 ZULIP_SERVICE_PUSH_NOTIFICATIONS = True
 ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = True
 
-# Breaks the UI if used, but enabled for development environment testing.
-ALLOW_GROUP_VALUED_SETTINGS = True
-
 # This value needs to be lower in development than usual to allow
 # for quicker testing of the feature.
 RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 5

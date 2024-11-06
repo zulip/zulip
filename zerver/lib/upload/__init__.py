@@ -70,7 +70,7 @@ def create_attachment(
         size=file_size,
         content_type=content_type,
     )
-    maybe_thumbnail(attachment, file_real_data)
+    maybe_thumbnail(file_real_data, content_type, path_id, realm.id)
     from zerver.actions.uploads import notify_attachment_update
 
     notify_attachment_update(user_profile, "add", attachment.to_dict())
@@ -158,7 +158,7 @@ def upload_message_attachment(
         str(target_realm.id), sanitize_name(uploaded_file_name)
     )
 
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         upload_backend.upload_message_attachment(
             path_id,
             uploaded_file_name,

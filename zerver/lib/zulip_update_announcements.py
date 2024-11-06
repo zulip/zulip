@@ -187,6 +187,40 @@ feature highlights in Zulip Server 9.0, and other Zulip project updates.
             blog_post_9_0_url="https://blog.zulip.com/zulip-server-9-0",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=9,
+        message=(
+            (
+                """
+- You can now [upload large files]({file_upload_limits_help_url}) up to
+  1 GB in organizations on Zulip Cloud
+  Standard or Zulip Cloud Plus [plans]({cloud_plans_url}).
+"""
+                if settings.CORPORATE_ENABLED
+                else """
+- You can now [upload large files]({file_upload_limits_help_url}), up to
+  the limit configured by your server's administrator (currently {max_file_upload_size} MB).
+"""
+            )
+            + """
+
+**Web and desktop updates**
+- You can now start a new conversation from the left sidebar. Click the `+`
+button next to the name of a channel to [start a new
+topic]({how_to_start_a_new_topic_help_url}) in that channel, or the `+` next to
+DIRECT MESSAGES to [start a DM]({starting_a_new_direct_message_help_url}).
+- The [user list]({user_list_help_url}) now shows recent participants in the
+  conversation you're viewing.
+"""
+        ).format(
+            how_to_start_a_new_topic_help_url="/help/introduction-to-topics#how-to-start-a-new-topic",
+            starting_a_new_direct_message_help_url="/help/starting-a-new-direct-message",
+            user_list_help_url="/help/user-list",
+            cloud_plans_url="/plans/",
+            file_upload_limits_help_url="/help/share-and-upload-files#file-upload-limits",
+            max_file_upload_size=settings.MAX_FILE_UPLOAD_SIZE,
+        ),
+    ),
 ]
 
 

@@ -114,7 +114,7 @@ export function needs_subscribe_warning(user_id: number, stream_id: number): boo
 
 export function check_dm_permissions_and_get_error_string(user_ids_string: string): string {
     if (!people.user_can_direct_message(user_ids_string)) {
-        if (user_groups.is_empty_group(realm.realm_direct_message_permission_group)) {
+        if (user_groups.is_setting_group_empty(realm.realm_direct_message_permission_group)) {
             return $t({
                 defaultMessage: "Direct messages are disabled in this organization.",
             });
@@ -569,6 +569,10 @@ export function validate_stream_message_mentions(opts: StreamWildcardOptions): b
 }
 
 export function validate_stream_message_address_info(sub: StreamSubscription): boolean {
+    if (sub.is_archived) {
+        compose_banner.show_stream_does_not_exist_error(sub.name);
+        return false;
+    }
     if (sub.subscribed) {
         return true;
     }

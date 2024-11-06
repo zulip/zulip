@@ -1,13 +1,5 @@
 import type {User} from "./people";
-
-export function compare_a_b(a: number | string, b: number | string): number {
-    if (a > b) {
-        return 1;
-    } else if (a === b) {
-        return 0;
-    }
-    return -1;
-}
+import {compare_a_b} from "./util";
 
 export function sort_email(a: User, b: User): number {
     const email_a = a.delivery_email;
@@ -29,7 +21,7 @@ export function sort_email(a: User, b: User): number {
     return compare_a_b(email_a.toLowerCase(), email_b.toLowerCase());
 }
 
-export function sort_role(a: User, b: User): number {
+export function sort_role<T extends {role: number}>(a: T, b: T): number {
     return compare_a_b(a.role, b.role);
 }
 

@@ -75,7 +75,7 @@ $ sudo service puppet stop
 
 ### PostgreSQL
 
-Zulip expects to install PostgreSQL 12, and find that listening on
+Zulip expects to install PostgreSQL 16, and find that listening on
 port 5432; any other version of PostgreSQL that is detected at install
 time will cause the install to abort. If you already have PostgreSQL
 installed, you can pass `--postgresql-version=` to the installer to

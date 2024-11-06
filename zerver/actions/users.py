@@ -80,7 +80,7 @@ def do_delete_user(user_profile: UserProfile, *, acting_user: UserProfile | None
     date_joined = user_profile.date_joined
     personal_recipient = user_profile.recipient
 
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         user_profile.delete()
         # Recipient objects don't get deleted through CASCADE, so we need to handle
         # the user's personal recipient manually. This will also delete all Messages pointing
@@ -180,7 +180,7 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
     realm = user_profile.realm
     date_joined = user_profile.date_joined
 
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         # The strategy is that before calling user_profile.delete(), we need to
         # reassign Messages  sent by the user to a dummy user, so that they don't
         # get affected by CASCADE. We cannot yet create a dummy user with .id
@@ -486,7 +486,7 @@ def do_deactivate_user(
         for profile in bot_profiles:
             do_deactivate_user(profile, _cascade=False, acting_user=acting_user)
 
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         if user_profile.realm.is_zephyr_mirror_realm:  # nocoverage
             # For zephyr mirror users, we need to make them a mirror dummy
             # again; otherwise, other users won't get the correct behavior
@@ -745,6 +745,28 @@ def do_change_can_create_users(user_profile: UserProfile, value: bool) -> None:
             RealmAuditLog.OLD_VALUE: old_value,
             RealmAuditLog.NEW_VALUE: value,
             "property": "can_create_users",
+        },
+    )
+
+
+@transaction.atomic(savepoint=False)
+def do_change_can_change_user_emails(user_profile: UserProfile, value: bool) -> None:
+    event_time = timezone_now()
+    old_value = user_profile.can_change_user_emails
+
+    user_profile.can_change_user_emails = value
+    user_profile.save(update_fields=["can_change_user_emails"])
+
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        event_type=AuditLogEventType.USER_SPECIAL_PERMISSION_CHANGED,
+        event_time=event_time,
+        acting_user=None,
+        modified_user=user_profile,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: value,
+            "property": "can_change_user_emails",
         },
     )
 

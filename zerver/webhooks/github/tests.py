@@ -61,6 +61,15 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 1 commit to branch changes.\n\n* Update README.md ([0d1a26e67d8](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"
         self.check_webhook("push__1_commit", TOPIC_BRANCH, expected_message)
 
+    def test_push_1_commit_private_repository_skipped(self) -> None:
+        self.url = self.build_webhook_url(ignore_private_repositories="true")
+        self.check_webhook(
+            fixture_name="push__1_commit_private_repository",
+            expected_topic_name=None,
+            expected_message=None,
+            expect_noop=True,
+        )
+
     def test_push_1_commit_without_username(self) -> None:
         expected_message = "eeshangarg [pushed](https://github.com/eeshangarg/public-repo/compare/0383613da871...2e8cf535fb38) 1 commit to branch changes. Commits by John Snow (1).\n\n* Update the README ([2e8cf535fb3](https://github.com/eeshangarg/public-repo/commit/2e8cf535fb38a3dab2476cdf856efda904ad4c94))"
         self.check_webhook("push__1_commit_without_username", TOPIC_BRANCH, expected_message)
@@ -268,6 +277,15 @@ class GitHubWebhookTest(WebhookTestCase):
         )
         self.check_webhook("pull_request__merged", TOPIC_PR, expected_message)
 
+    def test_pull_request_merged_msg_private_repository_skipped(self) -> None:
+        self.url = self.build_webhook_url(ignore_private_repositories="true")
+        self.check_webhook(
+            fixture_name="pull_request__merged_private_repository",
+            expected_topic_name=None,
+            expected_message=None,
+            expect_noop=True,
+        )
+
     def test_public_msg(self) -> None:
         expected_message = "baxterthehacker made the repository [baxterthehacker/public-repo](https://github.com/baxterthehacker/public-repo) public."
         self.check_webhook("public", TOPIC_REPO, expected_message)
@@ -283,6 +301,19 @@ class GitHubWebhookTest(WebhookTestCase):
     def test_repository_msg(self) -> None:
         expected_message = "baxterthehacker created the repository [baxterandthehackers/public-repo](https://github.com/baxterandthehackers/public-repo)."
         self.check_webhook("repository", TOPIC_REPO, expected_message)
+
+    def test_private_repository_msg(self) -> None:
+        expected_message = "baxterthehacker created the repository [baxterandthehackers/public-repo](https://github.com/baxterandthehackers/public-repo)."
+        self.check_webhook("repository", TOPIC_REPO, expected_message)
+
+    def test_private_repository_skipped_msg(self) -> None:
+        self.url = self.build_webhook_url(ignore_private_repositories="true")
+        self.check_webhook(
+            fixture_name="repository_private",
+            expected_topic_name=None,
+            expected_message=None,
+            expect_noop=True,
+        )
 
     def test_team_add_msg(self) -> None:
         expected_message = "The repository [baxterandthehackers/public-repo](https://github.com/baxterandthehackers/public-repo) was added to team github."
@@ -386,14 +417,15 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("pull_request__assigned", expected_topic_name, expected_message)
 
     def test_pull_request_unassigned_msg(self) -> None:
-        expected_message = (
-            "eeshangarg unassigned [PR #1](https://github.com/zulip-test-org/helloworld/pull/1)."
-        )
-        self.check_webhook(
-            "pull_request__unassigned",
-            "helloworld / PR #1 Mention that Zulip rocks!",
-            expected_message,
-        )
+        expected_message = "eeshangarg unassigned eeshangarg from [PR #1](https://github.com/zulip-test-org/helloworld/pull/1)."
+        expected_topic_name = "helloworld / PR #1 Mention that Zulip rocks!"
+        self.check_webhook("pull_request__unassigned", expected_topic_name, expected_message)
+
+    def test_pull_request_unassigned_msg_with_custom_topic_in_url(self) -> None:
+        self.url = self.build_webhook_url(topic="notifications")
+        expected_topic_name = "notifications"
+        expected_message = "eeshangarg unassigned eeshangarg from [PR #1 Mention that Zulip rocks!](https://github.com/zulip-test-org/helloworld/pull/1)"
+        self.check_webhook("pull_request__unassigned", expected_topic_name, expected_message)
 
     def test_pull_request_ready_for_review_msg(self) -> None:
         expected_message = "**Hypro999** has marked [PR #2](https://github.com/Hypro999/temp-test-github-webhook/pull/2) as ready for review."

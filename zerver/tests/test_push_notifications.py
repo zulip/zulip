@@ -14,7 +14,6 @@ import orjson
 import responses
 import time_machine
 from django.conf import settings
-from django.db import transaction
 from django.db.models import F, Q
 from django.http.response import ResponseHeaders
 from django.test import override_settings
@@ -2145,9 +2144,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             plan_type=RemoteRealm.PLAN_TYPE_SELF_MANAGED,
         )
 
-        with transaction.atomic(), self.assertLogs("zulip.analytics", level="WARNING") as m:
-            # The usual atomic() wrapper to avoid IntegrityError breaking the test's
-            # transaction.
+        with self.assertLogs("zulip.analytics", level="WARNING") as m:
             send_server_data_to_push_bouncer()
         self.assertEqual(m.output, ["WARNING:zulip.analytics:Duplicate registration detected."])
 
@@ -2705,6 +2702,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         # Now we want to test the other side of this - bouncer's handling
         # of a deleted realm.
         with (
+            self.captureOnCommitCallbacks(execute=True),
             self.assertLogs(logger, level="WARNING") as analytics_logger,
             mock.patch(
                 "corporate.lib.stripe.RemoteRealmBillingSession.on_paid_plan", return_value=True

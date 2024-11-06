@@ -316,18 +316,20 @@
             overflow: hidden;
             border-top: hsl(0deg 0% 50%) 0 solid;
             transition:
+                /* stylelint-disable-next-line plugin/no-low-performance-animation-properties */
                 height 0.4s ease-in-out,
                 border-top 0.4s step-end,
-                padding 0.4s step-end;
+                padding 0.4s step-end; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
             padding: 0;
             height: 0;
 
             &.spoiler-content-open {
                 border-top: hsl(0deg 0% 50%) 1px solid;
                 transition:
+                    /* stylelint-disable-next-line plugin/no-low-performance-animation-properties */
                     height 0.4s ease-in-out,
                     border-top 0.4s step-start,
-                    padding 0.4s step-start;
+                    padding 0.4s step-start; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
                 padding: 5px;
                 height: auto;
             }
@@ -349,7 +351,7 @@
             float: right;
             width: 15px;
             cursor: pointer;
-            transition: 0.4s ease;
+            transition: transform 0.4s ease;
             transform: rotate(45deg);
 
             &::before,
@@ -360,7 +362,7 @@
                 width: 12px;
                 height: 3px;
                 background-color: hsl(0deg 0% 83%);
-                transition: 0.4s ease;
+                transition: transform 0.4s ease;
             }
 
             &::after {
@@ -917,7 +919,7 @@
     &::-webkit-scrollbar-thumb {
         background-color: hsl(0deg 0% 0% / 30%);
         border-radius: 20px;
-        transition: all 0.2s ease;
+        transition: background-color 0.2s ease;
     }
 
     &::-webkit-scrollbar-thumb:hover {

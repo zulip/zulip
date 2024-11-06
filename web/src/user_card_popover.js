@@ -458,7 +458,7 @@ function toggle_user_card_popover_for_message(
 export function unsaved_message_user_mention_event_handler(e) {
     e.stopPropagation();
 
-    const id_string = $(e.target).attr("data-user-id");
+    const id_string = $(e.currentTarget).attr("data-user-id");
     // Do not open popover for @all mention
     if (id_string === "*") {
         return;
@@ -526,7 +526,7 @@ function get_user_card_popover_for_message_items() {
 // Functions related to the user card popover in the user sidebar.
 
 function toggle_sidebar_user_card_popover($target) {
-    const user_id = elem_to_user_id($target.find("a"));
+    const user_id = elem_to_user_id($target);
     const user = people.get_by_user_id(user_id);
 
     // Hiding popovers may mutate current_user_sidebar_user_id.
@@ -777,6 +777,13 @@ function register_click_handlers() {
     );
 
     $(".buddy-list-section").on("click", ".user-list-sidebar-menu-icon", (e) => {
+        e.stopPropagation();
+        const $target = $(e.currentTarget).closest("li");
+
+        toggle_sidebar_user_card_popover($target);
+    });
+
+    $(".buddy-list-section").on("click", ".user-profile-picture", (e) => {
         e.stopPropagation();
         const $target = $(e.currentTarget).closest("li");
 

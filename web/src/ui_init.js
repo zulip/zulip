@@ -117,6 +117,7 @@ import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
 import {current_user, realm, set_current_user, set_realm, state_data_schema} from "./state_data";
 import * as stream_card_popover from "./stream_card_popover";
+import * as stream_create from "./stream_create";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
@@ -533,6 +534,7 @@ export function initialize_everything(state_data) {
         on_send_message_success: compose.send_message_success,
         send_message: transmit.send_message,
     });
+    stream_create.initialize();
     stream_edit.initialize();
     user_group_edit.initialize();
     stream_edit_subscribers.initialize();
@@ -628,7 +630,11 @@ export function initialize_everything(state_data) {
     settings_notifications.initialize();
     settings_realm_user_settings_defaults.initialize();
     settings_panel_menu.initialize();
-    settings_sections.initialize();
+    settings_sections.initialize(
+        // zxcvbn.js is pretty big, and is only needed on password
+        // change, so load it asynchronously.
+        async () => (await import("./password_quality")).password_quality,
+    );
     settings_toggle.initialize();
     about_zulip.initialize();
 

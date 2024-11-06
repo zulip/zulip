@@ -1,13 +1,15 @@
-{{#if msg/sent_by_me}}
-    <div class="edit_content message_control_button"></div>
-{{/if}}
+{{#unless is_archived}}
+    {{#if msg/sent_by_me}}
+        <div class="edit_content message_control_button"></div>
+    {{/if}}
 
-{{#unless msg/sent_by_me}}
-    <div class="reaction_button message_control_button" data-tooltip-template-id="add-emoji-tooltip-template">
-        <div class="emoji-message-control-button-container">
-            <i class="message-controls-icon zulip-icon zulip-icon-smile" aria-label="{{t 'Add emoji reaction' }} (:)" role="button" aria-haspopup="true" tabindex="0"></i>
+    {{#unless msg/sent_by_me}}
+        <div class="reaction_button message_control_button" data-tooltip-template-id="add-emoji-tooltip-template">
+            <div class="emoji-message-control-button-container">
+                <i class="message-controls-icon zulip-icon zulip-icon-smile" aria-label="{{t 'Add emoji reaction' }} (:)" role="button" aria-haspopup="true" tabindex="0"></i>
+            </div>
         </div>
-    </div>
+    {{/unless}}
 {{/unless}}
 
 <div class="actions_hover message_control_button" data-tooltip-template-id="message-actions-tooltip-template" >

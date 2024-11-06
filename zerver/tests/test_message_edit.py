@@ -6,7 +6,11 @@ import orjson
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_edit import get_mentions_for_message_updates
-from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_change_realm_plan_type,
+    do_set_realm_property,
+)
 from zerver.actions.streams import do_deactivate_stream
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -18,7 +22,7 @@ from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Attachment, Message, NamedUserGroup, Realm, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import EditTopicPolicyEnum, WildcardMentionPolicyEnum, get_realm
+from zerver.models.realms import WildcardMentionPolicyEnum, get_realm
 from zerver.models.streams import get_stream
 
 
@@ -892,7 +896,7 @@ class EditMessageTest(ZulipTestCase):
         def set_message_editing_params(
             allow_message_editing: bool,
             message_content_edit_limit_seconds: int | str,
-            edit_topic_policy: int,
+            can_move_messages_between_topics_group: NamedUserGroup,
         ) -> None:
             result = self.client_patch(
                 "/json/realm",
@@ -901,7 +905,11 @@ class EditMessageTest(ZulipTestCase):
                     "message_content_edit_limit_seconds": orjson.dumps(
                         message_content_edit_limit_seconds
                     ).decode(),
-                    "edit_topic_policy": orjson.dumps(edit_topic_policy).decode(),
+                    "can_move_messages_between_topics_group": orjson.dumps(
+                        {
+                            "new": can_move_messages_between_topics_group.id,
+                        }
+                    ).decode(),
                 },
             )
             self.assert_json_success(result)
@@ -949,38 +957,69 @@ class EditMessageTest(ZulipTestCase):
         message.date_sent -= timedelta(seconds=180)
         message.save()
 
+        administrators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=get_realm("zulip"), is_system_group=True
+        )
+
         # test the various possible message editing settings
         # high enough time limit, all edits allowed
-        set_message_editing_params(True, 240, EditTopicPolicyEnum.ADMINS_ONLY)
+        set_message_editing_params(True, 240, administrators_system_group)
         do_edit_message_assert_success(id_, "A")
 
         # out of time, only topic editing allowed
-        set_message_editing_params(True, 120, EditTopicPolicyEnum.ADMINS_ONLY)
+        set_message_editing_params(True, 120, administrators_system_group)
         do_edit_message_assert_success(id_, "B", True)
         do_edit_message_assert_error(id_, "C", "The time limit for editing this message has passed")
 
         # infinite time, all edits allowed
-        set_message_editing_params(True, "unlimited", EditTopicPolicyEnum.ADMINS_ONLY)
+        set_message_editing_params(True, "unlimited", administrators_system_group)
         do_edit_message_assert_success(id_, "D")
 
         # without allow_message_editing, editing content is not allowed but
         # editing topic is allowed if topic-edit time limit has not passed
         # irrespective of content-edit time limit.
-        set_message_editing_params(False, 240, EditTopicPolicyEnum.ADMINS_ONLY)
+        set_message_editing_params(False, 240, administrators_system_group)
         do_edit_message_assert_success(id_, "B", True)
 
-        set_message_editing_params(False, 240, EditTopicPolicyEnum.ADMINS_ONLY)
+        set_message_editing_params(False, 240, administrators_system_group)
         do_edit_message_assert_success(id_, "E", True)
-        set_message_editing_params(False, 120, EditTopicPolicyEnum.ADMINS_ONLY)
+        set_message_editing_params(False, 120, administrators_system_group)
         do_edit_message_assert_success(id_, "F", True)
-        set_message_editing_params(False, "unlimited", EditTopicPolicyEnum.ADMINS_ONLY)
+        set_message_editing_params(False, "unlimited", administrators_system_group)
         do_edit_message_assert_success(id_, "G", True)
 
-    def test_edit_topic_policy(self) -> None:
+    def test_edit_message_in_archived_stream(self) -> None:
+        user = self.example_user("hamlet")
+        self.login("hamlet")
+        stream_name = "archived stream"
+        archived_stream = self.make_stream(stream_name)
+        self.subscribe(user, stream_name)
+        msg_id = self.send_stream_message(
+            user, "archived stream", topic_name="editing", content="before edit"
+        )
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "content after edit",
+            },
+        )
+        self.assert_json_success(result)
+
+        do_deactivate_stream(archived_stream, acting_user=None)
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "editing second time",
+            },
+        )
+        self.assert_json_error(result, "Invalid message(s)")
+
+    def test_can_move_messages_between_topics_group(self) -> None:
         def set_message_editing_params(
             allow_message_editing: bool,
             message_content_edit_limit_seconds: int | str,
-            edit_topic_policy: int,
+            can_move_messages_between_topics_group: NamedUserGroup,
         ) -> None:
             self.login("iago")
             result = self.client_patch(
@@ -990,7 +1029,11 @@ class EditMessageTest(ZulipTestCase):
                     "message_content_edit_limit_seconds": orjson.dumps(
                         message_content_edit_limit_seconds
                     ).decode(),
-                    "edit_topic_policy": orjson.dumps(edit_topic_policy).decode(),
+                    "can_move_messages_between_topics_group": orjson.dumps(
+                        {
+                            "new": can_move_messages_between_topics_group.id,
+                        }
+                    ).decode(),
                 },
             )
             self.assert_json_success(result)
@@ -1029,30 +1072,51 @@ class EditMessageTest(ZulipTestCase):
 
         # Guest user must be subscribed to the stream to access the message.
         polonius = self.example_user("polonius")
+        realm = polonius.realm
         self.subscribe(polonius, "Denmark")
 
+        administrators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        full_members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+        )
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        everyone_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+
         # any user can edit the topic of a message
-        set_message_editing_params(True, "unlimited", EditTopicPolicyEnum.EVERYONE)
+        set_message_editing_params(True, "unlimited", everyone_system_group)
         do_edit_message_assert_success(id_, "A", "polonius")
 
         # only members can edit topic of a message
-        set_message_editing_params(True, "unlimited", EditTopicPolicyEnum.MEMBERS_ONLY)
+        set_message_editing_params(True, "unlimited", members_system_group)
         do_edit_message_assert_error(
             id_, "B", "You don't have permission to edit this message", "polonius"
         )
         do_edit_message_assert_success(id_, "B", "cordelia")
 
         # only full members can edit topic of a message
-        set_message_editing_params(True, "unlimited", EditTopicPolicyEnum.FULL_MEMBERS_ONLY)
+        set_message_editing_params(True, "unlimited", full_members_system_group)
 
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
-        do_set_realm_property(cordelia.realm, "waiting_period_threshold", 10, acting_user=None)
 
         cordelia.date_joined = timezone_now() - timedelta(days=9)
         cordelia.save()
         hamlet.date_joined = timezone_now() - timedelta(days=9)
         hamlet.save()
+
+        do_set_realm_property(cordelia.realm, "waiting_period_threshold", 10, acting_user=None)
         do_edit_message_assert_error(
             id_, "C", "You don't have permission to edit this message", "cordelia"
         )
@@ -1062,15 +1126,12 @@ class EditMessageTest(ZulipTestCase):
             id_, "C", "You don't have permission to edit this message", "hamlet"
         )
 
-        cordelia.date_joined = timezone_now() - timedelta(days=11)
-        cordelia.save()
-        hamlet.date_joined = timezone_now() - timedelta(days=11)
-        hamlet.save()
+        do_set_realm_property(cordelia.realm, "waiting_period_threshold", 8, acting_user=None)
         do_edit_message_assert_success(id_, "C", "cordelia")
         do_edit_message_assert_success(id_, "CD", "hamlet")
 
         # only moderators can edit topic of a message
-        set_message_editing_params(True, "unlimited", EditTopicPolicyEnum.MODERATORS_ONLY)
+        set_message_editing_params(True, "unlimited", moderators_system_group)
         do_edit_message_assert_error(
             id_, "D", "You don't have permission to edit this message", "cordelia"
         )
@@ -1081,14 +1142,14 @@ class EditMessageTest(ZulipTestCase):
         do_edit_message_assert_success(id_, "D", "shiva")
 
         # only admins can edit the topics of messages
-        set_message_editing_params(True, "unlimited", EditTopicPolicyEnum.ADMINS_ONLY)
+        set_message_editing_params(True, "unlimited", administrators_system_group)
         do_edit_message_assert_error(
             id_, "E", "You don't have permission to edit this message", "shiva"
         )
         do_edit_message_assert_success(id_, "E", "iago")
 
         # even owners and admins cannot edit the topics of messages
-        set_message_editing_params(True, "unlimited", EditTopicPolicyEnum.NOBODY)
+        set_message_editing_params(True, "unlimited", nobody_system_group)
         do_edit_message_assert_error(
             id_, "H", "You don't have permission to edit this message", "desdemona"
         )
@@ -1097,14 +1158,14 @@ class EditMessageTest(ZulipTestCase):
         )
 
         # users can edit topics even if allow_message_editing is False
-        set_message_editing_params(False, "unlimited", EditTopicPolicyEnum.EVERYONE)
+        set_message_editing_params(False, "unlimited", everyone_system_group)
         do_edit_message_assert_success(id_, "D", "cordelia")
 
         # non-admin users cannot edit topics sent > 1 week ago including
         # sender of the message.
         message.date_sent -= timedelta(seconds=604900)
         message.save()
-        set_message_editing_params(True, "unlimited", EditTopicPolicyEnum.EVERYONE)
+        set_message_editing_params(True, "unlimited", everyone_system_group)
         do_edit_message_assert_success(id_, "E", "iago")
         do_edit_message_assert_success(id_, "F", "shiva")
         do_edit_message_assert_error(
@@ -1130,6 +1191,39 @@ class EditMessageTest(ZulipTestCase):
         )
         do_edit_message_assert_success(id_, "G", "cordelia")
         do_edit_message_assert_success(id_, "H", "hamlet")
+
+        # Test for checking setting for non-system user group.
+        user_group = check_add_user_group(
+            realm, "new_group", [polonius, cordelia], acting_user=cordelia
+        )
+        set_message_editing_params(True, "unlimited", user_group)
+        # Polonius and Cordelia are in the allowed user group, so can move messages.
+        do_edit_message_assert_success(id_, "I", "polonius")
+        do_edit_message_assert_success(id_, "J", "cordelia")
+        # Iago is not in the allowed user group, so cannot move messages.
+        do_edit_message_assert_error(
+            id_, "K", "You don't have permission to edit this message", "iago"
+        )
+
+        # Test for checking the setting for anonymous user group.
+        anonymous_user_group = self.create_or_update_anonymous_group_for_setting(
+            [cordelia],
+            [administrators_system_group],
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_topics_group",
+            anonymous_user_group,
+            acting_user=None,
+        )
+        # Cordelia is the direct member of the anonymous user group, so can move messages.
+        do_edit_message_assert_success(id_, "K", "cordelia")
+        # Iago is in the `administrators_system_group` subgroup, so can move messages.
+        do_edit_message_assert_success(id_, "L", "iago")
+        # Shiva is not in the anonymous user group, so cannot move messages.
+        do_edit_message_assert_error(
+            id_, "M", "You don't have permission to edit this message", "shiva"
+        )
 
     @mock.patch("zerver.actions.message_edit.send_event_on_commit")
     def test_topic_wildcard_mention_in_followed_topic(

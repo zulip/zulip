@@ -199,8 +199,8 @@ if [ "$EXTERNAL_HOST" = zulip.example.com ] \
 fi
 
 case "$POSTGRESQL_VERSION" in
-    [0-9] | [0-9].* | 1[01] | 1[01].*)
-        echo "error: PostgreSQL 12 or newer is required." >&2
+    [0-9] | [0-9].* | 1[0-2] | 1[0-2].*)
+        echo "error: PostgreSQL 13 or newer is required." >&2
         exit 1
         ;;
 esac

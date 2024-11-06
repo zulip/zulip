@@ -33,8 +33,7 @@ function get_new_heights(): {
     const usable_height =
         viewport_height -
         Number.parseInt($("#right-sidebar").css("paddingTop"), 10) -
-        ($("#userlist-header").outerHeight(true) ?? 0) -
-        ($("#user_search_section:not(.notdisplayed)").outerHeight(true) ?? 0);
+        ($("#userlist-header").outerHeight(true) ?? 0);
 
     const buddy_list_wrapper_max_height = Math.max(80, usable_height);
 

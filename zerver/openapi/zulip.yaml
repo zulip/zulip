@@ -694,6 +694,7 @@ paths:
                                       {
                                         "name": "test",
                                         "stream_id": 9,
+                                        "is_archived": false,
                                         "creator_id": null,
                                         "description": "",
                                         "rendered_description": "",
@@ -1337,6 +1338,7 @@ paths:
                                       {
                                         "name": "private",
                                         "stream_id": 12,
+                                        "is_archived": false,
                                         "description": "",
                                         "rendered_description": "",
                                         "date_created": 1691057093,
@@ -1395,6 +1397,7 @@ paths:
                                       {
                                         "name": "private",
                                         "stream_id": 12,
+                                        "is_archived": true,
                                         "description": "",
                                         "rendered_description": "",
                                         "date_created": 1691057093,
@@ -1994,6 +1997,7 @@ paths:
                                             {
                                               "name": "Scotland",
                                               "stream_id": 3,
+                                              "is_archived": false,
                                               "description": "Located in the United Kingdom",
                                               "rendered_description": "<p>Located in the United Kingdom</p>",
                                               "date_created": 1691057093,
@@ -2010,6 +2014,7 @@ paths:
                                             {
                                               "name": "Denmark",
                                               "stream_id": 1,
+                                              "is_archived": false,
                                               "description": "A Scandinavian country",
                                               "rendered_description": "<p>A Scandinavian country</p>",
                                               "date_created": 1691057093,
@@ -2026,6 +2031,7 @@ paths:
                                             {
                                               "name": "Verona",
                                               "stream_id": 5,
+                                              "is_archived": false,
                                               "description": "A city in Italy",
                                               "rendered_description": "<p>A city in Italy</p>",
                                               "date_created": 1691057093,
@@ -2073,6 +2079,7 @@ paths:
                                       {
                                         "name": "Scotland",
                                         "stream_id": 3,
+                                        "is_archived": false,
                                         "description": "Located in the United Kingdom",
                                         "rendered_description": "<p>Located in the United Kingdom</p>",
                                         "date_created": 1691057093,
@@ -4350,7 +4357,11 @@ paths:
                                   description: |
                                     An object containing the properties that have changed.
 
-                                    **Changes**: In Zulip 7.0 (feature level 183), the
+                                    **Changes**: In Zulip 10.0 (feature level 316), `edit_topic_policy`
+                                    property was removed and replaced by `can_move_messages_between_topics_group`
+                                    realm setting.
+
+                                    In Zulip 7.0 (feature level 183), the
                                     `community_topic_editing_limit_seconds` property was removed.
                                     It was documented as potentially returned as a changed property
                                     in this event, but in fact it was only ever returned in the
@@ -4401,15 +4412,17 @@ paths:
                                         The [policy](/api/roles-and-permissions#permission-levels)
                                         for which users can create bot users in this organization.
                                     can_access_all_users_group:
-                                      type: integer
-                                      description: |
-                                        The ID of the [user group](/api/get-user-groups) whose members
-                                        are allowed to access all users in the organization.
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the
+                                            set of users who are allowed to access all users in the
+                                            organization.
 
-                                        This setting can currently only be set to `"role:everyone"`
-                                        system group.
+                                            **Changes**: Prior to Zulip 10.0 (feature level 314), this value used
+                                            to be of type integer and did not accept anonymous user groups.
 
-                                        **Changes**: New in Zulip 8.0 (feature level 225).
+                                            New in Zulip 8.0 (feature level 225).
                                     can_create_groups:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -4506,6 +4519,20 @@ paths:
                                             In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
                                             `move_messages_between_streams_policy` enum.
                                         - $ref: "#/components/schemas/GroupSettingValue"
+                                    can_move_messages_between_topics_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to move messages from one topic to another
+                                            within a channel in the organization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 316). Previously, this
+                                            permission was controlled by the enum `edit_topic_policy`. Values were
+                                            1=Members, 2=Admins, 3=Full members, 4=Moderators, 5=Everyone, 6=Nobody.
+
+                                            In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
+                                            `edit_topic_policy` enum.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_manage_all_groups:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -4532,18 +4559,18 @@ paths:
 
                                             [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                                     create_multiuse_invite_group:
-                                      type: integer
-                                      description: |
-                                        The ID of the [user group](/api/get-user-groups) whose members are
-                                        allowed to create [reusable invitation
-                                        links](/help/invite-new-users#create-a-reusable-invitation-link)
-                                        to the organization.
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the
+                                            set of users who are allowed to create [reusable invitation
+                                            links](/help/invite-new-users#create-a-reusable-invitation-link)
+                                            to the organization.
 
-                                        This setting can currently only be set to user groups that are
-                                        system groups, except for the system groups named
-                                        `"role:internet"` and `"role:owners"`.
+                                            **Changes**: Prior to Zulip 10.0 (feature level 314), this value used
+                                            to be of type integer and did not accept anonymous user groups.
 
-                                        **Changes**: New in Zulip 8.0 (feature level 209).
+                                            New in Zulip 8.0 (feature level 209).
                                     default_code_block_language:
                                       type: string
                                       description: |
@@ -4610,27 +4637,6 @@ paths:
                                       description: |
                                         Whether the organization disallows disposable email
                                         addresses.
-                                    edit_topic_policy:
-                                      type: integer
-                                      description: |
-                                        The [policy][permission-level] for which users can edit topics of any message.
-
-                                        - 1 = Members only
-                                        - 2 = Admins only
-                                        - 3 = [Full members][calc-full-member] only
-                                        - 4 = Moderators only
-                                        - 5 = Everyone
-                                        - 6 = Nobody
-
-                                        See [`PATCH /messages/{message_id}`](/api/update-message) for details and history
-                                        of how message editing permissions work.
-
-                                        **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
-
-                                        New in Zulip 5.0 (feature level 75).
-
-                                        [permission-level]: /api/roles-and-permissions#permission-levels
-                                        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                                     email_changes_disabled:
                                       type: boolean
                                       description: |
@@ -8294,7 +8300,7 @@ paths:
 
         - `allow_message_editing`
         - `can_move_messages_between_channels_group`
-        - `edit_topic_policy`
+        - `can_move_messages_between_topics_group`
         - `message_content_edit_limit_seconds`
         - `move_messages_within_stream_limit_seconds`
         - `move_messages_between_streams_limit_seconds`
@@ -8303,6 +8309,10 @@ paths:
         [`POST /register`](/api/register-queue) response or in the documentation
         of the [`realm op: update_dict`](/api/get-events#realm-update_dict)
         event in [`GET /events`](/api/get-events).
+
+        **Changes**: In Zulip 10.0 (feature level 316), `edit_topic_policy`
+        was removed and replaced by `can_move_messages_between_topics_group`
+        realm setting.
 
         **Changes**: In Zulip 10.0 (feature level 310), `move_messages_between_streams_policy`
         was removed and replaced by `can_move_messages_between_channels_group`
@@ -10176,6 +10186,7 @@ paths:
                               "creator_id": null,
                               "description": "A Scandinavian country",
                               "desktop_notifications": true,
+                              "is_archived": false,
                               "is_muted": false,
                               "invite_only": false,
                               "name": "Denmark",
@@ -10190,6 +10201,7 @@ paths:
                               "creator_id": 8,
                               "description": "Located in the United Kingdom",
                               "desktop_notifications": true,
+                              "is_archived": false,
                               "is_muted": false,
                               "invite_only": false,
                               "name": "Scotland",
@@ -12634,6 +12646,52 @@ paths:
                             "delivery_email": null,
                           },
                       }
+    patch:
+      operationId: update-user-by-email
+      summary: Update a user by email
+      tags: ["users"]
+      x-requires-administrator: true
+      description: |
+        Administrative endpoint to update the details of another user in the organization by their email address.
+        Works the same way as [`PATCH /users/{user_id}`](/api/update-user) but fetching the target user by their
+        real email address.
+
+        The requester needs to have permission to view the target user's real email address, subject to the
+        user's email address visibility setting. Otherwise, the dummy address of the format
+        `user{id}@{realm.host}` needs be used. This follows the same rules as `GET /users/{email}`.
+
+        **Changes**: New in Zulip 10.0 (feature level 313).
+      parameters:
+        - name: email
+          in: path
+          required: true
+          description: |
+            The email address of the user, specified following the same rules as
+            [`GET /users/{email}`](/api/get-user-by-email).
+          schema:
+            type: string
+          example: hamlet@zulip.com
+      requestBody:
+        $ref: "#/components/requestBodies/UpdateUser"
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "Guests cannot be organization administrators",
+                        "code": "BAD_REQUEST",
+                      }
+                    description: |
+                      A typical unsuccessful JSON response:
   /users/{user_id}:
     get:
       operationId: get-user
@@ -12738,52 +12796,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/UserId"
       requestBody:
-        required: false
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                full_name:
-                  description: |
-                    The user's full name.
-
-                    **Changes**: Removed unnecessary JSON-encoding of this parameter in
-                    Zulip 5.0 (feature level 106).
-                  type: string
-                  example: NewName
-                role:
-                  description: |
-                    New [role](/api/roles-and-permissions) for the user. Roles are encoded as:
-
-                    - Organization owner: 100
-                    - Organization administrator: 200
-                    - Organization moderator: 300
-                    - Member: 400
-                    - Guest: 600
-
-                    Only organization owners can add or remove the owner role.
-
-                    The owner role cannot be removed from the only organization owner.
-
-                    **Changes**: New in Zulip 3.0 (feature level 8), replacing the previous
-                    pair of `is_admin` and `is_guest` boolean parameters. Organization moderator
-                    role added in Zulip 4.0 (feature level 60).
-                  type: integer
-                  example: 400
-                profile_data:
-                  description: |
-                    A dictionary containing the to be updated custom profile field data for the user.
-                  type: array
-                  items:
-                    type: object
-                  example:
-                    [{"id": 4, "value": "0"}, {"id": 5, "value": "1909-04-05"}]
-            encoding:
-              role:
-                contentType: application/json
-              profile_data:
-                contentType: application/json
+        $ref: "#/components/requestBodies/UpdateUser"
 
       responses:
         "200":
@@ -14076,6 +14089,15 @@ paths:
                       **Changes**: New in Zulip 10.0 (feature level 294). This
                       capability is for backwards-compatibility.
 
+                    - `archived_channels`: Boolean for whether the client supports processing
+                      [archived channels](/help/archive-a-channel) in the `stream` and
+                      `subscription` event types. If `false`, the server will not include data
+                      related to archived channels in the `register` response or in events.
+                      <br />
+                      **Changes**: New in Zulip 10.0 (feature level 315). This allows clients to
+                      access archived channels, without breaking backwards-compatibility for
+                      existing clients.
+
                     [help-linkifiers]: /help/add-a-custom-linkifier
                     [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
                     [events-linkifiers]: /api/get-events#realm_linkifiers
@@ -14692,8 +14714,8 @@ paths:
                                 such filtering.
 
                                 **Changes**: New in Zulip 8.0 (feature level 207).
-                            config:
-                              $ref: "#/components/schemas/BotConfiguration"
+                            config_options:
+                              $ref: "#/components/schemas/WebhookConfigOption"
                       recent_private_conversations:
                         description: |
                           Present if `recent_private_conversations` is present in `fetch_event_types`.
@@ -14781,6 +14803,7 @@ paths:
                               properties:
                                 stream_id: {}
                                 name: {}
+                                is_archived: {}
                                 description: {}
                                 date_created: {}
                                 creator_id:
@@ -16329,6 +16352,22 @@ paths:
                               In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
                               `move_messages_between_streams_policy` enum.
                           - $ref: "#/components/schemas/GroupSettingValue"
+                      realm_can_move_messages_between_topics_group:
+                        allOf:
+                          - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to move messages from one topic to another
+                              within a channel in the organization.
+
+                              **Changes**: New in Zulip 10.0 (feature level 316). Previously, this
+                              permission was controlled by the enum `edit_topic_policy`. Values were
+                              1=Members, 2=Admins, 3=Full members, 4=Moderators, 5=Everyone, 6=Nobody.
+
+                              In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
+                              `edit_topic_policy` enum.
+                          - $ref: "#/components/schemas/GroupSettingValue"
                       realm_bot_creation_policy:
                         type: integer
                         description: |
@@ -16590,18 +16629,18 @@ paths:
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_create_multiuse_invite_group:
-                        type: integer
-                        description: |
-                          The ID of the [user group](/api/get-user-groups) whose members are
-                          allowed to create [reusable invitation
-                          links](/help/invite-new-users#create-a-reusable-invitation-link)
-                          to the organization.
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining the
+                              set of users who are allowed to create [reusable invitation
+                              links](/help/invite-new-users#create-a-reusable-invitation-link)
+                              to the organization.
 
-                          This setting can currently only be set to user groups that are
-                          system groups, except for the system groups named
-                          `"role:internet"` and `"role:owners"`.
+                              **Changes**: Prior to Zulip 10.0 (feature level 314), this value used
+                              to be of type integer and did not accept anonymous user groups.
 
-                          **Changes**: New in Zulip 8.0 (feature level 209).
+                              New in Zulip 8.0 (feature level 209).
                       realm_inline_image_preview:
                         type: boolean
                         description: |
@@ -16872,29 +16911,6 @@ paths:
                           history of how message editing permissions work.
 
                           [config-message-editing]: /help/restrict-message-editing-and-deletion
-                      realm_edit_topic_policy:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          The [policy][permission-level] for which users can edit topics of any message.
-
-                          - 1 = Members only
-                          - 2 = Admins only
-                          - 3 = [Full members][calc-full-member] only
-                          - 4 = Moderators only
-                          - 5 = Everyone
-                          - 6 = Nobody
-
-                          See [`PATCH /messages/{message_id}`](/api/update-message) for details and
-                          history of how message editing permissions work.
-
-                          **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
-
-                          New in Zulip 5.0 (feature level 75).
-
-                          [permission-level]: /api/roles-and-permissions#permission-levels
-                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_message_content_edit_limit_seconds:
                         type: integer
                         nullable: true
@@ -17226,15 +17242,17 @@ paths:
 
                           **Changes**: New in Zulip 8.0 (feature level 216).
                       realm_can_access_all_users_group:
-                        type: integer
-                        description: |
-                          The ID of the [user group](/api/get-user-groups) whose members
-                          are allowed to access all users in the organization.
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining the
+                              set of users who are allowed to access all users in the
+                              organization.
 
-                          This setting can currently only be set to `"role:members"`
-                          and `"role:everyone"` system groups.
+                              **Changes**: Prior to Zulip 10.0 (feature level 314), this value used
+                              to be of type integer and did not accept anonymous user groups.
 
-                          **Changes**: New in Zulip 8.0 (feature level 225).
+                              New in Zulip 8.0 (feature level 225).
                       zulip_plan_is_not_limited:
                         type: boolean
                         description: |
@@ -19557,6 +19575,16 @@ paths:
             type: boolean
             default: true
           example: false
+        - name: exclude_archived
+          in: query
+          description: |
+            Whether to exclude archived streams from the results.
+
+            **Changes**: New in Zulip 10.0 (feature level 315).
+          schema:
+            type: boolean
+            default: true
+          example: true
         - name: include_all_active
           in: query
           description: |
@@ -19607,6 +19635,7 @@ paths:
                               properties:
                                 stream_id: {}
                                 name: {}
+                                is_archived: {}
                                 description: {}
                                 date_created: {}
                                 creator_id:
@@ -19650,6 +19679,7 @@ paths:
                               required:
                                 - stream_id
                                 - name
+                                - is_archived
                                 - description
                                 - date_created
                                 - creator_id
@@ -19678,6 +19708,7 @@ paths:
                               "history_public_to_subscribers": false,
                               "invite_only": true,
                               "is_announcement_only": false,
+                              "is_archived": false,
                               "is_default": false,
                               "is_web_public": false,
                               "message_retention_days": null,
@@ -19696,6 +19727,7 @@ paths:
                               "history_public_to_subscribers": true,
                               "invite_only": false,
                               "is_announcement_only": false,
+                              "is_archived": false,
                               "is_default": true,
                               "is_web_public": false,
                               "message_retention_days": null,
@@ -19763,6 +19795,7 @@ paths:
                             "creator_id": null,
                             "invite_only": false,
                             "is_announcement_only": false,
+                            "is_archived": false,
                             "is_web_public": false,
                             "message_retention_days": null,
                             "name": "Denmark",
@@ -20424,7 +20457,30 @@ paths:
                 contentType: application/json
       responses:
         "200":
-          $ref: "#/components/responses/SimpleSuccess"
+          description: |
+            A success response containing the unique ID of the user group.
+            This field provides a straightforward way to reference the
+            newly created user group.
+
+            **Changes**: New in Zulip 10.0 (feature level 317).
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - required:
+                      - group_id
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      group_id:
+                        type: integer
+                        description: |
+                          The unique ID of the created user group.
+                    example: {"msg": "", "result": "success", "group_id": 123}
+
         "400":
           description: Bad request.
           content:
@@ -21550,6 +21606,7 @@ components:
           properties:
             stream_id: {}
             name: {}
+            is_archived: {}
             description: {}
             date_created: {}
             creator_id:
@@ -21583,6 +21640,7 @@ components:
           required:
             - stream_id
             - name
+            - is_archived
             - description
             - date_created
             - creator_id
@@ -21603,6 +21661,7 @@ components:
           properties:
             stream_id: {}
             name: {}
+            is_archived: {}
             description: {}
             date_created: {}
             creator_id:
@@ -21621,6 +21680,7 @@ components:
           required:
             - stream_id
             - name
+            - is_archived
             - description
             - date_created
             - creator_id
@@ -21646,6 +21706,13 @@ components:
           type: string
           description: |
             The name of the channel.
+        is_archived:
+          type: boolean
+          description: |
+            A boolean indicating whether the channel is [archived](/help/archive-a-channel).
+
+            **Changes**: New in Zulip 10.0 (feature level 315).
+            Previously, this endpoint never returned archived channels.
         description:
           type: string
           description: |
@@ -21923,6 +21990,36 @@ components:
         description: |
           `{config_key}`: Description/value of the configuration data key.
         type: string
+    WebhookConfigOption:
+      type: array
+      description: |
+        An array of configuration options where each option is an
+        object containing a unique identifier, a human-readable name,
+        and a validation function name hinting how to verify the
+        correct input format.
+
+        This is an unstable API expected to be used only by the Zulip web
+        apps. Please discuss in chat.zulip.org before using it.
+
+        **Changes**: New in Zulip 10.0 (feature level 318).
+      items:
+        type: object
+        additionalProperties: false
+        properties:
+          key:
+            type: string
+            description: |
+              A key for the configuration option to use in generated URLs.
+          label:
+            type: string
+            description: |
+              A human-readable label of the configuration option.
+          validator:
+            type: string
+            description: |
+              The name of the validator function for the configuration
+              option. Currently generated values are `check_bool` and
+              `check_str`.
     CustomProfileField:
       type: object
       additionalProperties: false
@@ -22748,6 +22845,16 @@ components:
             was named `can_remove_subscribers_group_id`.
 
             New in Zulip 6.0 (feature level 142).
+        is_archived:
+          type: boolean
+          description: |
+            A boolean indicating whether the channel is [archived](/help/archive-a-channel).
+
+            **Changes**: New in Zulip 10.0 (feature level 315).
+            Previously, subscriptions only included active
+            channels. Note that some endpoints will never return archived
+            channels unless the client declares explicit support for
+            them via the `archived_channels` client capability.
     DefaultChannelGroup:
       type: object
       description: |
@@ -24464,6 +24571,67 @@ components:
           schema:
             allOf:
               - $ref: "#/components/schemas/IgnoredParametersSuccess"
+
+  ################
+  # Shared request bodies
+  ################
+  requestBodies:
+    UpdateUser:
+      required: false
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              full_name:
+                description: |
+                  The user's full name.
+
+                  **Changes**: Removed unnecessary JSON-encoding of this parameter in
+                  Zulip 5.0 (feature level 106).
+                type: string
+                example: NewName
+              role:
+                description: |
+                  New [role](/api/roles-and-permissions) for the user. Roles are encoded as:
+
+                  - Organization owner: 100
+                  - Organization administrator: 200
+                  - Organization moderator: 300
+                  - Member: 400
+                  - Guest: 600
+
+                  Only organization owners can add or remove the owner role.
+
+                  The owner role cannot be removed from the only organization owner.
+
+                  **Changes**: New in Zulip 3.0 (feature level 8), replacing the previous
+                  pair of `is_admin` and `is_guest` boolean parameters. Organization moderator
+                  role added in Zulip 4.0 (feature level 60).
+                type: integer
+                example: 400
+              profile_data:
+                description: |
+                  A dictionary containing the updated custom profile field data for the user.
+                type: array
+                items:
+                  type: object
+                example:
+                  [{"id": 4, "value": "0"}, {"id": 5, "value": "1909-04-05"}]
+              new_email:
+                description: |
+                  New email address for the user. Requires the user making the request
+                  to be an organization owner and additionally have the `.can_change_user_emails`
+                  special permission.
+
+                  **Changes**: New in Zulip 10.0 (feature level 285).
+                type: string
+                example: username@example.com
+          encoding:
+            role:
+              contentType: application/json
+            profile_data:
+              contentType: application/json
 
   ####################
   # Shared parameters

@@ -214,6 +214,22 @@ const maria = {
     avatar_url: null,
 };
 
+const cedar = {
+    email: "Cedar@example.com",
+    user_id: 305,
+    full_name: "Cedar Athens",
+    // With client_gravatar enabled, requests that client compute gravatar
+    avatar_url: null,
+};
+
+const leo = {
+    email: "Leo@example.com",
+    user_id: 306,
+    full_name: "Leo Athens",
+    // With client_gravatar enabled, requests that client compute gravatar
+    avatar_url: null,
+};
+
 const ashton = {
     email: "ashton@example.com",
     user_id: 303,
@@ -889,6 +905,8 @@ test_people("concat_direct_message_group", () => {
 test_people("message_methods", () => {
     people.add_active_user(charles);
     people.add_active_user(maria);
+    people.add_active_user(cedar);
+    people.add_active_user(leo);
     people.add_active_user(ashton);
 
     // We don't rely on Maria to have all flags set explicitly--
@@ -900,8 +918,22 @@ test_people("message_methods", () => {
         "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon",
     );
     assert.equal(
+        maria.avatar_url,
+        "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon",
+    );
+    // This will use the cached gravatar url
+    assert.equal(
         people.medium_avatar_url_for_person(maria),
         "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon&s=500",
+    );
+    // This will create a new gravatar url
+    assert.equal(
+        people.medium_avatar_url_for_person(cedar),
+        "https://secure.gravatar.com/avatar/2e6ed9fc1de54b7b5bc98ced46fe7a14?d=identicon&s=500",
+    );
+    assert.equal(
+        cedar.avatar_url,
+        "https://secure.gravatar.com/avatar/2e6ed9fc1de54b7b5bc98ced46fe7a14?d=identicon",
     );
     assert.equal(people.medium_avatar_url_for_person(charles), "/avatar/301/medium?version=0");
     assert.equal(people.medium_avatar_url_for_person(ashton), "/avatar/303/medium?version=0");
@@ -950,6 +982,16 @@ test_people("message_methods", () => {
     assert.equal(
         people.small_avatar_url(message),
         "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon",
+    );
+
+    // No gravatar url cached yet
+    message = {
+        avatar_url: undefined,
+        sender_id: leo.user_id,
+    };
+    assert.equal(
+        people.small_avatar_url(message),
+        "https://secure.gravatar.com/avatar/ce9581fbf1beefbad43a4233aa65954c?d=identicon",
     );
 
     blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");

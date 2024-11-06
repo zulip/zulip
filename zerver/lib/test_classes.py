@@ -72,6 +72,7 @@ from zerver.lib.test_console_output import (
 from zerver.lib.test_helpers import (
     cache_tries_captured,
     find_key_by_email,
+    get_test_image_file,
     instrument_url,
     queries_captured,
 )
@@ -2198,6 +2199,20 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
                     read_by_sender=read_by_sender,
                 )
         return message_id
+
+    def upload_image(self, image_name: str) -> str:
+        with get_test_image_file(image_name) as image_file:
+            response = self.assert_json_success(
+                self.client_post("/json/user_uploads", {"file": image_file})
+            )
+            return re.sub(r"/user_uploads/", "", response["url"])
+
+    def upload_and_thumbnail_image(self, image_name: str) -> str:
+        with self.captureOnCommitCallbacks(execute=True):
+            # Running captureOnCommitCallbacks includes inserting into
+            # the Rabbitmq queue, which in testing means we
+            # immediately run the worker for it, producing the thumbnails.
+            return self.upload_image(image_name)
 
 
 def get_row_ids_in_all_tables() -> Iterator[tuple[str, set[int]]]:

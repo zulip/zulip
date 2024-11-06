@@ -502,7 +502,6 @@ export function show(raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): v
                     );
 
                     if (adjusted_terms === null) {
-                        blueslip.error("adjusted_terms impossibly null");
                         return;
                     }
 

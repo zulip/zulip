@@ -92,7 +92,6 @@ function delete_attachments(attachment: string, file_name: string): void {
         html_heading: $t_html({defaultMessage: "Delete file?"}),
         html_body,
         html_submit_button: $t_html({defaultMessage: "Delete"}),
-        id: "confirm_delete_file_modal",
         focus_submit_on_open: true,
         on_click() {
             dialog_widget.submit_api_request(channel.del, "/json/attachments/" + attachment, {});
