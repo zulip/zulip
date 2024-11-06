@@ -50,6 +50,9 @@
             <button class="button rounded small reactivate btn-warning">
                 <i class="fa fa-user-plus" aria-hidden="true"></i>
             </button>
+            <button class="button rounded small btn-danger {{#unless (and is_bot cannot_deactivate) }}delete{{/unless}}" {{#if cannot_deactivate}}disabled="disabled"{{/if}}>
+                <i class="fa fa-trash-o" aria-hidden="true"></i>
+            </button>
             {{/if}}
         </span>
     </td>
