@@ -29,6 +29,8 @@ def build_for_prod_or_puppeteer(quiet: bool, config_name: str | None = None) -> 
         webpack_args += ["--stats=errors-only"]
     if config_name is not None:
         webpack_args += [f"--config-name={config_name}"]
+    if "PUPPETEER_TESTS" in os.environ:
+        webpack_args.append("--env=puppeteer_tests")
 
     # Silence warnings from "browserslist" about using old data; those
     # warnings are only useful for development
