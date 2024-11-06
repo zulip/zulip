@@ -2078,7 +2078,7 @@ msgstr "Отписаться от дайджест-писем:"
 #: templates/zerver/emails/email_base_default.html:33
 #: templates/zerver/emails/email_base_marketing.html:33
 msgid "Swimming fish"
-msgstr "Плавающая рыба"
+msgstr "Робот Zulip"
 
 #: templates/zerver/emails/find_team.html:9
 #: templates/zerver/emails/find_team.txt:2
@@ -2172,7 +2172,7 @@ msgstr "Здравствуйте,"
 msgid ""
 "%(referrer_name)s wants you to join them on Zulip &mdash; the team "
 "communication tool designed for productivity."
-msgstr "%(referrer_name)s приглашает вас общаться в Zulip &mdash; системе командного общения, ориентированной на эффективность."
+msgstr "%(referrer_name)s приглашает вас присоединиться к Zulip &mdash; системе командного общения, ориентированной на эффективность."
 
 #: templates/zerver/emails/invitation.html:15
 #: templates/zerver/emails/invitation_reminder.html:13
@@ -2189,7 +2189,7 @@ msgstr "%(referrer_full_name)s пригласил вас присоединит�
 msgid ""
 "%(referrer_full_name)s (%(referrer_email)s) wants you to join them on Zulip "
 "-- the team communication tool designed for productivity."
-msgstr "%(referrer_full_name)s (%(referrer_email)s) приглашает вас общаться в Zulip -- системе командного общения, ориентированной на эффективность."
+msgstr "%(referrer_full_name)s (%(referrer_email)s) приглашает вас присоединиться к Zulip -- системе командного общения, ориентированной на эффективность."
 
 #: templates/zerver/emails/invitation.txt:5
 #: templates/zerver/emails/invitation_reminder.txt:5
@@ -2206,7 +2206,7 @@ msgstr "Снова здравствуйте,"
 msgid ""
 "This is a friendly reminder that %(referrer_name)s wants you to join them on"
 " Zulip &mdash; the team communication tool designed for productivity."
-msgstr "Это напоминание о том, что %(referrer_name)s хочет общаться с вами в Zulip &mdash; системе командного общения, ориентированной на эффективность."
+msgstr "Это напоминание о том, что %(referrer_name)s приглашает вас присоединиться к Zulip &mdash; системе командного общения, ориентированной на эффективность."
 
 #: templates/zerver/emails/invitation_reminder.html:18
 #: templates/zerver/emails/invitation_reminder.txt:8
@@ -2233,7 +2233,7 @@ msgid ""
 "This is a friendly reminder that %(referrer_name)s (%(referrer_email)s) "
 "wants you to join them on Zulip -- the team communication tool designed for "
 "productivity."
-msgstr "Это напоминание о том, что %(referrer_name)s (%(referrer_email)s) хочет общаться с вами в Zulip -- системе командного общения, ориентированной на эффективность."
+msgstr "Это напоминание о том, что %(referrer_name)s (%(referrer_email)s) приглашает вас присоединиться к Zulip -- системе командного общения, ориентированной на эффективность."
 
 #: templates/zerver/emails/invitation_reminder.txt:10
 #, python-format

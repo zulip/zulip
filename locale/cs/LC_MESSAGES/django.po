@@ -6,6 +6,7 @@
 # Filip Mezera <filip.mezera@pirati.cz>, 2019
 # Filip Vařecha <filip@varecha.work>, 2019,2021
 # Greg Price <gnprice@gmail.com>, 2017
+# Jiří Richter <richtej2@gmail.com>, 2024
 # Jiří Ryszawy <jiri@ryszawy.com>, 2021
 # fri, 2017
 # fri, 2017-2024
@@ -16,7 +17,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-07-25 18:54+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: fri, 2017-2024\n"
+"Last-Translator: Jiří Richter <richtej2@gmail.com>, 2024\n"
 "Language-Team: Czech (http://app.transifex.com/zulip/zulip/language/cs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -326,11 +327,11 @@ msgid ""
 "            If this error is unexpected, you can\n"
 "            <a href=\"mailto:%(support_email)s\">contact support</a>.\n"
 "            "
-msgstr ""
+msgstr "\n            Pokud jste tuto chybu nečekali, můžete\n            <a href=\"mailto:%(support_email)s\">kontaktovat podporu</a>.\n            "
 
 #: templates/4xx.html:11
 msgid "Access forbidden (403)"
-msgstr ""
+msgstr "Přístup odepřen (403)"
 
 #: templates/4xx.html:13
 msgid ""
@@ -386,7 +387,7 @@ msgid ""
 "\n"
 "                In the meantime, you can <a href=\"mailto:%(support_email)s\">contact Zulip support</a>.\n"
 "                "
-msgstr ""
+msgstr "\n                Mezitím můžete <a href=\"mailto:%(support_email)s\">kontaktovat podporu Zulipu</a>.\n                "
 
 #: templates/500.html:31
 #, python-format
@@ -766,7 +767,7 @@ msgstr "Vše"
 
 #: templates/corporate/comparison_table_integrated.html:103
 msgid "10,000 messages"
-msgstr ""
+msgstr "10,000 zpráv"
 
 #: templates/corporate/comparison_table_integrated.html:107
 #: templates/corporate/comparison_table_integrated.html:108
@@ -1196,7 +1197,7 @@ msgstr "Pro organizace s až 10 uživateli"
 
 #: templates/corporate/comparison_table_integrated.html:1002
 msgid "25 users minimum"
-msgstr ""
+msgstr "nejméně 25 uživatelů"
 
 #: templates/corporate/comparison_table_integrated.html:1290
 #: templates/corporate/comparison_table_integrated.html:1509
@@ -2035,7 +2036,7 @@ msgstr ""
 
 #: templates/zerver/emails/digest.html:27 templates/zerver/emails/digest.txt:8
 msgid "New channels"
-msgstr ""
+msgstr "Nové kanály"
 
 #: templates/zerver/emails/digest.html:34
 msgid "Click here to log in to Zulip and catch up."

@@ -3,6 +3,7 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
+# Arusekk <arek_koz@o2.pl>, 2024
 # 6e12cc6f2e411e7ee51bc633f05bcbbe_9071a63, 2017
 # Kamil Lebiecki <kamil.lebiecki@icloud.com>, 2020
 # Krzysztof, 2020
@@ -23,7 +24,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-07-25 18:54+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Mateusz Mandera <mateusz.mandera@zulip.com>, 2024\n"
+"Last-Translator: Arusekk <arek_koz@o2.pl>, 2024\n"
 "Language-Team: Polish (http://app.transifex.com/zulip/zulip/language/pl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1704,7 +1705,7 @@ msgstr "Administratorzy"
 
 #: templates/zerver/development/dev_login.html:60
 msgid "Moderators"
-msgstr ""
+msgstr "Moderatorzy"
 
 #: templates/zerver/development/dev_login.html:71
 msgid "Guest users"
@@ -3365,7 +3366,7 @@ msgstr ""
 
 #: templates/zerver/login.html:18
 msgid "Log in to Zulip"
-msgstr "Zaloguje się do Zulip"
+msgstr "Zaloguj się do Zulipa"
 
 #: templates/zerver/login.html:44
 msgid "View without an account"
@@ -3401,7 +3402,7 @@ msgstr "Nie pamiętasz hasła?"
 #: templates/zerver/login.html:163
 msgid ""
 "Don't have an account yet? You need to be invited to join this organization."
-msgstr ""
+msgstr "Nie masz jeszcze konta? Potrzebujesz zaproszenia, żeby dołączyć do tej organizacji."
 
 #: templates/zerver/new_user_email_address_visibility.html:5
 msgid ""
@@ -3759,7 +3760,7 @@ msgstr "Zresetuj hasło"
 msgid ""
 "Forgot your password? No problem, we'll send a link to reset your password "
 "to the email you signed up with."
-msgstr ""
+msgstr "Nie pamiętasz hasła? Nie ma problemu, wyślemy link do zresetowania hasła mailem przypisanym do Twojego konta."
 
 #: templates/zerver/reset.html:34
 msgid "Send reset link"
@@ -5984,15 +5985,15 @@ msgstr ""
 
 #: zerver/models/users.py:291
 msgid "Admins, moderators, members and guests"
-msgstr ""
+msgstr "Administratorzy, moderatorzy, członkowie i goście"
 
 #: zerver/models/users.py:292
 msgid "Admins, moderators and members"
-msgstr ""
+msgstr "Administratorzy, moderatorzy i członkowie"
 
 #: zerver/models/users.py:293
 msgid "Admins and moderators"
-msgstr ""
+msgstr "Administratorzy i moderatorzy"
 
 #: zerver/models/users.py:294
 msgid "Admins only"
