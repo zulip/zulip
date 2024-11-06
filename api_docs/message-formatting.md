@@ -23,6 +23,42 @@ for syntax highlighting. This field is used in the
 mentions][help-global-time] to supported Markdown message formatting
 features.
 
+## Links to channels, topics, and messages
+
+Zulip's markup supports special readable Markdown syntax for [linking
+to channels, topics, and messages](/help/link-to-a-message-or-conversation).
+
+Sample HTML formats are as follows:
+``` html
+<!-- Syntax: #**announce** -->
+<a class="stream" data-stream-id="9"
+  href="/#narrow/channel/9-announce">
+ #announce
+</a>
+
+<!-- Syntax: #**announce>Zulip updates** -->
+<a class="stream-topic" data-stream-id="9"
+  href="/#narrow/channel/9-announce/topic/Zulip.20updates">
+ #announce &gt; Zulip updates
+</a>
+
+<!-- Syntax: #**announce>Zulip updates@214** -->
+<a class="message-link"
+  href="/#narrow/channel/9-announce/topic/Zulip.20updates/near/214">
+ #announce &gt; Zulip updates @ 💬
+</a>
+```
+
+The older stream/topic elements include a `data-stream-id`, which
+historically was used in order to display the current channel name if
+the channel had been renamed. That field is **deprecated**, because
+displaying an updated value for the most common forms of this syntax
+requires parsing the URL to get the topic to use anyway.
+
+**Changes**: In Zulip 10.0 (feature level 319), added Markdown syntax
+for linking to a specific message in a conversation. Declared the
+`data-stream-id` field to be deprecated as detailed above.
+
 ## Image previews
 
 When a Zulip message is sent linking to an uploaded image, Zulip will

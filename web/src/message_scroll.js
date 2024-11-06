@@ -96,7 +96,7 @@ export function scroll_finished() {
         // enter the screen and become read.  Calling
         // unread_ops.process_visible will update necessary
         // data structures and DOM elements.
-        setTimeout(unread_ops.process_visible, 0);
+        unread_ops.process_visible();
     } else {
         message_scroll_state.set_update_selection_on_next_scroll(true);
     }

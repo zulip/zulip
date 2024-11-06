@@ -130,7 +130,7 @@
         border: 1px solid hsl(0deg 0% 80%);
         box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
         transition:
-            border linear 0.2s,
+            border-color linear 0.2s,
             box-shadow linear 0.2s;
         border-radius: 4px;
         color: hsl(0deg 0% 33%);
@@ -218,7 +218,8 @@ button {
         padding: 4px;
         padding-left: 14px;
         padding-right: 14px;
-        transition: all 0.2s ease;
+        transition: none 0.2s ease;
+        transition-property: background-color, border-color, color;
 
         &:hover,
         &:focus {
@@ -271,10 +272,11 @@ input {
 
 .poll-edit-question,
 .todo-edit-task-list-title {
-    opacity: 0.4;
+    color: var(--color-message-action-visible);
 
-    &:hover {
-        opacity: 1;
+    &:hover,
+    &:focus-visible {
+        color: var(--color-message-action-interactive);
     }
 }
 

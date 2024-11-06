@@ -82,7 +82,6 @@ def do_set_realm_property(
     # These settings have a different event format due to their history.
     message_edit_settings = [
         "allow_message_editing",
-        "edit_topic_policy",
         "message_content_edit_limit_seconds",
     ]
     if name in message_edit_settings:
@@ -517,7 +516,7 @@ def do_deactivate_realm(
     if settings.BILLING_ENABLED:
         from corporate.lib.stripe import RealmBillingSession
 
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         realm.deactivated = True
         realm.save(update_fields=["deactivated"])
 
@@ -576,7 +575,7 @@ def do_reactivate_realm(realm: Realm) -> None:
         return
 
     realm.deactivated = False
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         realm.save(update_fields=["deactivated"])
 
         event_time = timezone_now()

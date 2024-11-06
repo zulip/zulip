@@ -54,9 +54,10 @@ from zerver.lib.send_email import (
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Realm, RealmAuditLog, UserProfile
+from zerver.models import Realm, RealmAuditLog, Stream, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_org_type_display_name, get_realm
+from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
 from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
@@ -1093,7 +1094,7 @@ class BillingSession(ABC):
             metadata=stripe_customer_data.metadata,
         )
         event_time = timestamp_to_datetime(stripe_customer.created)
-        with transaction.atomic():
+        with transaction.atomic(durable=True):
             self.write_to_audit_log(BillingSessionEventType.STRIPE_CUSTOMER_CREATED, event_time)
             customer = self.update_or_create_customer(stripe_customer.id)
         return customer
@@ -1792,7 +1793,7 @@ class BillingSession(ABC):
 
         # TODO: The correctness of this relies on user creation, deactivation, etc being
         # in a transaction.atomic() with the relevant RealmAuditLog entries
-        with transaction.atomic():
+        with transaction.atomic(durable=True):
             # We get the current license count here in case the number of billable
             # licenses has changed since the upgrade process began.
             current_licenses_count = self.get_billable_licenses_for_customer(
@@ -2197,7 +2198,7 @@ class BillingSession(ABC):
 
     # event_time should roughly be timezone_now(). Not designed to handle
     # event_times in the past or future
-    @transaction.atomic
+    @transaction.atomic(savepoint=False)
     def make_end_of_cycle_updates_if_needed(
         self, plan: CustomerPlan, event_time: datetime
     ) -> tuple[CustomerPlan | None, LicenseLedger | None]:
@@ -2911,7 +2912,7 @@ class BillingSession(ABC):
         if status is not None:
             if status == CustomerPlan.ACTIVE:
                 assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
-                with transaction.atomic():
+                with transaction.atomic(durable=True):
                     # Switch to a different plan was cancelled. We end the next plan
                     # and set the current one as active.
                     if plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
@@ -3411,7 +3412,7 @@ class BillingSession(ABC):
             raise BillingError("Form validation error", message=message)
 
         request_context = self.get_sponsorship_request_session_specific_context()
-        with transaction.atomic():
+        with transaction.atomic(durable=True):
             # Ensures customer is created first before updating sponsorship status.
             self.update_customer_sponsorship_status(True)
             sponsorship_request = ZulipSponsorshipRequest(
@@ -3843,6 +3844,31 @@ class BillingSession(ABC):
 
         return last_ledger
 
+    def send_support_admin_realm_internal_message(
+        self, channel_name: str, topic: str, message: str
+    ) -> None:
+        from zerver.actions.message_send import (
+            internal_send_private_message,
+            internal_send_stream_message,
+        )
+
+        admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        sender = get_system_bot(settings.NOTIFICATION_BOT, admin_realm.id)
+        try:
+            channel = get_stream(channel_name, admin_realm)
+            internal_send_stream_message(
+                sender,
+                channel,
+                topic,
+                message,
+            )
+        except Stream.DoesNotExist:  # nocoverage
+            direct_message = (
+                f":red_circle: Channel named '{channel_name}' doesn't exist.\n\n{topic}:\n{message}"
+            )
+            for user in admin_realm.get_human_admin_users():
+                internal_send_private_message(sender, user, direct_message)
+
 
 class RealmBillingSession(BillingSession):
     def __init__(
@@ -4006,6 +4032,7 @@ class RealmBillingSession(BillingSession):
             return customer
 
     @override
+    @transaction.atomic(savepoint=False)
     def do_change_plan_type(
         self, *, tier: int | None, is_sponsored: bool = False, background_update: bool = False
     ) -> None:
@@ -4211,6 +4238,14 @@ class RealmBillingSession(BillingSession):
         # anything weird.
         pass
 
+    def send_realm_created_internal_admin_message(self) -> None:
+        channel = "signups"
+        topic = "new organizations"
+        support_url = self.support_url()
+        organization_type = get_org_type_display_name(self.realm.org_type)
+        message = f"[{self.realm.name}]({support_url}) ([{self.realm.display_subdomain}]({self.realm.url})). Organization type: {organization_type}"
+        self.send_support_admin_realm_internal_message(channel, topic, message)
+
 
 class RemoteRealmBillingSession(BillingSession):
     def __init__(
@@ -4404,7 +4439,7 @@ class RemoteRealmBillingSession(BillingSession):
         return customer
 
     @override
-    @transaction.atomic
+    @transaction.atomic(savepoint=False)
     def do_change_plan_type(
         self, *, tier: int | None, is_sponsored: bool = False, background_update: bool = False
     ) -> None:  # nocoverage
@@ -4505,7 +4540,7 @@ class RemoteRealmBillingSession(BillingSession):
     def process_downgrade(
         self, plan: CustomerPlan, background_update: bool = False
     ) -> None:  # nocoverage
-        with transaction.atomic():
+        with transaction.atomic(savepoint=False):
             old_plan_type = self.remote_realm.plan_type
             new_plan_type = RemoteRealm.PLAN_TYPE_SELF_MANAGED
             self.remote_realm.plan_type = new_plan_type
@@ -4841,7 +4876,7 @@ class RemoteServerBillingSession(BillingSession):
         return customer
 
     @override
-    @transaction.atomic
+    @transaction.atomic(savepoint=False)
     def do_change_plan_type(
         self, *, tier: int | None, is_sponsored: bool = False, background_update: bool = False
     ) -> None:
@@ -4932,7 +4967,7 @@ class RemoteServerBillingSession(BillingSession):
     def process_downgrade(
         self, plan: CustomerPlan, background_update: bool = False
     ) -> None:  # nocoverage
-        with transaction.atomic():
+        with transaction.atomic(savepoint=False):
             old_plan_type = self.remote_server.plan_type
             new_plan_type = RemoteZulipServer.PLAN_TYPE_SELF_MANAGED
             self.remote_server.plan_type = new_plan_type
@@ -5231,7 +5266,7 @@ def ensure_customer_does_not_have_active_plan(customer: Customer) -> None:
         raise UpgradeWithExistingPlanError
 
 
-@transaction.atomic
+@transaction.atomic(durable=True)
 def do_reactivate_remote_server(remote_server: RemoteZulipServer) -> None:
     """
     Utility function for reactivating deactivated registrations.
@@ -5253,7 +5288,7 @@ def do_reactivate_remote_server(remote_server: RemoteZulipServer) -> None:
     )
 
 
-@transaction.atomic
+@transaction.atomic(durable=True)
 def do_deactivate_remote_server(
     remote_server: RemoteZulipServer, billing_session: RemoteServerBillingSession
 ) -> None:

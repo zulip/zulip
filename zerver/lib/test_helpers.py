@@ -603,8 +603,8 @@ def use_s3_backend(method: Callable[P, None]) -> Callable[P, None]:
     def new_method(*args: P.args, **kwargs: P.kwargs) -> None:
         backend = S3UploadBackend()
         with (
-            mock.patch("zerver.lib.upload.upload_backend", backend),
             mock.patch("zerver.worker.thumbnail.upload_backend", backend),
+            mock.patch("zerver.lib.upload.upload_backend", backend),
             mock.patch("zerver.views.tusd.upload_backend", backend),
         ):
             return method(*args, **kwargs)

@@ -99,6 +99,7 @@ export type MessageGroup = {
           stream_name?: string;
           stream_privacy_icon_color: string;
           stream_url: string;
+          is_archived: boolean;
           subscribed?: boolean;
           topic: string;
           topic_is_resolved: boolean;
@@ -468,6 +469,7 @@ function populate_group_from_message(
         const topic = message.topic;
         const match_topic = util.get_match_topic(message);
         const stream_url = hash_util.by_stream_url(message.stream_id);
+        const is_archived = stream_data.is_stream_archived(message.stream_id);
         const topic_url = hash_util.by_stream_topic_url(message.stream_id, message.topic);
 
         const sub = sub_store.get(message.stream_id);
@@ -508,6 +510,7 @@ function populate_group_from_message(
             is_web_public,
             match_topic,
             stream_url,
+            is_archived,
             topic_url,
             stream_id,
             is_subscribed,

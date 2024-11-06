@@ -96,7 +96,6 @@ from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
 from zerver.models.realms import (
-    EditTopicPolicyEnum,
     get_corresponding_policy_value_for_group_setting,
     get_realm_domains,
     get_realm_with_settings,
@@ -144,6 +143,7 @@ def fetch_initial_state_data(
     linkifier_url_template: bool = False,
     user_list_incomplete: bool = False,
     include_deactivated_groups: bool = False,
+    archived_channels: bool = False,
 ) -> dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
     web app's `page_params` and `/api/v1/register` (for mobile/terminal
@@ -292,16 +292,9 @@ def fetch_initial_state_data(
         for property_name in Realm.property_types:
             state["realm_" + property_name] = getattr(realm, property_name)
 
-        for (
-            setting_name,
-            permission_configuration,
-        ) in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
-            if setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
-                setting_value = getattr(realm, setting_name)
-                state["realm_" + setting_name] = get_group_setting_value_for_api(setting_value)
-                continue
-
-            state["realm_" + setting_name] = getattr(realm, permission_configuration.id_field_name)
+        for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
+            setting_value = getattr(realm, setting_name)
+            state["realm_" + setting_name] = get_group_setting_value_for_api(setting_value)
 
         state["realm_create_public_stream_policy"] = (
             get_corresponding_policy_value_for_group_setting(
@@ -337,9 +330,6 @@ def fetch_initial_state_data(
         # display what these fields are in the settings.
         state["realm_allow_message_editing"] = (
             False if user_profile is None else realm.allow_message_editing
-        )
-        state["realm_edit_topic_policy"] = (
-            EditTopicPolicyEnum.ADMINS_ONLY if user_profile is None else realm.edit_topic_policy
         )
 
         # This setting determines whether to send presence and also
@@ -631,7 +621,16 @@ def fetch_initial_state_data(
                 "name": integration.name,
                 "display_name": integration.display_name,
                 "all_event_types": get_all_event_types_for_integration(integration),
-                "config": {c[1]: c[0] for c in integration.config_options},
+                "config_options": [
+                    {
+                        "key": c.name,
+                        "label": c.description,
+                        "validator": c.validator.__name__,
+                    }
+                    for c in integration.config_options
+                ]
+                if integration.config_options
+                else [],
             }
             for integration in WEBHOOK_INTEGRATIONS
             if integration.legacy is False
@@ -661,6 +660,7 @@ def fetch_initial_state_data(
             sub_info = gather_subscriptions_helper(
                 user_profile,
                 include_subscribers=include_subscribers,
+                include_archived_channels=archived_channels,
             )
         else:
             sub_info = get_web_public_subs(realm)
@@ -794,6 +794,7 @@ def apply_events(
     linkifier_url_template: bool,
     user_list_incomplete: bool,
     include_deactivated_groups: bool,
+    archived_channels: bool = False,
 ) -> None:
     for event in events:
         if fetch_event_types is not None and event["type"] not in fetch_event_types:
@@ -816,6 +817,7 @@ def apply_events(
             linkifier_url_template=linkifier_url_template,
             user_list_incomplete=user_list_incomplete,
             include_deactivated_groups=include_deactivated_groups,
+            archived_channels=archived_channels,
         )
 
 
@@ -830,6 +832,7 @@ def apply_event(
     linkifier_url_template: bool,
     user_list_incomplete: bool,
     include_deactivated_groups: bool,
+    archived_channels: bool = False,
 ) -> None:
     if event["type"] == "message":
         state["max_message_id"] = max(state["max_message_id"], event["message"]["id"])
@@ -1114,7 +1117,7 @@ def apply_event(
                             if user_id != person_user_id
                         ]
 
-                    for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+                    for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
                         if not isinstance(state["realm_" + setting_name], int):
                             state["realm_" + setting_name].direct_members = [
                                 user_id
@@ -1217,17 +1220,30 @@ def apply_event(
                     s for s in state["streams"] if s["stream_id"] not in deleted_stream_ids
                 ]
 
-            state["subscriptions"] = [
-                stream
-                for stream in state["subscriptions"]
-                if stream["stream_id"] not in deleted_stream_ids
-            ]
+            if archived_channels:
+                for stream in state["subscriptions"]:
+                    if stream["stream_id"] in deleted_stream_ids:
+                        stream["is_archived"] = True
 
-            state["unsubscribed"] = [
-                stream
-                for stream in state["unsubscribed"]
-                if stream["stream_id"] not in deleted_stream_ids
-            ]
+                for stream in state["unsubscribed"]:
+                    if stream["stream_id"] in deleted_stream_ids:
+                        stream["is_archived"] = True
+                        stream["first_message_id"] = Stream.objects.get(
+                            id=stream["stream_id"]
+                        ).first_message_id
+
+            else:
+                state["subscriptions"] = [
+                    stream
+                    for stream in state["subscriptions"]
+                    if stream["stream_id"] not in deleted_stream_ids
+                ]
+
+                state["unsubscribed"] = [
+                    stream
+                    for stream in state["unsubscribed"]
+                    if stream["stream_id"] not in deleted_stream_ids
+                ]
 
             state["never_subscribed"] = [
                 stream
@@ -1727,6 +1743,7 @@ class ClientCapabilities(TypedDict):
     linkifier_url_template: NotRequired[bool]
     user_list_incomplete: NotRequired[bool]
     include_deactivated_groups: NotRequired[bool]
+    archived_channels: NotRequired[bool]
 
 
 def do_events_register(
@@ -1764,6 +1781,7 @@ def do_events_register(
     linkifier_url_template = client_capabilities.get("linkifier_url_template", False)
     user_list_incomplete = client_capabilities.get("user_list_incomplete", False)
     include_deactivated_groups = client_capabilities.get("include_deactivated_groups", False)
+    archived_channels = client_capabilities.get("archived_channels", False)
 
     if fetch_event_types is not None:
         event_types_set: set[str] | None = set(fetch_event_types)
@@ -1796,6 +1814,7 @@ def do_events_register(
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             user_settings_object=user_settings_object,
             user_list_incomplete=user_list_incomplete,
+            archived_channels=archived_channels,
             # These presence params are a noop, because presence is not included.
             slim_presence=True,
             presence_last_update_id_fetched_by_client=None,
@@ -1835,6 +1854,7 @@ def do_events_register(
         linkifier_url_template=linkifier_url_template,
         user_list_incomplete=user_list_incomplete,
         include_deactivated_groups=include_deactivated_groups,
+        archived_channels=archived_channels,
     )
 
     if queue_id is None:
@@ -1857,6 +1877,7 @@ def do_events_register(
         linkifier_url_template=linkifier_url_template,
         user_list_incomplete=user_list_incomplete,
         include_deactivated_groups=include_deactivated_groups,
+        archived_channels=archived_channels,
     )
 
     # Apply events that came in while we were fetching initial data

@@ -216,7 +216,7 @@ class MissedMessageWorker(QueueProcessingWorker):
     def maybe_send_batched_emails(self) -> None:
         current_time = timezone_now()
 
-        with transaction.atomic():
+        with transaction.atomic(durable=True):
             events_to_process = ScheduledMessageNotificationEmail.objects.filter(
                 scheduled_timestamp__lte=current_time
             ).select_for_update()

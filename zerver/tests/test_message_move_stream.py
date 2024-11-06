@@ -16,7 +16,7 @@ from zerver.lib.test_helpers import queries_captured
 from zerver.lib.url_encoding import near_stream_message_url
 from zerver.models import Message, NamedUserGroup, Stream, UserMessage, UserProfile
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import EditTopicPolicyEnum, get_realm
+from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 
 
@@ -1122,10 +1122,19 @@ class MessageMoveStreamTest(ZulipTestCase):
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream_1", "new_stream_1", "test"
         )
-
         realm = user_profile.realm
-        realm.edit_topic_policy = EditTopicPolicyEnum.ADMINS_ONLY
-        realm.save()
+
+        administrators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_topics_group",
+            administrators_system_group,
+            acting_user=None,
+        )
+
         self.login("cordelia")
 
         members_system_group = NamedUserGroup.objects.get(
@@ -1167,7 +1176,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(53), self.assert_memcached_count(14):
+        with self.assert_database_query_count(55), self.assert_memcached_count(14):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {

@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 
 import render_stream_creation_confirmation_banner from "../templates/modal_banner/stream_creation_confirmation_banner.hbs";
+import render_stream_info_banner from "../templates/modal_banner/stream_info_banner.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
 import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
@@ -124,6 +125,9 @@ export function update_stream_name(sub, new_name) {
 
     // Update navbar if needed
     message_view_header.maybe_rerender_title_area_for_stream(sub);
+
+    // Update the create stream error if needed
+    stream_create.maybe_update_error_message();
 }
 
 export function update_stream_description(sub, description, rendered_description) {
@@ -702,6 +706,18 @@ export function setup_page(callback) {
             throttled_redraw_left_panel();
         });
 
+        const context = {
+            banner_type: compose_banner.INFO,
+            classname: "stream_info",
+            hide_close_button: true,
+            button_text: $t({defaultMessage: "Learn more"}),
+            button_link: "/help/introduction-to-channels",
+        };
+
+        $("#channels_overlay_container .nothing-selected .stream-info-banner").html(
+            render_stream_info_banner(context),
+        );
+
         // When hitting Enter in the stream creation box, we open the
         // "create stream" UI with the stream name prepopulated.  This
         // is only useful if the user has permission to create
@@ -818,14 +834,16 @@ export function launch(section, left_side_tab, right_side_tab) {
             },
         });
         change_state(section, left_side_tab, right_side_tab);
+        setTimeout(() => {
+            if (!stream_settings_components.get_active_data().id) {
+                if (section === "new") {
+                    $("#create_stream_name").trigger("focus");
+                } else {
+                    $("#search_stream_name").trigger("focus");
+                }
+            }
+        }, 0);
     });
-    if (!stream_settings_components.get_active_data().id) {
-        if (section === "new") {
-            $("#create_stream_name").trigger("focus");
-        } else {
-            $("#search_stream_name").trigger("focus");
-        }
-    }
 }
 
 export function switch_rows(event) {

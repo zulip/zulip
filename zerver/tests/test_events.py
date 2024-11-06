@@ -305,6 +305,7 @@ class BaseAction(ZulipTestCase):
         user_list_incomplete: bool = False,
         client_is_old: bool = False,
         include_deactivated_groups: bool = False,
+        archived_channels: bool = False,
     ) -> Iterator[list[dict[str, Any]]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -354,6 +355,7 @@ class BaseAction(ZulipTestCase):
             linkifier_url_template=linkifier_url_template,
             user_list_incomplete=user_list_incomplete,
             include_deactivated_groups=include_deactivated_groups,
+            archived_channels=archived_channels,
         )
 
         if client_is_old:
@@ -395,6 +397,7 @@ class BaseAction(ZulipTestCase):
             linkifier_url_template=linkifier_url_template,
             user_list_incomplete=user_list_incomplete,
             include_deactivated_groups=include_deactivated_groups,
+            archived_channels=archived_channels,
         )
         post_process_state(self.user_profile, hybrid_state, notification_settings_null)
         after = orjson.dumps(hybrid_state)
@@ -425,6 +428,7 @@ class BaseAction(ZulipTestCase):
             linkifier_url_template=linkifier_url_template,
             user_list_incomplete=user_list_incomplete,
             include_deactivated_groups=include_deactivated_groups,
+            archived_channels=archived_channels,
         )
         post_process_state(self.user_profile, normal_state, notification_settings_null)
         self.match_states(hybrid_state, normal_state, events)
@@ -3355,6 +3359,23 @@ class NormalActionsTest(BaseAction):
             check_stream_delete("events[0]", events[0])
             self.assertIsNone(events[0]["streams"][0]["stream_weekly_traffic"])
 
+    def test_admin_deactivate_unsubscribed_stream(self) -> None:
+        self.set_up_db_for_testing_user_access()
+        stream = self.make_stream("test_stream")
+        iago = self.example_user("iago")
+        realm = iago.realm
+        self.user_profile = self.example_user("iago")
+
+        self.subscribe(iago, stream.name)
+        self.assertCountEqual(self.users_subscribed_to_stream(stream.name, realm), [iago])
+
+        self.unsubscribe(iago, stream.name)
+        self.assertCountEqual(self.users_subscribed_to_stream(stream.name, realm), [])
+
+        with self.verify_action(num_events=1, archived_channels=True) as events:
+            do_deactivate_stream(stream, acting_user=iago)
+        check_stream_delete("events[0]", events[0])
+
     def test_user_losing_access_on_deactivating_stream(self) -> None:
         self.set_up_db_for_testing_user_access()
         polonius = self.example_user("polonius")
@@ -3367,11 +3388,9 @@ class NormalActionsTest(BaseAction):
             self.users_subscribed_to_stream(stream.name, realm), [hamlet, polonius]
         )
 
-        with self.verify_action(num_events=2) as events:
+        with self.verify_action(num_events=2, archived_channels=True) as events:
             do_deactivate_stream(stream, acting_user=None)
         check_stream_delete("events[0]", events[0])
-        check_realm_user_remove("events[1]", events[1])
-        self.assertEqual(events[1]["person"]["user_id"], hamlet.id)
 
         # Test that if the subscribers of deactivated stream are involved in
         # DMs with guest, then the guest does not get "remove" event for them.
@@ -3383,11 +3402,9 @@ class NormalActionsTest(BaseAction):
             self.users_subscribed_to_stream(stream.name, realm), [iago, polonius, shiva]
         )
 
-        with self.verify_action(num_events=2) as events:
+        with self.verify_action(num_events=2, archived_channels=True) as events:
             do_deactivate_stream(stream, acting_user=None)
         check_stream_delete("events[0]", events[0])
-        check_realm_user_remove("events[1]", events[1])
-        self.assertEqual(events[1]["person"]["user_id"], iago.id)
 
     def test_subscribe_other_user_never_subscribed(self) -> None:
         for i, include_streams in enumerate([True, False]):
@@ -3726,7 +3743,6 @@ class RealmPropertyActionTest(BaseAction):
             default_code_block_language=["python", "javascript"],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
             invite_to_realm_policy=Realm.INVITE_TO_REALM_POLICY_TYPES,
-            edit_topic_policy=Realm.EDIT_TOPIC_POLICY_TYPES,
             message_content_edit_limit_seconds=[1000, 1100, 1200, None],
             move_messages_within_stream_limit_seconds=[1000, 1100, 1200],
             move_messages_between_streams_limit_seconds=[1000, 1100, 1200],
@@ -3787,14 +3803,13 @@ class RealmPropertyActionTest(BaseAction):
 
             if name in [
                 "allow_message_editing",
-                "edit_topic_policy",
                 "message_content_edit_limit_seconds",
             ]:
                 check_realm_update_dict("events[0]", events[0])
             else:
                 check_realm_update("events[0]", events[0], name)
 
-    def do_set_realm_permission_group_setting_test(self, setting_name: str) -> None:
+    def do_test_allow_system_group(self, setting_name: str) -> None:
         all_system_user_groups = NamedUserGroup.objects.filter(
             realm=self.user_profile.realm,
             is_system_group=True,
@@ -3808,22 +3823,6 @@ class RealmPropertyActionTest(BaseAction):
 
         now = timezone_now()
 
-        do_change_realm_permission_group_setting(
-            self.user_profile.realm,
-            setting_name,
-            default_group,
-            acting_user=self.user_profile,
-        )
-
-        self.assertEqual(
-            RealmAuditLog.objects.filter(
-                realm=self.user_profile.realm,
-                event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
-                event_time__gte=now,
-                acting_user=self.user_profile,
-            ).count(),
-            1,
-        )
         for user_group in all_system_user_groups:
             if user_group.name == default_group_name:
                 continue
@@ -4037,14 +4036,12 @@ class RealmPropertyActionTest(BaseAction):
 
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             with self.settings(SEND_DIGEST_EMAILS=True):
-                self.do_set_realm_permission_group_setting_test(prop)
-
-        for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS_WITH_NEW_API_FORMAT:
+                self.do_test_allow_system_group(prop)
             if Realm.REALM_PERMISSION_GROUP_SETTINGS[prop].require_system_group:
                 # Anonymous system groups aren't relevant when
                 # restricted to system groups.
                 continue
-            with self.settings(SEND_DIGEST_EMAILs=True):
+            with self.settings(SEND_DIGEST_EMAILS=True):
                 self.do_set_realm_permission_group_setting_to_anonymous_groups_test(prop)
 
     def do_set_realm_user_default_setting_test(self, name: str) -> None:

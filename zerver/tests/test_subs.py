@@ -9,6 +9,7 @@ from unittest import mock
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
@@ -94,7 +95,6 @@ from zerver.lib.test_helpers import (
     cache_tries_captured,
     get_subscription,
     most_recent_message,
-    most_recent_usermessage,
     queries_captured,
     reset_email_visibility_to_everyone_in_zulip_realm,
 )
@@ -238,8 +238,8 @@ class TestMiscStuff(ZulipTestCase):
         """Verify that all the fields from `Stream.API_FIELDS` and `Subscription.API_FIELDS` present
         in `APIStreamDict` and `APISubscriptionDict`, respectively.
         """
-        expected_fields = set(Stream.API_FIELDS) | {"stream_id"}
-        expected_fields -= {"id", "can_remove_subscribers_group_id"}
+        expected_fields = set(Stream.API_FIELDS) | {"stream_id", "is_archived"}
+        expected_fields -= {"id", "can_remove_subscribers_group_id", "deactivated"}
         expected_fields |= {"can_remove_subscribers_group"}
 
         stream_dict_fields = set(APIStreamDict.__annotations__.keys())
@@ -1424,7 +1424,7 @@ class StreamAdminTest(ZulipTestCase):
             )
             .exists()
         )
-        self.assertFalse(subscription_exists)
+        self.assertTrue(subscription_exists)
 
     def test_deactivate_stream_removes_default_stream(self) -> None:
         stream = self.make_stream("new_stream")
@@ -1454,44 +1454,11 @@ class StreamAdminTest(ZulipTestCase):
         do_deactivate_stream(streams_to_remove[0], acting_user=None)
         self.assertEqual(get_streams(default_stream_groups[0]), streams_to_keep)
 
-    def test_deactivate_stream_marks_messages_as_read(self) -> None:
-        hamlet = self.example_user("hamlet")
-        cordelia = self.example_user("cordelia")
-        stream = self.make_stream("new_stream")
-        self.subscribe(hamlet, stream.name)
-        self.subscribe(cordelia, stream.name)
-        self.subscribe(hamlet, "Denmark")
-        self.subscribe(cordelia, "Denmark")
-
-        self.send_stream_message(hamlet, stream.name)
-        new_stream_usermessage = most_recent_usermessage(cordelia)
-
-        # We send a message to a different stream too, to verify that the
-        # deactivation of new_stream won't corrupt read state of UserMessage elsewhere.
-        self.send_stream_message(hamlet, "Denmark")
-        denmark_usermessage = most_recent_usermessage(cordelia)
-
-        self.assertFalse(new_stream_usermessage.flags.read)
-        self.assertFalse(denmark_usermessage.flags.read)
-
-        with self.captureOnCommitCallbacks(execute=True):
-            do_deactivate_stream(stream, acting_user=None)
-        new_stream_usermessage.refresh_from_db()
-        denmark_usermessage.refresh_from_db()
-        self.assertTrue(new_stream_usermessage.flags.read)
-        self.assertFalse(denmark_usermessage.flags.read)
-
     def test_deactivated_streams_by_old_name(self) -> None:
         realm = get_realm("zulip")
         stream = self.make_stream("new_stream")
         do_deactivate_stream(stream, acting_user=None)
         self.assertEqual(set(deactivated_streams_by_old_name(realm, "new_stream")), {stream})
-
-        second_stream = self.make_stream("new_stream")
-        do_deactivate_stream(second_stream, acting_user=None)
-        self.assertEqual(
-            set(deactivated_streams_by_old_name(realm, "new_stream")), {stream, second_stream}
-        )
 
         self.make_stream("!DEACTIVATED:old_style")  # This is left active
         old_style = self.make_stream("old_style")
@@ -1512,6 +1479,31 @@ class StreamAdminTest(ZulipTestCase):
         with self.assertRaisesRegex(JsonableError, "Channel named existing already exists"):
             do_unarchive_stream(stream, new_name="existing", acting_user=None)
 
+    def test_unarchive_stream_private_with_no_subscribers(self) -> None:
+        stream = self.make_stream("private", invite_only=True)
+        do_deactivate_stream(stream, acting_user=None)
+        with self.assertRaisesRegex(JsonableError, "Channel is private and have no subscribers"):
+            do_unarchive_stream(stream, new_name="private", acting_user=None)
+
+    def test_unarchive_stream_private_and_web_public(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        stream = self.make_stream("private", invite_only=True)
+        self.subscribe(hamlet, stream.name)
+        self.subscribe(cordelia, stream.name)
+        do_deactivate_stream(stream, acting_user=None)
+        stream = Stream.objects.get(id=stream.id)
+        # Previously, archiving a channel set invite_only=True without changing is_web_public.
+        # This led to archived channels potentially being in an invalid state.
+        stream.is_web_public = True
+        stream.save(update_fields=["is_web_public"])
+        with self.capture_send_event_calls(expected_num_events=2):
+            do_unarchive_stream(stream, new_name="private", acting_user=None)
+
+        stream = Stream.objects.get(id=stream.id)
+        self.assertFalse(stream.is_web_public)
+
     def test_unarchive_stream(self) -> None:
         desdemona = self.example_user("desdemona")
         iago = self.example_user("iago")
@@ -1519,49 +1511,30 @@ class StreamAdminTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
 
         stream = self.make_stream("new_stream", is_web_public=True)
+        was_invite_only = stream.invite_only
+        was_web_public = stream.is_web_public
+        was_history_public = stream.history_public_to_subscribers
+
         self.subscribe(hamlet, stream.name)
         self.subscribe(cordelia, stream.name)
         do_deactivate_stream(stream, acting_user=None)
-        with self.capture_send_event_calls(expected_num_events=4) as events:
+        with self.capture_send_event_calls(expected_num_events=2) as events:
             do_unarchive_stream(stream, new_name="new_stream", acting_user=None)
 
-        # Tell all admins and owners that the stream exists
+        # Tell all subscribers and admins and owners that the stream exists
         self.assertEqual(events[0]["event"]["op"], "create")
         self.assertEqual(events[0]["event"]["streams"][0]["name"], "new_stream")
         self.assertEqual(events[0]["event"]["streams"][0]["stream_id"], stream.id)
-        self.assertEqual(set(events[0]["users"]), {iago.id, desdemona.id})
-
-        # Tell the owners that they're subscribed to it
-        self.assertEqual(events[1]["event"]["op"], "add")
-        self.assertEqual(events[1]["event"]["subscriptions"][0]["name"], "new_stream")
-        self.assertEqual(events[1]["event"]["subscriptions"][0]["stream_id"], stream.id)
-        self.assertEqual(events[1]["users"], [desdemona.id])
-
-        # iago (as an admin) gets to know that desdemona (the owner) is now subscribed.
-        self.assertEqual(
-            events[2],
-            {
-                "event": {
-                    "op": "peer_add",
-                    "stream_ids": [stream.id],
-                    "type": "subscription",
-                    "user_ids": [desdemona.id],
-                },
-                "users": [iago.id],
-            },
-        )
-
-        # Send a message there logging the reactivation
-        self.assertEqual(events[3]["event"]["type"], "message")
+        self.assertEqual(set(events[0]["users"]), {hamlet.id, cordelia.id, iago.id, desdemona.id})
 
         stream = Stream.objects.get(id=stream.id)
         self.assertFalse(stream.deactivated)
-        self.assertTrue(stream.invite_only)
-        self.assertFalse(stream.is_web_public)
-        self.assertTrue(stream.history_public_to_subscribers)
+        self.assertEqual(stream.invite_only, was_invite_only)
+        self.assertEqual(stream.is_web_public, was_web_public)
+        self.assertEqual(stream.history_public_to_subscribers, was_history_public)
 
         self.assertEqual(
-            [desdemona.id],
+            [hamlet.id, cordelia.id],
             [
                 sub.user_profile_id
                 for sub in get_active_subscriptions_for_stream_id(
@@ -2479,12 +2452,7 @@ class StreamAdminTest(ZulipTestCase):
         realm = stream.realm
         stream_id = stream.id
 
-        # Simulate that a stream by the same name has already been
-        # deactivated, just to exercise our renaming logic:
-        # Since we do not know the id of these simulated stream we prepend the name with a random hashed_stream_id
-        ensure_stream(realm, "DB32B77!DEACTIVATED:" + active_name, acting_user=None)
-
-        with self.capture_send_event_calls(expected_num_events=1) as events:
+        with self.capture_send_event_calls(expected_num_events=2) as events:
             result = self.client_delete("/json/streams/" + str(stream_id))
         self.assert_json_success(result)
 
@@ -2498,27 +2466,32 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(event["op"], "delete")
         self.assertEqual(event["streams"][0]["stream_id"], stream.id)
 
-        with self.assertRaises(Stream.DoesNotExist):
-            Stream.objects.get(realm=get_realm("zulip"), name=active_name)
-
-        # A deleted stream's name is changed, is deactivated, is invite-only,
-        # and has no subscribers.
         hashed_stream_id = hashlib.sha512(str(stream_id).encode()).hexdigest()[0:7]
-        deactivated_stream_name = hashed_stream_id + "!DEACTIVATED:" + active_name
+        old_deactivated_stream_name = hashed_stream_id + "!DEACTIVATED:" + active_name
+
+        with self.assertRaises(Stream.DoesNotExist):
+            Stream.objects.get(realm=get_realm("zulip"), name=old_deactivated_stream_name)
+
+        # An archived stream is deactivated, but subscribers and
+        # permissions settings are not immediately changed.
+        deactivated_stream_name = active_name
         deactivated_stream = get_stream(deactivated_stream_name, realm)
         self.assertTrue(deactivated_stream.deactivated)
-        self.assertTrue(deactivated_stream.invite_only)
         self.assertEqual(deactivated_stream.name, deactivated_stream_name)
-        subscribers = self.users_subscribed_to_stream(deactivated_stream_name, realm)
-        self.assertEqual(subscribers, [])
 
         # It doesn't show up in the list of public streams anymore.
         result = self.client_get("/json/streams", {"include_subscribed": "false"})
         public_streams = [s["name"] for s in self.assert_json_success(result)["streams"]]
-        self.assertNotIn(active_name, public_streams)
         self.assertNotIn(deactivated_stream_name, public_streams)
 
-        # Even if you could guess the new name, you can't subscribe to it.
+        # It shows up with `exclude_archived` parameter set to false.
+        result = self.client_get(
+            "/json/streams", {"exclude_archived": "false", "include_all_active": "true"}
+        )
+        streams = [s["name"] for s in self.assert_json_success(result)["streams"]]
+        self.assertIn(deactivated_stream_name, streams)
+
+        # You can't subscribe to archived stream.
         result = self.common_subscribe_to_streams(
             self.example_user("hamlet"), [deactivated_stream_name], allow_fail=True
         )
@@ -4044,7 +4017,9 @@ class SubscriptionRestApiTest(ZulipTestCase):
         def thunk2() -> HttpResponse:
             raise JsonableError("random failure")
 
-        with self.assertRaises(JsonableError):
+        with transaction.atomic(), self.assertRaises(JsonableError):
+            # The atomic() wrapper helps to avoid JsonableError breaking
+            # the test's transaction.
             compose_views([thunk1, thunk2])
 
         user_profile = self.example_user("hamlet")
@@ -5474,10 +5449,10 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assert_length(result, 1)
         self.assertEqual(result[0]["stream_id"], stream1.id)
 
-    def test_gather_subscriptions_excludes_deactivated_streams(self) -> None:
+    def test_gather_subscriptions_deactivated_streams(self) -> None:
         """
-        Check that gather_subscriptions_helper does not include deactivated streams in its
-        results.
+        Check that gather_subscriptions_helper does/doesn't include deactivated streams in its
+        results with `exclude_archived` parameter.
         """
         realm = get_realm("zulip")
         admin_user = self.example_user("iago")
@@ -5507,6 +5482,10 @@ class SubscriptionAPITest(ZulipTestCase):
         admin_after_delete = gather_subscriptions_helper(admin_user)
         non_admin_after_delete = gather_subscriptions_helper(non_admin_user)
 
+        admin_after_delete_include_archived = gather_subscriptions_helper(
+            admin_user, include_archived_channels=True
+        )
+
         # Compare results - should be 1 stream less
         self.assertTrue(
             len(admin_before_delete.subscriptions) == len(admin_after_delete.subscriptions) + 1,
@@ -5516,6 +5495,14 @@ class SubscriptionAPITest(ZulipTestCase):
             len(non_admin_before_delete.subscriptions)
             == len(non_admin_after_delete.subscriptions) + 1,
             "Expected exactly 1 less stream from gather_subscriptions_helper",
+        )
+
+        # Compare results - should be the same number of streams
+        self.assertTrue(
+            len(admin_before_delete.subscriptions) + len(admin_before_delete.unsubscribed)
+            == len(admin_after_delete_include_archived.subscriptions)
+            + len(admin_after_delete_include_archived.unsubscribed),
+            "Expected exact number of streams from gather_subscriptions_helper",
         )
 
     def test_validate_user_access_to_subscribers_helper(self) -> None:
@@ -5954,6 +5941,7 @@ class GetSubscribersTest(ZulipTestCase):
 
     def verify_sub_fields(self, sub_data: SubscriptionInfo) -> None:
         other_fields = {
+            "is_archived",
             "is_announcement_only",
             "in_home_view",
             "stream_id",
@@ -5962,7 +5950,7 @@ class GetSubscribersTest(ZulipTestCase):
         }
 
         expected_fields = set(Stream.API_FIELDS) | set(Subscription.API_FIELDS) | other_fields
-        expected_fields -= {"id", "can_remove_subscribers_group_id"}
+        expected_fields -= {"id", "can_remove_subscribers_group_id", "deactivated"}
         expected_fields |= {"can_remove_subscribers_group"}
 
         for lst in [sub_data.subscriptions, sub_data.unsubscribed]:
@@ -5970,6 +5958,7 @@ class GetSubscribersTest(ZulipTestCase):
                 self.assertEqual(set(sub), expected_fields)
 
         other_fields = {
+            "is_archived",
             "is_announcement_only",
             "stream_id",
             "stream_weekly_traffic",
@@ -5977,7 +5966,7 @@ class GetSubscribersTest(ZulipTestCase):
         }
 
         expected_fields = set(Stream.API_FIELDS) | other_fields
-        expected_fields -= {"id", "can_remove_subscribers_group_id"}
+        expected_fields -= {"id", "can_remove_subscribers_group_id", "deactivated"}
         expected_fields |= {"can_remove_subscribers_group"}
 
         for never_sub in sub_data.never_subscribed:

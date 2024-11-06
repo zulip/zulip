@@ -2718,3 +2718,15 @@ run_test("can_newly_match_moved_messages", () => {
     filter = new Filter([{negated: true, operator: "is", operand: "followed"}]);
     assert.deepEqual(filter.can_newly_match_moved_messages("general", "test"), true);
 });
+
+run_test("get_stringified_narrow_for_server_query", () => {
+    const filter = new Filter([
+        {operator: "channel", operand: "1"},
+        {operator: "topic", operand: "bar"},
+    ]);
+    const narrow = filter.get_stringified_narrow_for_server_query();
+    assert.equal(
+        narrow,
+        '[{"negated":false,"operator":"channel","operand":1},{"negated":false,"operator":"topic","operand":"bar"}]',
+    );
+});

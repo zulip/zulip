@@ -37,7 +37,7 @@ Usage: ./manage.py deliver_scheduled_emails
     def handle(self, *args: Any, **options: Any) -> None:
         try:
             while True:
-                with transaction.atomic():
+                with transaction.atomic(durable=True):
                     job = (
                         ScheduledEmail.objects.filter(scheduled_timestamp__lte=timezone_now())
                         .prefetch_related("users")

@@ -71,6 +71,7 @@ const direct_message_context_properties: (keyof DirectMessageContext)[] = [
 
 type StreamContext = {
     is_stream: boolean;
+    is_archived: boolean;
     invite_only: boolean;
     is_web_public: boolean;
     stream_name: string;
@@ -372,6 +373,7 @@ function format_stream(stream_id: number): StreamContext {
 
     return {
         is_stream: true,
+        is_archived: stream_info.is_archived,
         invite_only: stream_info.invite_only,
         is_web_public: stream_info.is_web_public,
         stream_name: stream_info.name,

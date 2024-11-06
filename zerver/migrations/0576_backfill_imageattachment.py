@@ -77,7 +77,8 @@ def backfill_imageattachment(apps: StateApps, schema_editor: BaseDatabaseSchemaE
                 source: pyvips.Source = pyvips.SourceCustom()
                 source.on_read(partial(s3_read, metadata["Body"]))
             else:
-                attachment_path = os.path.join(settings.LOCAL_UPLOADS_DIR, attachment.path_id)
+                assert settings.LOCAL_FILES_DIR is not None
+                attachment_path = os.path.join(settings.LOCAL_FILES_DIR, attachment.path_id)
                 if not os.path.exists(attachment_path):
                     print(f"{attachment.path_id}: Missing!")
                     continue

@@ -50,7 +50,7 @@ from zerver.lib.push_notifications import (
     send_apple_push_notification,
     send_test_push_notification_directly_to_devices,
 )
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.remote_server import (
     InstallationCountDataForAnalytics,
     RealmAuditLogDataForAnalytics,
@@ -211,7 +211,7 @@ def register_remote_server(
             _("A server with hostname {hostname} already exists").format(hostname=hostname)
         )
 
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         if remote_server is None:
             created = True
             remote_server = RemoteZulipServer.objects.create(
@@ -1012,7 +1012,7 @@ def update_remote_realm_data_for_server(
     }
     for context in new_locally_deleted_remote_realms_on_paid_plan_contexts:
         email_dict["context"] = context
-        queue_json_publish("email_senders", email_dict)
+        queue_event_on_commit("email_senders", email_dict)
 
 
 def get_human_user_realm_uuids(
@@ -1035,7 +1035,7 @@ def get_human_user_realm_uuids(
     return billable_realm_uuids
 
 
-@transaction.atomic
+@transaction.atomic(durable=True)
 def handle_customer_migration_from_server_to_realm(
     server: RemoteZulipServer,
 ) -> None:
@@ -1156,7 +1156,7 @@ def handle_customer_migration_from_server_to_realm(
 
 
 @typed_endpoint
-@transaction.atomic
+@transaction.atomic(durable=True)
 def remote_server_post_analytics(
     request: HttpRequest,
     server: RemoteZulipServer,
@@ -1267,7 +1267,7 @@ def remote_server_post_analytics(
         # 'last_audit_log_update' needs to be an atomic operation.
         # This helps to rely on 'last_audit_log_update' to assume
         # RemoteRealmAuditLog and LicenseLedger are up-to-date.
-        with transaction.atomic():
+        with transaction.atomic(savepoint=False):
             # Important: Do not return early if we receive 0 rows; we must
             # updated last_audit_log_update even if there are no new rows,
             # to help identify server whose ability to connect to this

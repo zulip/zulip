@@ -8,6 +8,7 @@ import * as bot_data from "./bot_data";
 import * as demo_organizations_ui from "./demo_organizations_ui";
 import {$t, get_language_name, language_list} from "./i18n";
 import {page_params} from "./page_params";
+import * as people from "./people";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as settings from "./settings";
 import * as settings_bots from "./settings_bots";
@@ -21,7 +22,6 @@ import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
 import * as settings_users from "./settings_users";
 import {current_user, realm} from "./state_data";
-import * as user_groups from "./user_groups";
 
 const admin_settings_label = {
     // Organization profile
@@ -110,6 +110,7 @@ export function build_page() {
     const options = {
         custom_profile_field_types: realm.custom_profile_field_types,
         full_name: current_user.full_name,
+        profile_picture: people.small_avatar_url_for_person(current_user),
         realm_name: realm.realm_name,
         realm_org_type: realm.realm_org_type,
         realm_available_video_chat_providers: realm.realm_available_video_chat_providers,
@@ -142,8 +143,6 @@ export function build_page() {
         language_list,
         realm_default_language_name: get_language_name(realm.realm_default_language),
         realm_default_language_code: realm.realm_default_language,
-        realm_direct_message_initiator_group_id: realm.realm_direct_message_initiator_group,
-        realm_direct_message_permission_group_id: realm.realm_direct_message_permission_group,
         realm_waiting_period_threshold: realm.realm_waiting_period_threshold,
         realm_new_stream_announcements_stream_id: realm.realm_new_stream_announcements_stream_id,
         realm_signup_announcements_stream_id: realm.realm_signup_announcements_stream_id,
@@ -184,12 +183,6 @@ export function build_page() {
         realm_invite_required: realm.realm_invite_required,
         can_create_user_groups: settings_data.user_can_create_user_groups(),
         policy_values: settings_config.common_policy_values,
-        realm_can_delete_any_message_group: realm.realm_can_delete_any_message_group,
-        realm_can_delete_own_message_group: realm.realm_can_delete_own_message_group,
-        realm_can_add_custom_emoji_group: realm.realm_can_add_custom_emoji_group,
-        realm_can_add_custom_emoji_group_name: user_groups.get_user_group_from_id(
-            realm.realm_can_add_custom_emoji_group,
-        ).name,
         ...settings_org.get_organization_settings_options(),
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
         web_mark_read_on_scroll_policy_values:
@@ -282,10 +275,6 @@ export function build_page() {
 
         tippy.default($("#realm_can_access_all_users_group_widget_container")[0], opts);
     }
-
-    settings_org.check_disable_direct_message_initiator_group_dropdown(
-        realm.realm_direct_message_permission_group,
-    );
 }
 
 export function launch(section, user_settings_tab) {

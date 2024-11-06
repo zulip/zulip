@@ -110,6 +110,9 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
         const sub = sub_store.get(stream_id);
         assert(sub);
         const pinned = sub.pin_to_top;
+        if (sub.is_archived) {
+            continue;
+        }
         if (pinned) {
             if (!sub.is_muted) {
                 pinned_streams.push(stream_id);

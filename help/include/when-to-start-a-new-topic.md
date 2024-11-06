@@ -8,6 +8,7 @@ Topic names should be brief but specific, for example:
 * **Not so good topic names:** "question", "hi", "help", "this topic is about
 a question I have about topics"
 
-!!! tip ""
-    Don't overthink naming your topic. The first 2-3 words that come to mind
-    are probably fine!
+
+Don't stress about making it perfect! The first 2-3 words that
+come to mind are probably fine, and you can always [change it
+later](/help/rename-a-topic).

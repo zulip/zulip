@@ -229,7 +229,7 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     )
 
 
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def send_initial_realm_messages(realm: Realm) -> None:
     # Sends the initial messages for a new organization.
     #

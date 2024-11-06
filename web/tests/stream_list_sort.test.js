@@ -77,6 +77,13 @@ const muted_pinned = {
     pin_to_top: true,
     is_muted: true,
 };
+const archived = {
+    subscribed: true,
+    name: "archived channel",
+    stream_id: 9,
+    pin_to_top: true,
+    is_archived: true,
+};
 
 function sort_groups(query) {
     const streams = stream_data.subscribed_stream_ids();
@@ -112,6 +119,7 @@ test("basics", ({override_rewire}) => {
     stream_data.add_sub(stream_hyphen_underscore_slash_colon);
     stream_data.add_sub(muted_active);
     stream_data.add_sub(muted_pinned);
+    stream_data.add_sub(archived);
 
     override_rewire(stream_list_sort, "has_recent_activity", (sub) => sub.name !== "pneumonia");
 

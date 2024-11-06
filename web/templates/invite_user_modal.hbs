@@ -35,36 +35,36 @@
     </div>
     <div class="input-group">
         <label for="expires_in" class="modal-field-label">{{t "Invitation expires after" }}</label>
-        <select id="expires_in" class="invite-user-select modal_select bootstrap-focus-style">
+        <select id="expires_in" name="expires_in" class="invite-user-select modal_select bootstrap-focus-style">
             {{#each expires_in_options}}
-                <option {{#if this.default }}selected{{/if}} name="expires_in" value="{{this.value}}">{{this.description}}</option>
+                <option {{#if this.default }}selected{{/if}} value="{{this.value}}">{{this.description}}</option>
             {{/each}}
         </select>
-        <p id="expires_on"></p>
-        <div id="custom-invite-expiration-time" class="dependent-settings-block">
-            <label for="expires_in" class="modal-field-label">{{t "Custom time" }}</label>
-            <input type="text" autocomplete="off" name="custom-expiration-time" id="custom-expiration-time-input" class="custom-expiration-time inline-block" value="" maxlength="3"/>
-            <select class="custom-expiration-time invite-user-select modal_select bootstrap-focus-style" id="custom-expiration-time-unit">
+        <p class="time-input-formatted-description"></p>
+        <div id="custom-invite-expiration-time" class="dependent-settings-block custom-time-input-container">
+            <label class="modal-field-label">{{t "Custom time" }}</label>
+            <input id="custom-expiration-time-input" name="custom-expiration-time-input" class="custom-time-input-value inline-block" type="text" autocomplete="off" value="" maxlength="3"/>
+            <select id="custom-expiration-time-unit" name="custom-expiration-time-unit" class="custom-time-input-unit invite-user-select modal_select bootstrap-focus-style">
                 {{#each time_choices}}
-                    <option name="custom_time_choice" class="custom_time_choice" value="{{this.name}}">{{this.description}}</option>
+                    <option value="{{this.name}}">{{this.description}}</option>
                 {{/each}}
             </select>
-            <p id="custom_expires_on"></p>
+            <p class="custom-time-input-formatted-description"></p>
         </div>
     </div>
     <div class="input-group">
         <label for="invite_as" class="modal-field-label">{{t "Users join as" }}
             {{> help_link_widget link="/help/roles-and-permissions" }}
         </label>
-        <select id="invite_as" class="invite-user-select modal_select bootstrap-focus-style">
-            <option name="invite_as" value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
-            <option name="invite_as" selected="selected" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
+        <select id="invite_as" name="invite_as" class="invite-user-select modal_select bootstrap-focus-style">
+            <option value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
+            <option selected="selected" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
             {{#if is_admin}}
-            <option name="invite_as" value="{{ invite_as_options.moderator.code }}">{{t "Moderators" }}</option>
-            <option name="invite_as" value="{{ invite_as_options.admin.code }}">{{t "Administrators" }}</option>
+            <option value="{{ invite_as_options.moderator.code }}">{{t "Moderators" }}</option>
+            <option value="{{ invite_as_options.admin.code }}">{{t "Administrators" }}</option>
             {{/if}}
             {{#if is_owner}}
-            <option name="invite_as" value="{{ invite_as_options.owner.code }}">{{t "Owners" }}</option>
+            <option value="{{ invite_as_options.owner.code }}">{{t "Owners" }}</option>
             {{/if}}
         </select>
     </div>

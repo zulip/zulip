@@ -101,8 +101,7 @@ def add_user_group(
             add_subgroups_to_user_group(
                 context.supergroup, context.direct_subgroups, acting_user=user_profile
             )
-
-    return json_success(request)
+    return json_success(request, data={"group_id": user_group.id})
 
 
 @require_member_or_admin
@@ -208,7 +207,7 @@ def edit_user_group(
 
 
 @typed_endpoint
-@transaction.atomic
+@transaction.atomic(durable=True)
 def deactivate_user_group(
     request: HttpRequest,
     user_profile: UserProfile,
@@ -469,6 +468,7 @@ def remove_subgroups_from_group_backend(
 
 @require_member_or_admin
 @typed_endpoint
+@transaction.atomic(durable=True)
 def update_subgroups_of_user_group(
     request: HttpRequest,
     user_profile: UserProfile,

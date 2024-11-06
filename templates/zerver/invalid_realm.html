@@ -12,14 +12,15 @@
             <h1 class="get-started">{{ _('No organization found') }}</h1>
         </div>
 
-        <div class="app-main white-box">
+        <div class="app-main find-account-page-container white-box">
             <p>
                 {% trans %}There is no Zulip organization at <b>{{ current_url }}</b>.{% endtrans %}
-                <br />
+            </p>
+            <p>
                 {% if corporate_enabled %}
-                    {% trans %}Please try a different URL, or <a href="mailto:{{ support_email }}">contact Zulip support</a>.{% endtrans %}
+                    {% trans %}Please try a different URL, <a href="{{ root_domain_url }}/accounts/find/">get a list of your Zulip Cloud accounts</a>, or <a href="mailto:{{ support_email }}">contact Zulip support</a>.{% endtrans %}
                 {% else %}
-                    {% trans %}Please try a different URL, or <a href="mailto:{{ support_email }}">contact this Zulip server's administrators</a>.{% endtrans %}
+                    {% trans %}Please try a different URL, <a href="{{ root_domain_url }}/accounts/find/">get a list of your accounts</a> on this server, or <a href="mailto:{{ support_email }}">contact this Zulip server's administrators</a>.{% endtrans %}
                 {% endif %}
             </p>
         </div>

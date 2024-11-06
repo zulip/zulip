@@ -134,7 +134,10 @@ export function typeahead_source(
     const potential_streams = invite_streams
         ? stream_data.get_invite_stream_data()
         : stream_data.get_unsorted_subs();
-    return filter_taken_streams(potential_streams, pill_widget).map((stream) => ({
+
+    const active_streams = potential_streams.filter((sub) => !sub.is_archived);
+
+    return filter_taken_streams(active_streams, pill_widget).map((stream) => ({
         ...stream,
         type: "stream",
     }));

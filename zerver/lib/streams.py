@@ -263,7 +263,10 @@ def check_stream_access_based_on_stream_post_policy(sender: UserProfile, stream:
 
 
 def access_stream_for_send_message(
-    sender: UserProfile, stream: Stream, forwarder_user_profile: UserProfile | None
+    sender: UserProfile,
+    stream: Stream,
+    forwarder_user_profile: UserProfile | None,
+    archived_channel_notice: bool = False,
 ) -> None:
     # Our caller is responsible for making sure that `stream` actually
     # matches the realm of the sender.
@@ -286,6 +289,14 @@ def access_stream_for_send_message(
             return
         else:
             raise JsonableError(_("User not authorized for this query"))
+
+    # Deactivated streams are not accessible.
+    if stream.deactivated:
+        if archived_channel_notice:
+            return
+        raise JsonableError(
+            _("Not authorized to send to channel '{channel_name}'").format(channel_name=stream.name)
+        )
 
     if is_cross_realm_bot_email(sender.delivery_email):
         return
@@ -425,7 +436,9 @@ def access_stream_common(
     except Subscription.DoesNotExist:
         sub = None
 
-    if check_basic_stream_access(user_profile, stream, sub, allow_realm_admin=allow_realm_admin):
+    if not stream.deactivated and check_basic_stream_access(
+        user_profile, stream, sub, allow_realm_admin=allow_realm_admin
+    ):
         return sub
 
     # Otherwise it is a private stream and you're not on it, so throw
@@ -661,6 +674,11 @@ def filter_stream_authorization(
 
     unauthorized_streams: list[Stream] = []
     for stream in streams:
+        # Deactivated streams are not accessible
+        if stream.deactivated:
+            unauthorized_streams.append(stream)
+            continue
+
         # The user is authorized for their own streams
         if stream.recipient_id in subscribed_recipient_ids:
             continue
@@ -817,11 +835,6 @@ def get_stream_by_narrow_operand_access_unchecked(operand: str | int, realm: Rea
     return get_stream_by_id_in_realm(operand, realm)
 
 
-def get_signups_stream(realm: Realm) -> Stream:
-    # This one-liner helps us work around a lint rule.
-    return get_stream("signups", realm)
-
-
 def ensure_stream(
     realm: Realm,
     stream_name: str,
@@ -872,6 +885,7 @@ def stream_to_dict(stream: Stream, recent_traffic: dict[int, int] | None = None)
         stream_weekly_traffic = None
 
     return APIStreamDict(
+        is_archived=stream.deactivated,
         can_remove_subscribers_group=stream.can_remove_subscribers_group_id,
         creator_id=stream.creator_id,
         date_created=datetime_to_timestamp(stream.date_created),
@@ -902,6 +916,7 @@ def get_streams_for_user(
     include_public: bool = True,
     include_web_public: bool = False,
     include_subscribed: bool = True,
+    exclude_archived: bool = True,
     include_all_active: bool = False,
     include_owner_subscribed: bool = False,
 ) -> list[Stream]:
@@ -910,8 +925,11 @@ def get_streams_for_user(
 
     include_public = include_public and user_profile.can_access_public_streams()
 
-    # Start out with all active streams in the realm.
-    query = Stream.objects.filter(realm=user_profile.realm, deactivated=False)
+    # Start out with all streams in the realm.
+    query = Stream.objects.filter(realm=user_profile.realm)
+
+    if exclude_archived:
+        query = query.filter(deactivated=False)
 
     if include_all_active:
         streams = query.only(*Stream.API_FIELDS)
@@ -965,6 +983,7 @@ def do_get_streams(
     include_public: bool = True,
     include_web_public: bool = False,
     include_subscribed: bool = True,
+    exclude_archived: bool = True,
     include_all_active: bool = False,
     include_default: bool = False,
     include_owner_subscribed: bool = False,
@@ -976,6 +995,7 @@ def do_get_streams(
         include_public,
         include_web_public,
         include_subscribed,
+        exclude_archived,
         include_all_active,
         include_owner_subscribed,
     )

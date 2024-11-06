@@ -86,6 +86,11 @@ def format_pull_request_event(payload: WildValue, include_title: bool = False) -
         target_branch = payload["pull_request"]["head_branch"].tame(check_string)
         base_branch = payload["pull_request"]["base_branch"].tame(check_string)
     title = payload["pull_request"]["title"].tame(check_string) if include_title else None
+    stringified_assignee = (
+        payload["pull_request"]["assignee"]["login"].tame(check_string)
+        if payload["action"] and payload["pull_request"]["assignee"]
+        else None
+    )
 
     return get_pull_request_event_message(
         user_name=user_name,
@@ -95,20 +100,24 @@ def format_pull_request_event(payload: WildValue, include_title: bool = False) -
         target_branch=target_branch,
         base_branch=base_branch,
         title=title,
+        assignee_updated=stringified_assignee,
     )
 
 
 def format_issues_event(payload: WildValue, include_title: bool = False) -> str:
     issue_nr = payload["issue"]["number"].tame(check_int)
     assignee = payload["issue"]["assignee"]
+    stringified_assignee = assignee["login"].tame(check_string) if assignee else None
+    action = payload["action"].tame(check_string)
     return get_issue_event_message(
         user_name=payload["sender"]["login"].tame(check_string),
         action=payload["action"].tame(check_string),
         url=get_issue_url(payload["repository"]["html_url"].tame(check_string), issue_nr),
         number=issue_nr,
         message=payload["issue"]["body"].tame(check_string),
-        assignee=assignee["login"].tame(check_string) if assignee else None,
+        assignee=stringified_assignee,
         title=payload["issue"]["title"].tame(check_string) if include_title else None,
+        assignee_updated=stringified_assignee if action == "assigned" else None,
     )
 
 

@@ -317,7 +317,7 @@ button {
 
             box-shadow: 0 3px 10px hsl(0deg 0% 0% / 20%);
 
-            transition: all 0.2s ease;
+            transition: box-shadow 0.2s ease;
 
             &:hover {
                 box-shadow: 0 3px 10px hsl(0deg 0% 100% / 20%);
@@ -681,8 +681,6 @@ button {
         .message-feed {
             height: calc(100% - 20px);
             margin-top: 20px;
-
-            transition: all 0.1s ease;
         }
     }
 
@@ -910,7 +908,7 @@ button {
     width: 155px;
     height: 220px;
     padding: 0 5px;
-    transition: all 0.3s ease;
+    transition: border-color 0.3s ease;
     margin: 10px 5px;
     color: hsl(219deg 23% 33%);
     border-radius: 5px;
@@ -918,7 +916,7 @@ button {
 }
 
 .portico-landing.hello .integrations .integration-icons .group:hover {
-    border: 1px solid hsl(170deg 47% 53%);
+    border-color: hsl(170deg 47% 53%);
 }
 
 .portico-landing.hello .integrations .integration-logo {
@@ -1079,7 +1077,7 @@ button {
     font-size: 3em;
     text-align: center;
 
-    transition: all 0.2s ease;
+    transition: background 0.2s ease;
 }
 
 .portico-landing.apps .other-apps .apps .icon:hover {
@@ -1582,7 +1580,7 @@ button {
 
     font-size: 0.9em;
 
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease;
 }
 
 .for-education-pricing-model .pricing-container .price-box:focus {
@@ -2533,10 +2531,6 @@ button {
 
         text-align: left;
         background-color: hsl(0deg 0% 100%);
-
-        transition-property: all;
-        transition-duration: 0.3s;
-        transition-timing-function: ease;
 
         .bottom {
             height: 275px;

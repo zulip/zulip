@@ -2,8 +2,9 @@
 
 {tab|desktop-web}
 
-1. Click the **New direct message** button at the bottom of the app, or the
-   **Start new conversation** button if you are in a direct message view.
+1. Click the **plus** (<i class="zulip-icon zulip-icon-square-plus"></i>) button next
+   to **DIRECT MESSAGES** in the left sidebar, or the **New direct message**
+   button at the bottom of the app.
 
 1. Start typing the name of the person or [group](/help/user-groups) you want to
    message, and select their name from the list of suggestions. You can continue

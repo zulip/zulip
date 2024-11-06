@@ -36,7 +36,9 @@
 
             <div class="group-permissions settings-subsection-parent" id="group_permission_settings">
                 <div class="subsection-header">
-                    <h3 class="user_group_setting_subsection_title">{{t "Group permissions" }}
+                    <h3 class="user_group_setting_subsection_title">
+                        {{t "Group permissions" }}
+                        {{> ../help_link_widget link="/help/manage-user-groups#configure-group-permissions"}}
                     </h3>
                     {{> ../settings/settings_save_discard_widget section_name="group-permissions" }}
                 </div>

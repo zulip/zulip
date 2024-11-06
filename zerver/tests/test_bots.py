@@ -18,6 +18,7 @@ from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
 from zerver.lib.utils import assert_is_not_none
+from zerver.lib.webhooks.common import WebhookConfigOption
 from zerver.models import RealmUserDefault, Service, Subscription, UserProfile
 from zerver.models.bots import get_bot_services
 from zerver.models.realms import BotCreationPolicyEnum, get_realm
@@ -37,7 +38,11 @@ stripe_sample_config_options = [
         "stripe",
         ["financial"],
         display_name="Stripe",
-        config_options=[("Stripe API key", "stripe_api_key", _check_string)],
+        config_options=[
+            WebhookConfigOption(
+                name="stripe_api_key", description="Stripe API key", validator=_check_string
+            )
+        ],
     ),
 ]
 

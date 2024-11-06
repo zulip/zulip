@@ -355,7 +355,7 @@ export async function build_move_topic_to_stream_popover(
     // When the modal is opened for moving the whole topic from left sidebar,
     // we do not have any message object and so we disable the stream input
     // based on the can_move_messages_between_channels_group setting and topic
-    // input based on edit_topic_policy. In other cases, message object is
+    // input based on can_move_messages_between_topics_group. In other cases, message object is
     // available and thus we check the time-based permissions as well in the
     // below if block to enable or disable the stream and topic input.
     let disable_stream_input = !settings_data.user_can_move_messages_between_streams();
@@ -491,6 +491,16 @@ export async function build_move_topic_to_stream_popover(
             current_stream_id,
             old_topic_name,
             (message_id) => {
+                if (message_id === undefined) {
+                    // There are no messages in the given topic, so we show an error banner
+                    // and return, preventing any attempts to move a non-existent topic.
+                    dialog_widget.hide_dialog_spinner();
+                    ui_report.client_error(
+                        $t_html({defaultMessage: "There are no messages to move."}),
+                        $("#move_topic_modal #dialog_error"),
+                    );
+                    return;
+                }
                 message_edit.move_topic_containing_message_to_stream(
                     message_id,
                     select_stream_id,

@@ -165,7 +165,8 @@ ul {
             "pnum" on,
             "lnum" on;
         color: hsl(0deg 0% 100%);
-        transition: all 0.8s ease-out;
+        transition: none 0.8s ease-out;
+        transition-property: background, transform;
         cursor: pointer;
     }
 
@@ -197,7 +198,7 @@ ul {
     }
 
     .client-logos-div {
-        transition: all 0.7s ease-out;
+        transition: opacity 0.7s ease-out;
         background-position: center;
     }
 
@@ -264,7 +265,7 @@ ul {
         line-height: 130%; /* 33.8px */
         position: relative;
         opacity: 0.7;
-        transition: all 0.1s;
+        transition: opacity 0.1s;
     }
 
     .screen-2__tabs ul li label:hover {
@@ -282,7 +283,7 @@ ul {
         border-radius: 5px;
         background: hsl(0deg 0% 100%);
         opacity: 0.3;
-        transition: all 0.1s;
+        transition: opacity 0.1s;
     }
 
     .screen-2__tabs ul li label:hover::before {
@@ -418,7 +419,8 @@ ul {
     }
 
     .quote__text {
-        transition: all 0.5s ease-out;
+        transition: none 0.5s ease-out;
+        transition-property: background, box-shadow;
         font-family: var(--font-ss3);
         font-style: normal;
         font-weight: 400;
@@ -448,7 +450,7 @@ ul {
         bottom: -37px;
         left: 0;
         mask-image: var(--quote-tail-mask);
-        transition: all 0.5s ease-out;
+        transition: background 0.5s ease-out;
         background: linear-gradient(
             0deg,
             hsl(0deg 0% 100% / 49%) 0%,
@@ -525,11 +527,11 @@ ul {
 
     .quote__source a {
         border-bottom: 1px solid hsl(0deg 0% 100% / 50%);
-        transition: border 0.4s ease-out;
+        transition: border-bottom-color 0.4s ease-out;
     }
 
     .quote__source a:hover {
-        border-bottom: 1px solid hsl(0deg 0% 100%);
+        border-bottom-color: hsl(0deg 0% 100%);
         transition: none;
     }
 
@@ -622,12 +624,12 @@ ul {
     .screen-4__desc a {
         font-weight: 550;
         border-bottom: 1px solid hsl(0deg 0% 100% / 50%);
-        transition: border 0.4s ease-out;
+        transition: border-bottom-color 0.4s ease-out;
     }
 
     .screen-2__desc a:hover,
     .screen-4__desc a:hover {
-        border-bottom: 1px solid hsl(0deg 0% 100%);
+        border-bottom-color: hsl(0deg 0% 100%);
         transition: none;
     }
 
@@ -669,7 +671,7 @@ ul {
         border: 2px solid hsl(0deg 0% 100% / 26%);
         background: hsl(0deg 0% 100% / 7%);
         min-height: 80px;
-        transition: all 0.2s;
+        transition: background 0.2s;
         padding: 12px 16px 14px;
 
         .card__text {

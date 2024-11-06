@@ -210,6 +210,15 @@
             }
         }
     }
+
+    .message-header-stream-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .message-header-stream-archived {
+        color: var(--color-text-message-header-archived);
+    }
 }
 
 .recipient_bar_controls {

@@ -588,3 +588,17 @@ class TestSendCustomEmail(ZulipTestCase):
                     call("  hamlet@zulip.com (zulip)"),
                 ],
             )
+
+
+class TestSendZulipUpdateAnnouncements(ZulipTestCase):
+    COMMAND_NAME = "send_zulip_update_announcements"
+
+    def test_reset_level(self) -> None:
+        realm = get_realm("zulip")
+        realm.zulip_update_announcements_level = 9
+        realm.save()
+
+        call_command(self.COMMAND_NAME, "--reset-level=5")
+
+        realm.refresh_from_db()
+        self.assertEqual(realm.zulip_update_announcements_level, 5)

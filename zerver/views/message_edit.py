@@ -167,7 +167,7 @@ def validate_can_delete_message(user_profile: UserProfile, message: Message) -> 
     return
 
 
-@transaction.atomic
+@transaction.atomic(durable=True)
 @typed_endpoint
 def delete_message_backend(
     request: HttpRequest,

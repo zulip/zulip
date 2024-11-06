@@ -9,7 +9,6 @@ import render_user_group_membership_request_result from "../templates/user_group
 import render_user_group_subgroup_entry from "../templates/user_group_settings/user_group_subgroup_entry.hbs";
 
 import * as add_group_members_pill from "./add_group_members_pill";
-import * as add_subscribers_pill from "./add_subscribers_pill";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
@@ -42,6 +41,10 @@ function get_potential_members(): User[] {
     }
 
     return people.filter_all_users(is_potential_member);
+}
+
+function get_potential_subgroups(): UserGroup[] {
+    return user_groups.get_potential_subgroups(current_group_id);
 }
 
 function get_user_group_members(group: UserGroup): (User | UserGroup)[] {
@@ -138,9 +141,10 @@ export function enable_member_management({
     // current_group_id and pill_widget are module-level variables
     current_group_id = group_id;
 
-    pill_widget = add_subscribers_pill.create({
+    pill_widget = add_group_members_pill.create({
         $pill_container,
-        get_potential_subscribers: get_potential_members,
+        get_potential_members,
+        get_potential_groups: get_potential_subgroups,
     });
 
     $pill_container.find(".input").on("input", () => {

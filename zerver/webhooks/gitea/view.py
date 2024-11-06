@@ -46,6 +46,7 @@ def format_pull_request_event(payload: WildValue, include_title: bool = False) -
         base_branch=base_branch,
         title=title,
         assignee=stringified_assignee,
+        assignee_updated=stringified_assignee if action == "assigned" else None,
     )
 
 

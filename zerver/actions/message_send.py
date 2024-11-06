@@ -1682,6 +1682,7 @@ def check_message(
     mention_backend: MentionBackend | None = None,
     limit_unread_user_ids: set[int] | None = None,
     disable_external_notifications: bool = False,
+    archived_channel_notice: bool = False,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -1727,7 +1728,10 @@ def check_message(
 
         if not skip_stream_access_check:
             access_stream_for_send_message(
-                sender=sender, stream=stream, forwarder_user_profile=forwarder_user_profile
+                sender=sender,
+                stream=stream,
+                forwarder_user_profile=forwarder_user_profile,
+                archived_channel_notice=archived_channel_notice,
             )
         else:
             # Defensive assertion - the only currently supported use case
@@ -1859,6 +1863,7 @@ def _internal_prep_message(
     disable_external_notifications: bool = False,
     forged: bool = False,
     forged_timestamp: float | None = None,
+    archived_channel_notice: bool = False,
 ) -> SendMessageRequest | None:
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
@@ -1890,6 +1895,7 @@ def _internal_prep_message(
             disable_external_notifications=disable_external_notifications,
             forged=forged,
             forged_timestamp=forged_timestamp,
+            archived_channel_notice=archived_channel_notice,
         )
     except JsonableError as e:
         logging.exception(
@@ -1913,6 +1919,7 @@ def internal_prep_stream_message(
     limit_unread_user_ids: set[int] | None = None,
     forged: bool = False,
     forged_timestamp: float | None = None,
+    archived_channel_notice: bool = False,
 ) -> SendMessageRequest | None:
     """
     See _internal_prep_message for details of how this works.
@@ -1930,6 +1937,7 @@ def internal_prep_stream_message(
         limit_unread_user_ids=limit_unread_user_ids,
         forged=forged,
         forged_timestamp=forged_timestamp,
+        archived_channel_notice=archived_channel_notice,
     )
 
 
@@ -2008,6 +2016,7 @@ def internal_send_stream_message(
     email_gateway: bool = False,
     message_type: int = Message.MessageType.NORMAL,
     limit_unread_user_ids: set[int] | None = None,
+    archived_channel_notice: bool = False,
 ) -> int | None:
     message = internal_prep_stream_message(
         sender,
@@ -2017,6 +2026,7 @@ def internal_send_stream_message(
         email_gateway=email_gateway,
         message_type=message_type,
         limit_unread_user_ids=limit_unread_user_ids,
+        archived_channel_notice=archived_channel_notice,
     )
 
     if message is None:

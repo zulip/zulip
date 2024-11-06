@@ -32,9 +32,7 @@ message.
 
 !!! keyboard_tip ""
 
-    You can react to the selected message with <img alt=":thumbs_up:"
-    class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f44d.png"
-    title="thumbs up"/> by using the <kbd>+</kbd> shortcut.
+    You can react to the selected message with 👍 by using the <kbd>+</kbd> shortcut.
 
 {tab|mobile}
 

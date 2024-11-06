@@ -34,7 +34,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 313  # Last bumped for adding `new_email` to /users/{user_id} and the new PATCH /users/{email} endpoint
+API_FEATURE_LEVEL = 319  # Last bumped for message-link class
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 313  # Last bumped for adding `new_email` to /users/{user_id
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (295, 0)  # bumped 2024-10-20 to upgrade Python requirements
+PROVISION_VERSION = (298, 1)  # bumped 2024-11-05 to upgrade shfmt

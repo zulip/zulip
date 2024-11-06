@@ -43,18 +43,6 @@
         }
     }
 
-    #subscription_overlay #stream-creation .settings-sticky-footer,
-    #groups_overlay #user-group-creation .settings-sticky-footer {
-        box-shadow: inset 0 1px 0 hsl(0deg 0% 0% / 20%);
-    }
-
-    #user_enter_sends_label,
-    #realm_enter_sends_label {
-        & kbd {
-            color: var(--color-kbd-text);
-        }
-    }
-
     #message-formatting,
     #keyboard-shortcuts {
         & kbd {
@@ -293,11 +281,6 @@
         }
     }
 
-    .stream_name_search_section,
-    .group_name_search_section {
-        border-color: hsl(0deg 0% 0% / 20%);
-    }
-
     #stream-actions-menu-popover .sp-container {
         background-color: transparent;
 
@@ -359,11 +342,10 @@
     select,
     .pill-container,
     .user-status-content-wrapper,
-    #custom-expiration-time-input,
+    .custom-time-input-value,
     #organization-permissions .dropdown-widget-button,
     #organization-settings .dropdown-widget-button,
-    #stream-advanced-configurations .dropdown-widget-button,
-    #compose_recipient_box {
+    #stream-advanced-configurations .dropdown-widget-button {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
         color: inherit;
@@ -391,10 +373,6 @@
 
     .settings-profile-user-field {
         border-color: hsl(3deg 73% 74%);
-    }
-
-    #compose-direct-recipient .pill-container {
-        background-color: hsl(0deg 0% 0% / 20%);
     }
 
     #searchbox {
@@ -477,7 +455,6 @@
     #message-edit-history-overlay-container {
         .flex.overlay-content > .overlay-container {
             box-shadow: 0 0 30px hsl(213deg 31% 0%);
-            background-color: var(--color-background);
         }
     }
 
@@ -572,21 +549,13 @@
         background-color: hsl(228deg 11% 17%);
     }
 
-    & .drafts-container .drafts-header,
-    .subscriptions-container .subscriptions-header,
-    .user-groups-container .user-groups-header,
-    .overlay-messages-header,
+    & .overlay-messages-header,
     .grey-box,
     .white-box,
     .stream-email,
     #generate-integration-url-modal .integration-url,
-    #settings_page .settings-header,
     #settings_page .sidebar li.active,
-    #settings_page .sidebar-wrapper .tab-container,
-    .table-striped tbody tr:nth-child(odd) th,
-    #subscription_overlay #stream-creation .settings-sticky-footer,
-    #groups_overlay #user-group-creation .settings-sticky-footer {
-        border-color: hsl(0deg 0% 0% / 20%);
+    .table-striped tbody tr:nth-child(odd) th {
         background-color: hsl(0deg 0% 0% / 20%);
     }
 
@@ -599,21 +568,11 @@
         );
     }
 
-    .user-groups-container .right .display-type,
-    .subscriptions-container .right .display-type,
-    .stream-row,
-    .group-row,
-    .subscriptions-container .left .list-toggler-container,
-    .user-groups-container .left .list-toggler-container,
-    .subscriptions-container .left,
-    .user-groups-container .left,
     .subscriber-list-box,
     .subscriber-list-box .subscriber_list_container .subscriber-list td,
     .member-list-box,
     .member-list-box .member_list_container .member-list td,
     #subscription_overlay .settings-radio-input-parent,
-    #settings_page .sidebar,
-    #settings_page .sidebar .sidebar-item,
     #recent_view_table table td {
         border-color: hsl(0deg 0% 0% / 20%);
     }
@@ -766,9 +725,7 @@
     }
 
     #feedback_container {
-        background-color: hsl(212deg 25% 15%);
         border-color: hsl(0deg 0% 0% / 50%);
-        color: inherit;
 
         & a:hover {
             color: hsl(0deg 0% 100%);

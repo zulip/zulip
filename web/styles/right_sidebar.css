@@ -51,7 +51,7 @@ $user_status_emoji_width: 24px;
     }
 
     .buddy-list-user-link {
-        margin-left: 15px;
+        margin-left: 5px;
     }
 }
 
@@ -116,7 +116,7 @@ $user_status_emoji_width: 24px;
 }
 
 .buddy-list-section {
-    margin-bottom: 0;
+    margin: 0;
     overflow-x: hidden;
     list-style-position: inside; /* Draw the bullets inside our box */
     line-height: var(--line-height-sidebar-row);
@@ -143,6 +143,10 @@ $user_status_emoji_width: 24px;
         &.highlighted_user {
             background-color: var(--color-buddy-list-highlighted-user);
             box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+
+            .user_circle {
+                outline: 1px solid var(--color-buddy-list-highlighted-user);
+            }
         }
     }
 
@@ -159,6 +163,15 @@ $user_status_emoji_width: 24px;
                line-height values. */
             margin-top: -2.5px;
         }
+    }
+
+    .user_sidebar_entry.with_avatar .user_circle {
+        display: inline-block;
+        position: absolute;
+        width: 0.4em;
+        height: 0.4em;
+        top: 1.6em;
+        left: 1.6em;
     }
 
     .empty-list-message {
@@ -241,6 +254,25 @@ $user_status_emoji_width: 24px;
     align-items: baseline;
 }
 
+.user_sidebar_entry.with_avatar {
+    grid-template: "row-content" var(--line-height-sidebar-row-with-avatars) "row-content" auto / minmax(
+            0,
+            1fr
+        );
+
+    .selectable_sidebar_block {
+        margin: 2px;
+    }
+
+    .unread_count:not(.hide) {
+        margin-right: 2px;
+    }
+
+    &.with_status .unread_count {
+        align-self: baseline;
+    }
+}
+
 .user-presence-link {
     grid-area: row-content;
 
@@ -249,6 +281,23 @@ $user_status_emoji_width: 24px;
         color: var(--color-text-sidebar-row);
         text-decoration: none;
     }
+}
+
+.information-settings .profile-with-avatar,
+.user_sidebar_entry.with_avatar .selectable_sidebar_block {
+    line-height: var(--line-height-sidebar-row-with-avatars);
+    display: grid;
+    grid-template:
+        "avatar row-content markers-and-controls" var(
+            --right-sidebar-avatar-width
+        )
+        "avatar row-content ." auto / auto minmax(0, 1fr) minmax(0, auto);
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.information-settings .profile-with-avatar {
+    margin: 5px 0;
 }
 
 .my_user_status {
@@ -363,38 +412,59 @@ $user_status_emoji_width: 24px;
     grid-template-rows: var(--line-height-sidebar-row-prominent);
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    margin-right: var(--width-simplebar-scroll-hover);
+    margin-bottom: 10px;
 
     #userlist-header-search {
         display: grid;
         grid-template-rows: var(--line-height-sidebar-row-prominent);
-        grid-template-columns: minmax(0, 1fr) 20px;
+        grid-template-columns: minmax(0, 1fr) 30px;
         align-items: center;
-    }
 
-    #userlist-title {
-        margin: 0;
-    }
+        & .user-list-filter {
+            grid-area: 1 / 1 / 2 / 3;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            /* Prevent text from colliding with #clear_search_button */
+            padding-right: 28px;
+            height: var(--line-height-sidebar-row-prominent);
+            box-sizing: border-box;
+        }
 
-    #user_filter_icon {
-        opacity: 0.5;
-        justify-self: center;
+        #clear_search_people_button {
+            grid-area: 1 / 2 / 2 / 3;
+            padding: 0;
+            background: none;
+            color: var(--color-text-clear-search-button);
+            display: grid;
 
-        &:hover {
-            opacity: 1;
-            cursor: pointer;
+            &:hover {
+                color: var(--color-text-clear-search-button-hover);
+            }
+
+            &:focus,
+            &:focus-visible,
+            &:active {
+                box-shadow: none;
+                outline: none;
+            }
+
+            .zulip-icon-close {
+                align-self: center;
+            }
         }
     }
 
-    /* hovering over the userlist-header creates the same highlight effect as hovering over the user_filter_icon */
-    &:hover > #user_filter_icon {
-        opacity: 1;
-        cursor: pointer;
-    }
-
     #buddy-list-menu-icon {
+        color: var(--color-vdots-visible);
         justify-content: center;
         display: grid;
+        width: 25px;
+        margin-left: 5px;
+
+        &:hover {
+            color: var(--color-vdots-hover);
+        }
     }
 }
 
@@ -407,30 +477,4 @@ $user_status_emoji_width: 24px;
        a scaling margin-top by subtracting the em-unit line height
        from the legacy value. */
     margin-top: calc(25px - (var(--legacy-body-line-height-unitless) * 1em));
-}
-
-#user_search_section {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 28px;
-    grid-template-rows: var(--line-height-sidebar-row-prominent);
-    white-space: nowrap;
-    margin-bottom: 10px;
-
-    & .user-list-filter {
-        grid-area: 1 / 1 / 2 / 3;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        /* Prevent text from colliding with .clear_search_button */
-        padding-right: 28px;
-        /* Push back against inherited styles; let CSS Grid be in
-           charge of the height. */
-        height: auto;
-    }
-
-    .clear_search_button {
-        grid-area: 1 / 2 / 2 / 3;
-        position: static;
-        padding: 0;
-    }
 }

@@ -440,15 +440,17 @@ export function get_remaining_time(start_time: number, duration: number): number
 
 export function get_custom_time_in_minutes(time_unit: string, time_input: number): number {
     switch (time_unit) {
+        case "minutes":
+            return time_input;
         case "hours":
             return time_input * 60;
         case "days":
             return time_input * 24 * 60;
         case "weeks":
             return time_input * 7 * 24 * 60;
-        default:
-            return time_input;
     }
+    blueslip.error(`Unexpected custom time unit: ${time_unit}`);
+    return time_input;
 }
 
 export function check_time_input(input_value: string, keep_number_as_float = false): number {
@@ -485,4 +487,13 @@ export function the<T>(items: T[] | JQuery<T>): T {
         });
     }
     return items[0]!;
+}
+
+export function compare_a_b<T>(a: T, b: T): number {
+    if (a > b) {
+        return 1;
+    } else if (a === b) {
+        return 0;
+    }
+    return -1;
 }

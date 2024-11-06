@@ -39,6 +39,70 @@ import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
 
+function filter_has_term_type(filter, term_type) {
+    return (
+        filter !== undefined &&
+        (filter.sorted_term_types().includes(term_type) ||
+            filter.sorted_term_types().includes(`not-${term_type}`))
+    );
+}
+
+export function discard_cached_lists_with_term_type(term_type) {
+    // Discards cached MessageList and MessageListData which have
+    // `term_type` and `not-term_type`.
+    assert(!term_type.includes("not-"));
+
+    // We loop over rendered message lists and cached message data separately since
+    // they are separately maintained and can have different items.
+    for (const msg_list of message_lists.all_rendered_message_lists()) {
+        // We never want to discard the current message list.
+        if (msg_list === message_lists.current) {
+            continue;
+        }
+
+        const filter = msg_list.data.filter;
+        if (filter_has_term_type(filter, term_type)) {
+            message_lists.delete_message_list(msg_list);
+            message_list_data_cache.remove(filter);
+        }
+    }
+
+    for (const msg_list_data of message_lists.non_rendered_data()) {
+        const filter = msg_list_data.filter;
+        if (filter_has_term_type(filter, term_type)) {
+            message_list_data_cache.remove(filter);
+        }
+    }
+}
+
+export function update_current_view_for_topic_visibility() {
+    // If we have rendered message list / cached data based on topic
+    // visibility policy, we need to rerender it to reflect the changes. It
+    // is easier to just load the narrow from scratch, instead of asking server
+    // for relevant messages in the updated topic.
+    const filter = message_lists.current?.data.filter;
+    if (filter_has_term_type(filter, "is-followed")) {
+        // Use `set_timeout to call after we update the topic
+        // visibility policy locally.
+        // Calling this outside `user_topics_ui` to avoid circular imports.
+        const msg_list_id = message_lists.current.id;
+        setTimeout(() => {
+            if (message_lists.current.id !== msg_list_id) {
+                // Check if the message list is still the same.
+                return;
+            }
+
+            message_view.show(filter.terms(), {
+                then_select_id: message_lists.current.selected_id(),
+                trigger: "topic visibility policy change",
+                force_rerender: true,
+            });
+        }, 0);
+        return true;
+    }
+    return false;
+}
+
 export function update_views_filtered_on_message_property(
     message_ids,
     property_term_type,
@@ -47,8 +111,11 @@ export function update_views_filtered_on_message_property(
     // NOTE: Call this function after updating the message property locally.
     assert(!property_term_type.includes("not-"));
 
-    // List of narrow terms whose msg list doesn't get updated elsewhere but
-    // can be applied locally.
+    // List of narrow terms where the message list doesn't get
+    // automatically updated elsewhere when the property changes, but
+    // we can apply locally if we have the message.
+    //
+    // is:followed is handled via update_current_view_for_topic_visibility.
     const supported_term_types = [
         "has-image",
         "has-link",
@@ -58,8 +125,6 @@ export function update_views_filtered_on_message_property(
         "is-unread",
         "is-mentioned",
         "is-alerted",
-        // TODO: Implement support for these terms.
-        // "is-followed",
     ];
 
     if (message_ids.length === 0 || !supported_term_types.includes(property_term_type)) {

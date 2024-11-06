@@ -14,9 +14,9 @@ import type {UserGroupUpdateEvent} from "./types";
 
 type UserGroupRaw = z.infer<typeof raw_user_group_schema>;
 
-// The members field is a number array which we convert
-// to a Set in the initialize function.
 export const user_group_schema = raw_user_group_schema.extend({
+    // These are delivered via the API as lists, but converted to sets
+    // during initialization for more convenient manipulation.
     members: z.set(z.number()),
     direct_subgroup_ids: z.set(z.number()),
 });
@@ -266,6 +266,24 @@ export function is_empty_group(user_group_id: number): boolean {
     return true;
 }
 
+export function is_setting_group_empty(setting_group: GroupSettingValue): boolean {
+    if (typeof setting_group === "number") {
+        return is_empty_group(setting_group);
+    }
+
+    if (setting_group.direct_members.length > 0) {
+        return false;
+    }
+
+    for (const subgroup_id of setting_group.direct_subgroups) {
+        if (!is_empty_group(subgroup_id)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 export function get_user_groups_of_user(user_id: number): UserGroup[] {
     const user_groups_realm = get_realm_user_groups();
     const groups_of_user = user_groups_realm.filter((group) =>
@@ -309,6 +327,52 @@ export function get_recursive_group_members(target_user_group: UserGroup): Set<n
         }
     }
     return members;
+}
+
+export function check_group_can_be_subgroup(
+    subgroup: UserGroup,
+    target_user_group: UserGroup,
+): boolean {
+    // This logic could be optimized if we maintained a reverse map
+    // from each group to the groups containing it, which might be a
+    // useful data structure for other code paths as well.
+    if (subgroup.deactivated) {
+        return false;
+    }
+
+    const already_subgroup_ids = target_user_group.direct_subgroup_ids;
+    if (subgroup.id === target_user_group.id) {
+        return false;
+    }
+
+    if (already_subgroup_ids.has(subgroup.id)) {
+        return false;
+    }
+
+    const recursive_subgroup_ids = get_recursive_subgroups(subgroup);
+    assert(recursive_subgroup_ids !== undefined);
+    if (recursive_subgroup_ids.has(target_user_group.id)) {
+        return false;
+    }
+    return true;
+}
+
+export function get_potential_subgroups(target_user_group_id: number): UserGroup[] {
+    const target_user_group = get_user_group_from_id(target_user_group_id);
+    return get_all_realm_user_groups().filter((user_group) =>
+        check_group_can_be_subgroup(user_group, target_user_group),
+    );
+}
+
+export function get_direct_subgroups_of_group(target_user_group: UserGroup): UserGroup[] {
+    const direct_subgroups = [];
+    const subgroup_ids = target_user_group.direct_subgroup_ids;
+    for (const subgroup_id of subgroup_ids) {
+        const subgroup = user_group_by_id_dict.get(subgroup_id);
+        assert(subgroup !== undefined);
+        direct_subgroups.push(subgroup);
+    }
+    return direct_subgroups;
 }
 
 export function is_user_in_group(

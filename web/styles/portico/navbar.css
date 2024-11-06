@@ -194,7 +194,8 @@ details summary::-webkit-details-marker {
     opacity: 0;
     height: 0;
     width: 100%;
-    transition: all 0.05s;
+    transition: none 0.05s;
+    transition-property: height, opacity; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
 }
 
 .top-menu-tab-input-unselect:not(:checked) + .top-menu-submenu-backdrop {
@@ -238,7 +239,8 @@ details summary::-webkit-details-marker {
     gap: 16px;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.2s;
+    transition: none 0.2s;
+    transition-property: opacity, visibility;
 }
 
 #case-studies-submenu {
@@ -382,7 +384,8 @@ details summary::-webkit-details-marker {
         "lnum" on;
     color: hsl(0deg 0% 100% / 80%);
 
-    transition: all 0.2;
+    transition: none 0.2;
+    transition-property: backdrop-filter, background, bottom, height; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
     overscroll-behavior: contain;
 }
 
@@ -504,7 +507,8 @@ details summary::-webkit-details-marker {
     position: sticky;
     top: 0;
     z-index: 1;
-    transition: all 0.3s;
+    transition: none 0.3s;
+    transition-property: background, backdrop-filter;
     height: 60px;
     overflow: hidden;
     display: flex;
@@ -574,7 +578,7 @@ details summary::-webkit-details-marker {
     background-position: right;
     transition:
         background,
-        letter-spacing 0.2s;
+        letter-spacing 0.2s; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
 }
 
 .top-menu-mobile-summary:active::after {

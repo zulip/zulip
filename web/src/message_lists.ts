@@ -15,7 +15,7 @@ export function set_current(msg_list: MessageList | undefined): void {
     current = msg_list;
 }
 
-function delete_message_list(message_list: MessageList): void {
+export function delete_message_list(message_list: MessageList): void {
     message_list.view.$list.remove();
     rendered_message_lists.delete(message_list.id);
     message_list.data.set_rendered_message_list_id(undefined);

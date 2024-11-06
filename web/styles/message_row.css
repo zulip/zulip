@@ -428,7 +428,8 @@
     .message_control_button {
         opacity: 0;
         visibility: hidden;
-        transition: all 0.2s ease;
+        transition: none 0.2s ease;
+        transition-property: opacity, visibility;
         width: var(--message-box-icon-width);
         height: var(--message-box-icon-height);
         text-align: center;
@@ -527,14 +528,14 @@
 .unread_marker {
     margin-left: var(--unread-marker-left);
     opacity: 0;
-    transition: all 0.3s ease-out;
+    transition: opacity 0.3s ease-out;
 
     &.slow_fade {
-        transition: all 2s ease-out;
+        transition: opacity 2s ease-out;
     }
 
     &.fast_fade {
-        transition: all 0.3s ease-out;
+        transition: opacity 0.3s ease-out;
     }
 
     &.date_unread_marker {
@@ -562,7 +563,7 @@
 }
 
 .unread .unread_marker {
-    transition: all 0.3s ease-out;
+    transition: opacity 0.3s ease-out;
     opacity: 1;
 }
 
@@ -657,7 +658,7 @@
 .edit-content-container {
     border-radius: 4px;
     border: 1px solid var(--color-message-content-container-border);
-    transition: border 0.2s ease;
+    transition: border-color 0.2s ease;
 
     &:has(.message_edit_content:focus) {
         border-color: var(--color-message-content-container-border-focus);

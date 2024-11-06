@@ -240,7 +240,8 @@
                 color: var(--color-compose-chevron-arrow);
                 text-decoration: none;
                 cursor: default;
-                transition: all 0.2s ease-in-out;
+                transition: none 0.2s ease-in-out;
+                transition-property: background, color;
 
                 &.narrow_to_compose_recipients {
                     background: var(
@@ -320,7 +321,7 @@
     grid-template-areas: "message-content composebox-buttons";
     border-radius: 4px;
     border: 1px solid var(--color-message-content-container-border);
-    transition: border 0.2s ease;
+    transition: border-color 0.2s ease;
 
     &:has(.new_message_textarea:focus) {
         border-color: var(--color-message-content-container-border-focus);
@@ -839,7 +840,7 @@
         width: 0;
         /* The progress updates seem to come every second or so,
         so this is the smoothest it can probably get. */
-        transition: width 1s ease-in-out;
+        transition: width 1s ease-in-out; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
         background: hsl(204deg 63% 85%);
         top: 0;
         bottom: 0;
@@ -903,16 +904,16 @@ textarea.new_message_textarea {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: stretch;
     flex: 1 1 0;
-    border: 1px solid hsl(0deg 0% 0% / 20%);
-    border-radius: 3px;
-    transition: border 0.2s ease;
-    background: hsl(0deg 0% 100%);
+    border: 1px solid var(--color-compose-recipient-box-border-color);
+    border-radius: 4px;
+    transition: border-color 0.2s ease;
+    background: var(--color-compose-recipient-box-background-color);
 
     /* Give the recipient box, a `<div>`, the
        correct styles when focus is in the
        #stream_message_recipient_topic `<input>` */
     &:focus-within {
-        border: 1px solid hsl(0deg 0% 67%);
+        border-color: var(--color-compose-recipient-box-has-focus);
     }
 
     #stream_message_recipient_topic,
@@ -972,6 +973,11 @@ textarea.new_message_textarea {
 #compose_select_recipient_widget {
     width: auto;
     outline: none;
+    /* We override the component-level colors to
+       ensure concord with the topic box. */
+    color: var(--color-compose-recipient-box-text-color);
+    background-color: var(--color-compose-recipient-box-background-color);
+    border-color: var(--color-compose-recipient-box-border-color);
 
     &.dropdown-widget-button {
         padding: 0 6px;
@@ -991,7 +997,7 @@ textarea.new_message_textarea {
     background-color: var(--color-compose-send-button-background);
 
     &:active {
-        transition: all 80ms;
+        transition: transform 80ms;
         transform: scale(0.96);
     }
 
@@ -1145,9 +1151,8 @@ textarea.new_message_textarea {
 
     .unread_count {
         margin: 1px 0 0 6px;
-        border: 0.5px solid var(--color-border-unread-counter);
-        background-color: unset;
-        color: inherit;
+        background-color: var(--color-background-unread-counter-quiet);
+        color: var(--color-unread-counter-quiet);
     }
 }
 
@@ -1426,6 +1431,14 @@ textarea.new_message_textarea {
     justify-content: flex-start;
     height: var(--compose-recipient-box-min-height);
 
+    &:focus-visible {
+        outline: 0;
+
+        #compose_select_recipient_widget {
+            border-color: var(--color-compose-recipient-box-has-focus);
+        }
+    }
+
     .dropdown_widget_value {
         flex-grow: 1;
         text-overflow: ellipsis;
@@ -1461,7 +1474,7 @@ textarea.new_message_textarea {
     font-weight: 450;
 
     &:active {
-        transition: all 80ms;
+        transition: transform 80ms;
         transform: scale(0.96);
     }
 

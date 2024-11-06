@@ -80,7 +80,7 @@ def do_delete_user(user_profile: UserProfile, *, acting_user: UserProfile | None
     date_joined = user_profile.date_joined
     personal_recipient = user_profile.recipient
 
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         user_profile.delete()
         # Recipient objects don't get deleted through CASCADE, so we need to handle
         # the user's personal recipient manually. This will also delete all Messages pointing
@@ -180,7 +180,7 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
     realm = user_profile.realm
     date_joined = user_profile.date_joined
 
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         # The strategy is that before calling user_profile.delete(), we need to
         # reassign Messages  sent by the user to a dummy user, so that they don't
         # get affected by CASCADE. We cannot yet create a dummy user with .id
@@ -486,7 +486,7 @@ def do_deactivate_user(
         for profile in bot_profiles:
             do_deactivate_user(profile, _cascade=False, acting_user=acting_user)
 
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         if user_profile.realm.is_zephyr_mirror_realm:  # nocoverage
             # For zephyr mirror users, we need to make them a mirror dummy
             # again; otherwise, other users won't get the correct behavior

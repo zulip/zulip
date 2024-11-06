@@ -20,6 +20,7 @@ on:
       - web/webpack.config.ts
       - zerver/worker/queue_processors.py
       - zerver/lib/push_notifications.py
+      - zerver/lib/storage.py
       - zerver/decorator.py
       - zproject/**
   workflow_dispatch:
