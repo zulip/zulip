@@ -19,13 +19,13 @@
     border-color: var(--color-user-circle-idle);
     background: linear-gradient(
         to bottom,
-        var(--color-background) 50%,
+        hsl(0deg 0% 100% / 0%) 50%,
         var(--color-user-circle-idle) 50%
     );
 }
 
 .user_circle_empty {
-    background-color: var(--color-background);
+    background-color: transparent;
     border-color: hsl(0deg 0% 50%);
 }
 

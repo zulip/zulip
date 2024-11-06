@@ -172,6 +172,18 @@ $user_status_emoji_width: 24px;
         height: 0.4em;
         top: 1.6em;
         left: 1.6em;
+
+        &.user_circle_idle {
+            background: linear-gradient(
+                to bottom,
+                var(--color-background) 50%,
+                var(--color-user-circle-idle) 50%
+            );
+        }
+
+        &.user_circle_empty {
+            background-color: var(--color-background);
+        }
     }
 
     .empty-list-message {
