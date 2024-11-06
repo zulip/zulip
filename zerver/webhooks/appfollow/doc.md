@@ -4,8 +4,6 @@ Receive user reviews from your tracked apps on AppFollow!
 
 {start_tabs}
 
-1. {!create-channel.md!}
-
 1. {!create-an-incoming-webhook.md!}
 
 1. {!generate-webhook-url-basic.md!}
