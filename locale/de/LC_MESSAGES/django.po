@@ -11,6 +11,7 @@
 # Daniel W. <daniel.wos.86@googlemail.com>, 2015
 # Dante Cassius <exaltedunmelody@gmail.com>, 2016
 # Dennis Stengele <dennis@stengele.me>, 2019
+# Ettore Atalan <atalanttore@googlemail.com>, 2024
 # Fabian Neumann, 2019
 # Fabian Tribrunner <fabian@tribrunner.at>, 2019
 # Felix <strifel@outlook.de>, 2020
@@ -44,7 +45,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-07-25 18:54+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: K B, 2024\n"
+"Last-Translator: Ettore Atalan <atalanttore@googlemail.com>, 2024\n"
 "Language-Team: German (http://app.transifex.com/zulip/zulip/language/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -771,7 +772,7 @@ msgstr ""
 
 #: templates/corporate/billing/upgrade.html:363
 msgid "Send invoice"
-msgstr ""
+msgstr "Rechnung senden"
 
 #: templates/corporate/communities.html:28
 msgid "Open communities directory"
@@ -3355,12 +3356,12 @@ msgstr "Bitte melde dich mit einer zulässigen E-Mail-Adresse an."
 #: templates/zerver/invalid_realm.html:4
 #: templates/zerver/invalid_realm.html:12
 msgid "No organization found"
-msgstr ""
+msgstr "Keine Organisation gefunden"
 
 #: templates/zerver/invalid_realm.html:17
 #, python-format
 msgid "There is no Zulip organization at <b>%(current_url)s</b>."
-msgstr ""
+msgstr "Es gibt keine Zulip-Organisation bei <b>%(current_url)s</b>."
 
 #: templates/zerver/invalid_realm.html:20
 #, python-format
@@ -3714,7 +3715,7 @@ msgstr "Einstellungen von einem anderen Zulip-Account importieren"
 
 #: templates/zerver/register.html:119
 msgid "Your full name"
-msgstr ""
+msgstr "Dein vollständiger Name"
 
 #: templates/zerver/register.html:120
 msgid "Name"
@@ -3758,15 +3759,15 @@ msgstr ""
 
 #: templates/zerver/register.html:213
 msgid "Please describe"
-msgstr ""
+msgstr "Bitte beschreiben"
 
 #: templates/zerver/register.html:214
 msgid "Where did you see the ad?"
-msgstr ""
+msgstr "Wo hast du die Anzeige gesehen?"
 
 #: templates/zerver/register.html:215
 msgid "Which organization?"
-msgstr ""
+msgstr "Welche Organisation?"
 
 #: templates/zerver/register.html:249
 msgid "Subscribe me to Zulip's low-traffic newsletter (a few emails a year)."
@@ -4194,7 +4195,7 @@ msgstr "Es existiert bereits ein benutzerdefinierter Emoji mit diesem Namen."
 #: zerver/lib/upload/__init__.py:323 zerver/lib/upload/__init__.py:331
 #: zerver/lib/upload/__init__.py:354
 msgid "Invalid image format"
-msgstr ""
+msgstr "Ungültiges Bildformat"
 
 #: zerver/actions/realm_linkifiers.py:148
 msgid "The ordered list must not contain duplicated linkifiers"
@@ -4248,21 +4249,21 @@ msgstr "[Geplante Nachrichten anzeigen](#scheduled)"
 
 #: zerver/actions/streams.py:117
 msgid "Channel is already deactivated"
-msgstr ""
+msgstr "Kanal ist bereits deaktiviert"
 
 #: zerver/actions/streams.py:239
 msgid "Channel is not currently deactivated"
-msgstr ""
+msgstr "Kanal ist derzeit nicht deaktiviert"
 
 #: zerver/actions/streams.py:242
 #, python-brace-format
 msgid "Channel named {channel_name} already exists"
-msgstr ""
+msgstr "Kanal mit dem Namen {channel_name} existiert bereits"
 
 #: zerver/actions/streams.py:313
 #, python-brace-format
 msgid "Channel {channel_name} un-archived."
-msgstr ""
+msgstr "Kanal {channel_name} nicht mehr archiviert."
 
 #: zerver/actions/streams.py:1176
 #, python-brace-format
@@ -4283,7 +4284,7 @@ msgstr ""
 #: zerver/actions/streams.py:1468
 #, python-brace-format
 msgid "{user_name} renamed channel {old_channel_name} to {new_channel_name}."
-msgstr ""
+msgstr "{user_name} hat den Kanal {old_channel_name} in {new_channel_name} umbenannt."
 
 #: zerver/actions/streams.py:1484 zerver/actions/streams.py:1486
 #: zerver/views/streams.py:780
@@ -4293,7 +4294,7 @@ msgstr "Keine Beschreibung."
 #: zerver/actions/streams.py:1489
 #, python-brace-format
 msgid "{user} changed the description for this channel."
-msgstr ""
+msgstr "{user} hat die Beschreibung für diesen Kanal geändert."
 
 #: zerver/actions/streams.py:1491
 msgid "Old description"
@@ -4311,7 +4312,7 @@ msgstr "Für immer"
 #: zerver/actions/streams.py:1571 zerver/actions/streams.py:1572
 #, python-brace-format
 msgid "{number_of_days} days"
-msgstr ""
+msgstr "{number_of_days} Tage"
 
 #: zerver/actions/streams.py:1564 zerver/actions/streams.py:1574
 #, python-brace-format
@@ -4509,7 +4510,7 @@ msgstr ""
 
 #: zerver/lib/addressee.py:124
 msgid "Missing channel"
-msgstr ""
+msgstr "Fehlender Kanal"
 
 #: zerver/lib/addressee.py:135
 msgid "Message must have recipients"
@@ -4594,7 +4595,7 @@ msgstr ""
 
 #: zerver/lib/email_mirror.py:422
 msgid "Email with no subject"
-msgstr ""
+msgstr "E-Mail ohne Betreff"
 
 #: zerver/lib/email_notifications.py:130 zerver/lib/email_notifications.py:152
 msgid "Open Zulip to see the spoiler content"
@@ -4692,17 +4693,17 @@ msgstr "Nicht angemeldet: API-Authentifizierung oder Nutzer-Session benötigt"
 #: zerver/lib/exceptions.py:179
 #, python-brace-format
 msgid "Channel '{stream}' does not exist"
-msgstr ""
+msgstr "Kanal '{stream}' existiert nicht"
 
 #: zerver/lib/exceptions.py:192
 #, python-brace-format
 msgid "Channel with ID '{stream_id}' does not exist"
-msgstr ""
+msgstr "Kanal mit ID '{stream_id}' existiert nicht"
 
 #: zerver/lib/exceptions.py:204
 #, python-brace-format
 msgid "Unsupported parameter combination: {parameters}"
-msgstr ""
+msgstr "Nicht unterstützte Parameterkombination: {parameters}"
 
 #: zerver/lib/exceptions.py:213
 msgid "organization owner"
@@ -4965,7 +4966,7 @@ msgstr ""
 
 #: zerver/lib/narrow.py:905
 msgid "Invalid 'with' operator"
-msgstr ""
+msgstr "Ungültiger Operator 'with'"
 
 #: zerver/lib/narrow.py:1148
 msgid "Missing 'anchor' argument."
@@ -4983,7 +4984,7 @@ msgstr "Operator {operator} nicht unterstützt."
 #: zerver/lib/narrow_predicate.py:25
 #, python-brace-format
 msgid "Operand {operand} not supported."
-msgstr ""
+msgstr "Operand {operand} wird nicht unterstützt."
 
 #: zerver/lib/onboarding.py:53
 #, python-brace-format
@@ -5154,7 +5155,7 @@ msgstr ""
 #: zerver/lib/onboarding.py:271 zerver/lib/onboarding.py:322
 #: zerver/lib/onboarding.py:394
 msgid "welcome to Zulip!"
-msgstr ""
+msgstr "willkommen bei Zulip!"
 
 #: zerver/lib/onboarding.py:274
 msgid ""
@@ -5230,11 +5231,11 @@ msgstr ""
 
 #: zerver/lib/onboarding.py:346
 msgid "moving messages"
-msgstr ""
+msgstr "Nachrichten verschieben"
 
 #: zerver/lib/onboarding.py:360
 msgid "experiments"
-msgstr ""
+msgstr "Experimente"
 
 #: zerver/lib/onboarding.py:370
 msgid "start a conversation"
@@ -5242,7 +5243,7 @@ msgstr ""
 
 #: zerver/lib/onboarding.py:384
 msgid "greetings"
-msgstr ""
+msgstr "Grüße"
 
 #: zerver/lib/outgoing_webhook.py:312
 msgid "Invalid JSON in response"
@@ -5396,12 +5397,12 @@ msgstr "Ungültige Kanal-ID"
 
 #: zerver/lib/streams.py:483
 msgid "Channel name already in use."
-msgstr ""
+msgstr "Kanalname wird bereits verwendet."
 
 #: zerver/lib/streams.py:491 zerver/lib/streams.py:611
 #, python-brace-format
 msgid "Invalid channel name '{channel_name}'"
-msgstr ""
+msgstr "Ungültiger Kanalname '{channel_name}'"
 
 #: zerver/lib/streams.py:756 zerver/views/streams.py:291
 msgid "A default channel cannot be private."
@@ -5551,7 +5552,7 @@ msgstr ""
 #: zerver/lib/typed_endpoint.py:341
 #, python-brace-format
 msgid "{var_name} is not length {length}"
-msgstr ""
+msgstr "{var_name} hat nicht die Länge {length}"
 
 #: zerver/lib/typed_endpoint.py:375
 #, python-brace-format
@@ -5566,16 +5567,16 @@ msgstr "Ungültige {var_name}: {msg}"
 #: zerver/lib/typed_endpoint.py:384
 #, python-brace-format
 msgid "{var_name} field is missing: {msg}"
-msgstr ""
+msgstr "Feld {var_name} fehlt: {msg}"
 
 #: zerver/lib/typed_endpoint_validators.py:31
 #: zerver/lib/typed_endpoint_validators.py:37
 msgid "Not in the list of possible values"
-msgstr ""
+msgstr "Nicht in der Liste der möglichen Werte"
 
 #: zerver/lib/typed_endpoint_validators.py:55
 msgid "Not a URL"
-msgstr ""
+msgstr "Keine URL"
 
 #: zerver/lib/typed_endpoint_validators.py:94 zerver/lib/validator.py:196
 #, python-brace-format
@@ -5588,7 +5589,7 @@ msgstr "Dieser Upload würde das Upload-Budget deiner Organisation überschreite
 
 #: zerver/lib/upload/__init__.py:368 zerver/lib/upload/__init__.py:370
 msgid "Image size exceeds limit"
-msgstr ""
+msgstr "Bildgröße überschreitet das Limit"
 
 #: zerver/lib/user_groups.py:114
 msgid "Invalid user group"
@@ -5925,11 +5926,11 @@ msgstr ""
 
 #: zerver/models/realms.py:400
 msgid "general"
-msgstr ""
+msgstr "allgemein"
 
 #: zerver/models/realms.py:401
 msgid "channel events"
-msgstr ""
+msgstr "Kanalereignisse"
 
 #: zerver/models/realms.py:417
 msgid "Zulip updates"
@@ -5989,7 +5990,7 @@ msgstr "Öffentlich, geschützter Verlauf"
 
 #: zerver/models/streams.py:93
 msgid "All channel members can post"
-msgstr ""
+msgstr "Alle Kanalmitglieder können posten"
 
 #: zerver/models/streams.py:94
 msgid "Only organization administrators can post"
@@ -6447,7 +6448,7 @@ msgstr "Ungültiger Wert für \"op\". Gib \"add\" oder \"remove\" an."
 
 #: zerver/views/streams.py:346
 msgid "Channel already has that name."
-msgstr ""
+msgstr "Der Kanal hat schon diesen Namen."
 
 #: zerver/views/streams.py:432 zerver/views/user_groups.py:191
 #: zerver/views/user_groups.py:390
@@ -6485,7 +6486,7 @@ msgstr ""
 
 #: zerver/views/streams.py:755
 msgid "new channels"
-msgstr ""
+msgstr "neue Kanäle"
 
 #: zerver/views/streams.py:789
 #, python-brace-format
@@ -6852,12 +6853,12 @@ msgstr ""
 #: zilencer/views.py:192
 #, python-brace-format
 msgid "{domain} does not exist"
-msgstr ""
+msgstr "{domain} existiert nicht"
 
 #: zilencer/views.py:213
 #, python-brace-format
 msgid "A server with hostname {hostname} already exists"
-msgstr ""
+msgstr "Ein Server mit dem Hostnamen {hostname} existiert bereits"
 
 #: zilencer/views.py:258
 msgid "Missing ios_app_id"
