@@ -90,14 +90,11 @@ export const user_list_style_values: {
         code: 2,
         description: $t({defaultMessage: "Show status text"}),
     },
-};
-
-if (page_params.development_environment) {
-    user_list_style_values.with_avatar = {
+    with_avatar: {
         code: 3,
         description: $t({defaultMessage: "Show avatar"}),
-    };
-}
+    },
+};
 
 export const web_animate_image_previews_values = {
     always: {
