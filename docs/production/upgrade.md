@@ -305,15 +305,42 @@ instructions for other supported platforms.
 1. Upgrade your server to the latest Zulip `8.x` release (at
    least 8.3, which adds support for Ubuntu 24.04).
 
-2. As the Zulip user, stop the Zulip server and run the following
+1. As the Zulip user, stop the Zulip server and run the following
    to back up the system:
 
    ```bash
-   supervisorctl stop all
+   /home/zulip/deployments/current/scripts/stop-server
    /home/zulip/deployments/current/manage.py backup --output=/home/zulip/release-upgrade.backup.tar.gz
    ```
 
-3. Switch to the root user and upgrade the operating system, following
+1. One of Zulip's dependencies, RabbitMQ, is used to store deferred work
+   in queues. RabbitMQ's Ubuntu packaging has [problems][rabbitmq-bug]
+   upgrading from version 3.9 in Ubuntu 22.04 to 3.12 in Ubuntu
+   24.04. To work around this bug, you'll need to uninstall
+   `rabbitmq-server`, purging its database, before upgrading the OS;
+   the steps after the OS upgrade will reinstall the new version and
+   configure it properly. You can do this uninstallation process
+   safely via the following process:
+
+   1. As root, run:
+      ```bash
+      rabbitmqctl list_queues
+      ```
+      to check whether any of Zulip's RabbitMQ queues contain
+      unprocessed events.
+   1. If any queues contain events, you can run as the `zulip` user
+      ```bash
+      /home/zulip/deployments/current/manage.py process_queue --all
+      ```
+      to process any events still in the queues. You can also decide
+      to skip this step if you're OK losing a bit of data of the
+      relevant type.
+   1. As root, run `apt purge rabbitmq-server` to remove the RabbitMQ
+      package, including, critically, its database and configuration
+      state, which would otherwise cause installation of the Ubuntu
+      24.04 package to crash.
+
+1. Switch to the root user and upgrade the operating system, following
    the prompts until it completes successfully:
 
    ```bash
@@ -330,11 +357,12 @@ instructions for other supported platforms.
    The `do-release-upgrade` tool will complete by prompting you to
    restart the system; press `N`, as we will do so later.
 
-4. Next, we need to reinstall the current version of Zulip, which
+1. Next, we need to reinstall the current version of Zulip, which
    among other things will recompile Zulip's Python module
    dependencies for your new version of Python and rewrite Zulip's
    full-text search indexes to work with the upgraded dictionary
-   packages:
+   packages. This will also take care of re-installing and re-configuring
+   RabbitMQ which we removed earlier.
 
    ```bash
    rm -rf /srv/zulip-venv-cache/*
@@ -346,13 +374,13 @@ instructions for other supported platforms.
    which can safely be ignored. It may also prompt about "daemons
    using outdated libraries"; you should select "cancel".
 
-5. As root, upgrade the database to the latest version of PostgreSQL:
+1. As root, upgrade the database to the latest version of PostgreSQL:
 
    ```bash
    /home/zulip/deployments/current/scripts/setup/upgrade-postgresql
    ```
 
-6. As root, restart the server:
+1. As root, restart the server:
 
    ```bash
    reboot
@@ -360,6 +388,8 @@ instructions for other supported platforms.
 
 You should now be able to navigate to your Zulip server's URL and
 confirm everything is working correctly.
+
+[rabbitmq-bug]: https://bugs.launchpad.net/ubuntu/+source/rabbitmq-server/+bug/2074309
 
 ### Upgrading from Ubuntu 20.04 Focal to 22.04 Jammy
 
