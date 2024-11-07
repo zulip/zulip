@@ -1025,6 +1025,7 @@ div.focused-message-list {
 
 .information-settings .user-profile-picture,
 .user_sidebar_entry.with_avatar .user-profile-picture {
+    position: relative;
     width: var(--right-sidebar-avatar-width);
     height: var(--right-sidebar-avatar-height);
 }
