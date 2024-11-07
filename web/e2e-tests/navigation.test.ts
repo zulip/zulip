@@ -6,7 +6,8 @@ import * as common from "./lib/common";
 
 async function navigate_using_left_sidebar(page: Page, stream_name: string): Promise<void> {
     console.log("Visiting #" + stream_name);
-    await page.click(`.stream-name[title="${stream_name}"]`);
+    const stream_id = await page.evaluate(() => zulip_test.get_sub("Verona")!.stream_id);
+    await page.click(`.narrow-filter[data-stream-id="${stream_id}"] .stream-name`);
     await page.waitForSelector(`#message_feed_container`, {visible: true});
 }
 
