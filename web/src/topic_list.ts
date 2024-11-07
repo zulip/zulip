@@ -359,6 +359,7 @@ export function initialize({
             on_topic_click(stream_id, topic);
 
             e.preventDefault();
+            e.stopPropagation();
         },
     );
 
