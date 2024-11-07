@@ -276,7 +276,7 @@
        the smaller line-height. */
     --line-height-sidebar-row-prominent: 1.7142em; /* 24px / 14px em */
     --line-height-sidebar-row: 1.5714em; /* 22px / 14px em */
-    --line-height-sidebar-row-with-avatars: 1.2857em; /* 18px / 14px em */
+    --line-height-sidebar-row-with-avatars: 1.3571em; /* 19px / 14px em */
 
     /* Right sidebar */
     --right-sidebar-padding-right: 8px;
