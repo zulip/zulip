@@ -872,6 +872,11 @@
     --color-user-circle-active: hsl(137deg 42% 47%);
     --color-user-circle-idle: hsl(45deg 56% 63%);
     --color-user-circle-empty: hsl(228deg 10% 50% / 25%);
+    --color-user-circle-empty-no-alpha: color-mix(
+        in srgb,
+        hsl(228deg 10% 50%) 50%,
+        hsl(0deg 100% 100%)
+    );
     /* hsl(229deg 9% 36%) corresponds to --grey-600.
        We use the hsl() equivalent directly since postcss-color-mix-function
        cannot dynamically resolve var() arguments. */
@@ -1426,6 +1431,11 @@
     --color-user-circle-active: hsl(137deg 47% 50%);
     --color-user-circle-idle: hsl(55deg 41% 32%);
     --color-user-circle-empty: hsl(228deg 10% 70% / 22%);
+    --color-user-circle-empty-no-alpha: color-mix(
+        in srgb,
+        hsl(228deg 10% 70%) 55%,
+        hsl(0deg 0% 0%)
+    );
     /* hsl(229deg 10% 70%) corresponds to --grey-400.
        We use the hsl() equivalent directly since postcss-color-mix-function
        cannot dynamically resolve var() arguments. */
