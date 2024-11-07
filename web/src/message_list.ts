@@ -430,8 +430,6 @@ export class MessageList {
         const subscribed = stream_data.is_subscribed(stream_id);
         const invite_only = sub?.invite_only;
         const is_web_public = sub?.is_web_public;
-        const can_toggle_subscription =
-            sub !== undefined && stream_data.can_toggle_subscription(sub);
         if (sub === undefined || sub.is_archived) {
             deactivated = true;
         } else if (!subscribed && !this.last_message_historical) {
@@ -443,7 +441,6 @@ export class MessageList {
             subscribed,
             deactivated,
             just_unsubscribed,
-            can_toggle_subscription,
             page_params.is_spectator,
             invite_only ?? false,
             is_web_public ?? false,

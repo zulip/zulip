@@ -359,7 +359,6 @@ run_test("bookend", ({override}) => {
 
     override(stream_data, "is_subscribed", () => is_subscribed);
     override(stream_data, "get_sub_by_id", () => ({invite_only, name: "IceCream"}));
-    override(stream_data, "can_toggle_subscription", () => true);
 
     {
         const stub = make_stub();

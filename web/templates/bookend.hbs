@@ -26,15 +26,4 @@
             {{/if}}
         </span>
     {{/if}}
-    {{#if can_toggle_subscription}}
-    <div class="sub_button_row">
-        <button class="button white rounded stream_sub_unsub_button {{#unless subscribed}}sea-green{{/unless}}" type="button" name="subscription">
-            {{#if subscribed}}
-            {{t 'Unsubscribe' }}
-            {{else}}
-            {{t 'Subscribe' }}
-            {{/if}}
-        </button>
-    </div>
-    {{/if}}
 </div>

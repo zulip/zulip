@@ -1953,7 +1953,6 @@ export class MessageListView {
         subscribed: boolean,
         deactivated: boolean,
         just_unsubscribed: boolean,
-        can_toggle_subscription: boolean,
         is_spectator: boolean,
         invite_only: boolean,
         is_web_public: boolean,
@@ -1963,7 +1962,6 @@ export class MessageListView {
         const $rendered_trailing_bookend = $(
             render_bookend({
                 stream_name,
-                can_toggle_subscription,
                 subscribed,
                 deactivated,
                 just_unsubscribed,
