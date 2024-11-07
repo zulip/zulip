@@ -1099,15 +1099,13 @@ ul.popover-group-menu-member-list {
     }
 
     .status-circle {
+        /* 10px at 16px/1em */
+        font-size: 0.625em;
+        line-height: 1;
         position: absolute;
-        width: var(--length-user-status-circle);
-        height: var(--length-user-status-circle);
-        top: unset;
-        left: unset;
-        right: -1px;
-        bottom: -1px;
-        border: solid 1px var(--color-background);
-        border-radius: 50%;
+        right: 0;
+        bottom: 0;
+        -webkit-text-stroke: 1.5px var(--color-background-popover-menu);
     }
 
     .user_circle_empty {
