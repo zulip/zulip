@@ -1177,7 +1177,7 @@
     --color-background-unread-counter-quiet: transparent;
     --color-unread-counter-prominent: hsl(0deg 0% 100%);
     --color-unread-counter-normal: hsl(0deg 0% 100% / 85%);
-    --color-unread-counter-quiet: hsl(240deg 15% 60%);
+    --color-unread-counter-quiet: hsl(240deg 15% 65%);
     /* Legacy unread-counter color value. */
     --color-background-unread-counter: var(
         --color-background-unread-counter-prominent
