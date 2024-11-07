@@ -1,4 +1,4 @@
-# DMs, mentions, and alerts
+# DMs and mentions
 
 You can configure desktop, mobile, and email notifications for
 [direct messages (DMs)](/help/direct-messages),
@@ -14,7 +14,7 @@ direct messages, mentions, and alert words.
 
 {settings_tab|notifications}
 
-1. In the **Notification triggers** table, toggle the settings for **DMs, mentions, and alerts**.
+1. In the **Notification triggers** table, toggle the settings for **DMs and mentions**.
 
 {end_tabs}
 

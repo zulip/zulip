@@ -2,8 +2,8 @@
 
 ## Message notification emails
 
-Zulip can be configured to send message notification emails for [DMs mentions,
-and alerts](/help/dm-mention-alert-notifications), as well as [channel
+Zulip can be configured to send message notification emails for [DMs and
+mentions](/help/dm-mention-alert-notifications), as well as [channel
 messages](/help/channel-notifications) and [followed
 topics](/help/follow-a-topic#configure-notifications-for-followed-topics).
 
@@ -147,7 +147,7 @@ to Zulip Cloud users announcing major changes in Zulip.
 
 * [Using Zulip via email](/help/using-zulip-via-email)
 * [Message a channel by email](/help/message-a-channel-by-email)
-* [DMs mentions, and alerts](/help/dm-mention-alert-notifications)
+* [DMs and mentions](/help/dm-mention-alert-notifications)
 * [Channel notifications](/help/channel-notifications)
 * [Follow a topic](/help/follow-a-topic)
 * [Hide message content in emails (for organizations)](/help/hide-message-content-in-emails)

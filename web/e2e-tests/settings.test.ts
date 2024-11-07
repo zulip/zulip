@@ -427,7 +427,7 @@ async function test_default_language_setting(page: Page): Promise<void> {
 
 async function test_notifications_section(page: Page): Promise<void> {
     await page.click('[data-section="notifications"]');
-    // At the beginning, "DMs, mentions, and alerts"(checkbox name=enable_sounds) audio will be on
+    // At the beginning, "DMs and mentions"(checkbox name=enable_sounds) audio will be on
     // and "Streams"(checkbox name=enable_stream_audible_notifications) audio will be off by default.
 
     const notification_sound_enabled =

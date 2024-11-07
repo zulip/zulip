@@ -94,7 +94,7 @@ If you delete a message soon after sending it, any [pending email
 notifications](/help/email-notifications#configure-delay-for-message-notification-emails)
 for that message will be canceled, and
 [visual desktop notifications](/help/desktop-notifications) will be removed,
-including [mentions and alerts](/help/dm-mention-alert-notifications).
+including [mentions](/help/dm-mention-alert-notifications).
 
 ## Related articles
 

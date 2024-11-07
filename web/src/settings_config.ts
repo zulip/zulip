@@ -1038,7 +1038,7 @@ export const all_notifications = (settings_object: Settings): AllNotifications =
             ),
         },
         {
-            label: $t({defaultMessage: "DMs, mentions, and alerts"}),
+            label: $t({defaultMessage: "DMs and mentions"}),
             notification_settings: get_notifications_table_row_data(
                 pm_mention_notification_settings,
                 settings_object,
