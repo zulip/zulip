@@ -279,20 +279,6 @@ module.exports = {
             },
         },
         {
-            files: ["web/debug-require.js"],
-            env: {
-                browser: true,
-                es2020: false,
-            },
-            rules: {
-                // Don’t require ES features that PhantomJS doesn’t support
-                // TODO: Toggle these settings now that we don't use PhantomJS
-                "no-var": "off",
-                "object-shorthand": "off",
-                "prefer-arrow-callback": "off",
-            },
-        },
-        {
             files: ["web/shared/**", "web/src/**", "web/third/**"],
             env: {
                 browser: true,
@@ -308,7 +294,11 @@ module.exports = {
             settings: {
                 "import/resolver": {
                     webpack: {
-                        config: "./web/webpack.config.ts",
+                        config: {
+                            resolve: {
+                                extensions: [".ts", ".js"],
+                            },
+                        },
                     },
                 },
             },

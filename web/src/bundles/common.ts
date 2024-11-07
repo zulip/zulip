@@ -1,5 +1,4 @@
 import "../sentry";
-import "../../debug-require";
 import "../alert_popup";
 import "../csrf";
 import "../blueslip";

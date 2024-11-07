@@ -21,12 +21,11 @@ def build_for_prod_or_puppeteer(quiet: bool, config_name: str | None = None) -> 
         if int(next(meminfo).split()[1]) < 3 * 1024 * 1024:
             os.environ["NODE_OPTIONS"] = "--max-old-space-size=1536"
     webpack_args = [
-        "../node_modules/.bin/webpack-cli",
+        "../node_modules/.bin/rspack",
+        "build",
         "--mode=production",
         f"--env=ZULIP_VERSION={ZULIP_VERSION}",
     ]
-    if quiet:
-        webpack_args += ["--stats=errors-only"]
     if config_name is not None:
         webpack_args += [f"--config-name={config_name}"]
 
@@ -43,7 +42,7 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
     # This is our most dynamic configuration, which we use for our
     # dev server.  The key piece here is that we identify changes to
     # files as devs make edits and serve new assets on the fly.
-    webpack_args = ["../node_modules/.bin/webpack-cli", "serve"]
+    webpack_args = ["../node_modules/.bin/rspack", "serve"]
     webpack_args += [
         # webpack-cli has a bug where it ignores --watch-poll with
         # multi-config, and we don't need the katex part anyway.
@@ -57,10 +56,6 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
     ]
     if minify:
         webpack_args.append("--env=minimize")
-    if disable_host_check:
-        webpack_args.append("--allowed-hosts=all")
-    else:
-        webpack_args.append(f"--allowed-hosts={host},.zulipdev.com,.zulipdev.org")
 
     # Tell webpack-dev-server to fall back to periodic polling on
     # filesystems where inotify is known to be broken.
@@ -94,7 +89,7 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
         event_notifier = pyinotify.Notifier(watch_manager, WebpackConfigFileChangeHandler())
         # We did a chdir to the root of the Zulip checkout above.
         for filepath in [
-            "webpack.config.ts",
+            "rspack.config.ts",
             "webpack.assets.json",
             "webpack.dev-assets.json",
         ]:

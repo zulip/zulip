@@ -1,54 +1,41 @@
-/// <reference types="webpack-dev-server" />
-
 import path from "node:path";
 
 import type {ZopfliOptions} from "@gfx/zopfli";
 import {gzip} from "@gfx/zopfli";
+import type {Configuration} from "@rspack/core";
+import {rspack} from "@rspack/core";
 import CompressionPlugin from "compression-webpack-plugin";
-import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
-import HtmlWebpackPlugin from "html-webpack-plugin";
-import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import {DefinePlugin} from "webpack";
-import type webpack from "webpack";
 import BundleTracker from "webpack-bundle-tracker";
 
-import DebugRequirePlugin from "./debug-require-webpack-plugin";
 import assets from "./webpack.assets.json";
 import dev_assets from "./webpack.dev-assets.json";
 
 const config = (
     env: {minimize?: boolean; ZULIP_VERSION?: string} = {},
     argv: {mode?: string},
-): webpack.Configuration[] => {
+): Configuration[] => {
     const production: boolean = argv.mode === "production";
 
-    const baseConfig: webpack.Configuration = {
+    const baseConfig: Configuration = {
         mode: production ? "production" : "development",
         context: __dirname,
-        cache: {
-            type: "filesystem",
-            buildDependencies: {
-                config: [__filename],
-            },
-        },
     };
 
-    const plugins: webpack.WebpackPluginInstance[] = [
-        new DefinePlugin({
+    const plugins: Configuration["plugins"] = [
+        new rspack.DefinePlugin({
             DEVELOPMENT: JSON.stringify(!production),
             ZULIP_VERSION: JSON.stringify(env.ZULIP_VERSION ?? "development"),
         }),
-        new DebugRequirePlugin(),
         new BundleTracker({
             path: path.join(__dirname, production ? ".." : "../var"),
             filename: production ? "webpack-stats-production.json" : "webpack-stats-dev.json",
         }),
         // Extract CSS from files
-        new MiniCssExtractPlugin({
+        new rspack.CssExtractRspackPlugin({
             filename: production ? "[name].[contenthash].css" : "[name].css",
             chunkFilename: production ? "[contenthash].css" : "[id].css",
         }),
-        new HtmlWebpackPlugin({
+        new rspack.HtmlRspackPlugin({
             filename: "5xx.html",
             template: "html/5xx.html",
             chunks: ["error-styles"],
@@ -65,7 +52,7 @@ const config = (
         );
     }
 
-    const frontendConfig: webpack.Configuration = {
+    const frontendConfig: Configuration = {
         ...baseConfig,
         name: "frontend",
         entry: production
@@ -84,11 +71,6 @@ const config = (
                     options: {exposes: "zulip_test"},
                 },
                 {
-                    test: require.resolve("./debug-require"),
-                    loader: "expose-loader",
-                    options: {exposes: "require"},
-                },
-                {
                     test: require.resolve("jquery"),
                     loader: "expose-loader",
                     options: {exposes: ["$", "jQuery"]},
@@ -97,7 +79,7 @@ const config = (
                 {
                     test: /\.font\.js$/,
                     use: [
-                        MiniCssExtractPlugin.loader,
+                        rspack.CssExtractRspackPlugin.loader,
                         {
                             loader: "css-loader",
                             options: {
@@ -129,7 +111,7 @@ const config = (
                     test: /\.css$/,
                     exclude: path.resolve(__dirname, "styles"),
                     use: [
-                        MiniCssExtractPlugin.loader,
+                        rspack.CssExtractRspackPlugin.loader,
                         {
                             loader: "css-loader",
                             options: {
@@ -143,7 +125,7 @@ const config = (
                     test: /\.css$/,
                     include: path.resolve(__dirname, "styles"),
                     use: [
-                        MiniCssExtractPlugin.loader,
+                        rspack.CssExtractRspackPlugin.loader,
                         {
                             loader: "css-loader",
                             options: {
@@ -219,12 +201,6 @@ const config = (
         devtool: production ? "source-map" : "cheap-module-source-map",
         optimization: {
             minimize: env.minimize ?? production,
-            minimizer: [
-                new CssMinimizerPlugin({
-                    minify: CssMinimizerPlugin.cleanCssMinify,
-                }),
-                "...",
-            ],
             splitChunks: {
                 chunks: "all",
                 // webpack/examples/many-pages suggests 20 requests for HTTP/2
@@ -267,7 +243,7 @@ const config = (
         },
     };
 
-    const serverConfig: webpack.Configuration = {
+    const serverConfig: Configuration = {
         ...baseConfig,
         name: "server",
         target: "node",

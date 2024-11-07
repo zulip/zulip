@@ -1,0 +1,38 @@
+diff --git a/spectrum.css b/spectrum.css
+index e68f4924e2ee96ad140dad60e1586e12a02c0693..1f1b753a8f81304fb4bac99dbb3b93badb9b11d7 100644
+--- a/spectrum.css
++++ b/spectrum.css
+@@ -10,8 +10,6 @@ License: MIT
+     top:0;
+     left:0;
+     display:inline-block;
+-    *display: inline;
+-    *zoom: 1;
+     /* https://github.com/bgrins/spectrum/issues/40 */
+     z-index: 9999994;
+     overflow: hidden;
+@@ -216,7 +214,6 @@ License: MIT
+ /* Clearfix hack */
+ .sp-cf:before, .sp-cf:after { content: ""; display: table; }
+ .sp-cf:after { clear: both; }
+-.sp-cf { *zoom: 1; }
+ 
+ /* Mobile devices, make hue slider bigger so it is easier to slide */
+ @media (max-device-width: 480px) {
+@@ -368,8 +365,6 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
+     cursor:pointer;
+     padding: 4px;
+     display:inline-block;
+-    *zoom: 1;
+-    *display: inline;
+     border: solid 1px #91765d;
+     background: #eee;
+     color: #333;
+@@ -402,7 +397,6 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
+ }
+ 
+ .sp-palette {
+-    *width: 220px;
+     max-width: 220px;
+ }
+ .sp-palette .sp-thumb-el {

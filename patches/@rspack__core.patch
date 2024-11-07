@@ -1,0 +1,54 @@
+diff --git a/compiled/zod/index.d.ts b/compiled/zod/index.d.ts
+index 08ec1b3ff352677899906681e702016998cb6f77..8db6f9b9d53d413ef62499c467f3534342886ae4 100644
+--- a/compiled/zod/index.d.ts
++++ b/compiled/zod/index.d.ts
+@@ -1716,7 +1716,7 @@ type z_mergeTypes<A, B> = mergeTypes<A, B>;
+ type z_noUnrecognized<Obj extends object, Shape extends object> = noUnrecognized<Obj, Shape>;
+ type z_objectInputType<Shape extends ZodRawShape, Catchall extends ZodTypeAny, UnknownKeys extends UnknownKeysParam = UnknownKeysParam> = objectInputType<Shape, Catchall, UnknownKeys>;
+ type z_objectOutputType<Shape extends ZodRawShape, Catchall extends ZodTypeAny, UnknownKeys extends UnknownKeysParam = UnknownKeysParam> = objectOutputType<Shape, Catchall, UnknownKeys>;
+-declare const z_objectUtil: typeof objectUtil;
++import z_objectUtil = objectUtil;
+ declare const z_oboolean: typeof oboolean;
+ declare const z_onumber: typeof onumber;
+ declare const z_ostring: typeof ostring;
+diff --git a/dist/Compilation.d.ts b/dist/Compilation.d.ts
+index dd24439d44fa2502c8bc1459905075cd788c434b..fdfba9573a6ab692074fb28b41be748b59c17605 100644
+--- a/dist/Compilation.d.ts
++++ b/dist/Compilation.d.ts
+@@ -377,32 +377,19 @@ export declare class Compilation {
+     static PROCESS_ASSETS_STAGE_REPORT: number;
+ }
+ export type EntryData = binding.JsEntryData;
+-/**
+- * Copied from `lib.es2015.iterable.d.ts` in TS 5.6 for compatibility
+- * 1. In 5.6 and after, `IterableIterator` cannot be assigned to 'MapIterator'
+- * 2. Before 5.6, Cannot find name 'MapIterator'
+- * @see https://devblogs.microsoft.com/typescript/announcing-typescript-5-6/#iterator-helper-methods
+- */
+-interface IteratorObject<T, TReturn = unknown, TNext = unknown> extends Iterator<T, TReturn, TNext> {
+-    [Symbol.iterator](): IteratorObject<T, TReturn, TNext>;
+-}
+-type BuiltinIteratorReturn = any;
+-interface MapIterator<T> extends IteratorObject<T, BuiltinIteratorReturn, unknown> {
+-    [Symbol.iterator](): MapIterator<T>;
+-}
+ export declare class Entries implements Map<string, EntryData> {
+     #private;
+     constructor(data: binding.JsEntries);
+     clear(): void;
+     forEach(callback: (value: binding.JsEntryData, key: string, map: Map<string, binding.JsEntryData>) => void, thisArg?: any): void;
+     get size(): number;
+-    entries(): MapIterator<[string, binding.JsEntryData]>;
+-    values(): MapIterator<binding.JsEntryData>;
+-    [Symbol.iterator](): MapIterator<[string, binding.JsEntryData]>;
++    entries(): ReturnType<Map<string, EntryData>["entries"]>;
++    values(): ReturnType<Map<string, EntryData>["values"]>;
++    [Symbol.iterator](): ReturnType<Map<string, EntryData>["entries"]>;
+     get [Symbol.toStringTag](): string;
+     has(key: string): boolean;
+     set(key: string, value: EntryData): this;
+     delete(key: string): boolean;
+     get(key: string): EntryData | undefined;
+-    keys(): MapIterator<string>;
++    keys(): ReturnType<Map<string, EntryData>["keys"]>;
+ }
