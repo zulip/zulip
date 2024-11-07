@@ -513,10 +513,6 @@ def process_raw_message_batch(
             rc_channel_mention_data=raw_message["rc_channel_mention_data"],
         )
 
-        if len(content) > 10000:  # nocoverage
-            logging.info("skipping too-long message of length %s", len(content))
-            continue
-
         date_sent = raw_message["date_sent"]
         sender_user_id = raw_message["sender_id"]
         recipient_id = raw_message["recipient_id"]

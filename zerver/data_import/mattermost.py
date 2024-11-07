@@ -442,10 +442,6 @@ def process_raw_message_batch(
         # html2text is GPL licensed, so run it as a subprocess.
         content = subprocess.check_output(["html2text", "--unicode-snob"], input=content, text=True)
 
-        if len(content) > 10000:  # nocoverage
-            logging.info("skipping too-long message of length %s", len(content))
-            continue
-
         date_sent = raw_message["date_sent"]
         sender_user_id = raw_message["sender_id"]
         if "channel_name" in raw_message:
