@@ -369,7 +369,6 @@ ul.popover-group-menu-member-list {
     color: var(--color-text-popover-menu);
 }
 
-.user_profile_presence,
 .popover_user_presence {
     width: var(--length-user-status-circle);
     height: var(--length-user-status-circle);
@@ -381,13 +380,18 @@ ul.popover-group-menu-member-list {
     flex-shrink: 0;
 }
 
+.user-status-icon-wrapper {
+    display: flex;
+}
+
 .user_profile_presence {
     /* Remove font-size to allow this to scale
        with the menu header text. Declaring font-size
        here maintains the legacy design of keeping
        the user-circle smaller, despite the larger
        surrounding text and icons. */
-    font-size: var(--base-font-size-px);
+    font-size: calc(var(--base-font-size-px) * 0.6666);
+    line-height: 1;
 }
 
 .bot-owner-name {
@@ -436,11 +440,6 @@ ul.popover-group-menu-member-list {
 
     .modal__header {
         justify-content: center;
-    }
-
-    .user_profile_presence {
-        margin: 5px;
-        vertical-align: middle;
     }
 
     .modal__close {
@@ -506,12 +505,14 @@ ul.popover-group-menu-member-list {
 
     .user-profile-manage-own-edit-button,
     .user-profile-manage-others-edit-button {
+        display: flex;
         text-decoration: none;
         /* 15px at 22px/1em */
         font-size: 0.6818em;
     }
 
     .user-profile-manage-own-copy-link-button {
+        display: flex;
         /* 19px at 22px/1em */
         font-size: 0.8638em;
         text-decoration: none;
