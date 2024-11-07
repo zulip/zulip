@@ -1021,13 +1021,17 @@ ul.popover-group-menu-member-list {
     }
 
     .popover-menu-user-presence {
+        /* 10px at 16px/1em */
+        font-size: 0.625em;
+        line-height: 1;
         position: absolute;
-        width: 8px;
-        height: 8px;
-        right: -1px;
-        bottom: -1px;
-        border: solid 1px var(--color-background);
-        border-radius: 50%;
+        right: 0;
+        bottom: 0;
+        -webkit-text-stroke: 1.5px var(--color-background-popover-menu);
+
+        &.user_circle_empty {
+            color: var(--color-user-circle-empty-no-alpha);
+        }
     }
 
     .popover-menu-user-info {
@@ -1059,11 +1063,6 @@ ul.popover-group-menu-member-list {
         color: var(--color-text-item);
         text-overflow: ellipsis;
         white-space: nowrap;
-    }
-
-    .user_circle_empty {
-        background-color: var(--color-background-popover-menu);
-        border-color: hsl(0deg 0% 50%);
     }
 }
 
