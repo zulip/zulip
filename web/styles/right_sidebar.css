@@ -168,10 +168,10 @@ $user_status_emoji_width: 24px;
     .user_sidebar_entry.with_avatar .user_circle {
         display: inline-block;
         position: absolute;
-        width: 0.4em;
-        height: 0.4em;
-        top: 1.6em;
-        left: 1.6em;
+        width: 0.5em;
+        height: 0.5em;
+        top: 1.7em;
+        left: 1.7em;
 
         &.user_circle_idle {
             background: linear-gradient(
@@ -273,7 +273,7 @@ $user_status_emoji_width: 24px;
         );
 
     .selectable_sidebar_block {
-        margin: 2px;
+        margin: 4px;
     }
 
     .unread_count:not(.hide) {
