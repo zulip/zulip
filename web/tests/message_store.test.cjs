@@ -118,7 +118,7 @@ test("process_new_message", () => {
     assert.equal(message.reply_to, "bob@example.com,cindy@example.com");
     assert.equal(message.to_user_ids, "103,104");
     assert.equal(message.display_reply_to, "Bob, Cindy");
-    assert.equal(message.alerted, true);
+    assert.equal(message.watched, true);
     assert.equal(message.is_me_message, false);
 
     const retrieved_message = message_store.get(2067);
@@ -151,7 +151,7 @@ test("process_new_message", () => {
     message = message_helper.process_new_message(message);
     assert.equal(message.reply_to, "denise@example.com");
     assert.deepEqual(message.flags, undefined);
-    assert.equal(message.alerted, false);
+    assert.equal(message.watched, false);
 
     assert.deepEqual(message_user_ids.user_ids().sort(), [
         me.user_id,
@@ -187,7 +187,7 @@ test("message_booleans_parity", () => {
         mentioned_me_directly: false,
         stream_wildcard_mentioned: true,
         topic_wildcard_mentioned: false,
-        alerted: false,
+        watched: false,
     });
 
     assert_bool_match(["topic_wildcard_mentioned"], {
@@ -195,7 +195,7 @@ test("message_booleans_parity", () => {
         mentioned_me_directly: false,
         stream_wildcard_mentioned: false,
         topic_wildcard_mentioned: true,
-        alerted: false,
+        watched: false,
     });
 
     assert_bool_match(["mentioned"], {
@@ -203,7 +203,7 @@ test("message_booleans_parity", () => {
         mentioned_me_directly: true,
         stream_wildcard_mentioned: false,
         topic_wildcard_mentioned: false,
-        alerted: false,
+        watched: false,
     });
 
     assert_bool_match(["has_alert_word"], {
@@ -211,7 +211,7 @@ test("message_booleans_parity", () => {
         mentioned_me_directly: false,
         stream_wildcard_mentioned: false,
         topic_wildcard_mentioned: false,
-        alerted: true,
+        watched: true,
     });
 });
 
@@ -269,7 +269,7 @@ test("update_booleans", () => {
     message.mentioned_me_directly = false;
     message.stream_wildcard_mentioned = false;
     message.topic_wildcard_mentioned = false;
-    message.alerted = false;
+    message.watched = false;
 
     let flags = ["mentioned", "has_alert_word", "read"];
     message_store.update_booleans(message, flags);
@@ -277,7 +277,7 @@ test("update_booleans", () => {
     assert.equal(message.mentioned_me_directly, true);
     assert.equal(message.stream_wildcard_mentioned, false);
     assert.equal(message.topic_wildcard_mentioned, false);
-    assert.equal(message.alerted, true);
+    assert.equal(message.watched, true);
 
     flags = ["stream_wildcard_mentioned", "unread"];
     message_store.update_booleans(message, flags);
@@ -297,7 +297,7 @@ test("update_booleans", () => {
     message_store.update_booleans(message, flags);
     assert.equal(message.mentioned, false);
     assert.equal(message.mentioned_me_directly, false);
-    assert.equal(message.alerted, false);
+    assert.equal(message.watched, false);
     assert.equal(message.stream_wildcard_mentioned, false);
     assert.equal(message.topic_wildcard_mentioned, false);
 
