@@ -369,8 +369,7 @@ ul.popover-group-menu-member-list {
     color: var(--color-text-popover-menu);
 }
 
-.user_profile_presence,
-.popover_user_presence {
+.user_profile_presence {
     width: var(--length-user-status-circle);
     height: var(--length-user-status-circle);
     margin: 0 5px;
@@ -379,9 +378,6 @@ ul.popover-group-menu-member-list {
     position: relative;
     top: 0;
     flex-shrink: 0;
-}
-
-.user_profile_presence {
     /* Remove font-size to allow this to scale
        with the menu header text. Declaring font-size
        here maintains the legacy design of keeping
