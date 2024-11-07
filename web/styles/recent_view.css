@@ -514,15 +514,6 @@
             .zulip-icon.zulip-icon-bot {
                 opacity: 0.6;
             }
-
-            .user_circle {
-                min-width: var(
-                    --length-user-status-circle-recent-conversations
-                );
-                height: var(--length-user-status-circle-recent-conversations);
-                float: left;
-                position: unset;
-            }
         }
 
         .user_status_icon_wrapper {

@@ -507,9 +507,6 @@
     /* User circles. */
     /* 8px at 14px/1em */
     --length-user-status-circle: 0.5714em;
-    /* Shrink the user activity circle for the Recent Conversations context. */
-    /* 7px at 14px/1em */
-    --length-user-status-circle-recent-conversations: 0.5em;
 
     /* Overlay heights for streams modal */
     --overlay-container-height: 95vh;
@@ -1638,7 +1635,7 @@
     );
     --color-tab-picker-icon: hsl(0deg 0% 80%);
     --color-user-circle-active: hsl(137deg 47% 50%);
-    --color-user-circle-idle: hsl(55deg 41% 32%);
+    --color-user-circle-idle: hsl(28deg 41% 42%);
     --color-user-circle-empty: hsl(228deg 10% 70% / 22%);
     --color-user-circle-empty-no-alpha: color-mix(
         in srgb,
