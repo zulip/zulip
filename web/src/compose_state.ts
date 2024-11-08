@@ -106,12 +106,16 @@ export function stream_id(): number | undefined {
     return undefined;
 }
 
-export function stream_name(): string {
+export let stream_name = (): string => {
     const stream_id = selected_recipient_id;
     if (typeof stream_id === "number") {
         return sub_store.maybe_get_stream_name(stream_id) ?? "";
     }
     return "";
+};
+
+export function rewire_stream_name(value: typeof stream_name): void {
+    stream_name = value;
 }
 
 export function set_stream_id(stream_id: number | ""): void {

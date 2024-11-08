@@ -61,7 +61,7 @@ export function get_recipient_label(message?: ComposeClosedMessage): string {
 }
 
 // Exported for tests
-export function update_reply_button_state(disable = false): void {
+export let update_reply_button_state = (disable = false): void => {
     $(".compose_reply_button").attr("disabled", disable ? "disabled" : null);
     if (disable) {
         $("#compose_buttons .compose-reply-button-wrapper").attr(
@@ -81,6 +81,10 @@ export function update_reply_button_state(disable = false): void {
             "selected_conversation",
         );
     }
+};
+
+export function rewire_update_reply_button_state(value: typeof update_reply_button_state): void {
+    update_reply_button_state = value;
 }
 
 function update_buttons(disable_reply?: boolean): void {

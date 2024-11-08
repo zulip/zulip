@@ -22,12 +22,12 @@ import * as recent_view_util from "./recent_view_util";
 import * as stream_data from "./stream_data";
 import * as unread_ops from "./unread_ops";
 
-export function respond_to_message(opts: {
+export let respond_to_message = (opts: {
     keep_composebox_empty?: boolean;
     message_id?: number;
     reply_type?: "personal";
     trigger?: string;
-}): void {
+}): void => {
     let message;
     let msg_type: "private" | "stream";
     if (recent_view_util.is_visible()) {
@@ -147,6 +147,10 @@ export function respond_to_message(opts: {
         is_reply: true,
         keep_composebox_empty: opts.keep_composebox_empty,
     });
+};
+
+export function rewire_respond_to_message(value: typeof respond_to_message): void {
+    respond_to_message = value;
 }
 
 export function reply_with_mention(opts: {
@@ -166,7 +170,9 @@ export function reply_with_mention(opts: {
     compose_ui.insert_syntax_and_focus(mention);
 }
 
-export function selection_within_message_id(selection = window.getSelection()): number | undefined {
+export let selection_within_message_id = (
+    selection = window.getSelection(),
+): number | undefined => {
     // Returns the message_id if the selection is entirely within a message,
     // otherwise returns undefined.
     assert(selection !== null);
@@ -178,6 +184,12 @@ export function selection_within_message_id(selection = window.getSelection()): 
         return start_id;
     }
     return undefined;
+};
+
+export function rewire_selection_within_message_id(
+    value: typeof selection_within_message_id,
+): void {
+    selection_within_message_id = value;
 }
 
 function get_quote_target(opts: {message_id?: number; quote_content?: string}): {

@@ -351,7 +351,7 @@ type ShowMessageViewOpts = {
     show_more_topics?: boolean;
 };
 
-export function show(raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): void {
+export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): void => {
     /* Main entry point for switching to a new view / message list.
 
        Supported parameters:
@@ -777,6 +777,10 @@ export function show(raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): v
             resize.resize_stream_filters_container();
         });
     });
+};
+
+export function rewire_show(value: typeof show): void {
+    show = value;
 }
 
 function navigate_to_anchor_message(opts: {

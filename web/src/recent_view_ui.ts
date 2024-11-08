@@ -930,7 +930,7 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
     setTimeout(revive_current_focus, 0);
 }
 
-export function inplace_rerender(topic_key: string, is_bulk_rerender?: boolean): boolean {
+export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): boolean => {
     if (!recent_view_util.is_visible()) {
         return false;
     }
@@ -990,6 +990,10 @@ export function inplace_rerender(topic_key: string, is_bulk_rerender?: boolean):
         setTimeout(revive_current_focus, 0);
     }
     return true;
+};
+
+export function rewire_inplace_rerender(value: typeof inplace_rerender): void {
+    inplace_rerender = value;
 }
 
 export function update_topic_visibility_policy(stream_id: number, topic: string): boolean {

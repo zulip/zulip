@@ -106,7 +106,11 @@ export type TypeaheadSuggestion =
     | SlashCommandSuggestion;
 
 // We export it to allow tests to mock it.
-export const max_num_items = MAX_ITEMS;
+export let max_num_items = MAX_ITEMS;
+
+export function rewire_max_num_items(value: typeof max_num_items): void {
+    max_num_items = value;
+}
 
 export let emoji_collection: Emoji[] = [];
 
@@ -389,9 +393,13 @@ function handle_keyup(e: JQuery.KeyUpEvent): void {
     }
 }
 
-export function split_at_cursor(query: string, $input: JQuery): [string, string] {
+export let split_at_cursor = (query: string, $input: JQuery): [string, string] => {
     const cursor = $input.caret();
     return [query.slice(0, cursor), query.slice(cursor)];
+};
+
+export function rewire_split_at_cursor(value: typeof split_at_cursor): void {
+    split_at_cursor = value;
 }
 
 export function tokenize_compose_str(s: string): string {

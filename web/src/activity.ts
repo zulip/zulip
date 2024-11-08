@@ -114,7 +114,7 @@ export function compute_active_status(): ActivityState {
     return ActivityState.IDLE;
 }
 
-export function send_presence_to_server(redraw?: () => void): void {
+export let send_presence_to_server = (redraw?: () => void): void => {
     // Zulip has 2 data feeds coming from the server to the client:
     // The server_events data, and this presence feed.  Data from
     // server_events is nicely serialized, but if we've been offline
@@ -180,6 +180,10 @@ export function send_presence_to_server(redraw?: () => void): void {
             }
         },
     });
+};
+
+export function rewire_send_presence_to_server(value: typeof send_presence_to_server): void {
+    send_presence_to_server = value;
 }
 
 export function mark_client_active(): void {

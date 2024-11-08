@@ -103,11 +103,11 @@ export function update_current_view_for_topic_visibility() {
     return false;
 }
 
-export function update_views_filtered_on_message_property(
+export let update_views_filtered_on_message_property = (
     message_ids,
     property_term_type,
     property_value,
-) {
+) => {
     // NOTE: Call this function after updating the message property locally.
     assert(!property_term_type.includes("not-"));
 
@@ -212,6 +212,7 @@ export function update_views_filtered_on_message_property(
                     // can be used to update other message lists and
                     // cached message data structures as well.
                 },
+                // eslint-disable-next-line no-loop-func
                 success(data) {
                     // `messages_to_fetch` might already be cached locally when
                     // we reach here but `message_helper.process_new_message`
@@ -258,6 +259,10 @@ export function update_views_filtered_on_message_property(
             }
         }
     }
+};
+
+export function rewire_update_views_filtered_on_message_property(value) {
+    update_views_filtered_on_message_property = value;
 }
 
 export function insert_new_messages(messages, sent_by_this_client, deliver_locally) {

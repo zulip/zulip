@@ -91,10 +91,10 @@ export function update_or_append_banner(
     }
 }
 
-export function clear_message_sent_banners(
+export let clear_message_sent_banners = (
     include_unmute_banner = true,
     skip_automatic_new_visibility_policy_banner = false,
-): void {
+): void => {
     for (const classname of Object.values(MESSAGE_SENT_CLASSNAMES)) {
         if (
             skip_automatic_new_visibility_policy_banner &&
@@ -115,6 +115,10 @@ export function clear_message_sent_banners(
         clear_unmute_topic_notifications();
     }
     scroll_to_message_banner_message_id = null;
+};
+
+export function rewire_clear_message_sent_banners(value: typeof clear_message_sent_banners): void {
+    clear_message_sent_banners = value;
 }
 
 // TODO: Replace with compose_ui.hide_compose_spinner() when it is converted to ts.

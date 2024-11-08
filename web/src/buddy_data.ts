@@ -27,8 +27,19 @@ import * as util from "./util";
 
 */
 
-export const max_size_before_shrinking = 600;
-export const max_channel_size_to_show_all_subscribers = 75;
+export let max_size_before_shrinking = 600;
+
+export function rewire_max_size_before_shrinking(value: typeof max_size_before_shrinking): void {
+    max_size_before_shrinking = value;
+}
+
+export let max_channel_size_to_show_all_subscribers = 75;
+
+export function rewire_max_channel_size_to_show_all_subscribers(
+    value: typeof max_channel_size_to_show_all_subscribers,
+): void {
+    max_channel_size_to_show_all_subscribers = value;
+}
 
 let is_searching_users = false;
 
@@ -71,11 +82,11 @@ export function level(user_id: number): number {
     }
 }
 
-export function user_matches_narrow(
+export let user_matches_narrow = (
     user_id: number,
     pm_ids: Set<number>,
     stream_id?: number | null,
-): boolean {
+): boolean => {
     if (stream_id) {
         return stream_data.is_user_subscribed(stream_id, user_id);
     }
@@ -83,6 +94,10 @@ export function user_matches_narrow(
         return pm_ids.has(user_id) || people.is_my_user_id(user_id);
     }
     return false;
+};
+
+export function rewire_user_matches_narrow(value: typeof user_matches_narrow): void {
+    user_matches_narrow = value;
 }
 
 export function compare_function(

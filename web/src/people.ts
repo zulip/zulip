@@ -89,10 +89,14 @@ export function get_users_from_ids(user_ids: number[]): User[] {
 }
 
 // Use this function only when you are sure that user_id is valid.
-export function get_by_user_id(user_id: number): User {
+export let get_by_user_id = (user_id: number): User => {
     const person = people_by_user_id_dict.get(user_id);
     assert(person, `Unknown user_id in get_by_user_id: ${user_id}`);
     return person;
+};
+
+export function rewire_get_by_user_id(value: typeof get_by_user_id): void {
+    get_by_user_id = value;
 }
 
 // This is type unsafe version of get_by_user_id for the callers that expects undefined values.
@@ -123,7 +127,7 @@ export function validate_user_ids(user_ids: number[]): number[] {
     return good_ids;
 }
 
-export function get_by_email(email: string): User | undefined {
+export let get_by_email = (email: string): User | undefined => {
     const person = people_dict.get(email);
 
     if (!person) {
@@ -137,6 +141,10 @@ export function get_by_email(email: string): User | undefined {
     }
 
     return person;
+};
+
+export function rewire_get_by_email(value: typeof get_by_email): void {
+    get_by_email = value;
 }
 
 export function get_bot_owner_user(user: User & {is_bot: true}): User | undefined {
@@ -382,7 +390,7 @@ export function emails_strings_to_user_ids_string(emails_string: string): string
     return email_list_to_user_ids_string(emails);
 }
 
-export function email_list_to_user_ids_string(emails: string[]): string | undefined {
+export let email_list_to_user_ids_string = (emails: string[]): string | undefined => {
     let user_ids = util.try_parse_as_truthy(
         emails.map((email) => {
             const person = get_by_email(email);
@@ -398,6 +406,12 @@ export function email_list_to_user_ids_string(emails: string[]): string | undefi
     user_ids = sort_numerically(user_ids);
 
     return user_ids.join(",");
+};
+
+export function rewire_email_list_to_user_ids_string(
+    value: typeof email_list_to_user_ids_string,
+): void {
+    email_list_to_user_ids_string = value;
 }
 
 export function get_full_names_for_poll_option(user_ids: number[]): string {
@@ -1056,7 +1070,7 @@ export function get_bot_ids(): number[] {
     return bot_ids;
 }
 
-export function get_active_human_count(): number {
+export let get_active_human_count = (): number => {
     let count = 0;
     for (const person of active_user_dict.values()) {
         if (!person.is_bot) {
@@ -1064,6 +1078,10 @@ export function get_active_human_count(): number {
         }
     }
     return count;
+};
+
+export function rewire_get_active_human_count(value: typeof get_active_human_count): void {
+    get_active_human_count = value;
 }
 
 export function get_active_user_ids(): number[] {

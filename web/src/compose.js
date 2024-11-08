@@ -170,7 +170,7 @@ export function send_message_success(request, data) {
     }
 }
 
-export function send_message(request = create_message_object()) {
+export let send_message = (request = create_message_object()) => {
     compose_state.set_recipient_edited_manually(false);
     compose_state.set_is_content_unedited_restored_draft(false);
     if (request.type === "private") {
@@ -269,6 +269,10 @@ export function send_message(request = create_message_object()) {
         // taking a longtime to send.
         setTimeout(() => echo.display_slow_send_loading_spinner(message), 5000);
     }
+};
+
+export function rewire_send_message(value) {
+    send_message = value;
 }
 
 export function enter_with_preview_open(ctrl_pressed = false) {
@@ -287,7 +291,7 @@ export function enter_with_preview_open(ctrl_pressed = false) {
 // Common entrypoint for asking the server to send the message
 // currently drafted in the compose box, including for scheduled
 // messages.
-export function finish(scheduling_message = false) {
+export let finish = (scheduling_message = false) => {
     if (compose_ui.compose_spinner_visible) {
         // Avoid sending a message twice in parallel in races where
         // the user clicks the `Send` button very quickly twice or
@@ -326,6 +330,10 @@ export function finish(scheduling_message = false) {
     }
     do_post_send_tasks();
     return true;
+};
+
+export function rewire_finish(value) {
+    finish = value;
 }
 
 export function do_post_send_tasks() {

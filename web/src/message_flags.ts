@@ -16,7 +16,11 @@ export function send_flag_update_for_messages(msg_ids: number[], flag: string, o
         },
     });
 }
-export const _unread_batch_size = 1000;
+export let _unread_batch_size = 1000;
+
+export function rewire__unread_batch_size(value: typeof _unread_batch_size): void {
+    _unread_batch_size = value;
+}
 
 export const send_read = (function () {
     let queue: Message[] = [];

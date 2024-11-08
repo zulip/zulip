@@ -70,8 +70,12 @@ function call_hooks(hooks: ComposeHook[]): void {
     }
 }
 
-export function blur_compose_inputs(): void {
+export let blur_compose_inputs = (): void => {
     $(".message_comp").find("input, textarea, button, #private_message_recipient").trigger("blur");
+};
+
+export function rewire_blur_compose_inputs(value: typeof blur_compose_inputs): void {
+    blur_compose_inputs = value;
 }
 
 function hide_box(): void {
@@ -109,8 +113,12 @@ function show_compose_box(opts: ComposeActionsOpts): void {
     compose_ui.set_focus(opts_by_message_type);
 }
 
-export function clear_textarea(): void {
+export let clear_textarea = (): void => {
     $("#compose").find("input[type=text], textarea").val("");
+};
+
+export function rewire_clear_textarea(value: typeof clear_textarea): void {
+    clear_textarea = value;
 }
 
 function clear_box(): void {
@@ -135,7 +143,7 @@ function clear_box(): void {
 }
 
 let autosize_callback_opts: ComposeActionsStartOpts;
-export function autosize_message_content(opts: ComposeActionsStartOpts): void {
+export let autosize_message_content = (opts: ComposeActionsStartOpts): void => {
     if (!compose_ui.is_expanded()) {
         autosize_callback_opts = opts;
         let has_resized_once = false;
@@ -157,15 +165,23 @@ export function autosize_message_content(opts: ComposeActionsStartOpts): void {
             });
         autosize($("textarea#compose-textarea"));
     }
+};
+
+export function rewire_autosize_message_content(value: typeof autosize_message_content): void {
+    autosize_message_content = value;
 }
 
-export function expand_compose_box(): void {
+export let expand_compose_box = (): void => {
     $("#compose_close").attr("data-tooltip-template-id", "compose_close_tooltip_template");
     $("#compose_controls").hide();
     $(".message_comp").show();
+};
+
+export function rewire_expand_compose_box(value: typeof expand_compose_box): void {
+    expand_compose_box = value;
 }
 
-export function complete_starting_tasks(opts: ComposeActionsOpts): void {
+export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
     // This is sort of a kitchen sink function, and it's called only
     // by compose.start() for now.  Having this as a separate function
     // makes testing a bit easier.
@@ -182,6 +198,10 @@ export function complete_starting_tasks(opts: ComposeActionsOpts): void {
     if (!narrow_state.narrowed_by_reply()) {
         compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
     }
+};
+
+export function rewire_complete_starting_tasks(value: typeof complete_starting_tasks): void {
+    complete_starting_tasks = value;
 }
 
 export function maybe_scroll_up_selected_message(opts: ComposeActionsStartOpts): void {
@@ -246,7 +266,7 @@ function same_recipient_as_before(opts: ComposeActionsOpts): boolean {
     );
 }
 
-export function start(raw_opts: ComposeActionsStartOpts): void {
+export let start = (raw_opts: ComposeActionsStartOpts): void => {
     if (page_params.is_spectator) {
         spectators.login_to_access();
         return;
@@ -390,9 +410,13 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
     resize.reset_compose_message_max_height();
 
     complete_starting_tasks(opts);
+};
+
+export function rewire_start(value: typeof start): void {
+    start = value;
 }
 
-export function cancel(): void {
+export let cancel = (): void => {
     // As user closes the compose box, restore the compose box max height
     if (compose_ui.is_expanded()) {
         compose_ui.make_compose_box_original_size();
@@ -420,6 +444,10 @@ export function cancel(): void {
     compose_state.set_message_type(undefined);
     compose_pm_pill.clear();
     $(document).trigger("compose_canceled.zulip");
+};
+
+export function rewire_cancel(value: typeof cancel): void {
+    cancel = value;
 }
 
 export function on_show_navigation_view(): void {
@@ -440,7 +468,7 @@ export function on_show_navigation_view(): void {
     cancel();
 }
 
-export function on_topic_narrow(): void {
+export let on_topic_narrow = (): void => {
     if (!compose_state.composing()) {
         // If our compose box is closed, then just
         // leave it closed, assuming that the user is
@@ -491,6 +519,10 @@ export function on_topic_narrow(): void {
     compose_fade.update_message_list();
     drafts.update_compose_draft_count();
     $("textarea#compose-textarea").trigger("focus");
+};
+
+export function rewire_on_topic_narrow(value: typeof on_topic_narrow): void {
+    on_topic_narrow = value;
 }
 
 // TODO/typescript: Fill this in when converting narrow.js to typescripot.

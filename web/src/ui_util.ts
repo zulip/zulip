@@ -72,10 +72,15 @@ export function is_user_said_paragraph($element: JQuery): boolean {
     return remaining_text.trim() === ":";
 }
 
-export function get_collapsible_status_array($elements: JQuery): boolean[] {
-    return [...$elements].map(
+export let get_collapsible_status_array = ($elements: JQuery): boolean[] =>
+    [...$elements].map(
         (element) => $(element).is("blockquote") || is_user_said_paragraph($(element)),
     );
+
+export function rewire_get_collapsible_status_array(
+    value: typeof get_collapsible_status_array,
+): void {
+    get_collapsible_status_array = value;
 }
 
 export function potentially_collapse_quotes($element: JQuery): boolean {

@@ -899,7 +899,7 @@ export function set_up_dropdown_widget_for_realm_group_settings(): void {
     }
 }
 
-export function init_dropdown_widgets(): void {
+export let init_dropdown_widgets = (): void => {
     const notification_stream_options = (): dropdown_widget.Option[] => {
         const streams = stream_settings_data.get_streams_for_settings_page();
         const options: dropdown_widget.Option[] = streams.map((stream) => ({
@@ -956,6 +956,10 @@ export function init_dropdown_widgets(): void {
     );
 
     set_up_dropdown_widget_for_realm_group_settings();
+};
+
+export function rewire_init_dropdown_widgets(value: typeof init_dropdown_widgets): void {
+    init_dropdown_widgets = value;
 }
 
 export function register_save_discard_widget_handlers(
@@ -1055,7 +1059,7 @@ export function register_save_discard_widget_handlers(
 }
 
 // Exported for tests
-export function initialize_group_setting_widgets(): void {
+export let initialize_group_setting_widgets = (): void => {
     const realm_group_permission_settings = Object.entries(
         realm.server_supported_permission_settings.realm,
     );
@@ -1080,6 +1084,12 @@ export function initialize_group_setting_widgets(): void {
 
     enable_or_disable_group_permission_settings();
     check_disable_direct_message_initiator_group_widget();
+};
+
+export function rewire_initialize_group_setting_widgets(
+    value: typeof initialize_group_setting_widgets,
+): void {
+    initialize_group_setting_widgets = value;
 }
 
 export function build_page(): void {
