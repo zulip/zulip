@@ -552,6 +552,7 @@ def process_raw_message_batch(
             has_image=has_image,
             has_link=has_link,
             has_attachment=has_attachment,
+            is_direct_message_type=is_pm_data,
         )
         zerver_message.append(message)
         build_reactions(
