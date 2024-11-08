@@ -597,6 +597,23 @@ input[type="checkbox"] {
     }
 }
 
+.alert-notification-email {
+    display: inline-block;
+    vertical-align: top;
+    height: auto !important; /*! important is Ensuring Overrides*/
+    width: auto !important;
+    white-space: break-spaces !important;
+    overflow-wrap: anywhere;
+    background-color: transparent;
+    border-radius: 4px;
+    margin-top: 14px;
+    margin-left: 10px;
+    padding: 3px 10px;
+
+    color: var(--text-color);
+    border: none;
+}
+
 #profile-field-settings #admin-add-profile-field-status {
     margin-top: 4px;
 }

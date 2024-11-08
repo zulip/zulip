@@ -57,7 +57,6 @@ export function do_settings_change(
         success(response_data) {
             setTimeout(() => {
                 ui_report.success(success_msg_html, $spinner, remove_after);
-                display_checkmark($spinner);
             }, appear_after);
             if (success_continuation !== undefined) {
                 success_continuation(response_data);
