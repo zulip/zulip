@@ -326,7 +326,7 @@ test_ui("get_invalid_recipient_emails", ({override, override_rewire}) => {
 
     people.initialize(current_user.user_id, params);
 
-    override_rewire(compose_state, "private_message_recipient", () => "welcome-bot@example.com");
+    override_rewire(compose_pm_pill, "get_emails", () => "welcome-bot@example.com");
     assert.deepEqual(compose_validate.get_invalid_recipient_emails(), []);
 });
 
