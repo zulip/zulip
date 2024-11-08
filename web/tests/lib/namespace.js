@@ -356,8 +356,8 @@ exports.with_overrides = function (test_function) {
             `We cannot override a function for ${typeof obj} objects`,
         );
 
-        // https://github.com/rosswarren/babel-plugin-rewire-ts/issues/15
-        const old_value = prop in obj ? obj[prop] : obj.__GetDependency__(prop);
+        assert.ok(Object.hasOwn(obj, prop));
+        const old_value = obj[prop];
         let new_value = value;
 
         if (typeof value === "function") {
