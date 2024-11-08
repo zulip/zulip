@@ -724,6 +724,7 @@
     --color-message-formatting-controls-container: hsl(232deg 30% 96%);
     --color-message-content-container-border: hsl(0deg 0% 0% / 10%);
     --color-message-content-container-border-focus: hsl(0deg 0% 57%);
+    --color-message-content-container-border-over-limit: hsl(0deg 76% 65%);
     --color-compose-control-button-background-hover: hsl(0deg 0% 0% / 5%);
     --color-compose-focus-ring: var(--color-outline-focus);
 
