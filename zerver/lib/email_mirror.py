@@ -28,6 +28,7 @@ from zerver.lib.message import normalize_body, truncate_content, truncate_topic
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
+from zerver.lib.streams import access_stream_for_send_message
 from zerver.lib.string_validation import is_character_printable
 from zerver.lib.upload import upload_message_attachment
 from zerver.models import Message, MissedMessageEmailAddress, Realm, Recipient, Stream, UserProfile
@@ -431,6 +432,15 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
         options["include_quotes"] = is_forwarded(subject_header)
 
     user_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id)
+
+    try:
+        access_stream_for_send_message(user_profile, stream, forwarder_user_profile=None)
+    except JsonableError as e:
+        logger.info(
+            "Failed to process email to %s (%s): %s", stream.name, stream.realm.string_id, e
+        )
+        return
+
     body = construct_zulip_body(message, stream.realm, sender=user_profile, **options)
     send_zulip(user_profile, stream, subject, body)
     logger.info(
