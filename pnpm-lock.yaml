@@ -365,9 +365,6 @@ importers:
       babel-plugin-istanbul:
         specifier: ^7.0.0
         version: 7.0.0
-      babel-plugin-rewire-ts:
-        specifier: ^1.4.0
-        version: 1.4.0
       callsites:
         specifier: ^3.1.0
         version: 3.1.0
@@ -3047,9 +3044,6 @@ packages:
     resolution: {integrity: sha512-2R25rQZWP63nGwaAswvDazbPXfrM3HwVoBXK6HcqeKrSrL/JqcC/rDcf95l4r7LXLyxDXc8uQDa064GubtCABg==}
     peerDependencies:
       '@babel/core': ^7.4.0 || ^8.0.0-0 <8.0.0
-
-  babel-plugin-rewire-ts@1.4.0:
-    resolution: {integrity: sha512-XVyyWMIx1fNSG42vbUaAro1LANLs/fBW6KurYaeoVjS2U8zLCaow7LKll6zjs1cwcqcbZK2v59zVouPs+JAqxw==}
 
   babel-plugin-syntax-jsx@6.18.0:
     resolution: {integrity: sha512-qrPaCSo9c8RHNRHIotaufGbuOBN8rtdC4QrrFFc43vyWCCz7Kl7GL1PGaXtMGQZUXrkCjNEgxDfmAuAabr/rlw==}
@@ -12148,8 +12142,6 @@ snapshots:
       '@babel/helper-define-polyfill-provider': 0.6.2(@babel/core@7.26.0)
     transitivePeerDependencies:
       - supports-color
-
-  babel-plugin-rewire-ts@1.4.0: {}
 
   babel-plugin-syntax-jsx@6.18.0: {}
 
