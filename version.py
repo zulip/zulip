@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 319  # Last bumped for message-link class
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (299, 0)  # bumped 2024-11-08 to remove babel-plugin-rewire-ts
+PROVISION_VERSION = (299, 1)  # bumped 2024-11-08 to patch svgicons2svgfont

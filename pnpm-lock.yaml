@@ -11,6 +11,9 @@ patchedDependencies:
   source-sans@3.46.0:
     hash: 4n7ij66tzyhzaqnxsenbilrxr4
     path: patches/source-sans@3.46.0.patch
+  svgicons2svgfont:
+    hash: d4mkid5oxxg6zfe7zsae2cikn4
+    path: patches/svgicons2svgfont.patch
   tippy.js@6.3.7:
     hash: mlbmk5pq4q6iuwarqu6solgeeq
     path: patches/tippy.js@6.3.7.patch
@@ -11614,7 +11617,7 @@ snapshots:
       mkdirp: 1.0.4
       q: 1.5.1
       svg2ttf: 6.0.3
-      svgicons2svgfont: 10.0.6
+      svgicons2svgfont: 10.0.6(patch_hash=d4mkid5oxxg6zfe7zsae2cikn4)
       ttf2eot: 3.1.0
       ttf2woff: 3.0.0
       ttf2woff2: 4.0.5
@@ -18390,7 +18393,7 @@ snapshots:
       microbuffer: 1.0.0
       svgpath: 2.6.0
 
-  svgicons2svgfont@10.0.6:
+  svgicons2svgfont@10.0.6(patch_hash=d4mkid5oxxg6zfe7zsae2cikn4):
     dependencies:
       commander: 7.2.0
       geometry-interfaces: 1.1.4
