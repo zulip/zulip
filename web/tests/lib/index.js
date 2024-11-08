@@ -40,7 +40,6 @@ require("@babel/register")({
     ],
     plugins: [
         ...(process.env.USING_INSTRUMENTED_CODE ? [["istanbul", {exclude: []}]] : []),
-        "babel-plugin-rewire-ts",
         ["@babel/plugin-transform-modules-commonjs", {lazy: () => true}],
     ],
     root: path.resolve(__dirname, "../.."),
