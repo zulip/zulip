@@ -55,19 +55,27 @@ function same_recipient(a: Recipient | null, b: Recipient | null): boolean {
 /** Exported only for tests. */
 export let state: TypingStatusState | null = null;
 
+export function rewire_state(value: typeof state): void {
+    state = value;
+}
+
 /** Exported only for tests. */
-export function stop_last_notification(worker: TypingStatusWorker): void {
+export let stop_last_notification = (worker: TypingStatusWorker): void => {
     assert(state !== null, "State object should not be null here.");
     clearTimeout(state.idle_timer);
     worker.notify_server_stop(state.current_recipient);
     state = null;
+};
+
+export function rewire_stop_last_notification(value: typeof stop_last_notification): void {
+    stop_last_notification = value;
 }
 
 /** Exported only for tests. */
-export function start_or_extend_idle_timer(
+export let start_or_extend_idle_timer = (
     worker: TypingStatusWorker,
     typing_stopped_wait_period: number,
-): ReturnType<typeof setTimeout> {
+): ReturnType<typeof setTimeout> => {
     function on_idle_timeout(): void {
         // We don't do any real error checking here, because
         // if we've been idle, we need to tell folks, and if
@@ -80,6 +88,10 @@ export function start_or_extend_idle_timer(
         clearTimeout(state.idle_timer);
     }
     return setTimeout(on_idle_timeout, typing_stopped_wait_period);
+};
+
+export function rewire_start_or_extend_idle_timer(value: typeof start_or_extend_idle_timer): void {
+    start_or_extend_idle_timer = value;
 }
 
 function set_next_start_time(current_time: number, typing_started_wait_period: number): void {
@@ -88,27 +100,35 @@ function set_next_start_time(current_time: number, typing_started_wait_period: n
 }
 
 // Exported for tests
-export function actually_ping_server(
+export let actually_ping_server = (
     worker: TypingStatusWorker,
     recipient: Recipient,
     current_time: number,
     typing_started_wait_period: number,
-): void {
+): void => {
     worker.notify_server_start(recipient);
     set_next_start_time(current_time, typing_started_wait_period);
+};
+
+export function rewire_actually_ping_server(value: typeof actually_ping_server): void {
+    actually_ping_server = value;
 }
 
 /** Exported only for tests. */
-export function maybe_ping_server(
+export let maybe_ping_server = (
     worker: TypingStatusWorker,
     recipient: Recipient,
     typing_started_wait_period: number,
-): void {
+): void => {
     assert(state !== null, "State object should not be null here.");
     const current_time = worker.get_current_time();
     if (current_time > state.next_send_start_time) {
         actually_ping_server(worker, recipient, current_time, typing_started_wait_period);
     }
+};
+
+export function rewire_maybe_ping_server(value: typeof maybe_ping_server): void {
+    maybe_ping_server = value;
 }
 
 /**

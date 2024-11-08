@@ -58,7 +58,7 @@ export function is_filtering_inactives(): boolean {
     return filter_out_inactives;
 }
 
-export function has_recent_activity(sub: StreamSubscription): boolean {
+export let has_recent_activity = (sub: StreamSubscription): boolean => {
     if (!filter_out_inactives || sub.pin_to_top) {
         // If users don't want to filter inactive streams
         // to the bottom, we respect that setting and don't
@@ -70,6 +70,10 @@ export function has_recent_activity(sub: StreamSubscription): boolean {
         return true;
     }
     return stream_topic_history.stream_has_topics(sub.stream_id) || sub.newly_subscribed;
+};
+
+export function rewire_has_recent_activity(value: typeof has_recent_activity): void {
+    has_recent_activity = value;
 }
 
 export function has_recent_activity_but_muted(sub: StreamSubscription): boolean {

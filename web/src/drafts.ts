@@ -22,9 +22,13 @@ import * as timerender from "./timerender";
 import * as ui_util from "./ui_util";
 import * as util from "./util";
 
-export function set_count(count: number): void {
+export let set_count = (count: number): void => {
     const $drafts_li = $(".top_left_drafts");
     ui_util.update_unread_count_in_dom($drafts_li, count);
+};
+
+export function rewire_set_count(value: typeof set_count): void {
+    set_count = value;
 }
 
 function getTimestamp(): number {
@@ -219,7 +223,7 @@ export const draft_model = (function () {
     };
 })();
 
-export function update_compose_draft_count(): void {
+export let update_compose_draft_count = (): void => {
     const $count_container = $(".compose-drafts-count-container");
     const $count_ele = $count_container.find(".compose-drafts-count");
     if (!compose_state.has_full_recipient()) {
@@ -235,11 +239,19 @@ export function update_compose_draft_count(): void {
         $count_ele.text("");
         $count_container.hide();
     }
+};
+
+export function rewire_update_compose_draft_count(value: typeof update_compose_draft_count): void {
+    update_compose_draft_count = value;
 }
 
-export function sync_count(): void {
+export let sync_count = (): void => {
     const drafts = draft_model.get();
     set_count(Object.keys(drafts).length);
+};
+
+export function rewire_sync_count(value: typeof sync_count): void {
+    sync_count = value;
 }
 
 export function delete_all_drafts(): void {
@@ -396,7 +408,7 @@ type UpdateDraftOptions = {
     is_sending_saving?: boolean;
 };
 
-export function update_draft(opts: UpdateDraftOptions = {}): string | undefined {
+export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined => {
     const draft_id = compose_draft_id;
     const old_draft = draft_id === undefined ? undefined : draft_model.getDraft(draft_id);
 
@@ -439,6 +451,10 @@ export function update_draft(opts: UpdateDraftOptions = {}): string | undefined 
     maybe_notify(no_notify);
 
     return new_draft_id;
+};
+
+export function rewire_update_draft(value: typeof update_draft): void {
+    update_draft = value;
 }
 
 export const DRAFT_LIFETIME = 30;

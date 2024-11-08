@@ -288,14 +288,14 @@ export function is_slash_command(content: string): boolean {
     return !content.startsWith("/me") && content.startsWith("/");
 }
 
-export function try_deliver_locally(
+export let try_deliver_locally = (
     message_request: MessageRequest,
     insert_new_messages: (
         messages: LocalMessage[],
         send_by_this_client: boolean,
         deliver_locally: boolean,
     ) => Message[],
-): Message | undefined {
+): Message | undefined => {
     // Checks if the message request can be locally echoed, and if so,
     // adds a local echoed copy of the message to appropriate message lists.
     //
@@ -349,6 +349,10 @@ export function try_deliver_locally(
 
     const message = insert_local_message(message_request, local_id_float, insert_new_messages);
     return message;
+};
+
+export function rewire_try_deliver_locally(value: typeof try_deliver_locally): void {
+    try_deliver_locally = value;
 }
 
 export function edit_locally(message: Message, request: LocalEditRequest): Message {
@@ -432,7 +436,7 @@ export function edit_locally(message: Message, request: LocalEditRequest): Messa
     return message;
 }
 
-export function reify_message_id(local_id: string, server_id: number): void {
+export let reify_message_id = (local_id: string, server_id: number): void => {
     const message = echo_state.get_message_waiting_for_id(local_id);
     echo_state.remove_message_from_waiting_for_id(local_id);
 
@@ -463,6 +467,10 @@ export function reify_message_id(local_id: string, server_id: number): void {
             message_id: message.id,
         });
     }
+};
+
+export function rewire_reify_message_id(value: typeof reify_message_id): void {
+    reify_message_id = value;
 }
 
 export function update_message_lists({old_id, new_id}: {old_id: number; new_id: number}): void {
@@ -576,13 +584,17 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
     return non_echo_messages;
 }
 
-export function message_send_error(message_id: number, error_response: string): void {
+export let message_send_error = (message_id: number, error_response: string): void => {
     // Error sending message, show inline
     const message = message_store.get(message_id)!;
     message.failed_request = true;
     message.show_slow_send_spinner = false;
 
     show_message_failed(message_id, error_response);
+};
+
+export function rewire_message_send_error(value: typeof message_send_error): void {
+    message_send_error = value;
 }
 
 function abort_message(message: Message): void {

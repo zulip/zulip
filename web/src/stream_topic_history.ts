@@ -356,10 +356,14 @@ export function has_history_for(stream_id: number): boolean {
     return fetched_stream_ids.has(stream_id);
 }
 
-export function get_recent_topic_names(stream_id: number): string[] {
+export let get_recent_topic_names = (stream_id: number): string[] => {
     const history = find_or_create(stream_id);
 
     return history.get_recent_topic_names();
+};
+
+export function rewire_get_recent_topic_names(value: typeof get_recent_topic_names): void {
+    get_recent_topic_names = value;
 }
 
 export function get_max_message_id(stream_id: number): number {

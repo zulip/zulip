@@ -12,7 +12,7 @@ import * as ui_report from "./ui_report";
 
 export let loaded = false;
 
-export function rerender_alert_words_ui(): void {
+export let rerender_alert_words_ui = (): void => {
     if (!loaded) {
         return;
     }
@@ -33,6 +33,10 @@ export function rerender_alert_words_ui(): void {
             ...ListWidget.generic_sort_functions("alphabetic", ["word"]),
         },
     });
+};
+
+export function rewire_rerender_alert_words_ui(value: typeof rerender_alert_words_ui): void {
+    rerender_alert_words_ui = value;
 }
 
 function update_alert_word_status(status_text: string, is_error: boolean): void {

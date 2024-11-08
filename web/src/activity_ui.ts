@@ -59,7 +59,7 @@ export function clear_for_testing(): void {
     user_filter = undefined;
 }
 
-export function update_presence_indicators(): void {
+export let update_presence_indicators = (): void => {
     $("[data-presence-indicator-user-id]").each(function () {
         const user_id = Number.parseInt($(this).attr("data-presence-indicator-user-id") ?? "", 10);
         assert(!Number.isNaN(user_id));
@@ -68,6 +68,10 @@ export function update_presence_indicators(): void {
             .removeClass("user_circle_empty user_circle_green user_circle_idle")
             .addClass(user_circle_class);
     });
+};
+
+export function rewire_update_presence_indicators(value: typeof update_presence_indicators): void {
+    update_presence_indicators = value;
 }
 
 export function redraw_user(user_id: number): void {
@@ -115,7 +119,7 @@ export function render_empty_user_list_message_if_needed($container: JQuery): vo
     $container.append($(empty_list_widget_html));
 }
 
-export function build_user_sidebar(): number[] | undefined {
+export let build_user_sidebar = (): number[] | undefined => {
     if (realm.realm_presence_disabled) {
         return undefined;
     }
@@ -131,6 +135,10 @@ export function build_user_sidebar(): number[] | undefined {
     render_empty_user_list_message_if_needed(buddy_list.$other_users_list);
 
     return all_user_ids; // for testing
+};
+
+export function rewire_build_user_sidebar(value: typeof build_user_sidebar): void {
+    build_user_sidebar = value;
 }
 
 function do_update_users_for_search(): void {
