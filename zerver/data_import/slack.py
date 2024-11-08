@@ -50,7 +50,7 @@ from zerver.lib.emoji import codepoint_to_name, get_emoji_file_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.mime_types import guess_type
 from zerver.lib.storage import static_path
-from zerver.lib.thumbnail import resize_logo
+from zerver.lib.thumbnail import resize_realm_icon
 from zerver.lib.upload import sanitize_name
 from zerver.models import (
     CustomProfileField,
@@ -1351,7 +1351,7 @@ def fetch_team_icons(
         open(resized_icon_output_path, "wb") as output_file,
         open(original_icon_output_path, "rb") as original_file,
     ):
-        resized_data = resize_logo(original_file.read())
+        resized_data = resize_realm_icon(original_file.read())
         output_file.write(resized_data)
     records.append(
         {
