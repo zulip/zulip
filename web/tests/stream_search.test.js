@@ -29,7 +29,7 @@ function expand_sidebar() {
 function make_cursor_helper() {
     const events = [];
 
-    stream_list.__Rewire__("stream_cursor", {
+    stream_list.rewire_stream_cursor({
         reset() {
             events.push("reset");
         },

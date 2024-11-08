@@ -346,11 +346,6 @@ exports.with_overrides = function (test_function) {
     };
 
     const override_rewire = function (obj, prop, value, {unused = true} = {}) {
-        // This is deprecated because it relies on the slow
-        // babel-plugin-rewire-ts plugin.  Consider alternatives such
-        // as exporting a helper function for tests from the module
-        // containing the function you need to mock.
-
         assert.ok(
             typeof obj === "object" || typeof obj === "function",
             `We cannot override a function for ${typeof obj} objects`,
@@ -377,19 +372,21 @@ exports.with_overrides = function (test_function) {
             unused = false;
         }
 
-        obj.__Rewire__(prop, new_value);
+        const rewire_prop = `rewire_${prop}`;
+        /* istanbul ignore if */
+        if (!(rewire_prop in obj)) {
+            assert.fail(`You must define ${rewire_prop} to use override_rewire on ${prop}.`);
+        }
+        obj[rewire_prop](new_value);
         restore_callbacks.push(() => {
             if (ok) {
                 assert.ok(!unused, `${prop} never got invoked!`);
             }
-            obj.__Rewire__(prop, old_value);
+            obj[rewire_prop](old_value);
         });
     };
 
     const disallow_rewire = function (obj, prop) {
-        // This is deprecated because it relies on the slow
-        // babel-plugin-rewire-ts plugin.
-
         override_rewire(
             obj,
             prop,

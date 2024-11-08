@@ -22,7 +22,7 @@ message_lists.all_rendered_message_lists = () => [message_lists.current];
 
 const people = zrequire("people");
 const message_events = zrequire("message_events");
-message_events.__Rewire__("update_views_filtered_on_message_property", () => {});
+message_events.rewire_update_views_filtered_on_message_property(() => {});
 const message_helper = zrequire("message_helper");
 const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
