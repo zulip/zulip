@@ -459,7 +459,7 @@
     margin: 0 1px;
 }
 
-#compose-limit-indicator:not(:empty) {
+.message-limit-indicator:not(:empty) {
     font-size: 12px;
     color: var(--color-limit-indicator);
     width: max-content;
