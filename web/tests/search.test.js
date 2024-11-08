@@ -252,7 +252,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             assert.equal(opts.updater(`channel:${verona_stream_id}`), "");
             assert.ok(input_pill_displayed);
 
-            search.__Rewire__("is_using_input_method", true);
+            search.rewire_is_using_input_method(true);
             _setup(terms);
             input_pill_displayed = false;
             mock_pill_removes(search.search_pill_widget);
@@ -272,7 +272,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
 
     $search_query_box.text("test string");
 
-    search.__Rewire__("is_using_input_method", false);
+    search.rewire_is_using_input_method(false);
     $searchbox_form.trigger("compositionend");
     assert.ok(search.is_using_input_method);
 
@@ -357,7 +357,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     expected_pill_display_value = "ver";
     _setup(terms);
     ev.key = "Enter";
-    search.__Rewire__("is_using_input_method", true);
+    search.rewire_is_using_input_method(true);
     $searchbox_form.trigger(ev);
     // No change on first Enter keyup event
     assert.ok(!is_blurred);
