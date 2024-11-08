@@ -437,6 +437,7 @@ export class MessageList {
         }
 
         this.view.render_trailing_bookend(
+            stream_id,
             sub?.name,
             subscribed,
             deactivated,

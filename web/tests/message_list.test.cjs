@@ -366,11 +366,13 @@ run_test("bookend", ({override}) => {
         list.update_trailing_bookend();
         assert.equal(stub.num_calls, 1);
         const bookend = stub.get_args(
+            "stream_id",
             "stream_name",
             "subscribed",
             "deactivated",
             "just_unsubscribed",
         );
+        assert.equal(bookend.stream_id, 5);
         assert.equal(bookend.stream_name, "IceCream");
         assert.equal(bookend.subscribed, true);
         assert.equal(bookend.deactivated, false);
@@ -386,11 +388,13 @@ run_test("bookend", ({override}) => {
         list.update_trailing_bookend();
         assert.equal(stub.num_calls, 1);
         const bookend = stub.get_args(
+            "stream_id",
             "stream_name",
             "subscribed",
             "deactivated",
             "just_unsubscribed",
         );
+        assert.equal(bookend.stream_id, 5);
         assert.equal(bookend.stream_name, "IceCream");
         assert.equal(bookend.subscribed, false);
         assert.equal(bookend.deactivated, false);
@@ -406,11 +410,13 @@ run_test("bookend", ({override}) => {
         list.update_trailing_bookend();
         assert.equal(stub.num_calls, 1);
         const bookend = stub.get_args(
+            "stream_id",
             "stream_name",
             "subscribed",
             "deactivated",
             "just_unsubscribed",
         );
+        assert.equal(bookend.stream_id, 5);
         assert.equal(bookend.stream_name, "IceCream");
         assert.equal(bookend.subscribed, false);
         assert.equal(bookend.deactivated, false);
@@ -425,11 +431,13 @@ run_test("bookend", ({override}) => {
         list.update_trailing_bookend();
         assert.equal(stub.num_calls, 1);
         const bookend = stub.get_args(
+            "stream_id",
             "stream_name",
             "subscribed",
             "deactivated",
             "just_unsubscribed",
         );
+        assert.equal(bookend.stream_id, 5);
         assert.equal(bookend.stream_name, "IceCream");
         assert.equal(bookend.subscribed, false);
         assert.equal(bookend.deactivated, false);
