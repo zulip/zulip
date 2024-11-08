@@ -13,7 +13,7 @@ from django.conf import settings
 from mypy_boto3_s3.service_resource import Bucket
 from typing_extensions import override
 
-from zerver.lib.thumbnail import resize_avatar, resize_logo
+from zerver.lib.thumbnail import resize_logo, resize_realm_icon
 from zerver.lib.upload.base import INLINE_MIME_TYPES, ZulipUploadBackend
 from zerver.models import Realm, RealmEmoji, UserProfile
 
@@ -315,7 +315,7 @@ class S3UploadBackend(ZulipUploadBackend):
             image_data,
         )
 
-        resized_data = resize_avatar(image_data)
+        resized_data = resize_realm_icon(image_data)
         upload_image_to_s3(
             self.avatar_bucket,
             s3_file_name + ".png",
