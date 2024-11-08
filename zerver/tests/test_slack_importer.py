@@ -1172,6 +1172,10 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[5]["has_link"], False)
         self.assertEqual(zerver_message[7]["has_link"], False)
 
+        # Test that topic_name is empty string for DMs and GDMs
+        self.assertEqual(zerver_message[6][EXPORT_TOPIC_NAME], "")
+        self.assertEqual(zerver_message[8][EXPORT_TOPIC_NAME], "")
+
         self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], "imported from Slack")
         self.assertEqual(zerver_message[3]["content"], "/me added bot")
         self.assertEqual(
