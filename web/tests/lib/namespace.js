@@ -26,26 +26,19 @@ let jquery_function;
 const template_path = path.resolve(__dirname, "../../templates");
 
 function load(request, parent, isMain) {
-    let module;
-
     const filename = Module._resolveFilename(request, parent, isMain);
     if (module_mocks.has(filename)) {
         used_module_mocks.add(filename);
-        module = module_mocks.get(filename);
+        return module_mocks.get(filename);
     } else if (filename.endsWith(".hbs") && filename.startsWith(template_path + path.sep)) {
         const actual_render = actual_load(request, parent, isMain);
-        module = template_stub({filename, actual_render});
+        return template_stub({filename, actual_render});
     } else if (filename === jquery_path && parent.filename !== real_jquery_path) {
-        module = jquery_function || $;
-    } else {
-        module = actual_load(request, parent, isMain);
+        return jquery_function || $;
     }
 
-    if (
-        (typeof module === "object" || typeof module === "function") &&
-        "__esModule" in module &&
-        "__Rewire__" in module
-    ) {
+    const module = actual_load(request, parent, isMain);
+    if ((typeof module === "object" || typeof module === "function") && "__esModule" in module) {
         /* istanbul ignore next */
         function error_immutable() {
             throw new Error(`${filename} is an immutable ES module`);
@@ -287,11 +280,6 @@ exports.with_overrides = function (test_function) {
         assert.ok(
             typeof obj === "object" || typeof obj === "function",
             `We cannot override a function for ${typeof obj} objects`,
-        );
-
-        assert.ok(
-            !("__esModule" in obj && "__Rewire__" in obj),
-            "Cannot mutate an ES module from outside. Consider exporting a test helper function from it instead.",
         );
 
         const had_value = Object.hasOwn(obj, prop);
