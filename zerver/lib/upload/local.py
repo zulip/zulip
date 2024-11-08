@@ -12,7 +12,7 @@ from django.conf import settings
 from typing_extensions import override
 
 from zerver.lib.mime_types import guess_type
-from zerver.lib.thumbnail import resize_avatar, resize_logo
+from zerver.lib.thumbnail import resize_logo, resize_realm_icon
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.upload.base import StreamingSourceWithSize, ZulipUploadBackend
 from zerver.lib.utils import assert_is_not_none
@@ -174,7 +174,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         image_data = icon_file.read()
         write_local_file("avatars", os.path.join(upload_path, "icon.original"), image_data)
 
-        resized_data = resize_avatar(image_data)
+        resized_data = resize_realm_icon(image_data)
         write_local_file("avatars", os.path.join(upload_path, "icon.png"), resized_data)
 
     @override
