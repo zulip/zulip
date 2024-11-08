@@ -389,7 +389,8 @@ function reset_searchbox(clear = false): void {
     }
 }
 
-function exit_search(opts: {keep_search_narrow_open: boolean}): void {
+// Exported for tests
+export function exit_search(opts: {keep_search_narrow_open: boolean}): void {
     const filter = narrow_state.filter();
     if (!filter || filter.is_common_narrow()) {
         // for common narrows, we change the UI (and don't redirect)

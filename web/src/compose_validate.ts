@@ -475,7 +475,8 @@ function is_recipient_large_topic(): boolean {
     return topic_participant_count_more_than_threshold(stream_id, compose_state.topic());
 }
 
-function wildcard_mention_policy_authorizes_user(): boolean {
+// Exported for tests
+export function wildcard_mention_policy_authorizes_user(): boolean {
     if (
         realm.realm_wildcard_mention_policy ===
         settings_config.wildcard_mention_policy_values.by_everyone.code
