@@ -45,6 +45,7 @@ async function close_settings_and_date_picker(page: Page): Promise<void> {
 }
 
 async function test_change_full_name(page: Page): Promise<void> {
+    await page.waitForSelector("#full_name", {visible: true});
     await page.click("#full_name");
 
     const full_name_input_selector = 'input[name="full_name"]';
