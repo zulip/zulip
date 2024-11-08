@@ -860,7 +860,7 @@ export function set_event_handlers({
         e.preventDefault();
         e.stopPropagation();
 
-        const stream_id = stream_id_for_elt($(e.target).parents("li"));
+        const stream_id = stream_id_for_elt($(e.target).parents("li.narrow-filter"));
         const current_narrow_stream_id = narrow_state.stream_id();
         const current_topic = narrow_state.topic();
 
