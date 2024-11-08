@@ -1054,7 +1054,8 @@ export function register_save_discard_widget_handlers(
     );
 }
 
-function initialize_group_setting_widgets(): void {
+// Exported for tests
+export function initialize_group_setting_widgets(): void {
     const realm_group_permission_settings = Object.entries(
         realm.server_supported_permission_settings.realm,
     );

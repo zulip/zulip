@@ -60,7 +60,8 @@ export function get_recipient_label(message?: ComposeClosedMessage): string {
     return "";
 }
 
-function update_reply_button_state(disable = false): void {
+// Exported for tests
+export function update_reply_button_state(disable = false): void {
     $(".compose_reply_button").attr("disabled", disable ? "disabled" : null);
     if (disable) {
         $("#compose_buttons .compose-reply-button-wrapper").attr(

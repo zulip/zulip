@@ -87,7 +87,8 @@ function set_next_start_time(current_time: number, typing_started_wait_period: n
     state.next_send_start_time = current_time + typing_started_wait_period;
 }
 
-function actually_ping_server(
+// Exported for tests
+export function actually_ping_server(
     worker: TypingStatusWorker,
     recipient: Recipient,
     current_time: number,
