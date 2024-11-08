@@ -9,6 +9,7 @@ import signal
 import subprocess
 import sys
 from collections.abc import Awaitable, Callable
+from functools import partial
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -23,7 +24,6 @@ from aiohttp import hdrs, web
 from aiohttp.http_exceptions import BadStatusLine
 
 from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
-from zerver.lib.partial import partial
 
 if "posix" in os.name and os.geteuid() == 0:
     raise RuntimeError("run-dev should not be run as root.")

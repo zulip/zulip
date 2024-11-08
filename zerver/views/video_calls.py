@@ -3,6 +3,7 @@ import json
 import random
 import secrets
 from base64 import b32encode
+from functools import partial
 from urllib.parse import quote, urlencode, urljoin
 
 import requests
@@ -26,7 +27,6 @@ from zerver.actions.video_calls import do_set_zoom_token
 from zerver.decorator import zulip_login_required
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.outgoing_http import OutgoingSession
-from zerver.lib.partial import partial
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain

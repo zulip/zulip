@@ -2,6 +2,7 @@ import re
 from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from functools import partial
 from typing import Any, TypedDict
 
 from django.conf import settings
@@ -19,7 +20,6 @@ from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.markdown import MessageRenderingResult
 from zerver.lib.mention import MentionData
 from zerver.lib.message_cache import MessageDict, extract_message_dict, stringify_message_dict
-from zerver.lib.partial import partial
 from zerver.lib.request import RequestVariableConversionError
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,

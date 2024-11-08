@@ -3,7 +3,7 @@
 # many servers had already upgraded to 9.2 where it was backported.
 
 import os
-from functools import reduce
+from functools import partial, reduce
 from operator import or_
 
 import boto3
@@ -16,8 +16,6 @@ from django.db import migrations
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Exists, OuterRef, Q
-
-from zerver.lib.partial import partial
 
 
 def backfill_imageattachment(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:

@@ -4,6 +4,7 @@ import random
 import shutil
 import unittest
 from collections.abc import Callable, Iterable
+from functools import partial
 from typing import Any, TypeAlias
 from unittest import TestSuite, runner
 from unittest.result import TestResult
@@ -22,7 +23,6 @@ from scripts.lib.zulip_tools import (
     get_or_create_dev_uuid_var_path,
 )
 from zerver.lib import test_helpers
-from zerver.lib.partial import partial
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_fixtures import BACKEND_DATABASE_TEMPLATE
 from zerver.lib.test_helpers import append_instrumentation_data, write_instrumentation_reports
