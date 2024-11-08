@@ -23,7 +23,6 @@ const stream_data = zrequire("stream_data");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const compose_fade = zrequire("compose_fade");
-const compose_recipient = zrequire("compose_recipient");
 const compose_fade_helper = zrequire("compose_fade_helper");
 const compose_state = zrequire("compose_state");
 
@@ -51,10 +50,7 @@ people.initialize_current_user(me.user_id);
 people.add_active_user(alice);
 people.add_active_user(bob);
 
-run_test("set_focused_recipient", ({override_rewire}) => {
-    override_rewire(compose_recipient, "selected_stream_name", "social");
-    override_rewire(compose_recipient, "is_direct_message_selected", false);
-
+run_test("set_focused_recipient", () => {
     const sub = {
         stream_id: 101,
         name: "social",
