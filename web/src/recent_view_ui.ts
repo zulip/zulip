@@ -923,10 +923,16 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
     // we ensure the list remains sorted after insertion.
     topics_widget.replace_list_data(get_list_data_for_widget(), false);
     topics_widget.filter_and_sort();
-    for (const key of row_keys) {
-        inplace_rerender(key, true);
+    // Iterate in the order of which the rows should be present so that
+    // we are not inserting rows without any rows being present around them.
+    for (const topic_data of topics_widget.get_current_list()) {
+        const msg = message_store.get(topic_data.last_msg_id);
+        assert(msg !== undefined);
+        const topic_key = recent_view_util.get_key_from_message(msg);
+        if (row_keys.includes(topic_key)) {
+            inplace_rerender(topic_key, true);
+        }
     }
-
     setTimeout(revive_current_focus, 0);
 }
 
