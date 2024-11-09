@@ -1,6 +1,6 @@
 Export was generated on a different Zulip version.
-Export=10.0-dev+git
-Server=10.0-dev+git
+Export={version_placeholder}
+Server={version_placeholder}
 
 Database formats differ between the exported realm and this server.
 Printing migrations that differ between the versions:
