@@ -51,6 +51,7 @@ html {
     margin-top: 0;
 }
 
+#realm-import-post-process,
 #new-realm-creation {
     .get-started {
         font-size: 2rem;
