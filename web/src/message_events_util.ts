@@ -80,6 +80,9 @@ export function maybe_add_narrowed_messages(
                 return new_msg;
             });
 
+            // Remove the elsewhere_messages from the message list since
+            // they don't match the filter as per data from server.
+            msg_list.remove_and_rerender(elsewhere_messages.map((msg) => msg.id));
             callback(new_messages, msg_list);
             unread_ops.process_visible();
             compose_notifications.notify_messages_outside_current_search(elsewhere_messages);
