@@ -350,3 +350,21 @@ p.digest_paragraph,
         max-width: 200px;
     }
 }
+
+/* Issue 31150: As asked, bigger font and zulip's font in order to looks cool. */
+@media (prefers-color-scheme: dark) {
+    .body {
+        background-color: #1c1c1c;
+        color: #f0f0f0;
+        font-size: 24px;
+        font-family: "Source Sans 3 VF", Comfortaa, sans-serif;
+    }
+
+    .main {
+        background-color: #2c2c2c;
+    }
+
+    a {
+        color: #29d829;
+    }
+}
