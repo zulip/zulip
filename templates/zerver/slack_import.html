@@ -1,0 +1,97 @@
+{% extends "zerver/portico_signup.html" %}
+{% set entrypoint = "register" %}
+
+{% block title %}
+<title>{{ _("Import from Slack") }} | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+<div class="app register-page">
+    <div class="app-main register-page-container new-style flex full-page center">
+        <div class="register-form left" id="realm-creation-form-slack-import">
+            <div class="lead">
+                <h1 class="get-started">{{ _("Import from Slack") }}</h1>
+            </div>
+            <div class="white-box">
+                {% if poll_for_import_completion %}
+                {% if import_poll_error_message %}
+                <p class="text-error">{{ import_poll_error_message }}</p>
+                {% endif %}
+                <input type='hidden' name='key' value='{{ key }}' id="auth_key_for_polling" />
+                <div class="input-box">
+                    <label for="uploaded-file-info">{{ _("Import progress") }}</label>
+                    <div id="slack-import-poll-status" class="not-editable-realm-field">
+                        {{ _("Checking import status…") }}
+                    </div>
+                </div>
+                {% else %}
+                <form method="post" class="form-inline" action="{{ url('import_realm_from_slack') }}">
+                    {{ csrf_input }}
+                    <div class="input-box no-validation">
+                        <input type='hidden' name='key' value='{{ key }}' id="auth_key_for_file_upload"/>
+                    </div>
+                    <div class="input-box slack-import-extra-info">
+                        <div class="not-editable-realm-field">
+                            {{ _("You will immediately see a bot user OAuth token, which is a long string of numbers and characters starting with xoxb-. Copy this token. You will use it to download user and emoji data from your Slack workspace.") }}
+                        </div>
+                    </div>
+                    <div class="input-box">
+                        <label for="slack_access_token" class="inline-block label-title">{{ _('Slack bot user OAuth token') }}</label>
+                        <input id="slack-access-token" type="text"
+                          placeholder="xoxb-…"
+                          maxlength="100" name="slack_access_token" required {% if slack_access_token %} value="{{ slack_access_token }}" {% endif %} />
+                        {% if slack_access_token_validation_error %}
+                        <p id="slack-access-token-validation-error" class="help-inline text-error">{{ slack_access_token_validation_error }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="input-box">
+                        <button type="submit" class="register-button" {% if slack_access_token %} id="update-slack-access-token"{% endif %}>
+                            {% if slack_access_token %}
+                            {{ _("Update") }}
+                            {% else %}
+                            {{ _("Submit") }}
+                            {% endif %}
+                        </button>
+                    </div>
+                </form>
+                {% if slack_access_token %}
+                <div class="input-box" id="slack-import-drag-drop-wrapper">
+                    <label for="slack-import-drag-and-drop" class="inline-block label-title">{{ _('Import your data') }}</label>
+                    <div id="slack-import-drag-and-drop" data-max-file-size="{{max_file_size}}"></div>
+                </div>
+                <form id="slack-import-start-upload-wrapper" method="post" class="form-inline {% if uploaded_import_file_name %}{% else %}hidden{% endif %}" action="{{ url('import_realm_from_slack') }}">
+                    {{ csrf_input }}
+                    <div class="input-box no-validation">
+                        <input type='hidden' name='key' value='{{ key }}' />
+                        <input type='hidden' name='start_slack_import' value="true" />
+                    </div>
+                    <div class="input-box">
+                        <label for="uploaded-file-info">{{ _("Uploaded file") }}</label>
+                        <div class="not-editable-realm-field" id="slack-import-uploaded-file-name">{{ uploaded_import_file_name }}</div>
+                    </div>
+                    <div class="input-box">
+                        <button type="submit" class="register-button">
+                            {{ _("Start import") }}
+                        </button>
+                    </div>
+                </form>
+                {% endif %}
+                {% endif %}
+            </div>
+            {% if poll_for_import_completion %}
+            {% else %}
+            <form method="post" class="hidden" id="cancel-slack-import-form" action="{{ url('import_realm_from_slack') }}">
+                {{ csrf_input }}
+                <input type='hidden' name='key' value="{{ key }}" />
+                <input type='hidden' name='cancel_import' value='true'/>
+            </form>
+            <div class="bottom-text">
+                {% trans %}
+                Or <a href="#" id="cancel-slack-import">create organization</a> without importing data.
+                {% endtrans %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

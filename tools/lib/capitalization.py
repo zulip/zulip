@@ -35,6 +35,7 @@ IGNORED_PHRASES = [
     r"LinkedIn",
     r"LDAP",
     r"Markdown",
+    r"OAuth",
     r"OTP",
     r"Pivotal",
     r"Recent conversations",

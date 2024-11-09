@@ -330,6 +330,10 @@ class HomepageForm(forms.Form):
         return email
 
 
+class ImportRealmOwnerSelectionForm(forms.Form):
+    user_id = forms.IntegerField()
+
+
 class RealmCreationForm(RealmDetailsForm):
     # This form determines whether users can create a new realm.
     email = forms.EmailField(validators=[email_not_system_bot, email_is_not_disposable])
