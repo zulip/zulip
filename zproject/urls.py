@@ -142,6 +142,7 @@ from zerver.views.registration import (
     create_realm,
     find_account,
     get_prereg_key_and_redirect,
+    import_realm_from_slack,
     new_realm_send_confirm,
     realm_import_post_process,
     realm_import_status,
@@ -604,6 +605,7 @@ i18n_urls = [
         realm_import_post_process,
         name="realm_import_post_process",
     ),
+    path("new/import/slack/", import_realm_from_slack, name="import_realm_from_slack"),
     path(
         "accounts/do_confirm/<confirmation_key>",
         get_prereg_key_and_redirect,

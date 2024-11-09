@@ -158,7 +158,11 @@ def get_prereg_key_and_redirect(
 
     registration_url = reverse("accounts_register")
     if realm_creation:
-        registration_url = reverse("realm_register")
+        assert isinstance(prereg_object, PreregistrationRealm)
+        if prereg_object.data_import_metadata.get("import_from") == "slack":
+            registration_url = reverse("import_realm_from_slack")
+        else:
+            registration_url = reverse("realm_register")
 
     return render(
         request,
@@ -236,6 +240,11 @@ def accounts_register(*args: Any, **kwargs: Any) -> HttpResponse:
     return registration_helper(*args, **kwargs)
 
 
+@require_post
+def import_realm_from_slack(*args: Any, **kwargs: Any) -> HttpResponse:
+    return registration_helper(*args, **kwargs)
+
+
 @typed_endpoint
 def registration_helper(
     request: HttpRequest,
@@ -299,6 +308,38 @@ def registration_helper(
                     "key": key,
                 },
             )
+
+        elif prereg_realm.data_import_metadata.get("import_from") == "slack":
+            context: dict[str, Any] = {
+                "key": key,
+            }
+
+            saved_slack_access_token = prereg_realm.data_import_metadata.get("slack_access_token")
+            if saved_slack_access_token or slack_access_token:
+                if slack_access_token and slack_access_token != saved_slack_access_token:
+                    # Verify slack token access.
+                    from zerver.data_import.slack import (
+                        SLACK_IMPORT_TOKEN_SCOPES,
+                        check_token_access,
+                    )
+
+                    check_token_access(slack_access_token, SLACK_IMPORT_TOKEN_SCOPES)
+
+                    saved_slack_access_token = slack_access_token
+                    prereg_realm.data_import_metadata["slack_access_token"] = slack_access_token
+                    prereg_realm.save(update_fields=["data_import_metadata"])
+
+                context["slack_access_token"] = saved_slack_access_token
+                context["uploaded_import_file_name"] = prereg_realm.data_import_metadata.get(
+                    "uploaded_import_file_name"
+                )
+
+            return TemplateResponse(
+                request,
+                "zerver/slack_import.html",
+                context,
+            )
+
         password_required = True
         role = UserProfile.ROLE_REALM_OWNER
     else:
@@ -879,9 +920,15 @@ def prepare_realm_activation_url(
     string_id: str,
     org_type: int,
     default_language: str,
+    import_form: str,
 ) -> str:
     prereg_realm = create_preregistration_realm(
-        email, realm_name, string_id, org_type, default_language
+        email,
+        realm_name,
+        string_id,
+        org_type,
+        default_language,
+        import_form,
     )
     activation_url = create_confirmation_link(
         prereg_realm, Confirmation.REALM_CREATION, no_associated_realm_object=True
@@ -1097,6 +1144,7 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
             realm_type = form.cleaned_data["realm_type"]
             realm_default_language = form.cleaned_data["realm_default_language"]
             realm_subdomain = form.cleaned_data["realm_subdomain"]
+            import_from = form.cleaned_data["import_from"]
             activation_url = prepare_realm_activation_url(
                 email,
                 request.session,
@@ -1104,6 +1152,7 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
                 realm_subdomain,
                 realm_type,
                 realm_default_language,
+                import_from,
             )
             if key_record is not None and key_record.presume_email_valid:
                 # The user has a token created from the server command line;

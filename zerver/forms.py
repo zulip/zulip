@@ -32,7 +32,7 @@ from zerver.lib.name_restrictions import is_reserved_subdomain
 from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_request_by_ip
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
-from zerver.models import Realm, UserProfile
+from zerver.models import PreregistrationRealm, Realm, UserProfile
 from zerver.models.realm_audit_logs import RealmAuditLog
 from zerver.models.realms import (
     DisposableEmailError,
@@ -325,6 +325,9 @@ class ImportRealmOwnerSelectionForm(forms.Form):
 class RealmCreationForm(RealmDetailsForm):
     # This form determines whether users can create a new realm.
     email = forms.EmailField(validators=[email_not_system_bot, email_is_not_disposable])
+    import_from = forms.ChoiceField(
+        choices=PreregistrationRealm.IMPORT_FROM_CHOICES,
+    )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         kwargs["realm_creation"] = True
