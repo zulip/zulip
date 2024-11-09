@@ -7,6 +7,7 @@ from urllib.parse import urlencode, urljoin
 import orjson
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, get_backends
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sessions.backends.base import SessionBase
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -18,9 +19,11 @@ from django.shortcuts import redirect, render
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.translation import get_language
+from django.utils.translation import gettext as _
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from pydantic import Json, NonNegativeInt, StringConstraints
 
+from confirmation import settings as confirmation_settings
 from confirmation.models import (
     Confirmation,
     ConfirmationKeyError,
@@ -36,12 +39,14 @@ from zerver.actions.default_streams import lookup_default_stream_groups
 from zerver.actions.user_settings import (
     do_change_full_name,
     do_change_password,
+    do_change_user_delivery_email,
     do_change_user_setting,
 )
-from zerver.actions.users import do_change_user_role
+from zerver.actions.users import do_change_user_role, generate_password_reset_url
 from zerver.context_processors import (
     get_realm_create_form_context,
     get_realm_from_request,
+    is_realm_import_enabled,
     login_context,
 )
 from zerver.decorator import add_google_analytics, do_login, require_post
@@ -49,12 +54,13 @@ from zerver.forms import (
     CaptchaRealmCreationForm,
     FindMyTeamForm,
     HomepageForm,
+    ImportRealmOwnerSelectionForm,
     RealmCreationForm,
     RealmRedirectForm,
     RegistrationForm,
 )
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
-from zerver.lib.exceptions import RateLimitedError
+from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.i18n import (
     get_browser_language_code,
     get_default_language_for_anonymous_user,
@@ -62,7 +68,9 @@ from zerver.lib.i18n import (
     get_language_name,
 )
 from zerver.lib.pysa import mark_sanitized
+from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.rate_limiter import rate_limit_request_by_ip
+from zerver.lib.response import json_success
 from zerver.lib.send_email import EmailNotDeliveredError, FromAddress, send_email
 from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain
@@ -77,10 +85,12 @@ from zerver.lib.typed_endpoint_validators import (
     non_negative_int_or_none_validator,
     timezone_or_empty_validator,
 )
+from zerver.lib.upload import all_message_attachments
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import get_accounts_for_email
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
+    Message,
     MultiuseInvite,
     NamedUserGroup,
     PreregistrationRealm,
@@ -91,7 +101,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.constants import MAX_LANGUAGE_ID_LENGTH
-from zerver.models.realm_audit_logs import RealmAuditLog
+from zerver.models.realm_audit_logs import AuditLogEventType, RealmAuditLog
 from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
@@ -101,12 +111,17 @@ from zerver.models.realms import (
     name_changes_disabled,
 )
 from zerver.models.streams import get_default_stream_groups
-from zerver.models.users import get_source_profile, get_user_by_delivery_email
+from zerver.models.users import (
+    get_source_profile,
+    get_user_by_delivery_email,
+    get_user_profile_by_id_in_realm,
+)
 from zerver.views.auth import (
     create_preregistration_realm,
     create_preregistration_user,
     finish_desktop_flow,
     finish_mobile_flow,
+    get_safe_redirect_to,
     redirect_and_log_into_subdomain,
     redirect_to_deactivation_notice,
 )
@@ -149,7 +164,11 @@ def get_prereg_key_and_redirect(
 
     registration_url = reverse("accounts_register")
     if realm_creation:
-        registration_url = reverse("realm_register")
+        assert isinstance(prereg_object, PreregistrationRealm)
+        if prereg_object.data_import_metadata.get("import_from") == "slack":
+            registration_url = reverse("import_realm_from_slack")
+        else:
+            registration_url = reverse("realm_register")
 
     return render(
         request,
@@ -186,9 +205,16 @@ def check_prereg_key(
 
     if realm_creation:
         assert isinstance(prereg_object, PreregistrationRealm)
-        # Defensive assert to make sure no mix-up in how .status is set leading to reuse
-        # of a PreregistrationRealm object.
-        assert prereg_object.created_realm is None
+        if prereg_object.data_import_metadata.get("need_select_realm_owner"):
+            # Allow user to get back to the import page to select realm owner.
+            # This is for a special case where the realm import has finished
+            # but user closed the import process browser window and needs to
+            # get back to the import page from the email confirmation link.
+            assert prereg_object.created_realm is not None
+        else:
+            # Defensive assert to make sure no mix-up in how .status is set leading to reuse
+            # of a PreregistrationRealm object.
+            assert prereg_object.created_realm is None
     else:
         assert isinstance(prereg_object, PreregistrationUser)
         # Defensive assert to make sure no mix-up in how .status is set leading to reuse
@@ -227,6 +253,11 @@ def accounts_register(*args: Any, **kwargs: Any) -> HttpResponse:
     return registration_helper(*args, **kwargs)
 
 
+@require_post
+def import_realm_from_slack(*args: Any, **kwargs: Any) -> HttpResponse:
+    return registration_helper(*args, **kwargs)
+
+
 @typed_endpoint
 def registration_helper(
     request: HttpRequest,
@@ -237,6 +268,9 @@ def registration_helper(
     form_full_name: Annotated[str | None, ApiParamConfig("full_name")] = None,
     source_realm_id: Annotated[NonNegativeInt | None, non_negative_int_or_none_validator()] = None,
     form_is_demo_organization: Annotated[str | None, ApiParamConfig("is_demo_organization")] = None,
+    slack_access_token: str | None = None,
+    start_slack_import: Json[bool] = False,
+    cancel_import: Json[bool] = False,
 ) -> HttpResponse:
     try:
         prereg_object, realm_creation = check_prereg_key(request, key)
@@ -249,6 +283,117 @@ def registration_helper(
     if realm_creation:
         assert isinstance(prereg_object, PreregistrationRealm)
         prereg_realm = prereg_object
+
+        if cancel_import:
+            if prereg_realm.created_realm or prereg_realm.data_import_metadata.get(
+                "is_import_work_queued"
+            ):
+                # This cancellation flow is just to go back to normal
+                # realm creation before one has started it. If the
+                # user somehow triggers this operation (no longer
+                # visible in the UI) after that point, we just
+                # redirect user import status page with a message that
+                # import work has already started.
+                return TemplateResponse(
+                    request,
+                    "zerver/slack_import.html",
+                    {
+                        "import_poll_error_message": _(
+                            "Unable to cancel import once it has started."
+                        ),
+                        "poll_for_import_completion": True,
+                        "key": key,
+                    },
+                )
+
+            # If the user cancels the import process, it is critical
+            # to remove any metadata that was added during the import
+            # process.
+            # NOTE: Don't revoke the confirmation key here, to allow
+            # the user to continue with the registration process if
+            # no import flow has started. This is important otherwise
+            # the user will be unable to register using the same subdomain.
+            prereg_realm.data_import_metadata = {}
+            prereg_realm.save(update_fields=["data_import_metadata"])
+            # Return back to normal registration flow.
+            return HttpResponseRedirect(
+                reverse("get_prereg_key_and_redirect", kwargs={"confirmation_key": key})
+            )
+
+        if start_slack_import:
+            assert is_realm_import_enabled()
+            assert prereg_realm.data_import_metadata.get("slack_access_token") is not None
+            assert prereg_realm.data_import_metadata.get("uploaded_import_file_name") is not None
+            assert prereg_realm.data_import_metadata.get("is_import_work_queued") is not True
+            assert prereg_realm.created_realm is None
+            queue_json_publish_rollback_unsafe(
+                "deferred_work",
+                {
+                    "type": "import_slack_data",
+                    "preregistration_realm_id": prereg_realm.id,
+                    "filename": f"import/{prereg_realm.id}/slack.zip",
+                    "slack_access_token": prereg_realm.data_import_metadata["slack_access_token"],
+                },
+            )
+            # Avoid starting the import process multiple times.
+            prereg_realm.data_import_metadata["is_import_work_queued"] = True
+            prereg_realm.save(update_fields=["data_import_metadata"])
+
+            return TemplateResponse(
+                request,
+                "zerver/slack_import.html",
+                {
+                    "poll_for_import_completion": True,
+                    "key": key,
+                },
+            )
+
+        elif prereg_realm.data_import_metadata.get("import_from") == "slack":
+            if prereg_realm.data_import_metadata.get("need_select_realm_owner"):
+                return HttpResponseRedirect(
+                    reverse("realm_import_post_process", kwargs={"confirmation_key": key})
+                )
+
+            assert is_realm_import_enabled()
+            context: dict[str, Any] = {
+                "key": key,
+                "max_file_size": settings.MAX_WEB_DATA_IMPORT_SIZE_MB,
+            }
+
+            saved_slack_access_token = prereg_realm.data_import_metadata.get("slack_access_token")
+            if saved_slack_access_token or slack_access_token:
+                if slack_access_token and slack_access_token != saved_slack_access_token:
+                    # Verify slack token access.
+                    from zerver.data_import.slack import (
+                        SLACK_IMPORT_TOKEN_SCOPES,
+                        check_token_access,
+                    )
+
+                    try:
+                        check_token_access(slack_access_token, SLACK_IMPORT_TOKEN_SCOPES)
+                    except Exception as e:
+                        context["slack_access_token_validation_error"] = str(e)
+                        return TemplateResponse(
+                            request,
+                            "zerver/slack_import.html",
+                            context,
+                        )
+
+                    saved_slack_access_token = slack_access_token
+                    prereg_realm.data_import_metadata["slack_access_token"] = slack_access_token
+                    prereg_realm.save(update_fields=["data_import_metadata"])
+
+                context["slack_access_token"] = saved_slack_access_token
+                context["uploaded_import_file_name"] = prereg_realm.data_import_metadata.get(
+                    "uploaded_import_file_name"
+                )
+
+            return TemplateResponse(
+                request,
+                "zerver/slack_import.html",
+                context,
+            )
+
         password_required = True
         role = UserProfile.ROLE_REALM_OWNER
     else:
@@ -889,6 +1034,193 @@ def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
         login_url, urlencode({"email": email, "already_registered": 1})
     )
     return HttpResponseRedirect(redirect_url)
+
+
+@typed_endpoint
+def realm_import_status(
+    request: HttpRequest,
+    *,
+    confirmation_key: str,
+) -> HttpResponse:  # nocoverage
+    try:
+        preregistration_realm = get_object_from_key(
+            confirmation_key,
+            [Confirmation.REALM_CREATION],
+            mark_object_used=False,
+            allow_used=True,
+        )
+    except ConfirmationKeyError:
+        raise JsonableError(_("Unauthenticated"))
+
+    assert isinstance(preregistration_realm, PreregistrationRealm)
+    try:
+        realm = Realm.objects.get(string_id=preregistration_realm.string_id)
+    except Realm.DoesNotExist:
+        # TODO: Either store the path to the temporary conversion directory on
+        # preregistration_realm.data_import_metadata, or have the conversion
+        # process support writing updates to this for a better progress indicator.
+        return json_success(request, {"status": _("Converting Slack data…")})
+
+    if realm.deactivated:
+        # These "if" cases are in the inverse order than they're done
+        # in the import process, so we get the latest step that it's
+        # on.
+        if Message.objects.filter(realm_id=realm.id).exists():
+            return json_success(request, {"status": _("Importing messages…")})
+        try:
+            next(all_message_attachments(prefix=f"{realm.id}/"))
+            return json_success(request, {"status": _("Importing attachment data…")})
+        except StopIteration:
+            pass
+        return json_success(request, {"status": _("Importing converted Slack data…")})
+
+    if (
+        not preregistration_realm.data_import_metadata["need_select_realm_owner"]
+        and preregistration_realm.created_realm is None
+    ):
+        return json_success(request, {"status": _("Finalizing import…")})
+
+    # We have a non-deactivated realm and it's linked to the prereg key
+    result = {"status": _("Done!")}
+    if not preregistration_realm.data_import_metadata["need_select_realm_owner"]:
+        importing_user = get_user_by_delivery_email(preregistration_realm.email, realm)
+        # Sanity check that this is a normal user account that can login.
+        assert (
+            importing_user.is_active
+            and not importing_user.is_bot
+            and not importing_user.is_mirror_dummy
+        )
+
+        # Allow setting an initial password for this first account,
+        # being careful to ensure this data import confirmation link
+        # can't be abused to reset the importing user's password in
+        # the future.
+        if (
+            not importing_user.has_usable_password()
+            and not RealmAuditLog.objects.filter(
+                modified_user=importing_user, event_type=AuditLogEventType.USER_PASSWORD_CHANGED
+            ).exists()
+        ):
+            result["redirect"] = generate_password_reset_url(
+                importing_user, default_token_generator
+            )
+        else:
+            result["redirect"] = get_safe_redirect_to(reverse("login"), realm.url)
+    else:
+        # The email address in the import may not match the email
+        # address they provided. Ask user which user they want to become.
+        result["status"] = _("No users matching provided email.")
+        result["redirect"] = reverse(
+            "realm_import_post_process", kwargs={"confirmation_key": confirmation_key}
+        )
+
+    return json_success(request, result)
+
+
+@transaction.atomic(durable=True)
+def realm_import_post_process(
+    request: HttpRequest,
+    confirmation_key: str,
+) -> HttpResponse:
+    try:
+        preregistration_realm = get_object_from_key(
+            confirmation_key,
+            [Confirmation.REALM_CREATION],
+            mark_object_used=False,
+            allow_used=True,
+        )
+    except ConfirmationKeyError as exception:
+        return render_confirmation_key_error(request, exception)
+
+    assert isinstance(preregistration_realm, PreregistrationRealm)
+    try:
+        realm = Realm.objects.get(string_id=preregistration_realm.string_id)
+    except Realm.DoesNotExist:
+        # If we cannot find the realm, likely means there was
+        # something wrong with the import process, or it has been
+        # since deleted. Revoke the confirmation key to force user to
+        # restart the process.
+        preregistration_realm.status = confirmation_settings.STATUS_REVOKED
+        preregistration_realm.save(update_fields=["status"])
+
+        return render_confirmation_key_error(
+            request, ConfirmationKeyError(ConfirmationKeyError.EXPIRED)
+        )
+
+    if not preregistration_realm.data_import_metadata["need_select_realm_owner"]:
+        return HttpResponseRedirect(get_safe_redirect_to(reverse("login"), realm.url))
+
+    if request.method == "POST":
+        form = ImportRealmOwnerSelectionForm(request.POST)
+        if form.is_valid():
+            # This is a highly sensitive code path, since what we're
+            # about to do is take control of another user account AND
+            # promote that account to organization owner.
+            #
+            # We need this code path for Slack import if the importing
+            # user's account doesn't exist in the Slack import, but we
+            # must be VERY careful to make sure we're in that situation.
+
+            # Validate that this PreregistrationRealm object is in the
+            # expected state, with no user matching the email address,
+            # and and having created this realm.
+            assert preregistration_realm.data_import_metadata["need_select_realm_owner"]
+            assert preregistration_realm.created_realm_id == realm.id
+            assert preregistration_realm.status != confirmation_settings.STATUS_USED
+
+            # ID of the imported user account that the importing user has
+            # selected to become their account.
+            user_id = form.cleaned_data["user_id"]
+
+            # Validate that a normal user account that can login was selected.
+            importing_user = get_user_profile_by_id_in_realm(user_id, realm)
+            assert (
+                importing_user.is_active
+                and not importing_user.is_bot
+                and not importing_user.is_mirror_dummy
+            )
+
+            # Promote to realm owner and set email address to what
+            # we've validated. This is safe because we've previously
+            # validated that this specific confirmation link was used
+            # to create this specific realm and cannot have been used
+            # to finish creating an account yet.
+            do_change_user_role(
+                importing_user, UserProfile.ROLE_REALM_OWNER, acting_user=importing_user
+            )
+            do_change_user_delivery_email(
+                importing_user, preregistration_realm.email, acting_user=importing_user
+            )
+
+            preregistration_realm.status = confirmation_settings.STATUS_USED
+            preregistration_realm.data_import_metadata["need_select_realm_owner"] = False
+            preregistration_realm.save()
+
+            # End by letting the importing user set a password for their new account.
+            assert (
+                not importing_user.has_usable_password()
+                and not RealmAuditLog.objects.filter(
+                    modified_user=importing_user, event_type=AuditLogEventType.USER_PASSWORD_CHANGED
+                ).exists()
+            )
+            return HttpResponseRedirect(
+                generate_password_reset_url(importing_user, default_token_generator)
+            )
+
+    claimable_users = UserProfile.objects.filter(
+        realm=realm, is_active=True, is_bot=False, is_mirror_dummy=False
+    )
+    context = {
+        "users": claimable_users,
+        "verified_email": preregistration_realm.email,
+        "key": confirmation_key,
+    }
+
+    return TemplateResponse(
+        request,
+        "zerver/realm_import_post_process.html",
+        context,
+    )
 
 
 @add_google_analytics
