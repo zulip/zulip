@@ -348,7 +348,7 @@ $(() => {
     });
 
     if ($("#slack-import-drag-and-drop").length > 0) {
-        const key = $<HTMLInputElement>("#auth_key").val();
+        const key = $<HTMLInputElement>("#auth_key_for_file_upload").val();
         const uppy = new Uppy({
             debug: true,
             autoProceed: true,
@@ -370,6 +370,7 @@ $(() => {
                             "Drag and drop your Slack export file here, or click to browse.",
                     }),
                 },
+                pluralize: () => 0,
             },
         });
         uppy.use(Tus, {endpoint: "/api/v1/tus/", removeFingerprintOnSuccess: true});
@@ -384,7 +385,7 @@ $(() => {
     }
 
     if ($("#slack-import-poll-status").length > 0) {
-        const key = $<HTMLInputElement>("#auth_key").val();
+        const key = $<HTMLInputElement>("#auth_key_for_polling").val();
         const pollInterval = 2000; // Poll every 2 seconds
 
         let poll_id: ReturnType<typeof setTimeout> | undefined;

@@ -901,6 +901,7 @@ Output:
             "realm_type": realm_type,
             "realm_default_language": realm_default_language,
             "realm_subdomain": realm_subdomain,
+            "import_from": "none",
         }
         if realm_in_root_domain is not None:
             payload["realm_in_root_domain"] = realm_in_root_domain
