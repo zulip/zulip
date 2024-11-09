@@ -217,7 +217,7 @@ export function get_stream_name_from_id(stream_id: number): string {
     return get_sub_by_id(stream_id)?.name ?? "";
 }
 
-export function get_sub_by_name(name: string): StreamSubscription | undefined {
+export let get_sub_by_name = (name: string): StreamSubscription | undefined => {
     // Note: Only use this function for situations where
     // you are comfortable with a user dealing with an
     // old name of a stream (from prior to a rename).
@@ -230,6 +230,10 @@ export function get_sub_by_name(name: string): StreamSubscription | undefined {
     }
 
     return sub_store.get(stream_id);
+};
+
+export function rewire_get_sub_by_name(value: typeof get_sub_by_name): void {
+    get_sub_by_name = value;
 }
 
 export function id_to_slug(stream_id: number): string {
@@ -449,7 +453,7 @@ export function canonicalized_name(stream_name: string): string {
     return stream_name.toString().toLowerCase();
 }
 
-export function get_color(stream_id: number | undefined): string {
+export let get_color = (stream_id: number | undefined): string => {
     if (stream_id === undefined) {
         return DEFAULT_COLOR;
     }
@@ -458,6 +462,10 @@ export function get_color(stream_id: number | undefined): string {
         return DEFAULT_COLOR;
     }
     return sub.color;
+};
+
+export function rewire_get_color(value: typeof get_color): void {
+    get_color = value;
 }
 
 export function is_muted(stream_id: number): boolean {
@@ -675,7 +683,7 @@ export function is_default_stream_id(stream_id: number): boolean {
     return default_stream_ids.has(stream_id);
 }
 
-export function is_user_subscribed(stream_id: number, user_id: number): boolean {
+export let is_user_subscribed = (stream_id: number, user_id: number): boolean => {
     const sub = sub_store.get(stream_id);
     if (sub === undefined || !can_view_subscribers(sub)) {
         // If we don't know about the stream, or we ourselves cannot access subscriber list,
@@ -691,6 +699,10 @@ export function is_user_subscribed(stream_id: number, user_id: number): boolean 
     }
 
     return peer_data.is_user_subscribed(stream_id, user_id);
+};
+
+export function rewire_is_user_subscribed(value: typeof is_user_subscribed): void {
+    is_user_subscribed = value;
 }
 
 export function create_streams(streams: Stream[]): void {

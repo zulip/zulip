@@ -249,10 +249,14 @@ export function get_reaction_sections(message_id: number): JQuery {
     return $rows.find(".message_reactions");
 }
 
-export function find_reaction(message_id: number, local_id: string): JQuery {
+export let find_reaction = (message_id: number, local_id: string): JQuery => {
     const $reaction_section = get_reaction_sections(message_id);
     const $reaction = $reaction_section.find(`[data-reaction-id='${CSS.escape(local_id)}']`);
     return $reaction;
+};
+
+export function rewire_find_reaction(value: typeof find_reaction): void {
+    find_reaction = value;
 }
 
 export function get_add_reaction_button(message_id: number): JQuery {
@@ -261,12 +265,16 @@ export function get_add_reaction_button(message_id: number): JQuery {
     return $add_button;
 }
 
-export function set_reaction_vote_text($reaction: JQuery, vote_text: string): void {
+export let set_reaction_vote_text = ($reaction: JQuery, vote_text: string): void => {
     const $count_element = $reaction.find(".message_reaction_count");
     $count_element.text(vote_text);
+};
+
+export function rewire_set_reaction_vote_text(value: typeof set_reaction_vote_text): void {
+    set_reaction_vote_text = value;
 }
 
-export function add_reaction(event: ReactionEvent): void {
+export let add_reaction = (event: ReactionEvent): void => {
     const message_id = event.message_id;
     const message = message_store.get(message_id);
 
@@ -311,13 +319,17 @@ export function add_reaction(event: ReactionEvent): void {
         message.clean_reactions.set(local_id, clean_reaction_object);
         insert_new_reaction(clean_reaction_object, message, user_id);
     }
+};
+
+export function rewire_add_reaction(value: typeof add_reaction): void {
+    add_reaction = value;
 }
 
-export function update_existing_reaction(
+export let update_existing_reaction = (
     clean_reaction_object: MessageCleanReaction,
     message: Message,
     acting_user_id: number,
-): void {
+): void => {
     // Our caller ensures that this message already has a reaction
     // for this emoji and sets up our user_list.  This function
     // simply updates the DOM.
@@ -335,13 +347,17 @@ export function update_existing_reaction(
     }
 
     update_vote_text_on_message(message);
+};
+
+export function rewire_update_existing_reaction(value: typeof update_existing_reaction): void {
+    update_existing_reaction = value;
 }
 
-export function insert_new_reaction(
+export let insert_new_reaction = (
     clean_reaction_object: MessageCleanReaction,
     message: Message,
     user_id: number,
-): void {
+): void => {
     // Our caller ensures we are the first user to react to this
     // message with this emoji. We then render the emoji/title/count
     // and insert it before the add button.
@@ -389,9 +405,13 @@ export function insert_new_reaction(
     }
 
     update_vote_text_on_message(message);
+};
+
+export function rewire_insert_new_reaction(value: typeof insert_new_reaction): void {
+    insert_new_reaction = value;
 }
 
-export function remove_reaction(event: ReactionEvent): void {
+export let remove_reaction = (event: ReactionEvent): void => {
     const message_id = event.message_id;
     const user_id = event.user_id;
     const message = message_store.get(message_id);
@@ -426,13 +446,17 @@ export function remove_reaction(event: ReactionEvent): void {
     update_user_fields(clean_reaction_object, should_display_reactors);
 
     remove_reaction_from_view(clean_reaction_object, message, user_id);
+};
+
+export function rewire_remove_reaction(value: typeof remove_reaction): void {
+    remove_reaction = value;
 }
 
-export function remove_reaction_from_view(
+export let remove_reaction_from_view = (
     clean_reaction_object: MessageCleanReaction,
     message: Message,
     user_id: number,
-): void {
+): void => {
     const local_id = get_local_reaction_id(clean_reaction_object);
     const $reaction = find_reaction(message.id, local_id);
     const reaction_count = clean_reaction_object.user_ids.length;
@@ -466,6 +490,10 @@ export function remove_reaction_from_view(
     }
 
     update_vote_text_on_message(message);
+};
+
+export function rewire_remove_reaction_from_view(value: typeof remove_reaction_from_view): void {
+    remove_reaction_from_view = value;
 }
 
 export function get_emojis_used_by_user_for_message_id(message_id: number): string[] {
@@ -687,7 +715,7 @@ function comma_separated_usernames(user_list: number[]): string {
     return comma_separated_usernames;
 }
 
-export function update_vote_text_on_message(message: Message): void {
+export let update_vote_text_on_message = (message: Message): void => {
     // Because whether we display a count or the names of reacting
     // users depends on total reactions on the message, we need to
     // recalculate this whenever adjusting reaction rendering on a
@@ -703,4 +731,10 @@ export function update_vote_text_on_message(message: Message): void {
         message_clean_reaction.vote_text = vote_text;
         set_reaction_vote_text(reaction_elem, vote_text);
     }
+};
+
+export function rewire_update_vote_text_on_message(
+    value: typeof update_vote_text_on_message,
+): void {
+    update_vote_text_on_message = value;
 }

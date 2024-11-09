@@ -698,6 +698,9 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(
             os.path.exists(os.path.join(harry_team_output_dir, "attachment.json")), True
         )
+        self.assertEqual(
+            os.path.exists(os.path.join(harry_team_output_dir, "migration_status.json")), True
+        )
 
         realm = self.read_file(harry_team_output_dir, "realm.json")
 

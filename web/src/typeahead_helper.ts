@@ -94,7 +94,7 @@ type StreamData = {
     subscribed: boolean;
 };
 
-export function render_typeahead_item(args: {
+export let render_typeahead_item = (args: {
     primary?: string | undefined;
     is_person?: boolean;
     img_src?: string;
@@ -105,7 +105,7 @@ export function render_typeahead_item(args: {
     is_user_group?: boolean;
     stream?: StreamData;
     emoji_code?: string | undefined;
-}): string {
+}): string => {
     const has_image = args.img_src !== undefined;
     const has_status = args.status_emoji_info !== undefined;
     const has_secondary = args.secondary !== undefined;
@@ -119,9 +119,13 @@ export function render_typeahead_item(args: {
         has_secondary_html,
         has_pronouns,
     });
+};
+
+export function rewire_render_typeahead_item(value: typeof render_typeahead_item): void {
+    render_typeahead_item = value;
 }
 
-export function render_person(person: UserPillData | UserOrMentionPillData): string {
+export let render_person = (person: UserPillData | UserOrMentionPillData): string => {
     if (person.type === "broadcast") {
         return render_typeahead_item({
             primary: person.user.special_item_text,
@@ -155,14 +159,21 @@ export function render_person(person: UserPillData | UserOrMentionPillData): str
     };
 
     return render_typeahead_item(typeahead_arguments);
+};
+
+export function rewire_render_person(value: typeof render_person): void {
+    render_person = value;
 }
 
-export function render_user_group(user_group: {name: string; description: string}): string {
-    return render_typeahead_item({
+export let render_user_group = (user_group: {name: string; description: string}): string =>
+    render_typeahead_item({
         primary: user_groups.get_display_group_name(user_group.name),
         secondary: user_group.description,
         is_user_group: true,
     });
+
+export function rewire_render_user_group(value: typeof render_user_group): void {
+    render_user_group = value;
 }
 
 export function render_person_or_user_group(
@@ -175,14 +186,17 @@ export function render_person_or_user_group(
     return render_person(item);
 }
 
-export function render_stream(stream: StreamData): string {
-    return render_typeahead_item({
+export let render_stream = (stream: StreamData): string =>
+    render_typeahead_item({
         secondary_html: stream.rendered_description,
         stream,
     });
+
+export function rewire_render_stream(value: typeof render_stream): void {
+    render_stream = value;
 }
 
-export function render_emoji(item: EmojiSuggestion): string {
+export let render_emoji = (item: EmojiSuggestion): string => {
     const args = {
         is_emoji: true,
         primary: item.emoji_name.replaceAll("_", " "),
@@ -198,6 +212,10 @@ export function render_emoji(item: EmojiSuggestion): string {
         ...args,
         emoji_code: item.emoji_code,
     });
+};
+
+export function rewire_render_emoji(value: typeof render_emoji): void {
+    render_emoji = value;
 }
 
 export function sorter<T>(query: string, objs: T[], get_item: (x: T) => string): T[] {
@@ -415,7 +433,7 @@ export function sort_languages(matches: LanguageSuggestion[], query: string): La
     }));
 }
 
-export function sort_recipients<UserType extends UserOrMentionPillData | UserPillData>({
+export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillData>({
     users,
     query,
     current_stream_id,
@@ -429,7 +447,7 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
     current_topic?: string | undefined;
     groups?: UserGroupPillData[];
     max_num_items?: number | undefined;
-}): (UserType | UserGroupPillData)[] {
+}): (UserType | UserGroupPillData)[] => {
     function sort_relevance(items: UserType[]): UserType[] {
         return sort_people_for_relevance(items, current_stream_id, current_topic);
     }
@@ -556,6 +574,10 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
     // FirstName, which we don't want to artificially prioritize over the
     // the lone active user whose name is FirstName LastName.
     return recipients.slice(0, max_num_items);
+};
+
+export function rewire_sort_recipients(value: typeof sort_recipients): void {
+    sort_recipients = value;
 }
 
 export function compare_setting_options(
@@ -618,7 +640,7 @@ export function compare_setting_options(
     return 1;
 }
 
-export function sort_group_setting_options({
+export let sort_group_setting_options = ({
     users,
     query,
     groups,
@@ -628,7 +650,7 @@ export function sort_group_setting_options({
     query: string;
     groups: UserGroupPillData[];
     target_group: UserGroup | undefined;
-}): (UserPillData | UserGroupPillData)[] {
+}): (UserPillData | UserGroupPillData)[] => {
     function sort_group_setting_items(
         objs: (UserPillData | UserGroupPillData)[],
     ): (UserPillData | UserGroupPillData)[] {
@@ -703,6 +725,10 @@ export function sort_group_setting_options({
     }
 
     return setting_options.slice(0, MAX_ITEMS);
+};
+
+export function rewire_sort_group_setting_options(value: typeof sort_group_setting_options): void {
+    sort_group_setting_options = value;
 }
 
 type SlashCommand = {
@@ -781,7 +807,7 @@ function compare_by_name(stream_a: StreamSubscription, stream_b: StreamSubscript
     return util.strcmp(stream_a.name, stream_b.name);
 }
 
-export function sort_streams(matches: StreamPillData[], query: string): StreamPillData[] {
+export let sort_streams = (matches: StreamPillData[], query: string): StreamPillData[] => {
     const name_results = typeahead.triage(query, matches, (x) => x.name, compare_by_activity);
     const desc_results = typeahead.triage(
         query,
@@ -791,11 +817,19 @@ export function sort_streams(matches: StreamPillData[], query: string): StreamPi
     );
 
     return [...name_results.matches, ...desc_results.matches, ...desc_results.rest];
+};
+
+export function rewire_sort_streams(value: typeof sort_streams): void {
+    sort_streams = value;
 }
 
-export function sort_streams_by_name(matches: StreamPillData[], query: string): StreamPillData[] {
+export let sort_streams_by_name = (matches: StreamPillData[], query: string): StreamPillData[] => {
     const results = typeahead.triage(query, matches, (x) => x.name, compare_by_name);
     return [...results.matches, ...results.rest];
+};
+
+export function rewire_sort_streams_by_name(value: typeof sort_streams_by_name): void {
+    sort_streams_by_name = value;
 }
 
 export function query_matches_person(

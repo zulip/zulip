@@ -27,6 +27,7 @@ const _document = {
 
 const channel = mock_esm("../src/channel");
 const electron_bridge = mock_esm("../src/electron_bridge");
+const keydown_util = mock_esm("../src/keydown_util", {handle() {}});
 const padded_widget = mock_esm("../src/padded_widget");
 const pm_list = mock_esm("../src/pm_list");
 const popovers = mock_esm("../src/popovers");
@@ -38,7 +39,6 @@ const watchdog = mock_esm("../src/watchdog");
 set_global("document", _document);
 
 const direct_message_group_data = zrequire("direct_message_group_data");
-const keydown_util = zrequire("keydown_util");
 const muted_users = zrequire("muted_users");
 const presence = zrequire("presence");
 const people = zrequire("people");

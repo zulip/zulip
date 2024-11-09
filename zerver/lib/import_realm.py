@@ -4,6 +4,7 @@ import os
 import shutil
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime, timezone
+from difflib import unified_diff
 from typing import Any
 
 import bmemcached
@@ -20,12 +21,22 @@ from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Identifier
 
 from analytics.models import RealmCount, StreamCount, UserCount
+from version import ZULIP_VERSION
 from zerver.actions.create_realm import set_default_for_realm_permission_group_settings
 from zerver.actions.realm_settings import do_change_realm_plan_type
 from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.bulk_create import bulk_set_users_or_streams_recipient_fields
-from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, TableName
+from zerver.lib.export import (
+    DATE_FIELDS,
+    Field,
+    MigrationStatusJson,
+    Path,
+    Record,
+    TableData,
+    TableName,
+    get_migrations_by_app,
+)
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
@@ -1124,6 +1135,16 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     if not os.path.exists(import_dir):
         raise Exception("Missing import directory!")
 
+    migration_status_filename = os.path.join(import_dir, "migration_status.json")
+    if not os.path.exists(migration_status_filename):
+        raise Exception(
+            "Missing migration_status.json file! Make sure you're using the same Zulip version as the exported realm."
+        )
+    logging.info("Checking migration status of exported realm")
+    with open(migration_status_filename) as f:
+        migration_status: MigrationStatusJson = orjson.loads(f.read())
+    check_migration_status(migration_status)
+
     realm_data_filename = os.path.join(import_dir, "realm.json")
     if not os.path.exists(realm_data_filename):
         raise Exception("Missing realm.json file!")
@@ -2080,3 +2101,72 @@ def add_users_to_system_user_groups(
         )
         for membership in usergroup_memberships
     )
+
+
+ZULIP_CLOUD_ONLY_APP_NAMES = ["zilencer", "corporate"]
+
+
+def check_migration_status(exported_migration_status: MigrationStatusJson) -> None:
+    mismatched_migrations_log: dict[str, str] = {}
+    local_migration_status = MigrationStatusJson(
+        migrations_by_app=get_migrations_by_app(), zulip_version=ZULIP_VERSION
+    )
+
+    # Different major versions are the most common form of mismatch
+    # and should get a nice error message focused on that, not
+    # migrations.
+    #
+    # We could split on `-`, to get the maintenance release version,
+    # but unless migrations are different, it should generally be safe
+    # to import across minor release differences.
+    exported_primary_version = exported_migration_status["zulip_version"].split(".")[0]
+    local_primary_version = local_migration_status["zulip_version"].split(".")[0]
+    if exported_primary_version != local_primary_version:
+        raise Exception(
+            "Export was generated on a different Zulip major version.\n"
+            f"Export={exported_migration_status['zulip_version']}\n"
+            f"Server={local_migration_status['zulip_version']}"
+        )
+    exported_migrations_by_app = exported_migration_status["migrations_by_app"]
+    local_migrations_by_app = local_migration_status["migrations_by_app"]
+    all_apps = set(exported_migrations_by_app.keys()).union(set(local_migrations_by_app.keys()))
+
+    for app in all_apps:
+        exported_app_migrations = exported_migrations_by_app.get(app)
+        local_app_migrations = local_migrations_by_app.get(app)
+
+        if app in ZULIP_CLOUD_ONLY_APP_NAMES and (
+            local_app_migrations is None or exported_app_migrations is None
+        ):
+            # This applications are expected to be present only on
+            # Zulip Cloud, so don't warn about them.
+            continue
+
+        if not exported_app_migrations:
+            logging.warning("This server has '%s' app installed, but exported realm does not.", app)
+        elif not local_app_migrations:
+            logging.warning("Exported realm has '%s' app installed, but this server does not.", app)
+        elif local_app_migrations != exported_app_migrations:
+            diff = list(
+                unified_diff(exported_app_migrations, local_app_migrations, lineterm="", n=1)
+            )
+            mismatched_migrations_log[f"\n'{app}' app:\n"] = "\n".join(diff[3:])
+
+    if mismatched_migrations_log:
+        # The order of the list output by the diff is nondeterministic, so the
+        # error logs needs to be sorted first.
+        sorted_error_log: list[str] = [
+            f"{key}{value}" for key, value in sorted(mismatched_migrations_log.items())
+        ]
+
+        error_message = (
+            "Export was generated on a different Zulip version.\n"
+            f"Export={exported_migration_status['zulip_version']}\n"
+            f"Server={local_migration_status['zulip_version']}\n"
+            "\n"
+            "Database formats differ between the exported realm and this server.\n"
+            "Printing migrations that differ between the versions:\n"
+            "--- exported realm\n"
+            "+++ this server"
+        ) + "\n".join(sorted_error_log)
+        raise Exception(error_message)

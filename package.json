@@ -119,7 +119,6 @@
     "@typescript-eslint/eslint-plugin": "^8.2.0",
     "@typescript-eslint/parser": "^8.2.0",
     "babel-plugin-istanbul": "^7.0.0",
-    "babel-plugin-rewire-ts": "^1.4.0",
     "callsites": "^3.1.0",
     "cldr-annotations-derived-modern": "^45.0.0",
     "cldr-annotations-modern": "^45.0.0",
@@ -165,6 +164,7 @@
     },
     "patchedDependencies": {
       "source-sans@3.46.0": "patches/source-sans@3.46.0.patch",
+      "svgicons2svgfont": "patches/svgicons2svgfont.patch",
       "tippy.js@6.3.7": "patches/tippy.js@6.3.7.patch"
     }
   },

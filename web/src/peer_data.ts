@@ -69,7 +69,7 @@ export function potential_subscribers(stream_id: number): User[] {
     return people.filter_all_users(is_potential_subscriber);
 }
 
-export function get_subscriber_count(stream_id: number, include_bots = true): number {
+export let get_subscriber_count = (stream_id: number, include_bots = true): number => {
     if (include_bots) {
         return get_user_set(stream_id).size;
     }
@@ -81,6 +81,10 @@ export function get_subscriber_count(stream_id: number, include_bots = true): nu
         }
     }
     return count;
+};
+
+export function rewire_get_subscriber_count(value: typeof get_subscriber_count): void {
+    get_subscriber_count = value;
 }
 
 export function get_subscribers(stream_id: number): number[] {

@@ -136,7 +136,7 @@ function stubbing(module, func_name_to_stub, test_function) {
 }
 
 // Set up defaults for most tests.
-hotkey.__Rewire__("processing_text", () => false);
+hotkey.rewire_processing_text(() => false);
 
 run_test("mappings", () => {
     function map_press(which, shiftKey) {

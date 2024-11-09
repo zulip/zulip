@@ -250,7 +250,7 @@ export function get_keypress_hotkey(e) {
     return keypress_mappings[e.which];
 }
 
-export function processing_text() {
+export let processing_text = () => {
     const $focused_elt = $(":focus");
     return (
         $focused_elt.is("input") ||
@@ -260,6 +260,10 @@ export function processing_text() {
         $focused_elt.attr("id") === "compose-send-button" ||
         $focused_elt.parents(".dropdown-list-container").length >= 1
     );
+};
+
+export function rewire_processing_text(value) {
+    processing_text = value;
 }
 
 export function in_content_editable_widget(e) {

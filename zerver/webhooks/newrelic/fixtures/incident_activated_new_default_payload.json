@@ -1,0 +1,25 @@
+{
+    "id": "c5faa7e6-7b54-402d-af79-f99601e0278c",
+    "issueUrl": "https://radar-api.service.newrelic.com/accounts/4420147/issues/c5faa7e6-7b54-402d-af79-f99601e0278c?notifier=WEBHOOK",
+    "title": "zulip_app query result is > 1.0 for 1 minutes on 'Zulip Server Low Storage'",
+    "priority": "CRITICAL",
+    "impactedEntities": [
+      "zulip_app"
+    ],
+    "totalIncidents": 1,
+    "state": "ACTIVATED",
+    "trigger": "STATE_CHANGE",
+    "isCorrelated": false,
+    "createdAt": 1713755131352,
+    "updatedAt": 1713769708699,
+    "sources": [
+      "newrelic"
+    ],
+    "alertPolicyNames": [
+      "Golden Signals"
+    ],
+    "alertConditionNames": [
+      "Zulip Server Low Storage"
+    ],
+    "workflowName": "testWorkflow"
+  }

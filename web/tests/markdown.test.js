@@ -2,6 +2,8 @@
 
 const assert = require("node:assert/strict");
 
+const katex = require("katex");
+
 const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_cases");
 
 const markdown_assert = require("./lib/markdown_assert");
@@ -1047,12 +1049,10 @@ test("missing unicode emojis", ({override}) => {
     assert.equal(message.content, "<p>\u{1F6B2}</p>");
 });
 
-test("katex_throws_unexpected_exceptions", ({override_rewire}) => {
+test("katex_throws_unexpected_exceptions", ({override}) => {
     const message = {raw_content: "$$a$$"};
-    override_rewire(markdown, "katex", {
-        renderToString() {
-            throw new Error("some-exception");
-        },
+    override(katex, "renderToString", () => {
+        throw new Error("some-exception");
     });
     assert.throws(() => markdown.render(message.raw_content), {
         name: "Error",

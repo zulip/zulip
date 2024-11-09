@@ -41,6 +41,10 @@ let zoomed_in = false;
 
 export let stream_cursor: ListCursor<number>;
 
+export function rewire_stream_cursor(value: typeof stream_cursor): void {
+    stream_cursor = value;
+}
+
 let has_scrolled = false;
 
 export function is_zoomed_in(): boolean {
@@ -97,13 +101,13 @@ export function clear_topics(): void {
     zoomed_in = false;
 }
 
-export function update_count_in_dom(
+export let update_count_in_dom = (
     $stream_li: JQuery,
     stream_counts: StreamCountInfo,
     stream_has_any_unread_mention_messages: boolean,
     stream_has_any_unmuted_unread_mention: boolean,
     stream_has_only_muted_unread_mention: boolean,
-): void {
+): void => {
     // The subscription_block properly excludes the topic list,
     // and it also has sensitive margins related to whether the
     // count is there or not.
@@ -176,6 +180,10 @@ export function update_count_in_dom(
         $subscription_block.removeClass("has-only-muted-unreads");
         $subscription_block.removeClass("stream-with-count");
     }
+};
+
+export function rewire_update_count_in_dom(value: typeof update_count_in_dom): void {
+    update_count_in_dom = value;
 }
 
 class StreamSidebar {
@@ -567,7 +575,7 @@ function set_stream_unread_count(
     );
 }
 
-export function update_streams_sidebar(force_rerender = false): void {
+export let update_streams_sidebar = (force_rerender = false): void => {
     if (!force_rerender && is_zoomed_in()) {
         // We do our best to update topics that are displayed
         // in case user zoomed in. Streams list will be updated,
@@ -591,6 +599,10 @@ export function update_streams_sidebar(force_rerender = false): void {
     }
 
     update_stream_sidebar_for_narrow(filter);
+};
+
+export function rewire_update_streams_sidebar(value: typeof update_streams_sidebar): void {
+    update_streams_sidebar = value;
 }
 
 export function update_dom_with_unread_counts(counts: FullUnreadCountsData): void {

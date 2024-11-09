@@ -475,7 +475,8 @@ function is_recipient_large_topic(): boolean {
     return topic_participant_count_more_than_threshold(stream_id, compose_state.topic());
 }
 
-function wildcard_mention_policy_authorizes_user(): boolean {
+// Exported for tests
+export let wildcard_mention_policy_authorizes_user = (): boolean => {
     if (
         realm.realm_wildcard_mention_policy ===
         settings_config.wildcard_mention_policy_values.by_everyone.code
@@ -517,6 +518,12 @@ function wildcard_mention_policy_authorizes_user(): boolean {
         return days >= realm.realm_waiting_period_threshold && !current_user.is_guest;
     }
     return !current_user.is_guest;
+};
+
+export function rewire_wildcard_mention_policy_authorizes_user(
+    value: typeof wildcard_mention_policy_authorizes_user,
+): void {
+    wildcard_mention_policy_authorizes_user = value;
 }
 
 export function stream_wildcard_mention_allowed(): boolean {

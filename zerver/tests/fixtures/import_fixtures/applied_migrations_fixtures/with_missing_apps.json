@@ -1,0 +1,63 @@
+{
+    "contenttypes": ["0001_initial", "0002_remove_content_type_name"],
+    "auth": [
+        "0001_initial",
+        "0002_alter_permission_name_max_length",
+        "0003_alter_user_email_max_length",
+        "0004_alter_user_username_opts"
+    ],
+    "zerver": [
+        "0001_initial",
+        "0029_realm_subdomain",
+        "0030_realm_org_type",
+        "0031_remove_system_avatar_source"
+    ],
+    "analytics": [
+        "0001_initial",
+        "0002_remove_huddlecount",
+        "0003_fillstate"
+    ],
+    "confirmation": [
+        "0001_initial",
+        "0002_realmcreationkey",
+        "0003_emailchangeconfirmation"
+    ],
+    "zilencer": [
+        "0001_initial",
+        "0002_remote_zulip_server",
+        "0003_add_default_for_remotezulipserver_last_updated_field"
+    ],
+    "corporate": [
+        "0001_initial",
+        "0002_customer_default_discount",
+        "0003_customerplan"
+    ],
+    "otp_static": ["0001_initial", "0002_throttling", "0003_add_timestamps"],
+    "otp_totp": ["0001_initial", "0002_auto_20190420_0723", "0003_add_timestamps"],
+    "pgroonga": ["0001_enable", "0002_html_escape_subject", "0003_v2_api_upgrade"],
+    "two_factor": [
+        "0001_initial",
+        "0002_auto_20150110_0810",
+        "0003_auto_20150817_1733",
+        "0004_auto_20160205_1827"
+    ],
+    "default": [
+        "0001_initial",
+        "0002_add_related_name",
+        "0003_alter_email_max_length",
+        "0004_auto_20160423_0400"
+    ],
+    "social_auth": [
+        "0001_initial",
+        "0002_add_related_name",
+        "0003_alter_email_max_length",
+        "0004_auto_20160423_0400",
+        "0005_auto_20160727_2333"
+    ],
+    "social_django": [
+        "0006_partial",
+        "0007_code_timestamp",
+        "0008_partial_timestamp",
+        "0009_auto_20191118_0520"
+    ]
+}

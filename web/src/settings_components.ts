@@ -631,10 +631,10 @@ export function get_input_type($input_elem: JQuery, input_type?: string): string
     return input_type;
 }
 
-export function get_input_element_value(
+export let get_input_element_value = (
     input_elem: HTMLElement,
     input_type?: string,
-): boolean | number | string | null | undefined | GroupSettingValue {
+): boolean | number | string | null | undefined | GroupSettingValue => {
     const $input_elem = $(input_elem);
     input_type = get_input_type($input_elem, input_type);
     let input_value;
@@ -691,6 +691,10 @@ export function get_input_element_value(
         default:
             return undefined;
     }
+};
+
+export function rewire_get_input_element_value(value: typeof get_input_element_value): void {
+    get_input_element_value = value;
 }
 
 export function set_input_element_value(

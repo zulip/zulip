@@ -1337,6 +1337,7 @@ class SlackImporter(ZulipTestCase):
 
         self.assertTrue(os.path.exists(output_dir))
         self.assertTrue(os.path.exists(output_dir + "/realm.json"))
+        self.assertTrue(os.path.exists(output_dir + "/migration_status.json"))
 
         realm_icons_path = os.path.join(output_dir, "realm_icons")
         realm_icon_records_path = os.path.join(realm_icons_path, "records.json")

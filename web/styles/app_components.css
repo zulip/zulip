@@ -623,6 +623,25 @@ input.settings_text_input {
     color: hsl(0deg 0% 100%);
 }
 
+/* Unread-count attention levels. */
+
+.prominent-count {
+    background-color: var(--color-background-unread-counter-prominent);
+    color: var(--color-unread-counter-prominent);
+}
+
+.normal-count {
+    background-color: var(--color-background-unread-counter-normal);
+    color: var(--color-unread-counter-normal);
+    box-shadow: var(--box-shadow-unread-counter-normal);
+}
+
+.quiet-count {
+    background-color: var(--color-background-unread-counter-quiet);
+    color: var(--color-unread-counter-quiet);
+    font-weight: 475;
+}
+
 .unread_mention_info:not(:empty) {
     margin-right: 5px;
     margin-left: 2px;

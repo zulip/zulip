@@ -116,7 +116,7 @@ export function get_user_topics_for_visibility_policy(visibility_policy: number)
     return topics;
 }
 
-export function set_user_topic_visibility_policy(
+export let set_user_topic_visibility_policy = (
     stream_id: number,
     topic: string,
     visibility_policy: number,
@@ -125,7 +125,7 @@ export function set_user_topic_visibility_policy(
     $status_element?: JQuery,
     success_cb?: () => void,
     error_cb?: () => void,
-): void {
+): void => {
     const data = {
         stream_id,
         topic,
@@ -203,6 +203,12 @@ export function set_user_topic_visibility_policy(
             }
         },
     });
+};
+
+export function rewire_set_user_topic_visibility_policy(
+    value: typeof set_user_topic_visibility_policy,
+): void {
+    set_user_topic_visibility_policy = value;
 }
 
 export function set_visibility_policy_for_element($elt: JQuery, visibility_policy: number): void {

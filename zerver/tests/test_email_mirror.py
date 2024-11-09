@@ -13,7 +13,7 @@ import orjson
 from django.conf import settings
 
 from zerver.actions.realm_settings import do_deactivate_realm
-from zerver.actions.streams import do_change_stream_post_policy
+from zerver.actions.streams import do_change_stream_post_policy, do_deactivate_stream
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.email_mirror import (
     create_missed_message_address,
@@ -39,6 +39,7 @@ from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish, most_recent_message, most_recent_usermessage
 from zerver.models import Attachment, Recipient, Stream, UserProfile
+from zerver.models.messages import Message
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
@@ -228,7 +229,7 @@ class TestFilterFooter(ZulipTestCase):
         self.assertEqual(result, text)
 
 
-class TestStreamEmailMessagesSuccess(ZulipTestCase):
+class TestStreamEmailMessages(ZulipTestCase):
     def create_incoming_valid_message(
         self, msgtext: str, stream: Stream, include_quotes: bool
     ) -> EmailMessage:
@@ -414,6 +415,31 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         self.assertEqual(message.content, "TestStreamEmailMessages body")
         self.assert_message_stream_name(message, stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
+
+    def test_receive_stream_email_deactivated_stream(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        msgtext = "TestStreamEmailMessages Body"
+        incoming_valid_message = self.create_incoming_valid_message(
+            msgtext, stream, include_quotes=False
+        )
+
+        do_deactivate_stream(stream, acting_user=None)
+        last_message_id = Message.objects.latest("id").id
+
+        with self.assertLogs(logger_name, level="INFO") as m:
+            process_message(incoming_valid_message)
+        self.assertEqual(
+            m.output,
+            [
+                f"INFO:{logger_name}:Failed to process email to {stream.name} ({stream.realm.string_id}): "
+                f"Not authorized to send to channel '{stream.name}'",
+            ],
+        )
+        self.assertEqual(Message.objects.latest("id").id, last_message_id)
 
     def test_receive_stream_email_show_sender_success(self) -> None:
         user_profile = self.example_user("hamlet")

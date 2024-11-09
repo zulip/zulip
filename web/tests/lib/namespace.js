@@ -26,26 +26,19 @@ let jquery_function;
 const template_path = path.resolve(__dirname, "../../templates");
 
 function load(request, parent, isMain) {
-    let module;
-
     const filename = Module._resolveFilename(request, parent, isMain);
     if (module_mocks.has(filename)) {
         used_module_mocks.add(filename);
-        module = module_mocks.get(filename);
+        return module_mocks.get(filename);
     } else if (filename.endsWith(".hbs") && filename.startsWith(template_path + path.sep)) {
         const actual_render = actual_load(request, parent, isMain);
-        module = template_stub({filename, actual_render});
+        return template_stub({filename, actual_render});
     } else if (filename === jquery_path && parent.filename !== real_jquery_path) {
-        module = jquery_function || $;
-    } else {
-        module = actual_load(request, parent, isMain);
+        return jquery_function || $;
     }
 
-    if (
-        (typeof module === "object" || typeof module === "function") &&
-        "__esModule" in module &&
-        "__Rewire__" in module
-    ) {
+    const module = actual_load(request, parent, isMain);
+    if ((typeof module === "object" || typeof module === "function") && "__esModule" in module) {
         /* istanbul ignore next */
         function error_immutable() {
             throw new Error(`${filename} is an immutable ES module`);
@@ -289,11 +282,6 @@ exports.with_overrides = function (test_function) {
             `We cannot override a function for ${typeof obj} objects`,
         );
 
-        assert.ok(
-            !("__esModule" in obj && "__Rewire__" in obj),
-            "Cannot mutate an ES module from outside. Consider exporting a test helper function from it instead.",
-        );
-
         const had_value = Object.hasOwn(obj, prop);
         const old_value = obj[prop];
         let new_value = value;
@@ -346,18 +334,13 @@ exports.with_overrides = function (test_function) {
     };
 
     const override_rewire = function (obj, prop, value, {unused = true} = {}) {
-        // This is deprecated because it relies on the slow
-        // babel-plugin-rewire-ts plugin.  Consider alternatives such
-        // as exporting a helper function for tests from the module
-        // containing the function you need to mock.
-
         assert.ok(
             typeof obj === "object" || typeof obj === "function",
             `We cannot override a function for ${typeof obj} objects`,
         );
 
-        // https://github.com/rosswarren/babel-plugin-rewire-ts/issues/15
-        const old_value = prop in obj ? obj[prop] : obj.__GetDependency__(prop);
+        assert.ok(Object.hasOwn(obj, prop));
+        const old_value = obj[prop];
         let new_value = value;
 
         if (typeof value === "function") {
@@ -377,19 +360,21 @@ exports.with_overrides = function (test_function) {
             unused = false;
         }
 
-        obj.__Rewire__(prop, new_value);
+        const rewire_prop = `rewire_${prop}`;
+        /* istanbul ignore if */
+        if (!(rewire_prop in obj)) {
+            assert.fail(`You must define ${rewire_prop} to use override_rewire on ${prop}.`);
+        }
+        obj[rewire_prop](new_value);
         restore_callbacks.push(() => {
             if (ok) {
                 assert.ok(!unused, `${prop} never got invoked!`);
             }
-            obj.__Rewire__(prop, old_value);
+            obj[rewire_prop](old_value);
         });
     };
 
     const disallow_rewire = function (obj, prop) {
-        // This is deprecated because it relies on the slow
-        // babel-plugin-rewire-ts plugin.
-
         override_rewire(
             obj,
             prop,

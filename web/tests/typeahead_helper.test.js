@@ -10,6 +10,7 @@ const stream_topic_history = mock_esm("../src/stream_topic_history");
 const settings_config = zrequire("settings_config");
 const pm_conversations = zrequire("pm_conversations");
 
+const bootstrap_typeahead = zrequire("bootstrap_typeahead");
 const recent_senders = zrequire("recent_senders");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
@@ -1053,7 +1054,7 @@ test("sort_group_setting_options", ({override_rewire}) => {
         b_user_3.full_name,
     ]);
 
-    override_rewire(th, "MAX_ITEMS", 6);
+    override_rewire(bootstrap_typeahead, "MAX_ITEMS", 6);
     assert.deepEqual(get_group_setting_typeahead_result("Bo", second_bob_group), [
         bob_system_group.name,
         bob_group.name,

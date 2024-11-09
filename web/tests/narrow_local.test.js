@@ -44,7 +44,7 @@ function test_with(fixture) {
         final_select_id: undefined,
     };
 
-    all_messages_data.__Rewire__("all_messages_data", {
+    all_messages_data.rewire_all_messages_data({
         fetch_status: {
             has_found_newest: () => fixture.has_found_newest,
         },
@@ -63,7 +63,7 @@ function test_with(fixture) {
         },
     });
 
-    narrow_state.__Rewire__("get_first_unread_info", () => fixture.unread_info);
+    narrow_state.rewire_get_first_unread_info(() => fixture.unread_info);
 
     message_view.maybe_add_local_messages({
         id_info,

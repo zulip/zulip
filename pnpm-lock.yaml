@@ -11,6 +11,9 @@ patchedDependencies:
   source-sans@3.46.0:
     hash: 4n7ij66tzyhzaqnxsenbilrxr4
     path: patches/source-sans@3.46.0.patch
+  svgicons2svgfont:
+    hash: d4mkid5oxxg6zfe7zsae2cikn4
+    path: patches/svgicons2svgfont.patch
   tippy.js@6.3.7:
     hash: mlbmk5pq4q6iuwarqu6solgeeq
     path: patches/tippy.js@6.3.7.patch
@@ -365,9 +368,6 @@ importers:
       babel-plugin-istanbul:
         specifier: ^7.0.0
         version: 7.0.0
-      babel-plugin-rewire-ts:
-        specifier: ^1.4.0
-        version: 1.4.0
       callsites:
         specifier: ^3.1.0
         version: 3.1.0
@@ -3047,9 +3047,6 @@ packages:
     resolution: {integrity: sha512-2R25rQZWP63nGwaAswvDazbPXfrM3HwVoBXK6HcqeKrSrL/JqcC/rDcf95l4r7LXLyxDXc8uQDa064GubtCABg==}
     peerDependencies:
       '@babel/core': ^7.4.0 || ^8.0.0-0 <8.0.0
-
-  babel-plugin-rewire-ts@1.4.0:
-    resolution: {integrity: sha512-XVyyWMIx1fNSG42vbUaAro1LANLs/fBW6KurYaeoVjS2U8zLCaow7LKll6zjs1cwcqcbZK2v59zVouPs+JAqxw==}
 
   babel-plugin-syntax-jsx@6.18.0:
     resolution: {integrity: sha512-qrPaCSo9c8RHNRHIotaufGbuOBN8rtdC4QrrFFc43vyWCCz7Kl7GL1PGaXtMGQZUXrkCjNEgxDfmAuAabr/rlw==}
@@ -11620,7 +11617,7 @@ snapshots:
       mkdirp: 1.0.4
       q: 1.5.1
       svg2ttf: 6.0.3
-      svgicons2svgfont: 10.0.6
+      svgicons2svgfont: 10.0.6(patch_hash=d4mkid5oxxg6zfe7zsae2cikn4)
       ttf2eot: 3.1.0
       ttf2woff: 3.0.0
       ttf2woff2: 4.0.5
@@ -12148,8 +12145,6 @@ snapshots:
       '@babel/helper-define-polyfill-provider': 0.6.2(@babel/core@7.26.0)
     transitivePeerDependencies:
       - supports-color
-
-  babel-plugin-rewire-ts@1.4.0: {}
 
   babel-plugin-syntax-jsx@6.18.0: {}
 
@@ -18398,7 +18393,7 @@ snapshots:
       microbuffer: 1.0.0
       svgpath: 2.6.0
 
-  svgicons2svgfont@10.0.6:
+  svgicons2svgfont@10.0.6(patch_hash=d4mkid5oxxg6zfe7zsae2cikn4):
     dependencies:
       commander: 7.2.0
       geometry-interfaces: 1.1.4

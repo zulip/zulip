@@ -17,6 +17,11 @@ import * as util from "./util";
 
 // Exported for unit testing
 export let is_using_input_method = false;
+
+export function rewire_is_using_input_method(value: typeof is_using_input_method): void {
+    is_using_input_method = value;
+}
+
 export let search_pill_widget: SearchPillWidget | null = null;
 let search_input_has_changed = false;
 
@@ -389,7 +394,8 @@ function reset_searchbox(clear = false): void {
     }
 }
 
-function exit_search(opts: {keep_search_narrow_open: boolean}): void {
+// Exported for tests
+export let exit_search = (opts: {keep_search_narrow_open: boolean}): void => {
     const filter = narrow_state.filter();
     if (!filter || filter.is_common_narrow()) {
         // for common narrows, we change the UI (and don't redirect)
@@ -403,13 +409,23 @@ function exit_search(opts: {keep_search_narrow_open: boolean}): void {
     }
     $("#search_query").trigger("blur");
     $(".app").trigger("focus");
+};
+
+export function rewire_exit_search(value: typeof exit_search): void {
+    exit_search = value;
 }
 
-export function open_search_bar_and_close_narrow_description(clear = false): void {
+export let open_search_bar_and_close_narrow_description = (clear = false): void => {
     reset_searchbox(clear);
     $(".navbar-search").addClass("expanded");
     $("#message_view_header").addClass("hidden");
     popovers.hide_all();
+};
+
+export function rewire_open_search_bar_and_close_narrow_description(
+    value: typeof open_search_bar_and_close_narrow_description,
+): void {
+    open_search_bar_and_close_narrow_description = value;
 }
 
 export function close_search_bar_and_open_narrow_description(): void {

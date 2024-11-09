@@ -1151,8 +1151,6 @@ textarea.new_message_textarea {
 
     .unread_count {
         margin: 1px 0 0 6px;
-        background-color: var(--color-background-unread-counter-quiet);
-        color: var(--color-unread-counter-quiet);
     }
 }
 

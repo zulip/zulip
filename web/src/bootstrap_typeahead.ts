@@ -186,7 +186,11 @@ export function defaultSorter(items: string[], query: string): string[] {
     return [...beginswith, ...caseSensitive, ...caseInsensitive];
 }
 
-export const MAX_ITEMS = 50;
+export let MAX_ITEMS = 50;
+
+export function rewire_MAX_ITEMS(value: typeof MAX_ITEMS): void {
+    MAX_ITEMS = value;
+}
 
 /* TYPEAHEAD PUBLIC CLASS DEFINITION
  * ================================= */
