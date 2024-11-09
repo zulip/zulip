@@ -348,6 +348,11 @@ class ExportFile(ZulipTestCase):
         )
         return fixture
 
+    def get_applied_migrations_error_message(self, fixture_name: str) -> str:
+        fixture = self.fixture_data(fixture_name, "import_fixtures/check_migrations_errors")
+        fixture = fixture.format(version_placeholder=ZULIP_VERSION)
+        return fixture.strip()
+
     def verify_migration_status_json(self) -> None:
         # This function asserts that the generated migration_status.json
         # is structurally familiar for it to be used for assertion at
@@ -2060,9 +2065,9 @@ class RealmImportExportTest(ExportFile):
             )
             do_import_realm(get_output_dir(), "test-zulip")
 
-        expected_error_message = self.fixture_data(
-            "unapplied_migrations_error.txt", "import_fixtures/check_migrations_errors"
-        ).strip()
+        expected_error_message = self.get_applied_migrations_error_message(
+            "unapplied_migrations_error.txt"
+        )
         error_message = str(e.exception).strip()
         self.assertEqual(expected_error_message, error_message)
 
@@ -2085,9 +2090,9 @@ class RealmImportExportTest(ExportFile):
                 export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
             )
             do_import_realm(get_output_dir(), "test-zulip")
-        expected_error_message = self.fixture_data(
-            "extra_migrations_error.txt", "import_fixtures/check_migrations_errors"
-        ).strip()
+        expected_error_message = self.get_applied_migrations_error_message(
+            "extra_migrations_error.txt"
+        )
         error_message = str(e.exception).strip()
         self.assertEqual(expected_error_message, error_message)
 
