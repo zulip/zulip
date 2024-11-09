@@ -144,6 +144,7 @@ from zerver.views.registration import (
     get_prereg_key_and_redirect,
     new_realm_send_confirm,
     realm_import_post_process,
+    realm_import_status,
     realm_redirect,
     realm_register,
     signup_send_confirm,
@@ -521,6 +522,10 @@ v1_api_and_json_patterns = [
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
     rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),
     rest_path("export/realm/consents", GET=get_users_export_consents),
+    rest_path(
+        "realm/import/status/<confirmation_key>",
+        GET=(realm_import_status, {"intentionally_undocumented", "allow_anonymous_user_web"}),
+    ),
 ]
 
 integrations_view = IntegrationView.as_view()
