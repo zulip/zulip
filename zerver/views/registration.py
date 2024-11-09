@@ -7,6 +7,8 @@ from urllib.parse import urlencode, urljoin
 import orjson
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, get_backends
+from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sessions.backends.base import SessionBase
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -41,7 +43,7 @@ from zerver.actions.user_settings import (
     do_change_password,
     do_change_user_setting,
 )
-from zerver.actions.users import do_change_user_role
+from zerver.actions.users import do_change_user_role, generate_password_reset_url
 from zerver.context_processors import (
     get_realm_create_form_context,
     get_realm_from_request,
@@ -65,6 +67,7 @@ from zerver.lib.i18n import (
 )
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.rate_limiter import rate_limit_request_by_ip
+from zerver.lib.response import json_success
 from zerver.lib.send_email import EmailNotDeliveredError, FromAddress, send_email
 from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain
@@ -79,10 +82,12 @@ from zerver.lib.typed_endpoint_validators import (
     non_negative_int_or_none_validator,
     timezone_or_empty_validator,
 )
+from zerver.lib.upload import all_message_attachments
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import get_accounts_for_email
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
+    Message,
     MultiuseInvite,
     NamedUserGroup,
     PreregistrationRealm,
@@ -884,6 +889,74 @@ def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
         login_url, urlencode({"email": email, "already_registered": 1})
     )
     return HttpResponseRedirect(redirect_url)
+
+
+@typed_endpoint
+def realm_import_status(
+    request: HttpRequest,
+    maybe_user_profile: UserProfile | AnonymousUser,
+    *,
+    confirmation_key: str,
+) -> HttpResponse:  # nocoverage
+    try:
+        preregistration_realm = get_object_from_key(
+            confirmation_key,
+            [Confirmation.REALM_CREATION],
+            mark_object_used=False,
+            allow_used=True,
+        )
+    except ConfirmationKeyError:
+        raise JsonableError(_("Unauthenticated"))
+
+    assert isinstance(preregistration_realm, PreregistrationRealm)
+    try:
+        realm = Realm.objects.get(string_id=preregistration_realm.string_id)
+    except Realm.DoesNotExist:
+        # TODO: Either store the path to the temporary conversion directory on
+        # preregistration_realm.data_import_metadata, or have the conversion
+        # process support writing updates to this for a better progress indicator.
+        return json_success(request, {"status": _("Converting Slack data…")})
+
+    if realm.deactivated:
+        # These "if" cases are in the inverse order than they're done
+        # in the import process, so we get the latest step that it's
+        # on.
+        if Message.objects.filter(realm_id=realm.id).exists():
+            return json_success(request, {"status": _("Importing messages…")})
+        try:
+            next(all_message_attachments(prefix=f"{realm.id}/"))
+            return json_success(request, {"status": _("Importing attachment data…")})
+        except StopIteration:
+            pass
+        return json_success(request, {"status": _("Importing converted Slack data…")})
+
+    if (
+        not preregistration_realm.data_import_metadata["no_user_matching_email"]
+        and preregistration_realm.created_realm is None
+    ):
+        return json_success(request, {"status": _("Finalizing import…")})
+
+    # We have a non-deactivated realm and it's linked to the prereg key
+    result = {"status": _("Done!")}
+    if not preregistration_realm.data_import_metadata["no_user_matching_email"]:
+        original_user = get_user_by_delivery_email(preregistration_realm.email, realm)
+        # For safety, we only provide a password reset redirect if the
+        # user has still not set a password; otherwise, this link
+        # would always function to get a password reset page for the
+        # first user
+        if not original_user.has_usable_password():
+            result["redirect"] = generate_password_reset_url(original_user, default_token_generator)
+        else:
+            result["redirect"] = get_safe_redirect_to(reverse("login"), realm.url)
+    else:
+        # The email address in the import may not match the email
+        # address they provided. Ask user which user they want to become.
+        result["status"] = _("No users matching provided email.")
+        result["redirect"] = reverse(
+            "realm_import_post_process", kwargs={"confirmation_key": confirmation_key}
+        )
+
+    return json_success(request, result)
 
 
 @transaction.atomic(durable=True)
