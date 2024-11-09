@@ -1,3 +1,8 @@
+import {Uppy} from "@uppy/core";
+import DragDrop from "@uppy/drag-drop";
+import Tus from "@uppy/tus";
+import "@uppy/core/dist/style.min.css";
+import "@uppy/drag-drop/dist/style.min.css";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
@@ -350,5 +355,71 @@ $(() => {
         if (selected_element !== undefined) {
             showElement(selected_element);
         }
+    });
+
+    if ($("#slack-import-drag-and-drop").length > 0) {
+        const key = $<HTMLInputElement>("#auth_key").val();
+        const uppy = new Uppy({
+            debug: true,
+            autoProceed: true,
+            restrictions: {
+                maxNumberOfFiles: 1,
+                minNumberOfFiles: 1,
+                allowedFileTypes: [".zip", "application/zip"],
+            },
+            meta: {
+                key,
+            },
+        });
+        uppy.use(DragDrop, {
+            target: "#slack-import-drag-and-drop",
+            locale: {
+                strings: {
+                    dropHereOr: $t({
+                        defaultMessage:
+                            "Drag and drop your Slack export file here, or click to browse.",
+                    }),
+                },
+            },
+        });
+        uppy.use(Tus, {endpoint: "/api/v1/tus/", removeFingerprintOnSuccess: true});
+        uppy.on("upload-error", (_file, error) => {
+            $("#slack-import-file-upload-error").text(error.message);
+        });
+        uppy.on("upload-success", (file, _response) => {
+            assert(file !== undefined);
+            $("#slack-import-start-upload-wrapper").removeClass("hidden");
+            $("#slack-import-uploaded-file-name").text(file.name!);
+        });
+    }
+
+    if ($("#slack-import-poll-status").length > 0) {
+        const key = $<HTMLInputElement>("#auth_key").val();
+        const pollInterval = 2000; // Poll every 2 seconds
+
+        let poll_id: ReturnType<typeof setTimeout> | undefined;
+        function checkImportStatus(): void {
+            $.get(`/json/realm/import/status/${key}`, {}, (response) => {
+                const {status, redirect} = z
+                    .object({status: z.string(), redirect: z.string().optional()})
+                    .parse(response);
+                $("#slack-import-poll-status").text(status);
+                if (poll_id && redirect !== undefined) {
+                    clearInterval(poll_id);
+                    window.location.assign(redirect);
+                }
+            });
+        }
+
+        // Start polling
+        poll_id = setInterval(checkImportStatus, pollInterval);
+    }
+
+    $("#cancel-slack-import").on("click", () => {
+        $("#cancel-slack-import-form").trigger("submit");
+    });
+
+    $("#slack-access-token").on("input", () => {
+        $("#update-slack-access-token").show();
     });
 });

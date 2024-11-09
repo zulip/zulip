@@ -925,6 +925,8 @@ button#register_auth_button_gitlab {
     }
 }
 
+#realm-import-post-process,
+#realm-creation-from-slack-import,
 #account-deactivated-success-page-details,
 #server-deactivate-details,
 #remote-billing-confirm-login-form,
@@ -1477,5 +1479,57 @@ button#register_auth_button_gitlab {
     .not-editable-realm-field {
         margin: 0;
         padding: 0;
+    }
+}
+
+#realm-creation-import-from-wrapper .extra-info-realm-creation-import-from {
+    padding-top: 5px;
+}
+
+#slack-import-drag-drop-wrapper {
+    width: 100%;
+    margin: 10px 0 0 5px;
+
+    #slack-import-drag-and-drop {
+        margin-right: 5px;
+    }
+}
+
+#realm-import-post-process,
+#realm-creation-from-slack-import {
+    .register-button {
+        margin: 0 auto;
+    }
+
+    #update-slack-access-token {
+        display: none;
+    }
+
+    .slack-import-extra-info {
+        margin-top: 0;
+
+        .not-editable-realm-field {
+            padding-top: 0;
+        }
+    }
+
+    .input-box.no-validation {
+        margin: 0;
+    }
+}
+
+#slack-import-drag-and-drop .uppy-DragDrop-container {
+    border: 1px dashed hsl(0deg 0% 0%);
+    background-color: hsl(0deg 0% 0% / 5%);
+    color: hsl(0deg 0% 40%);
+    font-size: 1rem;
+
+    &:focus {
+        outline: none;
+        box-shadow: none;
+    }
+
+    &:focus-visible {
+        outline: 1px solid hsl(213deg 81% 79%);
     }
 }
