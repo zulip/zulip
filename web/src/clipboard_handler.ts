@@ -1,8 +1,8 @@
-import * as hash_util from "./hash_util";
-import * as stream_data from "./stream_data";
+import * as hash_util from "./hash_util.ts";
+import * as stream_data from "./stream_data.ts";
 
-export function generate_formatted_link(link_text: string): string {
-    const stream_topic = hash_util.decode_stream_topic_from_url(link_text);
+export function generate_formatted_link(link_data: string): string {
+    const stream_topic = hash_util.decode_stream_topic_from_url(link_data);
 
     if (!stream_topic) {
         return "Invalid stream";
@@ -17,22 +17,30 @@ export function generate_formatted_link(link_text: string): string {
     const topic_name = stream_topic.topic_name?.replace(/</g, "&lt;")?.replace(/>/g, "&gt;");
     const stream_name = stream?.name?.replace(/</g, "&lt;")?.replace(/>/g, "&gt;");
 
-    if (topic_name !== undefined) {
-        return `<a href="${link_text}">#${stream_name}>${topic_name}</a>`;
-    }
+    const message_id = stream_topic?.message_id;
+    let formatted_url;
 
-    return `<a href="${link_text}">#${stream_name}</a>`;
+    if (message_id === undefined) {
+        if (topic_name !== undefined) {
+            formatted_url = `<a href="${link_data}">#${stream_name}>${topic_name}</a>`;
+        } else {
+            formatted_url = `<a href="${link_data}">#${stream_name}</a>`;
+        }
+    } else {
+        formatted_url = `<a href="${link_data}">#${stream_name}>${topic_name}@${message_id}</a>`;
+    }
+    return formatted_url;
 }
 
-export function copy_to_clipboard(link_text: string, after_copy_cb: () => void): void {
-    const formatted_url = generate_formatted_link(link_text);
+export function copy_to_clipboard(link_data: string, after_copy_cb: () => void): void {
+    const formatted_url = generate_formatted_link(link_data);
 
     if (formatted_url === "Invalid stream") {
         return;
     }
 
     const clipboardItem = new ClipboardItem({
-        "text/plain": new Blob([link_text], {
+        "text/plain": new Blob([link_data], {
             type: "text/plain",
         }),
         "text/html": new Blob([formatted_url], {type: "text/html"}),

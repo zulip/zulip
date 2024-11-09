@@ -7,7 +7,7 @@ import render_left_sidebar_stream_actions_popover from "../templates/popovers/le
 
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
-import * as clipboard_handler from "./clipboard_handler";
+import * as clipboard_handler from "./clipboard_handler.ts";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";

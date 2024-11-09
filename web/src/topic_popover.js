@@ -3,7 +3,7 @@ import $ from "jquery";
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_left_sidebar_topic_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_actions_popover.hbs";
 
-import * as clipboard_handler from "./clipboard_handler";
+import * as clipboard_handler from "./clipboard_handler.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
