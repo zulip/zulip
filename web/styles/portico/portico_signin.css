@@ -46,6 +46,7 @@ html {
     }
 }
 
+#realm-import-post-process,
 #new-realm-creation {
     .get-started {
         font-size: 2rem;

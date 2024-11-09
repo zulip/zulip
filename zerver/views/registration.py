@@ -18,10 +18,12 @@ from django.shortcuts import redirect, render
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.translation import get_language
+from django.utils.translation import gettext as _
 from django.views.defaults import server_error
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from pydantic import Json, NonNegativeInt, StringConstraints
 
+from confirmation import settings as confirmation_settings
 from confirmation.models import (
     Confirmation,
     ConfirmationKeyError,
@@ -49,12 +51,13 @@ from zerver.decorator import add_google_analytics, do_login, require_post
 from zerver.forms import (
     FindMyTeamForm,
     HomepageForm,
+    ImportRealmOwnerSelectionForm,
     RealmCreationForm,
     RealmRedirectForm,
     RegistrationForm,
 )
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
-from zerver.lib.exceptions import RateLimitedError
+from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.i18n import (
     get_browser_language_code,
     get_default_language_for_new_user,
@@ -106,6 +109,7 @@ from zerver.views.auth import (
     create_preregistration_user,
     finish_desktop_flow,
     finish_mobile_flow,
+    get_safe_redirect_to,
     redirect_and_log_into_subdomain,
     redirect_to_deactivation_notice,
 )
@@ -880,6 +884,66 @@ def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
         login_url, urlencode({"email": email, "already_registered": 1})
     )
     return HttpResponseRedirect(redirect_url)
+
+
+@transaction.atomic(durable=True)
+def realm_import_post_process(
+    request: HttpRequest,
+    confirmation_key: str,
+) -> HttpResponse:
+    try:
+        preregistration_realm = get_object_from_key(
+            confirmation_key,
+            [Confirmation.REALM_CREATION],
+            mark_object_used=False,
+            allow_used=True,
+        )
+    except ConfirmationKeyError as exception:
+        return render_confirmation_key_error(request, exception)
+
+    assert isinstance(preregistration_realm, PreregistrationRealm)
+    try:
+        realm = Realm.objects.get(string_id=preregistration_realm.string_id)
+    except Realm.DoesNotExist:
+        # If we cannot find the realm, likely means there was something
+        # wrong with the import process. Revoke the confirmation key to
+        # force user to restart the process.
+        preregistration_realm.status = confirmation_settings.STATUS_REVOKED
+        preregistration_realm.save(update_fields=["status"])
+
+        return render_confirmation_key_error(
+            request, ConfirmationKeyError(ConfirmationKeyError.EXPIRED)
+        )
+
+    if not preregistration_realm.data_import_metadata["no_user_matching_email"]:
+        return HttpResponseRedirect(get_safe_redirect_to(reverse("login"), realm.url))
+
+    if request.method == "POST":
+        form = ImportRealmOwnerSelectionForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data["email"]
+            user = get_user_by_delivery_email(email, realm)
+            user.delivery_email = preregistration_realm.email
+            user.role = UserProfile.ROLE_REALM_OWNER
+            user.save(update_fields=["delivery_email", "role"])
+            preregistration_realm.status = confirmation_settings.STATUS_USED
+            preregistration_realm.created_realm = realm
+            preregistration_realm.data_import_metadata["no_user_matching_email"] = False
+            preregistration_realm.save()
+            return HttpResponseRedirect(get_safe_redirect_to(reverse("login"), realm.url))
+
+    users = UserProfile.objects.filter(realm=realm, is_bot=False)
+    context = {
+        "users": users,
+        "email": preregistration_realm.email,
+        "key": confirmation_key,
+    }
+
+    return TemplateResponse(
+        request,
+        "zerver/realm_import_post_process.html",
+        context,
+    )
 
 
 @add_google_analytics
