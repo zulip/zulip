@@ -1,4 +1,5 @@
 from django.contrib.contenttypes.fields import GenericRelation
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.db.models import CASCADE, Q, QuerySet
 from django.db.models.functions import Upper
@@ -48,6 +49,8 @@ class PreregistrationRealm(models.Model):
     created_user = models.ForeignKey(
         UserProfile, null=True, related_name="+", on_delete=models.SET_NULL
     )
+
+    data_import_metadata = models.JSONField(default=dict, encoder=DjangoJSONEncoder)
 
 
 class PreregistrationUser(models.Model):
