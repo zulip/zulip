@@ -616,6 +616,9 @@ NAGIOS_BOT_HOST = SYSTEM_BOT_REALM + "." + EXTERNAL_HOST
 # Use half of the available CPUs for data import purposes.
 DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM = (len(os.sched_getaffinity(0)) // 2) or 1
 
+# Use the default tmpfile path for automated imports
+IMPORT_TMPFILE_DIRECTORY: str | None = None
+
 # How long after the last upgrade to nag users that the server needs
 # to be upgraded because of likely security releases in the meantime.
 # Default is 18 months, constructed as 12 months before someone should
