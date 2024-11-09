@@ -66,6 +66,7 @@ from zerver.lib.i18n import (
     get_language_name,
 )
 from zerver.lib.pysa import mark_sanitized
+from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.rate_limiter import rate_limit_request_by_ip
 from zerver.lib.response import json_success
 from zerver.lib.send_email import EmailNotDeliveredError, FromAddress, send_email
@@ -245,6 +246,9 @@ def registration_helper(
     form_full_name: Annotated[str | None, ApiParamConfig("full_name")] = None,
     source_realm_id: Annotated[NonNegativeInt | None, non_negative_int_or_none_validator()] = None,
     form_is_demo_organization: Annotated[str | None, ApiParamConfig("is_demo_organization")] = None,
+    slack_access_token: str | None = None,
+    start_slack_import: Json[bool] = False,
+    cancel_import: Json[bool] = False,
 ) -> HttpResponse:
     try:
         prereg_object, realm_creation = check_prereg_key(request, key)
@@ -257,6 +261,44 @@ def registration_helper(
     if realm_creation:
         assert isinstance(prereg_object, PreregistrationRealm)
         prereg_realm = prereg_object
+
+        if cancel_import:
+            # If the user cancels the import process, we need to remove the metadata
+            # that was added during the import process.
+            prereg_realm.data_import_metadata = {}
+            prereg_realm.save(update_fields=["data_import_metadata"])
+
+            # Return back to normal registration flow.
+            return HttpResponseRedirect(
+                reverse("get_prereg_key_and_redirect", kwargs={"confirmation_key": key})
+            )
+
+        if start_slack_import:
+            assert prereg_realm.data_import_metadata.get("slack_access_token") is not None
+            assert prereg_realm.data_import_metadata.get("uploaded_import_file_name") is not None
+            assert prereg_realm.data_import_metadata.get("is_import_work_queued") is not True
+            assert prereg_realm.created_realm is None
+            queue_json_publish_rollback_unsafe(
+                "deferred_work",
+                {
+                    "type": "import_slack_data",
+                    "preregistration_realm_id": prereg_realm.id,
+                    "filename": f"import/{prereg_realm.id}/slack.zip",
+                    "slack_access_token": prereg_realm.data_import_metadata["slack_access_token"],
+                },
+            )
+            # Avoid starting the import process multiple times.
+            prereg_realm.data_import_metadata["is_import_work_queued"] = True
+            prereg_realm.save(update_fields=["data_import_metadata"])
+
+            return TemplateResponse(
+                request,
+                "zerver/slack_import.html",
+                {
+                    "poll_for_import_completion": True,
+                    "key": key,
+                },
+            )
         password_required = True
         role = UserProfile.ROLE_REALM_OWNER
     else:
