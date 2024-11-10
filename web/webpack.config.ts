@@ -117,7 +117,7 @@ const config = (
                 },
                 // Transpile .js and .ts files with Babel
                 {
-                    test: /\.(js|ts)$/,
+                    test: /\.[cm]?[jt]s$/,
                     include: [
                         path.resolve(__dirname, "shared/src"),
                         path.resolve(__dirname, "src"),

@@ -56,11 +56,15 @@ def run() -> None:
                 "yml",
             ],
             "frontend": [
+                "cjs",
                 "css",
+                "cts",
                 "flow",
                 "hbs",
                 "html",
                 "js",
+                "mjs",
+                "mts",
                 "ts",
             ],
         },
@@ -76,8 +80,8 @@ def run() -> None:
     )
     linter_config.external_linter(
         "eslint",
-        ["node_modules/.bin/eslint", "--max-warnings=0", "--cache", "--ext", ".js,.ts"],
-        ["js", "ts"],
+        ["node_modules/.bin/eslint", "--max-warnings=0", "--cache"],
+        ["cjs", "cts", "js", "mjs", "mts", "ts"],
         fix_arg="--fix",
         description="Standard JavaScript style and formatting linter (config: .eslintrc).",
     )
@@ -162,7 +166,7 @@ def run() -> None:
     linter_config.external_linter(
         "prettier",
         ["node_modules/.bin/prettier", "--cache", "--check", "--log-level=warn"],
-        ["css", "flow", "js", "json", "md", "ts", "yaml", "yml"],
+        ["cjs", "css", "cts", "flow", "js", "json", "md", "mjs", "mts", "ts", "yaml", "yml"],
         fix_arg=["--write"],
         description="Formats CSS, JavaScript, YAML",
     )
