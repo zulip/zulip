@@ -2,11 +2,11 @@
 
 /* global $, CSS */
 
+const fs = require("node:fs");
 const path = require("node:path");
 
 const {program} = require("commander");
 require("css.escape");
-const mkdirp = require("mkdirp");
 const puppeteer = require("puppeteer");
 
 const options = {};
@@ -93,7 +93,7 @@ async function run() {
         clip.height -= 8;
         const imagePath = options.imagePath;
         const imageDir = path.dirname(imagePath);
-        mkdirp.sync(imageDir);
+        await fs.promises.mkdir(imageDir, {recursive: true});
         await page.screenshot({path: imagePath, clip});
     } catch (error) {
         console.log(error);
