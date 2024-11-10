@@ -155,7 +155,7 @@ module.exports = {
             },
         },
         {
-            files: ["**/*.ts"],
+            files: ["**/*.cts", "**/*.mts", "**/*.ts"],
             excludedFiles: "help-beta/**",
             extends: [
                 "plugin:@typescript-eslint/strict-type-checked",
