@@ -35,7 +35,6 @@
     ],
     "billing-event-status": [
         "./src/bundles/portico",
-        "./styles/portico/landing_page.css",
         "./src/billing/event_status",
         "./src/billing/helpers",
         "./styles/portico/billing.css"
