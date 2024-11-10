@@ -138,7 +138,6 @@
     "eslint-plugin-unicorn": "^56.0.0",
     "jsdom": "^25.0.0",
     "minimist": "^1.2.6",
-    "mkdirp": "^3.0.1",
     "mockdate": "^3.0.2",
     "nyc": "^17.0.0",
     "openapi-examples-validator": "^5.0.0",
