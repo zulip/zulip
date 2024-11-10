@@ -656,6 +656,16 @@ test("can_mark_messages_read", () => {
     filter = new Filter(in_home_negated);
     assert.ok(!filter.can_mark_messages_read());
 
+    const is_muted = [{operator: "is", operand: "muted"}];
+    const is_muted_negated = [{operator: "is", operand: "muted", negated: true}];
+    filter = new Filter(is_muted);
+    assert.ok(!filter.can_mark_messages_read());
+    assert_not_mark_read_with_is_operands(is_muted);
+    assert_not_mark_read_with_has_operands(is_muted);
+    assert_not_mark_read_when_searching(is_muted);
+    filter = new Filter(is_muted_negated);
+    assert.ok(filter.can_mark_messages_read());
+
     // Do not mark messages as read when in an unsupported 'in:*' filter.
     const in_random = [{operator: "in", operand: "xxxxxxxxx"}];
     const in_random_negated = [{operator: "in", operand: "xxxxxxxxx", negated: true}];
@@ -1028,6 +1038,16 @@ test("predicate_basics", ({override}) => {
     with_overrides(({override}) => {
         override(page_params, "narrow_stream", "kiosk");
         assert.ok(predicate({stream_id: 1234}));
+    });
+
+    override(user_topics, "is_topic_muted", () => false);
+    predicate = get_predicate([["is", "muted"]]);
+    assert.ok(!predicate({stream_id: 1234, topic: "bar"}));
+    assert.ok(!predicate({type: direct_message}));
+
+    with_overrides(({override}) => {
+        override(user_topics, "is_topic_muted", () => true);
+        assert.ok(predicate({stream_id: 1234, topic: "bar"}));
     });
 
     predicate = get_predicate([["near", 5]]);

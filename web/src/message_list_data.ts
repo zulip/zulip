@@ -252,6 +252,9 @@ export class MessageListData {
     }
 
     unmuted_messages(messages: Message[]): Message[] {
+        if (this.filter.can_show_muted_topics()) {
+            return messages;
+        }
         return this.messages_filtered_for_topic_mutes(
             this.messages_filtered_for_user_mutes(messages),
         );

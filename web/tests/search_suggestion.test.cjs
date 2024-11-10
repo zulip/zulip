@@ -377,6 +377,7 @@ test("empty_query_suggestions", () => {
         "is:alerted",
         "is:unread",
         "is:resolved",
+        "is:muted",
         "sender:myself@zulip.com",
         `channel:${devel_id}`,
         `channel:${office_id}`,
@@ -480,6 +481,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
         "is:alerted",
         "is:unread",
         "is:resolved",
+        "is:muted",
         "dm:alice@zulip.com",
         "sender:alice@zulip.com",
         "dm-including:alice@zulip.com",
@@ -498,6 +500,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     assert.equal(describe("is:unread"), "Unread messages");
     assert.equal(describe("is:resolved"), "Topics marked as resolved");
     assert.equal(describe("is:followed"), "Followed topics");
+    assert.equal(describe("is:muted"), "Muted messages");
 
     query = "-i";
     suggestions = get_suggestions(query);
@@ -510,6 +513,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
         "-is:alerted",
         "-is:unread",
         "-is:resolved",
+        "-is:muted",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -520,6 +524,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     assert.equal(describe("-is:unread"), "Exclude unread messages");
     assert.equal(describe("-is:resolved"), "Exclude topics marked as resolved");
     assert.equal(describe("-is:followed"), "Exclude followed topics");
+    assert.equal(describe("-is:muted"), "Exclude muted messages");
 
     // operand suggestions follow.
 
@@ -533,6 +538,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
         "is:alerted",
         "is:unread",
         "is:resolved",
+        "is:muted",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
