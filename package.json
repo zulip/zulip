@@ -122,7 +122,6 @@
     "callsites": "^3.1.0",
     "cldr-annotations-derived-modern": "^45.0.0",
     "cldr-annotations-modern": "^45.0.0",
-    "commander": "^12.0.0",
     "confusing-browser-globals": "^1.0.11",
     "css.escape": "^1.5.1",
     "diff": "^7.0.0",
@@ -137,7 +136,6 @@
     "eslint-plugin-no-jquery": "^3.0.2",
     "eslint-plugin-unicorn": "^56.0.0",
     "jsdom": "^25.0.0",
-    "minimist": "^1.2.6",
     "mockdate": "^3.0.2",
     "nyc": "^17.0.0",
     "openapi-examples-validator": "^5.0.0",
@@ -154,7 +152,6 @@
     "webpack-dev-server": "^5.0.2",
     "xvfb": "^0.4.0",
     "yaml": "^2.0.0-8",
-    "yargs": "^17.1.1",
     "zulip-js": "^2.0.8"
   },
   "pnpm": {

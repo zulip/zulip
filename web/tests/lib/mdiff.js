@@ -127,23 +127,24 @@ module.exports = {diff_strings};
 // Simple CLI for this module
 // Only run this code if called as a command-line utility
 if (require.main === module) {
-    // First two args are just "node" and "mdiff.js"
-    const argv = require("minimist")(process.argv.slice(2));
+    const {parseArgs} = require("node:util");
 
-    if (Object.hasOwn(argv, "help")) {
-        console.log(
-            process.argv[0] +
-                " " +
-                process.argv[1] +
-                " [ --help ]" +
-                " string_0" +
-                " string_1" +
-                "\n" +
-                "Where string_0 and string_1 are the strings to be diffed",
-        );
+    const usage =
+        "Usage: mdiff <string_0> <string_1>\nWhere <string_0> and <string_1> are the strings to be diffed";
+    const {
+        values: {help},
+        positionals: [string_0, string_1],
+    } = parseArgs({options: {help: {type: "boolean"}}, allowPositionals: true});
+
+    if (help) {
+        console.log(usage);
         process.exit(0);
     }
+    if (string_1 === undefined) {
+        console.error(usage);
+        process.exit(1);
+    }
 
-    const output = diff_strings(argv._[0], argv._[1]);
+    const output = diff_strings(string_0, string_1);
     console.log(output);
 }

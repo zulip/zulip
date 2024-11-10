@@ -4,27 +4,27 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const {parseArgs} = require("node:util");
 
-const {program} = require("commander");
 require("css.escape");
 const puppeteer = require("puppeteer");
 
-const options = {};
+const usage = "Usage: message-screenshot.js <message_id> <image_path> <realm_url>";
+const {
+    values: {help},
+    positionals: [messageId, imagePath, realmUrl],
+} = parseArgs({options: {help: {type: "boolean"}}, allowPositionals: true});
 
-program
-    .arguments("<message_id> <image_path> <realm_url>")
-    .action((messageId, imagePath, realmUrl) => {
-        options.messageId = messageId;
-        options.imagePath = imagePath;
-        options.realmUrl = realmUrl;
-        console.log(`Capturing screenshot for message ${messageId} to ${imagePath}`);
-    })
-    .parse(process.argv);
-
-if (options.messageId === undefined) {
-    console.error("no messageId specified!");
+if (help) {
+    console.log(usage);
+    process.exit(0);
+}
+if (realmUrl === undefined) {
+    console.error(usage);
     process.exit(1);
 }
+
+console.log(`Capturing screenshot for message ${messageId} to ${imagePath}`);
 
 // TODO: Refactor to share code with web/e2e-tests/realm-creation.test.ts
 async function run() {
@@ -43,7 +43,7 @@ async function run() {
         const page = await browser.newPage();
         // deviceScaleFactor:2 gives better quality screenshots (higher pixel density)
         await page.setViewport({width: 1280, height: 1024, deviceScaleFactor: 2});
-        await page.goto(`${options.realmUrl}/devlogin`);
+        await page.goto(`${realmUrl}/devlogin`);
         // wait for Iago devlogin button and click on it.
         await page.waitForSelector('[value="iago@zulip.com"]');
 
@@ -54,17 +54,15 @@ async function run() {
         ]);
 
         // Navigate to message and capture screenshot
-        await page.goto(`${options.realmUrl}/#narrow/id/${options.messageId}`, {
+        await page.goto(`${realmUrl}/#narrow/id/${messageId}`, {
             waitUntil: "networkidle2",
         });
         // eslint-disable-next-line no-undef
         const message_list_id = await page.evaluate(() => zulip_test.current_msg_list.id);
-        const messageSelector = `#message-row-${message_list_id}-${CSS.escape(options.messageId)}`;
+        const messageSelector = `#message-row-${message_list_id}-${CSS.escape(messageId)}`;
         await page.waitForSelector(messageSelector);
         // remove unread marker and don't select message
-        const marker = `#message-row-${message_list_id}-${CSS.escape(
-            options.messageId,
-        )} .unread_marker`;
+        const marker = `#message-row-${message_list_id}-${CSS.escape(messageId)} .unread_marker`;
         await page.evaluate((sel) => $(sel).remove(), marker);
         const messageBox = await page.$(messageSelector);
         await page.evaluate((msg) => $(msg).removeClass("selected_message"), messageSelector);
@@ -74,7 +72,6 @@ async function run() {
         clip.x -= 5;
         clip.width += 10;
         clip.y += 5;
-        const imagePath = options.imagePath;
         const imageDir = path.dirname(imagePath);
         await fs.promises.mkdir(imageDir, {recursive: true});
         await page.screenshot({path: imagePath, clip});
