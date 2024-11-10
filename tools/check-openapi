@@ -3,21 +3,24 @@
 "use strict";
 
 const fs = require("node:fs");
+const {parseArgs} = require("node:util");
 
 const Diff = require("diff");
 const ExampleValidator = require("openapi-examples-validator");
 const Prettier = require("prettier");
 const SwaggerParser = require("swagger-parser");
 const {Composer, CST, LineCounter, Parser, Scalar, YAMLMap, YAMLSeq, visit} = require("yaml");
-const {hideBin} = require("yargs/helpers");
-const yargs = require("yargs/yargs");
 
-const argv = yargs(hideBin(process.argv))
-    .option("fix", {
-        type: "boolean",
-        description: "Automatically fix some problems",
-    })
-    .parse();
+const usage = "Usage: check-openapi [--fix] <file>...";
+const {
+    values: {fix, help},
+    positionals: files,
+} = parseArgs({options: {fix: {type: "boolean"}, help: {type: "boolean"}}, allowPositionals: true});
+
+if (help) {
+    console.log(usage);
+    process.exit(0);
+}
 
 async function checkFile(file) {
     const yaml = await fs.promises.readFile(file, "utf8");
@@ -85,7 +88,7 @@ async function checkFile(file) {
                             formatted = formatted.replace(/\n$/, "");
                         }
                         if (formatted !== node.value.value) {
-                            if (argv.fix) {
+                            if (fix) {
                                 reformats.set(node.value.range[0], {
                                     value: formatted,
                                     context: {afterKey: true},
@@ -158,7 +161,7 @@ async function checkFile(file) {
 }
 
 (async () => {
-    for (const file of argv._) {
+    for (const file of files) {
         await checkFile(file);
     }
 })().catch((error) => {

@@ -4,29 +4,28 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const {parseArgs} = require("node:util");
 
-const {program} = require("commander");
 require("css.escape");
 const puppeteer = require("puppeteer");
 
-const options = {};
+const usage =
+    "Usage: thread-screenshot.js <narrow_uri> <narrow> <message_id> <image_path> <realm_url>";
+const {
+    values: {help},
+    positionals: [narrowUri, narrow, messageId, imagePath, realmUrl],
+} = parseArgs({options: {help: {type: "boolean"}}, allowPositionals: true});
 
-program
-    .arguments("<narrow_uri> <narrow> <unread_msg_id> <image_path> <realm_url>")
-    .action((narrow_uri, narrow, unread_msg_id, imagePath, realmUrl) => {
-        options.narrowUri = narrow_uri;
-        options.narrow = narrow;
-        options.messageId = unread_msg_id;
-        options.imagePath = imagePath;
-        options.realmUrl = realmUrl;
-        console.log(`Capturing screenshot for ${narrow} to ${imagePath}`);
-    })
-    .parse(process.argv);
-
-if (options.imagePath === undefined) {
-    console.error("no image path specified!");
+if (help) {
+    console.log(usage);
+    process.exit(0);
+}
+if (realmUrl === undefined) {
+    console.error(usage);
     process.exit(1);
 }
+
+console.log(`Capturing screenshot for ${narrow} to ${imagePath}`);
 
 // TODO: Refactor to share code with web/e2e-tests/realm-creation.test.ts
 async function run() {
@@ -45,7 +44,7 @@ async function run() {
         const page = await browser.newPage();
         // deviceScaleFactor:2 gives better quality screenshots (higher pixel density)
         await page.setViewport({width: 530, height: 1024, deviceScaleFactor: 2});
-        await page.goto(`${options.realmUrl}/devlogin`);
+        await page.goto(`${realmUrl}/devlogin`);
         // wait for Iago devlogin button and click on it.
         await page.waitForSelector('[value="iago@zulip.com"]');
 
@@ -56,7 +55,7 @@ async function run() {
         ]);
 
         // Navigate to message and capture screenshot
-        await page.goto(`${options.narrowUri}`, {
+        await page.goto(`${narrowUri}`, {
             waitUntil: "networkidle2",
         });
         // eslint-disable-next-line no-undef
@@ -72,7 +71,7 @@ async function run() {
             $(sel).remove();
         }, marker);
 
-        const messageSelector = `#message-row-${message_list_id}-${CSS.escape(options.messageId)}`;
+        const messageSelector = `#message-row-${message_list_id}-${CSS.escape(messageId)}`;
         await page.waitForSelector(messageSelector);
 
         const messageListBox = await page.$(messageListSelector);
@@ -91,7 +90,6 @@ async function run() {
         clip.width -= 64;
         clip.y += 10;
         clip.height -= 8;
-        const imagePath = options.imagePath;
         const imageDir = path.dirname(imagePath);
         await fs.promises.mkdir(imageDir, {recursive: true});
         await page.screenshot({path: imagePath, clip});

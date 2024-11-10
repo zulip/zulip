@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 319  # Last bumped for message-link class
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (300, 0)  # bumped 2024-11-10 to remove mkdirp
+PROVISION_VERSION = (301, 0)  # bumped 2024-11-10 to remove commander, minimist, yargs
