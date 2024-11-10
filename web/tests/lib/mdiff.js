@@ -141,6 +141,7 @@ if (require.main === module) {
                 "\n" +
                 "Where string_0 and string_1 are the strings to be diffed",
         );
+        process.exit(0);
     }
 
     const output = diff_strings(argv._[0], argv._[1]);
