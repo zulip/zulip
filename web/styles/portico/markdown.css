@@ -514,3 +514,30 @@
         }
     }
 }
+
+ /* If darkmode is preferred by OS */
+@media(prefers-color-scheme: dark){
+	.markdown{
+		background-color: #000; /* Dark background. */
+		color: #fff;
+	}
+
+	.markdown a{
+		color: #39ff14; /* Links green neon to dark mode. */
+	}
+
+	.markdown h1,
+	.markdown h2,
+	.markdown h3{
+		color: #ffffff; /* White letters. */
+	}
+
+	.markdown code,
+	.markdown pre{
+		background-color: #333; /* Codes with grey background. */
+		color: #e5e5e5; /* Grey light letters. */
+	}
+
+}
+
+
