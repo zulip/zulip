@@ -9,7 +9,7 @@ from pydantic import Json
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.compatibility import is_pronouns_field_type_supported
-from zerver.lib.events import ClientCapabilities, do_events_register
+from zerver.lib.events import DEFAULT_CLIENT_CAPABILITIES, ClientCapabilities, do_events_register
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
 from zerver.lib.request import RequestNotes
@@ -46,7 +46,7 @@ def events_register_backend(
     presence_history_limit_days: Json[int] | None = None,
     all_public_streams: Json[bool] | None = None,
     include_subscribers: Json[bool] = False,
-    client_capabilities: Json[ClientCapabilities] | None = None,
+    client_capabilities: Json[ClientCapabilities] = DEFAULT_CLIENT_CAPABILITIES,
     event_types: Json[list[str]] | None = None,
     fetch_event_types: Json[list[str]] | None = None,
     narrow: Json[NarrowT] | None = None,
@@ -98,9 +98,6 @@ def events_register_backend(
 
         all_public_streams = False
         include_streams = False
-
-    if client_capabilities is None:
-        client_capabilities = ClientCapabilities(notification_settings_null=False)
 
     client = RequestNotes.get_notes(request).client
     assert client is not None

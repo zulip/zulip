@@ -20,7 +20,7 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from confirmation import settings as confirmation_settings
-from zerver.lib.types import UnspecifiedValue
+from zerver.lib.types import UNSET, Unset
 from zerver.models import (
     EmailChangeStatus,
     MultiuseInvite,
@@ -129,7 +129,7 @@ def create_confirmation_object(
     obj: ConfirmationObjT,
     confirmation_type: int,
     *,
-    validity_in_minutes: int | None | UnspecifiedValue = UnspecifiedValue(),
+    validity_in_minutes: int | None | Unset = UNSET,
     no_associated_realm_object: bool = False,
 ) -> "Confirmation":
     # validity_in_minutes is an override for the default values which are
@@ -149,7 +149,7 @@ def create_confirmation_object(
 
     current_time = timezone_now()
     expiry_date = None
-    if not isinstance(validity_in_minutes, UnspecifiedValue):
+    if not isinstance(validity_in_minutes, Unset):
         if validity_in_minutes is None:
             expiry_date = None
         else:
@@ -172,7 +172,7 @@ def create_confirmation_link(
     obj: ConfirmationObjT,
     confirmation_type: int,
     *,
-    validity_in_minutes: int | None | UnspecifiedValue = UnspecifiedValue(),
+    validity_in_minutes: int | None | Unset = UNSET,
     url_args: Mapping[str, str] = {},
     no_associated_realm_object: bool = False,
 ) -> str:

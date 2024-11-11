@@ -69,7 +69,7 @@ class LinkifierDict(TypedDict):
     id: int
 
 
-class UnspecifiedValue:
+class Unset:
     """In most API endpoints, we use a default value of `None"` to encode
     parameters that the client did not pass, which is nicely Pythonic.
 
@@ -82,6 +82,9 @@ class UnspecifiedValue:
     TODO: Can this be merged with the _NotSpecified class, which is
     currently an internal implementation detail of the typed_endpoint?
     """
+
+
+UNSET = Unset()
 
 
 class EditHistoryEvent(TypedDict, total=False):
