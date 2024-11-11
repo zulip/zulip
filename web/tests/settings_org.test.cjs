@@ -625,6 +625,10 @@ test("set_up", ({override, override_rewire}) => {
         $.create("<stub-can-create-web-public-channel-group-parent>"),
     );
 
+    // Make our plan not limited so we don't have to stub all the
+    // elements involved in disabling the can_create_groups input.
+    override(realm, "zulip_plan_is_not_limited", true);
+
     override_rewire(settings_components, "get_input_element_value", (elem) => {
         if ($(elem).data() === "number") {
             return Number.parseInt($(elem).val(), 10);

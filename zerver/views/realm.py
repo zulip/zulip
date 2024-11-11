@@ -217,6 +217,9 @@ def update_realm(
             message_retention_days_raw, Realm.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
 
+    if can_create_groups is not None:
+        realm.ensure_not_on_limited_plan()
+
     if (
         invite_required is not None
         or create_multiuse_invite_group is not None

@@ -2358,6 +2358,16 @@ class RealmAPITest(ZulipTestCase):
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "Available on Zulip Cloud Standard. Upgrade to access.")
 
+    def test_can_create_groups_limited_plan_realms(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+
+        members_group = NamedUserGroup.objects.get(name="role:members", realm=realm)
+        req = {"can_create_groups": orjson.dumps({"new": members_group.id}).decode()}
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "Available on Zulip Cloud Standard. Upgrade to access.")
+
     def test_changing_can_access_all_users_group_based_on_plan_type(self) -> None:
         realm = get_realm("zulip")
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)

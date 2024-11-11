@@ -1490,6 +1490,12 @@ export function disable_opening_typeahead_on_clicking_label($container: JQuery):
     $group_setting_labels.off("click");
 }
 
+export function disable_group_permission_setting($container: JQuery): void {
+    $container.find(".input").prop("contenteditable", false);
+    $container.closest(".input-group").addClass("group_setting_disabled");
+    disable_opening_typeahead_on_clicking_label($container.closest(".input-group"));
+}
+
 export const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
     ["can_add_members_group", null],
     ["can_join_group", null],

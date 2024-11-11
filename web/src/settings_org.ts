@@ -144,11 +144,7 @@ export function enable_or_disable_group_permission_settings(): void {
         ];
         for (const setting_name of owner_editable_settings) {
             const $permission_pill_container = $(`#id_${CSS.escape(setting_name)}`);
-            $permission_pill_container.find(".input").prop("contenteditable", false);
-            $permission_pill_container.closest(".input-group").addClass("group_setting_disabled");
-            settings_components.disable_opening_typeahead_on_clicking_label(
-                $permission_pill_container.closest(".input-group"),
-            );
+            settings_components.disable_group_permission_setting($permission_pill_container);
         }
         return;
     }
@@ -156,9 +152,7 @@ export function enable_or_disable_group_permission_settings(): void {
     const $permission_pill_container_elements = $("#organization-permissions").find(
         ".pill-container",
     );
-    $permission_pill_container_elements.find(".input").prop("contenteditable", false);
-    $permission_pill_container_elements.closest(".input-group").addClass("group_setting_disabled");
-    settings_components.disable_opening_typeahead_on_clicking_label($("#organization-permissions"));
+    settings_components.disable_group_permission_setting($permission_pill_container_elements);
 }
 
 type OrganizationSettingsOptions = {
@@ -355,6 +349,14 @@ function set_create_web_public_stream_dropdown_visibility(): void {
     );
 }
 
+function disable_create_user_groups_if_on_limited_plan(): void {
+    if (!realm.zulip_plan_is_not_limited) {
+        settings_components.disable_group_permission_setting(
+            $("#id_realm_can_create_groups").closest(".input-group"),
+        );
+    }
+}
+
 export function check_disable_direct_message_initiator_group_widget(): void {
     const direct_message_permission_group_widget = settings_components.get_group_setting_widget(
         "realm_direct_message_permission_group",
@@ -369,12 +371,8 @@ export function check_disable_direct_message_initiator_group_widget(): void {
         direct_message_permission_group_widget,
     );
     if (user_groups.is_setting_group_empty(direct_message_permission_value)) {
-        $("#id_realm_direct_message_initiator_group").find(".input").prop("contenteditable", false);
-        $("#id_realm_direct_message_initiator_group")
-            .closest(".input-group")
-            .addClass("group_setting_disabled");
-        settings_components.disable_opening_typeahead_on_clicking_label(
-            $("#id_realm_direct_message_initiator_group").closest(".input-group"),
+        settings_components.disable_group_permission_setting(
+            $("#id_realm_direct_message_initiator_group"),
         );
     } else if (current_user.is_admin) {
         $("#id_realm_direct_message_initiator_group").find(".input").prop("contenteditable", true);
@@ -1124,6 +1122,7 @@ export function build_page(): void {
     set_message_content_in_email_notifications_visibility();
     set_digest_emails_weekday_visibility();
     set_create_web_public_stream_dropdown_visibility();
+    disable_create_user_groups_if_on_limited_plan();
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
 

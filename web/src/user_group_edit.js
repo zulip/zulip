@@ -129,16 +129,13 @@ function update_group_permission_settings_elements(group) {
         });
         settings_components.enable_opening_typeahead_on_clicking_label($group_permission_settings);
     } else {
-        $permission_pill_container_elements.find(".input").prop("contenteditable", false);
-
-        $permission_input_groups.addClass("group_setting_disabled");
         $permission_input_groups.each(function () {
             settings_components.initialize_disable_button_hint_popover(
                 $(this),
                 $t({defaultMessage: "You do not have permission to edit this setting."}),
             );
         });
-        settings_components.disable_opening_typeahead_on_clicking_label($group_permission_settings);
+        settings_components.disable_group_permission_setting($permission_input_groups);
     }
 }
 
