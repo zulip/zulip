@@ -733,7 +733,7 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def current_count_for_billed_licenses(self, event_time: datetime = timezone_now()) -> int:
+    def current_count_for_billed_licenses(self, event_time: datetime | None = None) -> int:
         pass
 
     @abstractmethod
@@ -3660,7 +3660,7 @@ class BillingSession(ABC):
         customer: Customer,
         tier: int,
         licenses: int | None = None,
-        event_time: datetime = timezone_now(),
+        event_time: datetime | None = None,
     ) -> int:
         if licenses is not None and customer.exempt_from_license_number_check:
             return licenses
@@ -3927,7 +3927,7 @@ class RealmBillingSession(BillingSession):
         return self.user.delivery_email
 
     @override
-    def current_count_for_billed_licenses(self, event_time: datetime = timezone_now()) -> int:
+    def current_count_for_billed_licenses(self, event_time: datetime | None = None) -> int:
         return get_latest_seat_count(self.realm)
 
     @override
@@ -4292,7 +4292,7 @@ class RemoteRealmBillingSession(BillingSession):
         return self.remote_billing_user.email
 
     @override
-    def current_count_for_billed_licenses(self, event_time: datetime = timezone_now()) -> int:
+    def current_count_for_billed_licenses(self, event_time: datetime | None = None) -> int:
         if has_stale_audit_log(self.remote_realm.server):
             raise MissingDataError
         remote_realm_counts = get_remote_realm_guest_and_non_guest_count(
@@ -4737,7 +4737,7 @@ class RemoteServerBillingSession(BillingSession):
         return self.remote_billing_user.email
 
     @override
-    def current_count_for_billed_licenses(self, event_time: datetime = timezone_now()) -> int:
+    def current_count_for_billed_licenses(self, event_time: datetime | None = None) -> int:
         if has_stale_audit_log(self.remote_server):
             raise MissingDataError
         remote_server_counts = get_remote_server_guest_and_non_guest_count(
