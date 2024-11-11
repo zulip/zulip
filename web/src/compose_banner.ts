@@ -4,6 +4,7 @@ import render_cannot_send_direct_message_error from "../templates/compose_banner
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
 
+import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as stream_data from "./stream_data.ts";
@@ -76,6 +77,10 @@ export function append_compose_banner_to_banner_list(
     $banner: JQuery,
     $list_container: JQuery,
 ): boolean {
+    const node = parse_single_node($banner);
+    if (node.hasClass("warning") && has_error()) {
+        return false;
+    }
     scroll_util.get_content_element($list_container).append($banner);
     return true;
 }
@@ -251,4 +256,18 @@ export function show_stream_not_subscribed_error(sub: StreamSubscription): void 
         hide_close_button: true,
     });
     append_compose_banner_to_banner_list($(new_row_html), $banner_container);
+}
+
+// Ensure the input has only one single top-level element,
+// and return a JQuery element of it.
+function parse_single_node(html_element: JQuery<Node | HTMLElement>): JQuery<Node | HTMLElement> {
+    if (html_element.length !== 1) {
+        blueslip.error("Input should contain only one top-level element.");
+        return $();
+    }
+    return html_element;
+}
+
+export function has_error(): boolean {
+    return $(".error").length > 0;
 }
