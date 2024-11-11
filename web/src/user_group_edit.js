@@ -23,6 +23,7 @@ import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_components from "./settings_components.ts";
+import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_org from "./settings_org.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -837,6 +838,10 @@ export function setup_page(callback) {
     function populate_and_fill() {
         const template_data = {
             can_create_user_groups: settings_data.user_can_create_user_groups(),
+            zulip_plan_is_not_limited: realm.zulip_plan_is_not_limited,
+            upgrade_text_for_wide_organization_logo: realm.upgrade_text_for_wide_organization_logo,
+            is_business_type_org:
+                realm.realm_org_type === settings_config.all_org_type_values.business.code,
             max_user_group_name_length,
         };
 

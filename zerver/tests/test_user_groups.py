@@ -10,6 +10,7 @@ from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_reactivate_user
 from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
+    do_change_realm_plan_type,
     do_set_realm_property,
 )
 from zerver.actions.streams import (
@@ -452,6 +453,14 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
         self.assert_length(NamedUserGroup.objects.filter(realm=hamlet.realm), 10)
+
+        # User groups should not be allowed to be created on limited plans.
+        original_plan_type = hamlet.realm.plan_type
+        do_change_realm_plan_type(hamlet.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "Available on Zulip Cloud Standard. Upgrade to access.")
+        self.assert_length(NamedUserGroup.objects.filter(realm=hamlet.realm), 10)
+        do_change_realm_plan_type(hamlet.realm, original_plan_type, acting_user=None)
 
         # Check default value of settings.
         everyone_system_group = NamedUserGroup.objects.get(
