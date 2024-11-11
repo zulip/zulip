@@ -1746,6 +1746,9 @@ class ClientCapabilities(TypedDict):
     archived_channels: NotRequired[bool]
 
 
+DEFAULT_CLIENT_CAPABILITIES = ClientCapabilities(notification_settings_null=False)
+
+
 def do_events_register(
     user_profile: UserProfile | None,
     realm: Realm,
@@ -1760,7 +1763,7 @@ def do_events_register(
     all_public_streams: bool = False,
     include_subscribers: bool = True,
     include_streams: bool = True,
-    client_capabilities: ClientCapabilities = ClientCapabilities(notification_settings_null=False),
+    client_capabilities: ClientCapabilities = DEFAULT_CLIENT_CAPABILITIES,
     narrow: Collection[NarrowTerm] = [],
     fetch_event_types: Collection[str] | None = None,
     spectator_requested_language: str | None = None,
