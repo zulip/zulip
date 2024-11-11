@@ -76,6 +76,9 @@ export function append_compose_banner_to_banner_list(
     $banner: JQuery,
     $list_container: JQuery,
 ): boolean {
+    if ($banner.hasClass("warning") && has_error()) {
+        return false;
+    }
     scroll_util.get_content_element($list_container).append($banner);
     return true;
 }
@@ -251,4 +254,8 @@ export function show_stream_not_subscribed_error(sub: StreamSubscription): void 
         hide_close_button: true,
     });
     append_compose_banner_to_banner_list($(new_row_html), $banner_container);
+}
+
+export function has_error(): boolean {
+    return $("#compose_banners .error:visible").length > 0;
 }
