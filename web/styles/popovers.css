@@ -308,7 +308,7 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
-    padding: 3px 10px;
+    padding: 3px var(--user-group-popover-horizontal-padding);
 }
 
 .popover-group-menu-name-container {
@@ -337,23 +337,39 @@ ul.popover-group-menu-member-list {
     flex-direction: column;
 
     .simplebar-content {
+        display: grid;
+        grid-template-areas: "group-member-icon gap group-member-name";
+        grid-template-columns:
+            max-content var(--user-group-popover-icon-text-gap)
+            minmax(0, 1fr);
         width: unset;
+    }
+
+    .popover-group-menu-member {
+        display: grid;
+        grid-template-columns: subgrid;
+        grid-column: 1 / -1;
+        align-items: center;
+        padding: 0 var(--user-group-popover-horizontal-padding);
+    }
+
+    .popover-group-member-icon {
+        justify-self: center;
+        grid-area: group-member-icon;
+    }
+
+    .popover-group-menu-member-name {
+        grid-area: group-member-name;
     }
 }
 
-.popover-group-menu-member,
 .popover-group-menu-placeholder {
-    display: flex;
-    align-items: center;
-    padding: 0 10px;
+    padding: 0 var(--user-group-popover-horizontal-padding);
+}
 
+.popover-group-menu-member {
     .zulip-icon-triple-users {
         color: var(--color-icon-purple);
-    }
-
-    .zulip-icon {
-        padding-left: 3px;
-        padding-right: 3px;
     }
 }
 
@@ -369,14 +385,13 @@ ul.popover-group-menu-member-list {
     color: var(--color-text-popover-menu);
 }
 
-.popover_user_presence {
-    margin: 0 2px;
-    /* 11px at 16px/1em */
-    font-size: 0.6875em;
-}
-
 .user-status-icon-wrapper {
     display: flex;
+}
+
+.popover-group-menu-user-presence {
+    /* 11px at 16px/1em */
+    font-size: 0.6875em;
 }
 
 .user_profile_presence {

@@ -27,16 +27,16 @@
                 <ul class="popover-menu-list popover-group-menu-member-list" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
                     {{#each subgroups}}
                         <li class="popover-group-menu-member">
-                            <i class="popover-menu-icon zulip-icon zulip-icon-triple-users" aria-hidden="true"></i>
+                            <i class="popover-group-member-icon popover-menu-icon zulip-icon zulip-icon-triple-users" aria-hidden="true"></i>
                             <span class="popover-group-menu-member-name">{{name}}</span>
                         </li>
                     {{/each}}
                     {{#each members}}
                         <li class="popover-group-menu-member">
                             {{#if is_bot}}
-                                <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
+                                <i class="popover-group-member-icon zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                             {{else}}
-                                <span class="user-circle zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} popover_user_presence hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
+                                <span class="user-circle zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} popover-group-menu-user-presence hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
                             {{/if}}
                             <span class="popover-group-menu-member-name">{{full_name}}</span>
                         </li>

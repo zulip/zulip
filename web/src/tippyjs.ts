@@ -328,7 +328,7 @@ export function initialize(): void {
             "#filter_streams_tooltip",
             ".error-icon-message-recipient .zulip-icon",
             "#personal-menu-dropdown .status-circle",
-            ".popover-group-menu-member-list .popover_user_presence",
+            ".popover-group-menu-member-list .popover-group-menu-user-presence",
             "#copy_generated_invite_link",
         ].join(","),
         appendTo: () => document.body,
