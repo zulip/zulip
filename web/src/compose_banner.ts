@@ -71,11 +71,13 @@ export function get_compose_banner_container($textarea: JQuery): JQuery {
 // This function provides a convenient way to add new elements
 // to a banner container. The function accepts a container element
 // as a parameter, to which a banner should be appended.
+// Returns a boolean value indicating whether the append had succeeded.
 export function append_compose_banner_to_banner_list(
     $banner: JQuery,
     $list_container: JQuery,
-): void {
+): boolean {
     scroll_util.get_content_element($list_container).append($banner);
+    return true;
 }
 
 export function update_or_append_banner(
