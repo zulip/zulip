@@ -23,7 +23,14 @@ type ComposeClosedMessage = {
     display_reply_to?: string | undefined;
 };
 
-export function get_recipient_label(message?: ComposeClosedMessage): string {
+/* intended for "fake objects containing just a couple fields"; since 'couple fields' is not specific, abandoned
+type PartialMessage = {
+    stream_id?: number;
+    topic?: string;
+}; */
+
+export function get_recipient_label(message?: ComposeClosedMessage /* | PartialMessage*/): string {
+    // If fixed, delete this:
     // TODO: This code path is bit of a type-checking disaster; we mix
     // actual message objects with fake objects containing just a
     // couple fields, both those constructed here and potentially
@@ -34,17 +41,7 @@ export function get_recipient_label(message?: ComposeClosedMessage): string {
 
     if (message === undefined) {
         if (message_lists.current.visibly_empty()) {
-            // For empty narrows where there's a clear reply target,
-            // i.e. stream+topic or a single direct message conversation,
-            // we label the button as replying to the thread.
-            const stream_id = narrow_state.stream_sub()?.stream_id;
-            const topic = narrow_state.topic();
-            if (stream_id !== undefined && topic !== undefined) {
-                return format_stream_recipient_label(stream_id, topic);
-            } else if (narrow_state.pm_ids_string()) {
-                const user_ids = people.user_ids_string_to_ids_array(narrow_state.pm_ids_string()!);
-                return message_store.get_pm_full_names(user_ids);
-            }
+            treat_fake_objects(message);
         } else {
             message = message_lists.current.selected_message();
         }
@@ -176,4 +173,37 @@ export function initialize(): void {
             keep_composebox_empty: true,
         });
     });
+}
+
+function treat_fake_objects(message?: ComposeClosedMessage): ComposeClosedMessage {
+    // Initialize message as an empty ComposeClosedMessage if it's undefined
+    message = message ?? {};
+    // For empty narrows where there's a clear reply target,
+    // i.e. stream+topic or a single PM conversation, we label
+    // the button as replying to the thread.
+    // "STREAM+TOPIC"
+    if (narrow_state.narrowed_by_topic_reply()) {
+        treat_update_recent_topics_button(message);
+        // "PM conversation"
+    } else if (narrow_state.pm_ids_string()) {
+        treat_video_call_name_requirement(message);
+    }
+    return message;
+}
+
+function treat_update_recent_topics_button(message?: ComposeClosedMessage): ComposeClosedMessage {
+    message = {
+        stream_id: narrow_state.stream_id(),
+        topic: narrow_state.topic() ?? "", // default value if it is undefined
+    };
+    return message;
+}
+
+function treat_video_call_name_requirement(message?: ComposeClosedMessage): ComposeClosedMessage {
+    const pm_ids_string = narrow_state.pm_ids_string();
+    const user_ids = pm_ids_string ? people.user_ids_string_to_ids_array(pm_ids_string) : []; // default value if it is undefined
+    message = {
+        display_reply_to: message_store.get_pm_full_names(user_ids),
+    };
+    return message;
 }
