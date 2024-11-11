@@ -160,6 +160,7 @@
       "source-map@^0.6": "npm:source-map-js@^1.2.1"
     },
     "patchedDependencies": {
+      "handlebars": "patches/handlebars.patch",
       "source-sans@3.46.0": "patches/source-sans@3.46.0.patch",
       "svgicons2svgfont": "patches/svgicons2svgfont.patch",
       "tippy.js@6.3.7": "patches/tippy.js@6.3.7.patch"
