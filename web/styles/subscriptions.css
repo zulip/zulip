@@ -92,6 +92,12 @@
         position: relative;
         top: -5px;
     }
+
+    &:disabled {
+        /* Replicate disabled values */
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
 }
 
 #create_user_group_description,
@@ -365,8 +371,7 @@ h4.user_group_setting_subsection_title {
 
     .left .no-streams-to-show,
     .left .no-groups-to-show,
-    .right .nothing-selected .create-stream-button-container,
-    .right .nothing-selected .create-group-button-container {
+    .right .nothing-selected .create-stream-button-container {
         display: block;
         text-align: center;
         font-size: 1em;
@@ -397,6 +402,18 @@ h4.user_group_setting_subsection_title {
 
         .create-group-button-container {
             margin-top: calc(45vh - 134px);
+            text-align: center;
+
+            .settings-empty-option-text {
+                color: hsl(0deg 0% 67%);
+            }
+
+            .upgrade-or-sponsorship-tip,
+            .upgrade-tip {
+                /* Center tip in parent container */
+                margin-left: auto;
+                margin-right: auto;
+            }
         }
     }
 

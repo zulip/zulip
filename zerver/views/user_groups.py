@@ -64,6 +64,7 @@ def add_user_group(
     can_manage_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_mention_group: Json[int | AnonymousSettingGroupDict] | None = None,
 ) -> HttpResponse:
+    user_profile.realm.ensure_not_on_limited_plan()
     user_profiles = user_ids_to_users(members, user_profile.realm, allow_deactivated=False)
     name = check_user_group_name(name)
 
