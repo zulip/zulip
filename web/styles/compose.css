@@ -329,7 +329,8 @@
 
     &:has(.new_message_textarea.over_limit),
     &:has(.new_message_textarea.over_limit:focus) {
-        box-shadow: 0 0 0 1pt hsl(0deg 76% 65%);
+        box-shadow: 0 0 0 1pt
+            var(--color-message-content-container-border-over-limit);
     }
 
     &:has(.new_message_textarea.over_limit.flash) {
@@ -867,7 +868,8 @@
     }
 
     100% {
-        box-shadow: 0 0 0 1pt hsl(0deg 76% 65%);
+        box-shadow: 0 0 0 1pt
+            var(--color-message-content-container-border-over-limit);
     }
 }
 
