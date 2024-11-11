@@ -366,13 +366,13 @@ def get_plan_data_by_remote_realm() -> dict[int, dict[int, RemoteActivityPlanDat
 
 
 def get_remote_realm_user_counts(
-    event_time: datetime = timezone_now(),
+    event_time: datetime | None = None,
 ) -> dict[int, RemoteCustomerUserCount]:  # nocoverage
     user_counts_by_realm: dict[int, RemoteCustomerUserCount] = {}
     for log in (
         RemoteRealmAuditLog.objects.filter(
             event_type__in=RemoteRealmAuditLog.SYNCED_BILLING_EVENTS,
-            event_time__lte=event_time,
+            event_time__lte=timezone_now() if event_time is None else event_time,
             remote_realm__isnull=False,
         )
         # Important: extra_data is empty for some pre-2020 audit logs
@@ -393,13 +393,13 @@ def get_remote_realm_user_counts(
 
 
 def get_remote_server_audit_logs(
-    event_time: datetime = timezone_now(),
+    event_time: datetime | None = None,
 ) -> dict[int, list[RemoteRealmAuditLog]]:
     logs_per_server: dict[int, list[RemoteRealmAuditLog]] = defaultdict(list)
     for log in (
         RemoteRealmAuditLog.objects.filter(
             event_type__in=RemoteRealmAuditLog.SYNCED_BILLING_EVENTS,
-            event_time__lte=event_time,
+            event_time__lte=timezone_now() if event_time is None else event_time,
         )
         # Important: extra_data is empty for some pre-2020 audit logs
         # prior to the introduction of realm_user_count_by_role
