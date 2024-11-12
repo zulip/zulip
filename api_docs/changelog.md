@@ -26,6 +26,20 @@ format used by the Zulip server that they are interacting with.
   `realm_empty_topic_display_name` field for clients to use
   while adding support for empty string as topic name.
 
+* [`POST /register`](/api/register-queue): Added `empty_topic_name`
+  [client capability](/api/register-queue#parameter-client_capabilities)
+  to allow client to specify whether it supports empty string as a topic name
+  in `register` response or events involving topic names.
+  Clients that don't support this client capability receive
+  `realm_empty_topic_display_name` field value as the topic name replacing
+  the empty string.
+
+* [`GET /events`](/api/get-events): For clients that don't support
+  the `empty_topic_name` [client capability](/api/register-queue#parameter-client_capabilities),
+  the following fields will have the value of `realm_empty_topic_display_name`
+  field replacing the empty string for channel messages:
+    * `subject` field in the `message` event type
+
 **Feature level 333**
 
 * [Message formatting](/api/message-formatting): System groups can now

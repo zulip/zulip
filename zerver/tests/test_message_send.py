@@ -789,22 +789,6 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Message must not be empty")
 
-    def test_empty_string_topic(self) -> None:
-        """
-        Sending a message that has empty string topic should fail
-        """
-        self.login("hamlet")
-        result = self.client_post(
-            "/json/messages",
-            {
-                "type": "channel",
-                "to": "Verona",
-                "content": "Test message",
-                "topic": "",
-            },
-        )
-        self.assert_json_error(result, "Topic can't be empty!")
-
     def test_missing_topic(self) -> None:
         """
         Sending a message without topic should fail
@@ -3342,3 +3326,23 @@ class CheckMessageTest(ZulipTestCase):
         realm.refresh_from_db()
         ret = check_message(sender, client, addressee, message_content, realm)
         self.assertEqual(ret.message.sender.id, sender.id)
+
+    def test_empty_topic_message(self) -> None:
+        realm = get_realm("zulip")
+        sender = self.example_user("iago")
+        client = make_client(name="test suite")
+        stream = get_stream("Denmark", realm)
+        topic_name = ""
+        message_content = "whatever"
+        addressee = Addressee.for_stream(stream, topic_name)
+
+        do_set_realm_property(realm, "mandatory_topics", True, acting_user=None)
+        realm.refresh_from_db()
+
+        with self.assertRaisesRegex(JsonableError, "Topics are required in this organization"):
+            check_message(sender, client, addressee, message_content, realm)
+
+        do_set_realm_property(realm, "mandatory_topics", False, acting_user=None)
+        realm.refresh_from_db()
+        ret = check_message(sender, client, addressee, message_content, realm)
+        self.assertEqual(ret.message.topic_name(), topic_name)

@@ -979,6 +979,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                 self.client_gravatar = client_gravatar
                 self.client_type_name = "whatever"
                 self.events: list[dict[str, Any]] = []
+                self.empty_topic_name = True
 
             def accepts_messages(self) -> bool:
                 return True
