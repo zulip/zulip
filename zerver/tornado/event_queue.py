@@ -29,7 +29,7 @@ from zerver.lib.narrow_predicate import build_narrow_predicate
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.queue import queue_json_publish_rollback_unsafe, retry_event
 from zerver.middleware import async_request_timer_restart
-from zerver.models import CustomProfileField, Message
+from zerver.models import CustomProfileField
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
 from zerver.tornado.handlers import finish_handler, get_handler_by_id, handler_stats_string
@@ -1133,6 +1133,7 @@ def process_message_event(
         *,
         apply_markdown: bool,
         client_gravatar: bool,
+        allow_empty_topic_name: bool,
         can_access_sender: bool,
         is_incoming_1_to_1: bool,
     ) -> dict[str, Any]:
@@ -1140,6 +1141,7 @@ def process_message_event(
             wide_dict,
             apply_markdown=apply_markdown,
             client_gravatar=client_gravatar,
+            allow_empty_topic_name=allow_empty_topic_name,
             can_access_sender=can_access_sender,
             realm_host=realm_host,
             is_incoming_1_to_1=is_incoming_1_to_1,
@@ -1222,19 +1224,10 @@ def process_message_event(
         message_dict = get_client_payload(
             apply_markdown=client.apply_markdown,
             client_gravatar=client.client_gravatar,
+            allow_empty_topic_name=client.empty_topic_name,
             can_access_sender=can_access_sender,
             is_incoming_1_to_1=wide_dict["recipient_id"] == client.user_recipient_id,
         )
-
-        # Compatibility code to change subject="" to subject=Message.EMPTY_TOPIC_FALLBACK_NAME
-        # for older clients with no UI support for empty topic name.
-        if (
-            recipient_type_name == "stream"
-            and not client.empty_topic_name
-            and wide_dict["subject"] == ""
-        ):
-            message_dict = message_dict.copy()
-            message_dict["subject"] = Message.EMPTY_TOPIC_FALLBACK_NAME
 
         # Make sure Zephyr mirroring bots know whether stream is invite-only
         if "mirror" in client.client_type_name and event_template.get("invite_only"):

@@ -51,7 +51,15 @@ important optimization when fetching messages in certain cases (e.g.,
 when [adding the `read` flag to a user's personal
 messages](/api/update-message-flags-for-narrow)).
 
+Note: When the value of `realm_empty_topic_display_name` found in
+the [POST /register](/api/register-queue) response is used as an operand
+for the `"topic"` operator in the narrow, it is interpreted
+as an empty string.
+
 ## Changes
+
+* Before Zulip 10.0 (feature level 334), empty string was not a valid
+  topic name for channel messages.
 
 * In Zulip 9.0 (feature level 271), support was added for a new filter
   operator, `with`, which uses a [message ID](#message-ids) for its
