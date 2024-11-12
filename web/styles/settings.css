@@ -1218,15 +1218,10 @@ $option_title_width: 180px;
     max-width: calc($right_sidebar_width + $option_title_width);
 
     .preview {
-        background-color: inherit !important;
         /* Match the 170px width of the right sidebar region for the name/status,
            doing something reasonable if the window shrinks. */
         width: calc(100% - $option_title_width);
-        text-align: left;
         white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden visible;
-        position: relative;
 
         .user-name-and-status-text {
             display: flex;
