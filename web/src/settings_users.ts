@@ -172,7 +172,6 @@ function add_value_to_filters(
 }
 
 function role_selected_handler(
-    this: HTMLElement,
     event: JQuery.ClickEvent,
     dropdown: tippy.Instance,
     widget: dropdown_widget.DropdownWidget,
@@ -180,7 +179,7 @@ function role_selected_handler(
     event.preventDefault();
     event.stopPropagation();
 
-    const role_code = Number($(this).attr("data-unique-id"));
+    const role_code = Number($(event.currentTarget).attr("data-unique-id"));
     if (widget.widget_name === active_section.dropdown_widget_name) {
         add_value_to_filters(active_section, "role_code", role_code);
     } else if (widget.widget_name === deactivated_section.dropdown_widget_name) {
