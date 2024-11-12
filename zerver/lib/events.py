@@ -80,6 +80,7 @@ from zerver.models import (
     Client,
     CustomProfileField,
     Draft,
+    Message,
     NamedUserGroup,
     Realm,
     RealmUserDefault,
@@ -479,7 +480,7 @@ def fetch_initial_state_data(
             settings.MAX_DEACTIVATED_REALM_DELETION_DAYS
         )
 
-        state["realm_empty_topic_display_name"] = "testing general chat"
+        state["realm_empty_topic_display_name"] = Message.EMPTY_TOPIC_FALLBACK_NAME
     if want("realm_user_settings_defaults"):
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         state["realm_user_settings_defaults"] = {}
@@ -1751,6 +1752,7 @@ class ClientCapabilities(TypedDict):
     user_list_incomplete: NotRequired[bool]
     include_deactivated_groups: NotRequired[bool]
     archived_channels: NotRequired[bool]
+    empty_topic_name: NotRequired[bool]
 
 
 DEFAULT_CLIENT_CAPABILITIES = ClientCapabilities(notification_settings_null=False)
@@ -1792,6 +1794,7 @@ def do_events_register(
     user_list_incomplete = client_capabilities.get("user_list_incomplete", False)
     include_deactivated_groups = client_capabilities.get("include_deactivated_groups", False)
     archived_channels = client_capabilities.get("archived_channels", False)
+    empty_topic_name = client_capabilities.get("empty_topic_name", False)
 
     if fetch_event_types is not None:
         event_types_set: set[str] | None = set(fetch_event_types)
@@ -1865,6 +1868,7 @@ def do_events_register(
         user_list_incomplete=user_list_incomplete,
         include_deactivated_groups=include_deactivated_groups,
         archived_channels=archived_channels,
+        empty_topic_name=empty_topic_name,
     )
 
     if queue_id is None:
