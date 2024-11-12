@@ -1123,12 +1123,16 @@ def process_message_event(
 
     @cache
     def get_client_payload(
-        apply_markdown: bool, client_gravatar: bool, can_access_sender: bool
+        apply_markdown: bool,
+        client_gravatar: bool,
+        allow_empty_topic_name: bool,
+        can_access_sender: bool,
     ) -> dict[str, Any]:
         return MessageDict.finalize_payload(
             wide_dict,
             apply_markdown=apply_markdown,
             client_gravatar=client_gravatar,
+            allow_empty_topic_name=allow_empty_topic_name,
             can_access_sender=can_access_sender,
             realm_host=realm_host,
         )
@@ -1208,19 +1212,11 @@ def process_message_event(
 
         can_access_sender = client.user_profile_id not in user_ids_without_access_to_sender
         message_dict = get_client_payload(
-            client.apply_markdown, client.client_gravatar, can_access_sender
+            client.apply_markdown,
+            client.client_gravatar,
+            client.empty_topic_name,
+            can_access_sender,
         )
-
-        # Compatibility code to change subject="" to subject="general chat"
-        # for clients with no UI support for empty topic name.
-        # This codeblock will be moved to get_client_payload (MessageDict.finalize_payload).
-        if (
-            recipient_type_name == "stream"
-            and not client.empty_topic_name
-            and wide_dict["subject"] == ""
-        ):
-            message_dict = message_dict.copy()
-            message_dict["subject"] = "general chat"
 
         # Make sure Zephyr mirroring bots know whether stream is invite-only
         if "mirror" in client.client_type_name and event_template.get("invite_only"):

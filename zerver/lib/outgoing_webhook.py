@@ -61,6 +61,8 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
             event["message"],
             apply_markdown=False,
             client_gravatar=False,
+            # TODO: Discuss in CZO.
+            allow_empty_topic_name=False,
             keep_rendered_content=True,
         )
 

@@ -212,6 +212,7 @@ def messages_for_ids(
     search_fields: dict[int, dict[str, str]],
     apply_markdown: bool,
     client_gravatar: bool,
+    allow_empty_topic_name: bool,
     allow_edit_history: bool,
     user_profile: UserProfile | None,
     realm: Realm,
@@ -253,7 +254,9 @@ def messages_for_ids(
         msg_dict["can_access_sender"] = msg_dict["sender_id"] not in inaccessible_sender_ids
         message_list.append(msg_dict)
 
-    MessageDict.post_process_dicts(message_list, apply_markdown, client_gravatar, realm)
+    MessageDict.post_process_dicts(
+        message_list, apply_markdown, client_gravatar, allow_empty_topic_name, realm
+    )
 
     return message_list
 
