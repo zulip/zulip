@@ -118,6 +118,7 @@ def get_messages_backend(
     ] = False,
     client_gravatar: Json[bool] = True,
     apply_markdown: Json[bool] = True,
+    allow_empty_topic_name: Json[bool] = False,
     client_requested_message_ids: Annotated[
         Json[list[NonNegativeInt] | None], ApiParamConfig("message_ids")
     ] = None,
@@ -302,6 +303,7 @@ def get_messages_backend(
             search_fields=search_fields,
             apply_markdown=apply_markdown,
             client_gravatar=client_gravatar,
+            allow_empty_topic_name=allow_empty_topic_name,
             allow_edit_history=realm.allow_edit_history,
             user_profile=user_profile,
             realm=realm,
