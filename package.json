@@ -100,6 +100,7 @@
     "@types/autosize": "^4.0.1",
     "@types/blueimp-md5": "^2.18.0",
     "@types/co-body": "^6.1.3",
+    "@types/gtag.js": "^0.0.20",
     "@types/is-url": "^1.2.32",
     "@types/jquery": "^3.3.31",
     "@types/jquery.validation": "^1.16.7",
