@@ -17,11 +17,9 @@ module.exports = {
         "plugin:unicorn/recommended",
         "prettier",
     ],
-    parser: "@babel/eslint-parser",
     parserOptions: {
         requireConfigFile: false,
         warnOnUnsupportedTypeScriptVersion: false,
-        sourceType: "unambiguous",
     },
     plugins: ["formatjs", "no-jquery"],
     settings: {

@@ -1,6 +1,4 @@
-"use strict";
-
-module.exports = {
+export default {
     plugins: [
         [
             "formatjs",
@@ -21,5 +19,4 @@ module.exports = {
         ],
         "@babel/typescript",
     ],
-    sourceType: "unambiguous",
 };

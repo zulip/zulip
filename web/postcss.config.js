@@ -1,8 +1,12 @@
-"use strict";
+import path from "node:path";
 
-const path = require("node:path");
+import postcssExtendRule from "postcss-extend-rule";
+import postcssImport from "postcss-import";
+import postcssPrefixWrap from "postcss-prefixwrap";
+import postcssPresetEnv from "postcss-preset-env";
+import postcssSimpleVars from "postcss-simple-vars";
 
-const {media_breakpoints} = require("./src/css_variables.js");
+import {media_breakpoints} from "./src/css_variables.js";
 
 const config = ({file}) => ({
     plugins: [
@@ -10,16 +14,16 @@ const config = ({file}) => ({
             // Add postcss-import plugin with postcss-prefixwrap to handle
             // the flatpickr dark theme. We do this because flatpickr themes
             // are not scoped. See https://github.com/flatpickr/flatpickr/issues/2168.
-            require("postcss-import")({
-                plugins: [require("postcss-prefixwrap")("%dark-theme")],
+            postcssImport({
+                plugins: [postcssPrefixWrap("%dark-theme")],
             }),
-        require("postcss-extend-rule"),
-        require("postcss-simple-vars")({variables: media_breakpoints}),
-        require("postcss-preset-env")({
+        postcssExtendRule,
+        postcssSimpleVars({variables: media_breakpoints}),
+        postcssPresetEnv({
             features: {
                 "nesting-rules": true,
             },
         }),
     ],
 });
-module.exports = config;
+export default config;
