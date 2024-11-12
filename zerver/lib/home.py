@@ -157,6 +157,7 @@ def build_page_params_for_home_page_load(
         user_list_incomplete=True,
         include_deactivated_groups=True,
         archived_channels=True,
+        empty_topic_name=True,
     )
 
     if user_profile is not None:
