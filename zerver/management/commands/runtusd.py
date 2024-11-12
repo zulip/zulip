@@ -51,7 +51,6 @@ class Command(BaseCommand):
             "-disable-download",
             "--log-level=warn",
         ]
-        
         env_vars = os.environ.copy()
         if settings.LOCAL_UPLOADS_DIR is not None:
             assert settings.LOCAL_FILES_DIR is not None
