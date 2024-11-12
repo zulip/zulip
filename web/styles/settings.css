@@ -1217,6 +1217,15 @@ $option_title_width: 180px;
 .user_list_style_values {
     max-width: calc($right_sidebar_width + $option_title_width);
 
+    .preferences-radio-choice-label {
+        justify-content: space-between;
+        margin-right: 6px;
+
+        .right {
+            margin-left: unset;
+        }
+    }
+
     .preview {
         /* Match the 170px width of the right sidebar region for the name/status,
            doing something reasonable if the window shrinks. */
@@ -1226,6 +1235,13 @@ $option_title_width: 180px;
         .user-name-and-status-text {
             display: flex;
             flex-direction: column;
+        }
+
+        .user-name-and-status-emoji {
+            .user-name {
+                max-width: 100%;
+                overflow: hidden;
+            }
         }
 
         .status-text {
