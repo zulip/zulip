@@ -15,7 +15,6 @@ module.exports = {
             "@babel/preset-env",
             {
                 corejs: "3.39",
-                include: ["transform-optional-chaining"],
                 shippedProposals: true,
                 useBuiltIns: "usage",
             },
