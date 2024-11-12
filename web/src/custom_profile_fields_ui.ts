@@ -170,6 +170,13 @@ export function initialize_custom_date_type_fields(element_id: string): void {
         static: true,
     });
 
+    // Enable the label associated to this field to open the datepicker when clicked.
+    $(element_id)
+        .find(".custom_user_field label.settings-field-label")
+        .on("click", function () {
+            $(this).closest(".custom_user_field").find("input.datepicker").trigger("click");
+        });
+
     $(element_id)
         .find<HTMLInputElement>(".custom_user_field input.datepicker")
         .on("mouseenter", function () {
