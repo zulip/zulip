@@ -312,11 +312,7 @@ module.exports = {
                 "no-console": "error",
             },
             settings: {
-                "import/resolver": {
-                    webpack: {
-                        config: "./web/webpack.config.ts",
-                    },
-                },
+                "import/resolver": "webpack",
             },
         },
         {
