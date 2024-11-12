@@ -412,11 +412,43 @@
     }
 }
 
+#subscribe-to-more-streams {
+    /* --left-sidebar-bottom-scrolling-buffer is to prevent the row from
+       being cut off, and --sidebar-bottom-spacing is extra padding. */
+    margin: 5px var(--left-sidebar-right-margin)
+        calc(
+            var(--left-sidebar-bottom-scrolling-buffer) +
+                var(--sidebar-bottom-spacing)
+        )
+        0;
+    padding-left: var(--left-sidebar-toggle-width-offset);
+    border-radius: 4px;
+
+    &:hover {
+        background: var(--color-background-sidebar-action-heading-hover);
+        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+        color: var(--color-text-sidebar-action-heading-hover);
+    }
+
+    .subscribe-more-link {
+        display: grid;
+        grid-template:
+            "plus-icon row-text" var(--line-height-sidebar-row-prominent)
+            / auto 1fr;
+        align-items: center;
+        color: var(--color-text-sidebar-action-heading);
+        text-decoration: none;
+
+        &:active {
+            transition: transform 80ms;
+            transform: scale(0.96);
+        }
+    }
+}
+
 #login-link-container,
 #subscribe-to-more-streams {
     text-decoration: none;
-    margin: 5px auto var(--left-sidebar-bottom-scrolling-buffer)
-        var(--left-sidebar-toggle-width-offset);
 
     .subscribe-more-icon {
         min-width: 19px;
@@ -432,6 +464,8 @@
     color: var(--color-text-url);
     display: flex;
     align-items: center;
+    margin: 5px auto var(--left-sidebar-bottom-scrolling-buffer)
+        var(--left-sidebar-toggle-width-offset);
 
     &:hover {
         cursor: pointer;

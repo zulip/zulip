@@ -1,16 +1,16 @@
 {{#if exactly_one_unsubscribed_stream}}
-    <a href="#channels/notsubscribed">
-        <i class="subscribe-more-icon fa fa-plus-circle" aria-hidden="true"></i>
-        {{~t "Browse 1 more channel" ~}}
+    <a class="subscribe-more-link" href="#channels/notsubscribed">
+        <i class="subscribe-more-icon zulip-icon zulip-icon-square-plus" aria-hidden="true" ></i>
+        {{~t "BROWSE 1 MORE CHANNEL" ~}}
     </a>
 {{else if can_subscribe_stream_count}}
-    <a href="#channels/notsubscribed">
-        <i class="subscribe-more-icon fa fa-plus-circle" aria-hidden="true"></i>
-        {{~t "Browse {can_subscribe_stream_count} more channels" ~}}
+    <a class="subscribe-more-link" href="#channels/notsubscribed">
+        <i class="subscribe-more-icon zulip-icon zulip-icon-square-plus" aria-hidden="true" ></i>
+        {{~t "BROWSE {can_subscribe_stream_count} MORE CHANNELS" ~}}
     </a>
 {{else if can_create_streams}}
-    <a href="#channels/new">
-        <i class="subscribe-more-icon fa fa-plus-circle" aria-hidden="true"></i>
-        {{~t "Create a channel" ~}}
+    <a class="subscribe-more-link" href="#channels/new">
+        <i class="subscribe-more-icon zulip-icon zulip-icon-square-plus" aria-hidden="true" ></i>
+        {{~t "CREATE A CHANNEL" ~}}
     </a>
 {{/if}}
