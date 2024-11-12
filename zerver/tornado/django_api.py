@@ -92,6 +92,7 @@ def request_event_queue(
     user_list_incomplete: bool = False,
     include_deactivated_groups: bool = False,
     archived_channels: bool = False,
+    empty_topic_name: bool = False,
 ) -> str | None:
     if not settings.USING_TORNADO:
         return None
@@ -117,6 +118,7 @@ def request_event_queue(
         "user_list_incomplete": orjson.dumps(user_list_incomplete),
         "include_deactivated_groups": orjson.dumps(include_deactivated_groups),
         "archived_channels": orjson.dumps(archived_channels),
+        "empty_topic_name": orjson.dumps(empty_topic_name),
     }
 
     if event_types is not None:

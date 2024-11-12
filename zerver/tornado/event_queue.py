@@ -80,6 +80,7 @@ class ClientDescriptor:
         user_list_incomplete: bool = False,
         include_deactivated_groups: bool = False,
         archived_channels: bool = False,
+        empty_topic_name: bool = False,
     ) -> None:
         # TODO: We eventually want to upstream this code to the caller, but
         # serialization concerns make it a bit difficult.
@@ -112,6 +113,7 @@ class ClientDescriptor:
         self.user_list_incomplete = user_list_incomplete
         self.include_deactivated_groups = include_deactivated_groups
         self.archived_channels = archived_channels
+        self.empty_topic_name = empty_topic_name
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -144,6 +146,7 @@ class ClientDescriptor:
             user_list_incomplete=self.user_list_incomplete,
             include_deactivated_groups=self.include_deactivated_groups,
             archived_channels=self.archived_channels,
+            empty_topic_name=self.empty_topic_name,
         )
 
     @override
@@ -182,6 +185,7 @@ class ClientDescriptor:
             d.get("user_list_incomplete", False),
             d.get("include_deactivated_groups", False),
             d.get("archived_channels", False),
+            d.get("empty_topic_name", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
@@ -1206,6 +1210,17 @@ def process_message_event(
         message_dict = get_client_payload(
             client.apply_markdown, client.client_gravatar, can_access_sender
         )
+
+        # Compatibility code to change subject="" to subject="general chat"
+        # for clients with no UI support for empty topic name.
+        # This codeblock will be moved to get_client_payload (MessageDict.finalize_payload).
+        if (
+            recipient_type_name == "stream"
+            and not client.empty_topic_name
+            and wide_dict["subject"] == ""
+        ):
+            message_dict = message_dict.copy()
+            message_dict["subject"] = "general chat"
 
         # Make sure Zephyr mirroring bots know whether stream is invite-only
         if "mirror" in client.client_type_name and event_template.get("invite_only"):
