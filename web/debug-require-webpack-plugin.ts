@@ -5,11 +5,10 @@
 import path from "node:path";
 
 import type {ResolveRequest} from "enhanced-resolve";
-import type {Chunk, Compiler, WebpackPluginInstance} from "webpack";
-import {NormalModule, Template} from "webpack";
+import webpack from "webpack";
 
-export default class DebugRequirePlugin implements WebpackPluginInstance {
-    apply(compiler: Compiler): void {
+export default class DebugRequirePlugin implements webpack.WebpackPluginInstance {
+    apply(compiler: webpack.Compiler): void {
         const resolved = new Map<string, Set<string>>();
         const nameSymbol = Symbol("DebugRequirePluginName");
         type NamedRequest = ResolveRequest & {
@@ -63,7 +62,7 @@ export default class DebugRequirePlugin implements WebpackPluginInstance {
                 debugRequirePath = await new Promise((resolve) => {
                     resolver.resolve(
                         {},
-                        __dirname,
+                        import.meta.dirname,
                         "./debug-require.js",
                         {},
                         (err?: Error | null, result?: string | false) => {
@@ -77,7 +76,7 @@ export default class DebugRequirePlugin implements WebpackPluginInstance {
         compiler.hooks.compilation.tap("DebugRequirePlugin", (compilation) => {
             compilation.mainTemplate.hooks.bootstrap.tap(
                 "DebugRequirePlugin",
-                (source: string, chunk: Chunk) => {
+                (source: string, chunk: webpack.Chunk) => {
                     if (compilation.chunkGraph === undefined) {
                         return source;
                     }
@@ -87,7 +86,7 @@ export default class DebugRequirePlugin implements WebpackPluginInstance {
                     compilation.chunkGraph.hasModuleInGraph(
                         chunk,
                         (m) => {
-                            if (m instanceof NormalModule) {
+                            if (m instanceof webpack.NormalModule) {
                                 const id = compilation.chunkGraph.getModuleId(m);
                                 if (id === null) {
                                     return false;
@@ -113,7 +112,7 @@ export default class DebugRequirePlugin implements WebpackPluginInstance {
                     }
 
                     ids.sort();
-                    return Template.asString([
+                    return webpack.Template.asString([
                         source,
                         `__webpack_require__.debugRequireIds = ${JSON.stringify(
                             Object.fromEntries(ids),
