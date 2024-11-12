@@ -53,7 +53,7 @@ $user_status_emoji_width: 24px;
     }
 
     .buddy-list-user-link {
-        margin-left: 5px;
+        margin-left: var(--right-sidebar-left-spacing);
     }
 }
 
@@ -195,7 +195,7 @@ $user_status_emoji_width: 24px;
         font-size: 14px;
         /* Override .empty-list-message !important styling */
         padding: 0 !important;
-        margin-left: 5px;
+        margin-left: var(--right-sidebar-left-spacing);
         text-align: left;
 
         &:hover {

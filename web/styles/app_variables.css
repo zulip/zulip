@@ -269,6 +269,7 @@
     --left-sidebar-bottom-scrolling-buffer: calc(
         (var(--legacy-body-line-height-unitless) * 1em) + 0.3571em
     );
+    --right-sidebar-left-spacing: 5px;
 
     /* We base sidebar row heights on their line heights.
        Prominent rows include things like headers (e.g., VIEWS)
