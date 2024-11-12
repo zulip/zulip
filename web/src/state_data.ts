@@ -1,14 +1,14 @@
 import {z} from "zod";
 
-import {server_add_bot_schema} from "./bot_types";
-import {realm_default_settings_schema} from "./realm_user_settings_defaults";
+import {server_add_bot_schema} from "./bot_types.ts";
+import {realm_default_settings_schema} from "./realm_user_settings_defaults.ts";
 import {
     api_stream_subscription_schema,
     never_subscribed_stream_schema,
     stream_schema,
-} from "./stream_types";
-import {user_settings_schema} from "./user_settings";
-import {user_status_schema} from "./user_status_types";
+} from "./stream_types.ts";
+import {user_settings_schema} from "./user_settings.ts";
+import {user_status_schema} from "./user_status_types.ts";
 
 const NOT_TYPED_YET = z.unknown();
 

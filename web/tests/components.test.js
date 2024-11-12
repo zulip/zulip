@@ -2,10 +2,10 @@
 
 const assert = require("node:assert/strict");
 
-const {$t} = require("./lib/i18n");
-const {mock_jquery, zrequire} = require("./lib/namespace");
-const {run_test, noop} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
+const {$t} = require("./lib/i18n.js");
+const {mock_jquery, zrequire} = require("./lib/namespace.js");
+const {run_test, noop} = require("./lib/test.js");
+const blueslip = require("./lib/zblueslip.js");
 
 let env;
 

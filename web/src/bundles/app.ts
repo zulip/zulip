@@ -1,17 +1,17 @@
-import "./common";
+import "./common.ts";
 
 // Import third party jQuery plugins
-import "../bootstrap_typeahead";
+import "../bootstrap_typeahead.ts";
 import "jquery-caret-plugin/dist/jquery.caret";
-import "../../third/jquery-idle/jquery.idle";
+import "../../third/jquery-idle/jquery.idle.js";
 import "spectrum-colorpicker";
 import "jquery-validation";
 
 // Import app JS
-import "../setup";
-import "../reload";
-import "../templates";
-import "../zulip_test";
+import "../setup.ts";
+import "../reload.ts";
+import "../templates.js";
+import "../zulip_test.ts";
 
 // Import styles
 import "tippy.js/dist/tippy.css";
@@ -60,4 +60,4 @@ import "../../styles/print.css";
 import "../../styles/inbox.css";
 
 // This should be last.
-import "../ui_init";
+import "../ui_init.js";

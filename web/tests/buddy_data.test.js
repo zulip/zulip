@@ -4,9 +4,9 @@ const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
-const {page_params} = require("./lib/zpage_params");
+const {mock_esm, zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
+const {page_params} = require("./lib/zpage_params.js");
 
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,

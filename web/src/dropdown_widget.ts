@@ -8,14 +8,14 @@ import render_dropdown_list from "../templates/dropdown_list.hbs";
 import render_dropdown_list_container from "../templates/dropdown_list_container.hbs";
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 
-import * as blueslip from "./blueslip";
-import * as ListWidget from "./list_widget";
-import type {ListWidget as ListWidgetType} from "./list_widget";
-import {page_params} from "./page_params";
-import * as popover_menus from "./popover_menus";
-import type {StreamSubscription} from "./sub_store";
-import {parse_html} from "./ui_util";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as ListWidget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
+import {page_params} from "./page_params.ts";
+import * as popover_menus from "./popover_menus.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import {parse_html} from "./ui_util.ts";
+import * as util from "./util.ts";
 
 /* Sync with max-height set in zulip.css */
 export const DEFAULT_DROPDOWN_HEIGHT = 210;

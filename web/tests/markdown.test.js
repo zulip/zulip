@@ -4,12 +4,12 @@ const assert = require("node:assert/strict");
 
 const katex = require("katex");
 
-const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_cases");
+const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_cases.json");
 
-const markdown_assert = require("./lib/markdown_assert");
-const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
-const {page_params} = require("./lib/zpage_params");
+const markdown_assert = require("./lib/markdown_assert.js");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
+const {page_params} = require("./lib/zpage_params.js");
 
 const example_realm_linkifiers = [
     {

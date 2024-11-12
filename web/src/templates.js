@@ -1,8 +1,8 @@
-import Handlebars from "handlebars/runtime";
+import Handlebars from "handlebars/runtime.js";
 
-import * as common from "./common";
-import {default_html_elements, intl} from "./i18n";
-import {postprocess_content} from "./postprocess_content";
+import * as common from "./common.ts";
+import {default_html_elements, intl} from "./i18n.ts";
+import {postprocess_content} from "./postprocess_content.ts";
 
 // Below, we register Zulip-specific extensions to the Handlebars API.
 //

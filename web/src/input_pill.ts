@@ -5,9 +5,9 @@ import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
 
-import * as keydown_util from "./keydown_util";
-import * as ui_util from "./ui_util";
-import * as util from "./util";
+import * as keydown_util from "./keydown_util.ts";
+import * as ui_util from "./ui_util.ts";
+import * as util from "./util.ts";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
 

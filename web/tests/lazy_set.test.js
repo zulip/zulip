@@ -2,9 +2,9 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
+const {zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
+const blueslip = require("./lib/zblueslip.js");
 
 const {LazySet} = zrequire("lazy_set");
 

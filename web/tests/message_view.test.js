@@ -2,11 +2,11 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
-const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {mock_esm, zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
+const blueslip = require("./lib/zblueslip.js");
+const $ = require("./lib/zjquery.js");
+const {page_params} = require("./lib/zpage_params.js");
 
 const hash_util = zrequire("hash_util");
 const compose_state = zrequire("compose_state");

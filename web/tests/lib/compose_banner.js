@@ -1,9 +1,9 @@
 "use strict";
 
-const compose_banner = require("../../src/compose_banner");
+const compose_banner = require("../../src/compose_banner.ts");
 
-const {noop} = require("./test");
-const $ = require("./zjquery");
+const {noop} = require("./test.js");
+const $ = require("./zjquery.js");
 
 exports.mock_banners = () => {
     // zjquery doesn't support `remove`, which is used when clearing the compose box.

@@ -4,10 +4,10 @@ import render_cannot_send_direct_message_error from "../templates/compose_banner
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
 
-import {$t} from "./i18n";
-import * as scroll_util from "./scroll_util";
-import * as stream_data from "./stream_data";
-import type {StreamSubscription} from "./sub_store";
+import {$t} from "./i18n.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 
 export let scroll_to_message_banner_message_id: number | null = null;
 export function set_scroll_to_message_banner_message_id(val: number | null): void {

@@ -3,14 +3,14 @@ import assert from "minimalistic-assert";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
-import * as compose_actions from "./compose_actions";
-import * as compose_banner from "./compose_banner";
-import {$t} from "./i18n";
-import * as message_view from "./message_view";
-import * as people from "./people";
-import * as scheduled_messages from "./scheduled_messages";
-import type {ScheduledMessage} from "./scheduled_messages";
-import * as timerender from "./timerender";
+import * as compose_actions from "./compose_actions.ts";
+import * as compose_banner from "./compose_banner.ts";
+import {$t} from "./i18n.ts";
+import * as message_view from "./message_view.ts";
+import * as people from "./people.ts";
+import * as scheduled_messages from "./scheduled_messages.ts";
+import type {ScheduledMessage} from "./scheduled_messages.ts";
+import * as timerender from "./timerender.ts";
 
 type ScheduledMessageComposeArgs =
     | {

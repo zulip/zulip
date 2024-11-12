@@ -1,21 +1,21 @@
-import Handlebars from "handlebars/runtime";
+import Handlebars from "handlebars/runtime.js";
 import assert from "minimalistic-assert";
 
 import render_user_pill from "../templates/user_pill.hbs";
 
-import {MAX_ITEMS} from "./bootstrap_typeahead";
-import * as common from "./common";
-import * as direct_message_group_data from "./direct_message_group_data";
-import {Filter, create_user_pill_context} from "./filter";
-import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import type {User} from "./people";
-import {type NarrowTerm, current_user} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as stream_topic_history from "./stream_topic_history";
-import * as stream_topic_history_util from "./stream_topic_history_util";
-import * as typeahead_helper from "./typeahead_helper";
+import {MAX_ITEMS} from "./bootstrap_typeahead.ts";
+import * as common from "./common.ts";
+import * as direct_message_group_data from "./direct_message_group_data.ts";
+import {Filter, create_user_pill_context} from "./filter.ts";
+import * as narrow_state from "./narrow_state.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import type {User} from "./people.ts";
+import {type NarrowTerm, current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
+import * as stream_topic_history_util from "./stream_topic_history_util.ts";
+import * as typeahead_helper from "./typeahead_helper.ts";
 
 export type UserPillItem = {
     id: number;

@@ -7,17 +7,17 @@ import {z} from "zod";
 
 import render_upload_banner from "../templates/compose_banner/upload_banner.hbs";
 
-import * as blueslip from "./blueslip";
-import * as compose_actions from "./compose_actions";
-import * as compose_banner from "./compose_banner";
-import * as compose_reply from "./compose_reply";
-import * as compose_state from "./compose_state";
-import * as compose_ui from "./compose_ui";
-import * as compose_validate from "./compose_validate";
-import {$t} from "./i18n";
-import * as message_lists from "./message_lists";
-import * as rows from "./rows";
-import {realm} from "./state_data";
+import * as blueslip from "./blueslip.ts";
+import * as compose_actions from "./compose_actions.ts";
+import * as compose_banner from "./compose_banner.ts";
+import * as compose_reply from "./compose_reply.ts";
+import * as compose_state from "./compose_state.ts";
+import * as compose_ui from "./compose_ui.ts";
+import * as compose_validate from "./compose_validate.ts";
+import {$t} from "./i18n.ts";
+import * as message_lists from "./message_lists.ts";
+import * as rows from "./rows.ts";
+import {realm} from "./state_data.ts";
 
 let drag_drop_img: HTMLElement | null = null;
 let compose_upload_object: Uppy;

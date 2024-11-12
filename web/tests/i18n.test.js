@@ -4,9 +4,9 @@ const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
-const {unmock_module, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
-const {page_params} = require("./lib/zpage_params");
+const {unmock_module, zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
+const {page_params} = require("./lib/zpage_params.js");
 
 // We download our translations in `page_params` (which
 // are for the user's chosen language), so we simulate
@@ -22,7 +22,7 @@ page_params.translation_data = {
 
 // Re-register Zulip extensions so extensions registered previously with
 // mocked i18n.ts do not interfere with following tests.
-require("../src/templates");
+require("../src/templates.js");
 
 // All of our other tests stub out i18n activity;
 // here we do a quick sanity check on the engine itself.

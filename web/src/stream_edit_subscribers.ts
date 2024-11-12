@@ -8,26 +8,26 @@ import render_stream_member_list_entry from "../templates/stream_settings/stream
 import render_stream_members_table from "../templates/stream_settings/stream_members_table.hbs";
 import render_stream_subscription_request_result from "../templates/stream_settings/stream_subscription_request_result.hbs";
 
-import * as add_subscribers_pill from "./add_subscribers_pill";
-import * as blueslip from "./blueslip";
-import * as confirm_dialog from "./confirm_dialog";
-import * as hash_parser from "./hash_parser";
-import {$t, $t_html} from "./i18n";
-import * as ListWidget from "./list_widget";
-import type {ListWidget as ListWidgetType} from "./list_widget";
-import * as peer_data from "./peer_data";
-import * as people from "./people";
-import type {User} from "./people";
-import * as scroll_util from "./scroll_util";
-import {current_user} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as stream_settings_containers from "./stream_settings_containers";
-import type {SettingsSubscription} from "./stream_settings_data";
-import * as sub_store from "./sub_store";
-import type {StreamSubscription} from "./sub_store";
-import * as subscriber_api from "./subscriber_api";
-import type {CombinedPillContainer} from "./typeahead_helper";
-import * as user_sort from "./user_sort";
+import * as add_subscribers_pill from "./add_subscribers_pill.ts";
+import * as blueslip from "./blueslip.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import * as hash_parser from "./hash_parser.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as ListWidget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
+import * as peer_data from "./peer_data.ts";
+import * as people from "./people.ts";
+import type {User} from "./people.ts";
+import * as scroll_util from "./scroll_util.ts";
+import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_settings_containers from "./stream_settings_containers.ts";
+import type {SettingsSubscription} from "./stream_settings_data.ts";
+import * as sub_store from "./sub_store.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as subscriber_api from "./subscriber_api.ts";
+import type {CombinedPillContainer} from "./typeahead_helper.ts";
+import * as user_sort from "./user_sort.ts";
 
 const remove_user_id_api_response_schema = z.object({
     removed: z.array(z.string()),

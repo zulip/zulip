@@ -4,18 +4,18 @@ const assert = require("node:assert/strict");
 const path = require("node:path");
 
 require("css.escape");
-require("handlebars/runtime");
+require("handlebars/runtime.js");
 const {JSDOM} = require("jsdom");
 const _ = require("lodash");
 
-const handlebars = require("./handlebars");
-const stub_i18n = require("./i18n");
-const namespace = require("./namespace");
-const test = require("./test");
-const blueslip = require("./zblueslip");
-const zjquery = require("./zjquery");
-const zpage_billing_params = require("./zpage_billing_params");
-const zpage_params = require("./zpage_params");
+const handlebars = require("./handlebars.js");
+const stub_i18n = require("./i18n.js");
+const namespace = require("./namespace.js");
+const test = require("./test.js");
+const blueslip = require("./zblueslip.js");
+const zjquery = require("./zjquery.js");
+const zpage_billing_params = require("./zpage_billing_params.js");
+const zpage_params = require("./zpage_params.js");
 
 process.env.NODE_ENV = "test";
 
@@ -83,7 +83,7 @@ handlebars.hook_require();
 
 const noop = function () {};
 
-require("../../src/templates"); // register Zulip extensions
+require("../../src/templates.js"); // register Zulip extensions
 
 async function run_one_module(file) {
     zjquery.clear_initialize_function();
@@ -118,15 +118,15 @@ test.set_verbose(files.length === 1);
         zpage_params.reset();
 
         namespace.mock_esm("../../src/blueslip", blueslip);
-        require("../../src/blueslip");
+        require("../../src/blueslip.ts");
         namespace.mock_esm("../../src/i18n", stub_i18n);
-        require("../../src/i18n");
+        require("../../src/i18n.ts");
         namespace.mock_esm("../../src/base_page_params", zpage_params);
-        require("../../src/base_page_params");
+        require("../../src/base_page_params.ts");
         namespace.mock_esm("../../src/billing/page_params", zpage_billing_params);
-        require("../../src/billing/page_params");
+        require("../../src/billing/page_params.ts");
         namespace.mock_esm("../../src/page_params", zpage_params);
-        require("../../src/page_params");
+        require("../../src/page_params.ts");
 
         try {
             await run_one_module(file);

@@ -1,4 +1,4 @@
-import {electron_bridge} from "../electron_bridge";
+import {electron_bridge} from "../electron_bridge.ts";
 
 document.querySelector<HTMLFormElement>("form#form")!.addEventListener("submit", () => {
     document.querySelector<HTMLParagraphElement>("p#bad-token")!.hidden = false;

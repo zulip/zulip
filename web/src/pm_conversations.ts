@@ -1,8 +1,8 @@
-import {FoldDict} from "./fold_dict";
-import type {Message} from "./message_store";
-import * as muted_users from "./muted_users";
-import * as people from "./people";
-import type {StateData} from "./state_data";
+import {FoldDict} from "./fold_dict.ts";
+import type {Message} from "./message_store.ts";
+import * as muted_users from "./muted_users.ts";
+import * as people from "./people.ts";
+import type {StateData} from "./state_data.ts";
 
 type PMConversation = {
     user_ids_string: string;

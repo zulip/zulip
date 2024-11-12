@@ -4,24 +4,24 @@ import * as tippy from "tippy.js";
 import render_admin_tab from "../templates/settings/admin_tab.hbs";
 import render_settings_organization_settings_tip from "../templates/settings/organization_settings_tip.hbs";
 
-import * as bot_data from "./bot_data";
-import * as demo_organizations_ui from "./demo_organizations_ui";
-import {$t, get_language_name, language_list} from "./i18n";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
-import * as settings from "./settings";
-import * as settings_bots from "./settings_bots";
-import * as settings_components from "./settings_components";
-import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
-import * as settings_invites from "./settings_invites";
-import * as settings_org from "./settings_org";
-import * as settings_panel_menu from "./settings_panel_menu";
-import * as settings_sections from "./settings_sections";
-import * as settings_toggle from "./settings_toggle";
-import * as settings_users from "./settings_users";
-import {current_user, realm} from "./state_data";
+import * as bot_data from "./bot_data.ts";
+import * as demo_organizations_ui from "./demo_organizations_ui.ts";
+import {$t, get_language_name, language_list} from "./i18n.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
+import * as settings from "./settings.js";
+import * as settings_bots from "./settings_bots.ts";
+import * as settings_components from "./settings_components.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import * as settings_invites from "./settings_invites.ts";
+import * as settings_org from "./settings_org.ts";
+import * as settings_panel_menu from "./settings_panel_menu.js";
+import * as settings_sections from "./settings_sections.js";
+import * as settings_toggle from "./settings_toggle.js";
+import * as settings_users from "./settings_users.ts";
+import {current_user, realm} from "./state_data.ts";
 
 const admin_settings_label = {
     // Organization profile

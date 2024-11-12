@@ -5,13 +5,13 @@ import assert from "minimalistic-assert";
 import {insertTextIntoField} from "text-field-edit";
 import TurndownService from "turndown";
 
-import * as compose_ui from "./compose_ui";
-import * as hash_util from "./hash_util";
-import * as message_lists from "./message_lists";
-import * as rows from "./rows";
-import * as stream_data from "./stream_data";
-import * as topic_link_util from "./topic_link_util";
-import * as util from "./util";
+import * as compose_ui from "./compose_ui.ts";
+import * as hash_util from "./hash_util.ts";
+import * as message_lists from "./message_lists.ts";
+import * as rows from "./rows.ts";
+import * as stream_data from "./stream_data.ts";
+import * as topic_link_util from "./topic_link_util.ts";
+import * as util from "./util.ts";
 
 declare global {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions

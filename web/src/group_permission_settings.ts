@@ -1,5 +1,5 @@
-import {realm} from "./state_data";
-import type {GroupPermissionSetting} from "./state_data";
+import {realm} from "./state_data.ts";
+import type {GroupPermissionSetting} from "./state_data.ts";
 
 export function get_group_permission_setting_config(
     setting_name: string,

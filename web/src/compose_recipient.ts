@@ -7,24 +7,24 @@ import type * as tippy from "tippy.js";
 
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 
-import * as compose_banner from "./compose_banner";
-import * as compose_fade from "./compose_fade";
-import * as compose_pm_pill from "./compose_pm_pill";
-import * as compose_state from "./compose_state";
-import * as compose_ui from "./compose_ui";
-import type {ComposeTriggeredOptions} from "./compose_ui";
-import * as compose_validate from "./compose_validate";
-import * as drafts from "./drafts";
-import * as dropdown_widget from "./dropdown_widget";
-import type {Option} from "./dropdown_widget";
-import {$t} from "./i18n";
-import * as narrow_state from "./narrow_state";
-import {realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import * as ui_util from "./ui_util";
-import * as user_groups from "./user_groups";
-import * as util from "./util";
+import * as compose_banner from "./compose_banner.ts";
+import * as compose_fade from "./compose_fade.ts";
+import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as compose_state from "./compose_state.ts";
+import * as compose_ui from "./compose_ui.ts";
+import type {ComposeTriggeredOptions} from "./compose_ui.ts";
+import * as compose_validate from "./compose_validate.ts";
+import * as drafts from "./drafts.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
+import type {Option} from "./dropdown_widget.ts";
+import {$t} from "./i18n.ts";
+import * as narrow_state from "./narrow_state.ts";
+import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import * as ui_util from "./ui_util.ts";
+import * as user_groups from "./user_groups.ts";
+import * as util from "./util.ts";
 
 type MessageType = "stream" | "private";
 type DirectMessagesOption = {

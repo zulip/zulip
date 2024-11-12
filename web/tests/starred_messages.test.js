@@ -2,9 +2,9 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, with_overrides, zrequire} = require("./lib/namespace");
-const {make_stub} = require("./lib/stub");
-const {run_test} = require("./lib/test");
+const {mock_esm, with_overrides, zrequire} = require("./lib/namespace.js");
+const {make_stub} = require("./lib/stub.js");
+const {run_test} = require("./lib/test.js");
 
 const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_area", {
     update_starred_count() {},

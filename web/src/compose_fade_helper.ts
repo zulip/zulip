@@ -1,7 +1,7 @@
-import type {Message} from "./message_store";
-import * as sub_store from "./sub_store";
-import type {Recipient} from "./util";
-import * as util from "./util";
+import type {Message} from "./message_store.ts";
+import * as sub_store from "./sub_store.ts";
+import type {Recipient} from "./util.ts";
+import * as util from "./util.ts";
 
 let focused_recipient: Recipient | undefined;
 

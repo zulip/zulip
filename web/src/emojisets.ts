@@ -3,8 +3,8 @@ import google_blob_sheet from "../generated/emoji/google-blob.webp";
 import google_sheet from "../generated/emoji/google.webp";
 import twitter_sheet from "../generated/emoji/twitter.webp";
 
-import * as blueslip from "./blueslip";
-import {user_settings} from "./user_settings";
+import * as blueslip from "./blueslip.ts";
+import {user_settings} from "./user_settings.ts";
 
 import google_blob_css from "!style-loader?injectType=lazyStyleTag!css-loader!../generated/emoji-styles/google-blob-sprite.css";
 import google_css from "!style-loader?injectType=lazyStyleTag!css-loader!../generated/emoji-styles/google-sprite.css";

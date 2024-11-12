@@ -10,11 +10,11 @@ const {
     buddy_list_add_user_matching_view,
     buddy_list_add_other_user,
     stub_buddy_list_elements,
-} = require("./lib/buddy_list");
-const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test, noop} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
-const $ = require("./lib/zjquery");
+} = require("./lib/buddy_list.js");
+const {mock_esm, zrequire} = require("./lib/namespace.js");
+const {run_test, noop} = require("./lib/test.js");
+const blueslip = require("./lib/zblueslip.js");
+const $ = require("./lib/zjquery.js");
 
 const padded_widget = mock_esm("../src/padded_widget");
 const message_viewport = mock_esm("../src/message_viewport");

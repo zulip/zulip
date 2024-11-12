@@ -3,11 +3,11 @@ import assert from "minimalistic-assert";
 
 import render_compose_control_buttons_popover from "../templates/popovers/compose_control_buttons/compose_control_buttons_popover.hbs";
 
-import * as giphy_state from "./giphy_state";
-import * as popover_menus from "./popover_menus";
-import * as popovers from "./popovers";
-import * as rows from "./rows";
-import {parse_html} from "./ui_util";
+import * as giphy_state from "./giphy_state.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as popovers from "./popovers.ts";
+import * as rows from "./rows.ts";
+import {parse_html} from "./ui_util.ts";
 
 export function initialize(): void {
     // Click event handlers for it are handled in `compose_ui` and

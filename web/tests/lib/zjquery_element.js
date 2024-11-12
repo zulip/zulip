@@ -2,7 +2,7 @@
 
 const assert = require("node:assert/strict");
 
-const FakeEvent = require("./zjquery_event");
+const FakeEvent = require("./zjquery_event.js");
 
 const noop = function () {};
 

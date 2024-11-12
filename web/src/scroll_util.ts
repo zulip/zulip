@@ -1,7 +1,7 @@
 import $ from "jquery";
 import SimpleBar from "simplebar";
 
-import * as util from "./util";
+import * as util from "./util.ts";
 
 // This type is helpful for testing, where we may have a dummy object instead of an actual jquery object.
 type JQueryOrZJQuery = {__zjquery?: true} & JQuery;

@@ -4,9 +4,9 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import type {Template} from "url-template";
 
-import * as fenced_code from "../shared/src/fenced_code";
-import marked from "../third/marked/lib/marked";
-import type {LinkifierMatch, ParseOptions, RegExpOrStub} from "../third/marked/lib/marked";
+import * as fenced_code from "../shared/src/fenced_code.ts";
+import marked from "../third/marked/lib/marked.js";
+import type {LinkifierMatch, ParseOptions, RegExpOrStub} from "../third/marked/lib/marked.js";
 
 // This contains zulip's frontend Markdown implementation; see
 // docs/subsystems/markdown.md for docs on our Markdown syntax.  The other

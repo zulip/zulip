@@ -1,9 +1,9 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import * as buddy_data from "./buddy_data";
-import * as popovers from "./popovers";
-import * as sidebar_ui from "./sidebar_ui";
+import * as buddy_data from "./buddy_data.ts";
+import * as popovers from "./popovers.ts";
+import * as sidebar_ui from "./sidebar_ui.ts";
 
 export class UserSearch {
     // This is mostly view code to manage the user search widget

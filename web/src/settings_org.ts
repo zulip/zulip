@@ -5,19 +5,19 @@ import {z} from "zod";
 import render_settings_deactivate_realm_modal from "../templates/confirm_dialog/confirm_deactivate_realm.hbs";
 import render_settings_admin_auth_methods_list from "../templates/settings/admin_auth_methods_list.hbs";
 
-import * as audible_notifications from "./audible_notifications";
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import {csrf_token} from "./csrf";
-import * as dialog_widget from "./dialog_widget";
-import * as dropdown_widget from "./dropdown_widget";
-import {$t, $t_html, get_language_name} from "./i18n";
-import * as keydown_util from "./keydown_util";
-import * as loading from "./loading";
-import * as pygments_data from "./pygments_data";
-import * as realm_icon from "./realm_icon";
-import * as realm_logo from "./realm_logo";
-import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
+import * as audible_notifications from "./audible_notifications.ts";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import {csrf_token} from "./csrf.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
+import {$t, $t_html, get_language_name} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
+import * as loading from "./loading.ts";
+import * as pygments_data from "./pygments_data.ts";
+import * as realm_icon from "./realm_icon.ts";
+import * as realm_logo from "./realm_logo.ts";
+import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
 import {
     type MessageMoveTimeLimitSetting,
     type RealmGroupSettingName,
@@ -27,23 +27,23 @@ import {
     realm_user_settings_default_properties_schema,
     simple_dropdown_realm_settings_schema,
     stream_settings_property_schema,
-} from "./settings_components";
-import * as settings_components from "./settings_components";
-import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
-import * as settings_notifications from "./settings_notifications";
-import * as settings_preferences from "./settings_preferences";
-import * as settings_realm_domains from "./settings_realm_domains";
-import * as settings_ui from "./settings_ui";
-import {current_user, group_setting_value_schema, realm, realm_schema} from "./state_data";
-import type {Realm} from "./state_data";
-import * as stream_settings_data from "./stream_settings_data";
-import type {StreamSubscription} from "./sub_store";
-import type {HTMLSelectOneElement} from "./types";
-import * as ui_report from "./ui_report";
-import * as user_groups from "./user_groups";
-import type {UserGroup, UserGroupForDropdownListWidget} from "./user_groups";
-import * as util from "./util";
+} from "./settings_components.ts";
+import * as settings_components from "./settings_components.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import * as settings_notifications from "./settings_notifications.ts";
+import * as settings_preferences from "./settings_preferences.ts";
+import * as settings_realm_domains from "./settings_realm_domains.ts";
+import * as settings_ui from "./settings_ui.ts";
+import {current_user, group_setting_value_schema, realm, realm_schema} from "./state_data.ts";
+import type {Realm} from "./state_data.ts";
+import * as stream_settings_data from "./stream_settings_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import type {HTMLSelectOneElement} from "./types.ts";
+import * as ui_report from "./ui_report.ts";
+import * as user_groups from "./user_groups.ts";
+import type {UserGroup, UserGroupForDropdownListWidget} from "./user_groups.ts";
+import * as util from "./util.ts";
 
 const meta = {
     loaded: false,

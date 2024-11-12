@@ -6,7 +6,7 @@ const path = require("node:path");
 
 const callsites = require("callsites");
 
-const $ = require("./zjquery");
+const $ = require("./zjquery.js");
 
 const new_globals = new Set();
 let old_globals = {};

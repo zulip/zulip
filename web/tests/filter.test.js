@@ -4,11 +4,11 @@ const assert = require("node:assert/strict");
 
 const {parseOneAddress} = require("email-addresses");
 
-const {mock_esm, with_overrides, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
-const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {mock_esm, with_overrides, zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
+const blueslip = require("./lib/zblueslip.js");
+const $ = require("./lib/zjquery.js");
+const {page_params} = require("./lib/zpage_params.js");
 
 const message_store = mock_esm("../src/message_store");
 const user_topics = mock_esm("../src/user_topics");

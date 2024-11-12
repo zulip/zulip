@@ -2,8 +2,8 @@
 
 const assert = require("node:assert/strict");
 
-const {make_stub} = require("./lib/stub");
-const {run_test, noop} = require("./lib/test");
+const {make_stub} = require("./lib/stub.js");
+const {run_test, noop} = require("./lib/test.js");
 
 /*
     The previous example was a bit extreme.  Generally we just

@@ -1,13 +1,13 @@
 import $ from "jquery";
 
-import * as compose_ui from "./compose_ui";
-import * as condense from "./condense";
-import * as message_lists from "./message_lists";
-import * as message_viewport from "./message_viewport";
-import * as resize from "./resize";
-import * as scroll_bar from "./scroll_bar";
-import * as sidebar_ui from "./sidebar_ui";
-import * as util from "./util";
+import * as compose_ui from "./compose_ui.ts";
+import * as condense from "./condense.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as resize from "./resize.ts";
+import * as scroll_bar from "./scroll_bar.ts";
+import * as sidebar_ui from "./sidebar_ui.ts";
+import * as util from "./util.ts";
 
 export let _old_width = $(window).width();
 

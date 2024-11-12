@@ -1,12 +1,12 @@
 import $ from "jquery";
 
-import type {InputPillConfig} from "./input_pill";
-import * as input_pill from "./input_pill";
-import type {User} from "./people";
-import * as people from "./people";
-import type {UserPill, UserPillWidget} from "./user_pill";
-import * as user_pill from "./user_pill";
-import * as util from "./util";
+import type {InputPillConfig} from "./input_pill.ts";
+import * as input_pill from "./input_pill.ts";
+import type {User} from "./people.ts";
+import * as people from "./people.ts";
+import type {UserPill, UserPillWidget} from "./user_pill.ts";
+import * as user_pill from "./user_pill.ts";
+import * as util from "./util.ts";
 
 export let widget: UserPillWidget;
 

@@ -4,20 +4,20 @@ import render_keyboard_shortcut from "../templates/keyboard_shortcuts.hbs";
 import render_markdown_help from "../templates/markdown_help.hbs";
 import render_search_operator from "../templates/search_operators.hbs";
 
-import * as browser_history from "./browser_history";
-import * as common from "./common";
-import * as components from "./components";
-import type {Toggle} from "./components";
-import {$t, $t_html} from "./i18n";
-import * as keydown_util from "./keydown_util";
-import * as markdown from "./markdown";
-import * as overlays from "./overlays";
-import {page_params} from "./page_params";
-import {postprocess_content} from "./postprocess_content";
-import * as rendered_markdown from "./rendered_markdown";
-import * as scroll_util from "./scroll_util";
-import {current_user} from "./state_data";
-import {user_settings} from "./user_settings";
+import * as browser_history from "./browser_history.ts";
+import * as common from "./common.ts";
+import * as components from "./components.ts";
+import type {Toggle} from "./components.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
+import * as markdown from "./markdown.ts";
+import * as overlays from "./overlays.ts";
+import {page_params} from "./page_params.ts";
+import {postprocess_content} from "./postprocess_content.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
+import * as scroll_util from "./scroll_util.ts";
+import {current_user} from "./state_data.ts";
+import {user_settings} from "./user_settings.ts";
 
 // Make it explicit that our toggler is undefined until
 // set_up_toggler is called.

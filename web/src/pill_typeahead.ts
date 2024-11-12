@@ -1,19 +1,19 @@
 import assert from "minimalistic-assert";
 
-import * as blueslip from "./blueslip";
-import {Typeahead} from "./bootstrap_typeahead";
-import type {TypeaheadInputElement} from "./bootstrap_typeahead";
-import * as people from "./people";
-import type {User} from "./people";
-import * as stream_pill from "./stream_pill";
-import type {StreamPillData, StreamPillWidget} from "./stream_pill";
-import * as typeahead_helper from "./typeahead_helper";
-import type {CombinedPillContainer, GroupSettingPillContainer} from "./typeahead_helper";
-import * as user_group_pill from "./user_group_pill";
-import type {UserGroupPillData} from "./user_group_pill";
-import type {UserGroup} from "./user_groups";
-import * as user_pill from "./user_pill";
-import type {UserPillData, UserPillWidget} from "./user_pill";
+import * as blueslip from "./blueslip.ts";
+import {Typeahead} from "./bootstrap_typeahead.ts";
+import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
+import * as people from "./people.ts";
+import type {User} from "./people.ts";
+import * as stream_pill from "./stream_pill.ts";
+import type {StreamPillData, StreamPillWidget} from "./stream_pill.ts";
+import * as typeahead_helper from "./typeahead_helper.ts";
+import type {CombinedPillContainer, GroupSettingPillContainer} from "./typeahead_helper.ts";
+import * as user_group_pill from "./user_group_pill.ts";
+import type {UserGroupPillData} from "./user_group_pill.ts";
+import type {UserGroup} from "./user_groups.ts";
+import * as user_pill from "./user_pill.ts";
+import type {UserPillData, UserPillWidget} from "./user_pill.ts";
 
 function person_matcher(query: string, item: UserPillData): boolean {
     return (

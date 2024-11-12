@@ -6,16 +6,16 @@ import * as tippy from "tippy.js";
 import render_drafts_tooltip from "../templates/drafts_tooltip.hbs";
 import render_narrow_to_compose_recipients_tooltip from "../templates/narrow_to_compose_recipients_tooltip.hbs";
 
-import * as compose_recipient from "./compose_recipient";
-import * as compose_state from "./compose_state";
-import * as compose_validate from "./compose_validate";
-import {$t} from "./i18n";
-import {pick_empty_narrow_banner} from "./narrow_banner";
-import * as narrow_state from "./narrow_state";
-import * as popover_menus from "./popover_menus";
-import {EXTRA_LONG_HOVER_DELAY, INSTANT_HOVER_DELAY, LONG_HOVER_DELAY} from "./tippyjs";
-import {parse_html} from "./ui_util";
-import {user_settings} from "./user_settings";
+import * as compose_recipient from "./compose_recipient.ts";
+import * as compose_state from "./compose_state.ts";
+import * as compose_validate from "./compose_validate.ts";
+import {$t} from "./i18n.ts";
+import {pick_empty_narrow_banner} from "./narrow_banner.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as popover_menus from "./popover_menus.ts";
+import {EXTRA_LONG_HOVER_DELAY, INSTANT_HOVER_DELAY, LONG_HOVER_DELAY} from "./tippyjs.ts";
+import {parse_html} from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
 
 export function initialize(): void {
     tippy.delegate("body", {

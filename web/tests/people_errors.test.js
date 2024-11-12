@@ -2,9 +2,9 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
+const {mock_esm, zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
+const blueslip = require("./lib/zblueslip.js");
 
 const reload_state = mock_esm("../src/reload_state", {
     is_in_progress: () => false,

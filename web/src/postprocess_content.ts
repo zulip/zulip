@@ -1,7 +1,7 @@
-import {$t} from "./i18n";
-import * as thumbnail from "./thumbnail";
-import {user_settings} from "./user_settings";
-import * as util from "./util";
+import {$t} from "./i18n.ts";
+import * as thumbnail from "./thumbnail.ts";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 let inertDocument: Document | undefined;
 

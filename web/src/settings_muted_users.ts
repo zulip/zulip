@@ -2,10 +2,10 @@ import $ from "jquery";
 
 import render_muted_user_ui_row from "../templates/muted_user_ui_row.hbs";
 
-import * as ListWidget from "./list_widget";
-import * as muted_users from "./muted_users";
-import * as people from "./people";
-import * as scroll_util from "./scroll_util";
+import * as ListWidget from "./list_widget.ts";
+import * as muted_users from "./muted_users.ts";
+import * as people from "./people.ts";
+import * as scroll_util from "./scroll_util.ts";
 
 export let loaded = false;
 

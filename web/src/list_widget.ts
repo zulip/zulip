@@ -4,8 +4,8 @@ import assert from "minimalistic-assert";
 import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.hbs";
 import render_empty_list_widget_for_table from "../templates/empty_list_widget_for_table.hbs";
 
-import * as blueslip from "./blueslip";
-import * as scroll_util from "./scroll_util";
+import * as blueslip from "./blueslip.ts";
+import * as scroll_util from "./scroll_util.ts";
 
 type SortingFunction<T> = (a: T, b: T) => number;
 

@@ -1,5 +1,5 @@
-import {$t} from "./i18n";
-import {realm} from "./state_data";
+import {$t} from "./i18n.ts";
+import {realm} from "./state_data.ts";
 
 export function version_display_string(): string {
     const version = realm.zulip_version;

@@ -2,11 +2,11 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {make_stub} = require("./lib/stub");
-const {run_test} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
-const $ = require("./lib/zjquery");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace.js");
+const {make_stub} = require("./lib/stub.js");
+const {run_test} = require("./lib/test.js");
+const blueslip = require("./lib/zblueslip.js");
+const $ = require("./lib/zjquery.js");
 
 // These unit tests for web/src/message_list.ts emphasize the model-ish
 // aspects of the MessageList class.  We have to stub out a few functions

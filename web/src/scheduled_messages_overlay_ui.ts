@@ -4,17 +4,17 @@ import assert from "minimalistic-assert";
 import render_scheduled_message from "../templates/scheduled_message.hbs";
 import render_scheduled_messages_overlay from "../templates/scheduled_messages_overlay.hbs";
 
-import * as browser_history from "./browser_history";
-import * as messages_overlay_ui from "./messages_overlay_ui";
-import * as overlays from "./overlays";
-import * as people from "./people";
-import * as scheduled_messages from "./scheduled_messages";
-import type {ScheduledMessage} from "./scheduled_messages";
-import * as scheduled_messages_ui from "./scheduled_messages_ui";
-import * as stream_color from "./stream_color";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import * as timerender from "./timerender";
+import * as browser_history from "./browser_history.ts";
+import * as messages_overlay_ui from "./messages_overlay_ui.ts";
+import * as overlays from "./overlays.ts";
+import * as people from "./people.ts";
+import * as scheduled_messages from "./scheduled_messages.ts";
+import type {ScheduledMessage} from "./scheduled_messages.ts";
+import * as scheduled_messages_ui from "./scheduled_messages_ui.ts";
+import * as stream_color from "./stream_color.ts";
+import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import * as timerender from "./timerender.ts";
 
 type ScheduledMessageRenderContext = ScheduledMessage &
     (

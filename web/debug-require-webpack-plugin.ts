@@ -64,7 +64,7 @@ export default class DebugRequirePlugin implements WebpackPluginInstance {
                     resolver.resolve(
                         {},
                         __dirname,
-                        "./debug-require",
+                        "./debug-require.js",
                         {},
                         (err?: Error | null, result?: string | false) => {
                             resolve(err ? false : result!);

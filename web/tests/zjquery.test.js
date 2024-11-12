@@ -2,8 +2,8 @@
 
 const assert = require("node:assert/strict");
 
-const {run_test} = require("./lib/test");
-const $ = require("./lib/zjquery");
+const {run_test} = require("./lib/test.js");
+const $ = require("./lib/zjquery.js");
 
 /*
 

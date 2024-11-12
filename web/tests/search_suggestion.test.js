@@ -2,9 +2,9 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test, noop} = require("./lib/test");
-const {page_params} = require("./lib/zpage_params");
+const {mock_esm, zrequire} = require("./lib/namespace.js");
+const {run_test, noop} = require("./lib/test.js");
+const {page_params} = require("./lib/zpage_params.js");
 
 const narrow_state = mock_esm("../src/narrow_state");
 const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");

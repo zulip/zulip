@@ -1,11 +1,11 @@
 import $ from "jquery";
 
-import * as channel from "./channel";
-import * as settings_data from "./settings_data";
-import {current_user, realm} from "./state_data";
-import * as ui_util from "./ui_util";
-import * as upload_widget from "./upload_widget";
-import type {UploadFunction} from "./upload_widget";
+import * as channel from "./channel.ts";
+import * as settings_data from "./settings_data.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as ui_util from "./ui_util.ts";
+import * as upload_widget from "./upload_widget.ts";
+import type {UploadFunction} from "./upload_widget.ts";
 
 export function build_realm_logo_widget(upload_function: UploadFunction, is_night: boolean): void {
     let logo_section_id = "#realm-day-logo-upload-widget";

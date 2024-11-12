@@ -1,5 +1,5 @@
-import * as message_feed_loading from "./message_feed_loading";
-import type {Message, RawMessage} from "./message_store";
+import * as message_feed_loading from "./message_feed_loading.ts";
+import type {Message, RawMessage} from "./message_store.ts";
 
 function max_id_for_messages(messages: (Message | RawMessage)[]): number {
     let max_id = 0;

@@ -2,12 +2,12 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import * as common from "../common";
-import {$t} from "../i18n";
-import {password_quality, password_warning} from "../password_quality";
-import * as settings_config from "../settings_config";
+import * as common from "../common.ts";
+import {$t} from "../i18n.ts";
+import {password_quality, password_warning} from "../password_quality.ts";
+import * as settings_config from "../settings_config.ts";
 
-import * as portico_modals from "./portico_modals";
+import * as portico_modals from "./portico_modals.ts";
 
 $(() => {
     // NB: this file is included on multiple pages.  In each context,

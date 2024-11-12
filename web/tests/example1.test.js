@@ -9,10 +9,10 @@
 // become clear as you keep reading.
 const assert = require("node:assert/strict");
 
-const {make_stream} = require("./lib/example_stream");
-const {make_user} = require("./lib/example_user");
-const {zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {make_stream} = require("./lib/example_stream.js");
+const {make_user} = require("./lib/example_user.js");
+const {zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
 
 // We will use our special zrequire helper to import the
 // Zulip code. We use zrequire instead of require,

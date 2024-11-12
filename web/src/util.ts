@@ -1,9 +1,9 @@
 import _ from "lodash";
 
-import * as blueslip from "./blueslip";
-import type {MatchedMessage, Message, RawMessage} from "./message_store";
-import type {UpdateMessageEvent} from "./types";
-import {user_settings} from "./user_settings";
+import * as blueslip from "./blueslip.ts";
+import type {MatchedMessage, Message, RawMessage} from "./message_store.ts";
+import type {UpdateMessageEvent} from "./types.ts";
+import {user_settings} from "./user_settings.ts";
 
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
 export function random_int(min: number, max: number): number {

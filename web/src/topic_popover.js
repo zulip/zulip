@@ -4,18 +4,18 @@ import $ from "jquery";
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_left_sidebar_topic_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_actions_popover.hbs";
 
-import * as confirm_dialog from "./confirm_dialog";
-import {$t_html} from "./i18n";
-import * as message_edit from "./message_edit";
-import * as popover_menus from "./popover_menus";
-import * as popover_menus_data from "./popover_menus_data";
-import * as starred_messages_ui from "./starred_messages_ui";
-import {realm} from "./state_data";
-import * as stream_popover from "./stream_popover";
-import * as ui_util from "./ui_util";
-import * as unread_ops from "./unread_ops";
-import * as user_topics from "./user_topics";
-import * as util from "./util";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import {$t_html} from "./i18n.ts";
+import * as message_edit from "./message_edit.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as popover_menus_data from "./popover_menus_data.ts";
+import * as starred_messages_ui from "./starred_messages_ui.ts";
+import {realm} from "./state_data.ts";
+import * as stream_popover from "./stream_popover.js";
+import * as ui_util from "./ui_util.ts";
+import * as unread_ops from "./unread_ops.ts";
+import * as user_topics from "./user_topics.ts";
+import * as util from "./util.ts";
 
 export function initialize() {
     popover_menus.register_popover_menu(

@@ -7,14 +7,14 @@ import render_settings_deactivation_user_modal from "../templates/confirm_dialog
 import render_settings_reactivation_bot_modal from "../templates/confirm_dialog/confirm_reactivate_bot.hbs";
 import render_settings_reactivation_user_modal from "../templates/confirm_dialog/confirm_reactivate_user.hbs";
 
-import * as bot_data from "./bot_data";
-import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
-import * as dialog_widget from "./dialog_widget";
-import {$t_html} from "./i18n";
-import * as people from "./people";
-import {invite_schema} from "./settings_invites";
-import {current_user, realm} from "./state_data";
+import * as bot_data from "./bot_data.ts";
+import * as channel from "./channel.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t_html} from "./i18n.ts";
+import * as people from "./people.ts";
+import {invite_schema} from "./settings_invites.ts";
+import {current_user, realm} from "./state_data.ts";
 
 export function confirm_deactivation(
     user_id: number,

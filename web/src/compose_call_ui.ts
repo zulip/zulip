@@ -1,15 +1,15 @@
 import $ from "jquery";
 import {z} from "zod";
 
-import * as channel from "./channel";
-import * as compose_call from "./compose_call";
-import {get_recipient_label} from "./compose_closed_ui";
-import * as compose_ui from "./compose_ui";
-import {$t, $t_html} from "./i18n";
-import * as rows from "./rows";
-import {current_user, realm} from "./state_data";
-import * as ui_report from "./ui_report";
-import * as util from "./util";
+import * as channel from "./channel.ts";
+import * as compose_call from "./compose_call.ts";
+import {get_recipient_label} from "./compose_closed_ui.ts";
+import * as compose_ui from "./compose_ui.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as rows from "./rows.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as ui_report from "./ui_report.ts";
+import * as util from "./util.ts";
 
 const call_response_schema = z.object({
     msg: z.string(),

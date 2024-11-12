@@ -1,8 +1,8 @@
 import $ from "jquery";
 
-import * as blueslip from "./blueslip";
-import * as hash_parser from "./hash_parser";
-import * as keydown_util from "./keydown_util";
+import * as blueslip from "./blueslip.ts";
+import * as hash_parser from "./hash_parser.ts";
+import * as keydown_util from "./keydown_util.ts";
 
 // Add functions to this that have no non-trivial
 // dependencies other than jQuery.

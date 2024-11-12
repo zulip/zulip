@@ -1,7 +1,7 @@
 "use strict";
 
-const {noop} = require("./test");
-const $ = require("./zjquery");
+const {noop} = require("./test.js");
+const $ = require("./zjquery.js");
 
 let users_matching_view = [];
 exports.buddy_list_add_user_matching_view = (user_id, $stub) => {

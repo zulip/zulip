@@ -8,12 +8,12 @@ const {
     buddy_list_add_user_matching_view,
     buddy_list_add_other_user,
     stub_buddy_list_elements,
-} = require("./lib/buddy_list");
-const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
-const {run_test, noop} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
-const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+} = require("./lib/buddy_list.js");
+const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.js");
+const {run_test, noop} = require("./lib/test.js");
+const blueslip = require("./lib/zblueslip.js");
+const $ = require("./lib/zjquery.js");
+const {page_params} = require("./lib/zpage_params.js");
 
 const $window_stub = $.create("window-stub");
 set_global("to_$", () => $window_stub);

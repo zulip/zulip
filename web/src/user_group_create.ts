@@ -1,17 +1,17 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import * as channel from "./channel";
-import {$t, $t_html} from "./i18n";
-import * as keydown_util from "./keydown_util";
-import * as loading from "./loading";
-import * as settings_components from "./settings_components";
-import type {GroupSettingPillContainer} from "./typeahead_helper";
-import * as ui_report from "./ui_report";
-import * as user_group_components from "./user_group_components";
-import * as user_group_create_members from "./user_group_create_members";
-import * as user_group_create_members_data from "./user_group_create_members_data";
-import * as user_groups from "./user_groups";
+import * as channel from "./channel.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
+import * as loading from "./loading.ts";
+import * as settings_components from "./settings_components.ts";
+import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
+import * as ui_report from "./ui_report.ts";
+import * as user_group_components from "./user_group_components.ts";
+import * as user_group_create_members from "./user_group_create_members.ts";
+import * as user_group_create_members_data from "./user_group_create_members_data.ts";
+import * as user_groups from "./user_groups.ts";
 
 let created_group_name: string | undefined;
 

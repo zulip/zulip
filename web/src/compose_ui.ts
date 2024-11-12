@@ -12,23 +12,23 @@ import {
 } from "text-field-edit";
 import {z} from "zod";
 
-import type {Typeahead} from "./bootstrap_typeahead";
-import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
-import * as channel from "./channel";
-import * as common from "./common";
-import type {TypeaheadSuggestion} from "./composebox_typeahead";
-import {$t, $t_html} from "./i18n";
-import * as loading from "./loading";
-import * as markdown from "./markdown";
-import * as people from "./people";
-import * as popover_menus from "./popover_menus";
-import {postprocess_content} from "./postprocess_content";
-import * as rendered_markdown from "./rendered_markdown";
-import * as rtl from "./rtl";
-import {current_user} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as user_status from "./user_status";
-import * as util from "./util";
+import type {Typeahead} from "./bootstrap_typeahead.ts";
+import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
+import * as channel from "./channel.ts";
+import * as common from "./common.ts";
+import type {TypeaheadSuggestion} from "./composebox_typeahead.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as loading from "./loading.ts";
+import * as markdown from "./markdown.ts";
+import * as people from "./people.ts";
+import * as popover_menus from "./popover_menus.ts";
+import {postprocess_content} from "./postprocess_content.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
+import * as rtl from "./rtl.ts";
+import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as user_status from "./user_status.ts";
+import * as util from "./util.ts";
 
 export const DEFAULT_COMPOSE_PLACEHOLDER = $t({defaultMessage: "Compose your message here"});
 

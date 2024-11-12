@@ -4,8 +4,8 @@ const assert = require("node:assert/strict");
 
 const url_template_lib = require("url-template");
 
-const {zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
 
 const markdown = zrequire("markdown");
 const linkifiers = zrequire("linkifiers");

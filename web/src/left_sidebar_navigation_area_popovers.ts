@@ -9,17 +9,17 @@ import render_left_sidebar_inbox_popover from "../templates/popovers/left_sideba
 import render_left_sidebar_recent_view_popover from "../templates/popovers/left_sidebar/left_sidebar_recent_view_popover.hbs";
 import render_left_sidebar_starred_messages_popover from "../templates/popovers/left_sidebar/left_sidebar_starred_messages_popover.hbs";
 
-import * as channel from "./channel";
-import * as drafts from "./drafts";
-import * as popover_menus from "./popover_menus";
-import * as popovers from "./popovers";
-import * as scheduled_messages from "./scheduled_messages";
-import * as settings_config from "./settings_config";
-import * as starred_messages from "./starred_messages";
-import * as starred_messages_ui from "./starred_messages_ui";
-import * as ui_util from "./ui_util";
-import * as unread_ops from "./unread_ops";
-import {user_settings} from "./user_settings";
+import * as channel from "./channel.ts";
+import * as drafts from "./drafts.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as popovers from "./popovers.ts";
+import * as scheduled_messages from "./scheduled_messages.ts";
+import * as settings_config from "./settings_config.ts";
+import * as starred_messages from "./starred_messages.ts";
+import * as starred_messages_ui from "./starred_messages_ui.ts";
+import * as ui_util from "./ui_util.ts";
+import * as unread_ops from "./unread_ops.ts";
+import {user_settings} from "./user_settings.ts";
 
 function common_click_handlers(): void {
     $("body").on("click", ".set-home-view", (e) => {

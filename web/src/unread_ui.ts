@@ -5,14 +5,14 @@ import render_mark_as_read_disabled_banner from "../templates/unread_banner/mark
 import render_mark_as_read_only_in_conversation_view from "../templates/unread_banner/mark_as_read_only_in_conversation_view.hbs";
 import render_mark_as_read_turned_off_banner from "../templates/unread_banner/mark_as_read_turned_off_banner.hbs";
 
-import * as message_lists from "./message_lists";
-import type {Message} from "./message_store";
-import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
-import {web_mark_read_on_scroll_policy_values} from "./settings_config";
-import * as unread from "./unread";
-import type {FullUnreadCountsData} from "./unread";
-import {user_settings} from "./user_settings";
+import * as message_lists from "./message_lists.ts";
+import type {Message} from "./message_store.ts";
+import * as narrow_state from "./narrow_state.ts";
+import {page_params} from "./page_params.ts";
+import {web_mark_read_on_scroll_policy_values} from "./settings_config.ts";
+import * as unread from "./unread.ts";
+import type {FullUnreadCountsData} from "./unread.ts";
+import {user_settings} from "./user_settings.ts";
 
 let user_closed_unread_banner = false;
 

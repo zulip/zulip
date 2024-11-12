@@ -2,10 +2,10 @@ import $ from "jquery";
 
 import render_scheduled_messages_indicator from "../templates/scheduled_messages_indicator.hbs";
 
-import * as narrow_state from "./narrow_state";
-import * as scheduled_messages from "./scheduled_messages";
-import type {ScheduledMessage} from "./scheduled_messages";
-import * as util from "./util";
+import * as narrow_state from "./narrow_state.ts";
+import * as scheduled_messages from "./scheduled_messages.ts";
+import type {ScheduledMessage} from "./scheduled_messages.ts";
+import * as util from "./util.ts";
 
 function get_scheduled_messages_matching_narrow(): ScheduledMessage[] {
     const scheduled_messages_list = [...scheduled_messages.scheduled_messages_data.values()];

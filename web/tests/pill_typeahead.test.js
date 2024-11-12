@@ -2,11 +2,11 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire, mock_esm} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
-const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {zrequire, mock_esm} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
+const blueslip = require("./lib/zblueslip.js");
+const $ = require("./lib/zjquery.js");
+const {page_params} = require("./lib/zpage_params.js");
 
 const noop = function () {};
 

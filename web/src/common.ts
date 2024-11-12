@@ -1,8 +1,8 @@
 import $ from "jquery";
 import * as tippy from "tippy.js";
 
-import {$t} from "./i18n";
-import * as util from "./util";
+import {$t} from "./i18n.ts";
+import * as util from "./util.ts";
 
 export const status_classes = "alert-error alert-success alert-info alert-warning alert-loading";
 

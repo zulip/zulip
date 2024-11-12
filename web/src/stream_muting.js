@@ -1,8 +1,8 @@
-import * as message_lists from "./message_lists";
-import * as settings_notifications from "./settings_notifications";
-import * as stream_edit from "./stream_edit";
-import * as stream_list from "./stream_list";
-import * as unread_ui from "./unread_ui";
+import * as message_lists from "./message_lists.ts";
+import * as settings_notifications from "./settings_notifications.ts";
+import * as stream_edit from "./stream_edit.ts";
+import * as stream_list from "./stream_list.ts";
+import * as unread_ui from "./unread_ui.ts";
 
 export function update_is_muted(sub, value) {
     sub.is_muted = value;

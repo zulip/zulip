@@ -2,12 +2,12 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_banners} = require("./lib/compose_banner");
-const {$t} = require("./lib/i18n");
-const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test, noop} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
-const $ = require("./lib/zjquery");
+const {mock_banners} = require("./lib/compose_banner.js");
+const {$t} = require("./lib/i18n.js");
+const {mock_esm, zrequire} = require("./lib/namespace.js");
+const {run_test, noop} = require("./lib/test.js");
+const blueslip = require("./lib/zblueslip.js");
+const $ = require("./lib/zjquery.js");
 
 const compose_banner = zrequire("compose_banner");
 const compose_pm_pill = zrequire("compose_pm_pill");

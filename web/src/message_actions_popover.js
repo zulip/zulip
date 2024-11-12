@@ -4,22 +4,22 @@ import assert from "minimalistic-assert";
 
 import render_message_actions_popover from "../templates/popovers/message_actions_popover.hbs";
 
-import * as blueslip from "./blueslip";
-import * as compose_reply from "./compose_reply";
-import * as condense from "./condense";
-import {show_copied_confirmation} from "./copied_tooltip";
-import * as emoji_picker from "./emoji_picker";
-import * as message_edit from "./message_edit";
-import * as message_lists from "./message_lists";
-import * as message_viewport from "./message_viewport";
-import * as popover_menus from "./popover_menus";
-import * as popover_menus_data from "./popover_menus_data";
-import * as popovers from "./popovers";
-import * as read_receipts from "./read_receipts";
-import * as rows from "./rows";
-import * as stream_popover from "./stream_popover";
-import {parse_html} from "./ui_util";
-import * as unread_ops from "./unread_ops";
+import * as blueslip from "./blueslip.ts";
+import * as compose_reply from "./compose_reply.ts";
+import * as condense from "./condense.ts";
+import {show_copied_confirmation} from "./copied_tooltip.ts";
+import * as emoji_picker from "./emoji_picker.ts";
+import * as message_edit from "./message_edit.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as popover_menus_data from "./popover_menus_data.ts";
+import * as popovers from "./popovers.ts";
+import * as read_receipts from "./read_receipts.ts";
+import * as rows from "./rows.ts";
+import * as stream_popover from "./stream_popover.js";
+import {parse_html} from "./ui_util.ts";
+import * as unread_ops from "./unread_ops.ts";
 
 let message_actions_popover_keyboard_toggle = false;
 

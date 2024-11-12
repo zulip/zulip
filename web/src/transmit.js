@@ -1,12 +1,12 @@
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as people from "./people";
-import * as reload from "./reload";
-import * as reload_state from "./reload_state";
-import * as sent_messages from "./sent_messages";
-import * as server_events from "./server_events";
-import {current_user} from "./state_data";
-import * as stream_data from "./stream_data";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as people from "./people.ts";
+import * as reload from "./reload.ts";
+import * as reload_state from "./reload_state.ts";
+import * as sent_messages from "./sent_messages.ts";
+import * as server_events from "./server_events.js";
+import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 
 export function send_message(request, on_success, error) {
     if (!request.resend) {

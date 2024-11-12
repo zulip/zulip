@@ -5,8 +5,8 @@ const assert = require("node:assert/strict");
 const _ = require("lodash");
 const MockDate = require("mockdate");
 
-const {set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {set_global, zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
 
 const blueslip = zrequire("blueslip");
 const {initialize_user_settings} = zrequire("user_settings");

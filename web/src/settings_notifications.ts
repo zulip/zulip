@@ -5,31 +5,31 @@ import {z} from "zod";
 import render_confirm_disable_all_notifications from "../templates/confirm_dialog/confirm_disable_all_notifications.hbs";
 import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.hbs";
 
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
-import {$t, $t_html} from "./i18n";
-import * as message_notifications from "./message_notifications";
-import {page_params} from "./page_params";
-import * as settings_components from "./settings_components";
-import * as settings_config from "./settings_config";
-import type {SettingsPanel} from "./settings_preferences";
-import * as settings_ui from "./settings_ui";
-import {realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as stream_settings_api from "./stream_settings_api";
-import * as stream_settings_data from "./stream_settings_data";
-import {stream_specific_notification_settings_schema} from "./stream_types";
-import * as sub_store from "./sub_store";
-import type {StreamSubscription} from "./sub_store";
-import * as ui_util from "./ui_util";
-import * as unread_ui from "./unread_ui";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as message_notifications from "./message_notifications.ts";
+import {page_params} from "./page_params.ts";
+import * as settings_components from "./settings_components.ts";
+import * as settings_config from "./settings_config.ts";
+import type {SettingsPanel} from "./settings_preferences.ts";
+import * as settings_ui from "./settings_ui.ts";
+import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_settings_api from "./stream_settings_api.ts";
+import * as stream_settings_data from "./stream_settings_data.ts";
+import {stream_specific_notification_settings_schema} from "./stream_types.ts";
+import * as sub_store from "./sub_store.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as ui_util from "./ui_util.ts";
+import * as unread_ui from "./unread_ui.ts";
 import {
     pm_notification_settings_schema,
     user_settings,
     user_settings_schema,
-} from "./user_settings";
-import * as util from "./util";
+} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 export let user_settings_panel: SettingsPanel | undefined;
 

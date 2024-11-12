@@ -9,7 +9,7 @@ import puppeteer from "puppeteer";
 import StackFrame from "stackframe";
 import StackTraceGPS from "stacktrace-gps";
 
-import {test_credentials} from "../../../var/puppeteer/test_credentials";
+import {test_credentials} from "../../../var/puppeteer/test_credentials.js";
 
 const root_dir = path.resolve(__dirname, "../../..");
 const puppeteer_dir = path.join(root_dir, "var/puppeteer");

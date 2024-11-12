@@ -6,14 +6,14 @@ import {z} from "zod";
 import render_read_receipts from "../templates/read_receipts.hbs";
 import render_read_receipts_modal from "../templates/read_receipts_modal.hbs";
 
-import * as channel from "./channel";
-import {$t, $t_html} from "./i18n";
-import * as loading from "./loading";
-import * as message_store from "./message_store";
-import * as modals from "./modals";
-import * as people from "./people";
-import * as ui_report from "./ui_report";
-import * as util from "./util";
+import * as channel from "./channel.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as loading from "./loading.ts";
+import * as message_store from "./message_store.ts";
+import * as modals from "./modals.ts";
+import * as people from "./people.ts";
+import * as ui_report from "./ui_report.ts";
+import * as util from "./util.ts";
 
 const read_receipts_api_response_schema = z.object({
     user_ids: z.array(z.number()),

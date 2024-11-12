@@ -1,14 +1,14 @@
 import {z} from "zod";
 
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import type {MessageList} from "./message_list";
-import * as message_store from "./message_store";
-import type {Message} from "./message_store";
-import type {PollWidgetOutboundData} from "./poll_widget";
-import {todo_widget_extra_data_schema} from "./todo_widget";
-import type {TodoWidgetOutboundData} from "./todo_widget";
-import * as widgetize from "./widgetize";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import type {MessageList} from "./message_list.ts";
+import * as message_store from "./message_store.ts";
+import type {Message} from "./message_store.ts";
+import type {PollWidgetOutboundData} from "./poll_widget.ts";
+import {todo_widget_extra_data_schema} from "./todo_widget.ts";
+import type {TodoWidgetOutboundData} from "./todo_widget.ts";
+import * as widgetize from "./widgetize.ts";
 
 export type Submessage = z.infer<typeof message_store.submessage_schema>;
 

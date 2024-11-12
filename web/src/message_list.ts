@@ -2,21 +2,21 @@ import autosize from "autosize";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import * as activity_ui from "./activity_ui";
-import * as blueslip from "./blueslip";
-import * as compose_tooltips from "./compose_tooltips";
-import type {MessageListData} from "./message_list_data";
-import * as message_list_tooltips from "./message_list_tooltips";
-import {MessageListView} from "./message_list_view";
-import * as message_lists from "./message_lists";
-import type {Message} from "./message_store";
-import * as narrow_banner from "./narrow_banner";
-import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
-import {web_mark_read_on_scroll_policy_values} from "./settings_config";
-import * as stream_data from "./stream_data";
-import * as unread from "./unread";
-import {user_settings} from "./user_settings";
+import * as activity_ui from "./activity_ui.ts";
+import * as blueslip from "./blueslip.ts";
+import * as compose_tooltips from "./compose_tooltips.ts";
+import type {MessageListData} from "./message_list_data.ts";
+import * as message_list_tooltips from "./message_list_tooltips.ts";
+import {MessageListView} from "./message_list_view.ts";
+import * as message_lists from "./message_lists.ts";
+import type {Message} from "./message_store.ts";
+import * as narrow_banner from "./narrow_banner.ts";
+import * as narrow_state from "./narrow_state.ts";
+import {page_params} from "./page_params.ts";
+import {web_mark_read_on_scroll_policy_values} from "./settings_config.ts";
+import * as stream_data from "./stream_data.ts";
+import * as unread from "./unread.ts";
+import {user_settings} from "./user_settings.ts";
 
 export type RenderInfo = {need_user_to_scroll: boolean};
 

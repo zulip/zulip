@@ -1,7 +1,7 @@
 // We only use jquery for parsing.
 import $ from "jquery";
 
-import type {Message} from "./message_store";
+import type {Message} from "./message_store.ts";
 
 // We need to check if the message content contains the specified HTML
 // elements.  We wrap the message.content in a <div>; this is

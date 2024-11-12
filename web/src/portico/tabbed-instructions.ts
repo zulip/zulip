@@ -1,8 +1,8 @@
 import $ from "jquery";
 
-import * as blueslip from "../blueslip";
-import * as common from "../common";
-import * as util from "../util";
+import * as blueslip from "../blueslip.ts";
+import * as common from "../common.ts";
+import * as util from "../util.ts";
 
 export type UserOS = "android" | "ios" | "mac" | "windows" | "linux";
 

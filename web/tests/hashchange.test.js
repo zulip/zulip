@@ -2,10 +2,10 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
-const $ = require("./lib/zjquery");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
+const blueslip = require("./lib/zblueslip.js");
+const $ = require("./lib/zjquery.js");
 
 let $window_stub;
 set_global("to_$", () => $window_stub);

@@ -1,25 +1,25 @@
 import $ from "jquery";
 import type * as tippy from "tippy.js";
 
-import * as activity_ui from "./activity_ui";
-import * as compose_actions from "./compose_actions";
-import * as compose_recipient from "./compose_recipient";
-import * as compose_state from "./compose_state";
-import * as dropdown_widget from "./dropdown_widget";
-import {$t} from "./i18n";
-import * as message_lists from "./message_lists";
-import * as message_view_header from "./message_view_header";
-import * as message_viewport from "./message_viewport";
-import * as modals from "./modals";
-import * as narrow_state from "./narrow_state";
-import * as narrow_title from "./narrow_title";
-import * as overlays from "./overlays";
-import * as pm_list from "./pm_list";
-import * as popovers from "./popovers";
-import * as resize from "./resize";
-import * as sidebar_ui from "./sidebar_ui";
-import * as stream_list from "./stream_list";
-import * as unread_ui from "./unread_ui";
+import * as activity_ui from "./activity_ui.ts";
+import * as compose_actions from "./compose_actions.ts";
+import * as compose_recipient from "./compose_recipient.ts";
+import * as compose_state from "./compose_state.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
+import {$t} from "./i18n.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_view_header from "./message_view_header.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as modals from "./modals.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as narrow_title from "./narrow_title.ts";
+import * as overlays from "./overlays.ts";
+import * as pm_list from "./pm_list.ts";
+import * as popovers from "./popovers.ts";
+import * as resize from "./resize.ts";
+import * as sidebar_ui from "./sidebar_ui.ts";
+import * as stream_list from "./stream_list.ts";
+import * as unread_ui from "./unread_ui.ts";
 
 export const FILTERS = {
     ALL_TOPICS: "all_topics",

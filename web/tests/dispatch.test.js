@@ -2,13 +2,13 @@
 
 const assert = require("node:assert/strict");
 
-const events = require("./lib/events");
-const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
-const {make_stub} = require("./lib/stub");
-const {run_test, noop} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
-const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const events = require("./lib/events.js");
+const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.js");
+const {make_stub} = require("./lib/stub.js");
+const {run_test, noop} = require("./lib/test.js");
+const blueslip = require("./lib/zblueslip.js");
+const $ = require("./lib/zjquery.js");
+const {page_params} = require("./lib/zpage_params.js");
 
 const event_fixtures = events.fixtures;
 const test_message = events.test_message;

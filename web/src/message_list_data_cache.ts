@@ -1,6 +1,6 @@
-import * as all_messages_data from "./all_messages_data";
-import type {Filter} from "./filter";
-import type {MessageListData} from "./message_list_data";
+import * as all_messages_data from "./all_messages_data.ts";
+import type {Filter} from "./filter.ts";
+import type {MessageListData} from "./message_list_data.ts";
 
 // LRU cache for message list data.
 //

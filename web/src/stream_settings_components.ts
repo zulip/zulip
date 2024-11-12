@@ -6,22 +6,22 @@ import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_selected_stream_title from "../templates/stream_settings/selected_stream_title.hbs";
 
-import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
-import * as dropdown_widget from "./dropdown_widget";
-import type {DropdownWidget} from "./dropdown_widget";
-import * as hash_util from "./hash_util";
-import {$t, $t_html} from "./i18n";
-import * as loading from "./loading";
-import * as overlays from "./overlays";
-import * as peer_data from "./peer_data";
-import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
-import {current_user} from "./state_data";
-import * as stream_ui_updates from "./stream_ui_updates";
-import type {StreamSubscription} from "./sub_store";
-import * as ui_report from "./ui_report";
-import * as user_groups from "./user_groups";
+import * as channel from "./channel.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
+import type {DropdownWidget} from "./dropdown_widget.ts";
+import * as hash_util from "./hash_util.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as loading from "./loading.ts";
+import * as overlays from "./overlays.ts";
+import * as peer_data from "./peer_data.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import {current_user} from "./state_data.ts";
+import * as stream_ui_updates from "./stream_ui_updates.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as ui_report from "./ui_report.ts";
+import * as user_groups from "./user_groups.ts";
 
 export function set_right_panel_title(sub: StreamSubscription): void {
     let title_icon_color = "#333333";

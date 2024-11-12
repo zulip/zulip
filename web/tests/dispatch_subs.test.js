@@ -2,11 +2,11 @@
 
 const assert = require("node:assert/strict");
 
-const events = require("./lib/events");
-const {mock_esm, zrequire} = require("./lib/namespace");
-const {make_stub} = require("./lib/stub");
-const {run_test, noop} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
+const events = require("./lib/events.js");
+const {mock_esm, zrequire} = require("./lib/namespace.js");
+const {make_stub} = require("./lib/stub.js");
+const {run_test, noop} = require("./lib/test.js");
+const blueslip = require("./lib/zblueslip.js");
 
 const event_fixtures = events.fixtures;
 const test_user = events.test_user;

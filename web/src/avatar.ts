@@ -2,13 +2,13 @@ import $ from "jquery";
 
 import render_confirm_delete_user_avatar from "../templates/confirm_dialog/confirm_delete_user_avatar.hbs";
 
-import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
-import {$t_html} from "./i18n";
-import * as settings_data from "./settings_data";
-import {current_user, realm} from "./state_data";
-import * as upload_widget from "./upload_widget";
-import type {UploadFunction, UploadWidget} from "./upload_widget";
+import * as channel from "./channel.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import {$t_html} from "./i18n.ts";
+import * as settings_data from "./settings_data.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as upload_widget from "./upload_widget.ts";
+import type {UploadFunction, UploadWidget} from "./upload_widget.ts";
 
 export function build_bot_create_widget(): UploadWidget {
     // We have to do strange gyrations with the file input to clear it,

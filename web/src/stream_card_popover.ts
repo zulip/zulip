@@ -3,13 +3,13 @@ import assert from "minimalistic-assert";
 
 import render_stream_card_popover from "../templates/popovers/stream_card_popover.hbs";
 
-import * as browser_history from "./browser_history";
-import * as hash_util from "./hash_util";
-import * as modals from "./modals";
-import * as popover_menus from "./popover_menus";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import * as ui_util from "./ui_util";
+import * as browser_history from "./browser_history.ts";
+import * as hash_util from "./hash_util.ts";
+import * as modals from "./modals.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import * as ui_util from "./ui_util.ts";
 
 let stream_id: number | undefined;
 

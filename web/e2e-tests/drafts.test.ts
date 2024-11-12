@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
 
-import * as common from "./lib/common";
+import * as common from "./lib/common.ts";
 
 async function wait_for_drafts_to_disappear(page: Page): Promise<void> {
     await page.waitForSelector("#draft_overlay.show", {hidden: true});

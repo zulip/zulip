@@ -1,5 +1,5 @@
-import type {InputPillConfig, InputPillContainer} from "./input_pill";
-import * as input_pill from "./input_pill";
+import type {InputPillConfig, InputPillContainer} from "./input_pill.ts";
+import * as input_pill from "./input_pill.ts";
 
 type EmailPill = {
     type: "email";

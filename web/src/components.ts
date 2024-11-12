@@ -1,7 +1,7 @@
 import $ from "jquery";
 
-import * as blueslip from "./blueslip";
-import * as keydown_util from "./keydown_util";
+import * as blueslip from "./blueslip.ts";
+import * as keydown_util from "./keydown_util.ts";
 
 /* USAGE:
     Toggle x = components.toggle({

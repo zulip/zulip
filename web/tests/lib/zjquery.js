@@ -8,8 +8,8 @@ const assert = require("node:assert/strict");
     and then subsequent calls to $("#foo") get the
     same instance.
 */
-const FakeElement = require("./zjquery_element");
-const FakeEvent = require("./zjquery_event");
+const FakeElement = require("./zjquery_element.js");
+const FakeEvent = require("./zjquery_event.js");
 
 function verify_selector_for_zulip(selector) {
     const is_valid =

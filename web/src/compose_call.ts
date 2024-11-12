@@ -1,4 +1,4 @@
-import {realm} from "./state_data";
+import {realm} from "./state_data.ts";
 
 export const zoom_token_callbacks = new Map();
 export const video_call_xhrs = new Map<string, JQuery.jqXHR<unknown>>();

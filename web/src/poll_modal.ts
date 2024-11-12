@@ -3,7 +3,7 @@ import SortableJS from "sortablejs";
 
 import render_poll_modal_option from "../templates/poll_modal_option.hbs";
 
-import * as util from "./util";
+import * as util from "./util.ts";
 
 function create_option_row($last_option_row_input: JQuery): void {
     const row_html = render_poll_modal_option();

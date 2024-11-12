@@ -6,9 +6,9 @@ const path = require("node:path");
 
 const {JSDOM} = require("jsdom");
 
-const {mock_cjs, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
-const $ = require("./lib/zjquery");
+const {mock_cjs, zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
+const $ = require("./lib/zjquery.js");
 
 const template = fs.readFileSync(
     path.resolve(__dirname, "../../templates/corporate/support/realm_details.html"),

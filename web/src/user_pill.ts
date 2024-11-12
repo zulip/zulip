@@ -2,20 +2,20 @@ import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
 
-import * as blueslip from "./blueslip";
-import type {EmojiRenderingDetails} from "./emoji";
-import * as group_permission_settings from "./group_permission_settings";
-import type {InputPillConfig, InputPillContainer} from "./input_pill";
-import * as input_pill from "./input_pill";
-import type {User} from "./people";
-import * as people from "./people";
-import {realm} from "./state_data";
+import * as blueslip from "./blueslip.ts";
+import type {EmojiRenderingDetails} from "./emoji.ts";
+import * as group_permission_settings from "./group_permission_settings.ts";
+import type {InputPillConfig, InputPillContainer} from "./input_pill.ts";
+import * as input_pill from "./input_pill.ts";
+import type {User} from "./people.ts";
+import * as people from "./people.ts";
+import {realm} from "./state_data.ts";
 import type {
     CombinedPill,
     CombinedPillContainer,
     GroupSettingPillContainer,
-} from "./typeahead_helper";
-import * as user_status from "./user_status";
+} from "./typeahead_helper.ts";
+import * as user_status from "./user_status.ts";
 
 // This will be used for pills for things like composing
 // direct messages or adding users to a stream/group.
