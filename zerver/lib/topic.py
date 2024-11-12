@@ -321,3 +321,9 @@ def participants_for_topic(realm_id: int, recipient_id: int, topic_name: str) ->
         ).values_list("id", flat=True)
     )
     return participants
+
+
+def maybe_rename_general_chat_to_empty_topic(topic_name: str) -> str:
+    if topic_name == Message.EMPTY_TOPIC_FALLBACK_NAME:
+        topic_name = ""
+    return topic_name
