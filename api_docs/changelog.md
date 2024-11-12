@@ -34,6 +34,11 @@ format used by the Zulip server that they are interacting with.
   the `subject` field in the `message` event type will have the value
   `"general chat"` replacing `""` for channel messages.
 
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): Added `allow_empty_topic_name`
+  boolean parameter to decide whether the topic names in the fetched messages
+  can be empty strings.
+
 **Feature level 330**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):

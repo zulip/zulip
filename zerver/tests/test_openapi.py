@@ -790,7 +790,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
 
     def test_generate_and_render_curl_with_array_example(self) -> None:
         generated_curl_example = self.curl_example(
-            "/messages", "GET", exclude=["use_first_unread_anchor", "message_ids"]
+            "/messages",
+            "GET",
+            exclude=["use_first_unread_anchor", "message_ids", "allow_empty_topic_name"],
         )
         expected_curl_example = [
             "```curl",
@@ -866,7 +868,13 @@ class TestCurlExampleGeneration(ZulipTestCase):
         generated_curl_example = self.curl_example(
             "/messages",
             "GET",
-            exclude=["client_gravatar", "apply_markdown", "use_first_unread_anchor", "message_ids"],
+            exclude=[
+                "client_gravatar",
+                "apply_markdown",
+                "use_first_unread_anchor",
+                "message_ids",
+                "allow_empty_topic_name",
+            ],
         )
         expected_curl_example = [
             "```curl",

@@ -164,6 +164,7 @@ class MessageDict:
         *,
         apply_markdown: bool,
         client_gravatar: bool,
+        allow_empty_topic_name: bool,
         realm: Realm,
         user_recipient_id: int | None,
     ) -> None:
@@ -184,6 +185,7 @@ class MessageDict:
                 obj,
                 apply_markdown=apply_markdown,
                 client_gravatar=client_gravatar,
+                allow_empty_topic_name=allow_empty_topic_name,
                 skip_copy=True,
                 can_access_sender=can_access_sender,
                 realm_host=realm.host,
@@ -196,6 +198,7 @@ class MessageDict:
         *,
         apply_markdown: bool,
         client_gravatar: bool,
+        allow_empty_topic_name: bool,
         keep_rendered_content: bool = False,
         skip_copy: bool = False,
         can_access_sender: bool,
@@ -209,6 +212,15 @@ class MessageDict:
         """
         if not skip_copy:
             obj = copy.copy(obj)
+
+        # Compatibility code to change topic="" to topic=Message.EMPTY_TOPIC_FALLBACK_NAME
+        # for older clients with no support for empty topic name.
+        if (
+            obj["recipient_type"] == Recipient.STREAM
+            and obj["subject"] == ""
+            and not allow_empty_topic_name
+        ):
+            obj["subject"] = Message.EMPTY_TOPIC_FALLBACK_NAME
 
         if obj["sender_email_address_visibility"] != UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
             # If email address of the sender is only available to administrators,
@@ -247,6 +259,11 @@ class MessageDict:
         for item in obj.get("edit_history", []):
             if "prev_rendered_content_version" in item:
                 del item["prev_rendered_content_version"]
+            if not allow_empty_topic_name:
+                if "prev_topic" in item and item["prev_topic"] == "":
+                    item["prev_topic"] = Message.EMPTY_TOPIC_FALLBACK_NAME
+                if "topic" in item and item["topic"] == "":
+                    item["topic"] = Message.EMPTY_TOPIC_FALLBACK_NAME
 
         if not keep_rendered_content:
             del obj["rendered_content"]

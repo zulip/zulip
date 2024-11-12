@@ -1733,6 +1733,7 @@ class StreamMessagesTest(ZulipTestCase):
             [dct],
             apply_markdown=True,
             client_gravatar=False,
+            allow_empty_topic_name=True,
             realm=user_profile.realm,
             user_recipient_id=None,
         )

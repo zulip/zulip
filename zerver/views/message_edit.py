@@ -195,6 +195,7 @@ def json_fetch_raw_message(
     *,
     message_id: PathOnly[NonNegativeInt],
     apply_markdown: Json[bool] = True,
+    allow_empty_topic_name: Json[bool] = False,
 ) -> HttpResponse:
     if not maybe_user_profile.is_authenticated:
         realm = get_valid_realm_from_request(request)
@@ -224,6 +225,7 @@ def json_fetch_raw_message(
         apply_markdown=apply_markdown,
         client_gravatar=True,
         allow_edit_history=allow_edit_history,
+        allow_empty_topic_name=allow_empty_topic_name,
         user_profile=user_profile,
         realm=message.realm,
     )

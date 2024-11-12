@@ -6793,6 +6793,19 @@ paths:
                 items:
                   type: integer
               example: [1, 2, 3]
+        - name: allow_empty_topic_name
+          in: query
+          description: |
+            Whether the topic names (`subject` field, and `prev_topic`, `topic` in `edit_history` objects)
+            in the messages returned can be empty string.
+
+            If `false`, `"general chat"` is returned replacing `""` as the topic name.
+
+            **Changes**: New in Zulip 10.0 (feature level 331).
+          schema:
+            type: boolean
+            default: false
+          example: true
       responses:
         "200":
           description: Success.
@@ -8118,6 +8131,19 @@ paths:
             type: boolean
             default: true
           example: false
+        - name: allow_empty_topic_name
+          in: query
+          description: |
+            Whether the topic name (`subject` field, and `prev_topic`, `topic` in `edit_history` objects)
+            in the message returned can be empty string.
+
+            If `false`, `"general chat"` is returned replacing `""` as the topic name.
+
+            **Changes**: New in Zulip 10.0 (feature level 331).
+          schema:
+            type: boolean
+            default: false
+          example: true
       responses:
         "200":
           description: Success.
