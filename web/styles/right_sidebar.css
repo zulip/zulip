@@ -524,13 +524,38 @@ $user_status_emoji_width: 24px;
     }
 }
 
-.right-sidebar-shortcuts {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+.invite-user-shortcut {
     /* The margin top is calculated from a legacy 25px height,
        from a 20px line of text and 5px of margin top. We calculate
        a scaling margin-top by subtracting the em-unit line height
        from the legacy value. */
     margin-top: calc(25px - (var(--legacy-body-line-height-unitless) * 1em));
+    margin-right: var(--width-simplebar-scroll-hover);
+    margin-bottom: var(--sidebar-bottom-spacing);
+    padding-left: var(--right-sidebar-left-spacing);
+    border-radius: 4px;
+
+    &:hover {
+        background: var(--color-background-sidebar-action-heading-hover);
+        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+        color: var(--color-text-sidebar-action-heading-hover);
+    }
+
+    .invite-user-link {
+        display: grid;
+        grid-template:
+            "user-icon row-text" var(--line-height-sidebar-row-prominent)
+            / auto 1fr;
+        align-items: center;
+        color: var(--color-text-sidebar-action-heading);
+
+        &:active {
+            transition: transform 80ms;
+            transform: scale(0.96);
+        }
+
+        .zulip-icon-user-plus {
+            padding-right: 5px;
+        }
+    }
 }
