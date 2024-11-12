@@ -386,7 +386,13 @@ def run_tests_via_node_js() -> int:
     # reports.  Running under nyc is slower and creates funny
     # tracebacks, so you generally want to get coverage reports only
     # after making sure tests will pass.
-    node_tests_cmd = ["node", "--stack-trace-limit=100", INDEX_JS]
+    node_tests_cmd = [
+        "node",
+        "--stack-trace-limit=100",
+        "--experimental-require-module",
+        "--no-warnings=ExperimentalWarning",
+        INDEX_JS,
+    ]
     if individual_files:
         # If we passed a specific set of tests, run in serial mode.
         global parallel
