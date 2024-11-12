@@ -4227,6 +4227,7 @@ class GetOldMessagesTest(ZulipTestCase):
             wide_dict,
             apply_markdown=True,
             client_gravatar=False,
+            allow_empty_topic_name=True,
             can_access_sender=True,
             realm_host=get_realm("zulip").host,
             is_incoming_1_to_1=False,

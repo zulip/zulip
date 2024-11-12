@@ -50,6 +50,7 @@ from zerver.lib.streams import (
     get_stream_by_narrow_operand_access_unchecked,
     get_web_public_streams_queryset,
 )
+from zerver.lib.topic import maybe_rename_general_chat_to_empty_topic
 from zerver.lib.topic_sqlalchemy import (
     get_followed_topic_condition_sa,
     get_resolved_topic_condition_sa,
@@ -901,6 +902,20 @@ def can_narrow_define_conversation(narrow: list[NarrowParameter]) -> bool:
             return True
 
     return False
+
+
+def update_narrow_terms_containing_empty_topic_fallback_name(
+    narrow: list[NarrowParameter] | None,
+) -> list[NarrowParameter] | None:
+    if narrow is None:
+        return narrow
+
+    for term in narrow:
+        if term.operator == "topic":
+            term.operand = maybe_rename_general_chat_to_empty_topic(term.operand)
+            break
+
+    return narrow
 
 
 # This function implements the core logic of the `with` operator,

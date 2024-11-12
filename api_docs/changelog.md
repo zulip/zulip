@@ -40,6 +40,11 @@ format used by the Zulip server that they are interacting with.
   field replacing the empty string for channel messages:
     * `subject` field in the `message` event type
 
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): Added `allow_empty_topic_name`
+  boolean parameter to decide whether the topic names in the fetched messages
+  can be empty strings.
+
 **Feature level 333**
 
 * [Message formatting](/api/message-formatting): System groups can now

@@ -62,6 +62,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
             event["message"],
             apply_markdown=False,
             client_gravatar=False,
+            allow_empty_topic_name=True,
             keep_rendered_content=True,
             can_access_sender=check_user_can_access_all_users(self.user_profile)
             or check_can_access_user(

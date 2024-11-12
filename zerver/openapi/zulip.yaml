@@ -6808,6 +6808,22 @@ paths:
                 items:
                   type: integer
               example: [1, 2, 3]
+        - name: allow_empty_topic_name
+          in: query
+          description: |
+            Whether the client supports processing the empty string as a topic in the
+            topic name fields in the returned data, including in returned edit_history data.
+
+            If `false`, the server will use the value of `realm_empty_topic_display_name`
+            found in the [`POST /register`](/api/register-queue) response instead of empty string
+            to represent the empty string topic in its response.
+
+            **Changes**: New in Zulip 10.0 (feature level 334). Previously, the empty string
+            was not a valid topic.
+          schema:
+            type: boolean
+            default: false
+          example: true
       responses:
         "200":
           description: Success.
@@ -8140,6 +8156,22 @@ paths:
             type: boolean
             default: true
           example: false
+        - name: allow_empty_topic_name
+          in: query
+          description: |
+            Whether the client supports processing the empty string as a topic in the
+            topic name fields in the returned data, including in returned edit_history data.
+
+            If `false`, the server will use the value of `realm_empty_topic_display_name`
+            found in the [`POST /register`](/api/register-queue) response instead of empty string
+            to represent the empty string topic in its response.
+
+            **Changes**: New in Zulip 10.0 (feature level 334). Previously, the empty string
+            was not a valid topic.
+          schema:
+            type: boolean
+            default: false
+          example: true
       responses:
         "200":
           description: Success.
