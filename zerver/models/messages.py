@@ -157,6 +157,8 @@ class Message(AbstractMessage):
 
     DEFAULT_SELECT_RELATED = ["sender", "realm", "recipient", "sending_client"]
 
+    EMPTY_TOPIC_FALLBACK_NAME = "general chat"
+
     class Meta:
         indexes = [
             GinIndex("search_tsvector", fastupdate=False, name="zerver_message_search_tsvector"),

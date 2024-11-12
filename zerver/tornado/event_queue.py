@@ -29,7 +29,7 @@ from zerver.lib.narrow_predicate import build_narrow_predicate
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.queue import queue_json_publish_rollback_unsafe, retry_event
 from zerver.middleware import async_request_timer_restart
-from zerver.models import CustomProfileField
+from zerver.models import CustomProfileField, Message
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
 from zerver.tornado.handlers import finish_handler, get_handler_by_id, handler_stats_string
@@ -82,6 +82,7 @@ class ClientDescriptor:
         user_list_incomplete: bool,
         include_deactivated_groups: bool,
         archived_channels: bool,
+        empty_topic_name: bool,
     ) -> None:
         # TODO: We eventually want to upstream this code to the caller, but
         # serialization concerns make it a bit difficult.
@@ -115,6 +116,7 @@ class ClientDescriptor:
         self.user_list_incomplete = user_list_incomplete
         self.include_deactivated_groups = include_deactivated_groups
         self.archived_channels = archived_channels
+        self.empty_topic_name = empty_topic_name
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -147,6 +149,7 @@ class ClientDescriptor:
             user_list_incomplete=self.user_list_incomplete,
             include_deactivated_groups=self.include_deactivated_groups,
             archived_channels=self.archived_channels,
+            empty_topic_name=self.empty_topic_name,
         )
 
     @override
@@ -186,6 +189,7 @@ class ClientDescriptor:
             user_list_incomplete=d.get("user_list_incomplete", False),
             include_deactivated_groups=d.get("include_deactivated_groups", False),
             archived_channels=d.get("archived_channels", False),
+            empty_topic_name=d.get("empty_topic_name", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
@@ -1221,6 +1225,16 @@ def process_message_event(
             can_access_sender=can_access_sender,
             is_incoming_1_to_1=wide_dict["recipient_id"] == client.user_recipient_id,
         )
+
+        # Compatibility code to change subject="" to subject=Message.EMPTY_TOPIC_FALLBACK_NAME
+        # for older clients with no UI support for empty topic name.
+        if (
+            recipient_type_name == "stream"
+            and not client.empty_topic_name
+            and wide_dict["subject"] == ""
+        ):
+            message_dict = message_dict.copy()
+            message_dict["subject"] = Message.EMPTY_TOPIC_FALLBACK_NAME
 
         # Make sure Zephyr mirroring bots know whether stream is invite-only
         if "mirror" in client.client_type_name and event_template.get("invite_only"):

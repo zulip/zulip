@@ -20,6 +20,20 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 331**
+
+* [`POST /register`](/api/register-queue): Added `empty_topic_name`
+  [client capability](/api/register-queue#parameter-client_capabilities)
+  to allow client to specify whether it supports empty string as a topic name
+  in `register` response or events involving topic names.
+  Clients that don't support this client capability receive `"general chat"`
+  as the topic name replacing `""`.
+
+* [`GET /events`](/api/get-events): For clients that don't support
+  the `empty_topic_name` [client capability](/api/register-queue#parameter-client_capabilities),
+  the `subject` field in the `message` event type will have the value
+  `"general chat"` replacing `""` for channel messages.
+
 **Feature level 330**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
