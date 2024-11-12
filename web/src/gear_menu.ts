@@ -1,5 +1,7 @@
 import $ from "jquery";
+import type {Instance as TippyInstance} from "tippy.js";
 import WinChan from "winchan";
+import {z} from "zod";
 
 import render_navbar_gear_menu_popover from "../templates/popovers/navbar/navbar_gear_menu_popover.hbs";
 
@@ -84,14 +86,14 @@ The click handler uses "[data-overlay-trigger]" as
 the selector and then calls browser_history.go_to_location.
 */
 
-function render(instance) {
+function render(instance: TippyInstance): void {
     const rendered_gear_menu = render_navbar_gear_menu_popover(
         popover_menus_data.get_gear_menu_content_context(),
     );
     instance.setContent(parse_html(rendered_gear_menu));
 }
 
-export function initialize() {
+export function initialize(): void {
     popover_menus.register_popover_menu("#gear-menu", {
         theme: "popover-menu",
         placement: "bottom",
@@ -127,14 +129,22 @@ export function initialize() {
                             blueslip.warn(err);
                             return;
                         }
-                        if (r.status !== "OK") {
-                            blueslip.warn(r);
+
+                        const webathena_response_schema = z.object({
+                            status: z.string(),
+                            session: z.unknown(),
+                        });
+
+                        const res = webathena_response_schema.parse(r);
+
+                        if (res.status !== "OK") {
+                            blueslip.warn(JSON.stringify(res));
                             return;
                         }
 
                         channel.post({
                             url: "/accounts/webathena_kerberos_login/",
-                            data: {cred: JSON.stringify(r.session)},
+                            data: {cred: JSON.stringify(res.session)},
                             success() {
                                 $("#zephyr-mirror-error").removeClass("show");
                             },
@@ -157,7 +167,7 @@ export function initialize() {
             });
 
             $popper.on("change", "input[name='theme-select']", (e) => {
-                const theme_code = Number.parseInt($(e.currentTarget).attr("data-theme-code"), 10);
+                const theme_code = Number.parseInt($(e.currentTarget).attr("data-theme-code")!, 10);
                 requestAnimationFrame(() => {
                     theme.set_theme_for_spectator(theme_code);
                 });
@@ -166,12 +176,12 @@ export function initialize() {
         onShow: render,
         onHidden(instance) {
             instance.destroy();
-            popover_menus.popover_instances.gear_menu = undefined;
+            popover_menus.popover_instances.gear_menu = null;
         },
     });
 }
 
-export function toggle() {
+export function toggle(): void {
     if (popover_menus.is_gear_menu_popover_displayed()) {
         popovers.hide_all();
         return;
@@ -186,8 +196,8 @@ export function toggle() {
     $("#gear-menu").trigger("click");
 }
 
-export function rerender() {
+export function rerender(): void {
     if (popover_menus.is_gear_menu_popover_displayed()) {
-        render(popover_menus.get_gear_menu_instance());
+        render(popover_menus.get_gear_menu_instance()!);
     }
 }
