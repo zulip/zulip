@@ -49,9 +49,8 @@ class Command(BaseCommand):
             "-hooks-http-forward-headers=Cookie,Authorization",
             "--hooks-enabled-events=pre-create,pre-finish",
             "-disable-download",
-            "--log-level=error" 
+            "--log-level=warn",
         ]
-        
         env_vars = os.environ.copy()
         if settings.LOCAL_UPLOADS_DIR is not None:
             assert settings.LOCAL_FILES_DIR is not None
