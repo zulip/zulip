@@ -7067,7 +7067,14 @@ paths:
                     [`POST /register`](/api/register-queue) endpoint to determine
                     the maximum topic length.
 
-                    **Changes**: New in Zulip 2.0.0. Previous Zulip releases encoded
+                    Note: When the value of `realm_empty_topic_display_name` found in
+                    the [POST /register](/api/register-queue) response is used for this
+                    parameter, it is interpreted as an empty string.
+
+                    **Changes**: Before Zulip 10.0 (feature level 334), empty string
+                    was not a valid topic name for channel messages.
+
+                    New in Zulip 2.0.0. Previous Zulip releases encoded
                     this as `subject`, which is currently a deprecated alias.
                   type: string
                   example: Castle
@@ -14137,6 +14144,16 @@ paths:
                       **Changes**: New in Zulip 10.0 (feature level 315). This allows clients to
                       access archived channels, without breaking backwards-compatibility for
                       existing clients.
+
+                    - `empty_topic_name`: Boolean for whether the client supports processing
+                      the empty string as a topic name. Clients not declaring this capability
+                      will be sent the value of `realm_empty_topic_display_name` found in the
+                      [POST /register](/api/register-queue) response instead of the empty string
+                      wherever topic names appear in the register response or events involving
+                      topic names.
+                      <br/>
+                      **Changes**: New in Zulip 10.0 (feature level 334). Previously,
+                      the empty string was not a valid topic name.
 
                     [help-linkifiers]: /help/add-a-custom-linkifier
                     [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
@@ -23445,6 +23462,16 @@ components:
 
             The field name is a legacy holdover from when topics were
             called "subjects" and will eventually change.
+
+            For clients that don't support the `empty_topic_name` [client capability][client-capabilities],
+            the empty string value is replaced with the value of `realm_empty_topic_display_name`
+            found in the [POST /register](/api/register-queue) response, for channel messages.
+
+            **Changes**: Before Zulip 10.0 (feature level 334), `empty_topic_name`
+            client capability didn't exist and empty string as the topic name for
+            channel messages wasn't allowed.
+
+            [client-capabilities]: /api/register-queue#parameter-client_capabilities
         submessages:
           type: array
           description: |

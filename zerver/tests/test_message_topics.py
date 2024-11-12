@@ -1,3 +1,4 @@
+import time
 from unittest import mock
 
 from django.utils.timezone import now as timezone_now
@@ -9,6 +10,7 @@ from zerver.models import Message, UserMessage, UserTopic
 from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
+from zerver.tornado.event_queue import allocate_client_descriptor
 
 
 class TopicHistoryTest(ZulipTestCase):
@@ -362,3 +364,55 @@ class TopicDeleteTest(ZulipTestCase):
             )
             result_dict = self.assert_json_success(result)
             self.assertFalse(result_dict["complete"])
+
+
+class EmptyTopicNameTest(ZulipTestCase):
+    def test_client_supports_empty_topic_name(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        queue_data = dict(
+            all_public_streams=True,
+            apply_markdown=True,
+            client_type_name="website",
+            empty_topic_name=True,
+            event_types=["message"],
+            last_connection_time=time.time(),
+            queue_timeout=600,
+            realm_id=hamlet.realm.id,
+            user_profile_id=hamlet.id,
+        )
+        client = allocate_client_descriptor(queue_data)
+        self.assertTrue(client.event_queue.empty())
+
+        self.send_stream_message(iago, "Denmark", topic_name="")
+        events = client.event_queue.contents()
+        self.assertEqual(events[0]["message"]["subject"], "")
+
+        self.send_stream_message(iago, "Denmark", topic_name=Message.EMPTY_TOPIC_FALLBACK_NAME)
+        events = client.event_queue.contents()
+        self.assertEqual(events[1]["message"]["subject"], "")
+
+    def test_client_not_supports_empty_topic_name(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        queue_data = dict(
+            all_public_streams=True,
+            apply_markdown=True,
+            client_type_name="zulip-mobile",
+            empty_topic_name=False,
+            event_types=["message"],
+            last_connection_time=time.time(),
+            queue_timeout=600,
+            realm_id=hamlet.realm.id,
+            user_profile_id=hamlet.id,
+        )
+        client = allocate_client_descriptor(queue_data)
+        self.assertTrue(client.event_queue.empty())
+
+        self.send_stream_message(iago, "Denmark", topic_name="")
+        events = client.event_queue.contents()
+        self.assertEqual(events[0]["message"]["subject"], Message.EMPTY_TOPIC_FALLBACK_NAME)
+
+        self.send_stream_message(iago, "Denmark", topic_name=Message.EMPTY_TOPIC_FALLBACK_NAME)
+        events = client.event_queue.contents()
+        self.assertEqual(events[1]["message"]["subject"], Message.EMPTY_TOPIC_FALLBACK_NAME)
