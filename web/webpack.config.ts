@@ -73,7 +73,7 @@ const config = (
             : Object.fromEntries(
                   Object.entries({...assets, ...dev_assets}).map(([name, paths]) => [
                       name,
-                      [...paths, "./src/debug"],
+                      [...paths, "./src/debug.ts"],
                   ]),
               ),
         module: {
@@ -208,10 +208,6 @@ const config = (
                   (pathData) => "files" + path.join("/", pathData.filename!),
             chunkFilename: production ? "[contenthash].js" : "[id].js",
             crossOriginLoading: "anonymous",
-        },
-        resolve: {
-            ...baseConfig.resolve,
-            extensions: [".ts", ".js"],
         },
         // We prefer cheap-module-source-map over any eval-* options
         // because stacktrace-gps doesn't currently support extracting

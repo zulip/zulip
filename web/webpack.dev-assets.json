@@ -1,18 +1,18 @@
 {
-    "dev-login": ["./src/bundles/portico", "./src/portico/dev-login"],
+    "dev-login": ["./src/bundles/portico.ts", "./src/portico/dev-login.ts"],
     "dev-integrations-panel": [
-        "./src/bundles/portico",
-        "./src/portico/integrations_dev_panel",
+        "./src/bundles/portico.ts",
+        "./src/portico/integrations_dev_panel.ts",
         "./styles/portico/integrations_dev_panel.css",
-        "./src/reload_state",
-        "./src/channel"
+        "./src/reload_state.ts",
+        "./src/channel.ts"
     ],
     "dev-email-log": [
-        "./src/bundles/common",
-        "./src/portico/email_log",
-        "./src/portico/portico_modals",
+        "./src/bundles/common.ts",
+        "./src/portico/email_log.ts",
+        "./src/portico/portico_modals.ts",
         "./styles/portico/email_log.css",
-        "./src/reload_state",
-        "./src/channel"
+        "./src/reload_state.ts",
+        "./src/channel.ts"
     ]
 }

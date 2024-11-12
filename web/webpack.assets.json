@@ -1,82 +1,82 @@
 {
     "activity": [
         "./third/bootstrap/css/bootstrap.portico.css",
-        "./src/bundles/common",
+        "./src/bundles/common.ts",
         "sorttable",
         "./styles/portico/activity.css"
     ],
     "billing": [
-        "./src/bundles/portico",
-        "./src/billing/helpers",
-        "./src/billing/billing",
+        "./src/bundles/portico.ts",
+        "./src/billing/helpers.ts",
+        "./src/billing/billing.ts",
         "./styles/portico/billing.css"
     ],
     "sponsorship": [
-        "./src/bundles/portico",
+        "./src/bundles/portico.ts",
         "jquery-validation",
-        "./src/portico/signup",
-        "./src/billing/sponsorship",
+        "./src/portico/signup.ts",
+        "./src/billing/sponsorship.ts",
         "./styles/portico/billing.css"
     ],
     "billing_auth": [
-        "./src/bundles/portico",
-        "./src/billing/helpers",
+        "./src/bundles/portico.ts",
+        "./src/billing/helpers.ts",
         "jquery-validation",
-        "./src/billing/remote_billing_auth",
-        "./src/billing/deactivate_server",
+        "./src/billing/remote_billing_auth.ts",
+        "./src/billing/deactivate_server.ts",
         "./styles/portico/billing.css"
     ],
     "upgrade": [
-        "./src/bundles/portico",
-        "./src/billing/helpers",
-        "./src/billing/upgrade",
+        "./src/bundles/portico.ts",
+        "./src/billing/helpers.ts",
+        "./src/billing/upgrade.ts",
         "jquery-validation",
         "./styles/portico/billing.css"
     ],
     "billing-event-status": [
-        "./src/bundles/portico",
-        "./src/billing/event_status",
-        "./src/billing/helpers",
+        "./src/bundles/portico.ts",
+        "./src/billing/event_status.ts",
+        "./src/billing/helpers.ts",
         "./styles/portico/billing.css"
     ],
-    "portico": ["./src/bundles/portico"],
+    "portico": ["./src/bundles/portico.ts"],
     "error-styles": [
         "./third/bootstrap/css/bootstrap.portico.css",
         "./styles/portico/portico_styles.css"
     ],
-    "common": ["./src/bundles/common"],
+    "common": ["./src/bundles/common.ts"],
     "help": [
-        "./src/bundles/portico",
+        "./src/bundles/portico.ts",
         "simplebar/dist/simplebar.css",
         "simplebar",
-        "./src/portico/help",
-        "./src/portico/tabbed-instructions"
+        "./src/portico/help.ts",
+        "./src/portico/tabbed-instructions.ts"
     ],
     "landing-page": [
-        "./src/bundles/portico",
-        "./src/portico/landing-page",
+        "./src/bundles/portico.ts",
+        "./src/portico/landing-page.ts",
         "./styles/portico/landing_page.css"
     ],
     "landing-page-with-pricing": [
-        "./src/bundles/portico",
-        "./src/portico/landing-page",
+        "./src/bundles/portico.ts",
+        "./src/portico/landing-page.ts",
         "./styles/portico/landing_page.css",
         "./styles/portico/pricing_plans.css"
     ],
     "landing-page-hello": [
-        "./src/bundles/hello",
-        "./src/portico/hello",
-        "./src/portico/landing-page",
-        "./src/portico/header",
+        "./src/bundles/hello.ts",
+        "./src/portico/hello.ts",
+        "./src/portico/landing-page.ts",
+        "./src/portico/header.ts",
         "./styles/portico/svg_icons.css",
         "./styles/portico/hello.css",
         "./styles/portico/navbar.css",
         "./styles/portico/footer.css"
     ],
     "plans-page": [
-        "./src/bundles/hello",
-        "./src/portico/landing-page",
-        "./src/portico/header",
+        "./src/bundles/hello.ts",
+        "./src/portico/landing-page.ts",
+        "./src/portico/header.ts",
         "./styles/portico/hello.css",
         "./styles/portico/navbar.css",
         "./styles/portico/footer.css",
@@ -85,36 +85,36 @@
         "./styles/portico/comparison_table.css"
     ],
     "integrations": [
-        "./src/bundles/portico",
-        "./src/portico/integrations",
+        "./src/bundles/portico.ts",
+        "./src/portico/integrations.js",
         "./styles/portico/landing_page.css",
         "./styles/portico/integrations.css"
     ],
     "communities": [
-        "./src/bundles/portico",
-        "./src/portico/communities",
+        "./src/bundles/portico.ts",
+        "./src/portico/communities.ts",
         "./styles/portico/landing_page.css",
         "./styles/portico/integrations.css"
     ],
-    "signup": ["./src/bundles/portico", "jquery-validation", "./src/portico/signup"],
-    "register": ["./src/bundles/portico", "jquery-validation", "./src/portico/signup"],
+    "signup": ["./src/bundles/portico.ts", "jquery-validation", "./src/portico/signup.ts"],
+    "register": ["./src/bundles/portico.ts", "jquery-validation", "./src/portico/signup.ts"],
     "confirm-preregistrationuser": [
         "./third/bootstrap/css/bootstrap.portico.css",
-        "./src/bundles/common",
-        "./src/portico/confirm-preregistrationuser"
+        "./src/bundles/common.ts",
+        "./src/portico/confirm-preregistrationuser.ts"
     ],
     "support": [
         "./third/bootstrap/css/bootstrap.portico.css",
-        "./src/bundles/common",
+        "./src/bundles/common.ts",
         "sorttable",
         "./styles/portico/activity.css",
-        "./src/support/support",
-        "./src/portico/tippyjs",
+        "./src/support/support.ts",
+        "./src/portico/tippyjs.ts",
         "tippy.js/dist/tippy.css"
     ],
-    "desktop-login": ["./src/bundles/portico", "./src/portico/desktop-login"],
-    "desktop-redirect": ["./src/bundles/portico", "./src/portico/desktop-redirect"],
-    "stats": ["./src/bundles/portico", "./styles/portico/stats.css", "./src/stats/stats"],
-    "app": ["./src/bundles/app"],
-    "digest": ["./src/bundles/portico"]
+    "desktop-login": ["./src/bundles/portico.ts", "./src/portico/desktop-login.ts"],
+    "desktop-redirect": ["./src/bundles/portico.ts", "./src/portico/desktop-redirect.ts"],
+    "stats": ["./src/bundles/portico.ts", "./styles/portico/stats.css", "./src/stats/stats.ts"],
+    "app": ["./src/bundles/app.ts"],
+    "digest": ["./src/bundles/portico.ts"]
 }
