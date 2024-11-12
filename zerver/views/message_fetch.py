@@ -25,6 +25,7 @@ from zerver.lib.narrow import (
     is_spectator_compatible,
     is_web_public_narrow,
     parse_anchor_value,
+    update_narrow_terms_containing_empty_topic_fallback_name,
     update_narrow_terms_containing_with_operator,
 )
 from zerver.lib.request import RequestNotes
@@ -118,6 +119,7 @@ def get_messages_backend(
     ] = False,
     client_gravatar: Json[bool] = True,
     apply_markdown: Json[bool] = True,
+    allow_empty_topic_name: Json[bool] = False,
     client_requested_message_ids: Annotated[
         Json[list[NonNegativeInt] | None], ApiParamConfig("message_ids")
     ] = None,
@@ -144,6 +146,7 @@ def get_messages_backend(
         anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
 
     realm = get_valid_realm_from_request(request)
+    narrow = update_narrow_terms_containing_empty_topic_fallback_name(narrow)
     narrow = update_narrow_terms_containing_with_operator(realm, maybe_user_profile, narrow)
 
     num_of_messages_requested = num_before + num_after
@@ -302,6 +305,7 @@ def get_messages_backend(
             search_fields=search_fields,
             apply_markdown=apply_markdown,
             client_gravatar=client_gravatar,
+            allow_empty_topic_name=allow_empty_topic_name,
             allow_edit_history=realm.allow_edit_history,
             user_profile=user_profile,
             realm=realm,

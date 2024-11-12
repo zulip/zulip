@@ -38,6 +38,11 @@ format used by the Zulip server that they are interacting with.
   field replacing `""` for channel messages:
     * `subject` field in the `message` event type
 
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): Added `allow_empty_topic_name`
+  boolean parameter to decide whether the topic names in the fetched messages
+  can be empty strings.
+
 **Feature level 332**
 
 * [`POST /register`](/api/register-queue): Added
