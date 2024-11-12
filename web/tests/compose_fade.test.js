@@ -2,8 +2,8 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_jquery, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {mock_jquery, zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
 
 mock_jquery((selector) => {
     switch (selector) {

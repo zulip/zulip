@@ -12,18 +12,18 @@ import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert
 import render_profile_incomplete_alert_content from "../templates/navbar_alerts/profile_incomplete.hbs";
 import render_server_needs_upgrade_alert_content from "../templates/navbar_alerts/server_needs_upgrade.hbs";
 
-import * as desktop_notifications from "./desktop_notifications";
-import * as keydown_util from "./keydown_util";
-import type {LocalStorage} from "./localstorage";
-import {localstorage} from "./localstorage";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import {current_user, realm} from "./state_data";
-import {should_display_profile_incomplete_alert} from "./timerender";
-import * as unread from "./unread";
-import * as unread_ops from "./unread_ops";
-import * as unread_ui from "./unread_ui";
-import * as util from "./util";
+import * as desktop_notifications from "./desktop_notifications.ts";
+import * as keydown_util from "./keydown_util.ts";
+import type {LocalStorage} from "./localstorage.ts";
+import {localstorage} from "./localstorage.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import {current_user, realm} from "./state_data.ts";
+import {should_display_profile_incomplete_alert} from "./timerender.ts";
+import * as unread from "./unread.ts";
+import * as unread_ops from "./unread_ops.ts";
+import * as unread_ui from "./unread_ui.ts";
+import * as util from "./util.ts";
 
 const show_step = function ($process: JQuery, step: number): void {
     $process

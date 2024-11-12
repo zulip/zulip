@@ -2,9 +2,9 @@
 
 const assert = require("node:assert/strict");
 
-const {set_global, mock_esm, zrequire} = require("./lib/namespace");
-const {run_test, noop} = require("./lib/test");
-const $ = require("./lib/zjquery");
+const {set_global, mock_esm, zrequire} = require("./lib/namespace.js");
+const {run_test, noop} = require("./lib/test.js");
+const $ = require("./lib/zjquery.js");
 
 const fake_buddy_list = {
     scroll_container_selector: "#whatever",

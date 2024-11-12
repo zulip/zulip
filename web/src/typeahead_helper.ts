@@ -1,33 +1,33 @@
-import Handlebars from "handlebars/runtime";
+import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as typeahead from "../shared/src/typeahead";
-import type {EmojiSuggestion} from "../shared/src/typeahead";
+import * as typeahead from "../shared/src/typeahead.ts";
+import type {EmojiSuggestion} from "../shared/src/typeahead.ts";
 import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
-import {MAX_ITEMS} from "./bootstrap_typeahead";
-import * as buddy_data from "./buddy_data";
-import * as compose_state from "./compose_state";
-import type {LanguageSuggestion, SlashCommandSuggestion} from "./composebox_typeahead";
-import type {InputPillContainer} from "./input_pill";
-import * as people from "./people";
-import type {PseudoMentionUser, User} from "./people";
-import * as pm_conversations from "./pm_conversations";
-import * as pygments_data from "./pygments_data";
-import * as recent_senders from "./recent_senders";
-import {realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as stream_list_sort from "./stream_list_sort";
-import type {StreamPill, StreamPillData} from "./stream_pill";
-import type {StreamSubscription} from "./sub_store";
-import type {UserGroupPill, UserGroupPillData} from "./user_group_pill";
-import * as user_groups from "./user_groups";
-import type {UserGroup} from "./user_groups";
-import type {UserPill, UserPillData} from "./user_pill";
-import * as user_status from "./user_status";
-import type {UserStatusEmojiInfo} from "./user_status";
-import * as util from "./util";
+import {MAX_ITEMS} from "./bootstrap_typeahead.ts";
+import * as buddy_data from "./buddy_data.ts";
+import * as compose_state from "./compose_state.ts";
+import type {LanguageSuggestion, SlashCommandSuggestion} from "./composebox_typeahead.ts";
+import type {InputPillContainer} from "./input_pill.ts";
+import * as people from "./people.ts";
+import type {PseudoMentionUser, User} from "./people.ts";
+import * as pm_conversations from "./pm_conversations.ts";
+import * as pygments_data from "./pygments_data.ts";
+import * as recent_senders from "./recent_senders.ts";
+import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_list_sort from "./stream_list_sort.ts";
+import type {StreamPill, StreamPillData} from "./stream_pill.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import type {UserGroupPill, UserGroupPillData} from "./user_group_pill.ts";
+import * as user_groups from "./user_groups.ts";
+import type {UserGroup} from "./user_groups.ts";
+import type {UserPill, UserPillData} from "./user_pill.ts";
+import * as user_status from "./user_status.ts";
+import type {UserStatusEmojiInfo} from "./user_status.ts";
+import * as util from "./util.ts";
 
 export type UserOrMention =
     | {type: "broadcast"; user: PseudoMentionUser}

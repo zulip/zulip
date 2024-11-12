@@ -1,8 +1,8 @@
-import * as gear_menu from "./gear_menu";
-import * as navbar_help_menu from "./navbar_help_menu";
-import {page_params} from "./page_params";
-import * as personal_menu_popover from "./personal_menu_popover";
-import * as popover_menus from "./popover_menus";
+import * as gear_menu from "./gear_menu.js";
+import * as navbar_help_menu from "./navbar_help_menu.ts";
+import {page_params} from "./page_params.ts";
+import * as personal_menu_popover from "./personal_menu_popover.ts";
+import * as popover_menus from "./popover_menus.ts";
 
 export function is_navbar_menus_displayed() {
     return (

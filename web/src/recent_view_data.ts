@@ -1,6 +1,6 @@
-import type {Message} from "./message_store";
-import * as people from "./people";
-import {get_key_from_message} from "./recent_view_util";
+import type {Message} from "./message_store.ts";
+import * as people from "./people.ts";
+import {get_key_from_message} from "./recent_view_util.ts";
 
 export type ConversationData = {
     last_msg_id: number;

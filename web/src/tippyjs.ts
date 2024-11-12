@@ -7,14 +7,14 @@ import render_change_visibility_policy_button_tooltip from "../templates/change_
 import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
-import {$t} from "./i18n";
-import * as people from "./people";
-import * as popovers from "./popovers";
-import * as settings_config from "./settings_config";
-import * as stream_data from "./stream_data";
-import * as ui_util from "./ui_util";
-import {user_settings} from "./user_settings";
-import * as util from "./util";
+import {$t} from "./i18n.ts";
+import * as people from "./people.ts";
+import * as popovers from "./popovers.ts";
+import * as settings_config from "./settings_config.ts";
+import * as stream_data from "./stream_data.ts";
+import * as ui_util from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 // For tooltips without data-tippy-content, we use the HTML content of
 // a <template> whose id is given by data-tooltip-template-id.

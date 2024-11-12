@@ -2,11 +2,11 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
-const {make_stub} = require("./lib/stub");
-const {run_test, noop} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
-const $ = require("./lib/zjquery");
+const {mock_esm, zrequire} = require("./lib/namespace.js");
+const {make_stub} = require("./lib/stub.js");
+const {run_test, noop} = require("./lib/test.js");
+const blueslip = require("./lib/zblueslip.js");
+const $ = require("./lib/zjquery.js");
 
 const browser_history = mock_esm("../src/browser_history");
 const color_data = mock_esm("../src/color_data");

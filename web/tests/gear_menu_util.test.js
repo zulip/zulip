@@ -2,8 +2,8 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
 
 const gear_menu_util = zrequire("gear_menu_util");
 const {set_realm} = zrequire("state_data");

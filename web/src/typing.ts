@@ -1,16 +1,16 @@
 import $ from "jquery";
 
-import * as typing_status from "../shared/src/typing_status";
-import type {Recipient} from "../shared/src/typing_status";
+import * as typing_status from "../shared/src/typing_status.ts";
+import type {Recipient} from "../shared/src/typing_status.ts";
 
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as compose_pm_pill from "./compose_pm_pill";
-import * as compose_state from "./compose_state";
-import * as people from "./people";
-import {realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import {user_settings} from "./user_settings";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as compose_state from "./compose_state.ts";
+import * as people from "./people.ts";
+import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import {user_settings} from "./user_settings.ts";
 
 type TypingAPIRequest = {op: "start" | "stop"} & (
     | {

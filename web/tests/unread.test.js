@@ -4,8 +4,8 @@ const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
-const {set_global, with_overrides, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {set_global, with_overrides, zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
 
 set_global("document", "document-stub");
 const {FoldDict} = zrequire("fold_dict");

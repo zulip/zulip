@@ -1,8 +1,8 @@
 import _ from "lodash";
 
-import type {Message} from "./message_store";
-import * as people from "./people";
-import type {StateData} from "./state_data";
+import type {Message} from "./message_store.ts";
+import * as people from "./people.ts";
+import type {StateData} from "./state_data.ts";
 
 // For simplicity, we use a list for our internal
 // data, since that matches what the server sends us.

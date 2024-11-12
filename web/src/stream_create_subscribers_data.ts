@@ -1,8 +1,8 @@
 import _ from "lodash";
 
-import * as people from "./people";
-import type {User} from "./people";
-import {current_user} from "./state_data";
+import * as people from "./people.ts";
+import type {User} from "./people.ts";
+import {current_user} from "./state_data.ts";
 
 let user_id_set: Set<number>;
 let soft_remove_user_id_set: Set<number>;

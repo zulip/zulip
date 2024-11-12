@@ -4,11 +4,11 @@ const assert = require("node:assert/strict");
 
 const MockDate = require("mockdate");
 
-const {mock_banners} = require("./lib/compose_banner");
-const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test, noop} = require("./lib/test");
-const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {mock_banners} = require("./lib/compose_banner.js");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace.js");
+const {run_test, noop} = require("./lib/test.js");
+const $ = require("./lib/zjquery.js");
+const {page_params} = require("./lib/zpage_params.js");
 
 const user_groups = zrequire("user_groups");
 

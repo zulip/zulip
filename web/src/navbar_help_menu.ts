@@ -2,9 +2,9 @@ import $ from "jquery";
 
 import render_navbar_help_menu from "../templates/popovers/navbar/navbar_help_menu_popover.hbs";
 
-import {page_params} from "./page_params";
-import * as popover_menus from "./popover_menus";
-import {parse_html} from "./ui_util";
+import {page_params} from "./page_params.ts";
+import * as popover_menus from "./popover_menus.ts";
+import {parse_html} from "./ui_util.ts";
 
 export function initialize(): void {
     popover_menus.register_popover_menu("#help-menu", {

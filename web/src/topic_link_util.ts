@@ -1,8 +1,8 @@
 import assert from "minimalistic-assert";
 
-import * as internal_url from "../shared/src/internal_url";
+import * as internal_url from "../shared/src/internal_url.ts";
 
-import * as stream_data from "./stream_data";
+import * as stream_data from "./stream_data.ts";
 
 const invalid_stream_topic_regex = /[`>*&]|(\$\$)/g;
 

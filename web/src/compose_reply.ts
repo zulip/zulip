@@ -2,25 +2,25 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import * as fenced_code from "../shared/src/fenced_code";
+import * as fenced_code from "../shared/src/fenced_code.ts";
 
-import * as channel from "./channel";
-import * as compose_actions from "./compose_actions";
-import * as compose_state from "./compose_state";
-import * as compose_ui from "./compose_ui";
-import * as copy_and_paste from "./copy_and_paste";
-import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
-import * as inbox_ui from "./inbox_ui";
-import * as inbox_util from "./inbox_util";
-import * as message_lists from "./message_lists";
-import type {Message} from "./message_store";
-import * as narrow_state from "./narrow_state";
-import * as people from "./people";
-import * as recent_view_ui from "./recent_view_ui";
-import * as recent_view_util from "./recent_view_util";
-import * as stream_data from "./stream_data";
-import * as unread_ops from "./unread_ops";
+import * as channel from "./channel.ts";
+import * as compose_actions from "./compose_actions.ts";
+import * as compose_state from "./compose_state.ts";
+import * as compose_ui from "./compose_ui.ts";
+import * as copy_and_paste from "./copy_and_paste.ts";
+import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
+import * as inbox_ui from "./inbox_ui.ts";
+import * as inbox_util from "./inbox_util.ts";
+import * as message_lists from "./message_lists.ts";
+import type {Message} from "./message_store.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as people from "./people.ts";
+import * as recent_view_ui from "./recent_view_ui.ts";
+import * as recent_view_util from "./recent_view_util.ts";
+import * as stream_data from "./stream_data.ts";
+import * as unread_ops from "./unread_ops.ts";
 
 export let respond_to_message = (opts: {
     keep_composebox_empty?: boolean;

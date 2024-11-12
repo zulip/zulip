@@ -2,9 +2,9 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test, noop} = require("./lib/test");
-const $ = require("./lib/zjquery");
+const {mock_esm, zrequire} = require("./lib/namespace.js");
+const {run_test, noop} = require("./lib/test.js");
+const $ = require("./lib/zjquery.js");
 
 const channel = mock_esm("../src/channel");
 const list_widget = mock_esm("../src/list_widget", {

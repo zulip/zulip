@@ -1,11 +1,11 @@
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as browser_history from "./browser_history";
-import type {Filter} from "./filter";
-import * as hash_util from "./hash_util";
-import * as message_lists from "./message_lists";
-import * as narrow_state from "./narrow_state";
+import * as browser_history from "./browser_history.ts";
+import type {Filter} from "./filter.ts";
+import * as hash_util from "./hash_util.ts";
+import * as message_lists from "./message_lists.ts";
+import * as narrow_state from "./narrow_state.ts";
 
 function is_URL_hash_same_as_filter_hash(filter: Filter): boolean {
     if (filter.is_in_home()) {

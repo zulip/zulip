@@ -1,19 +1,19 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as echo from "./echo";
-import * as loading from "./loading";
-import * as message_events from "./message_events";
-import {page_params} from "./page_params";
-import * as reload from "./reload";
-import * as reload_state from "./reload_state";
-import * as sent_messages from "./sent_messages";
-import * as server_events_dispatch from "./server_events_dispatch";
-import {server_message_schema} from "./server_message";
-import * as ui_report from "./ui_report";
-import * as watchdog from "./watchdog";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as echo from "./echo.ts";
+import * as loading from "./loading.ts";
+import * as message_events from "./message_events.js";
+import {page_params} from "./page_params.ts";
+import * as reload from "./reload.ts";
+import * as reload_state from "./reload_state.ts";
+import * as sent_messages from "./sent_messages.ts";
+import * as server_events_dispatch from "./server_events_dispatch.js";
+import {server_message_schema} from "./server_message.ts";
+import * as ui_report from "./ui_report.ts";
+import * as watchdog from "./watchdog.ts";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 

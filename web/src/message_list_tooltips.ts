@@ -6,20 +6,20 @@ import render_message_edit_notice_tooltip from "../templates/message_edit_notice
 import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 
-import {$t} from "./i18n";
-import * as message_lists from "./message_lists";
-import type {Message} from "./message_store";
-import * as popover_menus from "./popover_menus";
-import * as reactions from "./reactions";
-import * as rows from "./rows";
-import {realm} from "./state_data";
-import * as timerender from "./timerender";
+import {$t} from "./i18n.ts";
+import * as message_lists from "./message_lists.ts";
+import type {Message} from "./message_store.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as reactions from "./reactions.ts";
+import * as rows from "./rows.ts";
+import {realm} from "./state_data.ts";
+import * as timerender from "./timerender.ts";
 import {
     INTERACTIVE_HOVER_DELAY,
     LONG_HOVER_DELAY,
     topic_visibility_policy_tooltip_props,
-} from "./tippyjs";
-import {parse_html} from "./ui_util";
+} from "./tippyjs.ts";
+import {parse_html} from "./ui_util.ts";
 
 type Config = {
     attributes: boolean;

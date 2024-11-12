@@ -2,11 +2,11 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import * as channel from "./channel";
-import {electron_bridge} from "./electron_bridge";
-import {page_params} from "./page_params";
-import * as presence from "./presence";
-import * as watchdog from "./watchdog";
+import * as channel from "./channel.ts";
+import {electron_bridge} from "./electron_bridge.ts";
+import {page_params} from "./page_params.ts";
+import * as presence from "./presence.ts";
+import * as watchdog from "./watchdog.ts";
 
 const post_presence_response_schema = z.object({
     msg: z.string(),

@@ -2,9 +2,9 @@
 
 const assert = require("node:assert/strict");
 
-const {get_stream_email_address} = require("../src/stream_edit");
+const {get_stream_email_address} = require("../src/stream_edit.ts");
 
-const {run_test} = require("./lib/test");
+const {run_test} = require("./lib/test.js");
 
 run_test("get_stream_email_address", () => {
     let address = "announce.747b04693224b5d2f0d409b66ccd3866@zulipdev.com";

@@ -6,10 +6,10 @@ import PlotlyPie from "plotly.js/lib/pie";
 import * as tippy from "tippy.js";
 import {z} from "zod";
 
-import * as blueslip from "../blueslip";
-import {$t, $t_html} from "../i18n";
+import * as blueslip from "../blueslip.ts";
+import {$t, $t_html} from "../i18n.ts";
 
-import {page_params} from "./page_params";
+import {page_params} from "./page_params.ts";
 
 Plotly.register([PlotlyBar, PlotlyPie]);
 

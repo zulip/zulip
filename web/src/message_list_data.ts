@@ -1,13 +1,13 @@
 import assert from "minimalistic-assert";
 
-import * as blueslip from "./blueslip";
-import {FetchStatus} from "./fetch_status";
-import type {Filter} from "./filter";
-import type {Message} from "./message_store";
-import * as muted_users from "./muted_users";
-import {current_user} from "./state_data";
-import * as user_topics from "./user_topics";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import {FetchStatus} from "./fetch_status.ts";
+import type {Filter} from "./filter.ts";
+import type {Message} from "./message_store.ts";
+import * as muted_users from "./muted_users.ts";
+import {current_user} from "./state_data.ts";
+import * as user_topics from "./user_topics.ts";
+import * as util from "./util.ts";
 
 export class MessageListData {
     // The Filter object defines which messages match the narrow,

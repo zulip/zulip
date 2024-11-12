@@ -5,13 +5,13 @@ import type {PanZoom} from "panzoom";
 
 import render_lightbox_overlay from "../templates/lightbox_overlay.hbs";
 
-import * as blueslip from "./blueslip";
-import * as message_store from "./message_store";
-import * as overlays from "./overlays";
-import * as people from "./people";
-import * as popovers from "./popovers";
-import * as rows from "./rows";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as message_store from "./message_store.ts";
+import * as overlays from "./overlays.ts";
+import * as people from "./people.ts";
+import * as popovers from "./popovers.ts";
+import * as rows from "./rows.ts";
+import * as util from "./util.ts";
 
 type Payload = {
     user: string | undefined;

@@ -1,9 +1,9 @@
 import type {z} from "zod";
 
-import * as channel from "./channel";
-import {$t} from "./i18n";
-import type {StateData, scheduled_message_schema} from "./state_data";
-import * as timerender from "./timerender";
+import * as channel from "./channel.ts";
+import {$t} from "./i18n.ts";
+import type {StateData, scheduled_message_schema} from "./state_data.ts";
+import * as timerender from "./timerender.ts";
 
 export type ScheduledMessage = z.infer<typeof scheduled_message_schema>;
 

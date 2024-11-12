@@ -2,9 +2,9 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
-const $ = require("./lib/zjquery");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
+const $ = require("./lib/zjquery.js");
 
 mock_esm("../src/resize", {
     resize_stream_filters_container() {},

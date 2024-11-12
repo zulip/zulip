@@ -2,14 +2,14 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as compose_fade_helper from "./compose_fade_helper";
-import * as compose_state from "./compose_state";
-import type {MessageGroup} from "./message_list_view";
-import * as message_lists from "./message_lists";
-import * as message_viewport from "./message_viewport";
-import * as people from "./people";
-import * as rows from "./rows";
-import * as util from "./util";
+import * as compose_fade_helper from "./compose_fade_helper.ts";
+import * as compose_state from "./compose_state.ts";
+import type {MessageGroup} from "./message_list_view.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as people from "./people.ts";
+import * as rows from "./rows.ts";
+import * as util from "./util.ts";
 
 let normal_display = false;
 

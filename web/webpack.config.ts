@@ -12,7 +12,7 @@ import {DefinePlugin} from "webpack";
 import type webpack from "webpack";
 import BundleTracker from "webpack-bundle-tracker";
 
-import DebugRequirePlugin from "./debug-require-webpack-plugin";
+import DebugRequirePlugin from "./debug-require-webpack-plugin.ts";
 import assets from "./webpack.assets.json";
 import dev_assets from "./webpack.dev-assets.json";
 
@@ -79,12 +79,12 @@ const config = (
         module: {
             rules: [
                 {
-                    test: require.resolve("./src/zulip_test"),
+                    test: require.resolve("./src/zulip_test.ts"),
                     loader: "expose-loader",
                     options: {exposes: "zulip_test"},
                 },
                 {
-                    test: require.resolve("./debug-require"),
+                    test: require.resolve("./debug-require.js"),
                     loader: "expose-loader",
                     options: {exposes: "require"},
                 },

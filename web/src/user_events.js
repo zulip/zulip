@@ -4,29 +4,29 @@
 // (We should do bot updates here too.)
 import $ from "jquery";
 
-import * as activity_ui from "./activity_ui";
-import * as blueslip from "./blueslip";
-import {buddy_list} from "./buddy_list";
-import * as compose_state from "./compose_state";
-import * as message_live_update from "./message_live_update";
-import * as narrow_state from "./narrow_state";
-import * as navbar_alerts from "./navbar_alerts";
-import * as people from "./people";
-import * as pm_list from "./pm_list";
-import * as settings from "./settings";
-import * as settings_account from "./settings_account";
-import * as settings_config from "./settings_config";
-import * as settings_exports from "./settings_exports";
-import * as settings_linkifiers from "./settings_linkifiers";
-import * as settings_org from "./settings_org";
-import * as settings_profile_fields from "./settings_profile_fields";
-import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
-import * as settings_streams from "./settings_streams";
-import * as settings_users from "./settings_users";
-import {current_user, realm} from "./state_data";
-import * as stream_events from "./stream_events";
-import * as user_group_edit from "./user_group_edit";
-import * as user_profile from "./user_profile";
+import * as activity_ui from "./activity_ui.ts";
+import * as blueslip from "./blueslip.ts";
+import {buddy_list} from "./buddy_list.ts";
+import * as compose_state from "./compose_state.ts";
+import * as message_live_update from "./message_live_update.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as navbar_alerts from "./navbar_alerts.ts";
+import * as people from "./people.ts";
+import * as pm_list from "./pm_list.ts";
+import * as settings from "./settings.js";
+import * as settings_account from "./settings_account.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_exports from "./settings_exports.ts";
+import * as settings_linkifiers from "./settings_linkifiers.ts";
+import * as settings_org from "./settings_org.ts";
+import * as settings_profile_fields from "./settings_profile_fields.ts";
+import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults.ts";
+import * as settings_streams from "./settings_streams.ts";
+import * as settings_users from "./settings_users.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as stream_events from "./stream_events.js";
+import * as user_group_edit from "./user_group_edit.js";
+import * as user_profile from "./user_profile.ts";
 
 export const update_person = function update(person) {
     const person_obj = people.maybe_get_user_by_id(person.user_id);

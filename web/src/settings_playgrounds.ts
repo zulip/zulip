@@ -3,20 +3,20 @@ import $ from "jquery";
 import render_confirm_delete_playground from "../templates/confirm_dialog/confirm_delete_playground.hbs";
 import render_admin_playground_list from "../templates/settings/admin_playground_list.hbs";
 
-import {Typeahead} from "./bootstrap_typeahead";
-import * as bootstrap_typeahead from "./bootstrap_typeahead";
-import type {TypeaheadInputElement} from "./bootstrap_typeahead";
-import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
-import * as dialog_widget from "./dialog_widget";
-import {$t_html} from "./i18n";
-import * as ListWidget from "./list_widget";
-import * as realm_playground from "./realm_playground";
-import type {RealmPlayground} from "./realm_playground";
-import * as scroll_util from "./scroll_util";
-import {current_user, realm} from "./state_data";
-import {render_typeahead_item} from "./typeahead_helper";
-import * as ui_report from "./ui_report";
+import {Typeahead} from "./bootstrap_typeahead.ts";
+import * as bootstrap_typeahead from "./bootstrap_typeahead.ts";
+import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
+import * as channel from "./channel.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t_html} from "./i18n.ts";
+import * as ListWidget from "./list_widget.ts";
+import * as realm_playground from "./realm_playground.ts";
+import type {RealmPlayground} from "./realm_playground.ts";
+import * as scroll_util from "./scroll_util.ts";
+import {current_user, realm} from "./state_data.ts";
+import {render_typeahead_item} from "./typeahead_helper.ts";
+import * as ui_report from "./ui_report.ts";
 
 let pygments_typeahead: Typeahead<string>;
 

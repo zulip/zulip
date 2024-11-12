@@ -51,7 +51,7 @@ module.exports = {
         ],
         "formatjs/no-id": "error",
         "guard-for-in": "error",
-        "import/extensions": "error",
+        "import/extensions": ["error", "ignorePackages"],
         "import/first": "error",
         "import/newline-after-import": "error",
         "import/no-cycle": ["error", {ignoreExternal: true}],

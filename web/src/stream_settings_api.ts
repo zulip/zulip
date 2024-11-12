@@ -1,9 +1,9 @@
 import assert from "minimalistic-assert";
 
-import * as channel from "./channel";
-import * as settings_ui from "./settings_ui";
-import type {StreamProperties, StreamSubscription} from "./sub_store";
-import * as sub_store from "./sub_store";
+import * as channel from "./channel.ts";
+import * as settings_ui from "./settings_ui.ts";
+import type {StreamProperties, StreamSubscription} from "./sub_store.ts";
+import * as sub_store from "./sub_store.ts";
 
 export type SubData = {
     [Property in keyof StreamProperties]: {

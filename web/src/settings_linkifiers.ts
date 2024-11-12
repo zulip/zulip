@@ -7,17 +7,17 @@ import render_confirm_delete_linkifier from "../templates/confirm_dialog/confirm
 import render_admin_linkifier_edit_form from "../templates/settings/admin_linkifier_edit_form.hbs";
 import render_admin_linkifier_list from "../templates/settings/admin_linkifier_list.hbs";
 
-import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
-import * as dialog_widget from "./dialog_widget";
-import {$t_html} from "./i18n";
-import * as ListWidget from "./list_widget";
-import * as scroll_util from "./scroll_util";
-import * as settings_ui from "./settings_ui";
-import {current_user, realm} from "./state_data";
-import * as ui_report from "./ui_report";
-import * as ui_util from "./ui_util";
-import * as util from "./util";
+import * as channel from "./channel.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t_html} from "./i18n.ts";
+import * as ListWidget from "./list_widget.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as settings_ui from "./settings_ui.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as ui_report from "./ui_report.ts";
+import * as ui_util from "./ui_util.ts";
+import * as util from "./util.ts";
 
 type RealmLinkifiers = typeof realm.realm_linkifiers;
 

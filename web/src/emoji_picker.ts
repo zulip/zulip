@@ -4,29 +4,29 @@ import type * as tippy from "tippy.js";
 import {z} from "zod";
 
 import emoji_codes from "../../static/generated/emoji/emoji_codes.json";
-import * as typeahead from "../shared/src/typeahead";
+import * as typeahead from "../shared/src/typeahead.ts";
 import render_emoji_popover from "../templates/popovers/emoji/emoji_popover.hbs";
 import render_emoji_popover_emoji_map from "../templates/popovers/emoji/emoji_popover_emoji_map.hbs";
 import render_emoji_popover_search_results from "../templates/popovers/emoji/emoji_popover_search_results.hbs";
 import render_emoji_showcase from "../templates/popovers/emoji/emoji_showcase.hbs";
 
-import * as blueslip from "./blueslip";
-import * as compose_ui from "./compose_ui";
-import * as composebox_typeahead from "./composebox_typeahead";
-import * as emoji from "./emoji";
-import type {EmojiDict} from "./emoji";
-import * as keydown_util from "./keydown_util";
-import * as message_store from "./message_store";
-import {page_params} from "./page_params";
-import * as popover_menus from "./popover_menus";
-import * as reactions from "./reactions";
-import * as rows from "./rows";
-import * as scroll_util from "./scroll_util";
-import * as spectators from "./spectators";
-import * as ui_util from "./ui_util";
-import {user_settings} from "./user_settings";
-import * as user_status_ui from "./user_status_ui";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as compose_ui from "./compose_ui.ts";
+import * as composebox_typeahead from "./composebox_typeahead.ts";
+import * as emoji from "./emoji.ts";
+import type {EmojiDict} from "./emoji.ts";
+import * as keydown_util from "./keydown_util.ts";
+import * as message_store from "./message_store.ts";
+import {page_params} from "./page_params.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as reactions from "./reactions.ts";
+import * as rows from "./rows.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as spectators from "./spectators.ts";
+import * as ui_util from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
+import * as user_status_ui from "./user_status_ui.ts";
+import * as util from "./util.ts";
 
 // The functionalities for reacting to a message with an emoji
 // and composing a message with an emoji share a single widget,

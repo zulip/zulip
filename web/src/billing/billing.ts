@@ -1,9 +1,9 @@
 import $ from "jquery";
 import {z} from "zod";
 
-import * as portico_modals from "../portico/portico_modals";
+import * as portico_modals from "../portico/portico_modals.ts";
 
-import * as helpers from "./helpers";
+import * as helpers from "./helpers.ts";
 
 const billing_frequency_schema = z.enum(["Monthly", "Annual"]);
 const billing_base_url = $("#billing-page").attr("data-billing-base-url")!;

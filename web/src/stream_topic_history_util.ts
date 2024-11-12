@@ -1,8 +1,8 @@
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import * as channel from "./channel";
-import * as stream_topic_history from "./stream_topic_history";
+import * as channel from "./channel.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
 
 const stream_topic_history_response_schema = z.object({
     topics: z.array(

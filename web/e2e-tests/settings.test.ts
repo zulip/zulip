@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
 
-import {test_credentials} from "../../var/puppeteer/test_credentials";
+import {test_credentials} from "../../var/puppeteer/test_credentials.js";
 
-import * as common from "./lib/common";
+import * as common from "./lib/common.ts";
 
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const GENERIC_BOT_TYPE = "1";

@@ -1,17 +1,17 @@
-import Handlebars from "handlebars/runtime";
+import Handlebars from "handlebars/runtime.js";
 
-import {page_params} from "./base_page_params";
-import {$t, $t_html} from "./i18n";
-import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
-import {realm} from "./state_data";
-import {StreamPostPolicy} from "./stream_types";
-import type {StreamSpecificNotificationSettings} from "./sub_store";
+import {page_params} from "./base_page_params.ts";
+import {$t, $t_html} from "./i18n.ts";
+import type {RealmDefaultSettings} from "./realm_user_settings_defaults.ts";
+import {realm} from "./state_data.ts";
+import {StreamPostPolicy} from "./stream_types.ts";
+import type {StreamSpecificNotificationSettings} from "./sub_store.ts";
 import type {
     FollowedTopicNotificationSettings,
     PmNotificationSettings,
     StreamNotificationSettings,
     UserSettings,
-} from "./user_settings";
+} from "./user_settings.ts";
 
 /*
     This file contains translations between the integer values used in

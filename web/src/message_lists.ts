@@ -1,10 +1,10 @@
 import $ from "jquery";
 
-import * as inbox_util from "./inbox_util";
-import type {MessageList} from "./message_list";
-import type {MessageListData} from "./message_list_data";
-import * as message_list_data_cache from "./message_list_data_cache";
-import * as ui_util from "./ui_util";
+import * as inbox_util from "./inbox_util.ts";
+import type {MessageList} from "./message_list.ts";
+import type {MessageListData} from "./message_list_data.ts";
+import * as message_list_data_cache from "./message_list_data_cache.ts";
+import * as ui_util from "./ui_util.ts";
 
 export let current: MessageList | undefined;
 export const rendered_message_lists = new Map<number, MessageList>();

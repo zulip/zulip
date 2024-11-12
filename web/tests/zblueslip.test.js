@@ -2,8 +2,8 @@
 
 const assert = require("node:assert/strict");
 
-const {run_test} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
+const {run_test} = require("./lib/test.js");
+const blueslip = require("./lib/zblueslip.js");
 
 /*
 

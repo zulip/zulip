@@ -7,21 +7,21 @@ import emoji_settings_warning_modal from "../templates/confirm_dialog/confirm_em
 import render_add_emoji from "../templates/settings/add_emoji.hbs";
 import render_admin_emoji_list from "../templates/settings/admin_emoji_list.hbs";
 
-import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
-import * as dialog_widget from "./dialog_widget";
-import * as emoji from "./emoji";
-import type {ServerEmoji} from "./emoji";
-import {$t_html} from "./i18n";
-import * as ListWidget from "./list_widget";
-import * as loading from "./loading";
-import * as people from "./people";
-import * as scroll_util from "./scroll_util";
-import * as settings_data from "./settings_data";
-import {current_user} from "./state_data";
-import * as ui_report from "./ui_report";
-import * as upload_widget from "./upload_widget";
-import * as util from "./util";
+import * as channel from "./channel.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import * as emoji from "./emoji.ts";
+import type {ServerEmoji} from "./emoji.ts";
+import {$t_html} from "./i18n.ts";
+import * as ListWidget from "./list_widget.ts";
+import * as loading from "./loading.ts";
+import * as people from "./people.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as settings_data from "./settings_data.ts";
+import {current_user} from "./state_data.ts";
+import * as ui_report from "./ui_report.ts";
+import * as upload_widget from "./upload_widget.ts";
+import * as util from "./util.ts";
 
 const meta = {
     loaded: false,

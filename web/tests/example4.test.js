@@ -2,9 +2,9 @@
 
 const assert = require("node:assert/strict");
 
-const {make_bot} = require("./lib/example_user");
-const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test, noop} = require("./lib/test");
+const {make_bot} = require("./lib/example_user.js");
+const {mock_esm, zrequire} = require("./lib/namespace.js");
+const {run_test, noop} = require("./lib/test.js");
 
 /*
 

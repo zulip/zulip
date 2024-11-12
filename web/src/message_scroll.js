@@ -1,15 +1,15 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import * as compose_banner from "./compose_banner";
-import * as message_fetch from "./message_fetch";
-import * as message_lists from "./message_lists";
-import * as message_scroll_state from "./message_scroll_state";
-import * as message_viewport from "./message_viewport";
-import * as narrow_state from "./narrow_state";
-import * as unread from "./unread";
-import * as unread_ops from "./unread_ops";
-import * as unread_ui from "./unread_ui";
+import * as compose_banner from "./compose_banner.ts";
+import * as message_fetch from "./message_fetch.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_scroll_state from "./message_scroll_state.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as unread from "./unread.ts";
+import * as unread_ops from "./unread_ops.ts";
+import * as unread_ui from "./unread_ui.ts";
 
 let hide_scroll_to_bottom_timer;
 export function hide_scroll_to_bottom() {

@@ -2,17 +2,17 @@ import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
 
-import * as blueslip from "./blueslip";
-import * as input_pill from "./input_pill";
-import * as keydown_util from "./keydown_util";
-import type {User} from "./people";
-import * as pill_typeahead from "./pill_typeahead";
-import * as stream_pill from "./stream_pill";
-import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper";
-import * as user_group_pill from "./user_group_pill";
-import * as user_groups from "./user_groups";
-import type {UserGroup} from "./user_groups";
-import * as user_pill from "./user_pill";
+import * as blueslip from "./blueslip.ts";
+import * as input_pill from "./input_pill.ts";
+import * as keydown_util from "./keydown_util.ts";
+import type {User} from "./people.ts";
+import * as pill_typeahead from "./pill_typeahead.ts";
+import * as stream_pill from "./stream_pill.ts";
+import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper.ts";
+import * as user_group_pill from "./user_group_pill.ts";
+import * as user_groups from "./user_groups.ts";
+import type {UserGroup} from "./user_groups.ts";
+import * as user_pill from "./user_pill.ts";
 
 export function create_item_from_text(
     text: string,

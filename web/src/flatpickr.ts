@@ -4,9 +4,9 @@ import confirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import {$t} from "./i18n";
-import {user_settings} from "./user_settings";
-import * as util from "./util";
+import {$t} from "./i18n.ts";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 export let flatpickr_instance: flatpickr.Instance;
 

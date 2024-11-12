@@ -2,10 +2,10 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_jquery, mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
-const {page_params} = require("./lib/zpage_params");
+const {mock_jquery, mock_esm, set_global, zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
+const blueslip = require("./lib/zblueslip.js");
+const {page_params} = require("./lib/zpage_params.js");
 
 const xhr_401 = {
     status: 401,

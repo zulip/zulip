@@ -3,11 +3,11 @@ import $ from "jquery";
 import _ from "lodash";
 import {z} from "zod";
 
-import {page_params} from "./base_page_params";
-import * as blueslip from "./blueslip";
-import * as reload_state from "./reload_state";
-import {normalize_path, shouldCreateSpanForRequest} from "./sentry";
-import * as spectators from "./spectators";
+import {page_params} from "./base_page_params.ts";
+import * as blueslip from "./blueslip.ts";
+import * as reload_state from "./reload_state.ts";
+import {normalize_path, shouldCreateSpanForRequest} from "./sentry.ts";
+import * as spectators from "./spectators.ts";
 
 // We omit `success` handler from original `AjaxSettings` type because it types
 // the `data` parameter as `any` type and we want to avoid that.

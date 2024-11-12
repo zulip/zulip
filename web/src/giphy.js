@@ -3,12 +3,12 @@ import _ from "lodash";
 
 import render_giphy_picker from "../templates/giphy_picker.hbs";
 
-import * as blueslip from "./blueslip";
-import * as compose_ui from "./compose_ui";
-import * as popover_menus from "./popover_menus";
-import * as rows from "./rows";
-import {realm} from "./state_data";
-import * as ui_util from "./ui_util";
+import * as blueslip from "./blueslip.ts";
+import * as compose_ui from "./compose_ui.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as rows from "./rows.ts";
+import {realm} from "./state_data.ts";
+import * as ui_util from "./ui_util.ts";
 
 let giphy_fetch;
 let search_term = "";

@@ -2,10 +2,10 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
-const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {mock_esm, zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
+const $ = require("./lib/zjquery.js");
+const {page_params} = require("./lib/zpage_params.js");
 
 mock_esm("../src/electron_bridge");
 mock_esm("../src/spoilers", {hide_spoilers_in_notification() {}});

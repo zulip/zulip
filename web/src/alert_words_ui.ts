@@ -3,12 +3,12 @@ import $ from "jquery";
 import render_add_alert_word from "../templates/settings/add_alert_word.hbs";
 import render_alert_word_settings_item from "../templates/settings/alert_word_settings_item.hbs";
 
-import * as alert_words from "./alert_words";
-import * as channel from "./channel";
-import * as dialog_widget from "./dialog_widget";
-import {$t, $t_html} from "./i18n";
-import * as ListWidget from "./list_widget";
-import * as ui_report from "./ui_report";
+import * as alert_words from "./alert_words.ts";
+import * as channel from "./channel.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as ListWidget from "./list_widget.ts";
+import * as ui_report from "./ui_report.ts";
 
 export let loaded = false;
 

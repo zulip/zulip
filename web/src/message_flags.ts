@@ -2,9 +2,9 @@ import type {DebouncedFunc} from "lodash";
 import _ from "lodash";
 import {z} from "zod";
 
-import * as channel from "./channel";
-import type {Message} from "./message_store";
-import * as starred_messages from "./starred_messages";
+import * as channel from "./channel.ts";
+import type {Message} from "./message_store.ts";
+import * as starred_messages from "./starred_messages.ts";
 
 export function send_flag_update_for_messages(msg_ids: number[], flag: string, op: string): void {
     void channel.post({

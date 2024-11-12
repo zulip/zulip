@@ -5,10 +5,10 @@ const assert = require("node:assert/strict");
 const {add} = require("date-fns");
 const MockDate = require("mockdate");
 
-const {$t} = require("./lib/i18n");
-const {zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
-const $ = require("./lib/zjquery");
+const {$t} = require("./lib/i18n.js");
+const {zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
+const $ = require("./lib/zjquery.js");
 
 const {initialize_user_settings} = zrequire("user_settings");
 

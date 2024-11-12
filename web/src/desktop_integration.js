@@ -1,13 +1,13 @@
 import $ from "jquery";
 
-import * as browser_history from "./browser_history";
-import * as channel from "./channel";
-import {electron_bridge} from "./electron_bridge";
-import * as feedback_widget from "./feedback_widget";
-import {$t} from "./i18n";
-import * as message_store from "./message_store";
-import * as message_view from "./message_view";
-import * as stream_data from "./stream_data";
+import * as browser_history from "./browser_history.ts";
+import * as channel from "./channel.ts";
+import {electron_bridge} from "./electron_bridge.ts";
+import * as feedback_widget from "./feedback_widget.ts";
+import {$t} from "./i18n.ts";
+import * as message_store from "./message_store.ts";
+import * as message_view from "./message_view.ts";
+import * as stream_data from "./stream_data.ts";
 
 export function initialize() {
     if (electron_bridge === undefined) {

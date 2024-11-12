@@ -27,7 +27,7 @@ function compile_hbs(module, filename) {
     const pc = hb.precompile(code, {preventIndent: true, srcName: filename, strict: true});
     const node = new SourceNode();
     node.add([
-        'const Handlebars = require("handlebars/runtime");\n',
+        'const Handlebars = require("handlebars/runtime.js");\n',
         "module.exports = Handlebars.template(",
         SourceNode.fromStringWithSourceMap(pc.code, new SourceMapConsumer(pc.map)),
         ");\n",

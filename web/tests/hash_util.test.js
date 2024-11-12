@@ -2,10 +2,10 @@
 
 const assert = require("node:assert/strict");
 
-const message_link_test_cases = require("../../zerver/tests/fixtures/message_link_test_cases");
+const message_link_test_cases = require("../../zerver/tests/fixtures/message_link_test_cases.json");
 
-const {zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
 
 const hash_parser = zrequire("hash_parser");
 const hash_util = zrequire("hash_util");

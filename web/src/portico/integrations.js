@@ -1,12 +1,12 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import * as blueslip from "../blueslip";
-import * as common from "../common";
-import {$t} from "../i18n";
+import * as blueslip from "../blueslip.ts";
+import * as common from "../common.ts";
+import {$t} from "../i18n.ts";
 
-import * as google_analytics from "./google-analytics";
-import {path_parts} from "./landing-page";
+import * as google_analytics from "./google-analytics.ts";
+import {path_parts} from "./landing-page.ts";
 
 // these constants are populated immediately with data from the DOM on page load
 // name -> display name

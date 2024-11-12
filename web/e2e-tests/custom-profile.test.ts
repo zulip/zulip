@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
 
-import * as common from "./lib/common";
+import * as common from "./lib/common.ts";
 
 // This will be the row of the custom profile field we add.
 const profile_field_row = "#admin_profile_fields_table tr:nth-last-child(1)";

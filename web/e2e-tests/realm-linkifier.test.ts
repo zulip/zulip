@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
 
-import * as common from "./lib/common";
+import * as common from "./lib/common.ts";
 
 async function test_add_linkifier(page: Page): Promise<void> {
     await page.waitForSelector(".admin-linkifier-form", {visible: true});

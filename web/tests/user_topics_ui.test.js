@@ -2,8 +2,8 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
 
 const user_topics = zrequire("user_topics");
 const user_topics_ui = zrequire("user_topics_ui");

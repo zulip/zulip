@@ -4,9 +4,9 @@ const assert = require("node:assert/strict");
 
 const MockDate = require("mockdate");
 
-const {set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
+const {set_global, zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
+const blueslip = require("./lib/zblueslip.js");
 
 let time = 0;
 let checker;

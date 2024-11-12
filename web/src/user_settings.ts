@@ -1,6 +1,6 @@
 import {z} from "zod";
 
-import type {StateData} from "./state_data";
+import type {StateData} from "./state_data.ts";
 
 export const stream_notification_settings_schema = z.object({
     enable_stream_audible_notifications: z.boolean(),

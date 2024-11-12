@@ -8,14 +8,14 @@ import render_generate_integration_url_config_text_modal from "../templates/sett
 import render_generate_integration_url_modal from "../templates/settings/generate_integration_url_modal.hbs";
 import render_integration_events from "../templates/settings/integration_events.hbs";
 
-import {show_copied_confirmation} from "./copied_tooltip";
-import * as dialog_widget from "./dialog_widget";
-import * as dropdown_widget from "./dropdown_widget";
-import type {DropdownWidget, Option} from "./dropdown_widget";
-import {$t_html} from "./i18n";
-import {realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as util from "./util";
+import {show_copied_confirmation} from "./copied_tooltip.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
+import type {DropdownWidget, Option} from "./dropdown_widget.ts";
+import {$t_html} from "./i18n.ts";
+import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as util from "./util.ts";
 
 type ConfigOption = {
     key: string;

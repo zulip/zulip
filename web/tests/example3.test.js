@@ -2,9 +2,9 @@
 
 const assert = require("node:assert/strict");
 
-const {make_stream} = require("./lib/example_stream");
-const {zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {make_stream} = require("./lib/example_stream.js");
+const {zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
 
 // In the Zulip app you can narrow your message stream by topic, by
 // sender, by direct message recipient, by search keywords, etc.

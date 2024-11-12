@@ -2,10 +2,10 @@ import autosize from "autosize";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import * as blueslip from "./blueslip";
-import * as compose_state from "./compose_state";
-import * as compose_ui from "./compose_ui";
-import * as message_viewport from "./message_viewport";
+import * as blueslip from "./blueslip.ts";
+import * as compose_state from "./compose_state.ts";
+import * as compose_ui from "./compose_ui.ts";
+import * as message_viewport from "./message_viewport.ts";
 
 function get_bottom_whitespace_height(): number {
     return message_viewport.height() * 0.4;

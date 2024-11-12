@@ -2,8 +2,8 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
 
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const compose_state = mock_esm("../src/compose_state");

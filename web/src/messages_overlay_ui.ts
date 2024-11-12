@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import * as util from "./util";
+import * as util from "./util.ts";
 
 export type Context = {
     items_container_selector: string;

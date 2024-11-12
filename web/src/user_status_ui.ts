@@ -3,14 +3,14 @@ import $ from "jquery";
 import render_set_status_overlay from "../templates/set_status_overlay.hbs";
 import render_status_emoji_selector from "../templates/status_emoji_selector.hbs";
 
-import * as dialog_widget from "./dialog_widget";
-import * as emoji from "./emoji";
-import type {EmojiRenderingDetails} from "./emoji";
-import {$t, $t_html} from "./i18n";
-import * as keydown_util from "./keydown_util";
-import * as people from "./people";
-import * as user_status from "./user_status";
-import type {UserStatusEmojiInfo} from "./user_status";
+import * as dialog_widget from "./dialog_widget.ts";
+import * as emoji from "./emoji.ts";
+import type {EmojiRenderingDetails} from "./emoji.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
+import * as people from "./people.ts";
+import * as user_status from "./user_status.ts";
+import type {UserStatusEmojiInfo} from "./user_status.ts";
 
 let selected_emoji_info: Partial<UserStatusEmojiInfo> = {};
 let default_status_messages_and_emoji_info: {status_text: string; emoji: EmojiRenderingDetails}[];

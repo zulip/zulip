@@ -1,15 +1,15 @@
 import assert from "minimalistic-assert";
 
-import {$t_html} from "./i18n";
-import type {InputPillContainer} from "./input_pill";
-import * as people from "./people";
+import {$t_html} from "./i18n.ts";
+import type {InputPillContainer} from "./input_pill.ts";
+import * as people from "./people.ts";
 import type {
     CombinedPill,
     CombinedPillContainer,
     GroupSettingPillContainer,
-} from "./typeahead_helper";
-import type {UserGroup} from "./user_groups";
-import * as user_groups from "./user_groups";
+} from "./typeahead_helper.ts";
+import type {UserGroup} from "./user_groups.ts";
+import * as user_groups from "./user_groups.ts";
 
 export type UserGroupPill = {
     type: "user_group";

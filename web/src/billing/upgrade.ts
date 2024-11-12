@@ -1,12 +1,12 @@
 import $ from "jquery";
 import {z} from "zod";
 
-import {localstorage} from "../localstorage";
-import * as portico_modals from "../portico/portico_modals";
+import {localstorage} from "../localstorage.ts";
+import * as portico_modals from "../portico/portico_modals.ts";
 
-import * as helpers from "./helpers";
-import type {Prices} from "./helpers";
-import {page_params} from "./page_params";
+import * as helpers from "./helpers.ts";
+import type {Prices} from "./helpers.ts";
+import {page_params} from "./page_params.ts";
 
 const prices: Prices = {
     annual: page_params.annual_price,

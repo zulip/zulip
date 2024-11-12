@@ -6,38 +6,38 @@ import {z} from "zod";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
-import * as blueslip from "./blueslip";
-import * as compose_banner from "./compose_banner";
-import type {DropdownWidget} from "./dropdown_widget";
-import * as group_permission_settings from "./group_permission_settings";
-import * as group_setting_pill from "./group_setting_pill";
-import {$t} from "./i18n";
+import * as blueslip from "./blueslip.ts";
+import * as compose_banner from "./compose_banner.ts";
+import type {DropdownWidget} from "./dropdown_widget.ts";
+import * as group_permission_settings from "./group_permission_settings.ts";
+import * as group_setting_pill from "./group_setting_pill.ts";
+import {$t} from "./i18n.ts";
 import {
     LEGACY_FONT_SIZE_PX,
     LEGACY_LINE_HEIGHT_PERCENT,
     NON_COMPACT_MODE_FONT_SIZE_PX,
     NON_COMPACT_MODE_LINE_HEIGHT_PERCENT,
-} from "./information_density";
-import * as people from "./people";
+} from "./information_density.ts";
+import * as people from "./people.ts";
 import {
     realm_default_settings_schema,
     realm_user_settings_defaults,
-} from "./realm_user_settings_defaults";
-import * as scroll_util from "./scroll_util";
-import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
-import type {CustomProfileField, GroupSettingValue} from "./state_data";
-import {current_user, group_setting_value_schema, realm, realm_schema} from "./state_data";
-import * as stream_data from "./stream_data";
-import type {StreamSubscription} from "./sub_store";
-import {stream_subscription_schema} from "./sub_store";
-import type {GroupSettingPillContainer} from "./typeahead_helper";
-import type {HTMLSelectOneElement} from "./types";
-import * as user_group_pill from "./user_group_pill";
-import * as user_groups from "./user_groups";
-import type {UserGroup} from "./user_groups";
-import * as user_pill from "./user_pill";
-import * as util from "./util";
+} from "./realm_user_settings_defaults.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import type {CustomProfileField, GroupSettingValue} from "./state_data.ts";
+import {current_user, group_setting_value_schema, realm, realm_schema} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import {stream_subscription_schema} from "./sub_store.ts";
+import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
+import type {HTMLSelectOneElement} from "./types.ts";
+import * as user_group_pill from "./user_group_pill.ts";
+import * as user_groups from "./user_groups.ts";
+import type {UserGroup} from "./user_groups.ts";
+import * as user_pill from "./user_pill.ts";
+import * as util from "./util.ts";
 
 const MAX_CUSTOM_TIME_LIMIT_SETTING_VALUE = 2147483647;
 

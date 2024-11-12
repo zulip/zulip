@@ -2,10 +2,10 @@
 
 const assert = require("node:assert/strict");
 
-const {$t} = require("./lib/i18n");
-const {set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
+const {$t} = require("./lib/i18n.js");
+const {set_global, zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
+const blueslip = require("./lib/zblueslip.js");
 
 set_global("page_params", {
     is_spectator: false,

@@ -4,16 +4,16 @@ import {z} from "zod";
 
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
 
-import {Typeahead} from "./bootstrap_typeahead";
-import * as bootstrap_typeahead from "./bootstrap_typeahead";
-import {$t} from "./i18n";
-import * as people from "./people";
-import * as pill_typeahead from "./pill_typeahead";
-import * as settings_components from "./settings_components";
-import {current_user, realm} from "./state_data";
-import * as typeahead_helper from "./typeahead_helper";
-import type {UserPillWidget} from "./user_pill";
-import * as user_pill from "./user_pill";
+import {Typeahead} from "./bootstrap_typeahead.ts";
+import * as bootstrap_typeahead from "./bootstrap_typeahead.ts";
+import {$t} from "./i18n.ts";
+import * as people from "./people.ts";
+import * as pill_typeahead from "./pill_typeahead.ts";
+import * as settings_components from "./settings_components.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as typeahead_helper from "./typeahead_helper.ts";
+import type {UserPillWidget} from "./user_pill.ts";
+import * as user_pill from "./user_pill.ts";
 
 const user_value_schema = z.array(z.number());
 

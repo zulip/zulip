@@ -27,7 +27,7 @@ const assert = require("node:assert/strict");
 const {JSDOM} = require("jsdom");
 const _ = require("lodash");
 
-const mdiff = require("./mdiff");
+const mdiff = require("./mdiff.js");
 
 // Module-level global instance of MarkdownComparer, initialized when needed
 let _markdownComparerInstance = null;

@@ -2,10 +2,10 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
-const {make_stub} = require("./lib/stub");
-const {run_test} = require("./lib/test");
-const $ = require("./lib/zjquery");
+const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.js");
+const {make_stub} = require("./lib/stub.js");
+const {run_test} = require("./lib/test.js");
+const $ = require("./lib/zjquery.js");
 
 // Important note on these tests:
 

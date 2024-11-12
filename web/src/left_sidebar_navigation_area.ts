@@ -1,15 +1,15 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import type {Filter} from "./filter";
-import {localstorage} from "./localstorage";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import * as resize from "./resize";
-import * as scheduled_messages from "./scheduled_messages";
-import * as settings_config from "./settings_config";
-import * as ui_util from "./ui_util";
-import * as unread from "./unread";
+import type {Filter} from "./filter.ts";
+import {localstorage} from "./localstorage.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import * as resize from "./resize.ts";
+import * as scheduled_messages from "./scheduled_messages.ts";
+import * as settings_config from "./settings_config.ts";
+import * as ui_util from "./ui_util.ts";
+import * as unread from "./unread.ts";
 
 let last_mention_count = 0;
 const ls_key = "left_sidebar_views_state";

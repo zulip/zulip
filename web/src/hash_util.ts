@@ -1,17 +1,17 @@
-import * as internal_url from "../shared/src/internal_url";
+import * as internal_url from "../shared/src/internal_url.ts";
 
-import * as blueslip from "./blueslip";
-import type {Message} from "./message_store";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import * as settings_data from "./settings_data";
-import type {NarrowTerm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import type {StreamSubscription} from "./sub_store";
-import * as user_groups from "./user_groups";
-import type {UserGroup} from "./user_groups";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import type {Message} from "./message_store.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import * as settings_data from "./settings_data.ts";
+import type {NarrowTerm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as user_groups from "./user_groups.ts";
+import type {UserGroup} from "./user_groups.ts";
+import * as util from "./util.ts";
 
 export function build_reload_url(): string {
     let hash = window.location.hash;

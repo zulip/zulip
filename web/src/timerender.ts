@@ -10,11 +10,11 @@ import $ from "jquery";
 
 import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.hbs";
 
-import {$t} from "./i18n";
-import {difference_in_calendar_days, get_offset, start_of_day} from "./time_zone_util";
-import {parse_html} from "./ui_util";
-import {user_settings} from "./user_settings";
-import * as util from "./util";
+import {$t} from "./i18n.ts";
+import {difference_in_calendar_days, get_offset, start_of_day} from "./time_zone_util.ts";
+import {parse_html} from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 let next_timerender_id = 0;
 

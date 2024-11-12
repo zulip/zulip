@@ -2,16 +2,16 @@ import $ from "jquery";
 
 import render_navbar_personal_menu_popover from "../templates/popovers/navbar/navbar_personal_menu_popover.hbs";
 
-import * as channel from "./channel";
-import * as message_view from "./message_view";
-import * as people from "./people";
-import * as popover_menus from "./popover_menus";
-import * as popover_menus_data from "./popover_menus_data";
-import * as popovers from "./popovers";
-import {current_user} from "./state_data";
-import {parse_html} from "./ui_util";
-import {user_settings} from "./user_settings";
-import * as user_status from "./user_status";
+import * as channel from "./channel.ts";
+import * as message_view from "./message_view.ts";
+import * as people from "./people.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as popover_menus_data from "./popover_menus_data.ts";
+import * as popovers from "./popovers.ts";
+import {current_user} from "./state_data.ts";
+import {parse_html} from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
+import * as user_status from "./user_status.ts";
 
 export function initialize(): void {
     popover_menus.register_popover_menu("#personal-menu", {

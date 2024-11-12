@@ -2,8 +2,8 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace");
-const {run_test, noop} = require("./lib/test");
+const {zrequire} = require("./lib/namespace.js");
+const {run_test, noop} = require("./lib/test.js");
 
 // override file-level function call in reload.ts
 window.addEventListener = noop;

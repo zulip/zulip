@@ -3,11 +3,11 @@ import _ from "lodash";
 
 import render_dialog_widget from "../templates/dialog_widget.hbs";
 
-import type {AjaxRequestHandler} from "./channel";
-import {$t_html} from "./i18n";
-import * as loading from "./loading";
-import * as modals from "./modals";
-import * as ui_report from "./ui_report";
+import type {AjaxRequestHandler} from "./channel.ts";
+import {$t_html} from "./i18n.ts";
+import * as loading from "./loading.ts";
+import * as modals from "./modals.ts";
+import * as ui_report from "./ui_report.ts";
 
 // Since only one dialog widget can be active at a time
 // and we don't support reopening already closed dialog widgets,

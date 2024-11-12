@@ -1,11 +1,11 @@
 import {z} from "zod";
 
-import * as channel from "./channel";
-import * as emoji from "./emoji";
-import type {EmojiRenderingDetails} from "./emoji";
-import type {StateData} from "./state_data";
-import {user_settings} from "./user_settings";
-import {user_status_schema} from "./user_status_types";
+import * as channel from "./channel.ts";
+import * as emoji from "./emoji.ts";
+import type {EmojiRenderingDetails} from "./emoji.ts";
+import type {StateData} from "./state_data.ts";
+import {user_settings} from "./user_settings.ts";
+import {user_status_schema} from "./user_status_types.ts";
 
 export type UserStatus = z.infer<typeof user_status_schema>;
 export type UserStatusEmojiInfo = EmojiRenderingDetails & {

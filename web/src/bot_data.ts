@@ -1,9 +1,9 @@
 import type {z} from "zod";
 
-import type {services_schema} from "./bot_types";
-import {server_add_bot_schema, server_update_bot_schema} from "./bot_types";
-import * as people from "./people";
-import type {StateData} from "./state_data";
+import type {services_schema} from "./bot_types.ts";
+import {server_add_bot_schema, server_update_bot_schema} from "./bot_types.ts";
+import * as people from "./people.ts";
+import type {StateData} from "./state_data.ts";
 
 export type ServerUpdateBotData = z.infer<typeof server_update_bot_schema>;
 export type ServerAddBotData = z.infer<typeof server_add_bot_schema>;

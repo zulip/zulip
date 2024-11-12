@@ -4,9 +4,9 @@ const assert = require("node:assert/strict");
 
 const MockDate = require("mockdate");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
-const {make_stub} = require("./lib/stub");
-const {run_test, noop} = require("./lib/test");
+const {mock_esm, zrequire} = require("./lib/namespace.js");
+const {make_stub} = require("./lib/stub.js");
+const {run_test, noop} = require("./lib/test.js");
 
 const compose_notifications = mock_esm("../src/compose_notifications");
 const markdown = mock_esm("../src/markdown");

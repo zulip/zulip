@@ -2,9 +2,9 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, with_overrides, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
-const {page_params} = require("./lib/zpage_params");
+const {mock_esm, with_overrides, zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
+const {page_params} = require("./lib/zpage_params.js");
 
 const settings_data = zrequire("settings_data");
 const settings_config = zrequire("settings_config");

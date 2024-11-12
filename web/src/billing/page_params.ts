@@ -1,6 +1,6 @@
 import assert from "minimalistic-assert";
 
-import {page_params as base_page_params} from "../base_page_params";
+import {page_params as base_page_params} from "../base_page_params.ts";
 
 assert(base_page_params.page_type === "upgrade");
 

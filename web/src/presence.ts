@@ -1,9 +1,9 @@
 import type {z} from "zod";
 
-import * as people from "./people";
-import type {StateData, presence_schema} from "./state_data";
-import {realm} from "./state_data";
-import {user_settings} from "./user_settings";
+import * as people from "./people.ts";
+import type {StateData, presence_schema} from "./state_data.ts";
+import {realm} from "./state_data.ts";
+import {user_settings} from "./user_settings.ts";
 
 export type RawPresence = z.infer<typeof presence_schema> & {
     server_timestamp: number;

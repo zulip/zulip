@@ -1,4 +1,4 @@
-import * as blueslip from "./blueslip";
+import * as blueslip from "./blueslip.ts";
 
 export class LazySet {
     private data:

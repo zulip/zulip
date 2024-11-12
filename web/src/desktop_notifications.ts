@@ -1,8 +1,8 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import {electron_bridge} from "./electron_bridge";
-import type {Message} from "./message_store";
+import {electron_bridge} from "./electron_bridge.ts";
+import type {Message} from "./message_store.ts";
 
 type NoticeMemory = Map<
     string,

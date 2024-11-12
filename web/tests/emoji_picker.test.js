@@ -4,8 +4,8 @@ const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
-const {zrequire, set_global} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {zrequire, set_global} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
 
 const emoji = zrequire("emoji");
 const emoji_picker = zrequire("emoji_picker");

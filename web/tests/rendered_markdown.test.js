@@ -2,11 +2,11 @@
 
 const assert = require("node:assert/strict");
 
-const {$t} = require("./lib/i18n");
-const {mock_cjs, mock_esm, zrequire} = require("./lib/namespace");
-const {run_test, noop} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
-const $ = require("./lib/zjquery");
+const {$t} = require("./lib/i18n.js");
+const {mock_cjs, mock_esm, zrequire} = require("./lib/namespace.js");
+const {run_test, noop} = require("./lib/test.js");
+const blueslip = require("./lib/zblueslip.js");
+const $ = require("./lib/zjquery.js");
 
 let clipboard_args;
 class Clipboard {

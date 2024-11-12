@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/browser";
 
-import * as blueslip from "./blueslip";
+import * as blueslip from "./blueslip.ts";
 
 export let next_local_id = 0;
 export const messages = new Map<string, MessageState>();

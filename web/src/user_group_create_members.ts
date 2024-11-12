@@ -4,16 +4,16 @@ import render_new_user_group_user from "../templates/stream_settings/new_stream_
 import render_new_user_group_subgroup from "../templates/user_group_settings/new_user_group_subgroup.hbs";
 import render_new_user_group_users from "../templates/user_group_settings/new_user_group_users.hbs";
 
-import * as add_group_members_pill from "./add_group_members_pill";
-import * as ListWidget from "./list_widget";
-import type {ListWidget as ListWidgetType} from "./list_widget";
-import * as people from "./people";
-import type {User} from "./people";
-import {current_user} from "./state_data";
-import type {CombinedPillContainer} from "./typeahead_helper";
-import * as user_group_components from "./user_group_components";
-import * as user_group_create_members_data from "./user_group_create_members_data";
-import type {UserGroup} from "./user_groups";
+import * as add_group_members_pill from "./add_group_members_pill.ts";
+import * as ListWidget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
+import * as people from "./people.ts";
+import type {User} from "./people.ts";
+import {current_user} from "./state_data.ts";
+import type {CombinedPillContainer} from "./typeahead_helper.ts";
+import * as user_group_components from "./user_group_components.ts";
+import * as user_group_create_members_data from "./user_group_create_members_data.ts";
+import type {UserGroup} from "./user_groups.ts";
 
 let pill_widget: CombinedPillContainer;
 let all_users_list_widget: ListWidgetType<User | UserGroup, User | UserGroup>;

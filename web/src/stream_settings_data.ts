@@ -1,14 +1,14 @@
-import * as hash_util from "./hash_util";
-import * as peer_data from "./peer_data";
-import type {User} from "./people";
-import * as settings_config from "./settings_config";
-import {current_user} from "./state_data";
-import * as stream_data from "./stream_data";
-import type {StreamSpecificNotificationSettings, StreamSubscription} from "./sub_store";
-import * as sub_store from "./sub_store";
-import * as timerender from "./timerender";
-import {user_settings} from "./user_settings";
-import * as util from "./util";
+import * as hash_util from "./hash_util.ts";
+import * as peer_data from "./peer_data.ts";
+import type {User} from "./people.ts";
+import * as settings_config from "./settings_config.ts";
+import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import type {StreamSpecificNotificationSettings, StreamSubscription} from "./sub_store.ts";
+import * as sub_store from "./sub_store.ts";
+import * as timerender from "./timerender.ts";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 export type SettingsSubscription = StreamSubscription & {
     date_created_string: string;

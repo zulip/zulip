@@ -1,20 +1,20 @@
 import $ from "jquery";
 
-import * as alert_words from "./alert_words";
-import * as blueslip from "./blueslip";
-import * as desktop_notifications from "./desktop_notifications";
-import type {ElectronBridgeNotification} from "./desktop_notifications";
-import {$t} from "./i18n";
-import * as message_parser from "./message_parser";
-import type {Message} from "./message_store";
-import * as message_view from "./message_view";
-import * as people from "./people";
-import * as spoilers from "./spoilers";
-import * as stream_data from "./stream_data";
-import * as ui_util from "./ui_util";
-import {user_settings} from "./user_settings";
-import * as user_topics from "./user_topics";
-import * as util from "./util";
+import * as alert_words from "./alert_words.ts";
+import * as blueslip from "./blueslip.ts";
+import * as desktop_notifications from "./desktop_notifications.ts";
+import type {ElectronBridgeNotification} from "./desktop_notifications.ts";
+import {$t} from "./i18n.ts";
+import * as message_parser from "./message_parser.ts";
+import type {Message} from "./message_store.ts";
+import * as message_view from "./message_view.ts";
+import * as people from "./people.ts";
+import * as spoilers from "./spoilers.ts";
+import * as stream_data from "./stream_data.ts";
+import * as ui_util from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
+import * as user_topics from "./user_topics.ts";
+import * as util from "./util.ts";
 
 type TestNotificationMessage = {
     id: number;

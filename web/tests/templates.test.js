@@ -2,7 +2,7 @@
 
 const assert = require("node:assert/strict");
 
-const {run_test} = require("./lib/test");
+const {run_test} = require("./lib/test.js");
 
 /*
     Note that the test runner automatically registers

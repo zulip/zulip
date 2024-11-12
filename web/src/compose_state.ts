@@ -1,9 +1,9 @@
 import $ from "jquery";
 
-import * as compose_pm_pill from "./compose_pm_pill";
-import {$t} from "./i18n";
-import * as people from "./people";
-import * as sub_store from "./sub_store";
+import * as compose_pm_pill from "./compose_pm_pill.ts";
+import {$t} from "./i18n.ts";
+import * as people from "./people.ts";
+import * as sub_store from "./sub_store.ts";
 
 let message_type: "stream" | "private" | undefined;
 let recipient_edited_manually = false;

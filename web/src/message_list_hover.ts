@@ -3,11 +3,11 @@ import assert from "minimalistic-assert";
 
 import render_edit_content_button from "../templates/edit_content_button.hbs";
 
-import * as message_edit from "./message_edit";
-import * as message_lists from "./message_lists";
-import * as rows from "./rows";
-import * as thumbnail from "./thumbnail";
-import {user_settings} from "./user_settings";
+import * as message_edit from "./message_edit.ts";
+import * as message_lists from "./message_lists.ts";
+import * as rows from "./rows.ts";
+import * as thumbnail from "./thumbnail.ts";
+import {user_settings} from "./user_settings.ts";
 
 let $current_message_hover: JQuery | undefined;
 export function message_unhover(): void {

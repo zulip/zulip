@@ -1,14 +1,14 @@
 import $ from "jquery";
 
-import * as blueslip from "./blueslip";
-import * as browser_history from "./browser_history";
-import * as components from "./components";
-import {$t, $t_html} from "./i18n";
-import * as keydown_util from "./keydown_util";
-import * as popovers from "./popovers";
-import * as scroll_util from "./scroll_util";
-import * as settings_sections from "./settings_sections";
-import {redraw_active_users_list, redraw_deactivated_users_list} from "./settings_users";
+import * as blueslip from "./blueslip.ts";
+import * as browser_history from "./browser_history.ts";
+import * as components from "./components.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
+import * as popovers from "./popovers.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as settings_sections from "./settings_sections.js";
+import {redraw_active_users_list, redraw_deactivated_users_list} from "./settings_users.ts";
 
 export let normal_settings;
 export let org_settings;

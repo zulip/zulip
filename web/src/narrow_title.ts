@@ -1,17 +1,17 @@
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import {electron_bridge} from "./electron_bridge";
-import * as favicon from "./favicon";
-import type {Filter} from "./filter";
-import {$t} from "./i18n";
-import * as inbox_util from "./inbox_util";
-import * as people from "./people";
-import * as recent_view_util from "./recent_view_util";
-import {realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as unread from "./unread";
-import type {FullUnreadCountsData} from "./unread";
+import {electron_bridge} from "./electron_bridge.ts";
+import * as favicon from "./favicon.ts";
+import type {Filter} from "./filter.ts";
+import {$t} from "./i18n.ts";
+import * as inbox_util from "./inbox_util.ts";
+import * as people from "./people.ts";
+import * as recent_view_util from "./recent_view_util.ts";
+import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as unread from "./unread.ts";
+import type {FullUnreadCountsData} from "./unread.ts";
 
 export let unread_count = 0;
 let pm_count = 0;

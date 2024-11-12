@@ -4,9 +4,9 @@ const assert = require("node:assert/strict");
 
 const {addDays} = require("date-fns");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
-const {page_params} = require("./lib/zpage_params");
+const {mock_esm, zrequire} = require("./lib/namespace.js");
+const {run_test} = require("./lib/test.js");
+const {page_params} = require("./lib/zpage_params.js");
 
 page_params.is_spectator = false;
 

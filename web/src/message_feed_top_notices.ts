@@ -2,12 +2,12 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as hash_util from "./hash_util";
-import type {MessageList} from "./message_list";
-import * as message_lists from "./message_lists";
-import * as narrow_banner from "./narrow_banner";
-import * as narrow_state from "./narrow_state";
-import * as people from "./people";
+import * as hash_util from "./hash_util.ts";
+import type {MessageList} from "./message_list.ts";
+import * as message_lists from "./message_lists.ts";
+import * as narrow_banner from "./narrow_banner.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as people from "./people.ts";
 
 function show_history_limit_notice(): void {
     $(".top-messages-logo").hide();

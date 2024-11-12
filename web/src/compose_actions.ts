@@ -3,29 +3,29 @@
 import autosize from "autosize";
 import $ from "jquery";
 
-import * as blueslip from "./blueslip";
-import * as compose_banner from "./compose_banner";
-import * as compose_fade from "./compose_fade";
-import * as compose_notifications from "./compose_notifications";
-import * as compose_pm_pill from "./compose_pm_pill";
-import * as compose_recipient from "./compose_recipient";
-import * as compose_state from "./compose_state";
-import * as compose_ui from "./compose_ui";
-import type {ComposeTriggeredOptions} from "./compose_ui";
-import * as compose_validate from "./compose_validate";
-import * as drafts from "./drafts";
-import * as message_lists from "./message_lists";
-import type {Message} from "./message_store";
-import * as message_util from "./message_util";
-import * as message_viewport from "./message_viewport";
-import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import * as popovers from "./popovers";
-import * as reload_state from "./reload_state";
-import * as resize from "./resize";
-import * as spectators from "./spectators";
-import * as stream_data from "./stream_data";
+import * as blueslip from "./blueslip.ts";
+import * as compose_banner from "./compose_banner.ts";
+import * as compose_fade from "./compose_fade.ts";
+import * as compose_notifications from "./compose_notifications.ts";
+import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as compose_recipient from "./compose_recipient.ts";
+import * as compose_state from "./compose_state.ts";
+import * as compose_ui from "./compose_ui.ts";
+import type {ComposeTriggeredOptions} from "./compose_ui.ts";
+import * as compose_validate from "./compose_validate.ts";
+import * as drafts from "./drafts.ts";
+import * as message_lists from "./message_lists.ts";
+import type {Message} from "./message_store.ts";
+import * as message_util from "./message_util.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as narrow_state from "./narrow_state.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import * as popovers from "./popovers.ts";
+import * as reload_state from "./reload_state.ts";
+import * as resize from "./resize.ts";
+import * as spectators from "./spectators.ts";
+import * as stream_data from "./stream_data.ts";
 
 // Opts sent to `compose_actions.start`.
 type ComposeActionsStartOpts = {

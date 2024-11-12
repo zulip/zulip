@@ -1,21 +1,21 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import * as audible_notifications from "./audible_notifications";
+import * as audible_notifications from "./audible_notifications.ts";
 import {
     NON_COMPACT_MODE_FONT_SIZE_PX,
     NON_COMPACT_MODE_LINE_HEIGHT_PERCENT,
-} from "./information_density";
-import * as overlays from "./overlays";
-import {page_params} from "./page_params";
-import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
-import * as settings_notifications from "./settings_notifications";
-import * as settings_org from "./settings_org";
-import * as settings_preferences from "./settings_preferences";
-import type {SettingsPanel} from "./settings_preferences";
-import {current_user} from "./state_data";
-import type {HTMLSelectOneElement} from "./types";
-import * as util from "./util";
+} from "./information_density.ts";
+import * as overlays from "./overlays.ts";
+import {page_params} from "./page_params.ts";
+import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
+import * as settings_notifications from "./settings_notifications.ts";
+import * as settings_org from "./settings_org.ts";
+import * as settings_preferences from "./settings_preferences.ts";
+import type {SettingsPanel} from "./settings_preferences.ts";
+import {current_user} from "./state_data.ts";
+import type {HTMLSelectOneElement} from "./types.ts";
+import * as util from "./util.ts";
 
 export let realm_default_settings_panel: SettingsPanel | undefined;
 

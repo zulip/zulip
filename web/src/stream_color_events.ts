@@ -1,12 +1,12 @@
 import $ from "jquery";
 
-import * as inbox_util from "./inbox_util";
-import * as message_lists from "./message_lists";
-import * as message_view_header from "./message_view_header";
-import * as overlays from "./overlays";
-import * as stream_color from "./stream_color";
-import * as stream_data from "./stream_data";
-import type {StreamSubscription} from "./sub_store";
+import * as inbox_util from "./inbox_util.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_view_header from "./message_view_header.ts";
+import * as overlays from "./overlays.ts";
+import * as stream_color from "./stream_color.ts";
+import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 
 function update_table_message_recipient_stream_color(
     table: JQuery,

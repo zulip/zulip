@@ -3,17 +3,17 @@ import assert from "minimalistic-assert";
 
 import render_search_list_item from "../templates/search_list_item.hbs";
 
-import {Typeahead} from "./bootstrap_typeahead";
-import type {TypeaheadInputElement} from "./bootstrap_typeahead";
-import {Filter} from "./filter";
-import * as keydown_util from "./keydown_util";
-import * as narrow_state from "./narrow_state";
-import * as popovers from "./popovers";
-import * as search_pill from "./search_pill";
-import type {SearchPillWidget} from "./search_pill";
-import * as search_suggestion from "./search_suggestion";
-import type {NarrowTerm} from "./state_data";
-import * as util from "./util";
+import {Typeahead} from "./bootstrap_typeahead.ts";
+import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
+import {Filter} from "./filter.ts";
+import * as keydown_util from "./keydown_util.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as popovers from "./popovers.ts";
+import * as search_pill from "./search_pill.ts";
+import type {SearchPillWidget} from "./search_pill.ts";
+import * as search_suggestion from "./search_suggestion.ts";
+import type {NarrowTerm} from "./state_data.ts";
+import * as util from "./util.ts";
 
 // Exported for unit testing
 export let is_using_input_method = false;

@@ -2,9 +2,9 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace");
-const {run_test, noop} = require("./lib/test");
-const $ = require("./lib/zjquery");
+const {zrequire} = require("./lib/namespace.js");
+const {run_test, noop} = require("./lib/test.js");
+const $ = require("./lib/zjquery.js");
 
 const spoilers = zrequire("spoilers");
 

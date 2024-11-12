@@ -1,12 +1,12 @@
 import assert from "minimalistic-assert";
 
-import {all_messages_data} from "./all_messages_data";
-import * as echo_state from "./echo_state";
-import {FoldDict} from "./fold_dict";
-import * as message_util from "./message_util";
-import * as sub_store from "./sub_store";
-import type {StreamSubscription} from "./sub_store";
-import * as unread from "./unread";
+import {all_messages_data} from "./all_messages_data.ts";
+import * as echo_state from "./echo_state.ts";
+import {FoldDict} from "./fold_dict.ts";
+import * as message_util from "./message_util.ts";
+import * as sub_store from "./sub_store.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as unread from "./unread.ts";
 
 // stream_id -> PerStreamHistory object
 const stream_dict = new Map<number, PerStreamHistory>();

@@ -1,7 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import * as blueslip from "./blueslip";
+import * as blueslip from "./blueslip.ts";
 
 export type Node<T> = T & {
     key: unknown;

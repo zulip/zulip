@@ -2,18 +2,18 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import * as blueslip from "./blueslip";
-import * as compose_state from "./compose_state";
-import {csrf_token} from "./csrf";
-import * as drafts from "./drafts";
-import * as hash_util from "./hash_util";
-import type {LocalStorage} from "./localstorage";
-import {localstorage} from "./localstorage";
-import * as message_lists from "./message_lists";
-import {page_params} from "./page_params";
-import * as reload_state from "./reload_state";
-import * as ui_report from "./ui_report";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as compose_state from "./compose_state.ts";
+import {csrf_token} from "./csrf.ts";
+import * as drafts from "./drafts.ts";
+import * as hash_util from "./hash_util.ts";
+import type {LocalStorage} from "./localstorage.ts";
+import {localstorage} from "./localstorage.ts";
+import * as message_lists from "./message_lists.ts";
+import {page_params} from "./page_params.ts";
+import * as reload_state from "./reload_state.ts";
+import * as ui_report from "./ui_report.ts";
+import * as util from "./util.ts";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 

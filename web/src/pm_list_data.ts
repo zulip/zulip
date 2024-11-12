@@ -1,13 +1,13 @@
 import assert from "minimalistic-assert";
 
-import * as buddy_data from "./buddy_data";
-import * as hash_util from "./hash_util";
-import * as narrow_state from "./narrow_state";
-import * as people from "./people";
-import * as pm_conversations from "./pm_conversations";
-import * as unread from "./unread";
-import * as user_status from "./user_status";
-import type {UserStatusEmojiInfo} from "./user_status";
+import * as buddy_data from "./buddy_data.ts";
+import * as hash_util from "./hash_util.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as people from "./people.ts";
+import * as pm_conversations from "./pm_conversations.ts";
+import * as unread from "./unread.ts";
+import * as user_status from "./user_status.ts";
+import type {UserStatusEmojiInfo} from "./user_status.ts";
 
 // Maximum number of conversation threads to show in default view.
 const max_conversations_to_show = 8;

@@ -11,6 +11,7 @@
         "strict": true,
 
         /* Modules */
+        "allowImportingTsExtensions": true,
         "moduleResolution": "node",
         "paths": {
             "*": ["./web/src/types/*"],

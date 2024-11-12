@@ -1,10 +1,10 @@
 "use strict";
 
-const namespace = require("./namespace");
-const zblueslip = require("./zblueslip");
-const $ = require("./zjquery");
-const zpage_billing_params = require("./zpage_billing_params");
-const zpage_params = require("./zpage_params");
+const namespace = require("./namespace.js");
+const zblueslip = require("./zblueslip.js");
+const $ = require("./zjquery.js");
+const zpage_billing_params = require("./zpage_billing_params.js");
+const zpage_params = require("./zpage_params.js");
 
 let current_file_name;
 let verbose = false;

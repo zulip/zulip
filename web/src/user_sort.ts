@@ -1,5 +1,5 @@
-import type {User} from "./people";
-import {compare_a_b} from "./util";
+import type {User} from "./people.ts";
+import {compare_a_b} from "./util.ts";
 
 export function sort_email(a: User, b: User): number {
     const email_a = a.delivery_email;

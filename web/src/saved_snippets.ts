@@ -1,8 +1,8 @@
-import * as blueslip from "./blueslip";
-import type {Option} from "./dropdown_widget";
-import {$t} from "./i18n";
-import type {StateData} from "./state_data";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import type {Option} from "./dropdown_widget.ts";
+import {$t} from "./i18n.ts";
+import type {StateData} from "./state_data.ts";
+import * as util from "./util.ts";
 
 export type SavedSnippet = {
     id: number;
