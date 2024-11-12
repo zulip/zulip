@@ -212,6 +212,7 @@ def messages_for_ids(
     search_fields: dict[int, dict[str, str]],
     apply_markdown: bool,
     client_gravatar: bool,
+    allow_empty_topic_name: bool,
     allow_edit_history: bool,
     user_profile: UserProfile | None,
     realm: Realm,
@@ -257,6 +258,7 @@ def messages_for_ids(
         message_list,
         apply_markdown=apply_markdown,
         client_gravatar=client_gravatar,
+        allow_empty_topic_name=allow_empty_topic_name,
         realm=realm,
         user_recipient_id=None if user_profile is None else user_profile.recipient_id,
     )

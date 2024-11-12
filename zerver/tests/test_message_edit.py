@@ -49,6 +49,7 @@ class EditMessageTest(ZulipTestCase):
                 search_fields={},
                 apply_markdown=False,
                 client_gravatar=False,
+                allow_empty_topic_name=True,
                 allow_edit_history=True,
                 user_profile=None,
                 realm=msg.realm,

@@ -1,6 +1,7 @@
 import time
 from unittest import mock
 
+import orjson
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.streams import do_change_stream_permission
@@ -416,3 +417,113 @@ class EmptyTopicNameTest(ZulipTestCase):
         self.send_stream_message(iago, "Denmark", topic_name=Message.EMPTY_TOPIC_FALLBACK_NAME)
         events = client.event_queue.contents()
         self.assertEqual(events[1]["message"]["subject"], Message.EMPTY_TOPIC_FALLBACK_NAME)
+
+    def test_fetch_messages(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        first_message_id = self.send_stream_message(hamlet, "Denmark", topic_name="")
+        second_message_id = self.send_stream_message(
+            hamlet, "Denmark", topic_name=Message.EMPTY_TOPIC_FALLBACK_NAME
+        )
+
+        # Fetch using `/messages` endpoint.
+        params = {
+            "allow_empty_topic_name": "false",
+            "message_ids": orjson.dumps([first_message_id, second_message_id]).decode(),
+        }
+        result = self.client_get("/json/messages", params)
+        data = self.assert_json_success(result)
+        self.assert_length(data["messages"], 2)
+        for message in data["messages"]:
+            self.assertEqual(message["subject"], Message.EMPTY_TOPIC_FALLBACK_NAME)
+
+        params = {
+            "allow_empty_topic_name": "true",
+            "message_ids": orjson.dumps([first_message_id, second_message_id]).decode(),
+        }
+        result = self.client_get("/json/messages", params)
+        data = self.assert_json_success(result)
+        self.assert_length(data["messages"], 2)
+        for message in data["messages"]:
+            self.assertEqual(message["subject"], "")
+
+        get_params = {
+            "allow_empty_topic_name": "false",
+            "anchor": "newest",
+            "num_before": 2,
+            "num_after": 0,
+            "narrow": orjson.dumps(
+                [
+                    {"operator": "channel", "operand": "Denmark"},
+                    {"operator": "topic", "operand": Message.EMPTY_TOPIC_FALLBACK_NAME},
+                ]
+            ).decode(),
+        }
+        result = self.client_get("/json/messages", get_params)
+        data = self.assert_json_success(result)
+        self.assert_length(data["messages"], 2)
+        for message in data["messages"]:
+            self.assertEqual(message["subject"], Message.EMPTY_TOPIC_FALLBACK_NAME)
+
+        # Fetch using `/messages/{message_id}` endpoint.
+        result = self.client_get(
+            f"/json/messages/{first_message_id}", {"allow_empty_topic_name": "false"}
+        )
+        data = self.assert_json_success(result)
+        self.assertEqual(data["message"]["subject"], Message.EMPTY_TOPIC_FALLBACK_NAME)
+
+        result = self.client_get(
+            f"/json/messages/{second_message_id}", {"allow_empty_topic_name": "false"}
+        )
+        data = self.assert_json_success(result)
+        self.assertEqual(data["message"]["subject"], Message.EMPTY_TOPIC_FALLBACK_NAME)
+
+        result = self.client_get(
+            f"/json/messages/{first_message_id}", {"allow_empty_topic_name": "true"}
+        )
+        data = self.assert_json_success(result)
+        self.assertEqual(data["message"]["subject"], "")
+
+        result = self.client_get(
+            f"/json/messages/{second_message_id}", {"allow_empty_topic_name": "true"}
+        )
+        data = self.assert_json_success(result)
+        self.assertEqual(data["message"]["subject"], "")
+
+        # Verify `edit_history` objects.
+        params = {"topic": "new topic name"}
+        result = self.client_patch(f"/json/messages/{first_message_id}", params)
+        self.assert_json_success(result)
+
+        result = self.client_get(
+            f"/json/messages/{first_message_id}", {"allow_empty_topic_name": "false"}
+        )
+        data = self.assert_json_success(result)
+        self.assertEqual(
+            data["message"]["edit_history"][0]["prev_topic"], Message.EMPTY_TOPIC_FALLBACK_NAME
+        )
+
+        result = self.client_get(
+            f"/json/messages/{first_message_id}", {"allow_empty_topic_name": "true"}
+        )
+        data = self.assert_json_success(result)
+        self.assertEqual(data["message"]["edit_history"][0]["prev_topic"], "")
+
+        params = {"topic": ""}
+        result = self.client_patch(f"/json/messages/{first_message_id}", params)
+        self.assert_json_success(result)
+
+        result = self.client_get(
+            f"/json/messages/{first_message_id}", {"allow_empty_topic_name": "false"}
+        )
+        data = self.assert_json_success(result)
+        self.assertEqual(
+            data["message"]["edit_history"][0]["topic"], Message.EMPTY_TOPIC_FALLBACK_NAME
+        )
+
+        result = self.client_get(
+            f"/json/messages/{first_message_id}", {"allow_empty_topic_name": "true"}
+        )
+        data = self.assert_json_success(result)
+        self.assertEqual(data["message"]["edit_history"][0]["topic"], "")
