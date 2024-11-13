@@ -566,6 +566,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # like native Zulip messages (with a name + avatar, etc.).
     is_mirror_dummy = models.BooleanField(default=False)
 
+    is_deleted = models.BooleanField(default=False)
+
     # Users with this flag set are allowed to forge messages as sent by another
     # user and to send to private streams; also used for Zephyr/Jabber mirroring.
     can_forge_sender = models.BooleanField(default=False, db_index=True)

@@ -111,6 +111,7 @@ def create_user_profile(
     full_name: str,
     bot_owner: UserProfile | None,
     is_mirror_dummy: bool,
+    is_deleted: bool,
     tos_version: str | None,
     timezone: str,
     default_language: str,
@@ -125,7 +126,6 @@ def create_user_profile(
         date_joined = force_date_joined
 
     email = UserManager.normalize_email(email)
-
     extra_kwargs = {}
     if force_id is not None:
         extra_kwargs["id"] = force_id
@@ -141,6 +141,7 @@ def create_user_profile(
         bot_type=bot_type,
         bot_owner=bot_owner,
         is_mirror_dummy=is_mirror_dummy,
+        is_deleted=is_deleted,
         tos_version=tos_version,
         timezone=timezone,
         default_language=default_language,
@@ -170,6 +171,7 @@ def create_user(
     timezone: str = "",
     avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
     is_mirror_dummy: bool = False,
+    is_deleted: bool = False,
     default_language: str | None = None,
     default_sending_stream: Stream | None = None,
     default_events_register_stream: Stream | None = None,
@@ -207,6 +209,7 @@ def create_user(
         full_name,
         bot_owner,
         is_mirror_dummy,
+        is_deleted,
         tos_version,
         timezone,
         default_language,

@@ -1500,6 +1500,7 @@ export function make_user(user_id: number, email: string, full_name: string): Us
         is_bot: false,
         is_moderator: false,
         is_billing_admin: false,
+        is_deleted: false,
         // We explicitly don't set `avatar_url` for fake person objects so that fallback code
         // will ask the server or compute a gravatar URL only once we need the avatar URL,
         // it's important for performance that we not hash every user's email to get gravatar URLs.
@@ -1767,7 +1768,9 @@ export function initialize(my_user_id: number, params: StateData["people"]): voi
     }
 
     for (const person of params.realm_non_active_users) {
-        non_active_user_dict.set(person.user_id, person);
+        if (!person.is_deleted) {
+            non_active_user_dict.set(person.user_id, person);
+        }
         _add_user(person);
     }
 

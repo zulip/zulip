@@ -984,6 +984,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         disable_role_dropdown: person.is_owner && !current_user.is_owner,
         owner_is_only_user_in_organization: people.get_active_human_count() === 1,
         is_active,
+        is_deleted: person.is_deleted,
     });
 
     $container.append($(html_body));

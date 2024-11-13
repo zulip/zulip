@@ -595,6 +595,7 @@ class APIUserDict(TypedDict):
     is_owner: bool
     is_guest: bool
     is_billing_admin: NotRequired[bool]
+    is_deleted: NotRequired[bool]
     role: int
     is_bot: bool
     full_name: str
@@ -628,6 +629,7 @@ def format_user_row(
     is_owner = row["role"] == UserProfile.ROLE_REALM_OWNER
     is_guest = row["role"] == UserProfile.ROLE_GUEST
     is_bot = row["is_bot"]
+    is_deleted = row["is_deleted"]
 
     delivery_email = None
     if acting_user is not None and can_access_delivery_email(
@@ -643,6 +645,7 @@ def format_user_row(
         is_owner=is_owner,
         is_guest=is_guest,
         is_billing_admin=row["is_billing_admin"],
+        is_deleted=is_deleted,
         role=row["role"],
         is_bot=is_bot,
         full_name=row["full_name"],
@@ -700,6 +703,9 @@ def format_user_row(
         result["bot_owner_id"] = row["bot_owner_id"]
     elif custom_profile_field_data is not None:
         result["profile_data"] = custom_profile_field_data
+
+    if not is_deleted:
+        del result["is_deleted"]
     return result
 
 
@@ -990,6 +996,7 @@ def user_profile_to_user_row(user_profile: UserProfile) -> RawUserDict:
         role=user_profile.role,
         is_billing_admin=user_profile.is_billing_admin,
         is_bot=user_profile.is_bot,
+        is_deleted=user_profile.is_deleted,
         timezone=user_profile.timezone,
         date_joined=user_profile.date_joined,
         bot_owner_id=user_profile.bot_owner_id,

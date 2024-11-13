@@ -323,6 +323,7 @@ class RawUserDict(TypedDict):
     role: int
     is_billing_admin: bool
     is_bot: bool
+    is_deleted: bool
     timezone: str
     date_joined: datetime
     bot_owner_id: int | None
