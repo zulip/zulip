@@ -111,7 +111,7 @@
     }
 }
 
-.modal__btn {
+.modal__button {
     /* We need the backup value for billing related html files where
        this variable is not defined. */
     font-size: var(--base-font-size-px, 14px);
@@ -139,8 +139,8 @@
     }
 }
 
-.modal__btn:focus,
-.modal__btn:hover {
+.modal__button:focus,
+.modal__button:hover {
     transform: scale(1.05);
     /* The extremely subtle 1.05 scale can cause
        a gap to appear between the outline and
