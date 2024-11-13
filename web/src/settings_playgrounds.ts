@@ -91,9 +91,9 @@ function build_page(): void {
     $(".admin_playgrounds_table").on("click", ".delete", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        const $btn = $(this);
+        const $button = $(this);
         const url =
-            "/json/realm/playgrounds/" + encodeURIComponent($btn.attr("data-playground-id")!);
+            "/json/realm/playgrounds/" + encodeURIComponent($button.attr("data-playground-id")!);
         const html_body = render_confirm_delete_playground();
 
         confirm_dialog.launch({
