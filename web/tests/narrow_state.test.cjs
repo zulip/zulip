@@ -87,6 +87,7 @@ test("narrowed", () => {
     assert.ok(!narrow_state.narrowed_by_pm_reply());
     assert.ok(!narrow_state.narrowed_by_topic_reply());
     assert.ok(narrow_state.narrowed_by_stream_reply());
+    assert.ok(!narrow_state.is_search_view());
 
     set_filter([["dm", "steve@zulip.com"]]);
     assert.ok(narrow_state.narrowed_to_pms());
@@ -94,6 +95,7 @@ test("narrowed", () => {
     assert.ok(narrow_state.narrowed_by_pm_reply());
     assert.ok(!narrow_state.narrowed_by_topic_reply());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
+    assert.ok(!narrow_state.is_search_view());
 
     set_filter([
         ["stream", foo_stream_id.toString()],
@@ -104,6 +106,7 @@ test("narrowed", () => {
     assert.ok(!narrow_state.narrowed_by_pm_reply());
     assert.ok(narrow_state.narrowed_by_topic_reply());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
+    assert.ok(!narrow_state.is_search_view());
 
     set_filter([["search", "grail"]]);
     assert.ok(!narrow_state.narrowed_to_pms());
@@ -111,6 +114,7 @@ test("narrowed", () => {
     assert.ok(!narrow_state.narrowed_by_pm_reply());
     assert.ok(!narrow_state.narrowed_by_topic_reply());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
+    assert.ok(narrow_state.is_search_view());
 
     set_filter([["is", "starred"]]);
     assert.ok(!narrow_state.narrowed_to_pms());
@@ -118,6 +122,7 @@ test("narrowed", () => {
     assert.ok(!narrow_state.narrowed_by_pm_reply());
     assert.ok(!narrow_state.narrowed_by_topic_reply());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
+    assert.ok(narrow_state.is_search_view());
 });
 
 test("terms", () => {

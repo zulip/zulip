@@ -428,14 +428,6 @@ function maybe_restore_focus_to_message_edit_form(): void {
     }, 0);
 }
 
-function is_search_view(): boolean {
-    const current_filter = narrow_state.filter();
-    if (current_filter && !current_filter.supports_collapsing_recipients()) {
-        return true;
-    }
-    return false;
-}
-
 type SubscriptionMarkers = {
     bookend_top: boolean;
     stream_name: string;
@@ -456,7 +448,7 @@ function populate_group_from_message(
 
     // Each searched message is a self-contained result,
     // so we always display date in the recipient bar for those messages.
-    const always_display_date = is_search_view();
+    const always_display_date = narrow_state.is_search_view();
     if (is_stream) {
         assert(message.type === "stream");
         // stream messages have string display_recipient
