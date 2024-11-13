@@ -320,13 +320,13 @@ export function set_up(): void {
     $(".admin_emoji_table").on("click", ".delete", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        const $btn = $(this);
-        const url = "/json/realm/emoji/" + encodeURIComponent($btn.attr("data-emoji-name")!);
+        const $button = $(this);
+        const url = "/json/realm/emoji/" + encodeURIComponent($button.attr("data-emoji-name")!);
         const html_body = render_confirm_deactivate_custom_emoji({});
 
         const opts = {
             success_continuation() {
-                const $row = $btn.parents("tr");
+                const $row = $button.parents("tr");
                 $row.remove();
             },
         };
