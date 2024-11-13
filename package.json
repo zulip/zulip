@@ -16,6 +16,7 @@
     "@rspack/core": "^1.2.8",
     "@sentry/browser": "^9.2.0",
     "@sentry/core": "^9.2.0",
+    "@swc/plugin-formatjs": "^2.4.0",
     "@uppy/core": "^4.3.1",
     "@uppy/drag-drop": "^4.0.2",
     "@uppy/progress-bar": "^4.0.0",
