@@ -817,7 +817,7 @@ export function build_page(): void {
     meta.loaded = true;
 
     $("#admin_profile_fields_table").on("click", ".delete", delete_profile_field);
-    $("#add-custom-profile-field-btn").on("click", open_custom_profile_field_form_modal);
+    $("#add-custom-profile-field-button").on("click", open_custom_profile_field_form_modal);
     $("#admin_profile_fields_table").on("click", ".open-edit-form-modal", open_edit_form_modal);
     $("#admin_profile_fields_table").on(
         "click",

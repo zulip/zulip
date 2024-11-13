@@ -8,7 +8,7 @@ import * as common from "./lib/common.ts";
 const profile_field_row = "#admin_profile_fields_table tr:nth-last-child(1)";
 
 async function test_add_new_profile_field(page: Page): Promise<void> {
-    await page.click("#add-custom-profile-field-btn");
+    await page.click("#add-custom-profile-field-button");
     await common.wait_for_micromodal_to_open(page);
     assert.strictEqual(
         await common.get_text_from_selector(page, ".dialog_heading"),
