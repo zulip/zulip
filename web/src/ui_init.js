@@ -630,11 +630,7 @@ export function initialize_everything(state_data) {
     settings_notifications.initialize();
     settings_realm_user_settings_defaults.initialize();
     settings_panel_menu.initialize();
-    settings_sections.initialize(
-        // zxcvbn.js is pretty big, and is only needed on password
-        // change, so load it asynchronously.
-        async () => (await import("./password_quality.ts")).password_quality,
-    );
+    settings_sections.initialize();
     settings_toggle.initialize();
     about_zulip.initialize();
 

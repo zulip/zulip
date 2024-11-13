@@ -46,9 +46,9 @@ export function get_group(section) {
     }
 }
 
-export function initialize(load_password_quality) {
+export function initialize() {
     // personal
-    load_func_dict.set("your-account", () => settings_account.set_up(load_password_quality));
+    load_func_dict.set("your-account", settings_account.set_up);
     load_func_dict.set("preferences", () => {
         settings_preferences.set_up(settings_preferences.user_settings_panel);
     });
