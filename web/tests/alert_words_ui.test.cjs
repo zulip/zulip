@@ -101,8 +101,8 @@ run_test("close_status_message", ({override_rewire}) => {
     const close = $alert_word_settings.get_on_handler("click", ".close-alert-word-status");
 
     const $alert = $(".alert");
-    const $close_btn = $(".close-alert-word-status");
-    $close_btn.set_parents_result(".alert", $alert);
+    const $close_button = $(".close-alert-word-status");
+    $close_button.set_parents_result(".alert", $alert);
 
     $alert.show();
 
