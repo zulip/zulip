@@ -84,7 +84,7 @@ const config = (
                     options: {exposes: "zulip_test"},
                 },
                 {
-                    test: path.resolve(import.meta.dirname, "debug-require.js"),
+                    test: path.resolve(import.meta.dirname, "debug-require.cjs"),
                     loader: "expose-loader",
                     options: {exposes: "require"},
                 },
