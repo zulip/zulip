@@ -715,8 +715,8 @@ function discard_realm_settings_subsection_changes($subsection: JQuery): void {
     for (const elem of settings_components.get_subsection_property_elements($subsection)) {
         discard_realm_property_element_changes(elem);
     }
-    const $save_btn_controls = $subsection.find(".save-button-controls");
-    settings_components.change_save_button_state($save_btn_controls, "discarded");
+    const $save_button_controls = $subsection.find(".save-button-controls");
+    settings_components.change_save_button_state($save_button_controls, "discarded");
 }
 
 export function discard_stream_settings_subsection_changes(
@@ -726,8 +726,8 @@ export function discard_stream_settings_subsection_changes(
     for (const elem of settings_components.get_subsection_property_elements($subsection)) {
         discard_stream_property_element_changes(elem, sub);
     }
-    const $save_btn_controls = $subsection.find(".save-button-controls");
-    settings_components.change_save_button_state($save_btn_controls, "discarded");
+    const $save_button_controls = $subsection.find(".save-button-controls");
+    settings_components.change_save_button_state($save_button_controls, "discarded");
 }
 
 export function discard_group_settings_subsection_changes(
@@ -737,16 +737,16 @@ export function discard_group_settings_subsection_changes(
     for (const elem of settings_components.get_subsection_property_elements($subsection)) {
         discard_group_property_element_changes(elem, group);
     }
-    const $save_btn_controls = $subsection.find(".save-button-controls");
-    settings_components.change_save_button_state($save_btn_controls, "discarded");
+    const $save_button_controls = $subsection.find(".save-button-controls");
+    settings_components.change_save_button_state($save_button_controls, "discarded");
 }
 
 export function discard_realm_default_settings_subsection_changes($subsection: JQuery): void {
     for (const elem of settings_components.get_subsection_property_elements($subsection)) {
         discard_realm_default_property_element_changes(elem);
     }
-    const $save_btn_controls = $subsection.find(".save-button-controls");
-    settings_components.change_save_button_state($save_btn_controls, "discarded");
+    const $save_button_controls = $subsection.find(".save-button-controls");
+    settings_components.change_save_button_state($save_button_controls, "discarded");
 }
 
 export function deactivate_organization(e: JQuery.Event): void {
@@ -804,21 +804,21 @@ export function save_organization_settings(
     success_continuation: (() => void) | undefined = undefined,
 ): void {
     const $subsection_parent = $save_button.closest(".settings-subsection-parent");
-    const $save_btn_container = $subsection_parent.find(".save-button-controls");
+    const $save_button_container = $subsection_parent.find(".save-button-controls");
     const $failed_alert_elem = $subsection_parent.find(".subsection-failed-status p");
-    settings_components.change_save_button_state($save_btn_container, "saving");
+    settings_components.change_save_button_state($save_button_container, "saving");
     channel.patch({
         url: patch_url,
         data,
         success() {
             $failed_alert_elem.hide();
-            settings_components.change_save_button_state($save_btn_container, "succeeded");
+            settings_components.change_save_button_state($save_button_container, "succeeded");
             if (success_continuation !== undefined) {
                 success_continuation();
             }
         },
         error(xhr) {
-            settings_components.change_save_button_state($save_btn_container, "failed");
+            settings_components.change_save_button_state($save_button_container, "failed");
             $save_button.hide();
             ui_report.error($t_html({defaultMessage: "Save failed"}), xhr, $failed_alert_elem);
         },
