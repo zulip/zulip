@@ -60,6 +60,7 @@ from zerver.lib.topic import (
     RESOLVED_TOPIC_PREFIX,
     TOPIC_LINKS,
     TOPIC_NAME,
+    maybe_rename_general_chat_to_empty_topic,
     messages_for_topic,
     participants_for_topic,
     save_message_for_edit_use_case,
@@ -1278,6 +1279,7 @@ def check_update_message(
     # use OptionalTopic as well (or otherwise are guaranteed to strip input).
     if topic_name is not None:
         topic_name = topic_name.strip()
+        topic_name = maybe_rename_general_chat_to_empty_topic(topic_name)
         if topic_name == message.topic_name():
             topic_name = None
 
