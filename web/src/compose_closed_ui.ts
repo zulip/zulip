@@ -61,12 +61,18 @@ export function get_recipient_label(message?: ComposeClosedMessage): string {
 }
 
 // Exported for tests
-export let update_reply_button_state = (disable = false): void => {
+export let update_reply_button_state = (disable = false, conversation_type: string | undefined): void => {
     $(".compose_reply_button").attr("disabled", disable ? "disabled" : null);
-    if (disable) {
+    if (disable && conversation_type === "direct") {
         $("#compose_buttons .compose-reply-button-wrapper").attr(
             "data-reply-button-type",
             "direct_disabled",
+        );
+        return;
+    } else if (disable && conversation_type === "stream") {
+        $("#compose_buttons .compose-reply-button-wrapper").attr(
+            "data-reply-button-type",
+            "topic_locked",
         );
         return;
     }
@@ -87,8 +93,8 @@ export function rewire_update_reply_button_state(value: typeof update_reply_butt
     update_reply_button_state = value;
 }
 
-function update_buttons(disable_reply?: boolean): void {
-    update_reply_button_state(disable_reply);
+function update_buttons(disable_reply?: boolean, conversation_type?: string): void {
+    update_reply_button_state(disable_reply, conversation_type);
 }
 
 export function update_buttons_for_private(): void {
@@ -105,12 +111,24 @@ export function update_buttons_for_private(): void {
     }
 
     $("#new_conversation_button").attr("data-conversation-type", "direct");
-    update_buttons(disable_reply);
+    update_buttons(disable_reply, "direct");
 }
 
 export function update_buttons_for_stream_views(): void {
     $("#new_conversation_button").attr("data-conversation-type", "stream");
-    update_buttons();
+    const stream_id = narrow_state.stream_id();
+    const topic = narrow_state.topic();
+    let disable_reply;
+
+    if (stream_id && topic) {
+        if (message_util.user_can_send_message_in_locked_topic(stream_id, topic)) {
+            disable_reply = false;
+        } else {
+            // disable the [Message X] button when in a channel topic is lock
+            disable_reply = true;
+        }
+    }
+    update_buttons(disable_reply, "stream");
 }
 
 export function update_buttons_for_non_specific_views(): void {

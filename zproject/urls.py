@@ -186,6 +186,7 @@ from zerver.views.streams import (
 )
 from zerver.views.submessage import process_submessage
 from zerver.views.thumbnail import backend_serve_thumbnail
+from zerver.views.topic_settings import update_topic_settings
 from zerver.views.tusd import handle_tusd_hook
 from zerver.views.typing import send_notification_backend
 from zerver.views.unsubscribe import email_unsubscribe
@@ -506,6 +507,8 @@ v1_api_and_json_patterns = [
     rest_path("users/me/subscriptions/muted_topics", PATCH=update_muted_topic),
     # used to update the personal preferences for a topic -> zerver.views.user_topics
     rest_path("user_topics", POST=update_user_topic),
+    # used to update the topic settings -> zerver.views.topic_settings
+    rest_path("topic_settings", POST=update_topic_settings),
     # user-muting -> zerver.views.user_mutes
     rest_path("users/me/muted_users/<int:muted_user_id>", POST=mute_user, DELETE=unmute_user),
     # used to register for an event queue in tornado

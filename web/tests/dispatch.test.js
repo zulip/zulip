@@ -38,6 +38,7 @@ const message_events = mock_esm("../src/message_events", {
 });
 const message_lists = mock_esm("../src/message_lists");
 const user_topics_ui = mock_esm("../src/user_topics_ui");
+const topic_settings_ui = mock_esm("../src/topic_settings_ui");
 const muted_users_ui = mock_esm("../src/muted_users_ui");
 const narrow_title = mock_esm("../src/narrow_title");
 const navbar_alerts = mock_esm("../src/navbar_alerts");
@@ -391,6 +392,17 @@ run_test("followed_topic", ({override}) => {
     assert.equal(discard_msg_list_stub.num_calls, 1);
     const args = stub.get_args("user_topic");
     assert_same(args.user_topic, event);
+});
+
+run_test("lock_topics", ({override}) => {
+    const event = event_fixtures.topic_settings;
+
+    const stub = make_stub();
+    override(topic_settings_ui, "handle_topic_settings_updates", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("topic_settings");
+    assert_same(args.topic_settings, event);
 });
 
 run_test("muted_users", ({override}) => {

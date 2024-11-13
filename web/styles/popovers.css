@@ -1197,6 +1197,10 @@ ul.popover-group-menu-member-list {
            so we calculate its height to the 16px em in use. */
         min-height: 1.625em;
 
+        .zulip-icon-lock {
+            margin-top: 0 !important;
+        }
+
         .popover-menu-icon {
             /* 16px at 15px/1em */
             font-size: 1.0667em;

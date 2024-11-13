@@ -87,16 +87,30 @@ const compose_reply = zrequire("compose_reply");
 const message_lists = zrequire("message_lists");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("compose_recipient");
-const {set_realm} = zrequire("state_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 
 const realm = {};
 set_realm(realm);
+
+const current_user = {};
+set_current_user(current_user);
 
 const start = compose_actions.start;
 const cancel = compose_actions.cancel;
 const respond_to_message = compose_reply.respond_to_message;
 const reply_with_mention = compose_reply.reply_with_mention;
 const quote_and_reply = compose_reply.quote_and_reply;
+
+const me = {
+    email: "me@zulip.com",
+    user_id: 999,
+    full_name: "Me Myself",
+    is_admin: false,
+    is_moderator: true,
+};
+
+people.add_active_user(me);
+people.initialize_current_user(me.user_id);
 
 function assert_visible(sel) {
     assert.ok($(sel).visible());

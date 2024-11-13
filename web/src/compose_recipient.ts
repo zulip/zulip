@@ -105,8 +105,10 @@ function update_fade(): void {
     // It's possible that the new topic is not a resolved topic
     // so we clear the older warning.
     compose_validate.clear_topic_resolved_warning();
+    compose_validate.clear_topic_locked_warning();
 
     compose_validate.warn_if_topic_resolved(true);
+    compose_validate.warn_if_topic_locked(true);
     compose_fade.set_focused_recipient(msg_type);
     compose_fade.update_all();
 }
@@ -134,6 +136,13 @@ export function get_posting_policy_error_message(): string {
             defaultMessage: "You do not have permission to post in this channel.",
         });
     }
+    if (stream && stream_data.can_post_messages_in_stream(stream)) {
+        return compose_validate.check_lock_topic_permission_and_get_error_string(
+            compose_state.topic(),
+            stream.stream_id,
+        );
+    }
+
     return "";
 }
 

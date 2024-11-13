@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import render_cannot_send_direct_message_error from "../templates/compose_banner/cannot_send_direct_message_error.hbs";
+import render_cannot_send_stream_message_error from "../templates/compose_banner/cannot_send_stream_message_error.hbs";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
 
@@ -40,6 +41,7 @@ export const CLASSNAMES = {
     unmute_topic_notification: "unmute_topic_notification warning-style",
     // warnings
     topic_resolved: "topic_resolved",
+    warn_if_topic_locked: "warn_if_topic_locked",
     recipient_not_subscribed: "recipient_not_subscribed",
     wildcard_warning: "wildcard_warning",
     private_stream_warning: "private_stream_warning",
@@ -52,6 +54,7 @@ export const CLASSNAMES = {
     missing_stream: "missing_stream",
     no_post_permissions: "no_post_permissions",
     cannot_send_direct_message: "cannot_send_direct_message",
+    cannot_send_stream_message: "cannot_send_stream_message",
     missing_private_message_recipient: "missing_private_message_recipient",
     invalid_recipient: "invalid_recipient",
     invalid_recipients: "invalid_recipients",
@@ -211,6 +214,21 @@ export function cannot_send_direct_message_error(error_message: string): void {
     hide_compose_spinner();
 
     $("#private_message_recipient").trigger("focus").trigger("select");
+}
+
+export function cannot_send_stream_message_error(error_message: string): void {
+    // Remove any existing banners with this warning.
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.cannot_send_stream_message)}`).remove();
+
+    const new_row_html = render_cannot_send_stream_message_error({
+        banner_type: ERROR,
+        error_message,
+        classname: CLASSNAMES.cannot_send_stream_message,
+    });
+    append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
+    hide_compose_spinner();
+
+    $("#stream_message_recipient_topic").trigger("focus").trigger("select");
 }
 
 export function show_stream_does_not_exist_error(stream_name: string): void {

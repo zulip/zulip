@@ -20,6 +20,8 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
+from zerver.lib.streams import access_stream_id_by_name
+from zerver.lib.topic_settings import get_topic_lock_status
 from zerver.lib.typed_endpoint import (
     DOCUMENTATION_PENDING,
     ApiParamConfig,
@@ -171,6 +173,21 @@ def send_message_backend(
     if req_to is not None:
         if recipient_type_name == "stream":
             stream_indicator = extract_stream_indicator(req_to)
+            if topic_name is not None:
+                if isinstance(stream_indicator, str):
+                    stream_id = access_stream_id_by_name(user_profile, stream_indicator)
+                else:
+                    stream_id = int(stream_indicator)
+
+                if stream_id is not None:
+                    is_topic_locked = get_topic_lock_status(
+                        user_profile=user_profile, topic_name=topic_name, stream_id=stream_id
+                    )
+
+                    if is_topic_locked and not (
+                        user_profile.is_realm_admin or user_profile.is_moderator
+                    ):
+                        raise JsonableError(_("This topic has been locked by a moderator."))
 
             # For legacy reasons check_send_message expects
             # a list of streams, instead of a single stream.

@@ -5165,6 +5165,43 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event containing details about topic settings for a channel, including whether the topic is locked.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - topic_settings
+                                stream_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the channel where the topic settings have been updated.
+                                topic_name:
+                                  type: string
+                                  description: |
+                                    The name of the topic whose settings were changed.
+                                last_updated:
+                                  type: integer
+                                  description: |
+                                    A Unix timestamp indicating when the topic settings were last updated.
+                                is_locked:
+                                  type: boolean
+                                  description: |
+                                    Whether the topic is locked, preventing further posts.
+                              example:
+                                {
+                                  "type": "topic_settings",
+                                  "stream_id": 3,
+                                  "topic_name": "verona3",
+                                  "last_updated": 1729622182,
+                                  "is_locked": true,
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event containing the ID of a deleted draft.
                               properties:
                                 id:
@@ -15562,6 +15599,33 @@ paths:
 
                                 In Zulip 7.0 (feature level 170), added unmuted as a visibility
                                 policy option.
+                      topic_settings:
+                        type: array
+                        description: |
+                          Present if `topic_settings` is present in `fetch_event_types`.
+                        items:
+                          type: object
+                          description: |
+                            Object describing the user's configuration for a given topic.
+                          additionalProperties: false
+                          properties:
+                            stream_id:
+                              type: integer
+                              description: |
+                                The ID of the channel to which the topic belongs.
+                            topic_name:
+                              type: string
+                              description: |
+                                The name of the topic.
+                            last_updated:
+                              type: integer
+                              description: |
+                                An integer UNIX timestamp representing when the user-topic
+                                relationship was changed.
+                            is_locked:
+                              type: boolean
+                              description: |
+                                A boolean to lock or unlock the topic.
                       has_zoom_token:
                         type: boolean
                         description: |
@@ -20315,6 +20379,65 @@ paths:
                     description: |
                       An example JSON error response when the user composes a channel message
                       and `stream_id` is not specified:
+  /topic_settings:
+    post:
+      operationId: update-topic-settings
+      summary: Lock a topic
+      tags: ["channels"]
+      description: |
+        This endpoint allows authorized users (moderators or admins) to lock or unlock a topic within a stream.
+        When a topic is locked, only authorized users can post messages to that topic.
+        Unauthorized users will be restricted from posting in locked topics until the topic is unlocked.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                stream_id:
+                  description: |
+                    The ID of the channel where topic is present.
+                  type: integer
+                  example: 1
+                topic:
+                  description: |
+                    The name of the topic to be locked or unlocked.
+                  type: string
+                  example: dinner
+                is_locked:
+                  description: |
+                    Set to `true` to lock the topic, preventing non-authorized users from posting.
+                    Set to `false` to unlock the topic, allowing all users to post.
+                  type: boolean
+                  example: true
+              required:
+                - stream_id
+                - topic
+                - is_locked
+            encoding:
+              stream_id:
+                contentType: application/json
+              is_locked:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "Must be an organization moderator.",
+                      }
+                    description: |
+                      Error when the user does not have permission
+                      to lock or unlock topic in this organization
   /user_groups/create:
     post:
       operationId: create-user-group

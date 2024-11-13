@@ -9,6 +9,7 @@ import render_delete_message_modal from "../templates/confirm_dialog/confirm_del
 import render_confirm_merge_topics_with_rename from "../templates/confirm_dialog/confirm_merge_topics_with_rename.hbs";
 import render_confirm_moving_messages_modal from "../templates/confirm_dialog/confirm_moving_messages.hbs";
 import render_intro_resolve_topic_modal from "../templates/confirm_dialog/intro_resolve_topic.hbs";
+import render_intro_topic_lock_modal from "../templates/confirm_dialog/intro_topic_lock.hbs";
 import render_message_edit_form from "../templates/message_edit_form.hbs";
 import render_message_moved_widget_body from "../templates/message_moved_widget_body.hbs";
 import render_resolve_topic_time_limit_error_modal from "../templates/resolve_topic_time_limit_error_modal.hbs";
@@ -53,6 +54,7 @@ import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
+import * as topic_settings from "./topic_settings";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import {the} from "./util";
@@ -780,6 +782,30 @@ function show_intro_resolve_topic_modal(topic_name: string, cb: () => void): voi
     });
 }
 
+function show_intro_topic_lock_modal(topic_name: string, cb: () => void): void {
+    confirm_dialog.launch({
+        html_heading: $t_html({defaultMessage: "Lock topic"}),
+        html_body: render_intro_topic_lock_modal({topic_name}),
+        id: "intro_topic_lock_modal",
+        on_click: cb,
+        html_submit_button: $t({defaultMessage: "Got it — Confirm"}),
+        html_exit_button: $t({defaultMessage: "Got it — Cancel"}),
+    });
+}
+
+export function toggle_topic_lock(stream_id: number, topic_name: string, $row: JQuery): void {
+    const is_topic_lock = topic_settings.get_topic_lock_status(stream_id, topic_name);
+    if (!is_topic_lock && onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_topic_lock")) {
+        show_intro_topic_lock_modal(topic_name, () => {
+            do_toggle_topic_lock(topic_name, stream_id, $row);
+        });
+        onboarding_steps.post_onboarding_step_as_read("intro_topic_lock");
+        return;
+    }
+
+    do_toggle_topic_lock(topic_name, stream_id, $row);
+}
+
 export function toggle_resolve_topic(
     message_id: number,
     old_topic_name: string,
@@ -865,6 +891,34 @@ function do_toggle_resolve_topic(
                     ui_report.generic_embed_error(msg, 3500);
                 }
             }
+        },
+    });
+}
+function do_toggle_topic_lock(topic_name: string, stream_id: number, $row: JQuery): void {
+    if ($row) {
+        show_toggle_resolve_topic_spinner($row);
+    }
+
+    const data = {
+        stream_id,
+        topic: topic_name,
+        is_locked: !topic_settings.get_topic_lock_status(stream_id, topic_name),
+    };
+    void channel.post({
+        url: "/json/topic_settings",
+        data,
+        success() {
+            if ($row) {
+                const $spinner = $row.find(".toggle_resolve_topic_spinner");
+                loading.destroy_indicator($spinner);
+            }
+        },
+        error() {
+            ui_report.error(
+                $t_html({defaultMessage: "Topic lock status cannot be change."}),
+                undefined,
+                $("#dialog_error"),
+            );
         },
     });
 }

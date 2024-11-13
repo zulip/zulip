@@ -26,6 +26,7 @@ import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import type {StreamSubscription} from "./sub_store";
+import * as topic_settings from "./topic_settings";
 import type {UserOrMention} from "./typeahead_helper";
 import * as user_groups from "./user_groups";
 import * as util from "./util";
@@ -130,6 +131,21 @@ export function check_dm_permissions_and_get_error_string(user_ids_string: strin
     ) {
         return $t({
             defaultMessage: "You are not allowed to start direct message conversations.",
+        });
+    }
+    return "";
+}
+
+export function check_lock_topic_permission_and_get_error_string(
+    topic_name: string,
+    stream_id: number,
+): string {
+    if (
+        topic_settings.get_topic_lock_status(stream_id, topic_name) &&
+        !(current_user.is_admin || current_user.is_moderator)
+    ) {
+        return $t({
+            defaultMessage: "This topic has been locked by a moderator.",
         });
     }
     return "";
@@ -283,6 +299,11 @@ export function clear_topic_resolved_warning(): void {
     $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.topic_resolved)}`).remove();
 }
 
+export function clear_topic_locked_warning(): void {
+    compose_state.set_recipient_viewed_topic_locked_banner(false);
+    $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.warn_if_topic_locked)}`).remove();
+}
+
 export function warn_if_topic_resolved(topic_changed: boolean): void {
     // This function is called with topic_changed=false on every
     // keypress when typing a message, so it should not do anything
@@ -303,12 +324,17 @@ export function warn_if_topic_resolved(topic_changed: boolean): void {
         // inspecting additional fields in this case.
         return;
     }
+    const is_locked = topic_settings.get_topic_lock_status(stream_id, topic_name);
 
     const message_content = compose_state.message_content();
     const sub = stream_data.get_sub_by_id(stream_id);
     if (sub && message_content !== "" && resolved_topic.is_resolved(topic_name)) {
         if (compose_state.has_recipient_viewed_topic_resolved_banner()) {
             // We display the resolved topic banner at most once per narrow.
+            return;
+        }
+        if (is_locked) {
+            // We display the lock topic banner if the topic is resolved and locked at the same time.
             return;
         }
 
@@ -333,6 +359,48 @@ export function warn_if_topic_resolved(topic_changed: boolean): void {
         compose_state.set_recipient_viewed_topic_resolved_banner(true);
     } else {
         clear_topic_resolved_warning();
+    }
+}
+
+export function warn_if_topic_locked(topic_changed: boolean): void {
+    if (!(current_user.is_admin || current_user.is_moderator)) {
+        return;
+    }
+    const stream_id = compose_state.stream_id();
+    if (stream_id === undefined) {
+        return;
+    }
+
+    const topic_name = compose_state.topic();
+    const is_locked = topic_settings.get_topic_lock_status(stream_id, topic_name);
+
+    if (!topic_changed && !is_locked) {
+        return;
+    }
+
+    const message_content = compose_state.message_content();
+    const sub = stream_data.get_sub_by_id(stream_id);
+    if (sub && message_content !== "" && is_locked) {
+        if (compose_state.has_recipient_viewed_topic_locked_banner()) {
+            return;
+        }
+        const button_text = $t({defaultMessage: "Unlock topic"});
+        const context = {
+            banner_type: compose_banner.WARNING,
+            stream_id: sub.stream_id,
+            topic_name,
+            banner_text: $t({
+                defaultMessage:
+                    "You are sending a message to a locked topic. You can send as-is or unlock the topic first.",
+            }),
+            button_text,
+            classname: compose_banner.CLASSNAMES.warn_if_topic_locked,
+        };
+        const new_row_html = render_compose_banner(context);
+        compose_banner.append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
+        compose_state.set_recipient_viewed_topic_locked_banner(true);
+    } else {
+        clear_topic_locked_warning();
     }
 }
 
@@ -629,6 +697,14 @@ function validate_stream_message(scheduling_message: boolean): boolean {
             compose_banner.CLASSNAMES.no_post_permissions,
             $banner_container,
         );
+        return false;
+    }
+    const stream_message_error_string = check_lock_topic_permission_and_get_error_string(
+        compose_state.topic(),
+        stream_id,
+    );
+    if (stream_message_error_string) {
+        compose_banner.cannot_send_stream_message_error(stream_message_error_string);
         return false;
     }
 

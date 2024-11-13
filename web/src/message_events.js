@@ -506,6 +506,7 @@ export function update_messages(events) {
                 }
 
                 compose_validate.warn_if_topic_resolved(true);
+                compose_validate.warn_if_topic_locked(true);
                 compose_fade.set_focused_recipient("stream");
             }
 

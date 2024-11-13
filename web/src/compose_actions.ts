@@ -126,6 +126,7 @@ function clear_box(): void {
 
     // TODO: Better encapsulate at-mention warnings.
     compose_validate.clear_topic_resolved_warning();
+    compose_validate.clear_topic_locked_warning();
     compose_validate.clear_stream_wildcard_warnings($("#compose_banners"));
     compose_validate.set_user_acknowledged_stream_wildcard_flag(false);
 
@@ -396,6 +397,7 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
 
     // Show a warning if topic is resolved
     compose_validate.warn_if_topic_resolved(true);
+    compose_validate.warn_if_topic_locked(true);
     // Show a warning if the user is in a search narrow when replying to a message
     if (opts.is_reply) {
         compose_validate.warn_if_in_search_view();
@@ -508,6 +510,17 @@ export let on_topic_narrow = (): void => {
         return;
     }
 
+    const stream_id = narrow_state.stream_id();
+    const topic_name = narrow_state.topic();
+
+    if (
+        stream_id &&
+        topic_name &&
+        !message_util.user_can_send_message_in_locked_topic(stream_id, topic_name)
+    ) {
+        cancel();
+        return;
+    }
     // If we got this far, then the compose box has the correct stream
     // filled in, and either compose is empty or no topic was set, so
     // we should update the compose topic to match the new narrow.
@@ -515,6 +528,7 @@ export let on_topic_narrow = (): void => {
     // this convenience.
     compose_state.topic(narrow_state.topic());
     compose_validate.warn_if_topic_resolved(true);
+    compose_validate.warn_if_topic_locked(true);
     compose_fade.set_focused_recipient("stream");
     compose_fade.update_message_list();
     drafts.update_compose_draft_count();

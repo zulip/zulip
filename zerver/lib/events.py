@@ -60,6 +60,7 @@ from zerver.lib.thumbnail import THUMBNAIL_OUTPUT_FORMATS
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
+from zerver.lib.topic_settings import get_topic_settings
 from zerver.lib.user_groups import (
     get_group_setting_value_for_api,
     get_recursive_membership_groups,
@@ -757,6 +758,9 @@ def fetch_initial_state_data(
 
     if want("user_topic"):
         state["user_topics"] = [] if user_profile is None else get_user_topics(user_profile)
+
+    if want("topic_settings"):
+        state["topic_settings"] = [] if user_profile is None else get_topic_settings(user_profile)
 
     if want("video_calls"):
         state["has_zoom_token"] = settings_user.zoom_token is not None
@@ -1713,6 +1717,9 @@ def apply_event(
         else:
             fields = ["stream_id", "topic_name", "visibility_policy", "last_updated"]
             state["user_topics"].append({x: event[x] for x in fields})
+    elif event["type"] == "topic_settings":
+        fields = ["stream_id", "topic_name", "is_locked", "last_updated"]
+        state["topic_settings"].append({x: event[x] for x in fields})
     elif event["type"] == "has_zoom_token":
         state["has_zoom_token"] = event["value"]
     elif event["type"] == "web_reload_client":
