@@ -460,19 +460,19 @@ export class BuddyList extends BuddyListConf {
         let header_text;
         if (current_sub) {
             if (all_participant_ids.size) {
-                header_text = $t({defaultMessage: "Others in this channel"});
+                header_text = $t({defaultMessage: "OTHERS IN THIS CHANNEL"});
             } else {
-                header_text = $t({defaultMessage: "In this channel"});
+                header_text = $t({defaultMessage: "IN THIS CHANNEL"});
             }
         } else {
-            header_text = $t({defaultMessage: "In this conversation"});
+            header_text = $t({defaultMessage: "IN THIS CONVERSATION"});
         }
 
         $("#buddy-list-participants-container .buddy-list-subsection-header").append(
             $(
                 render_section_header({
                     id: "buddy-list-participants-section-heading",
-                    header_text: $t({defaultMessage: "In this conversation"}),
+                    header_text: $t({defaultMessage: "IN THIS CONVERSATION"}),
                     user_count: get_formatted_sub_count(all_participant_ids.size),
                     is_collapsed: this.participants_is_collapsed,
                 }),
@@ -496,7 +496,7 @@ export class BuddyList extends BuddyListConf {
             $(
                 render_section_header({
                     id: "buddy-list-other-users-section-heading",
-                    header_text: $t({defaultMessage: "Others"}),
+                    header_text: $t({defaultMessage: "OTHERS"}),
                     user_count: get_formatted_sub_count(other_users_count),
                     is_collapsed: this.other_users_is_collapsed,
                 }),
