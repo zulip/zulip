@@ -95,7 +95,7 @@ const config = (
                 },
                 // Generate webfont
                 {
-                    test: /\.font\.js$/,
+                    test: /\.font\.cjs$/,
                     use: [
                         MiniCssExtractPlugin.loader,
                         {
@@ -114,6 +114,7 @@ const config = (
                             },
                         },
                     ],
+                    type: "javascript/auto",
                 },
                 // Transpile .js and .ts files with Babel
                 {
