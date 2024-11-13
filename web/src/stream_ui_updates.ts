@@ -459,11 +459,11 @@ export function enable_or_disable_add_subscribers_elements(
 
         if (enable_elem) {
             $container_elem
-                .find(".add_all_users_to_stream_btn_container")
+                .find(".add_all_users_to_stream_button_container")
                 .removeClass("add_subscribers_disabled");
         } else {
             $container_elem
-                .find(".add_all_users_to_stream_btn_container")
+                .find(".add_all_users_to_stream_button_container")
                 .addClass("add_subscribers_disabled");
         }
     } else {
