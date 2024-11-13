@@ -1,4 +1,4 @@
-from urllib.parse import urlsplit
+from urllib.parse import SplitResult, urlsplit
 
 from django.conf import settings
 
@@ -66,3 +66,56 @@ def is_same_server_message_link(url: str) -> bool:
     ends_with_near_message_id = fragment_parts[-2] == "near" and fragment_parts[-1].isdigit()
 
     return ends_with_near_message_id
+
+
+class NearLinkHandler:
+    """
+    The NearLinkHandler is a helper class for editing
+    and cleaning up near links.
+
+    It can do basic operations such as splitting, fetching
+    link parts, and reassembling. It also applies some near
+    link related validations and clean-up operations.
+
+    See `test_near_link_variations.json` for examples of
+    links this class is intended to handle.
+    """
+
+    def __init__(self, near_link: str) -> None:
+        if not check_near_link_base(near_link):
+            raise AssertionError("This near link is either invalid or not from this server.")
+        self.split_result: SplitResult
+        self.patch_near_link(urlsplit(near_link))
+
+    def clean_near_link(self, split_result: SplitResult) -> SplitResult:
+        """
+        This function fixes legacy near links (uses "stream"),
+        and makes sure relative links starts with "/".
+        """
+        fragment_parts = split_result.fragment.split("/")
+        changed_parts = {}
+
+        if fragment_parts[1] == "stream":
+            fragment_parts[1] = "channel"
+        if split_result.hostname is None and split_result.path == "":
+            # Makes sure a relative near link starts with "/"
+            changed_parts["path"] = "/"
+
+        fragments = "/".join(fragment_parts)
+        changed_parts["fragment"] = fragments
+        cleaned_split_result = split_result._replace(**changed_parts)
+        return cleaned_split_result
+
+    def get_url(self) -> str:
+        return self.split_result.geturl()
+
+    def patch_near_link(self, split_result: SplitResult) -> None:
+        self.split_result = self.clean_near_link(split_result)
+
+    def get_near_link_fragment_parts(self) -> list[str]:
+        return self.split_result.fragment.split("/")
+
+    def patch_near_link_fragment_parts(self, fragment_parts: list[str]) -> None:
+        fragments = "/".join(fragment_parts)
+        patched_split_result = self.split_result._replace(fragment=fragments)
+        self.patch_near_link(patched_split_result)
