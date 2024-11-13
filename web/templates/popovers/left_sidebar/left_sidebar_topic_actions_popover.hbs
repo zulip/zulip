@@ -3,6 +3,11 @@
         <li role="none" class="popover-topic-header text-item popover-menu-list-item">
             <span class="popover-topic-name">{{topic_name}}</span>
         </li>
+        {{#unless topic_has_messages}}
+        <li role="none" class="popover-menu-list-item text-item italic hidden-for-spectators">
+            <span class="popover-menu-label">{{t "This topic has no messages." }}</span>
+        </li>
+        {{else}}
         {{!-- Group 1 --}}
         {{#unless is_spectator}}
         <li role="separator" class="popover-menu-separator"></li>
@@ -101,5 +106,6 @@
             </a>
         </li>
         {{/if}}
+        {{/unless}}
     </ul>
 </div>
