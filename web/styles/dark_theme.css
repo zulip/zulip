@@ -509,7 +509,7 @@
         background-color: hsl(211deg 18% 25%) !important;
     }
 
-    .recent_view_container #recent_view_table .btn-recent-filters {
+    .recent_view_container #recent_view_table .button-recent-filters {
         background-color: hsl(211deg 29% 14%);
         border-color: hsl(0deg 0% 0%);
         color: hsl(0deg 0% 100%);
@@ -530,7 +530,7 @@
         }
     }
 
-    .btn-recent-selected,
+    .button-recent-selected,
     #recent_view_table thead th {
         background-color: hsl(228deg 11% 17%) !important;
 

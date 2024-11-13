@@ -1022,7 +1022,7 @@ export function update_topic_unread_count(message: Message): void {
 export function set_filter(filter: string): void {
     // This function updates the `filters` variable
     // after user clicks on one of the filter buttons
-    // based on `btn-recent-selected` class and current
+    // based on `button-recent-selected` class and current
     // set `filters`.
 
     // Get the button which was clicked.
@@ -1030,7 +1030,7 @@ export function set_filter(filter: string): void {
         `[data-filter="${CSS.escape(filter)}"]`,
     );
 
-    if ($filter_elem.hasClass("btn-recent-selected")) {
+    if ($filter_elem.hasClass("button-recent-selected")) {
         filters.delete(filter);
         // If the button was not selected, we add the filter.
     } else {
@@ -1041,12 +1041,12 @@ export function set_filter(filter: string): void {
 }
 
 function show_selected_filters(): void {
-    // Add `btn-selected-filter` to the buttons to show
+    // Add `button-recent-selected` to the buttons to show
     // which filters are applied.
     for (const filter of filters) {
         $("#recent_view_filter_buttons")
             .find(`[data-filter="${CSS.escape(filter)}"]`)
-            .addClass("btn-recent-selected")
+            .addClass("button-recent-selected")
             .attr("aria-checked", "true");
     }
 }
@@ -1571,7 +1571,7 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
 
             if (
                 post_tab_focus_elem.id === "recent_view_search" ||
-                post_tab_focus_elem.classList.contains("btn-recent-filters") ||
+                post_tab_focus_elem.classList.contains("button-recent-filters") ||
                 post_tab_focus_elem.classList.contains("dropdown-widget-button")
             ) {
                 $current_focus_elem = $(post_tab_focus_elem);
@@ -1648,7 +1648,7 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
                 set_table_focus(row_focus, col_focus);
                 return true;
         }
-    } else if ($elt.hasClass("btn-recent-filters") || $elt.hasClass("dropdown-widget-button")) {
+    } else if ($elt.hasClass("button-recent-filters") || $elt.hasClass("dropdown-widget-button")) {
         switch (input_key) {
             case "click":
                 $current_focus_elem = $elt;
@@ -1747,7 +1747,7 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
     }
     if ($current_focus_elem !== "table" && input_key !== "escape") {
         $current_focus_elem.trigger("focus");
-        if ($current_focus_elem.hasClass("btn-recent-filters")) {
+        if ($current_focus_elem.hasClass("button-recent-filters")) {
             compose_closed_ui.set_standard_text_for_reply_button();
         }
         return true;
@@ -1838,7 +1838,7 @@ export function initialize({
 
     $("body").on("keydown", ".on_hover_topic_read", ui_util.convert_enter_to_click);
 
-    $("body").on("click", ".btn-recent-filters", (e) => {
+    $("body").on("click", ".button-recent-filters", (e) => {
         e.stopPropagation();
         if (page_params.is_spectator) {
             // Filter buttons are disabled for spectator.

@@ -161,7 +161,7 @@
         padding-top: 4px !important;
     }
 
-    .btn-recent-filters {
+    .button-recent-filters {
         border-radius: 40px;
         margin: 0 5px 10px 0;
 
@@ -181,7 +181,7 @@
         }
     }
 
-    .btn-recent-selected {
+    .button-recent-selected {
         background-color: hsl(0deg 11% 93%);
     }
 
