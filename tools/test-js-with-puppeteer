@@ -63,12 +63,7 @@ options = parser.parse_args()
 
 
 def run_single_test(test_file: str, test_number: int, total_tests: int) -> int:
-    cmd = [
-        os.path.join(ZULIP_PATH, "node_modules/.bin/ts-node"),
-        "--script-mode",
-        "--transpile-only",
-        test_file,
-    ]
+    cmd = ["node", "--experimental-strip-types", "--no-warnings=ExperimentalWarning", test_file]
 
     test_name = os.path.basename(test_file)
     cmd_str = shlex.join(cmd)
