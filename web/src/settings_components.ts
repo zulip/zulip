@@ -539,16 +539,16 @@ export function change_save_button_state($element: JQuery, state: string): void 
         }, fadeout_delay);
     }
 
-    const $saveBtn = $element.find(".save-button");
-    const $textEl = $saveBtn.find(".save-discard-widget-button-text");
+    const $save_button = $element.find(".save-button");
+    const $textEl = $save_button.find(".save-discard-widget-button-text");
 
     if (state !== "saving") {
-        $saveBtn.removeClass("saving");
+        $save_button.removeClass("saving");
     }
 
     if (state === "discarded") {
         let hide_delay = 0;
-        if ($saveBtn.attr("data-status") === "saved") {
+        if ($save_button.attr("data-status") === "saved") {
             // Keep saved button displayed a little longer.
             hide_delay = 500;
         }
@@ -580,7 +580,7 @@ export function change_save_button_state($element: JQuery, state: string): void 
             is_show = true;
 
             $element.find(".discard-button").hide();
-            $saveBtn.addClass("saving");
+            $save_button.addClass("saving");
             break;
         case "failed":
             button_text = $t({defaultMessage: "Save changes"});
@@ -597,7 +597,7 @@ export function change_save_button_state($element: JQuery, state: string): void 
     assert(button_text !== undefined);
     $textEl.text(button_text);
     assert(data_status !== undefined);
-    $saveBtn.attr("data-status", data_status);
+    $save_button.attr("data-status", data_status);
     if (state === "unsaved") {
         // Do not scroll if the currently focused element is a textarea or an input
         // of type text, to not interrupt the user's typing flow. Scrolling will happen
@@ -1200,9 +1200,9 @@ export function save_discard_realm_settings_widget_status_handler($subsection: J
         check_realm_settings_property_changed(elem),
     );
 
-    const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");
+    const $save_button_controls = $subsection.find(".subsection-header .save-button-controls");
     const button_state = show_change_process_button ? "unsaved" : "discarded";
-    change_save_button_state($save_btn_controls, button_state);
+    change_save_button_state($save_button_controls, button_state);
 }
 
 export function save_discard_stream_settings_widget_status_handler(
@@ -1219,9 +1219,9 @@ export function save_discard_stream_settings_widget_status_handler(
         );
     }
 
-    const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");
+    const $save_button_controls = $subsection.find(".subsection-header .save-button-controls");
     const button_state = show_change_process_button ? "unsaved" : "discarded";
-    change_save_button_state($save_btn_controls, button_state);
+    change_save_button_state($save_button_controls, button_state);
 
     // If the stream isn't currently private but being changed to private,
     // and the user changing this setting isn't subscribed, we show a
@@ -1265,9 +1265,9 @@ export function save_discard_group_widget_status_handler(
     const show_change_process_button = properties_elements.some((elem) =>
         check_group_property_changed(elem, group),
     );
-    const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");
+    const $save_button_controls = $subsection.find(".subsection-header .save-button-controls");
     const button_state = show_change_process_button ? "unsaved" : "discarded";
-    change_save_button_state($save_btn_controls, button_state);
+    change_save_button_state($save_button_controls, button_state);
 }
 
 export function save_discard_default_realm_settings_widget_status_handler(
@@ -1280,9 +1280,9 @@ export function save_discard_default_realm_settings_widget_status_handler(
         check_realm_default_settings_property_changed(elem),
     );
 
-    const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");
+    const $save_button_controls = $subsection.find(".subsection-header .save-button-controls");
     const button_state = show_change_process_button ? "unsaved" : "discarded";
-    change_save_button_state($save_btn_controls, button_state);
+    change_save_button_state($save_button_controls, button_state);
 }
 
 function check_maximum_valid_value(
@@ -1321,7 +1321,7 @@ function should_disable_save_button_for_jitsi_server_url_setting(): boolean {
 function should_disable_save_button_for_time_limit_settings(
     time_limit_settings: HTMLElement[],
 ): boolean {
-    let disable_save_btn = false;
+    let disable_save_button = false;
     for (const setting_elem of time_limit_settings) {
         const $dropdown_elem = $(setting_elem).find<HTMLSelectOneElement>("select:not([multiple])");
         const $custom_input_elem = $(setting_elem).find<HTMLInputElement>(
@@ -1334,7 +1334,7 @@ function should_disable_save_button_for_time_limit_settings(
             "realm-user-default-settings";
         const property_name = extract_property_name($dropdown_elem, for_realm_default_settings);
 
-        disable_save_btn =
+        disable_save_button =
             $dropdown_elem.val() === "custom_period" &&
             (custom_input_elem_val <= 0 ||
                 Number.isNaN(custom_input_elem_val) ||
@@ -1347,15 +1347,15 @@ function should_disable_save_button_for_time_limit_settings(
             // 0 is a valid value for realm_waiting_period_threshold setting. We specifically
             // check for $custom_input_elem.val() to be "0" and not custom_input_elem_val
             // because it is 0 even when custom input box is empty.
-            disable_save_btn = false;
+            disable_save_button = false;
         }
 
-        if (disable_save_btn) {
+        if (disable_save_button) {
             break;
         }
     }
 
-    return disable_save_btn;
+    return disable_save_button;
 }
 
 function should_disable_save_button_for_group_settings(settings: string[]): boolean {
@@ -1395,20 +1395,21 @@ function should_disable_save_button_for_group_settings(settings: string[]): bool
 function enable_or_disable_save_button($subsection_elem: JQuery): void {
     const time_limit_settings = [...$subsection_elem.find(".time-limit-setting")];
 
-    let disable_save_btn = false;
+    let disable_save_button = false;
     if (time_limit_settings.length) {
-        disable_save_btn = should_disable_save_button_for_time_limit_settings(time_limit_settings);
+        disable_save_button =
+            should_disable_save_button_for_time_limit_settings(time_limit_settings);
     } else if ($subsection_elem.attr("id") === "org-other-settings") {
-        disable_save_btn = should_disable_save_button_for_jitsi_server_url_setting();
+        disable_save_button = should_disable_save_button_for_jitsi_server_url_setting();
         const $button_wrapper = $subsection_elem.find<tippy.PopperElement>(
             ".subsection-changes-save",
         );
         const tippy_instance = util.the($button_wrapper)._tippy;
-        if (disable_save_btn) {
+        if (disable_save_button) {
             // avoid duplication of tippy
             if (!tippy_instance) {
                 const opts: Partial<tippy.Props> = {placement: "top"};
-                initialize_disable_btn_hint_popover(
+                initialize_disable_button_hint_popover(
                     $button_wrapper,
                     $t({defaultMessage: "Cannot save invalid Jitsi server URL."}),
                     opts,
@@ -1421,20 +1422,20 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
         }
     }
 
-    if (!disable_save_btn) {
+    if (!disable_save_button) {
         const group_settings = [...$subsection_elem.find(".pill-container")].map((elem) =>
             extract_property_name($(elem)),
         );
         if (group_settings.length) {
-            disable_save_btn = should_disable_save_button_for_group_settings(group_settings);
+            disable_save_button = should_disable_save_button_for_group_settings(group_settings);
         }
     }
 
-    $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);
+    $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_button);
 }
 
-export function initialize_disable_btn_hint_popover(
-    $btn_wrapper: JQuery,
+export function initialize_disable_button_hint_popover(
+    $button_wrapper: JQuery,
     hint_text: string | undefined,
     opts: Partial<tippy.Props> = {},
 ): void {
@@ -1450,7 +1451,7 @@ export function initialize_disable_btn_hint_popover(
     if (hint_text !== undefined) {
         tippy_opts.content = hint_text;
     }
-    tippy.default(util.the($btn_wrapper), tippy_opts);
+    tippy.default(util.the($button_wrapper), tippy_opts);
 }
 
 export function enable_opening_typeahead_on_clicking_label($container: JQuery): void {
