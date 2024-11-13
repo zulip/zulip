@@ -81,7 +81,11 @@ ConfirmationObjT: TypeAlias = NoZilencerConfirmationObjT | ZilencerConfirmationO
 
 
 def get_object_from_key(
-    confirmation_key: str, confirmation_types: list[int], *, mark_object_used: bool
+    confirmation_key: str,
+    confirmation_types: list[int],
+    *,
+    mark_object_used: bool,
+    allow_used: bool = False,
 ) -> ConfirmationObjT:
     """Access a confirmation object from one of the provided confirmation
     types with the provided key.
@@ -90,6 +94,9 @@ def get_object_from_key(
     confirmation object as used (which generally prevents it from
     being used again). It should always be False for MultiuseInvite
     objects, since they are intended to be used multiple times.
+
+    By default, used confirmation objects cannot be used again as part
+    of their security model.
     """
 
     # Confirmation keys used to be 40 characters
@@ -108,11 +115,13 @@ def get_object_from_key(
     obj = confirmation.content_object
     assert obj is not None
 
-    used_value = confirmation_settings.STATUS_USED
-    revoked_value = confirmation_settings.STATUS_REVOKED
-    if hasattr(obj, "status") and obj.status in [used_value, revoked_value]:
+    forbidden_statuses = {confirmation_settings.STATUS_REVOKED}
+    if not allow_used:
+        forbidden_statuses.add(confirmation_settings.STATUS_USED)
+
+    if hasattr(obj, "status") and obj.status in forbidden_statuses:
         # Confirmations where the object has the status attribute are one-time use
-        # and are marked after being used (or revoked).
+        # and are marked after being revoked (or used).
         raise ConfirmationKeyError(ConfirmationKeyError.EXPIRED)
 
     if mark_object_used:
