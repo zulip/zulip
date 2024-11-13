@@ -217,9 +217,9 @@ export function build_page(): void {
     $(".admin_linkifiers_table").on("click", ".delete", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        const $btn = $(this);
+        const $button = $(this);
         const html_body = render_confirm_delete_linkifier();
-        const url = "/json/realm/filters/" + encodeURIComponent($btn.attr("data-linkifier-id")!);
+        const url = "/json/realm/filters/" + encodeURIComponent($button.attr("data-linkifier-id")!);
 
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Delete linkifier?"}),
@@ -236,8 +236,8 @@ export function build_page(): void {
         e.preventDefault();
         e.stopPropagation();
 
-        const $btn = $(this);
-        const linkifier_id = Number.parseInt($btn.attr("data-linkifier-id")!, 10);
+        const $button = $(this);
+        const linkifier_id = Number.parseInt($button.attr("data-linkifier-id")!, 10);
         open_linkifier_edit_form(linkifier_id);
     });
 
