@@ -221,10 +221,9 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
-from zerver.lib.types import ProfileDataElementUpdateDict
+from zerver.lib.types import AnonymousSettingGroupDict, ProfileDataElementUpdateDict
 from zerver.lib.upload import upload_message_attachment
 from zerver.lib.user_groups import (
-    AnonymousSettingGroupDict,
     get_group_setting_value_for_api,
     get_role_based_system_groups_dict,
 )

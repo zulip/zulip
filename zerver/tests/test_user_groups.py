@@ -35,8 +35,8 @@ from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.types import AnonymousSettingGroupDict
 from zerver.lib.user_groups import (
-    AnonymousSettingGroupDict,
     get_direct_user_groups,
     get_recursive_group_members,
     get_recursive_membership_groups,

@@ -18,7 +18,11 @@ from zerver.lib.exceptions import (
     SystemGroupRequiredError,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import GroupPermissionSetting, ServerSupportedPermissionSettings
+from zerver.lib.types import (
+    AnonymousSettingGroupDict,
+    GroupPermissionSetting,
+    ServerSupportedPermissionSettings,
+)
 from zerver.models import (
     GroupGroupMembership,
     NamedUserGroup,
@@ -31,12 +35,6 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
-
-
-@dataclass
-class AnonymousSettingGroupDict:
-    direct_members: list[int]
-    direct_subgroups: list[int]
 
 
 @dataclass
