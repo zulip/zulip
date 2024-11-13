@@ -39,6 +39,8 @@ format used by the Zulip server that they are interacting with.
   the following fields will have the value of `realm_empty_topic_display_name`
   field replacing the empty string for channel messages:
     * `subject` field in the `message` event type
+    * `topic` field in the `delete_message` event type
+    * `orig_subject` and `subject` fields in the `update_message` event type
 
 * [`GET /messages`](/api/get-messages),
   [`GET /messages/{message_id}`](/api/get-message): Added `allow_empty_topic_name`

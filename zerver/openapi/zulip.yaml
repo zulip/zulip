@@ -2119,6 +2119,17 @@ paths:
                                     Only present if `message_type` is `"stream"`.
 
                                     The topic to which the message was sent.
+
+                                    For clients that don't support the `empty_topic_name` [client capability][client-capabilities],
+                                    if the actual topic name was empty string, this field's value will instead
+                                    be the value of `realm_empty_topic_display_name` found in the
+                                    [`POST /register`](/api/register-queue) response.
+
+                                    **Changes**: Before 10.0 (feature level 334), `empty_topic_name`
+                                    client capability didn't exist and empty string as the topic name for
+                                    channel messages wasn't allowed.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                               example:
                                 {
                                   "type": "delete_message",
@@ -2515,6 +2526,17 @@ paths:
 
                                     The pre-edit topic for all of the messages with IDs in
                                     `message_ids`.
+
+                                    For clients that don't support the `empty_topic_name` [client capability][client-capabilities],
+                                    if the actual pre-edit topic name is empty string, this field's value will instead
+                                    be the value of `realm_empty_topic_display_name` found in the
+                                    [`POST /register`](/api/register-queue) response.
+
+                                    **Changes**: Before 10.0 (feature level 334), `empty_topic_name`
+                                    client capability didn't exist and empty string as the topic name for
+                                    channel messages wasn't allowed.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                 subject:
                                   type: string
                                   description: |
@@ -2524,6 +2546,17 @@ paths:
 
                                     The post-edit topic for all of the messages with IDs in
                                     `message_ids`.
+
+                                    For clients that don't support the `empty_topic_name` [client capability][client-capabilities],
+                                    if the actual post-edit topic name is empty string, this field's value will instead
+                                    be the value of `realm_empty_topic_display_name` found in the
+                                    [`POST /register`](/api/register-queue) response.
+
+                                    **Changes**: Before 10.0 (feature level 334), `empty_topic_name`
+                                    client capability didn't exist and empty string as the topic name for
+                                    channel messages wasn't allowed.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                 topic_links:
                                   type: array
                                   items:
@@ -8409,8 +8442,15 @@ paths:
                     Should only be sent when changing the topic, and will throw an error
                     if the target message is not a channel message.
 
-                    **Changes**: New in Zulip 2.0.0. Previous Zulip releases encoded
-                    this as `subject`, which is currently a deprecated alias.
+                    Note: When the value of `realm_empty_topic_display_name` found in
+                    the [POST /register](/api/register-queue) response is used for this
+                    parameter, it is interpreted as an empty string.
+
+                    **Changes**: Before Zulip 10.0 (feature level 334), empty string
+                    was not a valid topic name for channel messages.
+
+                    New in Zulip 2.0.0. Previous Zulip releases encoded this as `subject`,
+                    which is currently a deprecated alias.
                   type: string
                   example: Castle
                 propagate_mode:
