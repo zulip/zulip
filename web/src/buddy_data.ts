@@ -240,6 +240,7 @@ export function get_title_data(
     second_line: string | undefined;
     third_line: string;
     show_you?: boolean;
+    is_deactivated?: boolean;
 } {
     if (is_group) {
         // For groups, just return a string with recipient names.
@@ -253,6 +254,7 @@ export function get_title_data(
     // Since it's not a group, user_ids_string is a single user ID.
     const user_id = Number.parseInt(user_ids_string, 10);
     const person = people.get_by_user_id(user_id);
+    const is_deactivated = !people.is_person_active(user_id);
 
     if (person.is_bot) {
         const bot_owner = people.get_bot_owner_user(person);
@@ -266,7 +268,10 @@ export function get_title_data(
             return {
                 first_line: person.full_name,
                 second_line: bot_owner_name,
-                third_line: "",
+                third_line: is_deactivated
+                    ? $t({defaultMessage: "This bot has been deactivated."})
+                    : "",
+                is_deactivated,
             };
         }
 
@@ -282,6 +287,16 @@ export function get_title_data(
     // Since is_group=False, it's a single, human user.
     const last_seen = user_last_seen_time_status(user_id);
     const is_my_user = people.is_my_user_id(user_id);
+
+    if (is_deactivated) {
+        return {
+            first_line: person.full_name,
+            second_line: $t({defaultMessage: "This user has been deactivated."}),
+            third_line: "",
+            show_you: is_my_user,
+            is_deactivated,
+        };
+    }
 
     // Users has a status.
     if (user_status.get_status_text(user_id)) {
