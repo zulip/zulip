@@ -23,7 +23,7 @@ TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 ROOT_DIR = os.path.dirname(TOOLS_DIR)
 
-EVENTS_JS = "web/tests/lib/events.js"
+EVENTS_JS = "web/tests/lib/events.cjs"
 
 # check for the venv
 from tools.lib import sanity_check

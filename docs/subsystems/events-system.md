@@ -381,9 +381,9 @@ node test fixtures and our OpenAPI documentation.
 #### Node testing
 
 Once you've completed backend testing, be sure to add an example event
-in `web/tests/lib/events.js`, a test of the
+in `web/tests/lib/events.cjs`, a test of the
 `server_events_dispatch.js` code for that event in
-`web/tests/dispatch.test.js`, and verify your example
+`web/tests/dispatch.test.cjs`, and verify your example
 against the two versions of the schema that you declared above using
 `tools/check-schemas`.
 

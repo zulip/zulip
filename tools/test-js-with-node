@@ -20,7 +20,7 @@ sanity_check.check_venv(__file__)
 import orjson
 from zulint.printer import BOLDRED, CYAN, ENDC, GREEN
 
-INDEX_JS = os.path.join(ROOT_DIR, "web/tests/lib/index.js")
+INDEX_JS = os.path.join(ROOT_DIR, "web/tests/lib/index.cjs")
 NODE_COVERAGE_PATH = os.path.join(ROOT_DIR, "var/node-coverage/coverage-final.json")
 
 # Ideally, we wouldn't need this line, but it seems to be required to
@@ -28,9 +28,9 @@ NODE_COVERAGE_PATH = os.path.join(ROOT_DIR, "var/node-coverage/coverage-final.js
 os.chdir(ROOT_DIR)
 
 USAGE = """
-    tools/test-js-with-node                                - to run all tests
-    tools/test-js-with-node util.test.js activity.test.js  - to run just a couple tests
-    tools/test-js-with-node --coverage                     - to generate coverage report
+    tools/test-js-with-node                                  - to run all tests
+    tools/test-js-with-node util.test.cjs activity.test.cjs  - to run just a couple tests
+    tools/test-js-with-node --coverage                       - to generate coverage report
     """
 
 
@@ -291,14 +291,14 @@ EXEMPT_FILES = make_set(
         "web/src/zcommand.ts",
         "web/src/zform.js",
         "web/src/zulip_test.ts",
-        "web/tests/lib/example_user.js",
-        "web/tests/lib/mdiff.js",
-        "web/tests/lib/real_jquery.js",
-        "web/tests/lib/zjquery_element.js",
-        "web/tests/lib/zpage_billing_params.js",
+        "web/tests/lib/example_user.cjs",
+        "web/tests/lib/mdiff.cjs",
+        "web/tests/lib/real_jquery.cjs",
+        "web/tests/lib/zjquery_element.cjs",
+        "web/tests/lib/zpage_billing_params.cjs",
         # There are some important functions which are not called right now but will
         # be reused when we add tests for dropdown widget so it doesn't make sense to remove them.
-        "web/tests/recent_view.test.js",
+        "web/tests/recent_view.test.cjs",
     ]
 )
 
@@ -362,8 +362,8 @@ def print_error(msg: str) -> None:
 
 def clean_file(orig_fn: str) -> str:
     fn = orig_fn
-    if not fn.endswith(".test.js"):
-        fn += ".test.js"
+    if not fn.endswith(".test.cjs"):
+        fn += ".test.cjs"
     if "web/tests/" not in fn:
         fn = os.path.join(ROOT_DIR, "web", "tests", fn)
     fn = os.path.abspath(fn)
@@ -381,7 +381,7 @@ def clean_files(fns: list[str]) -> list[str]:
 def run_tests_via_node_js() -> int:
     os.environ["TZ"] = "UTC"
 
-    # The index.js test runner is the real "driver" here, and we launch
+    # The index.cjs test runner is the real "driver" here, and we launch
     # with either nyc or node, depending on whether we want coverage
     # reports.  Running under nyc is slower and creates funny
     # tracebacks, so you generally want to get coverage reports only
@@ -393,7 +393,7 @@ def run_tests_via_node_js() -> int:
         parallel = 1
         files = individual_files
     else:
-        files = sorted(glob.glob(os.path.join(ROOT_DIR, "web/tests/*.test.js")))
+        files = sorted(glob.glob(os.path.join(ROOT_DIR, "web/tests/*.test.cjs")))
 
     test_files = clean_files(files)
 
@@ -417,14 +417,15 @@ def run_tests_via_node_js() -> int:
         coverage_dir = os.path.join(ROOT_DIR, "var/node-coverage")
 
         nyc = os.path.join(ROOT_DIR, "node_modules/.bin/nyc")
-        command = [nyc, "--extension", ".hbs", "--extension", ".ts"]
+        command = [nyc]
+        command += [f"--extension={ext}" for ext in [".cjs", ".cts", ".hbs", ".mjs", ".mts", ".ts"]]
         command += ["--report-dir", coverage_dir]
         command += ["--temp-directory", coverage_dir]
         command += ["-r=lcov", "-r=json", "-r=text-summary"]
         command += node_tests_cmd
     else:
         # Normal testing, no coverage analysis.
-        # Run the index.js test runner, which runs all the other tests.
+        # Run the index.cjs test runner, which runs all the other tests.
         command = node_tests_cmd
 
     try:
@@ -473,8 +474,8 @@ def enforce_proper_coverage(coverage_json: Any) -> bool:
         *glob.glob("web/src/*.js"),
         *glob.glob("web/src/*.ts"),
         *glob.glob("web/src/billing/*.js"),
-        *glob.glob("web/tests/*.js"),
-        *glob.glob("web/tests/lib/*.js"),
+        *glob.glob("web/tests/*.cjs"),
+        *glob.glob("web/tests/lib/*.cjs"),
     }
     missing_files = sorted(EXEMPT_FILES - all_js_files)
     assert not missing_files, f"Missing files should be removed from EXEMPT_FILES: {missing_files}"

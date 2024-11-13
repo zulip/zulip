@@ -41,7 +41,7 @@ message is sent). As a result, we try to make sure that
 The Python-Markdown implementation is tested by
 `zerver/tests/test_markdown.py`, and the marked.js implementation and
 `markdown.contains_backend_only_syntax` are tested by
-`web/tests/markdown.test.js`.
+`web/tests/markdown.test.cjs`.
 
 A shared set of fixed test data ("test fixtures") is present in
 `zerver/tests/fixtures/markdown_test_cases.json`, and is automatically used
