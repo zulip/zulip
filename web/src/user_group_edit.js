@@ -775,15 +775,15 @@ export function add_or_remove_from_group(group, group_row) {
         user_group_edit_members.edit_user_group_membership({
             group,
             removed: [user_id],
-            success_callback,
-            error_callback,
+            success: success_callback,
+            error: error_callback,
         });
     } else {
         user_group_edit_members.edit_user_group_membership({
             group,
             added: [user_id],
-            success_callback,
-            error_callback,
+            success: success_callback,
+            error: error_callback,
         });
     }
 }
