@@ -25,6 +25,13 @@ export function search_terms(current_filter: Filter | undefined = filter()): Nar
     return current_filter.terms();
 }
 
+export function is_search_view(current_filter: Filter | undefined = filter()): boolean {
+    if (current_filter && !current_filter.supports_collapsing_recipients()) {
+        return true;
+    }
+    return false;
+}
+
 export function is_message_feed_visible(): boolean {
     // It's important that `message_lists.current` is the
     // source of truth for this since during the initial app load,
