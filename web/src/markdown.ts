@@ -5,13 +5,13 @@ import assert from "minimalistic-assert";
 import type {Template} from "url-template";
 
 import * as fenced_code from "../shared/src/fenced_code.ts";
-import marked from "../third/marked/lib/marked.js";
-import type {LinkifierMatch, ParseOptions, RegExpOrStub} from "../third/marked/lib/marked.js";
+import marked from "../third/marked/lib/marked.cjs";
+import type {LinkifierMatch, ParseOptions, RegExpOrStub} from "../third/marked/lib/marked.cjs";
 
 // This contains zulip's frontend Markdown implementation; see
 // docs/subsystems/markdown.md for docs on our Markdown syntax.  The other
 // main piece in rendering Markdown client-side is
-// web/third/marked/lib/marked.js, which we have significantly
+// web/third/marked/lib/marked.cjs, which we have significantly
 // modified from the original implementation.
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/markdown.html
