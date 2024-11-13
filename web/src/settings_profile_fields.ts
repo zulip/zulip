@@ -314,7 +314,7 @@ function delete_choice_row_for_edit(
     field: CustomProfileField,
 ): void {
     delete_choice_row(row);
-    disable_submit_btn_if_no_property_changed($profile_field_form, field);
+    disable_submit_button_if_no_property_changed($profile_field_form, field);
 }
 
 function show_modal_for_deleting_options(
@@ -384,7 +384,7 @@ function set_up_external_account_field_edit_form(
     }
 }
 
-function disable_submit_btn_if_no_property_changed(
+function disable_submit_button_if_no_property_changed(
     $profile_field_form: JQuery,
     field: CustomProfileField,
 ): void {
@@ -434,7 +434,7 @@ function set_up_select_field_edit_form(
         filter: "input",
         preventOnFilter: false,
         onSort() {
-            disable_submit_btn_if_no_property_changed($profile_field_form, field);
+            disable_submit_button_if_no_property_changed($profile_field_form, field);
         },
     });
 }
@@ -520,7 +520,7 @@ function open_edit_form_modal(this: HTMLElement): void {
         // select field add/update/remove operations are covered in onSort and
         // row delete button is separately covered in delete_choice_row_for_edit.
         $profile_field_form.on("input", () => {
-            disable_submit_btn_if_no_property_changed($profile_field_form, field);
+            disable_submit_button_if_no_property_changed($profile_field_form, field);
         });
     }
 
