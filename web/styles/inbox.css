@@ -47,13 +47,13 @@
             margin-left: 10px;
 
             &:focus {
-                background-color: var(--color-background-btn-inbox-focus);
+                background-color: var(--color-background-button-inbox-focus);
                 outline: 0;
             }
         }
 
         .btn-inbox-selected {
-            background-color: var(--color-background-btn-inbox-selected);
+            background-color: var(--color-background-button-inbox-selected);
         }
 
         #inbox-filters {

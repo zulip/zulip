@@ -970,8 +970,8 @@
             hsl(0deg 0% 0% / 5%) 100%
         ),
         hsl(0deg 0% 100%);
-    --color-background-btn-inbox-selected: hsl(0deg 0% 0% / 5%);
-    --color-background-btn-inbox-focus: hsl(0deg 0% 80%);
+    --color-background-button-inbox-selected: hsl(0deg 0% 0% / 5%);
+    --color-background-button-inbox-focus: hsl(0deg 0% 80%);
     --color-icons-inbox: hsl(0deg 0% 0%);
     --color-background-icon-close-hover: hsl(0deg 0% 0% / 5%);
 
@@ -1517,8 +1517,8 @@
             hsl(0deg 0% 100% / 5%) 100%
         ),
         hsl(0deg 0% 14.12%);
-    --color-background-btn-inbox-selected: hsl(0deg 0% 100% / 5%);
-    --color-background-btn-inbox-focus: hsl(0deg 0% 20%);
+    --color-background-button-inbox-selected: hsl(0deg 0% 100% / 5%);
+    --color-background-button-inbox-focus: hsl(0deg 0% 20%);
     --color-icons-inbox: hsl(0deg 0% 100%);
     --color-background-icon-close-hover: hsl(0deg 0% 100% / 5%);
 
