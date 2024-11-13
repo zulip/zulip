@@ -78,11 +78,6 @@ const config = (
         module: {
             rules: [
                 {
-                    test: path.resolve(import.meta.dirname, "src/zulip_test.ts"),
-                    loader: "expose-loader",
-                    options: {exposes: "zulip_test"},
-                },
-                {
                     test: url.fileURLToPath(import.meta.resolve("jquery")),
                     loader: "expose-loader",
                     options: {exposes: ["$", "jQuery"]},
