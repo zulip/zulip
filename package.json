@@ -147,7 +147,6 @@
     "stylelint-config-standard": "^36.0.0",
     "svgo": "^3.0.0",
     "swagger-parser": "^10.0.0",
-    "ts-node": "^10.0.0",
     "typescript": "^5.0.2",
     "vnu-jar": "^24.10.17",
     "webpack-dev-server": "^5.0.2",
