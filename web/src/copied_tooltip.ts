@@ -26,12 +26,12 @@ function show_copied_tooltip(
 }
 
 function show_check_icon(copy_button: HTMLElement): void {
-    $(copy_button).addClass("copy-btn-success");
+    $(copy_button).addClass("copy-button-success");
     $(copy_button).find(".zulip-icon").removeClass("zulip-icon-copy").addClass("zulip-icon-check");
 }
 
 function remove_check_icon(copy_button: HTMLElement): void {
-    $(copy_button).removeClass("copy-btn-success");
+    $(copy_button).removeClass("copy-button-success");
     $(copy_button).find(".zulip-icon").addClass("zulip-icon-copy").removeClass("zulip-icon-check");
 }
 

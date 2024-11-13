@@ -9,14 +9,14 @@
                 <strong>Zulip Server</strong>
                 <div class="zulip-version-info">
                     <span>{{t "Version {zulip_version}" }}</span>
-                    <span class="copy-btn tippy-zulip-tooltip zulip-version" data-tippy-content="{{t 'Copy version' }}" data-tippy-placement="right" data-clipboard-text="{{zulip_version}}">
+                    <span class="copy-button tippy-zulip-tooltip zulip-version" data-tippy-content="{{t 'Copy version' }}" data-tippy-placement="right" data-clipboard-text="{{zulip_version}}">
                         <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
                     </span>
                 </div>
                 {{#if is_fork}}
                 <div class="zulip-merge-base-info">
                     <span>{{t "Forked from upstream at {zulip_merge_base}" }}</span>
-                    <span class="copy-btn tippy-zulip-tooltip zulip-merge-base" data-tippy-content="{{t 'Copy version' }}" data-tippy-placement="right" data-clipboard-text="{{zulip_merge_base}}">
+                    <span class="copy-button tippy-zulip-tooltip zulip-merge-base" data-tippy-content="{{t 'Copy version' }}" data-tippy-placement="right" data-clipboard-text="{{zulip_merge_base}}">
                         <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
                     </span>
                 </div>
