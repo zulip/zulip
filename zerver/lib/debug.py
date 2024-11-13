@@ -12,8 +12,49 @@ from types import FrameType
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
+# Logger for debug logs
 logger = logging.getLogger("zulip.debug")
 
+# New imports for status tracking
+from typing import Optional
+
+
+# --- New code for "Working..." and "Done!" banners ---
+
+# A mock function to represent banner updates.
+def update_working_banner(messages_read: int, total_messages: int) -> None:
+    """
+    This simulates a backend update that would be consumed by the frontend to update the "Working..." banner.
+    """
+    # This is where you would send real-time updates to the frontend
+    progress = f"Working… {messages_read} messages marked as read so far."
+    logger.info(progress)  # Log the progress, but ideally send this to the frontend via WebSockets or HTTP.
+    # Example: send to the frontend via WebSocket or other real-time mechanisms.
+    # Example: send_to_frontend("working", progress)
+
+
+def update_done_banner(messages_read: int, total_messages: int) -> None:
+    """
+    This simulates a backend update that would be consumed by the frontend to update the "Done!" banner.
+    """
+    # When done, show the final message in green.
+    progress = f"Done! {messages_read} messages marked as read."
+    logger.info(progress)  # Log the done status, ideally send this to the frontend
+    # Example: send to the frontend via WebSocket or other real-time mechanisms.
+    # Example: send_to_frontend("done", progress)
+
+
+def update_message_read_progress(messages_read: int, total_messages: int) -> None:
+    """
+    This is a function that simulates the backend processing and updates the "Working..." banner.
+    It is called periodically, as the server marks messages as read.
+    """
+    if messages_read < total_messages:
+        update_working_banner(messages_read, total_messages)
+    else:
+        update_done_banner(messages_read, total_messages)
+
+# --- End of new banner update functions ---
 
 # Interactive debugging code from
 # https://stackoverflow.com/questions/132058/showing-the-stack-trace-from-a-running-python-application
@@ -45,7 +86,7 @@ def tracemalloc_dump() -> None:
     if not tracemalloc.is_tracing():
         logger.warning("pid %s: tracemalloc off, nothing to dump", os.getpid())
         return
-    # Despite our name for it, `timezone_now` always deals in UTC.
+    # Despite our name for it, timezone_now always deals in UTC.
     basename = "snap.{}.{}".format(os.getpid(), timezone_now().strftime("%F-%T"))
     path = os.path.join(settings.TRACEMALLOC_DUMP_DIR, basename)
     os.makedirs(settings.TRACEMALLOC_DUMP_DIR, exist_ok=True)
@@ -110,6 +151,6 @@ def maybe_tracemalloc_listen() -> None:
 
     """
     if os.environ.get("PYTHONTRACEMALLOC"):
-        # If the server was started with `tracemalloc` tracing on, then
-        # listen for a signal to dump `tracemalloc` snapshots.
+        # If the server was started with tracemalloc tracing on, then
+        # listen for a signal to dump tracemalloc snapshots.
         tracemalloc_listen()

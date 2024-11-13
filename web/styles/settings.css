@@ -273,7 +273,7 @@ h3,
     button[data-dismiss="modal"] i.fa-pencil {
         margin-left: 3px;
     }
-
+    
     .hidden-email {
         font-style: italic;
     }
@@ -2123,4 +2123,29 @@ $option_title_width: 180px;
 
 #data-exports .tab-switcher .ind-tab {
     width: 160px;
+}
+.close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+    background-color: transparent;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.7);
+    color: #ffffff;
+}
+
+.close:active {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.9);
 }
