@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 319  # Last bumped for message-link class
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (301, 2)  # bumped 2024-11-12 to patch handlebars
+PROVISION_VERSION = (301, 3)  # bumped 2024-11-13 for @giphy/js-types

@@ -20,7 +20,7 @@ import {electron_bridge} from "./electron_bridge.ts";
 import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as gear_menu from "./gear_menu.js";
-import * as giphy from "./giphy.js";
+import * as giphy from "./giphy.ts";
 import * as information_density from "./information_density.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as linkifiers from "./linkifiers.ts";
