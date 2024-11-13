@@ -1105,28 +1105,10 @@ li.top_left_scheduled_messages {
     display: none;
 }
 
-.sidebar-topic-name,
-.sidebar-topic-action-heading {
+.sidebar-topic-name {
     cursor: pointer;
     grid-area: row-content;
     padding: 0 var(--left-sidebar-before-unread-count-padding) 0 0;
-    /* TODO: Consolidate these styles with conversation partners and stream name
-        once grid rewrite is complete on all sidebar rows.
-
-        Also: note that these styles will be moot for topic names once we allow
-        for multiline topics. If we hold multiline topics to a certain number
-        of lines, we'll likely need a JavaScript-based solution like Clamp.js
-        to display an ellipsis on the final visible line. */
-    white-space: nowrap;
-    /* Both `hidden` and `clip` are shown for the sake
-        of older browsers that do not support `clip`. */
-    overflow-x: hidden;
-    overflow-x: clip;
-    text-overflow: ellipsis;
-
-    span.sidebar-topic-name-inner {
-        white-space: pre;
-    }
 
     &:hover {
         color: inherit;
@@ -1144,6 +1126,27 @@ li.top_left_scheduled_messages {
     font-variant: var(--font-variant-sidebar-action-heading);
     font-feature-settings: var(--font-feature-settings-sidebar-action-heading);
     text-transform: var(--text-transform-sidebar-action-heading);
+
+    cursor: pointer;
+    grid-area: row-content;
+    padding: 0 var(--left-sidebar-before-unread-count-padding) 0 0;
+    /* TODO: Consolidate these styles with conversation partners and stream name
+        once grid rewrite is complete on all sidebar rows.
+
+        Also: note that these styles will be moot for topic names once we allow
+        for multiline topics. If we hold multiline topics to a certain number
+        of lines, we'll likely need a JavaScript-based solution like Clamp.js
+        to display an ellipsis on the final visible line. */
+    white-space: nowrap;
+    /* Both `hidden` and `clip` are shown for the sake
+        of older browsers that do not support `clip`. */
+    overflow-x: hidden;
+    overflow-x: clip;
+    text-overflow: ellipsis;
+
+    &:focus {
+        text-decoration: none;
+    }
 
     &:hover {
         text-decoration: none;
