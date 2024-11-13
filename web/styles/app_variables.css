@@ -282,6 +282,16 @@
     --line-height-sidebar-row-prominent: 1.7142em; /* 24px / 14px em */
     --line-height-sidebar-row: 1.5714em; /* 22px / 14px em */
     --line-height-sidebar-row-with-avatars: 1.3571em; /* 19px / 14px em */
+    --line-height-sidebar-topic-inner: 1.2em;
+    /* This spacing value is to compensate for the
+       additional space of the prominent row-height
+       from within the inner topic value. */
+    --spacing-top-bottom-sidebar-topic-inner: calc(
+        (
+                var(--line-height-sidebar-row-prominent) -
+                    var(--line-height-sidebar-topic-inner)
+            ) / 2
+    );
 
     /* Right sidebar */
     --right-sidebar-padding-right: 8px;

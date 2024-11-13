@@ -1117,6 +1117,12 @@ li.top_left_scheduled_messages {
     &:focus {
         text-decoration: none;
     }
+
+    .sidebar-topic-name-inner {
+        display: block;
+        line-height: var(--line-height-sidebar-topic-inner);
+        margin: var(--spacing-top-bottom-sidebar-topic-inner) 0;
+    }
 }
 
 .sidebar-topic-action-heading {
