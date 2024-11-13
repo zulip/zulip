@@ -52,13 +52,9 @@
             }
 
             .user_circle {
-                /* 8px at 16px/1em */
-                font-size: 0.5em;
+                /* 9px at 16px/1em */
+                font-size: 0.5625em;
                 align-self: center;
-                /* TODO: Revisit the use of flebox on these
-                   typeahead lines to make this fiddly adjustment
-                   unnecessary. */
-                margin-right: 1px;
             }
 
             .typeahead-text-container {
