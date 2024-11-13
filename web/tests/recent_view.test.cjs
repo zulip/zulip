@@ -772,7 +772,7 @@ test("test_filter_participated", ({mock_template}) => {
     // remove muted filter
     rt.set_filter("muted");
 
-    $("#recent_view_filter_buttons").removeClass("btn-recent-selected");
+    $("#recent_view_filter_buttons").removeClass("button-recent-selected");
 
     expected_filter_participated = true;
 
