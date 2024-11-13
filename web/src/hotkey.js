@@ -21,7 +21,7 @@ import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as feedback_widget from "./feedback_widget.ts";
 import * as gear_menu from "./gear_menu.js";
-import * as giphy from "./giphy.js";
+import * as giphy from "./giphy.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.js";
 import * as inbox_ui from "./inbox_ui.ts";

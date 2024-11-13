@@ -305,6 +305,9 @@ importers:
       '@formatjs/cli':
         specifier: ^6.0.0
         version: 6.3.8
+      '@giphy/js-types':
+        specifier: ^5.1.0
+        version: 5.1.0
       '@types/autosize':
         specifier: ^4.0.1
         version: 4.0.3
@@ -359,6 +362,9 @@ importers:
       '@types/textarea-caret':
         specifier: ^3.0.3
         version: 3.0.3
+      '@types/throttle-debounce':
+        specifier: ^5.0.2
+        version: 5.0.2
       '@types/tinycolor2':
         specifier: ^1.4.5
         version: 1.4.6
@@ -434,6 +440,9 @@ importers:
       openapi-examples-validator:
         specifier: ^5.0.0
         version: 5.0.0
+      preact:
+        specifier: ^10.24.3
+        version: 10.24.3
       prettier:
         specifier: ^3.0.0
         version: 3.3.3
@@ -2480,6 +2489,9 @@ packages:
 
   '@types/textarea-caret@3.0.3':
     resolution: {integrity: sha512-bsA9GdXV1wQsXyDjS5+A+czz8IAR3haH5DU+KctIoXbzobRL2NOiwF/+EbB7pofAyudMytLj4ihPtbmbJT8FWw==}
+
+  '@types/throttle-debounce@5.0.2':
+    resolution: {integrity: sha512-pDzSNulqooSKvSNcksnV72nk8p7gRqN8As71Sp28nov1IgmPKWbOEIwAWvBME5pPTtaXJAvG3O4oc76HlQ4kqQ==}
 
   '@types/tinycolor2@1.4.6':
     resolution: {integrity: sha512-iEN8J0BoMnsWBqjVbWH/c0G0Hh7O21lpR2/+PrvAVgWdzL7eexIFm4JN/Wn10PTcmNdtS6U67r499mlWMXOxNw==}
@@ -11321,6 +11333,8 @@ snapshots:
       '@types/geojson': 7946.0.14
 
   '@types/textarea-caret@3.0.3': {}
+
+  '@types/throttle-debounce@5.0.2': {}
 
   '@types/tinycolor2@1.4.6': {}
 

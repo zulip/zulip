@@ -1,5 +1,9 @@
+import type {GifsResult, GiphyFetch, Rating} from "@giphy/js-fetch-api";
+import type {IGif} from "@giphy/js-types";
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
+import type * as tippy from "tippy.js";
 
 import render_giphy_picker from "../templates/giphy_picker.hbs";
 
@@ -9,24 +13,26 @@ import * as popover_menus from "./popover_menus.ts";
 import * as rows from "./rows.ts";
 import {realm} from "./state_data.ts";
 import * as ui_util from "./ui_util.ts";
+import {the} from "./util.ts";
 
-let giphy_fetch;
+let giphy_fetch: GiphyFetch | undefined;
 let search_term = "";
-let gifs_grid;
-let giphy_popover_instance = null;
+let gifs_grid: {remove: () => void} | undefined;
+let giphy_popover_instance: tippy.Instance | undefined;
 
 // Only used if popover called from edit message, otherwise it is `undefined`.
-let edit_message_id;
+let edit_message_id: number | undefined;
 
-export function is_popped_from_edit_message() {
-    return giphy_popover_instance && edit_message_id !== undefined;
+export function is_popped_from_edit_message(): boolean {
+    return giphy_popover_instance !== undefined && edit_message_id !== undefined;
 }
 
-export function focus_current_edit_message() {
-    $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`).trigger("focus");
+export function focus_current_edit_message(): void {
+    assert(edit_message_id !== undefined);
+    $(`#edit_form_${CSS.escape(`${edit_message_id}`)} .message_edit_content`).trigger("focus");
 }
 
-export function update_giphy_rating() {
+export function update_giphy_rating(): void {
     if (
         realm.realm_giphy_rating === realm.giphy_rating_options.disabled.id ||
         realm.giphy_api_key === ""
@@ -37,10 +43,10 @@ export function update_giphy_rating() {
     }
 }
 
-function get_rating() {
+function get_rating(): Rating {
     const options = realm.giphy_rating_options;
-    for (const rating in realm.giphy_rating_options) {
-        if (options[rating].id === realm.realm_giphy_rating) {
+    for (const rating of ["pg", "g", "y", "pg-13", "r"] as const) {
+        if (options[rating]?.id === realm.realm_giphy_rating) {
             return rating;
         }
     }
@@ -51,7 +57,7 @@ function get_rating() {
     return "g";
 }
 
-async function renderGIPHYGrid(targetEl) {
+async function renderGIPHYGrid(targetEl: HTMLElement): Promise<{remove: () => void}> {
     const {renderGrid} = await import(/* webpackChunkName: "giphy-sdk" */ "@giphy/js-components");
     const {GiphyFetch} = await import(/* webpackChunkName: "giphy-sdk" */ "@giphy/js-fetch-api");
 
@@ -59,7 +65,8 @@ async function renderGIPHYGrid(targetEl) {
         giphy_fetch = new GiphyFetch(realm.giphy_api_key);
     }
 
-    function fetchGifs(offset) {
+    async function fetchGifs(offset: number): Promise<GifsResult> {
+        assert(giphy_fetch !== undefined);
         const config = {
             offset,
             limit: 25,
@@ -73,7 +80,7 @@ async function renderGIPHYGrid(targetEl) {
         return giphy_fetch.search(search_term, config);
     }
 
-    const render = () =>
+    const render = (): (() => void) =>
         // See https://github.com/Giphy/giphy-js/blob/master/packages/components/README.md#grid
         // for detailed documentation.
         renderGrid(
@@ -86,11 +93,11 @@ async function renderGIPHYGrid(targetEl) {
                 // Hide the creator attribution that appears over a
                 // GIF; nice in principle but too distracting.
                 hideAttribution: true,
-                onGifClick(props) {
-                    let $textarea = $("textarea#compose-textarea");
+                onGifClick(props: IGif) {
+                    let $textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
                     if (edit_message_id !== undefined) {
                         $textarea = $(
-                            `#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`,
+                            `#edit_form_${CSS.escape(`${edit_message_id}`)} .message_edit_content`,
                         );
                     }
 
@@ -120,18 +127,18 @@ async function renderGIPHYGrid(targetEl) {
     };
 }
 
-async function update_grid_with_search_term() {
+async function update_grid_with_search_term(): Promise<void> {
     if (!gifs_grid) {
         return;
     }
 
-    const $search_elem = $("#giphy-search-query");
+    const $search_elem = $<HTMLInputElement>("input#giphy-search-query");
     // GIPHY popover may have been hidden by the
     // time this function is called.
     if ($search_elem.length) {
-        search_term = $search_elem[0].value;
+        search_term = the($search_elem).value;
         gifs_grid.remove();
-        gifs_grid = await renderGIPHYGrid($("#giphy_grid_in_popover .giphy-content")[0]);
+        gifs_grid = await renderGIPHYGrid(the($("#giphy_grid_in_popover .giphy-content")));
         return;
     }
 
@@ -139,7 +146,7 @@ async function update_grid_with_search_term() {
     gifs_grid = undefined;
 }
 
-export function hide_giphy_popover() {
+export function hide_giphy_popover(): boolean {
     // Returns `true` if the popover was open.
     if (giphy_popover_instance) {
         giphy_popover_instance.destroy();
@@ -151,7 +158,7 @@ export function hide_giphy_popover() {
     return false;
 }
 
-function toggle_giphy_popover(target) {
+function toggle_giphy_popover(target: HTMLElement): void {
     popover_menus.toggle_popover_menu(
         target,
         {
@@ -161,10 +168,9 @@ function toggle_giphy_popover(target) {
                 instance.setContent(ui_util.parse_html(render_giphy_picker()));
                 $(instance.popper).addClass("giphy-popover");
             },
-            async onShow(instance) {
+            onShow(instance) {
                 giphy_popover_instance = instance;
                 const $popper = $(giphy_popover_instance.popper).trigger("focus");
-                gifs_grid = await renderGIPHYGrid($popper.find(".giphy-content")[0]);
 
                 const $click_target = $(instance.reference);
                 if ($click_target.parents(".message_edit_form").length === 1) {
@@ -186,22 +192,26 @@ function toggle_giphy_popover(target) {
                     // every search. This makes the UX of searching pleasant
                     // by allowing user to finish typing before search
                     // is executed.
-                    _.debounce(update_grid_with_search_term, 300),
+                    _.debounce(() => void update_grid_with_search_term(), 300),
                 );
 
                 $popper.on("keydown", ".giphy-gif", ui_util.convert_enter_to_click);
                 $popper.on("keydown", ".compose_gif_icon", ui_util.convert_enter_to_click);
 
-                $popper.on("click", "#giphy_search_clear", async (e) => {
+                $popper.on("click", "#giphy_search_clear", (e) => {
                     e.stopPropagation();
                     $("#giphy-search-query").val("");
-                    await update_grid_with_search_term();
+                    void update_grid_with_search_term();
                 });
 
-                // Focus on search box by default.
-                // This is specially helpful for users
-                // navigating via keyboard.
-                $("#giphy-search-query").trigger("focus");
+                void (async () => {
+                    gifs_grid = await renderGIPHYGrid(the($popper.find(".giphy-content")));
+
+                    // Focus on search box by default.
+                    // This is specially helpful for users
+                    // navigating via keyboard.
+                    $("#giphy-search-query").trigger("focus");
+                })();
             },
             onHidden() {
                 hide_giphy_popover();
@@ -214,12 +224,12 @@ function toggle_giphy_popover(target) {
     );
 }
 
-function register_click_handlers() {
-    $("body").on("click", ".compose_control_button.compose_gif_icon", (e) => {
-        toggle_giphy_popover(e.currentTarget);
+function register_click_handlers(): void {
+    $("body").on("click", ".compose_control_button.compose_gif_icon", function (this: HTMLElement) {
+        toggle_giphy_popover(this);
     });
 }
 
-export function initialize() {
+export function initialize(): void {
     register_click_handlers();
 }
