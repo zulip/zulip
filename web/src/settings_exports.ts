@@ -391,8 +391,8 @@ export function set_up(): void {
     $(".admin_exports_table").on("click", ".delete", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        const $btn = $(this);
-        const url = "/json/export/realm/" + encodeURIComponent($btn.attr("data-export-id")!);
+        const $button = $(this);
+        const url = "/json/export/realm/" + encodeURIComponent($button.attr("data-export-id")!);
         const html_body = render_confirm_delete_data_export();
 
         confirm_dialog.launch({
