@@ -619,10 +619,10 @@ export function initialize(): void {
         },
     );
 
-    $<HTMLInputElement>("input#channels_overlay_container").on(
+    $("#channels_overlay_container").on(
         "change",
-        ".sub_setting_checkbox .sub_setting_control",
-        function on_change(this: HTMLInputElement) {
+        ".sub_setting_checkbox input.sub_setting_control",
+        function on_change(this: HTMLInputElement, _event: JQuery.Event) {
             stream_setting_changed(this);
         },
     );
