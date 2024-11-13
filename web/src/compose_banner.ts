@@ -125,7 +125,7 @@ export function rewire_clear_message_sent_banners(value: typeof clear_message_se
 function hide_compose_spinner(): void {
     $(".compose-submit-button .loader").hide();
     $(".compose-submit-button span").show();
-    $(".compose-submit-button").removeClass("disable-btn");
+    $(".compose-submit-button").removeClass("compose-button-disabled");
 }
 
 export function clear_errors(): void {
