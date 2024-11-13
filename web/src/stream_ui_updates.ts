@@ -136,7 +136,7 @@ export function update_private_stream_privacy_option_state(
 
 export function initialize_cant_subscribe_popover(): void {
     const $button_wrapper = $(".settings .stream_settings_header .sub_unsub_button_wrapper");
-    settings_components.initialize_disable_btn_hint_popover($button_wrapper, undefined);
+    settings_components.initialize_disable_button_hint_popover($button_wrapper, undefined);
 }
 
 export function set_up_right_panel_section(sub: StreamSubscription): void {
@@ -413,7 +413,7 @@ export function update_add_subscriptions_elements(sub: SettingsSubscription): vo
                 defaultMessage: "Only channel members can add users to a private channel.",
             });
         }
-        settings_components.initialize_disable_btn_hint_popover(
+        settings_components.initialize_disable_button_hint_popover(
             $add_subscribers_container,
             tooltip_message,
         );

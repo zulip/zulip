@@ -101,7 +101,7 @@ function update_add_members_elements(group) {
         $button_element.prop("disabled", true);
         $add_members_container.addClass("add_members_disabled");
 
-        settings_components.initialize_disable_btn_hint_popover(
+        settings_components.initialize_disable_button_hint_popover(
             $add_members_container,
             $t({defaultMessage: "You are not allowed to add members to this group."}),
         );
@@ -132,7 +132,7 @@ function update_group_permission_settings_elements(group) {
         const $permission_input_groups = $group_permission_settings.find(".input-group");
         $permission_input_groups.addClass("group_setting_disabled");
         $permission_input_groups.each(function () {
-            settings_components.initialize_disable_btn_hint_popover(
+            settings_components.initialize_disable_button_hint_popover(
                 $(this),
                 $t({defaultMessage: "You do not have permission to edit this setting."}),
             );
@@ -244,7 +244,7 @@ function initialize_tooltip_for_membership_button(group_id) {
     } else {
         tooltip_message = $t({defaultMessage: "You do not have permission to join this group."});
     }
-    settings_components.initialize_disable_btn_hint_popover($tooltip_wrapper, tooltip_message);
+    settings_components.initialize_disable_button_hint_popover($tooltip_wrapper, tooltip_message);
 }
 
 function update_group_membership_button(group_id) {

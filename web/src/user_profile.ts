@@ -228,7 +228,7 @@ function change_state_of_subscribe_button(
 
 function reset_subscribe_widget(): void {
     $("#user-profile-modal .add-subscription-button").prop("disabled", true);
-    settings_components.initialize_disable_btn_hint_popover(
+    settings_components.initialize_disable_button_hint_popover(
         $("#user-profile-modal .add-subscription-button-wrapper"),
         $t({defaultMessage: "Select a channel to subscribe"}),
         {},
