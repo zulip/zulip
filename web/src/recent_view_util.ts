@@ -1,4 +1,4 @@
-import type {Message} from "./message_store";
+import type {Message} from "./message_store.ts";
 
 let is_view_visible = false;
 

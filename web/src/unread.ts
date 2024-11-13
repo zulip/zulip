@@ -1,24 +1,24 @@
 import type {z} from "zod";
 
-import * as blueslip from "./blueslip";
-import {FoldDict} from "./fold_dict";
-import * as message_store from "./message_store";
-import type {Message} from "./message_store";
-import * as people from "./people";
-import * as recent_view_util from "./recent_view_util";
-import * as settings_config from "./settings_config";
+import * as blueslip from "./blueslip.ts";
+import {FoldDict} from "./fold_dict.ts";
+import * as message_store from "./message_store.ts";
+import type {Message} from "./message_store.ts";
+import * as people from "./people.ts";
+import * as recent_view_util from "./recent_view_util.ts";
+import * as settings_config from "./settings_config.ts";
 import type {
     StateData,
     unread_direct_message_group_info_schema,
     unread_direct_message_info_schema,
-} from "./state_data";
-import * as stream_data from "./stream_data";
-import type {TopicHistoryEntry} from "./stream_topic_history";
-import * as sub_store from "./sub_store";
-import type {UpdateMessageEvent} from "./types";
-import {user_settings} from "./user_settings";
-import * as user_topics from "./user_topics";
-import * as util from "./util";
+} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import type {TopicHistoryEntry} from "./stream_topic_history.ts";
+import * as sub_store from "./sub_store.ts";
+import type {UpdateMessageEvent} from "./types.ts";
+import {user_settings} from "./user_settings.ts";
+import * as user_topics from "./user_topics.ts";
+import * as util from "./util.ts";
 
 // The unread module tracks the message IDs and locations of the
 // user's unread messages.  The tracking is initialized with

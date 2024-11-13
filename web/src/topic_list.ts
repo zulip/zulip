@@ -6,14 +6,14 @@ import render_more_topics from "../templates/more_topics.hbs";
 import render_more_topics_spinner from "../templates/more_topics_spinner.hbs";
 import render_topic_list_item from "../templates/topic_list_item.hbs";
 
-import * as blueslip from "./blueslip";
-import * as popover_menus from "./popover_menus";
-import * as scroll_util from "./scroll_util";
-import * as stream_topic_history from "./stream_topic_history";
-import * as stream_topic_history_util from "./stream_topic_history_util";
-import * as topic_list_data from "./topic_list_data";
-import type {TopicInfo} from "./topic_list_data";
-import * as vdom from "./vdom";
+import * as blueslip from "./blueslip.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
+import * as stream_topic_history_util from "./stream_topic_history_util.ts";
+import * as topic_list_data from "./topic_list_data.ts";
+import type {TopicInfo} from "./topic_list_data.ts";
+import * as vdom from "./vdom.ts";
 
 /*
     Track all active widgets with a Map by stream_id.

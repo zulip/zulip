@@ -1,12 +1,12 @@
-import * as emoji from "./emoji";
-import * as hash_util from "./hash_util";
-import * as linkifiers from "./linkifiers";
-import type {AbstractMap, MarkdownHelpers} from "./markdown";
-import * as people from "./people";
-import * as stream_data from "./stream_data";
-import type {Stream} from "./sub_store";
-import * as user_groups from "./user_groups";
-import {user_settings} from "./user_settings";
+import * as emoji from "./emoji.ts";
+import * as hash_util from "./hash_util.ts";
+import * as linkifiers from "./linkifiers.ts";
+import type {AbstractMap, MarkdownHelpers} from "./markdown.ts";
+import * as people from "./people.ts";
+import * as stream_data from "./stream_data.ts";
+import type {Stream} from "./sub_store.ts";
+import * as user_groups from "./user_groups.ts";
+import {user_settings} from "./user_settings.ts";
 
 /*
     This config is in a separate file for partly

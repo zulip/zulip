@@ -1,13 +1,13 @@
 import {z} from "zod";
 
-import * as blueslip from "./blueslip";
+import * as blueslip from "./blueslip.ts";
 import type {
     never_subscribed_stream_schema,
     stream_properties_schema,
     stream_schema,
     stream_specific_notification_settings_schema,
-} from "./stream_types";
-import {api_stream_subscription_schema} from "./stream_types";
+} from "./stream_types.ts";
+import {api_stream_subscription_schema} from "./stream_types.ts";
 
 export type Stream = z.infer<typeof stream_schema>;
 export type StreamSpecificNotificationSettings = z.infer<

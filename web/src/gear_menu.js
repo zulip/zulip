@@ -3,14 +3,14 @@ import WinChan from "winchan";
 
 import render_navbar_gear_menu_popover from "../templates/popovers/navbar/navbar_gear_menu_popover.hbs";
 
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as popover_menus from "./popover_menus";
-import * as popover_menus_data from "./popover_menus_data";
-import * as popovers from "./popovers";
-import * as settings_preferences from "./settings_preferences";
-import * as theme from "./theme";
-import {parse_html} from "./ui_util";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as popover_menus_data from "./popover_menus_data.ts";
+import * as popovers from "./popovers.ts";
+import * as settings_preferences from "./settings_preferences.ts";
+import * as theme from "./theme.ts";
+import {parse_html} from "./ui_util.ts";
 
 /*
 For various historical reasons there isn't one

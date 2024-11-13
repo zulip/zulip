@@ -1,5 +1,5 @@
-import * as muted_users from "./muted_users";
-import * as util from "./util";
+import * as muted_users from "./muted_users.ts";
+import * as util from "./util.ts";
 
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
 

@@ -1,9 +1,9 @@
-import * as input_pill from "./input_pill";
-import {set_up_stream} from "./pill_typeahead";
-import * as stream_data from "./stream_data";
-import * as stream_pill from "./stream_pill";
-import type {StreamPill} from "./stream_pill";
-import type {CombinedPill} from "./typeahead_helper";
+import * as input_pill from "./input_pill.ts";
+import {set_up_stream} from "./pill_typeahead.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_pill from "./stream_pill.ts";
+import type {StreamPill} from "./stream_pill.ts";
+import type {CombinedPill} from "./typeahead_helper.ts";
 
 type SetUpPillTypeaheadConfig = {
     pill_widget: stream_pill.StreamPillWidget;

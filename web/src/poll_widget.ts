@@ -1,20 +1,20 @@
 import $ from "jquery";
 
-import {PollData} from "../shared/src/poll_data";
+import {PollData} from "../shared/src/poll_data.ts";
 import type {
     InboundData,
     NewOptionOutboundData,
     QuestionOutboundData,
     VoteOutboundData,
-} from "../shared/src/poll_data";
+} from "../shared/src/poll_data.ts";
 import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
 import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
 
-import * as blueslip from "./blueslip";
-import {$t} from "./i18n";
-import * as keydown_util from "./keydown_util";
-import type {Message} from "./message_store";
-import * as people from "./people";
+import * as blueslip from "./blueslip.ts";
+import {$t} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
+import type {Message} from "./message_store.ts";
+import * as people from "./people.ts";
 
 export type Event = {sender_id: number; data: InboundData};
 

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import type {Page} from "puppeteer";
 import {z} from "zod";
 
-import * as common from "./lib/common";
+import * as common from "./lib/common.ts";
 
 const email = "alice@test.example.com";
 const organization_name = "Awesome Organization";

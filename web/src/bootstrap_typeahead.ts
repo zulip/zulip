@@ -164,8 +164,8 @@ import {insertTextIntoField} from "text-field-edit";
 import getCaretCoordinates from "textarea-caret";
 import * as tippy from "tippy.js";
 
-import * as scroll_util from "./scroll_util";
-import {get_string_diff, the} from "./util";
+import * as scroll_util from "./scroll_util.ts";
+import {get_string_diff, the} from "./util.ts";
 
 export function defaultSorter(items: string[], query: string): string[] {
     const beginswith = [];

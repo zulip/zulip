@@ -5,19 +5,19 @@ import {z} from "zod";
 import render_message_reaction from "../templates/message_reaction.hbs";
 import render_message_reactions from "../templates/message_reactions.hbs";
 
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as emoji from "./emoji";
-import type {EmojiRenderingDetails} from "./emoji";
-import {$t} from "./i18n";
-import * as message_lists from "./message_lists";
-import * as message_store from "./message_store";
-import type {Message, MessageCleanReaction, RawMessage} from "./message_store";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import * as spectators from "./spectators";
-import {current_user} from "./state_data";
-import {user_settings} from "./user_settings";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as emoji from "./emoji.ts";
+import type {EmojiRenderingDetails} from "./emoji.ts";
+import {$t} from "./i18n.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_store from "./message_store.ts";
+import type {Message, MessageCleanReaction, RawMessage} from "./message_store.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import * as spectators from "./spectators.ts";
+import {current_user} from "./state_data.ts";
+import {user_settings} from "./user_settings.ts";
 
 const waiting_for_server_request_ids = new Set<string>();
 

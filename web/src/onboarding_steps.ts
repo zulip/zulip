@@ -1,9 +1,9 @@
 import type {z} from "zod";
 
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as people from "./people";
-import type {NarrowTerm, StateData, onboarding_step_schema} from "./state_data";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as people from "./people.ts";
+import type {NarrowTerm, StateData, onboarding_step_schema} from "./state_data.ts";
 
 export type OnboardingStep = z.output<typeof onboarding_step_schema>;
 

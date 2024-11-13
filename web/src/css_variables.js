@@ -1,7 +1,3 @@
-/* eslint-env commonjs */
-
-"use strict";
-
 // Media query breakpoints according to Bootstrap 4.5
 const xs = 0;
 const sm = 576;
@@ -25,34 +21,32 @@ const cb3 = 860;
 const cb4 = 750;
 const cb5 = 504;
 
-module.exports = {
-    media_breakpoints: {
-        xs_min: xs + "px",
-        sm_min: sm + "px",
-        md_min: md + "px",
-        mc_min: mc + "px",
-        lg_min: lg + "px",
-        xl_min: xl + "px",
-        ml_min: ml + "px",
-        mm_min: mm + "px",
-        ms_min: ms + "px",
-        cb1_min: cb1 + "px",
-        cb2_min: cb2 + "px",
-        cb3_min: cb3 + "px",
-        cb4_min: cb4 + "px",
-        cb5_min: cb5 + "px",
-        short_navbar_cutoff_height: "600px",
-    },
+export const media_breakpoints = {
+    xs_min: xs + "px",
+    sm_min: sm + "px",
+    md_min: md + "px",
+    mc_min: mc + "px",
+    lg_min: lg + "px",
+    xl_min: xl + "px",
+    ml_min: ml + "px",
+    mm_min: mm + "px",
+    ms_min: ms + "px",
+    cb1_min: cb1 + "px",
+    cb2_min: cb2 + "px",
+    cb3_min: cb3 + "px",
+    cb4_min: cb4 + "px",
+    cb5_min: cb5 + "px",
+    short_navbar_cutoff_height: "600px",
+};
 
-    media_breakpoints_num: {
-        xs,
-        sm,
-        md,
-        mc,
-        lg,
-        xl,
-        ml,
-        mm,
-        ms,
-    },
+export const media_breakpoints_num = {
+    xs,
+    sm,
+    md,
+    mc,
+    lg,
+    xl,
+    ml,
+    mm,
+    ms,
 };

@@ -4,17 +4,17 @@ import {z} from "zod";
 import render_convert_demo_organization_form from "../templates/settings/convert_demo_organization_form.hbs";
 import render_demo_organization_warning from "../templates/settings/demo_organization_warning.hbs";
 
-import * as channel from "./channel";
-import * as dialog_widget from "./dialog_widget";
-import {$t} from "./i18n";
-import * as keydown_util from "./keydown_util";
-import {get_demo_organization_deadline_days_remaining} from "./navbar_alerts";
-import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
-import * as settings_org from "./settings_org";
-import type {RequestOpts} from "./settings_ui";
-import {current_user, realm} from "./state_data";
-import type {HTMLSelectOneElement} from "./types";
+import * as channel from "./channel.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
+import {get_demo_organization_deadline_days_remaining} from "./navbar_alerts.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import * as settings_org from "./settings_org.ts";
+import type {RequestOpts} from "./settings_ui.ts";
+import {current_user, realm} from "./state_data.ts";
+import type {HTMLSelectOneElement} from "./types.ts";
 
 export function insert_demo_organization_warning(): void {
     const days_remaining = get_demo_organization_deadline_days_remaining();

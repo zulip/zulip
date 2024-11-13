@@ -5,16 +5,16 @@ import type * as tippy from "tippy.js";
 import render_add_saved_snippet_modal from "../templates/add_saved_snippet_modal.hbs";
 import render_confirm_delete_saved_snippet from "../templates/confirm_dialog/confirm_delete_saved_snippet.hbs";
 
-import * as channel from "./channel";
-import * as compose_state from "./compose_state";
-import * as compose_ui from "./compose_ui";
-import * as confirm_dialog from "./confirm_dialog";
-import * as dialog_widget from "./dialog_widget";
-import * as dropdown_widget from "./dropdown_widget";
-import {$t_html} from "./i18n";
-import * as popover_menus from "./popover_menus";
-import * as saved_snippets from "./saved_snippets";
-import type {StateData} from "./state_data";
+import * as channel from "./channel.ts";
+import * as compose_state from "./compose_state.ts";
+import * as compose_ui from "./compose_ui.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
+import {$t_html} from "./i18n.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as saved_snippets from "./saved_snippets.ts";
+import type {StateData} from "./state_data.ts";
 
 let saved_snippet_dropdown_widget: dropdown_widget.DropdownWidget;
 

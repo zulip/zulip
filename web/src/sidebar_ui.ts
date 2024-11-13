@@ -4,22 +4,22 @@ import render_left_sidebar from "../templates/left_sidebar.hbs";
 import render_buddy_list_popover from "../templates/popovers/buddy_list_popover.hbs";
 import render_right_sidebar from "../templates/right_sidebar.hbs";
 
-import {buddy_list} from "./buddy_list";
-import {media_breakpoints_num} from "./css_variables";
-import {reorder_left_sidebar_navigation_list} from "./left_sidebar_navigation_area";
-import {localstorage} from "./localstorage";
-import * as message_lists from "./message_lists";
-import * as message_viewport from "./message_viewport";
-import {page_params} from "./page_params";
-import * as popover_menus from "./popover_menus";
-import * as rendered_markdown from "./rendered_markdown";
-import * as resize from "./resize";
-import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
-import * as spectators from "./spectators";
-import {current_user} from "./state_data";
-import * as ui_util from "./ui_util";
-import {user_settings} from "./user_settings";
+import {buddy_list} from "./buddy_list.ts";
+import {media_breakpoints_num} from "./css_variables.js";
+import {reorder_left_sidebar_navigation_list} from "./left_sidebar_navigation_area.ts";
+import {localstorage} from "./localstorage.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_viewport from "./message_viewport.ts";
+import {page_params} from "./page_params.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
+import * as resize from "./resize.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import * as spectators from "./spectators.ts";
+import {current_user} from "./state_data.ts";
+import * as ui_util from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
 
 function save_sidebar_toggle_status(): void {
     const ls = localstorage();

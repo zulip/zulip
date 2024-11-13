@@ -83,7 +83,7 @@ def run() -> None:
         ["node_modules/.bin/eslint", "--max-warnings=0", "--cache"],
         ["cjs", "cts", "js", "mjs", "mts", "ts"],
         fix_arg="--fix",
-        description="Standard JavaScript style and formatting linter (config: .eslintrc).",
+        description="Standard JavaScript style and formatting linter (config: .eslintrc.cjs).",
     )
     linter_config.external_linter(
         "puppet",

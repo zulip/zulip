@@ -9,25 +9,25 @@ import render_empty_list_widget_for_list from "../templates/empty_list_widget_fo
 import render_presence_row from "../templates/presence_row.hbs";
 import render_presence_rows from "../templates/presence_rows.hbs";
 
-import * as blueslip from "./blueslip";
-import * as buddy_data from "./buddy_data";
-import type {BuddyUserInfo} from "./buddy_data";
-import {media_breakpoints_num} from "./css_variables";
-import type {Filter} from "./filter";
-import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
-import * as message_viewport from "./message_viewport";
-import * as narrow_state from "./narrow_state";
-import * as padded_widget from "./padded_widget";
-import * as peer_data from "./peer_data";
-import * as people from "./people";
-import * as scroll_util from "./scroll_util";
-import {current_user} from "./state_data";
-import * as stream_data from "./stream_data";
-import type {StreamSubscription} from "./sub_store";
-import {INTERACTIVE_HOVER_DELAY} from "./tippyjs";
-import {user_settings} from "./user_settings";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as buddy_data from "./buddy_data.ts";
+import type {BuddyUserInfo} from "./buddy_data.ts";
+import {media_breakpoints_num} from "./css_variables.js";
+import type {Filter} from "./filter.ts";
+import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as padded_widget from "./padded_widget.ts";
+import * as peer_data from "./peer_data.ts";
+import * as people from "./people.ts";
+import * as scroll_util from "./scroll_util.ts";
+import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import {INTERACTIVE_HOVER_DELAY} from "./tippyjs.ts";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 function get_formatted_sub_count(sub_count: number): string {
     if (sub_count < 1000) {

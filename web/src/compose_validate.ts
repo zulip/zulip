@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import * as resolved_topic from "../shared/src/resolved_topic";
+import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
 import render_private_stream_warning from "../templates/compose_banner/private_stream_warning.hbs";
@@ -8,27 +8,27 @@ import render_stream_wildcard_warning from "../templates/compose_banner/stream_w
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_compose_limit_indicator from "../templates/compose_limit_indicator.hbs";
 
-import * as compose_banner from "./compose_banner";
-import * as compose_pm_pill from "./compose_pm_pill";
-import * as compose_state from "./compose_state";
-import * as compose_ui from "./compose_ui";
-import {$t} from "./i18n";
-import * as message_store from "./message_store";
-import * as message_util from "./message_util";
-import * as narrow_state from "./narrow_state";
-import * as peer_data from "./peer_data";
-import * as people from "./people";
-import * as reactions from "./reactions";
-import * as recent_senders from "./recent_senders";
-import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
-import {current_user, realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import type {StreamSubscription} from "./sub_store";
-import type {UserOrMention} from "./typeahead_helper";
-import * as user_groups from "./user_groups";
-import * as util from "./util";
+import * as compose_banner from "./compose_banner.ts";
+import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as compose_state from "./compose_state.ts";
+import * as compose_ui from "./compose_ui.ts";
+import {$t} from "./i18n.ts";
+import * as message_store from "./message_store.ts";
+import * as message_util from "./message_util.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as peer_data from "./peer_data.ts";
+import * as people from "./people.ts";
+import * as reactions from "./reactions.ts";
+import * as recent_senders from "./recent_senders.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import type {UserOrMention} from "./typeahead_helper.ts";
+import * as user_groups from "./user_groups.ts";
+import * as util from "./util.ts";
 
 let user_acknowledged_stream_wildcard = false;
 let upload_in_progress = false;

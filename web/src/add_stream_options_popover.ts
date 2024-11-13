@@ -4,9 +4,9 @@ import type * as tippy from "tippy.js";
 
 import render_left_sidebar_stream_setting_popover from "../templates/popovers/left_sidebar/left_sidebar_stream_setting_popover.hbs";
 
-import * as popover_menus from "./popover_menus";
-import * as settings_data from "./settings_data";
-import {parse_html} from "./ui_util";
+import * as popover_menus from "./popover_menus.ts";
+import * as settings_data from "./settings_data.ts";
+import {parse_html} from "./ui_util.ts";
 
 export function initialize(): void {
     popover_menus.register_popover_menu("#streams_inline_icon", {

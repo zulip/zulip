@@ -4,12 +4,12 @@ import url_template_lib from "url-template";
 
 import render_playground_links_popover from "../templates/popovers/playground_links_popover.hbs";
 
-import * as blueslip from "./blueslip";
-import * as popover_menus from "./popover_menus";
-import * as realm_playground from "./realm_playground";
-import type {RealmPlayground} from "./realm_playground";
-import * as ui_util from "./ui_util";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as realm_playground from "./realm_playground.ts";
+import type {RealmPlayground} from "./realm_playground.ts";
+import * as ui_util from "./ui_util.ts";
+import * as util from "./util.ts";
 
 type RealmPlaygroundWithURL = RealmPlayground & {playground_url: string};
 

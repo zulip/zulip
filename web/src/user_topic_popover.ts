@@ -3,11 +3,11 @@ import assert from "minimalistic-assert";
 
 import render_change_visibility_policy_popover from "../templates/popovers/change_visibility_policy_popover.hbs";
 
-import * as popover_menus from "./popover_menus";
-import * as popover_menus_data from "./popover_menus_data";
-import {parse_html} from "./ui_util";
-import * as user_topics from "./user_topics";
-import * as util from "./util";
+import * as popover_menus from "./popover_menus.ts";
+import * as popover_menus_data from "./popover_menus_data.ts";
+import {parse_html} from "./ui_util.ts";
+import * as user_topics from "./user_topics.ts";
+import * as util from "./util.ts";
 
 export function initialize(): void {
     popover_menus.register_popover_menu(".change_visibility_policy", {

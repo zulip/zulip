@@ -4,10 +4,10 @@ import assert from "minimalistic-assert";
 
 import render_about_zulip from "../templates/about_zulip.hbs";
 
-import * as browser_history from "./browser_history";
-import {show_copied_confirmation} from "./copied_tooltip";
-import * as overlays from "./overlays";
-import {realm} from "./state_data";
+import * as browser_history from "./browser_history.ts";
+import {show_copied_confirmation} from "./copied_tooltip.ts";
+import * as overlays from "./overlays.ts";
+import {realm} from "./state_data.ts";
 
 export function launch(): void {
     overlays.open_overlay({

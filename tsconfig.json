@@ -11,7 +11,9 @@
         "strict": true,
 
         /* Modules */
-        "moduleResolution": "node",
+        "allowImportingTsExtensions": true,
+        "module": "preserve",
+        "moduleResolution": "bundler",
         "paths": {
             "*": ["./web/src/types/*"],
         },

@@ -1,14 +1,14 @@
 import assert from "minimalistic-assert";
 
-import * as blueslip from "./blueslip";
-import {Filter} from "./filter";
-import * as message_lists from "./message_lists";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import type {NarrowTerm} from "./state_data";
-import * as stream_data from "./stream_data";
-import type {StreamSubscription} from "./sub_store";
-import * as unread from "./unread";
+import * as blueslip from "./blueslip.ts";
+import {Filter} from "./filter.ts";
+import * as message_lists from "./message_lists.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import type {NarrowTerm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as unread from "./unread.ts";
 
 export function filter(): Filter | undefined {
     // `Recent Conversations` and `Inbox` return undefined;

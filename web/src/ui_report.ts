@@ -1,9 +1,9 @@
 import $ from "jquery";
 import {z} from "zod";
 
-import * as channel from "./channel";
-import * as common from "./common";
-import {$t} from "./i18n";
+import * as channel from "./channel.ts";
+import * as common from "./common.ts";
+import {$t} from "./i18n.ts";
 
 /* Arguments used in the report_* functions are,
    response- response that we want to display

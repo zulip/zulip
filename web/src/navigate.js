@@ -1,9 +1,9 @@
 import assert from "minimalistic-assert";
 
-import * as message_lists from "./message_lists";
-import * as message_view from "./message_view";
-import * as message_viewport from "./message_viewport";
-import * as unread_ops from "./unread_ops";
+import * as message_lists from "./message_lists.ts";
+import * as message_view from "./message_view.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as unread_ops from "./unread_ops.ts";
 
 function go_to_row(msg_id) {
     assert(message_lists.current !== undefined);

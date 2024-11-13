@@ -1,6 +1,6 @@
-import * as channel from "./channel";
-import * as people from "./people";
-import type {StreamSubscription} from "./sub_store";
+import * as channel from "./channel.ts";
+import * as people from "./people.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 
 /*
     This module simply encapsulates our legacy API for subscribing

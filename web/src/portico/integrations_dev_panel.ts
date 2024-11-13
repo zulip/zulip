@@ -2,8 +2,8 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import * as channel from "../channel";
-import * as util from "../util";
+import * as channel from "../channel.ts";
+import * as util from "../util.ts";
 // Main JavaScript file for the integrations development panel at
 // /devtools/integrations.
 

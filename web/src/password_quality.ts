@@ -2,7 +2,7 @@ import {zxcvbn, zxcvbnOptions} from "@zxcvbn-ts/core";
 import * as zxcvbnCommonPackage from "@zxcvbn-ts/language-common";
 import * as zxcvbnEnPackage from "@zxcvbn-ts/language-en";
 
-import {$t} from "./i18n";
+import {$t} from "./i18n.ts";
 
 zxcvbnOptions.setOptions({
     translations: zxcvbnEnPackage.translations,

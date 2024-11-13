@@ -3,11 +3,11 @@ import assert from "minimalistic-assert";
 
 import render_user_topic_ui_row from "../templates/user_topic_ui_row.hbs";
 
-import * as ListWidget from "./list_widget";
-import * as scroll_util from "./scroll_util";
-import * as settings_config from "./settings_config";
-import * as user_topics from "./user_topics";
-import type {UserTopic} from "./user_topics";
+import * as ListWidget from "./list_widget.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as settings_config from "./settings_config.ts";
+import * as user_topics from "./user_topics.ts";
+import type {UserTopic} from "./user_topics.ts";
 
 export let loaded = false;
 

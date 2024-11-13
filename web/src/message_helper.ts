@@ -1,18 +1,18 @@
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as alert_words from "./alert_words";
-import * as message_store from "./message_store";
-import type {Message, RawMessage} from "./message_store";
-import * as message_user_ids from "./message_user_ids";
-import * as people from "./people";
-import * as pm_conversations from "./pm_conversations";
-import * as reactions from "./reactions";
-import * as recent_senders from "./recent_senders";
-import * as stream_data from "./stream_data";
-import * as stream_topic_history from "./stream_topic_history";
-import * as user_status from "./user_status";
-import * as util from "./util";
+import * as alert_words from "./alert_words.ts";
+import * as message_store from "./message_store.ts";
+import type {Message, RawMessage} from "./message_store.ts";
+import * as message_user_ids from "./message_user_ids.ts";
+import * as people from "./people.ts";
+import * as pm_conversations from "./pm_conversations.ts";
+import * as reactions from "./reactions.ts";
+import * as recent_senders from "./recent_senders.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
+import * as user_status from "./user_status.ts";
+import * as util from "./util.ts";
 
 export function process_new_message(raw_message: RawMessage, deliver_locally = false): Message {
     // Call this function when processing a new message.  After

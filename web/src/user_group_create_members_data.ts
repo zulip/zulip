@@ -1,11 +1,11 @@
 import _ from "lodash";
 
-import * as people from "./people";
-import type {User} from "./people";
-import {current_user} from "./state_data";
-import * as user_group_components from "./user_group_components";
-import * as user_groups from "./user_groups";
-import type {UserGroup} from "./user_groups";
+import * as people from "./people.ts";
+import type {User} from "./people.ts";
+import {current_user} from "./state_data.ts";
+import * as user_group_components from "./user_group_components.ts";
+import * as user_groups from "./user_groups.ts";
+import type {UserGroup} from "./user_groups.ts";
 
 let user_id_set: Set<number>;
 let soft_remove_user_id_set: Set<number>;

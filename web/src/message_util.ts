@@ -1,15 +1,15 @@
 import assert from "minimalistic-assert";
 
-import {all_messages_data} from "./all_messages_data";
-import type {MessageList, RenderInfo} from "./message_list";
-import type {MessageListData} from "./message_list_data";
-import * as message_lists from "./message_lists";
-import * as message_store from "./message_store";
-import type {Message} from "./message_store";
-import * as people from "./people";
-import * as pm_conversations from "./pm_conversations";
-import * as unread from "./unread";
-import * as unread_ui from "./unread_ui";
+import {all_messages_data} from "./all_messages_data.ts";
+import type {MessageList, RenderInfo} from "./message_list.ts";
+import type {MessageListData} from "./message_list_data.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_store from "./message_store.ts";
+import type {Message} from "./message_store.ts";
+import * as people from "./people.ts";
+import * as pm_conversations from "./pm_conversations.ts";
+import * as unread from "./unread.ts";
+import * as unread_ui from "./unread_ui.ts";
 
 type DirectMessagePermissionHints = {
     is_known_empty_conversation: boolean;

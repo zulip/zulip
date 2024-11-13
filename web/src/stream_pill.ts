@@ -2,12 +2,12 @@ import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
 
-import {$t} from "./i18n";
-import type {InputPillContainer} from "./input_pill";
-import * as peer_data from "./peer_data";
-import * as stream_data from "./stream_data";
-import type {StreamSubscription} from "./sub_store";
-import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper";
+import {$t} from "./i18n.ts";
+import type {InputPillContainer} from "./input_pill.ts";
+import * as peer_data from "./peer_data.ts";
+import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper.ts";
 
 export type StreamPill = {
     type: "stream";

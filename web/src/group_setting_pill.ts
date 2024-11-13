@@ -2,18 +2,18 @@ import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
 
-import * as group_permission_settings from "./group_permission_settings";
-import * as input_pill from "./input_pill";
-import type {InputPillConfig} from "./input_pill";
-import * as people from "./people";
-import * as pill_typeahead from "./pill_typeahead";
-import type {GroupSettingPill, GroupSettingPillContainer} from "./typeahead_helper";
-import * as user_group_pill from "./user_group_pill";
-import type {UserGroupPill} from "./user_group_pill";
-import * as user_groups from "./user_groups";
-import type {UserGroup} from "./user_groups";
-import * as user_pill from "./user_pill";
-import type {UserPill} from "./user_pill";
+import * as group_permission_settings from "./group_permission_settings.ts";
+import * as input_pill from "./input_pill.ts";
+import type {InputPillConfig} from "./input_pill.ts";
+import * as people from "./people.ts";
+import * as pill_typeahead from "./pill_typeahead.ts";
+import type {GroupSettingPill, GroupSettingPillContainer} from "./typeahead_helper.ts";
+import * as user_group_pill from "./user_group_pill.ts";
+import type {UserGroupPill} from "./user_group_pill.ts";
+import * as user_groups from "./user_groups.ts";
+import type {UserGroup} from "./user_groups.ts";
+import * as user_pill from "./user_pill.ts";
+import type {UserPill} from "./user_pill.ts";
 
 function check_group_allowed_for_setting(
     group_item: UserGroupPill,

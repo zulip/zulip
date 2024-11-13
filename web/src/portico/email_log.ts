@@ -1,8 +1,8 @@
 import $ from "jquery";
 
-import * as channel from "../channel";
+import * as channel from "../channel.ts";
 
-import * as portico_modals from "./portico_modals";
+import * as portico_modals from "./portico_modals.ts";
 
 $(() => {
     // This code will be executed when the user visits /emails in

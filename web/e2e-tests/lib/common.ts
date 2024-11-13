@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import "css.escape";
 import path from "node:path";
 import timersPromises from "node:timers/promises";
+import * as url from "node:url";
 
 import ErrorStackParser from "error-stack-parser";
 import type {Browser, ConsoleMessage, ConsoleMessageLocation, ElementHandle, Page} from "puppeteer";
@@ -9,9 +10,9 @@ import puppeteer from "puppeteer";
 import StackFrame from "stackframe";
 import StackTraceGPS from "stacktrace-gps";
 
-import {test_credentials} from "../../../var/puppeteer/test_credentials";
+import {test_credentials} from "../../../var/puppeteer/test_credentials.js";
 
-const root_dir = path.resolve(__dirname, "../../..");
+const root_dir = url.fileURLToPath(new URL("../../..", import.meta.url));
 const puppeteer_dir = path.join(root_dir, "var/puppeteer");
 
 type Message = Record<string, string | boolean> & {

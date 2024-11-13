@@ -6,16 +6,16 @@ import render_confirm_delete_detached_attachments_modal from "../templates/confi
 import render_settings_upload_space_stats from "../templates/settings/upload_space_stats.hbs";
 import render_uploaded_files_list from "../templates/settings/uploaded_files_list.hbs";
 
-import {attachment_api_response_schema} from "./attachments";
-import * as channel from "./channel";
-import * as dialog_widget from "./dialog_widget";
-import {$t, $t_html} from "./i18n";
-import * as ListWidget from "./list_widget";
-import * as loading from "./loading";
-import * as scroll_util from "./scroll_util";
-import {realm} from "./state_data";
-import * as timerender from "./timerender";
-import * as ui_report from "./ui_report";
+import {attachment_api_response_schema} from "./attachments.ts";
+import * as channel from "./channel.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as ListWidget from "./list_widget.ts";
+import * as loading from "./loading.ts";
+import * as scroll_util from "./scroll_util.ts";
+import {realm} from "./state_data.ts";
+import * as timerender from "./timerender.ts";
+import * as ui_report from "./ui_report.ts";
 
 type ServerAttachment = z.infer<typeof attachment_api_response_schema>["attachments"][number];
 

@@ -5,12 +5,12 @@
 import $ from "jquery";
 import * as tippy from "tippy.js";
 
-import * as blueslip from "./blueslip";
-import {media_breakpoints_num} from "./css_variables";
-import * as modals from "./modals";
-import * as overlays from "./overlays";
-import * as popovers from "./popovers";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import {media_breakpoints_num} from "./css_variables.js";
+import * as modals from "./modals.ts";
+import * as overlays from "./overlays.ts";
+import * as popovers from "./popovers.ts";
+import * as util from "./util.ts";
 
 type PopoverName =
     | "compose_control_buttons"

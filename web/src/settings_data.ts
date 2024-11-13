@@ -1,12 +1,12 @@
 import assert from "minimalistic-assert";
 
-import * as group_permission_settings from "./group_permission_settings";
-import {page_params} from "./page_params";
-import * as settings_config from "./settings_config";
-import {current_user, realm} from "./state_data";
-import type {GroupSettingValue} from "./state_data";
-import * as user_groups from "./user_groups";
-import {user_settings} from "./user_settings";
+import * as group_permission_settings from "./group_permission_settings.ts";
+import {page_params} from "./page_params.ts";
+import * as settings_config from "./settings_config.ts";
+import {current_user, realm} from "./state_data.ts";
+import type {GroupSettingValue} from "./state_data.ts";
+import * as user_groups from "./user_groups.ts";
+import {user_settings} from "./user_settings.ts";
 
 let user_join_date: Date;
 export function initialize(current_user_join_date: Date): void {

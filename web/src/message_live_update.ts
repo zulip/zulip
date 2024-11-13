@@ -1,6 +1,6 @@
-import * as message_lists from "./message_lists";
-import * as message_store from "./message_store";
-import type {UserStatusEmojiInfo} from "./user_status";
+import * as message_lists from "./message_lists.ts";
+import * as message_store from "./message_store.ts";
+import type {UserStatusEmojiInfo} from "./user_status.ts";
 
 export function rerender_messages_view(): void {
     for (const list of message_lists.all_rendered_message_lists()) {

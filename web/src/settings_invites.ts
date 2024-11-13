@@ -5,20 +5,20 @@ import render_settings_resend_invite_modal from "../templates/confirm_dialog/con
 import render_settings_revoke_invite_modal from "../templates/confirm_dialog/confirm_revoke_invite.hbs";
 import render_admin_invites_list from "../templates/settings/admin_invites_list.hbs";
 
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
-import * as dialog_widget from "./dialog_widget";
-import {$t, $t_html} from "./i18n";
-import * as ListWidget from "./list_widget";
-import * as loading from "./loading";
-import * as people from "./people";
-import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
-import {current_user, realm} from "./state_data";
-import * as timerender from "./timerender";
-import * as ui_report from "./ui_report";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as ListWidget from "./list_widget.ts";
+import * as loading from "./loading.ts";
+import * as people from "./people.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as timerender from "./timerender.ts";
+import * as ui_report from "./ui_report.ts";
+import * as util from "./util.ts";
 
 export const invite_schema = z.intersection(
     z.object({

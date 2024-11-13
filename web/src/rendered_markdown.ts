@@ -7,20 +7,20 @@ import code_buttons_container from "../templates/code_buttons_container.hbs";
 import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import render_mention_content_wrapper from "../templates/mention_content_wrapper.hbs";
 
-import * as blueslip from "./blueslip";
-import {show_copied_confirmation} from "./copied_tooltip";
-import {$t} from "./i18n";
-import * as message_store from "./message_store";
-import type {Message} from "./message_store";
-import * as people from "./people";
-import * as realm_playground from "./realm_playground";
-import * as rows from "./rows";
-import * as rtl from "./rtl";
-import * as sub_store from "./sub_store";
-import * as timerender from "./timerender";
-import * as user_groups from "./user_groups";
-import {user_settings} from "./user_settings";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import {show_copied_confirmation} from "./copied_tooltip.ts";
+import {$t} from "./i18n.ts";
+import * as message_store from "./message_store.ts";
+import type {Message} from "./message_store.ts";
+import * as people from "./people.ts";
+import * as realm_playground from "./realm_playground.ts";
+import * as rows from "./rows.ts";
+import * as rtl from "./rtl.ts";
+import * as sub_store from "./sub_store.ts";
+import * as timerender from "./timerender.ts";
+import * as user_groups from "./user_groups.ts";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 /*
     rendered_markdown

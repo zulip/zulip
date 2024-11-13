@@ -1,16 +1,16 @@
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import * as blueslip from "./blueslip";
-import {FoldDict} from "./fold_dict";
-import * as group_permission_settings from "./group_permission_settings";
-import {$t} from "./i18n";
-import {page_params} from "./page_params";
-import * as settings_config from "./settings_config";
-import type {GroupPermissionSetting, GroupSettingValue, StateData} from "./state_data";
-import {current_user, raw_user_group_schema, realm} from "./state_data";
-import type {UserOrMention} from "./typeahead_helper";
-import type {UserGroupUpdateEvent} from "./types";
+import * as blueslip from "./blueslip.ts";
+import {FoldDict} from "./fold_dict.ts";
+import * as group_permission_settings from "./group_permission_settings.ts";
+import {$t} from "./i18n.ts";
+import {page_params} from "./page_params.ts";
+import * as settings_config from "./settings_config.ts";
+import type {GroupPermissionSetting, GroupSettingValue, StateData} from "./state_data.ts";
+import {current_user, raw_user_group_schema, realm} from "./state_data.ts";
+import type {UserOrMention} from "./typeahead_helper.ts";
+import type {UserGroupUpdateEvent} from "./types.ts";
 
 type UserGroupRaw = z.infer<typeof raw_user_group_schema>;
 

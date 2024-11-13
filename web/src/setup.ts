@@ -1,8 +1,8 @@
 import $ from "jquery";
 
-import * as blueslip from "./blueslip";
-import * as loading from "./loading";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as loading from "./loading.ts";
+import * as util from "./util.ts";
 
 export let page_load_time: number | undefined;
 

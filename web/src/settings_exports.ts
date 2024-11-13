@@ -7,22 +7,22 @@ import render_admin_export_consent_list from "../templates/settings/admin_export
 import render_admin_export_list from "../templates/settings/admin_export_list.hbs";
 import render_start_export_modal from "../templates/start_export_modal.hbs";
 
-import * as channel from "./channel";
-import * as components from "./components";
-import * as confirm_dialog from "./confirm_dialog";
-import * as dialog_widget from "./dialog_widget";
-import * as dropdown_widget from "./dropdown_widget";
-import type {DropdownWidget, Option} from "./dropdown_widget";
-import {$t, $t_html} from "./i18n";
-import * as ListWidget from "./list_widget";
-import type {ListWidget as ListWidgetType} from "./list_widget";
-import * as loading from "./loading";
-import * as people from "./people";
-import * as scroll_util from "./scroll_util";
-import * as settings_config from "./settings_config";
-import * as timerender from "./timerender";
-import type {HTMLSelectOneElement} from "./types";
-import * as ui_report from "./ui_report";
+import * as channel from "./channel.ts";
+import * as components from "./components.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
+import type {DropdownWidget, Option} from "./dropdown_widget.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as ListWidget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
+import * as loading from "./loading.ts";
+import * as people from "./people.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as settings_config from "./settings_config.ts";
+import * as timerender from "./timerender.ts";
+import type {HTMLSelectOneElement} from "./types.ts";
+import * as ui_report from "./ui_report.ts";
 
 const export_consent_schema = z.object({
     user_id: z.number(),

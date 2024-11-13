@@ -1,5 +1,5 @@
-import {Filter} from "./filter";
-import {MessageListData} from "./message_list_data";
+import {Filter} from "./filter.ts";
+import {MessageListData} from "./message_list_data.ts";
 
 export let all_messages_data = new MessageListData({
     excludes_muted_topics: false,

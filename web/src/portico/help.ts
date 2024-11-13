@@ -5,11 +5,11 @@ import SimpleBar from "simplebar";
 import * as tippy from "tippy.js";
 
 import zulip_copy_icon from "../../templates/zulip_copy_icon.hbs";
-import * as common from "../common";
-import {show_copied_confirmation} from "../copied_tooltip";
-import * as util from "../util";
+import * as common from "../common.ts";
+import {show_copied_confirmation} from "../copied_tooltip.ts";
+import * as util from "../util.ts";
 
-import {activate_correct_tab} from "./tabbed-instructions";
+import {activate_correct_tab} from "./tabbed-instructions.ts";
 
 function register_tabbed_section($tabbed_section: JQuery): void {
     const $li = $tabbed_section.find("ul.nav li");

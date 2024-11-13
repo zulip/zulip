@@ -2,7 +2,7 @@ import $ from "jquery";
 import Micromodal from "micromodal";
 import assert from "minimalistic-assert";
 
-import * as blueslip from "../blueslip";
+import * as blueslip from "../blueslip.ts";
 
 function is_open(): boolean {
     return $(".micromodal").hasClass("modal--open");

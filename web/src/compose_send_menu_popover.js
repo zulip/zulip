@@ -5,18 +5,18 @@ import render_send_later_popover from "../templates/popovers/send_later_popover.
 import render_send_later_modal from "../templates/send_later_modal.hbs";
 import render_send_later_modal_options from "../templates/send_later_modal_options.hbs";
 
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as compose from "./compose";
-import * as compose_state from "./compose_state";
-import * as compose_validate from "./compose_validate";
-import * as drafts from "./drafts";
-import * as flatpickr from "./flatpickr";
-import * as modals from "./modals";
-import * as popover_menus from "./popover_menus";
-import * as scheduled_messages from "./scheduled_messages";
-import {parse_html} from "./ui_util";
-import {user_settings} from "./user_settings";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as compose from "./compose.js";
+import * as compose_state from "./compose_state.ts";
+import * as compose_validate from "./compose_validate.ts";
+import * as drafts from "./drafts.ts";
+import * as flatpickr from "./flatpickr.ts";
+import * as modals from "./modals.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as scheduled_messages from "./scheduled_messages.ts";
+import {parse_html} from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
 
 export const SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS = 60 * 1000;
 const ENTER_SENDS_SELECTION_DELAY = 600;

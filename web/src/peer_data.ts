@@ -1,8 +1,8 @@
-import * as blueslip from "./blueslip";
-import {LazySet} from "./lazy_set";
-import type {User} from "./people";
-import * as people from "./people";
-import * as sub_store from "./sub_store";
+import * as blueslip from "./blueslip.ts";
+import {LazySet} from "./lazy_set.ts";
+import type {User} from "./people.ts";
+import * as people from "./people.ts";
+import * as sub_store from "./sub_store.ts";
 
 // This maps a stream_id to a LazySet of user_ids who are subscribed.
 const stream_subscribers = new Map<number, LazySet>();

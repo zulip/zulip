@@ -6,20 +6,20 @@ import render_announce_stream_checkbox from "../templates/stream_settings/announ
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
 import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
 
-import * as hash_parser from "./hash_parser";
-import {$t} from "./i18n";
-import * as settings_components from "./settings_components";
-import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
-import * as settings_org from "./settings_org";
-import {current_user, realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as stream_edit_toggler from "./stream_edit_toggler";
-import * as stream_settings_containers from "./stream_settings_containers";
-import type {SettingsSubscription} from "./stream_settings_data";
-import * as sub_store from "./sub_store";
-import type {StreamSubscription} from "./sub_store";
-import * as util from "./util";
+import * as hash_parser from "./hash_parser.ts";
+import {$t} from "./i18n.ts";
+import * as settings_components from "./settings_components.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import * as settings_org from "./settings_org.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_edit_toggler from "./stream_edit_toggler.ts";
+import * as stream_settings_containers from "./stream_settings_containers.ts";
+import type {SettingsSubscription} from "./stream_settings_data.ts";
+import * as sub_store from "./sub_store.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as util from "./util.ts";
 
 export function row_for_stream_id(stream_id: number): JQuery {
     return $(`.stream-row[data-stream-id='${CSS.escape(stream_id.toString())}']`);

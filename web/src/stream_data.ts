@@ -1,28 +1,28 @@
 import assert from "minimalistic-assert";
 
-import * as blueslip from "./blueslip";
-import * as color_data from "./color_data";
-import {FoldDict} from "./fold_dict";
-import {page_params} from "./page_params";
-import * as peer_data from "./peer_data";
-import type {User} from "./people";
-import * as people from "./people";
-import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
-import type {StateData} from "./state_data";
-import {current_user, realm} from "./state_data";
-import type {StreamPostPolicy} from "./stream_types";
-import * as sub_store from "./sub_store";
+import * as blueslip from "./blueslip.ts";
+import * as color_data from "./color_data.ts";
+import {FoldDict} from "./fold_dict.ts";
+import {page_params} from "./page_params.ts";
+import * as peer_data from "./peer_data.ts";
+import type {User} from "./people.ts";
+import * as people from "./people.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import type {StateData} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
+import type {StreamPostPolicy} from "./stream_types.ts";
+import * as sub_store from "./sub_store.ts";
 import type {
     ApiStreamSubscription,
     NeverSubscribedStream,
     Stream,
     StreamSpecificNotificationSettings,
     StreamSubscription,
-} from "./sub_store";
-import * as user_groups from "./user_groups";
-import {user_settings} from "./user_settings";
-import * as util from "./util";
+} from "./sub_store.ts";
+import * as user_groups from "./user_groups.ts";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 // Type for the parameter of `create_sub_from_server_data` function.
 type ApiGenericStreamSubscription = NeverSubscribedStream | ApiStreamSubscription;

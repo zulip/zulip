@@ -5,10 +5,10 @@ import mixPlugin from "colord/plugins/mix";
 import $ from "jquery";
 import type tinycolor from "tinycolor2";
 
-import {$t} from "./i18n";
-import * as settings_data from "./settings_data";
-import * as stream_data from "./stream_data";
-import * as stream_settings_api from "./stream_settings_api";
+import {$t} from "./i18n.ts";
+import * as settings_data from "./settings_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_settings_api from "./stream_settings_api.ts";
 
 extend([lchPlugin, mixPlugin]);
 

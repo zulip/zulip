@@ -1,15 +1,15 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import type {Filter} from "./filter";
-import * as pm_list_data from "./pm_list_data";
-import * as pm_list_dom from "./pm_list_dom";
-import type {PMNode} from "./pm_list_dom";
-import * as resize from "./resize";
-import * as scroll_util from "./scroll_util";
-import * as ui_util from "./ui_util";
-import type {FullUnreadCountsData} from "./unread";
-import * as vdom from "./vdom";
+import type {Filter} from "./filter.ts";
+import * as pm_list_data from "./pm_list_data.ts";
+import * as pm_list_dom from "./pm_list_dom.ts";
+import type {PMNode} from "./pm_list_dom.ts";
+import * as resize from "./resize.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as ui_util from "./ui_util.ts";
+import type {FullUnreadCountsData} from "./unread.ts";
+import * as vdom from "./vdom.ts";
 
 let prior_dom: vdom.Tag<PMNode> | undefined;
 

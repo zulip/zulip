@@ -41,7 +41,7 @@ message is sent). As a result, we try to make sure that
 The Python-Markdown implementation is tested by
 `zerver/tests/test_markdown.py`, and the marked.js implementation and
 `markdown.contains_backend_only_syntax` are tested by
-`web/tests/markdown.test.js`.
+`web/tests/markdown.test.cjs`.
 
 A shared set of fixed test data ("test fixtures") is present in
 `zerver/tests/fixtures/markdown_test_cases.json`, and is automatically used
@@ -102,7 +102,7 @@ places:
 
 - The backend Markdown processor (`zerver/lib/markdown/__init__.py`).
 - The frontend Markdown processor (`web/src/markdown.ts` and sometimes
-  `web/third/marked/lib/marked.js`), or `markdown.contains_backend_only_syntax` if
+  `web/third/marked/lib/marked.cjs`), or `markdown.contains_backend_only_syntax` if
   your changes won't be supported in the frontend processor.
 - If desired, the typeahead logic in `web/src/composebox_typeahead.ts`.
 - The test suite, probably via adding entries to `zerver/tests/fixtures/markdown_test_cases.json`.

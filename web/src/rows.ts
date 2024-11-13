@@ -1,10 +1,10 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import * as blueslip from "./blueslip";
-import * as message_lists from "./message_lists";
-import * as message_store from "./message_store";
-import type {Message} from "./message_store";
+import * as blueslip from "./blueslip.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_store from "./message_store.ts";
+import type {Message} from "./message_store.ts";
 
 // We don't need an andSelf() here because we already know
 // that our next element is *not* a message_row, so this

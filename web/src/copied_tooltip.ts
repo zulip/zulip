@@ -1,7 +1,7 @@
 import $ from "jquery";
 import * as tippy from "tippy.js";
 
-import {$t} from "./i18n";
+import {$t} from "./i18n.ts";
 
 function show_copied_tooltip(
     copy_button: HTMLElement,

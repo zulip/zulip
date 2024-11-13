@@ -3,17 +3,17 @@ import _ from "lodash";
 
 import render_draft_table_body from "../templates/draft_table_body.hbs";
 
-import * as browser_history from "./browser_history";
-import * as compose_actions from "./compose_actions";
-import * as drafts from "./drafts";
-import {$t} from "./i18n";
-import * as message_view from "./message_view";
-import * as messages_overlay_ui from "./messages_overlay_ui";
-import * as overlays from "./overlays";
-import * as people from "./people";
-import * as rendered_markdown from "./rendered_markdown";
-import * as user_card_popover from "./user_card_popover";
-import * as user_group_popover from "./user_group_popover";
+import * as browser_history from "./browser_history.ts";
+import * as compose_actions from "./compose_actions.ts";
+import * as drafts from "./drafts.ts";
+import {$t} from "./i18n.ts";
+import * as message_view from "./message_view.ts";
+import * as messages_overlay_ui from "./messages_overlay_ui.ts";
+import * as overlays from "./overlays.ts";
+import * as people from "./people.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
+import * as user_card_popover from "./user_card_popover.js";
+import * as user_group_popover from "./user_group_popover.ts";
 
 function restore_draft(draft_id) {
     const draft = drafts.draft_model.getDraft(draft_id);

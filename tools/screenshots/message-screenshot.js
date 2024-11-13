@@ -1,13 +1,11 @@
-"use strict";
-
 /* global $, CSS */
 
-const fs = require("node:fs");
-const path = require("node:path");
-const {parseArgs} = require("node:util");
+import * as fs from "node:fs";
+import path from "node:path";
+import {parseArgs} from "node:util";
 
-require("css.escape");
-const puppeteer = require("puppeteer");
+import "css.escape";
+import puppeteer from "puppeteer";
 
 const usage = "Usage: message-screenshot.js <message_id> <image_path> <realm_url>";
 const {

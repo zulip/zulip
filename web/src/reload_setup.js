@@ -1,10 +1,10 @@
-import * as activity from "./activity";
-import * as blueslip from "./blueslip";
-import * as compose from "./compose";
-import * as compose_actions from "./compose_actions";
-import {localstorage} from "./localstorage";
-import * as message_fetch from "./message_fetch";
-import * as message_view from "./message_view";
+import * as activity from "./activity.ts";
+import * as blueslip from "./blueslip.ts";
+import * as compose from "./compose.js";
+import * as compose_actions from "./compose_actions.ts";
+import {localstorage} from "./localstorage.ts";
+import * as message_fetch from "./message_fetch.ts";
+import * as message_view from "./message_view.ts";
 
 // Check if we're doing a compose-preserving reload.  This must be
 // done before the first call to get_events

@@ -1,12 +1,12 @@
 import assert from "minimalistic-assert";
 
-import * as settings_config from "./settings_config";
-import * as stream_data from "./stream_data";
-import * as stream_topic_history from "./stream_topic_history";
-import * as sub_store from "./sub_store";
-import type {StreamSubscription} from "./sub_store";
-import {user_settings} from "./user_settings";
-import * as util from "./util";
+import * as settings_config from "./settings_config.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
+import * as sub_store from "./sub_store.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 let first_render_completed = false;
 let previous_pinned: number[] = [];
