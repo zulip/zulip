@@ -340,8 +340,8 @@ export function stream_and_topic_exist_in_edit_history(
 export function hide_message_edit_spinner($row: JQuery): void {
     $row.find(".loader").hide();
     $row.find(".message_edit_save span").show();
-    $row.find(".message_edit_save").removeClass("disable-btn");
-    $row.find(".message_edit_cancel").removeClass("disable-btn");
+    $row.find(".message_edit_save").removeClass("message-edit-button-disabled");
+    $row.find(".message_edit_cancel").removeClass("message-edit-button-disabled");
 }
 
 export function show_message_edit_spinner($row: JQuery): void {
@@ -349,8 +349,8 @@ export function show_message_edit_spinner($row: JQuery): void {
     // do for send button in compose box.
     loading.show_button_spinner($row.find(".loader"), true);
     $row.find(".message_edit_save span").hide();
-    $row.find(".message_edit_save").addClass("disable-btn");
-    $row.find(".message_edit_cancel").addClass("disable-btn");
+    $row.find(".message_edit_save").addClass("message-edit-button-disabled");
+    $row.find(".message_edit_cancel").addClass("message-edit-button-disabled");
 }
 
 export function show_topic_edit_spinner($row: JQuery): void {
