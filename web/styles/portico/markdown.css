@@ -1,13 +1,17 @@
 .markdown {
     /* Copied from app_variables.css to be used in portico pages. */
-    --color-copy-btn: color-mix(in oklch, hsl(229deg 9% 36%) 70%, transparent);
-    --color-copy-btn-hover: hsl(229deg 9% 36%);
-    --color-copy-btn-active: color-mix(
+    --color-copy-button: color-mix(
+        in oklch,
+        hsl(229deg 9% 36%) 70%,
+        transparent
+    );
+    --color-copy-button-hover: hsl(229deg 9% 36%);
+    --color-copy-button-active: color-mix(
         in oklch,
         hsla(229deg 9% 36%) 70%,
         transparent
     );
-    --color-copy-btn-success: hsl(146deg 90% 27%);
+    --color-copy-button-success: hsl(146deg 90% 27%);
 
     font-weight: 400;
     font-size: 1rem;
@@ -424,25 +428,25 @@
         }
     }
 
-    .copy-btn {
+    .copy-button {
         display: flex;
         border-radius: 4px;
-        color: var(--color-copy-btn);
+        color: var(--color-copy-button);
         /* 2px at 16px/1em */
         padding: 0.125em;
         cursor: pointer;
 
         &:hover,
         &:focus-visible {
-            color: var(--color-copy-btn-hover);
+            color: var(--color-copy-button-hover);
         }
 
         &:active {
-            color: var(--color-copy-btn-active);
+            color: var(--color-copy-button-active);
         }
 
-        &.copy-btn-success {
-            color: var(--color-copy-btn-success);
+        &.copy-button-success {
+            color: var(--color-copy-button-success);
         }
     }
 

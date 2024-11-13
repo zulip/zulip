@@ -795,30 +795,30 @@
     }
 
     /* The properties of the code_external_link button are copied from the
-       copy-btn class in app_components.css. */
+       copy-button class in app_components.css. */
     .code_external_link {
         display: flex;
         border-radius: 4px;
-        color: var(--color-copy-btn);
+        color: var(--color-copy-button);
         /* 2px at 16px/1em */
         padding: 0.125em;
         cursor: pointer;
 
         &:hover,
         :focus-visible {
-            background-color: var(--color-copy-btn-square-bg-hover);
+            background-color: var(--color-copy-button-square-bg-hover);
         }
 
         &:active {
-            background-color: var(--color-copy-btn-square-bg-active);
-            color: var(--color-copy-btn-square-active);
+            background-color: var(--color-copy-button-square-bg-active);
+            color: var(--color-copy-button-square-active);
         }
     }
 
     .copy_codeblock,
     .code_external_link {
         font-size: 1.1363em;
-        border: 1px solid var(--color-copy-btn-square-bg-active);
+        border: 1px solid var(--color-copy-button-square-bg-active);
         backdrop-filter: blur(20px);
     }
 }

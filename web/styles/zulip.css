@@ -648,7 +648,7 @@ li,
     right: 5px;
     height: 1em;
     backdrop-filter: blur(20px);
-    outline: 1px solid var(--color-copy-btn-square-bg-active);
+    outline: 1px solid var(--color-copy-button-square-bg-active);
 }
 
 #copy_generated_link_container {

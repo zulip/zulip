@@ -856,28 +856,32 @@
     /* hsl(229deg 9% 36%) corresponds to --grey-600.
        We use the hsl() equivalent directly since postcss-color-mix-function
        cannot dynamically resolve var() arguments. */
-    --color-copy-btn: color-mix(in oklch, hsl(229deg 9% 36%) 70%, transparent);
-    --color-copy-btn-hover: var(--grey-600);
+    --color-copy-button: color-mix(
+        in oklch,
+        hsl(229deg 9% 36%) 70%,
+        transparent
+    );
+    --color-copy-button-hover: var(--grey-600);
     /* --grey-600, opacity 0.07 */
-    --color-copy-btn-square-bg-hover: color-mix(
+    --color-copy-button-square-bg-hover: color-mix(
         in oklch,
         hsla(229deg 9% 36%) 7%,
         transparent
     );
     /* --grey-600, opacity 0.7 */
-    --color-copy-btn-active: color-mix(
+    --color-copy-button-active: color-mix(
         in oklch,
         hsla(229deg 9% 36%) 70%,
         transparent
     );
-    --color-copy-btn-square-active: var(--grey-600);
+    --color-copy-button-square-active: var(--grey-600);
     /* --grey-600, opacity 0.11 */
-    --color-copy-btn-square-bg-active: color-mix(
+    --color-copy-button-square-bg-active: color-mix(
         in oklch,
         hsl(229deg 9% 36%) 11%,
         transparent
     );
-    --color-copy-btn-success: var(--green-500);
+    --color-copy-button-success: var(--green-500);
 
     /* Reaction container colors */
     --color-message-reaction-border: hsl(0deg 0% 0% / 10%);
@@ -1403,28 +1407,32 @@
     /* hsl(229deg 10% 70%) corresponds to --grey-400.
        We use the hsl() equivalent directly since postcss-color-mix-function
        cannot dynamically resolve var() arguments. */
-    --color-copy-btn: color-mix(in oklch, hsl(229deg 10% 70%) 70%, transparent);
-    --color-copy-btn-hover: var(--grey-300);
+    --color-copy-button: color-mix(
+        in oklch,
+        hsl(229deg 10% 70%) 70%,
+        transparent
+    );
+    --color-copy-button-hover: var(--grey-300);
     /* --grey-400, opacity 0.14 */
-    --color-copy-btn-square-bg-hover: color-mix(
+    --color-copy-button-square-bg-hover: color-mix(
         in oklch,
         hsl(230deg 9% 60%) 14%,
         transparent
     );
     /* --grey-300, opacity 0.7 */
-    --color-copy-btn-active: color-mix(
+    --color-copy-button-active: color-mix(
         in oklch,
         hsl(229deg 10% 70%) 70%,
         transparent
     );
-    --color-copy-btn-square-active: var(--grey-300);
+    --color-copy-button-square-active: var(--grey-300);
     /* --grey-400, opacity 0.18 */
-    --color-copy-btn-square-bg-active: color-mix(
+    --color-copy-button-square-bg-active: color-mix(
         in oklch,
         hsl(229deg 9% 60%) 18%,
         transparent
     );
-    --color-copy-btn-success: var(--green-300);
+    --color-copy-button-success: var(--green-300);
 
     /* Reaction container colors */
     --color-message-reaction-border: hsl(0deg 0% 100% / 15%);

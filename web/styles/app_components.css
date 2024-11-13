@@ -1344,37 +1344,37 @@ input.settings_text_input {
     }
 }
 
-.copy-btn {
+.copy-button {
     display: flex;
     border-radius: 4px;
-    color: var(--color-copy-btn);
+    color: var(--color-copy-button);
     /* 2px at 16px/1em */
     padding: 0.125em;
     cursor: pointer;
 
     &:hover,
     &:focus-visible {
-        color: var(--color-copy-btn-hover);
+        color: var(--color-copy-button-hover);
     }
 
     &:active {
-        color: var(--color-copy-btn-active);
+        color: var(--color-copy-button-active);
     }
 
-    &.copy-btn-square {
+    &.copy-button-square {
         &:hover,
         :focus-visible {
-            background-color: var(--color-copy-btn-square-bg-hover);
+            background-color: var(--color-copy-button-square-bg-hover);
         }
 
         &:active {
-            background-color: var(--color-copy-btn-square-bg-active);
-            color: var(--color-copy-btn-square-active);
+            background-color: var(--color-copy-button-square-bg-active);
+            color: var(--color-copy-button-square-active);
         }
     }
 
-    &.copy-btn-success {
-        color: var(--color-copy-btn-success);
+    &.copy-button-success {
+        color: var(--color-copy-button-success);
     }
 }
 
