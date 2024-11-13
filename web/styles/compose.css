@@ -1402,6 +1402,10 @@ textarea.new_message_textarea {
             opacity: 0.5;
         }
     }
+
+    .compose-button-disabled {
+        pointer-events: none;
+    }
 }
 
 .drag {

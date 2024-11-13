@@ -1199,7 +1199,7 @@ export function hide_compose_spinner(): void {
     compose_spinner_visible = false;
     $(".compose-submit-button .loader").hide();
     $(".compose-submit-button .zulip-icon-send").show();
-    $(".compose-submit-button").removeClass("disable-btn");
+    $(".compose-submit-button").removeClass("compose-button-disabled");
 }
 
 export function show_compose_spinner(): void {
@@ -1207,7 +1207,7 @@ export function show_compose_spinner(): void {
     // Always use white spinner.
     loading.show_button_spinner($(".compose-submit-button .loader"), true);
     $(".compose-submit-button .zulip-icon-send").hide();
-    $(".compose-submit-button").addClass("disable-btn");
+    $(".compose-submit-button").addClass("compose-button-disabled");
 }
 
 export function get_compose_click_target(element: HTMLElement): Element {
