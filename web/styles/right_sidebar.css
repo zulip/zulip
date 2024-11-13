@@ -143,11 +143,6 @@ $user_status_emoji_width: 24px;
         &.highlighted_user {
             background-color: var(--color-buddy-list-highlighted-user);
             box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
-
-            &.with_avatar .user_circle {
-                -webkit-text-stroke: 1.5px
-                    var(--color-buddy-list-highlighted-user);
-            }
         }
     }
 
