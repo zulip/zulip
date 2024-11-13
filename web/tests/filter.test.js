@@ -378,6 +378,61 @@ test("basics", () => {
     assert.ok(filter.is_conversation_view());
     assert.ok(!filter.is_conversation_view_with_near());
 
+    terms = [{operator: "is", operand: "dm", negated: true}];
+    filter = new Filter(terms);
+    assert.ok(!filter.has_operator("search"));
+    assert.ok(filter.can_apply_locally());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(filter.can_mark_messages_read());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.contains_only_private_messages());
+
+    terms = [
+        {operator: "channel", operand: "channel_name"},
+        {operator: "is", operand: "dm", negated: true},
+    ];
+    filter = new Filter(terms);
+    assert.ok(filter.has_operator("channel"));
+    assert.ok(filter.can_apply_locally());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(filter.can_mark_messages_read());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(!filter.has_negated_operand("channel", "not-is-dm"));
+
+    terms = [
+        {operator: "topic", operand: "topic_name"},
+        {operator: "is", operand: "dm", negated: true},
+    ];
+    filter = new Filter(terms);
+    assert.ok(filter.has_operator("topic"));
+    assert.ok(!filter.has_operator("search"));
+    assert.ok(filter.can_apply_locally());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(filter.can_mark_messages_read());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(!filter.has_negated_operand("topic", "topic_name"));
+
+    terms = [
+        {operator: "channel", operand: "channel_name"},
+        {operator: "topic", operand: "topic_name"},
+        {operator: "is", operand: "dm", negated: true},
+    ];
+    filter = new Filter(terms);
+    assert.ok(filter.has_operator("channel"));
+    assert.ok(filter.has_operator("topic"));
+    assert.ok(!filter.has_operator("search"));
+    assert.ok(filter.can_apply_locally());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(filter.can_mark_messages_read());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(!filter.has_negated_operand("channel", "channel_name"));
+    assert.ok(!filter.has_negated_operand("topic", "topic_name"));
+    assert.ok(filter.can_bucket_by("channel"));
+    assert.ok(filter.can_bucket_by("channel", "topic"));
+
     // "pm-with" was renamed to "dm"
     terms = [{operator: "pm-with", operand: "joe@example.com"}];
     filter = new Filter(terms);

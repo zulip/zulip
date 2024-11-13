@@ -70,6 +70,18 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
     //
     // TODO: This ideally doesn't need a special case, we can just use
     // `filter.get_description` for it.
+
+    if (filter?.has_negated_operand("is", "dm")) {
+        return {
+            title: $t({defaultMessage: "Messages excluding DMs"}),
+            description: $t({
+                defaultMessage: "All messages except direct messages.",
+            }),
+            zulip_icon: "all-messages",
+            link: "/help/combined-feed",
+        };
+    }
+
     if (filter === undefined || filter.is_in_home()) {
         let description;
         if (page_params.is_spectator) {

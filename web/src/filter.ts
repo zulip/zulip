@@ -1151,6 +1151,22 @@ export class Filter {
             return true;
         }
 
+        if (_.isEqual(term_types, ["not-is-dm"])) {
+            return true;
+        }
+
+        if (_.isEqual(term_types, ["channel", "not-is-dm"])) {
+            return true;
+        }
+
+        if (_.isEqual(term_types, ["topic", "not-is-dm"])) {
+            return true;
+        }
+
+        if (_.isEqual(term_types, ["channel", "topic", "not-is-dm"])) {
+            return true;
+        }
+
         if (_.isEqual(term_types, [])) {
             // Empty filters means we are displaying all possible messages.
             return true;
