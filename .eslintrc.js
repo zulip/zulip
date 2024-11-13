@@ -137,6 +137,12 @@ module.exports = {
     },
     overrides: [
         {
+            files: ["*.cjs"],
+            parserOptions: {
+                sourceType: "script",
+            },
+        },
+        {
             files: ["web/tests/**"],
             rules: {
                 "no-jquery/no-selector-prop": "off",
