@@ -1334,6 +1334,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     font-weight: 400;
     line-height: 1;
     word-wrap: break-word;
+    line-height: 1.2;
 }
 
 .empty-feed-notice-description {
