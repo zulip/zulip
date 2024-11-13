@@ -291,7 +291,7 @@ module.exports = {
             },
         },
         {
-            files: ["web/debug-require.js"],
+            files: ["web/debug-require.cjs"],
             env: {
                 browser: true,
                 es2020: false,
