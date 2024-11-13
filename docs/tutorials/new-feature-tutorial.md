@@ -62,7 +62,7 @@ organization in Zulip). The following files are involved in the process:
 
 - `web/e2e-tests/admin.test.ts`: end-to-end tests for the organization
   admin settings pages.
-- `web/tests/dispatch.test.js`
+- `web/tests/dispatch.test.cjs`
 
 **Documentation**
 
@@ -668,11 +668,11 @@ frontend tests: [node-based unit tests](../testing/testing-with-node.md) and
 
 At the minimum, if you created a new function to update UI in
 `settings_org.ts`, you will need to mock that function in
-`web/tests/dispatch.test.js`. Add the name of the UI
+`web/tests/dispatch.test.cjs`. Add the name of the UI
 function you created to the following object with `noop` as the value:
 
 ```js
-// web/tests/dispatch.test.js
+// web/tests/dispatch.test.cjs
 
 set_global('settings_org', {
     update_email_change_display: noop,
