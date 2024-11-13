@@ -747,10 +747,10 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             formData.append("file-" + i, file);
         }
 
-        const $submit_btn = $("#user-profile-modal .dialog_submit_button");
-        const $cancel_btn = $("#user-profile-modal .dialog_exit_button");
-        show_button_spinner($submit_btn);
-        $cancel_btn.prop("disabled", true);
+        const $submit_button = $("#user-profile-modal .dialog_submit_button");
+        const $cancel_button = $("#user-profile-modal .dialog_exit_button");
+        show_button_spinner($submit_button);
+        $cancel_button.prop("disabled", true);
 
         void channel.patch({
             url,
@@ -759,7 +759,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             contentType: false,
             success() {
                 avatar_widget.clear();
-                hide_button_spinner($submit_btn);
+                hide_button_spinner($submit_button);
                 original_values = get_current_values($("#bot-edit-form"));
                 toggle_submit_button($("#bot-edit-form"));
                 ui_report.success(
@@ -767,7 +767,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                     $("#user-profile-modal .save-success"),
                     1200,
                 );
-                $cancel_btn.prop("disabled", false);
+                $cancel_button.prop("disabled", false);
             },
             error(xhr) {
                 ui_report.error(
@@ -779,8 +779,8 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                 $("#bot-edit-form")
                     .closest(".simplebar-content-wrapper")
                     .animate({scrollTop: 0}, "fast");
-                hide_button_spinner($submit_btn);
-                $cancel_btn.prop("disabled", false);
+                hide_button_spinner($submit_button);
+                $cancel_button.prop("disabled", false);
             },
         });
     });
@@ -960,11 +960,11 @@ function get_current_values(
 
 function toggle_submit_button($edit_form: JQuery): void {
     const current_values = get_current_values($edit_form);
-    const $submit_btn = $("#user-profile-modal .dialog_submit_button");
+    const $submit_button = $("#user-profile-modal .dialog_submit_button");
     if (!_.isEqual(original_values, current_values)) {
-        $submit_btn.prop("disabled", false);
+        $submit_button.prop("disabled", false);
     } else {
-        $submit_btn.prop("disabled", true);
+        $submit_button.prop("disabled", true);
     }
 }
 
@@ -1061,16 +1061,16 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
             profile_data: JSON.stringify(profile_data),
         };
 
-        const $submit_btn = $("#user-profile-modal .dialog_submit_button");
-        const $cancel_btn = $("#user-profile-modal .dialog_exit_button");
-        show_button_spinner($submit_btn);
-        $cancel_btn.prop("disabled", true);
+        const $submit_button = $("#user-profile-modal .dialog_submit_button");
+        const $cancel_button = $("#user-profile-modal .dialog_exit_button");
+        show_button_spinner($submit_button);
+        $cancel_button.prop("disabled", true);
 
         void channel.patch({
             url,
             data,
             success() {
-                hide_button_spinner($submit_btn);
+                hide_button_spinner($submit_button);
                 original_values = get_current_values($("#edit-user-form"));
                 toggle_submit_button($("#edit-user-form"));
                 ui_report.success(
@@ -1078,7 +1078,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
                     $("#user-profile-modal .save-success"),
                     1200,
                 );
-                $cancel_btn.prop("disabled", false);
+                $cancel_button.prop("disabled", false);
             },
             error(xhr) {
                 ui_report.error(
@@ -1090,8 +1090,8 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
                 $("#edit-user-form")
                     .closest(".simplebar-content-wrapper")
                     .animate({scrollTop: 0}, "fast");
-                hide_button_spinner($submit_btn);
-                $cancel_btn.prop("disabled", false);
+                hide_button_spinner($submit_button);
+                $cancel_button.prop("disabled", false);
             },
         });
     });
