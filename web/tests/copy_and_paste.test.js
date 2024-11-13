@@ -157,6 +157,15 @@ run_test("paste_handler_converter", () => {
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><h1 style="box-sizing: border-box; font-size: 2em; margin-top: 0px !important; margin-right: 0px; margin-bottom: 16px; margin-left: 0px; font-weight: 600; line-height: 1.25; padding-bottom: 0.3em; border-bottom: 1px solid hsl(216, 14%, 93%); color: hsl(210, 12%, 16%); font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">Zulip overview</h1>';
     assert.equal(copy_and_paste.paste_handler_converter(input), "Zulip overview");
 
+    // Only heading (when selected and copy)
+    input = "<body><!--StartFragment--><h1>Zulip overview</h1><!--EndFragment--></body>";
+    assert.equal(copy_and_paste.paste_handler_converter(input), "Zulip overview");
+
+    // Only heading (when triple clicked and copied)
+    input =
+        '<body><!--StartFragment--><h1>Zulip overview</h1><br class="Apple-interchange-newline"><!--EndFragment--></body>';
+    assert.equal(copy_and_paste.paste_handler_converter(input), "Zulip overview");
+
     // Italic text
     input =
         '<meta http-equiv="content-type" content="text/html; charset=utf-8">normal text <i style="box-sizing: inherit; color: hsl(0, 0%, 0%); font-family: Verdana, sans-serif; font-size: 15px; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%); text-decoration-style: initial; text-decoration-color: initial;">This text is italic</i>';
