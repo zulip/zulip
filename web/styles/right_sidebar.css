@@ -151,16 +151,36 @@ $user_status_emoji_width: 24px;
         place-self: center center;
     }
 
-    .user_sidebar_entry.with_avatar .user_circle {
-        position: absolute;
-        /* 8px at 16px/1em */
-        font-size: 0.5em;
-        bottom: 0;
-        right: 0;
-        -webkit-text-stroke: 1.5px var(--color-background);
+    .user_sidebar_entry.with_avatar {
+        .user-profile-picture {
+            border-radius: 0;
 
-        &.user_circle_empty {
-            display: none;
+            img {
+                /* 6px (half of circle + stroke, rounded up to 12px) at 16px/1em
+                   Adjusts the bottom-right border radius to accommodate
+                   the dot. We round up to avoid subpixel portions of the
+                   profile image shining through. The border-radius is
+                   specified on the img here so that the dot itself does
+                   not get clipped. */
+                border-radius: 4px 4px 0.375em;
+            }
+        }
+
+        .user_circle {
+            position: absolute;
+            /* 10px at 16px/1em */
+            font-size: 0.625em;
+            /* Pull top and left by half a pixel at 10px/1em
+               this seems necessary to correct for the subpixel
+               width of the stroke. */
+            bottom: 0.05em;
+            right: 0.05em;
+            /* 1.5px at 10px/1em */
+            -webkit-text-stroke: 0.15em var(--color-background);
+
+            &.user_circle_empty {
+                display: none;
+            }
         }
     }
 
