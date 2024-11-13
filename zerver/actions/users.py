@@ -29,8 +29,9 @@ from zerver.lib.soft_deactivation import queue_soft_reactivation
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import get_streams_for_user, stream_to_dict
+from zerver.lib.types import AnonymousSettingGroupDict
 from zerver.lib.user_counts import realm_user_count_by_role
-from zerver.lib.user_groups import AnonymousSettingGroupDict, get_system_user_group_for_user
+from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import (
     get_active_bots_owned_by_user,
     get_user_ids_who_can_access_user,

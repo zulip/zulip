@@ -21,10 +21,10 @@ from zerver.lib.send_email import FromAddress, send_email, send_email_to_admins
 from zerver.lib.sessions import delete_realm_user_sessions
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
+from zerver.lib.types import AnonymousSettingGroupDict
 from zerver.lib.upload import delete_message_attachments
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import (
-    AnonymousSettingGroupDict,
     get_group_setting_value_for_api,
     get_group_setting_value_for_audit_log_data,
 )

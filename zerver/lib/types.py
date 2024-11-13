@@ -138,6 +138,12 @@ class UserTopicDict(TypedDict, total=False):
     visibility_policy: int
 
 
+@dataclass
+class AnonymousSettingGroupDict:
+    direct_members: list[int]
+    direct_subgroups: list[int]
+
+
 # This next batch of types is for Stream/Subscription objects.
 class RawStreamDict(TypedDict):
     """Dictionary containing fields fetched from the Stream model that

@@ -22,8 +22,8 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
+from zerver.lib.types import AnonymousSettingGroupDict
 from zerver.lib.user_groups import (
-    AnonymousSettingGroupDict,
     GroupSettingChangeRequest,
     access_user_group_for_deactivation,
     access_user_group_for_setting,
