@@ -37,7 +37,7 @@
             z-index: 1;
         }
 
-        .btn-inbox-filter {
+        .button-inbox-filter {
             border: none;
             height: 30px;
             border-radius: 5px;
@@ -52,7 +52,7 @@
             }
         }
 
-        .btn-inbox-selected {
+        .button-inbox-selected {
             background-color: var(--color-background-button-inbox-selected);
         }
 
