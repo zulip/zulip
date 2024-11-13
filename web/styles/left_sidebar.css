@@ -865,14 +865,13 @@ li.top_left_scheduled_messages {
     margin-right: 3px;
 }
 
-/* New .topic-box grid definitions here. */
+/* New grid definitions here. */
 #views-label-container,
 .zoom-in #hide-more-direct-messages,
 .top_left_row,
 .left-sidebar-navigation-label-container,
 .dm-box,
 .subscription_block,
-.topic-box,
 .searching-for-more-topics,
 .topic_search_section {
     display: grid;
@@ -1079,10 +1078,15 @@ li.top_left_scheduled_messages {
 
 .topic-box,
 .searching-for-more-topics {
-    grid-template-columns:
-        0 var(--left-sidebar-icon-column-width) var(
-            --left-sidebar-icon-content-gap
+    display: grid;
+    grid-template:
+        "starting-offset starting-anchor-element icon-content-gap row-content controls markers-and-unreads ending-anchor-element ending-offset" var(
+            --line-height-sidebar-row-prominent
         )
+        ".               .                       .                row-content .        .                   .                     .            " auto / 0 var(
+            --left-sidebar-icon-column-width
+        )
+        var(--left-sidebar-icon-content-gap)
         minmax(0, 1fr) minmax(0, max-content) minmax(0, max-content)
         var(--left-sidebar-vdots-width) 0;
 }
@@ -1176,7 +1180,7 @@ li.top_left_scheduled_messages {
 
 .sidebar-topic-check {
     grid-area: starting-anchor-element;
-    justify-self: end;
+    place-self: center end;
     /* 15px at 14px/1em */
     font-size: 1.0714em;
     /* Use background to mask part of grouping bracket. */
