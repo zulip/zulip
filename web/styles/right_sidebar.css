@@ -26,13 +26,10 @@ $user_status_emoji_width: 24px;
     overflow: auto;
 }
 
-.buddy-list-section-toggle.fa-caret-right {
-    width: 7px;
-    transition: rotate 140ms linear;
-    /* The triangle icon has asymmetrical padding on it, so
-       when it rotates down it would be too high without
-       this padding. */
-    padding-left: 2px;
+.buddy-list-section-toggle.zulip-icon-heading-triangle-right {
+    transition:
+        opacity 140ms linear,
+        rotate 140ms linear;
 
     &.rotate-icon-down {
         rotate: 90deg;
@@ -41,6 +38,11 @@ $user_status_emoji_width: 24px;
     &.rotate-icon-right {
         rotate: 0deg;
     }
+}
+
+.buddy-list-section-toggle {
+    color: var(--color-text-sidebar-heading);
+    opacity: var(--opacity-sidebar-heading-icon);
 }
 
 .buddy-list-section-container {
@@ -230,13 +232,30 @@ $user_status_emoji_width: 24px;
     top: 0;
     z-index: 1;
     color: var(--color-text-default);
+    border-radius: 4px;
+    padding-left: 4px;
+
+    &:hover {
+        background-color: var(--color-buddy-list-highlighted-user);
+        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+
+        .buddy-list-section-toggle,
+        .buddy-list-heading {
+            opacity: var(--opacity-sidebar-heading-hover);
+        }
+    }
 }
 
 .buddy-list-heading {
     user-select: none;
-    font-weight: 600;
     margin: 0;
     padding: 5px 5px 5px 0;
+    color: var(--color-text-sidebar-heading);
+    font-size: inherit;
+    font-weight: var(--font-weight-sidebar-heading);
+    letter-spacing: var(--letter-spacing-sidebar-heading);
+    opacity: var(--opacity-sidebar-heading);
+    transition: opacity 140ms linear;
 }
 
 .buddy-list-subsection-header.no-display {
