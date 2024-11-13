@@ -90,7 +90,7 @@ type RequestOpts = {
 export function hide_dialog_spinner(): void {
     const dialog_widget_selector = current_dialog_widget_selector();
     const $spinner = $(`${dialog_widget_selector} .modal__spinner`);
-    $(`${dialog_widget_selector} .modal__btn`).prop("disabled", false);
+    $(`${dialog_widget_selector} .modal__button`).prop("disabled", false);
 
     loading.hide_spinner($(".dialog_submit_button"), $spinner);
 }
@@ -98,7 +98,7 @@ export function hide_dialog_spinner(): void {
 export function show_dialog_spinner(): void {
     const dialog_widget_selector = current_dialog_widget_selector();
     // Disable both the buttons.
-    $(`${dialog_widget_selector} .modal__btn`).prop("disabled", true);
+    $(`${dialog_widget_selector} .modal__button`).prop("disabled", true);
 
     const $spinner = $(`${dialog_widget_selector} .modal__spinner`);
 
