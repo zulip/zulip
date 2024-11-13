@@ -192,6 +192,7 @@ test("title_data", ({override}) => {
         first_line: "Blue Herring Bot",
         second_line: "translated: Owner: Human Myself",
         third_line: "",
+        is_deactivated: false,
     };
     assert.deepEqual(
         buddy_data.get_title_data(bot_with_owner.user_id, is_group),
@@ -228,6 +229,30 @@ test("title_data", ({override}) => {
         show_you: false,
     };
     assert.deepEqual(buddy_data.get_title_data(old_user.user_id, is_group), expected_data);
+
+    // Deactivated users.
+    people.deactivate(selma);
+    expected_data = {
+        first_line: "Human Selma",
+        second_line: "translated: This user has been deactivated.",
+        third_line: "",
+        show_you: false,
+        is_deactivated: true,
+    };
+    assert.deepEqual(buddy_data.get_title_data(selma.user_id, is_group), expected_data);
+
+    // Deactivated bots.
+    people.deactivate(bot_with_owner);
+    expected_group_data = {
+        first_line: "Blue Herring Bot",
+        second_line: "translated: Owner: Human Myself",
+        third_line: "translated: This bot has been deactivated.",
+        is_deactivated: true,
+    };
+    assert.deepEqual(
+        buddy_data.get_title_data(bot_with_owner.user_id, is_group),
+        expected_group_data,
+    );
 });
 
 test("filters deactivated users", () => {
