@@ -2119,6 +2119,15 @@ paths:
                                     Only present if `message_type` is `"stream"`.
 
                                     The topic to which the message was sent.
+
+                                    For clients that don't support the `empty_topic_name` [client capability][client-capabilities],
+                                    the `""` value is replaced with `"general chat"`.
+
+                                    **Changes**: Before 10.0 (feature level 331), `empty_topic_name`
+                                    client capability didn't exist and empty string as the topic name for
+                                    channel messages wasn't allowed.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                               example:
                                 {
                                   "type": "delete_message",
@@ -2515,6 +2524,15 @@ paths:
 
                                     The pre-edit topic for all of the messages with IDs in
                                     `message_ids`.
+
+                                    For clients that don't support the `empty_topic_name` [client capability][client-capabilities],
+                                    the `""` value is replaced with `"general chat"`.
+
+                                    **Changes**: Before 10.0 (feature level 331), `empty_topic_name`
+                                    client capability didn't exist and empty string as the topic name for
+                                    channel messages wasn't allowed.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                 subject:
                                   type: string
                                   description: |
@@ -2524,6 +2542,15 @@ paths:
 
                                     The post-edit topic for all of the messages with IDs in
                                     `message_ids`.
+
+                                    For clients that don't support the `empty_topic_name` [client capability][client-capabilities],
+                                    the `""` value is replaced with `"general chat"`.
+
+                                    **Changes**: Before 10.0 (feature level 331), `empty_topic_name`
+                                    client capability didn't exist and empty string as the topic name for
+                                    channel messages wasn't allowed.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                 topic_links:
                                   type: array
                                   items:

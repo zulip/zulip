@@ -347,7 +347,7 @@ class EmptyTopicNameTest(ZulipTestCase):
             apply_markdown=True,
             client_type_name="website",
             empty_topic_name=True,
-            event_types=["message"],
+            event_types=["message", "update_message"],
             last_connection_time=time.time(),
             queue_timeout=600,
             realm_id=hamlet.realm.id,
@@ -356,13 +356,22 @@ class EmptyTopicNameTest(ZulipTestCase):
         client = allocate_client_descriptor(queue_data)
         self.assertTrue(client.event_queue.empty())
 
-        self.send_stream_message(iago, "Denmark", topic_name="")
+        message_id = self.send_stream_message(iago, "Denmark", topic_name="")
         events = client.event_queue.contents()
         self.assertEqual(events[0]["message"]["subject"], "")
 
-        self.send_stream_message(iago, "Denmark", topic_name="general chat")
+        message_id_2 = self.send_stream_message(iago, "Denmark", topic_name="general chat")
         events = client.event_queue.contents()
         self.assertEqual(events[1]["message"]["subject"], "")
+
+        self.login_user(iago)
+        with self.captureOnCommitCallbacks(execute=True):
+            params = {"topic": "new topic name", "send_notification_to_new_thread": "false"}
+            self.client_patch(f"/json/messages/{message_id}", params)
+            self.client_patch(f"/json/messages/{message_id_2}", params)
+        events = client.event_queue.contents()
+        self.assertEqual(events[2]["orig_subject"], "")
+        self.assertEqual(events[3]["orig_subject"], "")
 
     def test_client_not_supports_empty_topic_name(self) -> None:
         iago = self.example_user("iago")
@@ -372,7 +381,7 @@ class EmptyTopicNameTest(ZulipTestCase):
             apply_markdown=True,
             client_type_name="zulip-mobile",
             empty_topic_name=False,
-            event_types=["message"],
+            event_types=["message", "update_message"],
             last_connection_time=time.time(),
             queue_timeout=600,
             realm_id=hamlet.realm.id,
@@ -381,13 +390,22 @@ class EmptyTopicNameTest(ZulipTestCase):
         client = allocate_client_descriptor(queue_data)
         self.assertTrue(client.event_queue.empty())
 
-        self.send_stream_message(iago, "Denmark", topic_name="")
+        message_id = self.send_stream_message(iago, "Denmark", topic_name="")
         events = client.event_queue.contents()
         self.assertEqual(events[0]["message"]["subject"], "general chat")
 
-        self.send_stream_message(iago, "Denmark", topic_name="general chat")
+        message_id_2 = self.send_stream_message(iago, "Denmark", topic_name="general chat")
         events = client.event_queue.contents()
         self.assertEqual(events[1]["message"]["subject"], "general chat")
+
+        self.login_user(iago)
+        with self.captureOnCommitCallbacks(execute=True):
+            params = {"topic": "new topic name", "send_notification_to_new_thread": "false"}
+            self.client_patch(f"/json/messages/{message_id}", params)
+            self.client_patch(f"/json/messages/{message_id_2}", params)
+        events = client.event_queue.contents()
+        self.assertEqual(events[2]["orig_subject"], "general chat")
+        self.assertEqual(events[3]["orig_subject"], "general chat")
 
     def test_fetch_messages(self) -> None:
         hamlet = self.example_user("hamlet")
