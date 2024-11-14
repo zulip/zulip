@@ -1624,6 +1624,19 @@ def process_user_topic_event(event: Mapping[str, Any], users: Iterable[int]) -> 
             client.add_event(event_copy)
 
 
+def process_stream_typing_notification_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if not client.accepts_event(event):
+                continue
+
+            event_copy = dict(event)
+            if event_copy.get("topic") == "" and not client.empty_topic_name:
+                event_copy["topic"] = "general chat"
+
+            client.add_event(event_copy)
+
+
 def process_notification(notice: Mapping[str, Any]) -> None:
     event: Mapping[str, Any] = notice["event"]
     users: list[int] | list[Mapping[str, Any]] = notice["users"]
@@ -1654,6 +1667,8 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         process_user_group_name_update_event(event, cast(list[int], users))
     elif event["type"] == "user_topic":
         process_user_topic_event(event, cast(list[int], users))
+    elif event["type"] == "typing" and event["message_type"] == "stream":
+        process_stream_typing_notification_event(event, cast(list[int], users))
     elif event["type"] == "cleanup_queue":
         # cleanup_event_queue may generate this event to forward cleanup
         # requests to the right shard.
