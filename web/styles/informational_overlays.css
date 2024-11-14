@@ -65,6 +65,13 @@
         /* keeps dividing line at same width for all tables in model. */
         width: calc(50% - 11px);
         text-align: right;
+
+        & .emoji {
+            height: var(--length-line-oversize-block);
+            width: var(--length-line-oversize-block);
+            margin: var(--length-line-oversize-block-margin-adjust) auto;
+            vertical-align: var(--line-fitted-vertical-align-offset-em);
+        }
     }
 
     .hotkey {
