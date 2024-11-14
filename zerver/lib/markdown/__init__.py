@@ -295,8 +295,8 @@ def rewrite_local_links_to_relative(db_data: DbData | None, link: str) -> str:
     """
 
     if db_data:
-        realm_url_prefix = db_data.realm_url + "/"
-        if link.startswith((realm_url_prefix + "#", realm_url_prefix + "user_uploads/")):
+        realm_url_prefix = db_data.realm_url
+        if link.startswith((realm_url_prefix + "/#", realm_url_prefix + "/user_uploads/")):
             return link.removeprefix(realm_url_prefix)
 
     return link
