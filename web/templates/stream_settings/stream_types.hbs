@@ -14,7 +14,7 @@
             {{> ../help_link_widget link="/help/channel-permissions" }}
         </label>
 
-        <div class="stream-privacy_choices prop-element" id="id_stream_privacy" data-setting-widget-type="radio-group" data-setting-choice-type="string">
+        <div class="stream-privacy_choices prop-element" id="{{prefix}}stream_privacy" data-setting-widget-type="radio-group" data-setting-choice-type="string">
             {{#each stream_privacy_policy_values}}
                 <div class="settings-radio-input-parent">
                     <label class="radio">
@@ -34,7 +34,7 @@
 
     <div class="default-stream">
         {{> ../settings/settings_checkbox
-          prefix="id_"
+          prefix=prefix
           setting_name="is_default_stream"
           is_checked=check_default_stream
           label=(t "Default channel for new users")
@@ -57,7 +57,7 @@
             <label class="dropdown-title">{{t 'Who can post to this channel'}}
                 {{> ../help_link_widget link="/help/stream-sending-policy" }}
             </label>
-            <select name="stream-post-policy" class="stream_post_policy_setting prop-element settings_select bootstrap-focus-style" id="id_stream_post_policy" data-setting-widget-type="number">
+            <select name="stream-post-policy" class="stream_post_policy_setting prop-element settings_select bootstrap-focus-style" id="{{prefix}}stream_post_policy" data-setting-widget-type="number">
                 {{#each stream_post_policy_values}}
                     <option value="{{this.code}}" {{#if (eq this.code ../stream_post_policy) }}selected{{/if}}>
                         {{ this.description}}
@@ -82,7 +82,7 @@
 
                     <select name="stream_message_retention_setting"
                       class="stream_message_retention_setting prop-element settings_select bootstrap-focus-style"
-                      id="id_message_retention_days"
+                      id="{{prefix}}message_retention_days"
                       data-setting-widget-type="message-retention-setting">
                         <option value="realm_default">{{t "Use organization level settings {org_level_message_retention_setting}" }}</option>
                         <option value="unlimited">{{t 'Retain forever' }}</option>
@@ -96,7 +96,7 @@
                         <input type="text" autocomplete="off"
                           name="stream-message-retention-days"
                           class="stream-message-retention-days message-retention-setting-custom-input time-limit-custom-input"
-                          id="stream_message_retention_custom_input" />
+                          id="{{prefix}}stream_message_retention_custom_input" />
                     </div>
                 </div>
             </div>
