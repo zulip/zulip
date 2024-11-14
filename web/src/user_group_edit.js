@@ -41,15 +41,15 @@ export let select_tab = "general";
 let group_list_widget;
 let group_list_toggler;
 
-function get_user_group_id(target) {
-    const $row = $(target).closest(
+function get_user_group_id($target) {
+    const $row = $target.closest(
         ".group-row, .user_group_settings_wrapper, .save-button, .group_settings_header",
     );
     return Number.parseInt($row.attr("data-group-id"), 10);
 }
 
-function get_user_group_for_target(target) {
-    const user_group_id = get_user_group_id(target);
+function get_user_group_for_target($target) {
+    const user_group_id = get_user_group_id($target);
     if (!user_group_id) {
         blueslip.error("Cannot find user group id for target");
         return undefined;
@@ -501,8 +501,8 @@ export function show_group_settings(group) {
     setup_group_settings(group);
 }
 
-export function open_group_edit_panel_for_row(group_row) {
-    const group = get_user_group_for_target(group_row);
+export function open_group_edit_panel_for_row($group_row) {
+    const group = get_user_group_for_target($group_row);
     show_group_settings(group);
 }
 
@@ -989,14 +989,14 @@ function parse_args_for_deactivation_banner(objections) {
 export function initialize() {
     $("#groups_overlay_container").on("click", ".group-row", function (e) {
         if ($(e.target).closest(".check, .user_group_settings_wrapper").length === 0) {
-            open_group_edit_panel_for_row(this);
+            open_group_edit_panel_for_row($(this));
         }
     });
 
     $("#groups_overlay_container").on("click", "#open_group_info_modal", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const user_group_id = get_user_group_id(e.target);
+        const user_group_id = get_user_group_id($(e.target));
         const user_group = user_groups.get_user_group_from_id(user_group_id);
         const template_data = {
             group_name: user_group.name,
@@ -1080,7 +1080,7 @@ export function initialize() {
     });
 
     function save_group_info(e) {
-        const group = get_user_group_for_target(e.currentTarget);
+        const group = get_user_group_for_target($(e.currentTarget));
 
         const url = `/json/user_groups/${group.id}`;
         let name;
@@ -1129,7 +1129,7 @@ export function initialize() {
             return;
         }
 
-        const user_group_id = get_user_group_id(e.target);
+        const user_group_id = get_user_group_id($(e.target));
         const user_group = user_groups.get_user_group_from_id(user_group_id);
         const $group_row = row_for_group_id(user_group_id);
         add_or_remove_from_group(user_group, $group_row);
