@@ -1623,6 +1623,25 @@ def process_user_group_name_update_event(event: Mapping[str, Any], users: Iterab
                 client.add_event(user_group_event)
 
 
+def process_user_topic_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    empty_topic_name_fallback_event: Mapping[str, Any] | dict[str, Any]
+    if event.get("topic_name") == "":
+        empty_topic_name_fallback_event = dict(event)
+        empty_topic_name_fallback_event["topic_name"] = Message.EMPTY_TOPIC_FALLBACK_NAME
+    else:
+        empty_topic_name_fallback_event = event
+
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if not client.accepts_event(event):
+                continue
+
+            if client.empty_topic_name:
+                client.add_event(event)
+            else:
+                client.add_event(empty_topic_name_fallback_event)
+
+
 def process_notification(notice: Mapping[str, Any]) -> None:
     event: Mapping[str, Any] = notice["event"]
     users: list[int] | list[Mapping[str, Any]] = notice["users"]
@@ -1651,6 +1670,8 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         # event sent for updating name separately for clients with different
         # capabilities.
         process_user_group_name_update_event(event, cast(list[int], users))
+    elif event["type"] == "user_topic":
+        process_user_topic_event(event, cast(list[int], users))
     elif event["type"] == "cleanup_queue":
         # cleanup_event_queue may generate this event to forward cleanup
         # requests to the right shard.
