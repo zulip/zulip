@@ -348,10 +348,11 @@ class EmptyTopicNameTest(ZulipTestCase):
             apply_markdown=True,
             client_type_name="website",
             empty_topic_name=True,
-            event_types=["message", "update_message", "delete_message", "user_topic"],
+            event_types=["message", "update_message", "delete_message", "user_topic", "typing"],
             last_connection_time=time.time(),
             queue_timeout=600,
             realm_id=hamlet.realm.id,
+            stream_typing_notifications=True,
             user_profile_id=hamlet.id,
         )
         client = allocate_client_descriptor(queue_data)
@@ -425,6 +426,24 @@ class EmptyTopicNameTest(ZulipTestCase):
         self.assertEqual(events[6]["topic_name"], "")
         self.assertEqual(events[7]["topic_name"], "")
 
+        params = dict(
+            type="stream",
+            op="start",
+            stream_id=str(denmark.id),
+            topic="",
+        )
+        self.api_post(hamlet, "/api/v1/typing", params)
+        params = dict(
+            type="stream",
+            op="start",
+            stream_id=str(verona.id),
+            topic=Message.EMPTY_TOPIC_FALLBACK_NAME,
+        )
+        self.api_post(hamlet, "/api/v1/typing", params)
+        events = client.event_queue.contents()
+        self.assertEqual(events[8]["topic"], "")
+        self.assertEqual(events[9]["topic"], "")
+
     def test_client_not_supports_empty_topic_name(self) -> None:
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
@@ -433,10 +452,11 @@ class EmptyTopicNameTest(ZulipTestCase):
             apply_markdown=True,
             client_type_name="zulip-mobile",
             empty_topic_name=False,
-            event_types=["message", "update_message", "delete_message", "user_topic"],
+            event_types=["message", "update_message", "delete_message", "user_topic", "typing"],
             last_connection_time=time.time(),
             queue_timeout=600,
             realm_id=hamlet.realm.id,
+            stream_typing_notifications=True,
             user_profile_id=hamlet.id,
         )
         client = allocate_client_descriptor(queue_data)
@@ -509,6 +529,24 @@ class EmptyTopicNameTest(ZulipTestCase):
         events = client.event_queue.contents()
         self.assertEqual(events[6]["topic_name"], Message.EMPTY_TOPIC_FALLBACK_NAME)
         self.assertEqual(events[7]["topic_name"], Message.EMPTY_TOPIC_FALLBACK_NAME)
+
+        params = dict(
+            type="stream",
+            op="start",
+            stream_id=str(denmark.id),
+            topic="",
+        )
+        self.api_post(hamlet, "/api/v1/typing", params)
+        params = dict(
+            type="stream",
+            op="start",
+            stream_id=str(verona.id),
+            topic=Message.EMPTY_TOPIC_FALLBACK_NAME,
+        )
+        self.api_post(hamlet, "/api/v1/typing", params)
+        events = client.event_queue.contents()
+        self.assertEqual(events[8]["topic"], Message.EMPTY_TOPIC_FALLBACK_NAME)
+        self.assertEqual(events[9]["topic"], Message.EMPTY_TOPIC_FALLBACK_NAME)
 
     def test_fetch_messages(self) -> None:
         hamlet = self.example_user("hamlet")
