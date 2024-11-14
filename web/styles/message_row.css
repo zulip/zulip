@@ -743,7 +743,7 @@ of the base style defined for a read-only textarea in dark mode. */
 }
 
 .edit-controls {
-    .btn-wrapper {
+    .button-wrapper {
         cursor: not-allowed;
     }
 }

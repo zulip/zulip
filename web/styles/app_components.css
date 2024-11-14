@@ -222,7 +222,7 @@ input::placeholder {
         }
     }
 
-    &.btn-warning {
+    &.button-warning {
         color: hsl(35deg 70% 56%);
         border-color: hsl(35deg 98% 84%);
 
@@ -237,7 +237,7 @@ input::placeholder {
         }
     }
 
-    &.btn-danger {
+    &.button-danger {
         color: hsl(357deg 64% 72%);
         border-color: hsl(4deg 56% 82%);
 

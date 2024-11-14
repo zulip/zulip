@@ -44,14 +44,14 @@
             <div class="bot-card-api-key-value-and-button no-select">
                 <!-- have the `.text-select` in `.no-select` so that the value doesn't have trailing whitespace. -->
                 <span class="bot-card-value text-select">{{api_key}}</span>
-                <button type="submit" class="button no-style btn-secondary bot-card-regenerate-bot-api-key tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Generate new API key' }}" data-user-id="{{user_id}}">
+                <button type="submit" class="button no-style button-secondary bot-card-regenerate-bot-api-key tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Generate new API key' }}" data-user-id="{{user_id}}">
                     <i class="fa fa-refresh" aria-hidden="true"></i>
                 </button>
             </div>
             <div class="bot-card-api-key-error text-error"></div>
         </div>
         {{else}}
-        <button class="button round btn-warning reactivate_bot" data-user-id="{{user_id}}">{{t "Reactivate bot" }}</button>
+        <button class="button round button-warning reactivate_bot" data-user-id="{{user_id}}">{{t "Reactivate bot" }}</button>
         {{/if}}
     </div>
 </li>

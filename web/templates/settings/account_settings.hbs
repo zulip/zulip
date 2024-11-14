@@ -52,13 +52,13 @@
 
             <div class="input-group">
                 <div id="deactivate_account_container" class="inline-block {{#if user_is_only_organization_owner}}disabled_setting_tooltip{{/if}}">
-                    <button type="submit" class="button rounded btn-danger" id="user_deactivate_account_button"
+                    <button type="submit" class="button rounded button-danger" id="user_deactivate_account_button"
                       {{#if user_is_only_organization_owner}}disabled="disabled"{{/if}}>
                         {{t 'Deactivate account' }}
                     </button>
                 </div>
                 {{#if owner_is_only_user_in_organization}}
-                    <button type="submit" class="button rounded btn-danger deactivate_realm_button">
+                    <button type="submit" class="button rounded button-danger deactivate_realm_button">
                         {{t 'Deactivate organization' }}
                     </button>
                 {{/if}}

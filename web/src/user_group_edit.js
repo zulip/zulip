@@ -1022,7 +1022,7 @@ export function initialize() {
         });
     });
 
-    $("#groups_overlay_container").on("click", ".group_settings_header .btn-danger", () => {
+    $("#groups_overlay_container").on("click", ".group_settings_header .button-danger", () => {
         const active_group_data = get_active_data();
         const group_id = active_group_data.id;
         const user_group = user_groups.get_user_group_from_id(group_id);
