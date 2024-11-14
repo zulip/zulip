@@ -1123,7 +1123,14 @@ li.top_left_scheduled_messages {
     }
 
     .sidebar-topic-name-inner {
-        display: block;
+        /* Clamp multi-line topics to two lines. */
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        /* Break overflowing words as necessary. */
+        overflow-wrap: break-word;
+
         line-height: var(--line-height-sidebar-topic-inner);
         margin: var(--spacing-top-bottom-sidebar-topic-inner) 0;
     }
