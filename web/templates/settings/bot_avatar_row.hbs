@@ -5,23 +5,23 @@
             <div class="bot-card-name">{{name}}</div>
             {{#if is_active}}
             <div class="edit-bot-buttons">
-                <button type="submit" class="btn open_edit_bot_form tippy-zulip-delayed-tooltip" data-sidebar-form="edit-bot" data-tippy-content="{{t 'Edit bot' }}" data-email="{{email}}">
+                <button type="submit" class="bootstrap-btn open_edit_bot_form tippy-zulip-delayed-tooltip" data-sidebar-form="edit-bot" data-tippy-content="{{t 'Edit bot' }}" data-email="{{email}}">
                     <i class="fa fa-pencil blue" aria-hidden="true"></i>
                 </button>
-                <a type="submit" download="{{zuliprc}}" class="btn download_bot_zuliprc tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Download zuliprc' }}" data-email="{{email}}">
+                <a type="submit" download="{{zuliprc}}" class="bootstrap-btn download_bot_zuliprc tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Download zuliprc' }}" data-email="{{email}}">
                     <i class="fa fa-download sea-green" aria-hidden="true"></i>
                 </a>
-                <button type="submit" id="copy_zuliprc" class="btn copy_zuliprc tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Copy zuliprc' }}">
+                <button type="submit" id="copy_zuliprc" class="bootstrap-btn copy_zuliprc tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Copy zuliprc' }}">
                     <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
                 </button>
-                <button type="submit" class="btn deactivate_bot danger-red tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Deactivate bot' }}" data-user-id="{{user_id}}">
+                <button type="submit" class="bootstrap-btn deactivate_bot danger-red tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Deactivate bot' }}" data-user-id="{{user_id}}">
                     <i class="fa fa-user-times" aria-hidden="true"></i>
                 </button>
-                <button type="submit" class="btn open_bots_subscribed_streams tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Subscribed channels' }}" data-user-id="{{user_id}}">
+                <button type="submit" class="bootstrap-btn open_bots_subscribed_streams tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Subscribed channels' }}" data-user-id="{{user_id}}">
                     <i class="fa fa-hashtag purple" aria-hidden="true"></i>
                 </button>
                 {{#if is_incoming_webhook_bot}}
-                <button type="submit" class="btn open-generate-integration-url-modal tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Generate URL for an integration'}}" data-api-key="{{api_key}}">
+                <button type="submit" class="bootstrap-btn open-generate-integration-url-modal tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Generate URL for an integration'}}" data-api-key="{{api_key}}">
                     <i class="fa fa-link steel-blue" aria-hidden="true"></i>
                 </button>
                 {{/if}}

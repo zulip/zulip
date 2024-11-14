@@ -1,5 +1,5 @@
 {{> ./dropdown_widget widget_name="recent-view-filter"}}
-<button data-filter="include_private" type="button" class="btn bootstrap-btn-default button-recent-filters {{#if is_spectator}}fake_disabled_button{{/if}}" role="checkbox" aria-checked="true">
+<button data-filter="include_private" type="button" class="bootstrap-btn bootstrap-btn-default button-recent-filters {{#if is_spectator}}fake_disabled_button{{/if}}" role="checkbox" aria-checked="true">
     {{#if filter_pm}}
     <i class="fa fa-check-square-o"></i>
     {{else}}
@@ -7,7 +7,7 @@
     {{/if}}
     {{t 'Include DMs' }}
 </button>
-<button data-filter="unread" type="button" class="btn bootstrap-btn-default button-recent-filters {{#if is_spectator}}fake_disabled_button{{/if}}" role="checkbox" aria-checked="false">
+<button data-filter="unread" type="button" class="bootstrap-btn bootstrap-btn-default button-recent-filters {{#if is_spectator}}fake_disabled_button{{/if}}" role="checkbox" aria-checked="false">
     {{#if filter_unread}}
     <i class="fa fa-check-square-o"></i>
     {{else}}
@@ -15,7 +15,7 @@
     {{/if}}
     {{t 'Unread' }}
 </button>
-<button data-filter="participated" type="button" class="btn bootstrap-btn-default button-recent-filters {{#if is_spectator}}fake_disabled_button{{/if}}" role="checkbox" aria-checked="false">
+<button data-filter="participated" type="button" class="bootstrap-btn bootstrap-btn-default button-recent-filters {{#if is_spectator}}fake_disabled_button{{/if}}" role="checkbox" aria-checked="false">
     {{#if filter_participated}}
     <i class="fa fa-check-square-o"></i>
     {{else}}

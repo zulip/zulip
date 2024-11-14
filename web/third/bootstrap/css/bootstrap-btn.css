@@ -31,7 +31,7 @@ THE SOFTWARE.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
  */
 
-.btn {
+.bootstrap-btn {
   display: inline-block;
   padding: 6px 12px;
   margin-bottom: 0;
@@ -50,27 +50,27 @@ THE SOFTWARE.
   border: 1px solid transparent;
   border-radius: 0px;
 }
-.btn:focus,
-.btn:active:focus,
-.btn.active:focus {
+.bootstrap-btn:focus,
+.bootstrap-btn:active:focus,
+.bootstrap-btn.active:focus {
   outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
-.btn:hover,
-.btn:focus {
+.bootstrap-btn:hover,
+.bootstrap-btn:focus {
   color: #333;
   text-decoration: none;
 }
-.btn:active,
-.btn.active {
+.bootstrap-btn:active,
+.bootstrap-btn.active {
   background-image: none;
   outline: 0;
   -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
           box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
 }
-.btn.disabled,
-.btn[disabled] {
+.bootstrap-btn.disabled,
+.bootstrap-btn[disabled] {
   pointer-events: none;
   cursor: not-allowed;
   -webkit-box-shadow: none;
