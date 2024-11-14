@@ -1,8 +1,21 @@
-It's easy to send Zulip messages from GitHub Actions! This is useful:
+# Zulip GitHub Actions integration
 
-  * If you want to report the success or failure of an Action to Zulip.
+It's easy to send Zulip messages from GitHub Actions!
+
+This is useful:
+
+  * If you want to report the success or failure of an action to Zulip.
+
   * If you want to send output from your actions to Zulip.
 
-Instructions are available [here](https://github.com/zulip/github-actions-zulip#readme).
+{start_tabs}
 
-See also the [GitHub integration](/integrations/doc/github).
+  1. See [Zulip GitHub Actions repository][instructions] for instructions.
+
+{end_tabs}
+
+### Related documentation
+
+* [GitHub integration](/integrations/doc/github).
+
+[instructions]: https://github.com/zulip/github-actions-zulip#readme
