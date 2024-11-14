@@ -1,3 +1,5 @@
+# Zulip Email integration
+
 You can send emails to Zulip! This is useful:
 
   * If you have an email that you want to discuss on Zulip
