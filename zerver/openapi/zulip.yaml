@@ -2768,8 +2768,19 @@ paths:
 
                                     Topic within the channel where the message is being typed.
 
-                                    **Changes**: New in Zulip 4.0 (feature level 58). Previously,
-                                    typing notifications were only for direct messages.
+                                    For clients that don't support the `empty_topic_name` [client capability][client-capabilities],
+                                    if the actual topic name is empty string, this field's value will instead
+                                    be the value of `realm_empty_topic_display_name` found in the
+                                    [`POST /register`](/api/register-queue) response.
+
+                                    **Changes**: Before 10.0 (feature level 334), `empty_topic_name`
+                                    client capability didn't exist and empty string as the topic name for
+                                    channel messages wasn't allowed.
+
+                                    New in Zulip 4.0 (feature level 58). Previously, typing notifications
+                                    were only for direct messages.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                               example:
                                 {
                                   "type": "typing",
@@ -20603,8 +20614,15 @@ paths:
                     Topic to which message is being typed. Required for the `"stream"` or `"channel"`
                     type. Ignored in the case of `"direct"` type.
 
-                    **Changes**: New in Zulip 4.0 (feature level 58). Previously, typing
-                    notifications were only for direct messages.
+                    Note: When the value of `realm_empty_topic_display_name` found in
+                    the [POST /register](/api/register-queue) response is used for this
+                    parameter, it is interpreted as an empty string.
+
+                    **Changes**: Before Zulip 10.0 (feature level 334), empty string
+                    was not a valid topic name for channel messages.
+
+                    New in Zulip 4.0 (feature level 58). Previously, typing notifications
+                    were only for direct messages.
                   type: string
                   example: typing notifications
               required:
