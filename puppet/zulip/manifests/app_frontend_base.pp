@@ -14,8 +14,20 @@ class zulip::app_frontend_base {
     # package already includes the client.
     include zulip::postgresql_client
   }
-  # For Slack import
-  zulip::safepackage { 'unzip': ensure => installed }
+  zulip::safepackage {
+    [
+      # For Slack import.
+      'unzip',
+      # Ensures `/etc/ldap/ldap.conf` exists; the default
+      # `TLS_CACERTDIR` specified there is necessary for LDAP
+      # authentication to work. This package is "Recommended" by
+      # `libldap` where is required by postgres, so has been on most
+      # Zulip servers by default; adding it here explicitly ensures it
+      # is available on those that don't include the database server.
+      'libldap-common'
+      ]:
+        ensure => installed,
+  }
 
   file { '/etc/nginx/zulip-include/app':
     require => Package[$zulip::common::nginx],
