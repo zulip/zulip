@@ -17,7 +17,6 @@ import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
-import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -46,7 +45,6 @@ import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
-import * as user_groups from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
@@ -234,37 +232,12 @@ export function stream_settings(sub: StreamSubscription): StreamSetting[] {
     });
 }
 
-function setup_dropdown(sub: StreamSubscription, slim_sub: StreamSubscription): void {
-    const can_remove_subscribers_group_widget = new dropdown_widget.DropdownWidget({
-        widget_name: "can_remove_subscribers_group",
-        get_options: () =>
-            user_groups.get_realm_user_groups_for_dropdown_list_widget(
-                "can_remove_subscribers_group",
-                "stream",
-            ),
-        item_click_callback(event, dropdown) {
-            dropdown.hide();
-            event.preventDefault();
-            event.stopPropagation();
-            can_remove_subscribers_group_widget.render();
-            settings_components.save_discard_stream_settings_widget_status_handler(
-                $(".advanced-configurations-container"),
-                slim_sub,
-            );
-        },
-        $events_container: $("#subscription_overlay .subscription_settings"),
-        default_id: sub.can_remove_subscribers_group,
-        unique_id_type: dropdown_widget.DataTypes.NUMBER,
-        on_mount_callback(dropdown) {
-            $(dropdown.popper).css("min-width", "300px");
-            $(dropdown.popper).find(".simplebar-content").css("width", "max-content");
-        },
+function setup_group_setting_widgets(sub: StreamSubscription): void {
+    settings_components.create_stream_group_setting_widget({
+        $pill_container: $("#id_can_remove_subscribers_group"),
+        setting_name: "can_remove_subscribers_group",
+        sub,
     });
-    settings_components.set_dropdown_setting_widget(
-        "can_remove_subscribers_group",
-        can_remove_subscribers_group_widget,
-    );
-    can_remove_subscribers_group_widget.setup();
 }
 
 export function show_settings_for(node: HTMLElement): void {
@@ -318,7 +291,7 @@ export function show_settings_for(node: HTMLElement): void {
     show_subscription_settings(sub);
     settings_org.set_message_retention_setting_dropdown(sub);
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
-    setup_dropdown(sub, slim_sub);
+    setup_group_setting_widgets(slim_sub);
 
     $("#channels_overlay_container").on(
         "click",

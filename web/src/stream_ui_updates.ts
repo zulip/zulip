@@ -278,10 +278,29 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         .find("input, select, button")
         .prop("disabled", !sub.can_change_stream_permissions);
 
+    const $permission_pill_container_elements =
+        $advanced_configurations_container.find(".pill-container");
+    $permission_pill_container_elements
+        .find(".input")
+        .prop("contenteditable", sub.can_change_stream_permissions);
+
     if (!sub.can_change_stream_permissions) {
         $general_settings_container.find(".default-stream").addClass("control-label-disabled");
+        $permission_pill_container_elements
+            .closest(".input-group")
+            .addClass("group_setting_disabled");
+        settings_components.disable_opening_typeahead_on_clicking_label(
+            $advanced_configurations_container,
+        );
         return;
     }
+
+    $permission_pill_container_elements
+        .closest(".input-group")
+        .removeClass("group_setting_disabled");
+    settings_components.enable_opening_typeahead_on_clicking_label(
+        $advanced_configurations_container,
+    );
 
     update_default_stream_and_stream_privacy_state($stream_settings);
 

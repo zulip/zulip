@@ -66,10 +66,10 @@
             </select>
         </div>
 
-        {{> ../dropdown_widget_with_label
-          widget_name=can_remove_subscribers_setting_widget_name
+        {{> ../settings/group_setting_value_pill_input
+          setting_name="can_remove_subscribers_group"
           label=(t 'Who can unsubscribe others from this channel')
-          value_type="number"}}
+          prefix=prefix }}
 
         {{#if (or is_owner is_stream_edit)}}
             <div>

@@ -1,6 +1,6 @@
 <div class="input-group">
     <label class="group-setting-label">{{label}}</label>
-    <div class="pill-container person_picker prop-element" id="id_{{setting_name}}" data-setting-widget-type="group-setting-type">
+    <div class="pill-container person_picker prop-element" id="{{#if prefix}}{{prefix}}{{else}}id_{{/if}}{{setting_name}}" data-setting-widget-type="group-setting-type">
         <div class="input" contenteditable="true" data-placeholder="{{t 'Add roles, groups or users' }}">
             {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
         </div>

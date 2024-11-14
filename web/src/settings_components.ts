@@ -29,6 +29,7 @@ import * as settings_data from "./settings_data.ts";
 import type {CustomProfileField, GroupSettingValue} from "./state_data.ts";
 import {current_user, realm, realm_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_settings_containers from "./stream_settings_containers.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import {stream_subscription_schema} from "./sub_store.ts";
 import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
@@ -477,7 +478,6 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_signup_announcements_stream_id", null],
     ["realm_zulip_update_announcements_stream_id", null],
     ["realm_default_code_block_language", null],
-    ["can_remove_subscribers_group", null],
     ["realm_can_access_all_users_group", null],
     ["realm_can_create_web_public_channel_group", null],
 ]);
@@ -856,9 +856,12 @@ export function check_stream_settings_property_changed(
     const current_val = get_stream_settings_property_value(property_name, sub);
     let proposed_val;
     switch (property_name) {
-        case "can_remove_subscribers_group":
-            proposed_val = get_dropdown_list_widget_setting_value($elem);
+        case "can_remove_subscribers_group": {
+            const pill_widget = get_group_setting_widget(property_name);
+            assert(pill_widget !== null);
+            proposed_val = get_group_setting_widget_value(pill_widget);
             break;
+        }
         case "message_retention_days":
             assert(elem instanceof HTMLSelectElement);
             proposed_val = get_message_retention_setting_value($(elem), false);
@@ -873,7 +876,7 @@ export function check_stream_settings_property_changed(
                 blueslip.error("Element refers to unknown property", {property_name});
             }
     }
-    return current_val !== proposed_val;
+    return !_.isEqual(current_val, proposed_val);
 }
 
 export function get_group_setting_widget_value(
@@ -1096,6 +1099,19 @@ export function populate_data_for_stream_settings_request(
                         ...data,
                         ...settings_data.get_request_data_for_stream_privacy(input_value),
                     };
+                    continue;
+                }
+
+                const stream_group_settings = new Set(["can_remove_subscribers_group"]);
+                if (stream_group_settings.has(property_name)) {
+                    const old_value = get_stream_settings_property_value(
+                        stream_settings_property_schema.parse(property_name),
+                        sub,
+                    );
+                    data[property_name] = JSON.stringify({
+                        new: input_value,
+                        old: old_value,
+                    });
                     continue;
                 }
 
@@ -1368,9 +1384,12 @@ function should_disable_save_button_for_group_settings(settings: string[]): bool
                 setting_name_without_prefix,
                 "realm",
             );
+        } else if (setting_name === "can_remove_subscribers_group") {
+            group_setting_config = group_permission_settings.get_group_permission_setting_config(
+                setting_name,
+                "stream",
+            );
         } else {
-            // We do not have any stream settings using the new UI currently,
-            // so we know that this block will be called for group setting only.
             group_setting_config = group_permission_settings.get_group_permission_setting_config(
                 setting_name,
                 "group",
@@ -1476,6 +1495,7 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["can_leave_group", null],
     ["can_manage_group", null],
     ["can_mention_group", null],
+    ["can_remove_subscribers_group", null],
     ["realm_can_add_custom_emoji_group", null],
     ["realm_can_create_groups", null],
     ["realm_can_create_public_channel_group", null],
@@ -1647,6 +1667,56 @@ export function create_realm_group_setting_widget({
         }
         save_discard_realm_settings_widget_status_handler($save_discard_widget_container);
     });
+}
+
+type stream_setting_name = "can_remove_subscribers_group";
+
+export function create_stream_group_setting_widget({
+    $pill_container,
+    setting_name,
+    sub,
+}: {
+    $pill_container: JQuery;
+    setting_name: stream_setting_name;
+    sub?: StreamSubscription;
+}): GroupSettingPillContainer {
+    const pill_widget = group_setting_pill.create_pills($pill_container, setting_name, "stream");
+    const opts: {
+        setting_name: string;
+        sub: StreamSubscription | undefined;
+        setting_type: "stream";
+    } = {
+        setting_name,
+        sub,
+        setting_type: "stream",
+    };
+    group_setting_pill.set_up_pill_typeahead({pill_widget, $pill_container, opts});
+
+    if (sub !== undefined) {
+        group_setting_widget_map.set(setting_name, pill_widget);
+    }
+
+    if (sub !== undefined) {
+        set_group_setting_widget_value(pill_widget, sub[setting_name]);
+        const $edit_container = stream_settings_containers.get_edit_container(sub);
+        const $subsection = $edit_container.find(".advanced-configurations-container");
+
+        pill_widget.onPillCreate(() => {
+            save_discard_stream_settings_widget_status_handler($subsection, sub);
+        });
+        pill_widget.onPillRemove(() => {
+            save_discard_stream_settings_widget_status_handler($subsection, sub);
+        });
+    } else {
+        const default_group_name = group_permission_settings.get_group_permission_setting_config(
+            setting_name,
+            "stream",
+        )!.default_group_name;
+        const default_group_id = user_groups.get_user_group_from_name(default_group_name)!.id;
+        set_group_setting_widget_value(pill_widget, default_group_id);
+    }
+
+    return pill_widget;
 }
 
 export function set_time_input_formatted_text(

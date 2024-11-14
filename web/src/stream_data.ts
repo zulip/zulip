@@ -9,7 +9,7 @@ import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import type {StateData} from "./state_data.ts";
+import type {GroupSettingValue, StateData} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import type {StreamPostPolicy} from "./stream_types.ts";
 import * as sub_store from "./sub_store.ts";
@@ -424,11 +424,11 @@ export function update_message_retention_setting(
     sub.message_retention_days = message_retention_days;
 }
 
-export function update_can_remove_subscribers_group_id(
+export function update_can_remove_subscribers_group(
     sub: StreamSubscription,
-    can_remove_subscribers_group_id: number,
+    can_remove_subscribers_group: GroupSettingValue,
 ): void {
-    sub.can_remove_subscribers_group = can_remove_subscribers_group_id;
+    sub.can_remove_subscribers_group = can_remove_subscribers_group;
 }
 
 export function receives_notifications(
@@ -569,7 +569,7 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
         return true;
     }
 
-    return user_groups.is_user_in_group(
+    return user_groups.is_user_in_setting_group(
         sub.can_remove_subscribers_group,
         people.my_current_user_id(),
     );

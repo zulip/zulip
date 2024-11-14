@@ -608,13 +608,15 @@ export function discard_stream_property_element_changes(
         sub,
     );
     switch (property_name) {
-        case "can_remove_subscribers_group":
-            assert(typeof property_value === "number");
-            settings_components.set_dropdown_list_widget_setting_value(
-                property_name,
-                property_value,
+        case "can_remove_subscribers_group": {
+            const pill_widget = settings_components.get_group_setting_widget(property_name);
+            assert(pill_widget !== null);
+            settings_components.set_group_setting_widget_value(
+                pill_widget,
+                group_setting_value_schema.parse(property_value),
             );
             break;
+        }
         case "stream_privacy": {
             assert(typeof property_value === "string");
             $elem.find(`input[value='${CSS.escape(property_value)}']`).prop("checked", true);
