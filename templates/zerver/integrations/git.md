@@ -1,4 +1,8 @@
+# Zulip Git integration
+
 Get Zulip notifications for your Git repositories!
+
+{start_tabs}
 
 1. {!create-an-incoming-webhook.md!}
 
@@ -8,24 +12,23 @@ Get Zulip notifications for your Git repositories!
 
 1. {!change-zulip-config-file.md!}
 
-    You may also need to change the value of `STREAM_NAME`.
+    Also update the value of `STREAM_NAME` to the name of your channel.
 
-    You can specify the branches that will be used for notifications by modifying
-    the `commit_notice_destination` function. By default,
-    pushes to the `main`, `master`, and `test-post-receive` branches will result in a
-    notification.
+    !!! tip ""
 
-1. Symlink `/usr/local/share/zulip/integrations/git/zulip_git_config.py`
-   to the `.git/hooks` directory of your Git repository.
+        Customize notification branches by editing the
+        `commit_notice_destination` function. By default,
+        pushes to the `main`, `master`, and `test-post-receive` branches
+        will result in a notification.
 
-1. Symlink `/usr/local/share/zulip/integrations/git/post-receive`
+1. Symlink both
+   `/usr/local/share/zulip/integrations/git/zulip_git_config.py`
+   and `/usr/local/share/zulip/integrations/git/post-receive`
    to the `.git/hooks` directory of your Git repository.
 
 !!! tip ""
 
-    You can test the plugin without changing your `main` branch by
-    pushing to the `test-post-receive` branch.
+    Use the `test-post-receive` branch to test the plugin without modifying
+    your main branch.
 
-{!congrats.md!}
-
-![Git bot message](/static/images/integrations/git/001.png)
+{end_tabs}
