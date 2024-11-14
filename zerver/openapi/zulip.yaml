@@ -2205,6 +2205,15 @@ paths:
                                   type: string
                                   description: |
                                     The name of the topic.
+
+                                    For clients that don't support the `empty_topic_name` [client capability][client-capabilities],
+                                    the `""` value is replaced with `"general chat"`.
+
+                                    **Changes**: Before 10.0 (feature level 331), `empty_topic_name`
+                                    client capability didn't exist and empty string as the topic name for
+                                    channel messages wasn't allowed.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                 last_updated:
                                   type: integer
                                   description: |

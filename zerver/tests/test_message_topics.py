@@ -5,8 +5,9 @@ import orjson
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.streams import do_change_stream_permission
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, UserMessage
+from zerver.models import Message, UserMessage, UserTopic
 from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -347,7 +348,7 @@ class EmptyTopicNameTest(ZulipTestCase):
             apply_markdown=True,
             client_type_name="website",
             empty_topic_name=True,
-            event_types=["message", "update_message"],
+            event_types=["message", "update_message", "user_topic"],
             last_connection_time=time.time(),
             queue_timeout=600,
             realm_id=hamlet.realm.id,
@@ -373,6 +374,34 @@ class EmptyTopicNameTest(ZulipTestCase):
         self.assertEqual(events[2]["orig_subject"], "")
         self.assertEqual(events[3]["orig_subject"], "")
 
+        # reset
+        self.send_stream_message(
+            iago, "Denmark", topic_name="", skip_capture_on_commit_callbacks=True
+        )
+        self.send_stream_message(
+            iago, "Verona", topic_name="general chat", skip_capture_on_commit_callbacks=True
+        )
+
+        self.login_user(hamlet)
+        denmark = get_stream("Denmark", hamlet.realm)
+        verona = get_stream("Verona", hamlet.realm)
+        with self.captureOnCommitCallbacks(execute=True):
+            do_set_user_topic_visibility_policy(
+                hamlet,
+                denmark,
+                "",
+                visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+            )
+            do_set_user_topic_visibility_policy(
+                hamlet,
+                verona,
+                "general chat",
+                visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+            )
+        events = client.event_queue.contents()
+        self.assertEqual(events[4]["topic_name"], "")
+        self.assertEqual(events[5]["topic_name"], "")
+
     def test_client_not_supports_empty_topic_name(self) -> None:
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
@@ -381,7 +410,7 @@ class EmptyTopicNameTest(ZulipTestCase):
             apply_markdown=True,
             client_type_name="zulip-mobile",
             empty_topic_name=False,
-            event_types=["message", "update_message"],
+            event_types=["message", "update_message", "user_topic"],
             last_connection_time=time.time(),
             queue_timeout=600,
             realm_id=hamlet.realm.id,
@@ -406,6 +435,34 @@ class EmptyTopicNameTest(ZulipTestCase):
         events = client.event_queue.contents()
         self.assertEqual(events[2]["orig_subject"], "general chat")
         self.assertEqual(events[3]["orig_subject"], "general chat")
+
+        # reset
+        self.send_stream_message(
+            iago, "Denmark", topic_name="", skip_capture_on_commit_callbacks=True
+        )
+        self.send_stream_message(
+            iago, "Verona", topic_name="general chat", skip_capture_on_commit_callbacks=True
+        )
+
+        self.login_user(hamlet)
+        denmark = get_stream("Denmark", hamlet.realm)
+        verona = get_stream("Verona", hamlet.realm)
+        with self.captureOnCommitCallbacks(execute=True):
+            do_set_user_topic_visibility_policy(
+                hamlet,
+                denmark,
+                "",
+                visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+            )
+            do_set_user_topic_visibility_policy(
+                hamlet,
+                verona,
+                "general chat",
+                visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+            )
+        events = client.event_queue.contents()
+        self.assertEqual(events[4]["topic_name"], "general chat")
+        self.assertEqual(events[5]["topic_name"], "general chat")
 
     def test_fetch_messages(self) -> None:
         hamlet = self.example_user("hamlet")
