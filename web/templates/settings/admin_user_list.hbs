@@ -36,18 +36,18 @@
     <td class="actions">
         <span class="user-status-settings">
             <span {{#if (and is_bot cannot_edit)}}class="tippy-zulip-tooltip"{{/if}} {{#if (and is_bot cannot_edit)}}data-tippy-content="{{t 'This bot cannot be edited.'}}"{{/if}}>
-                <button class="button rounded small btn-warning open-user-form tippy-zulip-delayed-tooltip" data-tippy-content="{{#if is_bot}}{{#unless cannot_edit}}{{t 'Edit bot' }}{{/unless}}{{else}}{{t 'Edit user' }}{{/if}}" data-user-id="{{user_id}}" {{#if cannot_edit}}disabled="disabled"{{/if}}>
+                <button class="button rounded small button-warning open-user-form tippy-zulip-delayed-tooltip" data-tippy-content="{{#if is_bot}}{{#unless cannot_edit}}{{t 'Edit bot' }}{{/unless}}{{else}}{{t 'Edit user' }}{{/if}}" data-user-id="{{user_id}}" {{#if cannot_edit}}disabled="disabled"{{/if}}>
                     <i class="fa fa-pencil" aria-hidden="true"></i>
                 </button>
             </span>
             {{#if is_active}}
             <span {{#if (and is_bot cannot_deactivate)}}class="tippy-zulip-tooltip"{{/if}} {{#if (and is_bot cannot_deactivate)}}data-tippy-content="{{t 'This bot cannot be deactivated.'}}"{{/if}}>
-                <button class="button rounded small btn-danger {{#unless (and is_bot cannot_deactivate) }}deactivate{{/unless}}" {{#if cannot_deactivate}}disabled="disabled"{{/if}}>
+                <button class="button rounded small button-danger {{#unless (and is_bot cannot_deactivate) }}deactivate{{/unless}}" {{#if cannot_deactivate}}disabled="disabled"{{/if}}>
                     <i class="fa fa-user-times" aria-hidden="true"></i>
                 </button>
             </span>
             {{else}}
-            <button class="button rounded small reactivate btn-warning">
+            <button class="button rounded small reactivate button-warning">
                 <i class="fa fa-user-plus" aria-hidden="true"></i>
             </button>
             {{/if}}

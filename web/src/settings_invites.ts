@@ -226,7 +226,7 @@ function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}):
             dialog_widget.close();
             $resend_button.prop("disabled", true);
             $resend_button.text($t({defaultMessage: "Sent!"}));
-            $resend_button.removeClass("resend btn-warning").addClass("sea-green");
+            $resend_button.removeClass("resend button-warning").addClass("sea-green");
         },
     });
 }
