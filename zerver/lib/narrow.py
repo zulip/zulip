@@ -371,8 +371,10 @@ class NarrowBuilder:
         assert self.user_profile is not None
 
         if operand == "home":
-            conditions = exclude_muting_conditions(self.user_profile, [])
-            return query.where(and_(*conditions))
+            conditions = exclude_muting_conditions(
+                self.user_profile, [NarrowParameter(operator="in", operand="home")]
+            )
+            return query.where(maybe_negate(and_(*conditions)))
         elif operand == "all":
             return query
 
