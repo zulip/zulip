@@ -717,7 +717,7 @@ export function initialize(): void {
         function (this: HTMLSelectElement) {
             const message_retention_setting_dropdown_value = this.value;
             settings_components.change_element_block_display_property(
-                "stream_message_retention_custom_input",
+                "id_stream_message_retention_custom_input",
                 message_retention_setting_dropdown_value === "custom_period",
             );
         },
