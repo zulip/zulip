@@ -1293,6 +1293,8 @@ function check_maximum_valid_value(
     if (
         property_name === "realm_message_content_edit_limit_seconds" ||
         property_name === "realm_message_content_delete_limit_seconds" ||
+        property_name === "realm_move_messages_between_streams_limit_seconds" ||
+        property_name === "realm_move_messages_within_stream_limit_seconds" ||
         property_name === "email_notifications_batching_period_seconds"
     ) {
         setting_value = parse_time_limit($custom_input_elem);
