@@ -40,7 +40,7 @@ type ListWidgetOpts<Key, Item = Key> = {
     name?: string;
     get_item: (key: Key) => Item;
     modifier_html: (item: Item, filter_value: string) => string;
-    init_sort?: string | SortingFunction<Item>;
+    init_sort?: string | string[] | SortingFunction<Item>;
     initially_descending_sort?: boolean;
     html_selector?: (item: Item) => JQuery;
     callback_after_render?: () => void;
@@ -70,7 +70,7 @@ export type ListWidget<Key, Item = Key> = BaseListWidget & {
     clear: () => void;
     set_filter_value: (value: string) => void;
     set_reverse_mode: (reverse_mode: boolean) => void;
-    set_sorting_function: (sorting_function: string | SortingFunction<Item>) => void;
+    set_sorting_function: (sorting_function: string | string[] | SortingFunction<Item>) => void;
     set_up_event_handlers: () => void;
     increase_rendered_offset: () => void;
     reduce_rendered_offset: () => void;
