@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-import json
 import os
 import re
 from subprocess import check_output
+
+import orjson
 
 LEGACY_STRINGS_MAP = {
     "<p>You are searching for messages that belong to more than one channel, which is not possible.</p>": "<p>You are searching for messages that belong to more than one stream, which is not possible.</p>",
@@ -200,8 +201,8 @@ def get_locales() -> list[str]:
 
 
 def get_translations(path: str) -> dict[str, str]:
-    with open(path) as raw_resource_file:
-        translations = json.load(raw_resource_file)
+    with open(path, "rb") as raw_resource_file:
+        translations = orjson.loads(raw_resource_file.read())
 
     return translations
 
@@ -226,9 +227,13 @@ def update_for_legacy_stream_translations(
     # Only replace file content if we've made any updates for legacy
     # translated strings.
     if number_of_updates > 0:
-        with open(path, "w") as f:
-            json.dump(updated_translations, f, ensure_ascii=False, indent=2, sort_keys=True)
-            f.write("\n")
+        with open(path, "wb") as f:
+            f.write(
+                orjson.dumps(
+                    updated_translations,
+                    option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS,
+                )
+            )
         print(f"Updated {number_of_updates} strings in: {path}")
 
 

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-import json
 import os
 import re
 from subprocess import check_output
+
+import orjson
 
 
 def get_json_filename(locale: str) -> str:
@@ -23,8 +24,8 @@ def get_locales() -> list[str]:
 
 
 def get_translation_stats(resource_path: str) -> dict[str, int]:
-    with open(resource_path) as raw_resource_file:
-        raw_info = json.load(raw_resource_file)
+    with open(resource_path, "rb") as raw_resource_file:
+        raw_info = orjson.loads(raw_resource_file.read())
 
     total = len(raw_info)
     not_translated = len([i for i in raw_info.items() if i[1] == ""])
@@ -41,8 +42,12 @@ for locale in get_locales():
         locale_paths.append(path)
 
 stats_path = os.path.join("locale", "mobile_info.json")
-with open(stats_path, "w") as f:
-    json.dump(translation_stats, f, indent=2, sort_keys=True)
-    f.write("\n")
+with open(stats_path, "wb") as f:
+    f.write(
+        orjson.dumps(
+            translation_stats,
+            option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS,
+        )
+    )
 
 print("Mobile stats file created at: " + stats_path)
