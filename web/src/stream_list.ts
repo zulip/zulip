@@ -851,7 +851,8 @@ export function initialize({
 }
 
 export function initialize_tippy_tooltips(): void {
-    tippy.default("#stream_filters li .subscription_block .stream-name", {
+    tippy.delegate("body", {
+        target: "#stream_filters li .subscription_block .stream-name",
         delay: LONG_HOVER_DELAY,
         onShow(instance) {
             const stream_id = stream_id_for_elt($(instance.reference).parents("li.narrow-filter"));
