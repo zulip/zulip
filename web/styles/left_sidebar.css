@@ -684,6 +684,11 @@ li.active-sub-filter {
        to appear out of alignment. This grid feature should
        only apply in the expanded-navigation view. */
     grid-auto-rows: var(--line-height-sidebar-row);
+    overflow: hidden;
+
+    &.rolling-in-out {
+        transition: max-height 0.5s ease;
+    }
 
     .left-sidebar-navigation-label-container {
         .left-sidebar-navigation-label {
@@ -974,9 +979,7 @@ li.top_left_scheduled_messages {
             grid-auto-rows: unset;
             /* When the navigation area is condensed, hide all
                the rows in the full navigation list... */
-            & .top_left_row {
-                display: none;
-            }
+            max-height: 0 !important;
             /* ...except when there is an active filter in place:
                that row should still be shown. */
             & .top_left_row.active-filter {

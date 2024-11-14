@@ -231,6 +231,11 @@ export function initialize_left_sidebar(): void {
     $("#left-sidebar-container").html(rendered_sidebar);
     // make sure home-view and left_sidebar order persists
     reorder_left_sidebar_navigation_list(user_settings.web_home_view);
+
+    $("#left-sidebar-navigation-list").css(
+        "max-height",
+        $("#left-sidebar-navigation-list").get(0)!.getBoundingClientRect().height,
+    );
 }
 
 export function initialize_right_sidebar(): void {

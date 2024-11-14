@@ -157,6 +157,7 @@ function toggle_condensed_navigation_area(): void {
         $views_label_icon.removeClass("rotate-icon-right");
         save_state(STATES.EXPANDED);
     }
+    $("#left-sidebar-navigation-list").addClass("rolling-in-out");
     resize.resize_stream_filters_container();
 }
 
@@ -267,4 +268,8 @@ export function initialize(): void {
             toggle_condensed_navigation_area();
         },
     );
+
+    $("body").on("transitionend", "#left-sidebar-navigation-list", () => {
+        $("#left-sidebar-navigation-list").removeClass("rolling-in-out");
+    });
 }
