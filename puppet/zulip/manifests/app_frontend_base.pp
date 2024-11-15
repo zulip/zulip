@@ -24,9 +24,9 @@ class zulip::app_frontend_base {
       # `libldap` where is required by postgres, so has been on most
       # Zulip servers by default; adding it here explicitly ensures it
       # is available on those that don't include the database server.
-      'libldap-common'
-      ]:
-        ensure => installed,
+      'libldap-common',
+    ]:
+      ensure => installed,
   }
 
   file { '/etc/nginx/zulip-include/app':
