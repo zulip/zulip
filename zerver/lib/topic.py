@@ -327,3 +327,11 @@ def maybe_rename_general_chat_to_empty_topic(topic_name: str) -> str:
     if topic_name == "general chat":
         topic_name = ""
     return topic_name
+
+
+def maybe_rename_empty_topic_to_general_chat(
+    topic_name: str, is_channel_message: bool, allow_empty_topic_name: bool
+) -> str:
+    if is_channel_message and topic_name == "" and not allow_empty_topic_name:
+        return "general chat"
+    return topic_name
