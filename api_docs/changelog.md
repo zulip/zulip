@@ -42,6 +42,10 @@ format used by the Zulip server that they are interacting with.
   boolean parameter to decide whether the topic names in the fetched messages
   can be empty strings.
 
+* [`GET /messages/{message_id}/history`](/api/get-message-history):
+  Added `allow_empty_topic_name` boolean parameter to decide whether the
+  topic names in the fetched message history objects can be empty strings.
+
 **Feature level 330**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
