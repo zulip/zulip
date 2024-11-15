@@ -705,8 +705,11 @@ export function initialize(): void {
         $(".dialog_submit_button").attr("data-stream-id", stream_id);
     });
 
-    $("#channels_overlay_container").on("click", ".stream-row", function (this: HTMLElement) {
+    $("#channels_overlay_container").on("click", ".stream-row", function (this: HTMLElement, e) {
         if ($(this).closest(".check, .subscription_settings").length === 0) {
+            if ($(e.target).closest(".subscriber-count").length === 1) {
+                stream_edit_toggler.set_select_tab("subscribers");
+            }
             open_edit_panel_for_row(this);
         }
     });
