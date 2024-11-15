@@ -327,12 +327,12 @@
         border-color: var(--color-message-content-container-border-focus);
     }
 
-    &:has(.new_message_textarea.over_limit),
-    &:has(.new_message_textarea.over_limit:focus) {
+    &:has(.new_message_textarea.over-limit),
+    &:has(.new_message_textarea.over-limit:focus) {
         box-shadow: 0 0 0 1pt hsl(0deg 76% 65%);
     }
 
-    &:has(.new_message_textarea.over_limit.flash) {
+    &:has(.new_message_textarea.over-limit.flash) {
         animation: message-limit-flash 0.5s ease-in-out 3;
     }
 
@@ -472,7 +472,7 @@
     margin-top: auto;
     padding: 3px 3px 3px 0;
 
-    &.over_limit {
+    &.over-limit {
         color: var(--color-limit-indicator-over-limit);
         font-weight: bold;
     }

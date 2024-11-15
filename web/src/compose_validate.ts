@@ -727,8 +727,8 @@ export function check_overflow_text(): number {
     const $indicator = $("#compose-limit-indicator");
 
     if (text.length > max_length) {
-        $indicator.addClass("over_limit");
-        $("textarea#compose-textarea").addClass("over_limit");
+        $indicator.addClass("over-limit");
+        $("textarea#compose-textarea").addClass("over-limit");
         $indicator.html(
             render_compose_limit_indicator({
                 remaining_characters,
@@ -736,8 +736,8 @@ export function check_overflow_text(): number {
         );
         set_message_too_long(true);
     } else if (remaining_characters <= 900) {
-        $indicator.removeClass("over_limit");
-        $("textarea#compose-textarea").removeClass("over_limit");
+        $indicator.removeClass("over-limit");
+        $("textarea#compose-textarea").removeClass("over-limit");
         $indicator.html(
             render_compose_limit_indicator({
                 remaining_characters,
@@ -746,7 +746,7 @@ export function check_overflow_text(): number {
         set_message_too_long(false);
     } else {
         $indicator.text("");
-        $("textarea#compose-textarea").removeClass("over_limit");
+        $("textarea#compose-textarea").removeClass("over-limit");
 
         set_message_too_long(false);
     }
