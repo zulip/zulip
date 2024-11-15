@@ -686,3 +686,44 @@ class EmptyTopicNameTest(ZulipTestCase):
         )
         data = self.assert_json_success(result)
         self.assertEqual(data["message"]["edit_history"][0]["topic"], "")
+
+    def test_get_message_edit_history(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        message_id = self.send_stream_message(hamlet, "Denmark", topic_name="")
+        message_id_2 = self.send_stream_message(
+            hamlet, "Denmark", topic_name=Message.EMPTY_TOPIC_FALLBACK_NAME
+        )
+
+        params = {"topic": "new topic name"}
+        result = self.client_patch(f"/json/messages/{message_id}", params)
+        self.assert_json_success(result)
+        result = self.client_patch(f"/json/messages/{message_id_2}", params)
+        self.assert_json_success(result)
+
+        params = {"allow_empty_topic_name": "false"}
+        result = self.client_get(f"/json/messages/{message_id}/history", params)
+        data = self.assert_json_success(result)
+        self.assertEqual(data["message_history"][0]["topic"], Message.EMPTY_TOPIC_FALLBACK_NAME)
+        self.assertEqual(
+            data["message_history"][1]["prev_topic"], Message.EMPTY_TOPIC_FALLBACK_NAME
+        )
+
+        result = self.client_get(f"/json/messages/{message_id_2}/history", params)
+        data = self.assert_json_success(result)
+        self.assertEqual(data["message_history"][0]["topic"], Message.EMPTY_TOPIC_FALLBACK_NAME)
+        self.assertEqual(
+            data["message_history"][1]["prev_topic"], Message.EMPTY_TOPIC_FALLBACK_NAME
+        )
+
+        params = {"allow_empty_topic_name": "true"}
+        result = self.client_get(f"/json/messages/{message_id}/history", params)
+        data = self.assert_json_success(result)
+        self.assertEqual(data["message_history"][0]["topic"], "")
+        self.assertEqual(data["message_history"][1]["prev_topic"], "")
+
+        result = self.client_get(f"/json/messages/{message_id_2}/history", params)
+        data = self.assert_json_success(result)
+        self.assertEqual(data["message_history"][0]["topic"], "")
+        self.assertEqual(data["message_history"][1]["prev_topic"], "")

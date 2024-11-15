@@ -23,13 +23,16 @@ from zerver.lib.message import (
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.topic import maybe_rename_empty_topic_to_general_chat
 from zerver.lib.typed_endpoint import OptionalTopic, PathOnly, typed_endpoint
 from zerver.lib.types import EditHistoryEvent, FormattedEditHistoryEvent
 from zerver.models import Message, UserProfile
 
 
 def fill_edit_history_entries(
-    raw_edit_history: list[EditHistoryEvent], message: Message
+    raw_edit_history: list[EditHistoryEvent],
+    message: Message,
+    allow_empty_topic_name: bool,
 ) -> list[FormattedEditHistoryEvent]:
     """
     This fills out the message edit history entries from the database
@@ -39,7 +42,10 @@ def fill_edit_history_entries(
     """
     prev_content = message.content
     prev_rendered_content = message.rendered_content
-    prev_topic_name = message.topic_name()
+    is_channel_message = message.is_stream_message()
+    prev_topic_name = maybe_rename_empty_topic_to_general_chat(
+        message.topic_name(), is_channel_message, allow_empty_topic_name
+    )
 
     # Make sure that the latest entry in the history corresponds to the
     # message's last edit time
@@ -58,7 +64,9 @@ def fill_edit_history_entries(
         }
 
         if "prev_topic" in edit_history_event:
-            prev_topic_name = edit_history_event["prev_topic"]
+            prev_topic_name = maybe_rename_empty_topic_to_general_chat(
+                edit_history_event["prev_topic"], is_channel_message, allow_empty_topic_name
+            )
             formatted_entry["prev_topic"] = prev_topic_name
 
         # Fill current values for content/rendered_content.
@@ -99,6 +107,7 @@ def get_message_edit_history(
     user_profile: UserProfile,
     *,
     message_id: PathOnly[NonNegativeInt],
+    allow_empty_topic_name: Json[bool] = False,
 ) -> HttpResponse:
     if not user_profile.realm.allow_edit_history:
         raise JsonableError(_("Message edit history is disabled in this organization"))
@@ -111,7 +120,9 @@ def get_message_edit_history(
         raw_edit_history = []
 
     # Fill in all the extra data that will make it usable
-    message_edit_history = fill_edit_history_entries(raw_edit_history, message)
+    message_edit_history = fill_edit_history_entries(
+        raw_edit_history, message, allow_empty_topic_name
+    )
     return json_success(request, data={"message_history": list(reversed(message_edit_history))})
 
 
