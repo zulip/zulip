@@ -7310,6 +7310,21 @@ paths:
         [edit-settings]: /help/view-a-messages-edit-history
       parameters:
         - $ref: "#/components/parameters/MessageId"
+        - name: allow_empty_topic_name
+          in: query
+          description: |
+            Whether the topic names i.e. `topic` and `prev_topic` fields in
+            the `message_history` objects returned can be empty string.
+
+            If `false`, the value of `realm_empty_topic_display_name`
+            found in the [`POST /register`](/api/register-queue) response is
+            returned replacing the empty string as the topic name.
+
+            **Changes**: New in Zulip 10.0 (feature level 334).
+          schema:
+            type: boolean
+            default: false
+          example: true
       x-response-description: |
         Please note that the original message's snapshot only contains the fields
         `topic`, `content`, `rendered_content`, `timestamp` and `user_id`. This
