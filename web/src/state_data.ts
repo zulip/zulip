@@ -7,6 +7,7 @@ import {
     never_subscribed_stream_schema,
     stream_schema,
 } from "./stream_types.ts";
+import {group_setting_value_schema} from "./types.ts";
 import {user_settings_schema} from "./user_settings.ts";
 import {user_status_schema} from "./user_status_types.ts";
 
@@ -126,13 +127,6 @@ export const server_emoji_schema = z.object({
 });
 
 export const realm_emoji_map_schema = z.record(server_emoji_schema);
-
-export const anonymous_group_schema = z.object({
-    direct_subgroups: z.array(z.number()),
-    direct_members: z.array(z.number()),
-});
-
-export const group_setting_value_schema = z.union([z.number(), anonymous_group_schema]);
 
 export type GroupSettingValue = z.infer<typeof group_setting_value_schema>;
 
