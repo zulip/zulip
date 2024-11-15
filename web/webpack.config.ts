@@ -167,12 +167,7 @@ const config = (
                         ignoreHelpers: true,
                         // Tell webpack not to explicitly require these.
                         knownHelpers: [
-                            "if",
-                            "unless",
-                            "each",
-                            "with",
                             // The ones below are defined in web/src/templates.js
-                            "plural",
                             "eq",
                             "and",
                             "or",
@@ -180,6 +175,7 @@ const config = (
                             "t",
                             "tr",
                             "rendered_markdown",
+                            "numberFormat",
                             "tooltip_hotkey_hints",
                             "popover_hotkey_hints",
                         ],
