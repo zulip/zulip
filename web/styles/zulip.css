@@ -2119,3 +2119,10 @@ body:not(.hide-left-sidebar) {
 .empty-topic-display {
     font-style: italic;
 }
+
+.private_message_header_name {
+    i.zulip-icon-bot {
+        padding-left: 0.1em;
+        vertical-align: -0.2em;
+    }
+}

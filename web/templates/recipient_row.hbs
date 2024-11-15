@@ -98,7 +98,7 @@
             {{~#tr}}You and <z-user-names></z-user-names>
             {{#*inline "z-user-names"}}
                 {{#each recipient_users}}
-                    {{~full_name}}{{#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{/if}}{{#unless @last}}, {{/unless~}}
+                    {{~full_name}}{{#if is_bot}}<i class="zulip-icon zulip-icon-bot header_zulip_bot" aria-label="{{t 'Bot' }}"></i>{{/if}}{{#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{/if}}{{#unless @last}}, {{/unless~}}
                 {{/each}}
             {{/inline}}
             {{/tr~}}
