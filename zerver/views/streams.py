@@ -80,6 +80,7 @@ from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.topic import (
     get_topic_history_for_public_stream,
     get_topic_history_for_stream,
+    maybe_rename_general_chat_to_empty_topic,
     messages_for_topic,
 )
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
@@ -965,6 +966,7 @@ def delete_in_topic(
     topic_name: str,
 ) -> HttpResponse:
     stream, ignored_sub = access_stream_by_id(user_profile, stream_id)
+    topic_name = maybe_rename_general_chat_to_empty_topic(topic_name)
 
     messages = messages_for_topic(
         user_profile.realm_id, assert_is_not_none(stream.recipient_id), topic_name
