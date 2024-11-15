@@ -179,7 +179,10 @@ const config = (
                             "tooltip_hotkey_hints",
                             "popover_hotkey_hints",
                         ],
-                        precompileOptions: {strict: true},
+                        precompileOptions: {
+                            knownHelpersOnly: true,
+                            strict: true,
+                        },
                         preventIndent: true,
                         // This replaces relative image resources with
                         // a computed require() path to them, so their
