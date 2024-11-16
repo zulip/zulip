@@ -28,7 +28,7 @@
 
     {{#if ask_to_announce_stream}}
         <div id="announce-new-stream">
-            {{>announce_stream_checkbox }}
+            {{>announce_stream_checkbox . }}
         </div>
     {{/if}}
 
@@ -78,7 +78,7 @@
                         {{> ../help_link_widget link="/help/message-retention-policy" }}
                     </label>
 
-                    {{> ../settings/upgrade_tip_widget}}
+                    {{> ../settings/upgrade_tip_widget .}}
 
                     <select name="stream_message_retention_setting"
                       class="stream_message_retention_setting prop-element settings_select bootstrap-focus-style"

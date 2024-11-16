@@ -19,7 +19,7 @@
         {{this.operator}}
         {{~#each this.users}}
             {{#if this.valid_user}}
-                {{> user_pill}}
+                {{> user_pill .}}
             {{else}}
                 {{this.operand}}
             {{/if}}

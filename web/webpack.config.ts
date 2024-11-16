@@ -182,6 +182,7 @@ const config = (
                         precompileOptions: {
                             knownHelpersOnly: true,
                             strict: true,
+                            explicitPartialContext: true,
                         },
                         preventIndent: true,
                         // This replaces relative image resources with

@@ -5,7 +5,7 @@
                 <h1 class="modal__title dialog_heading">
                     {{{ heading_text }}}
                     {{#if link}}
-                    {{> help_link_widget }}
+                    {{> help_link_widget . }}
                     {{/if}}
                 </h1>
                 <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>

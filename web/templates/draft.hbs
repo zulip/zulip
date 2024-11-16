@@ -5,7 +5,7 @@
             <div class="message-header-contents" style="background: {{recipient_bar_color}};">
                 <div class="message_label_clickable stream_label">
                     <span class="stream-privacy-modified-color-{{stream_id}} stream-privacy filter-icon"  style="color: {{stream_privacy_icon_color}}">
-                        {{> stream_privacy}}
+                        {{> stream_privacy .}}
                     </span>
                     {{#if stream_name}}
                         {{stream_name}}

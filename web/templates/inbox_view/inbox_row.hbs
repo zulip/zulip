@@ -1,5 +1,5 @@
 {{#if is_stream}}
-    {{> inbox_stream_header_row}}
+    {{> inbox_stream_header_row .}}
 {{else}}
     <div id="inbox-row-conversation-{{conversation_key}}" class="inbox-row {{#if is_hidden}}hidden_by_filters{{/if}} {{#if is_collapsed}}collapsed_container{{/if}}" tabindex="0" data-col-index="{{ column_indexes.RECIPIENT }}">
         <div class="inbox-focus-border">
