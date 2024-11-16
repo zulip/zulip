@@ -11,6 +11,7 @@ from unittest.mock import patch
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.management.base import CommandError
 from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
@@ -2199,7 +2200,7 @@ class RealmImportExportTest(ExportFile):
 
         with (
             patch("zerver.lib.import_realm.ZULIP_VERSION", "8.0"),
-            self.assertRaises(Exception) as e,
+            self.assertRaises(CommandError) as e,
             self.assertLogs(level="INFO"),
         ):
             do_import_realm(
@@ -2207,9 +2208,9 @@ class RealmImportExportTest(ExportFile):
                 "test-zulip",
             )
         expected_error_message = (
-            "Export was generated on a different Zulip major version.\n"
-            f"Export={ZULIP_VERSION}\n"
-            "Server=8.0"
+            "Error: Export was generated on a different Zulip major version.\n"
+            f"Export version: {ZULIP_VERSION}\n"
+            "Server version: 8.0"
         )
         self.assertEqual(expected_error_message, str(e.exception))
 
