@@ -1,5 +1,5 @@
 {{#unless realm_has_description}}
-    {{#> modal_banner }}
+    {{#> modal_banner . }}
         <p class="banner_message">
             {{#tr}}
                 You may want to <z-link>configure</z-link> your organization's login page prior to inviting users.
@@ -8,7 +8,7 @@
         </p>
     {{/modal_banner}}
 {{else unless realm_has_user_set_icon}}
-    {{#> modal_banner }}
+    {{#> modal_banner . }}
         <p class="banner_message">
             {{#tr}}
                 You may want to <z-link>upload a profile picture</z-link> for your organization prior to inviting users.
@@ -18,7 +18,7 @@
     {{/modal_banner}}
 {{/unless}}
 {{#unless realm_has_custom_profile_fields}}
-    {{#> modal_banner }}
+    {{#> modal_banner . }}
         <p class="banner_message">
             {{#tr}}
                 You may want to configure <z-link-1>default new user settings</z-link-1> and <z-link-2>custom profile fields</z-link-2> prior to inviting users.

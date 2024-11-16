@@ -1,7 +1,7 @@
 <div class="user-status-content-wrapper">
     <div class="tippy-zulip-tooltip" data-tippy-content="{{t 'Select emoji' }}" data-tippy-placement="top" aria-label="{{t 'Select emoji' }}" id="selected_emoji">
         <div class="status-emoji-wrapper" tabindex="0">
-            {{> status_emoji_selector}}
+            {{> status_emoji_selector .}}
         </div>
     </div>
     <input type="text" class="user-status modal_text_input" placeholder="{{t 'Your status' }}" maxlength="60"/>

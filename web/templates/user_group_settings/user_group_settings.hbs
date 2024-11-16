@@ -59,7 +59,7 @@
                     </h3>
                 </div>
                 <div class="creator_details group_details_box_subsection">
-                    {{> ../creator_details }}
+                    {{> ../creator_details . }}
                 </div>
                 <div class="group_details_box_subsection">
                     {{t "User group ID"}}<br/>
@@ -70,7 +70,7 @@
 
         <div class="group_member_settings group_setting_section" data-group-section="members">
             <div class="edit_members_for_user_group">
-                {{> user_group_members}}
+                {{> user_group_members .}}
             </div>
         </div>
     </div>

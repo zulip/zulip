@@ -1,6 +1,6 @@
 <div id="recent_view_filter_buttons" class="button-group" role="group">
     <div id="recent_filters_group">
-        {{> recent_view_filters}}
+        {{> recent_view_filters .}}
     </div>
     <div class="search_group" role="group">
         <input type="text" id="recent_view_search" class="filter_text_input" value="{{ search_val }}" autocomplete="off" placeholder="{{t 'Filter topics (t)' }}" />

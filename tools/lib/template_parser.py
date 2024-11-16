@@ -153,7 +153,7 @@ def tokenize(text: str, template_format: str | None = None) -> list[Token]:
                 kind = "handlebars_partial"
             elif looking_at_handlebars_partial_block():
                 s = get_handlebars_partial(text, state.i)
-                tag = s[5:-2]
+                tag = s[5:-2].split(None, 1)[0]
                 kind = "handlebars_partial_block"
             elif looking_at_html_start():
                 s = get_html_tag(text, state.i)

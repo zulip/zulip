@@ -5,7 +5,7 @@
     </h4>
     <div class="subscriber_list_settings">
         <div class="subscriber_list_add float-left">
-            {{> add_subscribers_form}}
+            {{> add_subscribers_form .}}
             <div class="stream_subscription_request_result"></div>
         </div>
         <div class="clear-float"></div>
@@ -17,7 +17,7 @@
         </span>
     </div>
     <div class="subscriber-list-box">
-        {{> stream_members_table}}
+        {{> stream_members_table .}}
     </div>
 </div>
 {{/render_subscribers}}

@@ -6,9 +6,9 @@
             {{#*inline "z-link"}}<a href="/help/configure-default-new-user-settings" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
         {{/tr}}
     </div>
-    {{> preferences prefix="realm_" for_realm_settings=true full_name=full_name}}
+    {{> preferences . prefix="realm_" for_realm_settings=true full_name=full_name}}
 
-    {{> notification_settings prefix="realm_" for_realm_settings=true}}
+    {{> notification_settings . prefix="realm_" for_realm_settings=true}}
 
     <div class="privacy_settings settings-subsection-parent">
         <div class="subsection-header inline-block">

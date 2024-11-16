@@ -7,7 +7,7 @@
                 <a href="{{pm_url}}" class="recent-view-table-link">{{t "Direct messages" }}</a>
                 {{else}}
                 <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
-                    {{> stream_privacy }}
+                    {{> stream_privacy . }}
                 </span>
                 <a href="{{topic_url}}" class="recent-view-table-link">{{stream_name}}</a>
                 {{/if}}

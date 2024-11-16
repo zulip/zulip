@@ -11,19 +11,19 @@
             {{else if subscribed }}
                 {{#tr}}
                     You subscribed to <z-stream-name></z-stream-name>. <channel-settings-link></channel-settings-link>
-                    {{#*inline "z-stream-name"}}{{> stream_privacy }} {{stream_name}}{{/inline}}
+                    {{#*inline "z-stream-name"}}{{> stream_privacy . }} {{stream_name}}{{/inline}}
                     {{#*inline "channel-settings-link"}} <a href="#channels/{{stream_id}}/{{stream_name}}/personal">{{t 'Manage channel settings'}}</a>{{/inline}}
                 {{/tr}}
             {{else if just_unsubscribed }}
                 {{#tr}}
                     You unsubscribed from <z-stream-name></z-stream-name>. <channel-settings-link></channel-settings-link>
-                    {{#*inline "z-stream-name"}}{{> stream_privacy }} {{stream_name}}{{/inline}}
+                    {{#*inline "z-stream-name"}}{{> stream_privacy . }} {{stream_name}}{{/inline}}
                     {{#*inline "channel-settings-link"}} <a href="#channels/{{stream_id}}/{{stream_name}}/general">{{t 'View in channel settings'}}</a>{{/inline}}
                 {{/tr}}
             {{else}}
                 {{#tr}}
                     You are not subscribed to <z-stream-name></z-stream-name>.
-                    {{#*inline "z-stream-name"}}{{> stream_privacy }} {{stream_name}}{{/inline}}
+                    {{#*inline "z-stream-name"}}{{> stream_privacy . }} {{stream_name}}{{/inline}}
                 {{/tr}}
             {{/if}}
         </span>

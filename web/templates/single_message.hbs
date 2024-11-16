@@ -10,7 +10,7 @@
     <div class="unread_marker message_unread_marker"><div class="unread-marker-fill"></div></div>
     <div class="messagebox">
         <div class="messagebox-content {{#if status_message}}is-me-message{{/if}}">
-            {{> message_body}}
+            {{> message_body .}}
             {{!-- message_edit_form.hbs is inserted here when editing a message. --}}
         </div>
     </div>
