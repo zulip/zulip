@@ -234,6 +234,7 @@ $user_status_emoji_width: 24px;
     color: var(--color-text-default);
     border-radius: 4px;
     padding-left: 4px;
+    margin-right: var(--width-simplebar-scroll-hover);
 
     &:hover {
         background-color: var(--color-buddy-list-highlighted-user);
