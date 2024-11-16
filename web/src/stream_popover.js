@@ -1,4 +1,3 @@
-import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
@@ -213,8 +212,26 @@ function build_stream_popover(opts) {
                 e.stopPropagation();
             });
 
-            new ClipboardJS($popper.find(".copy_stream_link")[0]).on("success", () => {
-                popover_menus.hide_current_popover_if_visible(instance);
+            $popper.find(".copy_stream_link").on("click", (e) => {
+                const $linkElement = $(e.currentTarget);
+                const plainText = $linkElement.data("clipboard-text");
+                const streamName = $linkElement.closest("ul").data("name");
+                const htmlText = `<a href="${plainText}">#${streamName}</a>`;
+
+                navigator.clipboard
+                    .write([
+                        new ClipboardItem({
+                            "text/plain": new Blob([plainText], {type: "text/plain"}),
+                            "text/html": new Blob([htmlText], {type: "text/html"}),
+                        }),
+                    ])
+                    .then(() => {
+                        // Hide the popover and show a success message
+                        popover_menus.hide_current_popover_if_visible(instance);
+                    });
+
+                e.preventDefault();
+                e.stopPropagation();
             });
         },
         onHidden() {
