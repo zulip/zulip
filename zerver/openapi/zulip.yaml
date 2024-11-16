@@ -5231,6 +5231,60 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event containing details of a newly pinned view.
+
+                                **Changes**: New in Zulip 10.0 (feature level 324).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - pinned_views
+                                op:
+                                  type: string
+                                  enum:
+                                    - add
+                                pinned_view:
+                                  $ref: "#/components/schemas/PinnedView"
+                              example:
+                                type: "pinned_views"
+                                op: "add"
+                                pinned_view:
+                                  view_id: "inbox"
+                                  location: 2
+                                  name: null
+                                  url_hash: null
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event containing details of a pinned view update.
+
+                                **Changes**: New in Zulip 10.0 (feature level 324).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - pinned_views
+                                op:
+                                  type: string
+                                  enum:
+                                    - update
+                                pinned_view:
+                                  $ref: "#/components/schemas/PinnedView"
+                              example:
+                                type: "pinned_views"
+                                op: "update"
+                                pinned_view:
+                                  view_id: "inbox"
+                                  location: 2
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event containing details of a newly created saved snippet.
 
                                 **Changes**: New in Zulip 10.0 (feature level 297).
@@ -6033,6 +6087,216 @@ paths:
                         "code": "BAD_REQUEST",
                         "result": "error",
                         "msg": "Draft does not exist",
+                      }
+  /pinned_views:
+    get:
+      operationId: get-pinned-views
+      tags: ["pinned_views"]
+      summary: Get all pinned views
+      description: |
+        Fetch all pinned views for the current user.
+
+        **Changes**: New in Zulip 10.0 (feature level 324).
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      pinned_views:
+                        type: array
+                        description: |
+                          An array of dictionaries containing the user's pinned views.
+                        items:
+                          $ref: "#/components/schemas/PinnedView"
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "pinned_views":
+                          [
+                            {
+                              "view_id": "inbox",
+                              "location": 2,
+                              "name": null,
+                              "url_hash": null,
+                            },
+                          ],
+                      }
+    post:
+      operationId: add-pinned-view
+      tags: ["pinned_views"]
+      summary: Add a pinned view
+      description: |
+        Add a new pinned view for the current user.
+
+        **Changes**: New in Zulip 10.0 (feature level 324).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                view_id:
+                  type: string
+                  description: |
+                    The ID of the view to pin.
+                  example: "inbox"
+                name:
+                  type: string
+                  nullable: true
+                  description: |
+                    Optional display name for the pinned view. Reserved for future use.
+                  example: "Inbox"
+                url_hash:
+                  type: string
+                  nullable: true
+                  description: |
+                    Optional URL hash associated with the view. Reserved for future use.
+                  example: "#inbox"
+                location:
+                  type: integer
+                  description: |
+                    The location in the sidebar for this pinned view.
+
+                    - `1` - Menu
+                    - `2` - Expanded (default)
+                  example: 2
+              required:
+                - view_id
+                - location
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      pinned_view_id:
+                        type: string
+                        description: |
+                          The view ID of the pinned view created.
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "pinned_view_id": "recent",
+                      }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid 'view_id'",
+                        "result": "error",
+                      }
+                    description: |
+                      A typical failed JSON response for when the view_id is invalid
+                      or the location is not supported.
+  /pinned_views/{view_id}:
+    patch:
+      operationId: update-pinned-view-location
+      tags: ["pinned_views"]
+      summary: Update the location of a pinned view
+      description: |
+        Update the location of an existing pinned view for the user.
+
+        **Changes**: New in Zulip 10.0 (feature level 324).
+      parameters:
+        - name: view_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: |
+            The ID of the pinned view to update.
+          example: "inbox"
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                location:
+                  type: integer
+                  description: |
+                    The new location for the pinned view in the left sidebar.
+
+                    - `1` - Menu
+                    - `2` - Expanded
+                  example: 1
+              required:
+                - location
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      pinned_view_id:
+                        type: string
+                        description: |
+                          The unique ID of the pinned view that was updated.
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "pinned_view_id": "inbox",
+                      }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid location.",
+                        "result": "error",
+                      }
+                    description: |
+                      A typical failed JSON response for when invalid location.
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      A typical failed JSON response for when no pinned view exists
+                      with the provided ID:
+                    example:
+                      {
+                        "code": "NOT_FOUND",
+                        "result": "error",
+                        "msg": "Pinned view does not exist.",
                       }
   /saved_snippets:
     get:
@@ -14819,6 +15083,17 @@ paths:
                                 The list of users other than the current user in the direct message
                                 conversation. This will be an empty list for direct messages sent to
                                 oneself.
+                      pinned_views:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/PinnedView"
+                        description: |
+                          Present if `pinned_views` is present in `fetch_event_types`.
+
+                          An array of dictionaries containing data on all of the current user's
+                          pinned views.
+
+                          **Changes**: New in Zulip 10.0 (feature level 324).
                       saved_snippets:
                         type: array
                         items:
@@ -23645,6 +23920,42 @@ components:
         - to
         - topic
         - content
+    PinnedView:
+      type: object
+      description: |
+        Object representing a user's configuration for pinned views in the
+        left sidebar, allowing views to be pinned or hidden.
+      additionalProperties: false
+      required:
+        - view_id
+        - location
+      properties:
+        view_id:
+          type: string
+          description: |
+            The ID of the pinned view.
+          example: "inbox"
+        location:
+          type: integer
+          enum: [1, 2]
+          description: |
+            The location of the pinned view in the sidebar.
+
+            - `1` - Menu
+            - `2` - Expanded
+          example: 2
+        name:
+          type: string
+          nullable: true
+          description: |
+            Optional display name for the pinned view. Reserved for future use.
+          example: "Inbox"
+        url_hash:
+          type: string
+          nullable: true
+          description: |
+            Optional URL hash associated with the view. Reserved for future use.
+          example: "#inbox"
     SavedSnippet:
       type: object
       description: |

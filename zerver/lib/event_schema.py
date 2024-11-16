@@ -349,6 +349,37 @@ saved_snippet_remove_event = event_dict_type(
 )
 check_saved_snippet_remove = make_checker(saved_snippet_remove_event)
 
+pinned_view_fields = DictType(
+    required_keys=[
+        ("view_id", str),
+        ("location", int),
+    ],
+    optional_keys=[
+        ("name", OptionalType(str)),
+        ("url_hash", OptionalType(str)),
+    ],
+)
+
+pinned_view_add_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("pinned_views")),
+        ("op", Equals("add")),
+        ("pinned_view", pinned_view_fields),
+    ]
+)
+
+check_pinned_view_add = make_checker(pinned_view_add_event)
+
+pinned_view_update_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("pinned_views")),
+        ("op", Equals("update")),
+        ("pinned_view", pinned_view_fields),
+    ]
+)
+
+check_pinned_view_update = make_checker(pinned_view_update_event)
+
 has_zoom_token_event = event_dict_type(
     required_keys=[
         ("type", Equals("has_zoom_token")),
