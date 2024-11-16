@@ -457,10 +457,6 @@ export class BuddyList extends BuddyListConf {
             return;
         }
 
-        const header_text = current_sub
-            ? $t({defaultMessage: "THIS CHANNEL"})
-            : $t({defaultMessage: "THIS CONVERSATION"});
-
         $("#buddy-list-participants-container .buddy-list-subsection-header").append(
             $(
                 render_section_header({
@@ -476,7 +472,9 @@ export class BuddyList extends BuddyListConf {
             $(
                 render_section_header({
                     id: "buddy-list-users-matching-view-section-heading",
-                    header_text,
+                    header_text: current_sub
+                        ? $t({defaultMessage: "THIS CHANNEL"})
+                        : $t({defaultMessage: "THIS CONVERSATION"}),
                     user_count: get_formatted_sub_count(
                         total_human_subscribers_count - all_participant_ids.size,
                     ),
