@@ -264,6 +264,10 @@ $user_status_emoji_width: 24px;
     grid-area: row-content;
 }
 
+.buddy-list-heading-dot {
+    font-weight: 700;
+}
+
 .buddy-list-subsection-header.no-display {
     display: none;
 }
