@@ -41,6 +41,7 @@ $user_status_emoji_width: 24px;
 }
 
 .buddy-list-section-toggle {
+    grid-area: arrow;
     color: var(--color-text-sidebar-heading);
     opacity: var(--opacity-sidebar-heading-icon);
 }
@@ -53,7 +54,10 @@ $user_status_emoji_width: 24px;
     }
 
     .buddy-list-user-link {
-        margin-left: var(--right-sidebar-left-spacing);
+        margin-left: calc(
+            var(--right-sidebar-toggle-width-offset) +
+                var(--right-sidebar-left-spacing)
+        );
     }
 }
 
@@ -195,7 +199,10 @@ $user_status_emoji_width: 24px;
         font-size: 14px;
         /* Override .empty-list-message !important styling */
         padding: 0 !important;
-        margin-left: var(--right-sidebar-left-spacing);
+        margin-left: calc(
+            var(--right-sidebar-toggle-width-offset) +
+                var(--right-sidebar-left-spacing)
+        );
         text-align: left;
 
         &:hover {
@@ -223,17 +230,20 @@ $user_status_emoji_width: 24px;
 }
 
 .buddy-list-subsection-header {
-    display: flex;
+    display: grid;
     align-items: center;
+    grid-template:
+        "arrow row-content scroll-buffer" var(
+            --line-height-sidebar-row-prominent
+        )
+        / var(--right-sidebar-header-icon-toggle-width) minmax(0, 1fr);
     cursor: pointer;
     background-color: var(--color-background);
-    line-height: 1;
     position: sticky;
     top: 0;
     z-index: 1;
     color: var(--color-text-default);
     border-radius: 4px;
-    padding-left: 4px;
     margin-right: var(--width-simplebar-scroll-hover);
 
     &:hover {
@@ -257,6 +267,7 @@ $user_status_emoji_width: 24px;
     letter-spacing: var(--letter-spacing-sidebar-heading);
     opacity: var(--opacity-sidebar-heading);
     transition: opacity 140ms linear;
+    grid-area: row-content;
 }
 
 .buddy-list-subsection-header.no-display {
@@ -385,6 +396,7 @@ $user_status_emoji_width: 24px;
         "row-content ." auto / minmax(0, 1fr) 26px;
     align-content: baseline;
     margin-right: var(--width-simplebar-scroll-hover);
+    margin-left: var(--right-sidebar-toggle-width-offset);
 
     .user-name-and-status-emoji {
         display: flex;
@@ -449,6 +461,7 @@ $user_status_emoji_width: 24px;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     margin-bottom: 10px;
+    margin-left: 5px;
 
     #userlist-header-search {
         display: grid;

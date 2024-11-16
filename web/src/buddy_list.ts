@@ -453,6 +453,7 @@ export class BuddyList extends BuddyListConf {
             $("#buddy-list-users-matching-view-container").toggleClass("no-display", true);
         }
 
+        $(".buddy-list-subsection-header").toggleClass("no-display", hide_headers);
         if (hide_headers) {
             return;
         }
