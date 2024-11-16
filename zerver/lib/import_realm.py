@@ -13,6 +13,7 @@ import pyvips
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.cache import cache
+from django.core.management.base import CommandError
 from django.core.validators import validate_email
 from django.db import connection, transaction
 from django.db.backends.utils import CursorWrapper
@@ -2122,10 +2123,10 @@ def check_migration_status(exported_migration_status: MigrationStatusJson) -> No
     exported_primary_version = exported_migration_status["zulip_version"].split(".")[0]
     local_primary_version = local_migration_status["zulip_version"].split(".")[0]
     if exported_primary_version != local_primary_version:
-        raise Exception(
-            "Export was generated on a different Zulip major version.\n"
-            f"Export={exported_migration_status['zulip_version']}\n"
-            f"Server={local_migration_status['zulip_version']}"
+        raise CommandError(
+            "Error: Export was generated on a different Zulip major version.\n"
+            f"Export version: {exported_migration_status['zulip_version']}\n"
+            f"Server version: {local_migration_status['zulip_version']}"
         )
     exported_migrations_by_app = exported_migration_status["migrations_by_app"]
     local_migrations_by_app = local_migration_status["migrations_by_app"]
@@ -2160,13 +2161,13 @@ def check_migration_status(exported_migration_status: MigrationStatusJson) -> No
         ]
 
         error_message = (
-            "Export was generated on a different Zulip version.\n"
-            f"Export={exported_migration_status['zulip_version']}\n"
-            f"Server={local_migration_status['zulip_version']}\n"
+            "Error: Export was generated on a different Zulip version.\n"
+            f"Export version: {exported_migration_status['zulip_version']}\n"
+            f"Server version: {local_migration_status['zulip_version']}\n"
             "\n"
             "Database formats differ between the exported realm and this server.\n"
             "Printing migrations that differ between the versions:\n"
             "--- exported realm\n"
             "+++ this server"
         ) + "\n".join(sorted_error_log)
-        raise Exception(error_message)
+        raise CommandError(error_message)

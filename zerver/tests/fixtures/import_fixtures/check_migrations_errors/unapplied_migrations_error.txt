@@ -1,6 +1,6 @@
-Export was generated on a different Zulip version.
-Export={version_placeholder}
-Server={version_placeholder}
+Error: Export was generated on a different Zulip version.
+Export version: {version_placeholder}
+Server version: {version_placeholder}
 
 Database formats differ between the exported realm and this server.
 Printing migrations that differ between the versions:
