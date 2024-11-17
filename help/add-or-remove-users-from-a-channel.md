@@ -146,6 +146,8 @@ subscribe the user.
 
 {end_tabs}
 
+{!automated-dm-channel-remove.md!}
+
 ## Related articles
 
 * [Introduction to channels](/help/introduction-to-channels)
