@@ -999,6 +999,17 @@ def get_streams_for_user(
     return list(streams)
 
 
+def get_group_setting_value_dict_for_streams(
+    streams: list[Stream],
+) -> dict[int, int | AnonymousSettingGroupDict]:
+    setting_group_ids = set()
+    for stream in streams:
+        for setting_name in Stream.stream_permission_group_settings:
+            setting_group_ids.add(getattr(stream, setting_name + "_id"))
+
+    return get_setting_values_for_group_settings(list(setting_group_ids))
+
+
 def get_setting_values_for_group_settings(
     group_ids: list[int],
 ) -> dict[int, int | AnonymousSettingGroupDict]:
@@ -1056,12 +1067,7 @@ def do_get_streams(
     stream_ids = {stream.id for stream in streams}
     recent_traffic = get_streams_traffic(stream_ids, user_profile.realm)
 
-    setting_group_ids = set()
-    for stream in streams:
-        for setting_name in Stream.stream_permission_group_settings:
-            setting_group_ids.add(getattr(stream, setting_name + "_id"))
-
-    setting_groups_dict = get_setting_values_for_group_settings(list(setting_group_ids))
+    setting_groups_dict = get_group_setting_value_dict_for_streams(streams)
 
     stream_dicts = sorted(
         (stream_to_dict(stream, recent_traffic, setting_groups_dict) for stream in streams),
