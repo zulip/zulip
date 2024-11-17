@@ -1257,28 +1257,28 @@ export function edit_last_sent_message(): void {
         return;
     }
 
-    const msg = message_lists.current.get_last_message_sent_by_me();
+    const last_sent_msg = message_lists.current.get_last_message_sent_by_me();
 
-    if (!msg) {
+    if (!last_sent_msg) {
         return;
     }
 
-    if (!msg.id) {
+    if (!last_sent_msg.id) {
         blueslip.error("Message has invalid id in edit_last_sent_message.");
         return;
     }
 
-    if (!is_content_editable(msg, 5)) {
+    if (!is_content_editable(last_sent_msg, 5)) {
         return;
     }
 
-    message_lists.current.select_id(msg.id, {then_scroll: true});
+    message_lists.current.select_id(last_sent_msg.id, {then_scroll: true});
 
-    const $msg_row = message_lists.current.get_row(msg.id);
+    const $msg_row = message_lists.current.get_row(last_sent_msg.id);
     if (!$msg_row) {
         // This should never happen, since we got the message above
         // from message_lists.current.
-        blueslip.error("Could not find row for id", {msg_id: msg.id});
+        blueslip.error("Could not find row for id", {msg_id: last_sent_msg.id});
         return;
     }
 
