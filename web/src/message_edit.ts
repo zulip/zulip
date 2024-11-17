@@ -1272,6 +1272,18 @@ export function edit_last_sent_message(): void {
         return;
     }
 
+    const current_selected_msg = message_store.get(message_lists.current.selected_id());
+    if (current_selected_msg && current_selected_msg.id < last_sent_msg.id) {
+        // If there are any unread messages between the selected message and the
+        // message we want to edit, we don't edit the last sent message to avoid
+        // marking messages as read unintentionally.
+        for (const msg of message_lists.current.all_messages()) {
+            if (current_selected_msg.id < msg.id && msg.id < last_sent_msg.id && msg.unread) {
+                return;
+            }
+        }
+    }
+
     message_lists.current.select_id(last_sent_msg.id, {then_scroll: true});
 
     const $msg_row = message_lists.current.get_row(last_sent_msg.id);
