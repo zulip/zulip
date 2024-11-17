@@ -420,6 +420,28 @@ def revoke_email_invitation(client: Client) -> None:
     validate_against_openapi_schema(result, "/invites/{invite_id}", "delete", "200")
 
 
+@openapi_test_function("/invites/{invite_id}:get")
+def get_email_invitation(client: Client) -> None:
+    # Send email invitation.
+    email = "get-invite@zulip.com"
+    request = {
+        "invitee_emails": email,
+        "stream_ids": [],
+    }
+    client.call_endpoint(url="/invites", method="POST", request=request)
+    # Get invitation ID.
+    invites = client.call_endpoint(url="/invites", method="GET")["invites"]
+    invite = [s for s in invites if not s["is_multiuse"] and s["email"] == email]
+    assert len(invite) == 1
+    invite_id = invite[0]["id"]
+    # {code_example|start}
+    # Get email invitation.
+    result = client.call_endpoint(url=f"/invites/{invite_id}", method="GET")
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/invites/{invite_id}", "get", "200")
+
+
 @openapi_test_function("/invites/multiuse/{invite_id}:delete")
 def revoke_reusable_invitation_link(client: Client) -> None:
     # Create multiuse invitation link.
@@ -437,6 +459,25 @@ def revoke_reusable_invitation_link(client: Client) -> None:
     # {code_example|end}
     assert_success_response(result)
     validate_against_openapi_schema(result, "/invites/multiuse/{invite_id}", "delete", "200")
+
+
+@openapi_test_function("/invites/multiuse/{invite_id}:get")
+def get_reusable_invitation_link(client: Client) -> None:
+    # Create multiuse invitation link.
+    invite_url = client.call_endpoint(url="/invites/multiuse", method="POST", request={})[
+        "invite_link"
+    ]
+    # Get invitation ID.
+    invites = client.call_endpoint(url="/invites", method="GET")["invites"]
+    invite = [s for s in invites if s["is_multiuse"] and s["link_url"] == invite_url]
+    assert len(invite) == 1
+    invite_id = invite[0]["id"]
+    # {code_example|start}
+    # Get reusable invitation link.
+    result = client.call_endpoint(url=f"/invites/multiuse/{invite_id}", method="GET")
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/invites/multiuse/{invite_id}", "get", "200")
 
 
 @openapi_test_function("/invites/{invite_id}/resend:post")
@@ -1893,6 +1934,8 @@ def test_invitations(client: Client) -> None:
     create_reusable_invitation_link(client)
     revoke_reusable_invitation_link(client)
     get_invitations(client)
+    get_email_invitation(client)
+    get_reusable_invitation_link(client)
     resend_email_invitation(client)
 
 
