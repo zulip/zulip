@@ -382,8 +382,8 @@ def update_stream_backend(
     if stream_post_policy is not None:
         do_change_stream_post_policy(stream, stream_post_policy, acting_user=user_profile)
 
+    request_settings_dict = locals()
     for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
-        request_settings_dict = locals()
         assert setting_name in request_settings_dict
         if request_settings_dict[setting_name] is None:
             continue
