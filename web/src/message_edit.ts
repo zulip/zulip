@@ -6,6 +6,7 @@ import {z} from "zod";
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
+import render_confirm_edit_messages from "../templates/confirm_dialog/confirm_edit_messages.hbs";
 import render_confirm_merge_topics_with_rename from "../templates/confirm_dialog/confirm_merge_topics_with_rename.hbs";
 import render_confirm_moving_messages_modal from "../templates/confirm_dialog/confirm_moving_messages.hbs";
 import render_intro_resolve_topic_modal from "../templates/confirm_dialog/intro_resolve_topic.hbs";
@@ -1252,6 +1253,23 @@ export function maybe_show_edit($row: JQuery, id: number): void {
     }
 }
 
+function warn_user_about_unread_msgs(last_sent_msg_id: number, num_unread: number): void {
+    confirm_dialog.launch({
+        html_heading: $t({defaultMessage: "Edit last sent message"}),
+        html_body: render_confirm_edit_messages({
+            num_unread,
+        }),
+        on_click() {
+            // Select the message we want to edit to mark messages between it and the
+            // current selected id as read.
+            message_lists.current?.select_id(last_sent_msg_id, {
+                then_scroll: true,
+            });
+            edit_last_sent_message();
+        },
+    });
+}
+
 export function edit_last_sent_message(): void {
     if (message_lists.current === undefined) {
         return;
@@ -1273,14 +1291,23 @@ export function edit_last_sent_message(): void {
     }
 
     const current_selected_msg = message_store.get(message_lists.current.selected_id());
-    if (current_selected_msg && current_selected_msg.id < last_sent_msg.id) {
+    if (
+        current_selected_msg &&
+        current_selected_msg.id < last_sent_msg.id &&
+        message_lists.current.can_mark_messages_read()
+    ) {
         // If there are any unread messages between the selected message and the
         // message we want to edit, we don't edit the last sent message to avoid
         // marking messages as read unintentionally.
+        let num_unread = 0;
         for (const msg of message_lists.current.all_messages()) {
             if (current_selected_msg.id < msg.id && msg.id < last_sent_msg.id && msg.unread) {
-                return;
+                num_unread += 1;
             }
+        }
+        if (num_unread > 0) {
+            warn_user_about_unread_msgs(last_sent_msg.id, num_unread);
+            return;
         }
     }
 
