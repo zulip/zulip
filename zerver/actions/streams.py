@@ -466,7 +466,7 @@ def send_stream_creation_events_for_previously_inaccessible_streams(
         for setting_name in Stream.stream_permission_group_settings:
             setting_group_ids.add(getattr(stream, setting_name + "_id"))
 
-    setting_groups_dict = get_setting_values_for_group_settings(list(setting_group_ids))
+    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None
 
     for stream_id, stream_users_ids in altered_user_dict.items():
         stream = stream_dict[stream_id]
@@ -488,6 +488,9 @@ def send_stream_creation_events_for_previously_inaccessible_streams(
             notify_user_ids = list(stream_users_ids & altered_guests)
 
         if notify_user_ids:
+            if setting_groups_dict is None:
+                setting_groups_dict = get_setting_values_for_group_settings(list(setting_group_ids))
+
             send_stream_creation_event(
                 realm, stream, notify_user_ids, recent_traffic, setting_groups_dict
             )
