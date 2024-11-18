@@ -151,6 +151,7 @@ def create_stream_if_needed(
     message_retention_days: int | None = None,
     can_remove_subscribers_group: UserGroup | None = None,
     acting_user: UserProfile | None = None,
+    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
 ) -> tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
         realm, invite_only, history_public_to_subscribers
@@ -197,21 +198,31 @@ def create_stream_if_needed(
             event_time=event_time,
         )
 
+        if setting_groups_dict is None:
+            setting_groups_dict = get_group_setting_value_dict_for_streams([stream])
+
         if stream.is_public():
             if stream.is_web_public:
                 notify_user_ids = active_user_ids(stream.realm_id)
             else:
                 notify_user_ids = active_non_guest_user_ids(stream.realm_id)
-            send_stream_creation_event(realm, stream, notify_user_ids)
+            send_stream_creation_event(
+                realm, stream, notify_user_ids, setting_groups_dict=setting_groups_dict
+            )
         else:
             realm_admin_ids = [user.id for user in stream.realm.get_admin_users_and_bots()]
-            send_stream_creation_event(realm, stream, realm_admin_ids)
+            send_stream_creation_event(
+                realm, stream, realm_admin_ids, setting_groups_dict=setting_groups_dict
+            )
 
     return stream, created
 
 
 def create_streams_if_needed(
-    realm: Realm, stream_dicts: list[StreamDict], acting_user: UserProfile | None = None
+    realm: Realm,
+    stream_dicts: list[StreamDict],
+    acting_user: UserProfile | None = None,
+    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
 ) -> tuple[list[Stream], list[Stream]]:
     """Note that stream_dict["name"] is assumed to already be stripped of
     whitespace"""
@@ -232,6 +243,7 @@ def create_streams_if_needed(
             message_retention_days=stream_dict.get("message_retention_days", None),
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
             acting_user=acting_user,
+            setting_groups_dict=setting_groups_dict,
         )
 
         if created:
@@ -717,6 +729,7 @@ def list_to_streams(
     autocreate: bool = False,
     unsubscribing_others: bool = False,
     is_default_stream: bool = False,
+    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
 ) -> tuple[list[Stream], list[Stream]]:
     """Converts list of dicts to a list of Streams, validating input in the process
 
@@ -817,7 +830,10 @@ def list_to_streams(
         # paranoid approach, since often on Zulip two people will discuss
         # creating a new stream, and both people eagerly do it.)
         created_streams, dup_streams = create_streams_if_needed(
-            realm=user_profile.realm, stream_dicts=missing_stream_dicts, acting_user=user_profile
+            realm=user_profile.realm,
+            stream_dicts=missing_stream_dicts,
+            acting_user=user_profile,
+            setting_groups_dict=setting_groups_dict,
         )
         existing_streams += dup_streams
 
