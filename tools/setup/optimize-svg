@@ -43,17 +43,18 @@ fi
 
 ZULIP_PATH="$(readlink -f "$(dirname "$0")"/../..)"
 PNPM="/usr/local/bin/pnpm"
+FILE_PATH="static/images/integrations/logos"
 
 if [ -n "$CHECK_UNOPTIMIZED" ]; then
-    RESULT=$("$PNPM" exec svgo -f static/images/integrations/logos | grep -o '\.[0-9]% = ' | wc -l)
+    RESULT=$("$PNPM" exec svgo -f "$FILE_PATH" | grep -o '\.[0-9]% = ' | wc -l)
     if [ "$RESULT" -ge 1 ]; then
-        echo "ERROR: svgo detected unoptimized SVG files in the \`static/images/integrations/logos\` folder." 1>&2
+        echo "ERROR: svgo detected unoptimized SVG file(s)." 1>&2
         echo "Please run tools/setup/optimize-svg and commit the file changes to optimize them."
         exit 1
     else
-        echo "SUCCESS: SVG files in static/images/integrations/logos are all optimized!"
+        echo "SUCCESS: SVG file(s) are optimized!"
     fi
 else
-    "$PNPM" exec svgo -q -f static/images/integrations/logos
+    "$PNPM" exec svgo -q -f "$FILE_PATH"
     "$ZULIP_PATH"/tools/setup/generate_integration_bots_avatars.py
 fi
