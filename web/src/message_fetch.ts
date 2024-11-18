@@ -354,11 +354,6 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         // will return an error if appropriate.
         narrow_data = [...narrow_data, ...web_public_narrow];
     }
-    // We don't pass a narrow for the non-spectator, combined feed view; this
-    // is required to display messages if their muted status changes without
-    // a new network request, and so we need the server to send the message
-    // history from muted streams and topics even though the combined feed
-    // view's "in:home" narrow term will filter those.
     if (narrow_data.length > 0) {
         const narrow_param_string = JSON.stringify(narrow_data);
         data.narrow = handle_operators_supporting_id_based_api(narrow_param_string);
