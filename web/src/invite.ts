@@ -39,6 +39,7 @@ let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
 let pills: email_pill.EmailPillWidget;
 let stream_pill_widget: stream_pill.StreamPillWidget;
+let guest_invite_stream_ids: number[] = [];
 
 function reset_error_messages(): void {
     $("#dialog_error").hide().text("").removeClass(common.status_classes);
@@ -296,7 +297,7 @@ function set_streams_to_join_list_visibility(): void {
     }
 }
 
-function update_guest_visible_users_count(): void {
+function update_guest_visible_users_count_and_stream_ids(): void {
     const invite_as = Number.parseInt(
         $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
         10,
@@ -305,6 +306,9 @@ function update_guest_visible_users_count(): void {
     assert(!Number.isNaN(invite_as));
 
     const guest_role_selected = invite_as === settings_config.user_role_values.guest.code;
+    if (guest_role_selected) {
+        guest_invite_stream_ids = stream_pill.get_stream_ids(stream_pill_widget);
+    }
     if (!guest_role_selected || settings_data.guests_can_access_all_other_users()) {
         $("#guest_visible_users_container").hide();
         return;
@@ -331,6 +335,33 @@ function generate_invite_tips_data(): Record<string, boolean> {
         realm_has_user_set_icon: realm_icon_source !== "G",
         realm_has_custom_profile_fields: custom_profile_fields.length > 0,
     };
+}
+
+function update_stream_list(): void {
+    const invite_as = Number.parseInt(
+        $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
+        10,
+    );
+
+    assert(!Number.isNaN(invite_as));
+
+    const guest_role_selected = invite_as === settings_config.user_role_values.guest.code;
+    stream_pill_widget.clear();
+
+    if (guest_role_selected) {
+        $("#invite_select_default_streams").prop("checked", false);
+        $(".add_streams_container").show();
+        for (const stream_id of guest_invite_stream_ids) {
+            const sub = stream_data.get_sub_by_id(stream_id);
+            if (sub) {
+                stream_pill.append_stream(sub, stream_pill_widget, false);
+            }
+        }
+    } else {
+        $("#invite_select_default_streams").prop("checked", true);
+        invite_stream_picker_pill.add_default_stream_pills(stream_pill_widget);
+        set_streams_to_join_list_visibility();
+    }
 }
 
 function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void {
@@ -377,10 +408,15 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             stream_pill_widget = invite_stream_picker_pill.create($stream_pill_container);
         }
 
-        $("#invite_as, #invite_streams_container .input, #invite_select_default_streams").on(
+        $("#invite_streams_container .input, #invite_select_default_streams").on(
             "change",
-            update_guest_visible_users_count,
+            update_guest_visible_users_count_and_stream_ids,
         );
+
+        $("#invite_as").on("change", () => {
+            update_stream_list();
+            update_guest_visible_users_count_and_stream_ids();
+        });
 
         $("#invite-user-modal").on("click", ".setup-tips-container .banner_content a", () => {
             dialog_widget.close();
