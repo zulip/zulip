@@ -42,6 +42,7 @@ from zerver.models import (
     UserGroupMembership,
     UserProfile,
 )
+from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.streams import (
     bulk_get_streams,
@@ -142,18 +143,32 @@ def send_stream_creation_event(
 
 
 def get_stream_permission_default_group(
-    setting_name: str, system_groups_name_dict: dict[str, NamedUserGroup]
+    setting_name: str,
+    system_groups_name_dict: dict[str, NamedUserGroup],
+    creator: UserProfile | None = None,
 ) -> UserGroup:
     setting_default_name = Stream.stream_permission_group_settings[setting_name].default_group_name
+    if setting_default_name == "stream_creator_or_nobody":
+        if creator:
+            default_group = UserGroup(
+                realm=creator.realm,
+            )
+            default_group.save()
+            UserGroupMembership.objects.create(user_profile=creator, user_group=default_group)
+            return default_group
+        else:
+            return system_groups_name_dict[SystemGroups.NOBODY]
     return system_groups_name_dict[setting_default_name]
 
 
-def get_default_values_for_stream_permission_group_settings(realm: Realm) -> dict[str, UserGroup]:
+def get_default_values_for_stream_permission_group_settings(
+    realm: Realm, creator: UserProfile | None = None
+) -> dict[str, UserGroup]:
     group_setting_values = {}
     system_groups_name_dict = get_role_based_system_groups_dict(realm)
     for setting_name in Stream.stream_permission_group_settings:
         group_setting_values[setting_name] = get_stream_permission_default_group(
-            setting_name, system_groups_name_dict
+            setting_name, system_groups_name_dict, creator
         )
 
     return group_setting_values
@@ -192,7 +207,7 @@ def create_stream_if_needed(
             if system_groups_name_dict is None:
                 system_groups_name_dict = get_role_based_system_groups_dict(realm)
             group_setting_values[setting_name] = get_stream_permission_default_group(
-                setting_name, system_groups_name_dict
+                setting_name, system_groups_name_dict, creator=acting_user
             )
         else:
             group_setting_values[setting_name] = request_settings_dict[setting_name]

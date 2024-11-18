@@ -148,7 +148,7 @@ class Stream(models.Model):
             allow_owners_group=True,
             allow_nobody_group=True,
             allow_everyone_group=False,
-            default_group_name=SystemGroups.NOBODY,
+            default_group_name="stream_creator_or_nobody",
             id_field_name="can_administer_channel_group_id",
         ),
         "can_remove_subscribers_group": GroupPermissionSetting(
