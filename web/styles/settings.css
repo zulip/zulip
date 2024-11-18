@@ -602,8 +602,9 @@ input[type="checkbox"] {
 }
 
 #add-custom-profile-field-button {
-    float: right;
-    margin-top: 4px;
+    margin-top: auto;
+    margin-bottom: 12px;
+    padding: 4px 14px;
 }
 
 #user-notification-settings {
@@ -712,23 +713,17 @@ input[type="checkbox"] {
 }
 
 .add_default_streams_button_container {
-    float: right;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: auto;
+    margin-bottom: 12px;
+    gap: 6px;
 
     #show-add-default-streams-modal {
-        /* We want this button to have the same height as the filter
-           button on its right. We're overriding the default vertical
-           button padding and setting it to 0. Having the
-           height fixed will mean that the vertical whitespace will
-           adjust itself for different font-sizes without changing the
-           height.
-           */
         padding-top: 0;
         padding-bottom: 0;
-        height: 30px;
 
         min-width: 0;
-        margin-top: 12px;
-        margin-right: 6px;
     }
 }
 
@@ -1995,6 +1990,10 @@ $option_title_width: 180px;
 
 .settings_panel_list_header {
     position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
 
     & h3 {
         display: inline-block;
@@ -2002,15 +2001,35 @@ $option_title_width: 180px;
 
     .user_filters {
         display: flex;
-        float: right;
         flex-wrap: wrap;
+        margin-top: auto;
+        margin-bottom: 12px;
+        gap: 6px;
 
         & .dropdown-widget-button {
             height: 30px;
             max-width: 160px;
-            margin-right: 12px;
-            margin-top: 12px;
         }
+
+        & input.search {
+            /* Margins need to be only handled by the container holding the
+            filters to keep them aligned in .settings_panel_list_header */
+            margin: 0;
+        }
+    }
+
+    .add_default_streams_button_container {
+        & input.search {
+            /* Margins need to be only handled by the container holding the
+            filters to keep them aligned in .settings_panel_list_header */
+            margin: 0;
+        }
+    }
+
+    .alert-notification {
+        margin-top: auto;
+        margin-bottom: 12px;
+        margin-right: auto;
     }
 
     & input.search {
@@ -2023,7 +2042,8 @@ $option_title_width: 180px;
         float: right;
         font-size: 1em;
         max-width: 160px;
-        margin-top: 12px;
+        margin-top: auto;
+        margin-bottom: 12px;
     }
 }
 
