@@ -45,7 +45,8 @@ ZULIP_PATH="$(readlink -f "$(dirname "$0")"/../..)"
 PNPM="/usr/local/bin/pnpm"
 
 if [ -n "$CHECK_UNOPTIMIZED" ]; then
-    if [ "$(node_modules/.bin/svgo -f static/images/integrations/logos | grep -o '\.[0-9]% = ' | wc -l)" -ge 1 ]; then
+    RESULT=$("$PNPM" exec svgo -f static/images/integrations/logos | grep -o '\.[0-9]% = ' | wc -l)
+    if [ "$RESULT" -ge 1 ]; then
         echo "ERROR: svgo detected unoptimized SVG files in the \`static/images/integrations/logos\` folder." 1>&2
         echo "Please run tools/setup/optimize-svg and commit the file changes to optimize them."
         exit 1
