@@ -6,6 +6,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import * as settings_components from "./settings_components.ts";
+import {realm} from "./state_data.ts";
 import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
 import * as ui_report from "./ui_report.ts";
 import * as user_group_components from "./user_group_components.ts";
@@ -27,11 +28,13 @@ export function get_name(): string | undefined {
     return created_group_name;
 }
 
-let can_add_members_group_widget: GroupSettingPillContainer | undefined;
-let can_join_group_widget: GroupSettingPillContainer | undefined;
-let can_leave_group_widget: GroupSettingPillContainer | undefined;
-let can_manage_group_widget: GroupSettingPillContainer | undefined;
-let can_mention_group_widget: GroupSettingPillContainer | undefined;
+export const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
+    ["can_add_members_group", null],
+    ["can_join_group", null],
+    ["can_leave_group", null],
+    ["can_manage_group", null],
+    ["can_mention_group", null],
+]);
 
 class UserGroupMembershipError {
     report_no_members_to_user_group(): void {
@@ -153,41 +156,24 @@ function create_user_group(): void {
     const user_ids = user_group_create_members.get_principals();
     const subgroup_ids = user_group_create_members.get_subgroups();
 
-    assert(can_add_members_group_widget !== undefined);
-    const can_add_members_group = settings_components.get_group_setting_widget_value(
-        can_add_members_group_widget,
-    );
-
-    assert(can_manage_group_widget !== undefined);
-    const can_manage_group =
-        settings_components.get_group_setting_widget_value(can_manage_group_widget);
-
-    assert(can_join_group_widget !== undefined);
-    const can_join_group =
-        settings_components.get_group_setting_widget_value(can_join_group_widget);
-
-    assert(can_leave_group_widget !== undefined);
-    const can_leave_group =
-        settings_components.get_group_setting_widget_value(can_leave_group_widget);
-
-    assert(can_mention_group_widget !== undefined);
-    const can_mention_group =
-        settings_components.get_group_setting_widget_value(can_mention_group_widget);
-
-    const data = {
+    const data: Record<string, string> = {
         name: group_name,
         description,
         members: JSON.stringify(user_ids),
         subgroups: JSON.stringify(subgroup_ids),
-        can_add_members_group: JSON.stringify(can_add_members_group),
-        can_join_group: JSON.stringify(can_join_group),
-        can_leave_group: JSON.stringify(can_leave_group),
-        can_mention_group: JSON.stringify(can_mention_group),
-        can_manage_group: JSON.stringify(can_manage_group),
     };
     loading.make_indicator($("#user_group_creating_indicator"), {
         text: $t({defaultMessage: "Creating group..."}),
     });
+
+    const permission_settings = Object.keys(realm.server_supported_permission_settings.group);
+    for (const setting_name of permission_settings) {
+        const widget = group_setting_widget_map.get(setting_name);
+        assert(widget !== undefined);
+        assert(widget !== null);
+        const setting_value = settings_components.get_group_setting_widget_value(widget);
+        data[setting_name] = JSON.stringify(setting_value);
+    }
 
     void channel.post({
         url: "/json/user_groups/create",
@@ -259,28 +245,12 @@ export function set_up_handlers(): void {
     // This will always be enabled when creating a user group.
     settings_components.enable_opening_typeahead_on_clicking_label($container);
 
-    can_add_members_group_widget = settings_components.create_group_setting_widget({
-        $pill_container: $("#id_new_group_can_add_members_group"),
-        setting_name: "can_add_members_group",
-    });
-
-    can_manage_group_widget = settings_components.create_group_setting_widget({
-        $pill_container: $("#id_new_group_can_manage_group"),
-        setting_name: "can_manage_group",
-    });
-
-    can_join_group_widget = settings_components.create_group_setting_widget({
-        $pill_container: $("#id_new_group_can_join_group"),
-        setting_name: "can_join_group",
-    });
-
-    can_leave_group_widget = settings_components.create_group_setting_widget({
-        $pill_container: $("#id_new_group_can_leave_group"),
-        setting_name: "can_leave_group",
-    });
-
-    can_mention_group_widget = settings_components.create_group_setting_widget({
-        $pill_container: $("#id_new_group_can_mention_group"),
-        setting_name: "can_mention_group",
-    });
+    const permission_settings = Object.keys(realm.server_supported_permission_settings.group);
+    for (const setting_name of permission_settings) {
+        const widget = settings_components.create_group_setting_widget({
+            $pill_container: $(`#id_new_group_${CSS.escape(setting_name)}`),
+            setting_name: settings_components.group_setting_name_schema.parse(setting_name),
+        });
+        group_setting_widget_map.set(setting_name, widget);
+    }
 }

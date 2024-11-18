@@ -1548,12 +1548,15 @@ export function set_group_setting_widget_value(
     }
 }
 
-type group_setting_name =
-    | "can_add_members_group"
-    | "can_join_group"
-    | "can_leave_group"
-    | "can_manage_group"
-    | "can_mention_group";
+export const group_setting_name_schema = z.enum([
+    "can_add_members_group",
+    "can_join_group",
+    "can_leave_group",
+    "can_manage_group",
+    "can_mention_group",
+]);
+
+type GroupSettingName = z.infer<typeof group_setting_name_schema>;
 
 export function create_group_setting_widget({
     $pill_container,
@@ -1561,7 +1564,7 @@ export function create_group_setting_widget({
     group,
 }: {
     $pill_container: JQuery;
-    setting_name: group_setting_name;
+    setting_name: GroupSettingName;
     group?: UserGroup;
 }): GroupSettingPillContainer {
     const pill_widget = group_setting_pill.create_pills($pill_container, setting_name, "group");
