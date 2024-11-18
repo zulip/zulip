@@ -1,3 +1,5 @@
+import assert from "minimalistic-assert";
+
 import * as alert_words_ui from "./alert_words_ui.ts";
 import * as attachments_ui from "./attachments_ui.ts";
 import * as blueslip from "./blueslip.ts";
@@ -18,10 +20,10 @@ import * as settings_streams from "./settings_streams.ts";
 import * as settings_user_topics from "./settings_user_topics.ts";
 import * as settings_users from "./settings_users.ts";
 
-const load_func_dict = new Map(); // group -> function
+const load_func_dict = new Map<string, () => void>(); // key is a group
 const loaded_groups = new Set();
 
-export function get_group(section) {
+export function get_group(section: string): string {
     // Sometimes several sections all share the same code.
 
     switch (section) {
@@ -46,13 +48,14 @@ export function get_group(section) {
     }
 }
 
-export function initialize() {
+export function initialize(): void {
     // personal
     load_func_dict.set("your-account", settings_account.set_up);
     load_func_dict.set("preferences", () => {
         settings_preferences.set_up(settings_preferences.user_settings_panel);
     });
     load_func_dict.set("notifications", () => {
+        assert(settings_notifications.user_settings_panel !== undefined);
         settings_notifications.set_up(settings_notifications.user_settings_panel);
     });
     load_func_dict.set("your-bots", settings_bots.set_up);
@@ -77,7 +80,7 @@ export function initialize() {
     );
 }
 
-export function load_settings_section(section) {
+export function load_settings_section(section: string): void {
     const group = get_group(section);
 
     if (!load_func_dict.has(group)) {
@@ -92,13 +95,14 @@ export function load_settings_section(section) {
     }
 
     const load_func = load_func_dict.get(group);
+    assert(load_func !== undefined);
 
     // Do the real work here!
     load_func();
     loaded_groups.add(group);
 }
 
-export function reset_sections() {
+export function reset_sections(): void {
     loaded_groups.clear();
     settings_emoji.reset();
     settings_exports.reset();

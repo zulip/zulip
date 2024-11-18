@@ -18,7 +18,7 @@ import * as settings_data from "./settings_data.ts";
 import * as settings_invites from "./settings_invites.ts";
 import * as settings_org from "./settings_org.ts";
 import * as settings_panel_menu from "./settings_panel_menu.js";
-import * as settings_sections from "./settings_sections.js";
+import * as settings_sections from "./settings_sections.ts";
 import * as settings_toggle from "./settings_toggle.js";
 import * as settings_users from "./settings_users.ts";
 import {current_user, realm} from "./state_data.ts";
