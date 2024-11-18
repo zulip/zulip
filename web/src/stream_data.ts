@@ -1,6 +1,8 @@
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
+import type {Bot} from "./bot_data.ts";
+import * as bot_data from "./bot_data.ts";
 import * as color_data from "./color_data.ts";
 import {FoldDict} from "./fold_dict.ts";
 import {page_params} from "./page_params.ts";
@@ -496,10 +498,28 @@ export function can_toggle_subscription(sub: StreamSubscription): boolean {
     );
 }
 
+export function get_current_user_and_their_bots_with_post_messages_permission(
+    sub: StreamSubscription,
+): (User | Bot)[] {
+    const senders_with_post_messages_permission: (User | Bot)[] = [];
+
+    if (can_post_messages_in_stream(sub)) {
+        senders_with_post_messages_permission.push(people.get_by_user_id(current_user.user_id));
+    }
+
+    for (const bot of bot_data.get_all_bots_for_current_user()) {
+        if (bot.is_active && can_bot_post_messages_in_channel(sub, bot)) {
+            senders_with_post_messages_permission.push(bot);
+        }
+    }
+    return senders_with_post_messages_permission;
+}
+
 export function can_access_stream_email(sub: StreamSubscription): boolean {
     return (
-        (sub.subscribed || sub.is_web_public || (!current_user.is_guest && !sub.invite_only)) &&
-        !page_params.is_spectator
+        !page_params.is_spectator &&
+        sub.subscribed &&
+        get_current_user_and_their_bots_with_post_messages_permission(sub).length > 0
     );
 }
 
@@ -618,6 +638,54 @@ export function can_post_messages_in_stream(stream: StreamSubscription): boolean
     ) {
         return false;
     }
+    return true;
+}
+
+export function can_bot_post_messages_in_channel(channel: StreamSubscription, bot: Bot): boolean {
+    const bot_user = people.get_by_user_id(bot.user_id);
+    assert(bot_user.is_bot);
+
+    if (channel.is_archived) {
+        return false;
+    }
+
+    if (bot_user.is_admin) {
+        return true;
+    }
+
+    if (channel.stream_post_policy === settings_config.stream_post_policy_values.admins.code) {
+        return false;
+    }
+
+    if (bot_user.is_moderator) {
+        return true;
+    }
+
+    if (channel.stream_post_policy === settings_config.stream_post_policy_values.moderators.code) {
+        return false;
+    }
+
+    if (
+        bot_user.is_guest &&
+        channel.stream_post_policy !== settings_config.stream_post_policy_values.everyone.code
+    ) {
+        return false;
+    }
+
+    // Currently, this function is not used in a codepath with no bot owner.
+    assert(bot.owner_id !== null);
+    const bot_owner = people.get_by_user_id(bot.owner_id);
+    const current_datetime = Date.now();
+    const bot_owner_date_joined = new Date(bot_owner.date_joined).getTime();
+    const days = (current_datetime - bot_owner_date_joined) / 1000 / 86400;
+    if (
+        channel.stream_post_policy ===
+            settings_config.stream_post_policy_values.non_new_members.code &&
+        days < realm.realm_waiting_period_threshold
+    ) {
+        return false;
+    }
+
     return true;
 }
 
