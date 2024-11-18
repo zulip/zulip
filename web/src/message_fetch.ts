@@ -331,16 +331,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         blueslip.error("Message list data is undefined!");
     }
 
-    // This block is a hack; structurally, we want to set
-    //   data.narrow = opts.msg_list.data.filter.public_terms()
-    //
-    // But support for the all_messages_data sharing of data with
-    // the combined feed view and the (hacky) page_params.narrow feature
-    // requires a somewhat ugly bundle of conditionals.
-    let narrow_data: NarrowTerm[] = [];
-    if (!msg_list_data.filter.is_in_home()) {
-        narrow_data = msg_list_data.filter.public_terms();
-    }
+    let narrow_data = msg_list_data.filter.public_terms();
     if (page_params.narrow !== undefined) {
         narrow_data = [...narrow_data, ...page_params.narrow];
     }
