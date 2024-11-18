@@ -928,7 +928,8 @@ def stream_to_dict(
 def get_web_public_streams(realm: Realm) -> list[APIStreamDict]:  # nocoverage
     query = get_web_public_streams_queryset(realm)
     streams = query.only(*Stream.API_FIELDS)
-    stream_dicts = [stream_to_dict(stream) for stream in streams]
+    setting_groups_dict = get_group_setting_value_dict_for_streams(list(streams))
+    stream_dicts = [stream_to_dict(stream, None, setting_groups_dict) for stream in streams]
     return stream_dicts
 
 

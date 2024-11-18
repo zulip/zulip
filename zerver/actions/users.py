@@ -28,7 +28,11 @@ from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.soft_deactivation import queue_soft_reactivation
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
 from zerver.lib.stream_traffic import get_streams_traffic
-from zerver.lib.streams import get_streams_for_user, stream_to_dict
+from zerver.lib.streams import (
+    get_group_setting_value_dict_for_streams,
+    get_streams_for_user,
+    stream_to_dict,
+)
 from zerver.lib.types import AnonymousSettingGroupDict
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
@@ -555,10 +559,16 @@ def send_stream_events_for_role_update(
             for stream in current_accessible_streams
             if stream.id in now_accessible_stream_ids
         ]
+
+        setting_groups_dict = get_group_setting_value_dict_for_streams(now_accessible_streams)
+
         event = dict(
             type="stream",
             op="create",
-            streams=[stream_to_dict(stream, recent_traffic) for stream in now_accessible_streams],
+            streams=[
+                stream_to_dict(stream, recent_traffic, setting_groups_dict)
+                for stream in now_accessible_streams
+            ],
         )
         send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
