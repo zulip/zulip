@@ -154,35 +154,15 @@ function show_membership_settings(group) {
 }
 
 function show_general_settings(group) {
-    settings_components.create_group_setting_widget({
-        $pill_container: $("#id_can_add_members_group"),
-        setting_name: "can_add_members_group",
-        group,
-    });
+    const permission_settings = Object.keys(realm.server_supported_permission_settings.group);
+    for (const setting_name of permission_settings) {
+        settings_components.create_group_setting_widget({
+            $pill_container: $(`#id_${CSS.escape(setting_name)}`),
+            setting_name,
+            group,
+        });
+    }
 
-    settings_components.create_group_setting_widget({
-        $pill_container: $("#id_can_manage_group"),
-        setting_name: "can_manage_group",
-        group,
-    });
-
-    settings_components.create_group_setting_widget({
-        $pill_container: $("#id_can_join_group"),
-        setting_name: "can_join_group",
-        group,
-    });
-
-    settings_components.create_group_setting_widget({
-        $pill_container: $("#id_can_leave_group"),
-        setting_name: "can_leave_group",
-        group,
-    });
-
-    settings_components.create_group_setting_widget({
-        $pill_container: $("#id_can_mention_group"),
-        setting_name: "can_mention_group",
-        group,
-    });
     update_general_panel_ui(group);
 }
 
