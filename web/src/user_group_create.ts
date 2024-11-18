@@ -260,28 +260,27 @@ export function set_up_handlers(): void {
     settings_components.enable_opening_typeahead_on_clicking_label($container);
 
     can_add_members_group_widget = settings_components.create_group_setting_widget({
-        $pill_container: $container.find(".can-add-members-group-container .pill-container"),
+        $pill_container: $("#id_new_group_can_add_members_group"),
         setting_name: "can_add_members_group",
     });
 
-    const $pill_container = $container.find(".can-manage-group-container .pill-container");
     can_manage_group_widget = settings_components.create_group_setting_widget({
-        $pill_container,
+        $pill_container: $("#id_new_group_can_manage_group"),
         setting_name: "can_manage_group",
     });
 
     can_join_group_widget = settings_components.create_group_setting_widget({
-        $pill_container: $container.find(".can-join-group-container .pill-container"),
+        $pill_container: $("#id_new_group_can_join_group"),
         setting_name: "can_join_group",
     });
 
     can_leave_group_widget = settings_components.create_group_setting_widget({
-        $pill_container: $container.find(".can-leave-group-container .pill-container"),
+        $pill_container: $("#id_new_group_can_leave_group"),
         setting_name: "can_leave_group",
     });
 
     can_mention_group_widget = settings_components.create_group_setting_widget({
-        $pill_container: $container.find(".can-mention-group-container .pill-container"),
+        $pill_container: $("#id_new_group_can_mention_group"),
         setting_name: "can_mention_group",
     });
 }

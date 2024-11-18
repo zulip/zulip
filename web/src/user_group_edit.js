@@ -154,33 +154,32 @@ function show_membership_settings(group) {
 }
 
 function show_general_settings(group) {
-    const $edit_container = get_edit_container(group);
     settings_components.create_group_setting_widget({
-        $pill_container: $edit_container.find(".can-add-members-group-container .pill-container"),
+        $pill_container: $("#id_can_add_members_group"),
         setting_name: "can_add_members_group",
         group,
     });
 
     settings_components.create_group_setting_widget({
-        $pill_container: $edit_container.find(".can-manage-group-container .pill-container"),
+        $pill_container: $("#id_can_manage_group"),
         setting_name: "can_manage_group",
         group,
     });
 
     settings_components.create_group_setting_widget({
-        $pill_container: $edit_container.find(".can-join-group-container .pill-container"),
+        $pill_container: $("#id_can_join_group"),
         setting_name: "can_join_group",
         group,
     });
 
     settings_components.create_group_setting_widget({
-        $pill_container: $edit_container.find(".can-leave-group-container .pill-container"),
+        $pill_container: $("#id_can_leave_group"),
         setting_name: "can_leave_group",
         group,
     });
 
     settings_components.create_group_setting_widget({
-        $pill_container: $edit_container.find(".can-mention-group-container .pill-container"),
+        $pill_container: $("#id_can_mention_group"),
         setting_name: "can_mention_group",
         group,
     });
