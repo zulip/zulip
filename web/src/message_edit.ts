@@ -1272,7 +1272,7 @@ export function edit_last_sent_message(): void {
         return;
     }
 
-    message_lists.current.select_id(msg.id, {then_scroll: true, from_scroll: true});
+    message_lists.current.select_id(msg.id, {then_scroll: true});
 
     const $msg_row = message_lists.current.get_row(msg.id);
     if (!$msg_row) {
