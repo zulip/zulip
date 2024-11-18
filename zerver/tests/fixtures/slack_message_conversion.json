@@ -94,6 +94,11 @@
       "name": "format_emoji_test",
       "input": "*1️⃣ bold* some _1️⃣ italic_ word ~1️⃣ strike~",
       "conversion_output": "**1️⃣ bold** some *1️⃣ italic* word ~~1️⃣ strike~~"
+    },
+    {
+      "name": "overlapping_capture_group_test",
+      "input": "*abc*\n*def*\n*ghi*\n*jkl*\n\n*ABC ABC*",
+      "conversion_output": "**abc**\n**def**\n**ghi**\n**jkl**\n\n**ABC ABC**"
     }
   ]
 }

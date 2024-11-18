@@ -52,21 +52,21 @@ SLACK_STRIKETHROUGH_REGEX = r"""
                              (\~)                                  # followed by an ~
                                 ([^~]*)            # any character except ~
                              (\~)                                  # followed by an ~
-                             (\n|$|[ -']|[+-/]|[:-?]|\*|\_|\}|\)|\]|\||\^)  # ends with specified characters
+                             (?=\n|$|[ -']|[+-/]|[:-?]|\*|\_|\}|\)|\]|\||\^)  # ends with specified characters
                              """
 SLACK_ITALIC_REGEX = r"""
                       (\n|^|[ -*]|[+-/]|[:-?]|\{|\[|\||\^|~)
                       (\_)
                           ([^_]*)                # any character except _
                       (\_)
-                      (\n|$|[ -']|[+-/]|[:-?]|\}|\)|\]|\*|\||\^|~)
+                      (?=\n|$|[ -']|[+-/]|[:-?]|\}|\)|\]|\*|\||\^|~)
                       """
 SLACK_BOLD_REGEX = r"""
                     (\n|^|[ -(]|[+-/]|[:-?]|\{|\[|\_|\||\^|~)
                     (\*)
                         ([^*]*)                 # any character except *
                     (\*)
-                    (\n|$|[ -']|[+-/]|[:-?]|\}|\)|\]|\_|\||\^|~)
+                    (?=\n|$|[ -']|[+-/]|[:-?]|\}|\)|\]|\_|\||\^|~)
                     """
 
 
@@ -139,9 +139,7 @@ def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
     3. For italic formatting: This maps Slack's '_italic_' to Zulip's '*italic*'
     """
     for match in re.finditer(regex, text, re.VERBOSE):
-        converted_token = (
-            match.group(1) + zulip_keyword + match.group(3) + zulip_keyword + match.group(5)
-        )
+        converted_token = match.group(1) + zulip_keyword + match.group(3) + zulip_keyword
         text = text.replace(match.group(0), converted_token)
     return text
 
