@@ -24,7 +24,7 @@ import * as stream_color_events from "./stream_color_events.ts";
 import * as stream_create from "./stream_create.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
-import * as stream_muting from "./stream_muting.js";
+import * as stream_muting from "./stream_muting.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_settings_ui from "./stream_settings_ui.js";
 import * as sub_store from "./sub_store.ts";
