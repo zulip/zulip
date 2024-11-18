@@ -2402,7 +2402,7 @@ button {
     border-left: 6px solid hsl(168.1deg 49.15% 46.27%);
 }
 
-#why-zulip-page,
+.why-page,
 .case-study-page,
 .solutions-page {
     .bottom-register-buttons.extra_margin_before_footer {
@@ -2692,7 +2692,7 @@ button {
 }
 
 .self-hosting-page,
-#why-zulip-page {
+.why-page {
     .hero-buttons {
         margin-top: 30px;
     }
