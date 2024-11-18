@@ -742,10 +742,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     ],
     "buildbot": [ScreenshotConfig("started.json")],
     "canarytoken": [ScreenshotConfig("canarytoken_real.json")],
-    "circleci": [
-        ScreenshotConfig("bitbucket_job_completed.json", image_name="001.png"),
-        ScreenshotConfig("github_job_completed.json", image_name="002.png"),
-    ],
+    "circleci": [ScreenshotConfig("github_job_completed.json")],
     "clubhouse": [ScreenshotConfig("story_create.json")],
     "codeship": [ScreenshotConfig("error_build.json")],
     "crashlytics": [ScreenshotConfig("issue_message.json")],
