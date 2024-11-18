@@ -10420,6 +10420,8 @@ paths:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 can_remove_subscribers_group:
                   $ref: "#/components/schemas/CanRemoveSubscribersGroup"
+                can_administer_channel_group:
+                  $ref: "#/components/schemas/CanAdministerChannelGroup"
               required:
                 - subscriptions
             encoding:
@@ -10442,6 +10444,8 @@ paths:
               stream_post_policy:
                 contentType: application/json
               can_remove_subscribers_group:
+                contentType: application/json
+              can_administer_channel_group:
                 contentType: application/json
       responses:
         "200":
@@ -14906,6 +14910,7 @@ paths:
                                 is_recently_active: {}
                                 is_announcement_only: {}
                                 can_remove_subscribers_group: {}
+                                can_administer_channel_group: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -19736,6 +19741,7 @@ paths:
                                 is_recently_active: {}
                                 is_announcement_only: {}
                                 can_remove_subscribers_group: {}
+                                can_administer_channel_group: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -20086,6 +20092,47 @@ paths:
                       "new": {"direct_members": [10], "direct_subgroups": [11]},
                       "old": 15,
                     }
+                can_administer_channel_group:
+                  description: |
+                    The set of users who have permission to administer this channel
+                    expressed as an [update to a group-setting value][update-group-setting].
+
+                    Note that a user who is a member of the specified user group must
+                    also [have access](/help/channel-permissions) to the channel in
+                    order to administer the channel.
+
+                    Realm admins are allowed to administer a channel they have access to
+                    regardless of whether they are present in this group.
+
+                    Users in this group can edit channel name and description without
+                    subscribing to the channel, but they need to be subscribed to edit
+                    channel permissions and add users.
+
+                    **Changes**: New in Zulip 10.0 (feature level 325). Prior to this
+                    change, the permission to administer channels was limited to realm
+                    administrators.
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    new:
+                      allOf:
+                        - description: |
+                            The new [group-setting value](/api/group-setting-values) for who would
+                            have the permission to administer this channel.
+                        - $ref: "#/components/schemas/CanAdministerChannelGroup"
+                    old:
+                      allOf:
+                        - description: |
+                            The expected current [group-setting value](/api/group-setting-values)
+                            for who has the permission to administer this channel.
+                        - $ref: "#/components/schemas/CanAdministerChannelGroup"
+                  required:
+                    - new
+                  example:
+                    {
+                      "new": {"direct_members": [10], "direct_subgroups": [11]},
+                      "old": 15,
+                    }
             encoding:
               is_private:
                 contentType: application/json
@@ -20100,6 +20147,8 @@ paths:
               stream_post_policy:
                 contentType: application/json
               can_remove_subscribers_group:
+                contentType: application/json
+              can_administer_channel_group:
                 contentType: application/json
       responses:
         "200":
@@ -21815,6 +21864,7 @@ components:
             is_recently_active: {}
             is_announcement_only: {}
             can_remove_subscribers_group: {}
+            can_administer_channel_group: {}
             stream_weekly_traffic:
               type: integer
               nullable: true
@@ -21872,6 +21922,7 @@ components:
             is_recently_active: {}
             is_announcement_only: {}
             can_remove_subscribers_group: {}
+            can_administer_channel_group: {}
           required:
             - stream_id
             - name
@@ -22026,6 +22077,8 @@ components:
             should use `stream_post_policy` instead.
         can_remove_subscribers_group:
           $ref: "#/components/schemas/CanRemoveSubscribersGroup"
+        can_administer_channel_group:
+          $ref: "#/components/schemas/CanAdministerChannelGroup"
     BasicBot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -23055,6 +23108,8 @@ components:
             insufficient data to estimate the average traffic.
         can_remove_subscribers_group:
           $ref: "#/components/schemas/CanRemoveSubscribersGroup"
+        can_administer_channel_group:
+          $ref: "#/components/schemas/CanAdministerChannelGroup"
         is_archived:
           type: boolean
           description: |
@@ -24745,6 +24800,29 @@ components:
             setting was named `can_remove_subscribers_group_id`.
 
             New in Zulip 6.0 (feature level 142).
+
+            [setting-values]: /api/group-setting-values
+    CanAdministerChannelGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to administer this channel.
+
+            Note that a user who is a member of the specified user group must
+            also [have access](/help/channel-permissions) to the channel in
+            order to administer the channel.
+
+            Realm admins are allowed to administer a channel they have access to
+            regardless of whether they are present in this group.
+
+            Users in this group can edit channel name and description without
+            subscribing to the channel, but they need to be subscribed to edit
+            channel permissions and add users.
+
+            **Changes**: New in Zulip 10.0 (feature level 325). Prior to this
+            change, the permission to administer channels was limited to realm
+            administrators.
 
             [setting-values]: /api/group-setting-values
     LinkifierPattern:

@@ -52,6 +52,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
     for stream in streams:
         # Add Stream fields.
         is_archived = stream.deactivated
+        can_administer_channel_group = setting_groups_dict[stream.can_administer_channel_group_id]
         can_remove_subscribers_group = setting_groups_dict[stream.can_remove_subscribers_group_id]
         creator_id = stream.creator_id
         date_created = datetime_to_timestamp(stream.date_created)
@@ -86,6 +87,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
         sub = SubscriptionStreamDict(
             is_archived=is_archived,
             audible_notifications=audible_notifications,
+            can_administer_channel_group=can_administer_channel_group,
             can_remove_subscribers_group=can_remove_subscribers_group,
             color=color,
             creator_id=creator_id,
@@ -146,12 +148,16 @@ def build_stream_api_dict(
     # migration.
     is_announcement_only = raw_stream_dict["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
 
+    can_administer_channel_group = setting_groups_dict[
+        raw_stream_dict["can_administer_channel_group_id"]
+    ]
     can_remove_subscribers_group = setting_groups_dict[
         raw_stream_dict["can_remove_subscribers_group_id"]
     ]
 
     return APIStreamDict(
         is_archived=raw_stream_dict["deactivated"],
+        can_administer_channel_group=can_administer_channel_group,
         can_remove_subscribers_group=can_remove_subscribers_group,
         creator_id=raw_stream_dict["creator_id"],
         date_created=datetime_to_timestamp(raw_stream_dict["date_created"]),
@@ -178,6 +184,7 @@ def build_stream_dict_for_sub(
 ) -> SubscriptionStreamDict:
     # Handle Stream.API_FIELDS
     is_archived = stream_dict["is_archived"]
+    can_administer_channel_group = stream_dict["can_administer_channel_group"]
     can_remove_subscribers_group = stream_dict["can_remove_subscribers_group"]
     creator_id = stream_dict["creator_id"]
     date_created = stream_dict["date_created"]
@@ -213,6 +220,7 @@ def build_stream_dict_for_sub(
     return SubscriptionStreamDict(
         is_archived=is_archived,
         audible_notifications=audible_notifications,
+        can_administer_channel_group=can_administer_channel_group,
         can_remove_subscribers_group=can_remove_subscribers_group,
         color=color,
         creator_id=creator_id,
@@ -267,6 +275,9 @@ def build_stream_dict_for_never_sub(
     else:
         stream_weekly_traffic = None
 
+    can_administer_channel_group_value = setting_groups_dict[
+        raw_stream_dict["can_administer_channel_group_id"]
+    ]
     can_remove_subscribers_group_value = setting_groups_dict[
         raw_stream_dict["can_remove_subscribers_group_id"]
     ]
@@ -277,6 +288,7 @@ def build_stream_dict_for_never_sub(
     # Our caller may add a subscribers field.
     return NeverSubscribedStreamDict(
         is_archived=is_archived,
+        can_administer_channel_group=can_administer_channel_group_value,
         can_remove_subscribers_group=can_remove_subscribers_group_value,
         creator_id=creator_id,
         date_created=date_created,
