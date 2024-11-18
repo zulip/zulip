@@ -844,9 +844,9 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
             "007.png",
             use_basic_auth=True,
             extra_params={
-                "ticket_title": "Test ticket",
-                "ticket_id": "4",
-                "message": "Test message",
+                "ticket_title": "Hardware Ecosystem Compatibility Inquiry",
+                "ticket_id": "4837",
+                "message": "Hi, I am planning to purchase the X5000 smartphone and want to ensure compatibility with my existing devices - WDX10 wireless earbuds and Z600 smartwatch. Are there any known issues?",
             },
         )
     ],
