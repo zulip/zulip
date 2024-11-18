@@ -1,6 +1,8 @@
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
+import type {Bot} from "./bot_data.ts";
+import * as bot_data from "./bot_data.ts";
 import * as color_data from "./color_data.ts";
 import {FoldDict} from "./fold_dict.ts";
 import {page_params} from "./page_params.ts";
@@ -493,10 +495,28 @@ export function can_toggle_subscription(sub: StreamSubscription): boolean {
     );
 }
 
+export function get_current_user_and_their_bots_with_post_messages_permission(
+    sub: StreamSubscription,
+): (User | Bot)[] {
+    const senders_with_post_messages_permission: (User | Bot)[] = [];
+
+    if (can_post_messages_in_stream(sub)) {
+        senders_with_post_messages_permission.push(people.get_by_user_id(current_user.user_id));
+    }
+
+    for (const bot of bot_data.get_all_bots_for_current_user()) {
+        if (bot.is_active && can_post_messages_in_stream(sub, bot)) {
+            senders_with_post_messages_permission.push(bot);
+        }
+    }
+    return senders_with_post_messages_permission;
+}
+
 export function can_access_stream_email(sub: StreamSubscription): boolean {
     return (
-        (sub.subscribed || sub.is_web_public || (!current_user.is_guest && !sub.invite_only)) &&
-        !page_params.is_spectator
+        !page_params.is_spectator &&
+        sub.subscribed &&
+        get_current_user_and_their_bots_with_post_messages_permission(sub).length > 0
     );
 }
 
@@ -598,7 +618,7 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
 
 export let can_post_messages_in_stream = function (
     stream: StreamSubscription,
-    sender: CurrentUser = current_user,
+    sender: CurrentUser | Bot = current_user,
 ): boolean {
     if (stream.is_archived) {
         return false;

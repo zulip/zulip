@@ -23,6 +23,8 @@ const stream_settings_data = zrequire("stream_settings_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
+const bot_data = mock_esm("../src/bot_data");
+
 const current_user = {};
 set_current_user(current_user);
 const realm = {};
@@ -1368,34 +1370,45 @@ test("can_access_stream_email", ({override}) => {
         is_muted: false,
         invite_only: true,
         history_public_to_subscribers: false,
+        stream_post_policy: settings_config.stream_post_policy_values.admins.code,
     };
-    override(current_user, "is_admin", false);
-    assert.equal(stream_data.can_access_stream_email(social), true);
-
-    override(current_user, "is_admin", true);
-    assert.equal(stream_data.can_access_stream_email(social), true);
-
-    social.subscribed = false;
-    assert.equal(stream_data.can_access_stream_email(social), false);
-
-    social.invite_only = false;
-    assert.equal(stream_data.can_access_stream_email(social), true);
-
-    override(current_user, "is_admin", false);
-    assert.equal(stream_data.can_access_stream_email(social), true);
-
-    override(current_user, "is_guest", true);
-    assert.equal(stream_data.can_access_stream_email(social), false);
-
-    social.subscribed = true;
-    assert.equal(stream_data.can_access_stream_email(social), true);
-
-    social.is_web_public = true;
-    assert.equal(stream_data.can_access_stream_email(social), true);
-
-    social.subscribed = false;
-    assert.equal(stream_data.can_access_stream_email(social), true);
+    const bot = {
+        is_active: true,
+        user_id: 999,
+    };
+    const bot_user = {
+        email: "bot@zulip.com",
+        full_name: "Bot User",
+        user_id: 999,
+        is_bot: true,
+        role: settings_config.user_role_values.moderator.code,
+    };
+    people.add_active_user(bot_user);
+    override(bot_data, "get_all_bots_for_current_user", () => [bot]);
 
     page_params.is_spectator = true;
     assert.equal(stream_data.can_access_stream_email(social), false);
+    page_params.is_spectator = false;
+
+    social.subscribed = false;
+    assert.equal(stream_data.can_access_stream_email(social), false);
+    social.subscribed = true;
+
+    // Neither the user nor any of the bots they control can post message.
+    me.is_moderator = true;
+    assert.equal(stream_data.can_access_stream_email(social), false);
+
+    // user can but none of the bots they control can post message.
+    me.is_admin = true;
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    // user can't but one of the bots they control can post message.
+    me.is_admin = false;
+    me.is_moderator = false;
+    social.stream_post_policy = settings_config.stream_post_policy_values.moderators.code;
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    // Both the user and one of the bots they control can post message.
+    me.is_moderator = true;
+    assert.equal(stream_data.can_access_stream_email(social), true);
 });
