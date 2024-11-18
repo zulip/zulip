@@ -7,7 +7,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
-import * as settings_sections from "./settings_sections.js";
+import * as settings_sections from "./settings_sections.ts";
 import {redraw_active_users_list, redraw_deactivated_users_list} from "./settings_users.ts";
 
 export let normal_settings;
