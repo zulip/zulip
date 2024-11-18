@@ -241,7 +241,7 @@ EXEMPT_FILES = make_set(
         "web/src/stream_edit_subscribers.ts",
         "web/src/stream_edit_toggler.ts",
         "web/src/stream_list.ts",
-        "web/src/stream_muting.js",
+        "web/src/stream_muting.ts",
         "web/src/stream_popover.js",
         "web/src/stream_settings_api.ts",
         "web/src/stream_settings_components.ts",

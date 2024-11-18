@@ -2,9 +2,10 @@ import * as message_lists from "./message_lists.ts";
 import * as settings_notifications from "./settings_notifications.ts";
 import * as stream_edit from "./stream_edit.ts";
 import * as stream_list from "./stream_list.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 import * as unread_ui from "./unread_ui.ts";
 
-export function update_is_muted(sub, value) {
+export function update_is_muted(sub: StreamSubscription, value: boolean): void {
     sub.is_muted = value;
 
     for (const msg_list of message_lists.all_rendered_message_lists()) {
