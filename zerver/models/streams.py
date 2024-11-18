@@ -121,10 +121,14 @@ class Stream(models.Model):
     }
     message_retention_days = models.IntegerField(null=True, default=None)
 
-    # on_delete field here is set to RESTRICT because we don't want to allow
-    # deleting a user group in case it is referenced by this setting.
-    # We are not using PROTECT since we want to allow deletion of user groups
-    # when realm itself is deleted.
+    # on_delete field for group value settings is set to RESTRICT
+    # because we don't want to allow deleting a user group in case it
+    # is referenced by the respective setting. We are not using PROTECT
+    # since we want to allow deletion of user groups when the realm
+    # itself is deleted.
+    can_administer_channel_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
     can_remove_subscribers_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT)
 
     # The very first message ID in the stream.  Used to help clients
@@ -138,6 +142,15 @@ class Stream(models.Model):
     is_recently_active = models.BooleanField(default=True, db_default=True)
 
     stream_permission_group_settings = {
+        "can_administer_channel_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=True,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.NOBODY,
+            id_field_name="can_administer_channel_group_id",
+        ),
         "can_remove_subscribers_group": GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
@@ -188,6 +201,7 @@ class Stream(models.Model):
         "name",
         "rendered_description",
         "stream_post_policy",
+        "can_administer_channel_group_id",
         "can_remove_subscribers_group_id",
         "is_recently_active",
     ]
@@ -195,6 +209,7 @@ class Stream(models.Model):
     def to_dict(self) -> DefaultStreamDict:
         return DefaultStreamDict(
             is_archived=self.deactivated,
+            can_administer_channel_group=self.can_administer_channel_group_id,
             can_remove_subscribers_group=self.can_remove_subscribers_group_id,
             creator_id=self.creator_id,
             date_created=datetime_to_timestamp(self.date_created),

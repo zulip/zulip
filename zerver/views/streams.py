@@ -259,6 +259,7 @@ def update_stream_backend(
     is_web_public: Json[bool] | None = None,
     new_name: str | None = None,
     message_retention_days: Json[str] | Json[int] | None = None,
+    can_administer_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
 ) -> HttpResponse:
     # We allow realm administrators to update the stream name and
@@ -580,6 +581,7 @@ def add_subscriptions_backend(
     ] = Stream.STREAM_POST_POLICY_EVERYONE,
     history_public_to_subscribers: Json[bool] | None = None,
     message_retention_days: Json[str] | Json[int] = RETENTION_DEFAULT,
+    can_administer_channel_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_remove_subscribers_group: Json[int | AnonymousSettingGroupDict] | None = None,
     announce: Json[bool] = False,
     principals: Json[list[str] | list[int]] | None = None,
@@ -640,6 +642,9 @@ def add_subscriptions_backend(
         stream_dict_copy["message_retention_days"] = parse_message_retention_days(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
+        stream_dict_copy["can_administer_channel_group"] = group_settings_map[
+            "can_administer_channel_group"
+        ]
         stream_dict_copy["can_remove_subscribers_group"] = group_settings_map[
             "can_remove_subscribers_group"
         ]

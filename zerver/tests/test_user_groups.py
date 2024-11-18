@@ -1487,6 +1487,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 stream, setting_name, moderators_group, acting_user=None
             )
 
+            # Unarchive the stream for the next test
+            do_unarchive_stream(stream, "support", acting_user=None)
+
         leadership_group = self.create_user_group_for_test(
             "leadership", acting_user=self.example_user("othello")
         )
