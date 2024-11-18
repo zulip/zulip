@@ -46,7 +46,9 @@ PNPM="/usr/local/bin/pnpm"
 FILE_PATH="static/images/integrations/logos"
 
 if [ -n "$CHECK_UNOPTIMIZED" ]; then
-    RESULT=$("$PNPM" exec svgo -f "$FILE_PATH" | grep -o '\.[0-9]% = ' | wc -l)
+    TEMP_PATH=$(mktemp -d svgo_temp_XXXXXX)
+    RESULT=$("$PNPM" exec svgo -o "$TEMP_PATH" -f "$FILE_PATH" | grep -o '\.[0-9]% = ' | wc -l)
+    rm -rf "$TEMP_PATH"
     if [ "$RESULT" -ge 1 ]; then
         echo "ERROR: svgo detected unoptimized SVG file(s)." 1>&2
         echo "Please run tools/setup/optimize-svg and commit the file changes to optimize them."
