@@ -539,7 +539,7 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(exported_realm_user_default[0]["default_language"], "de")
 
         exported_usergroups = data["zerver_usergroup"]
-        self.assert_length(exported_usergroups, 11)
+        self.assert_length(exported_usergroups, 14)
         self.assertFalse("direct_members" in exported_usergroups[2])
         self.assertFalse("direct_subgroups" in exported_usergroups[2])
 

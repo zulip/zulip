@@ -209,6 +209,7 @@ def bulk_create_streams(realm: Realm, stream_dict: dict[str, dict[str, Any]]) ->
             options["history_public_to_subscribers"] = (
                 not options.get("invite_only", False) and not realm.is_zephyr_mirror_realm
             )
+        creator = options.get("creator", None)
         if name.lower() not in existing_streams:
             streams_to_create.append(
                 Stream(
@@ -224,7 +225,7 @@ def bulk_create_streams(realm: Realm, stream_dict: dict[str, dict[str, Any]]) ->
                     is_web_public=options.get("is_web_public", False),
                     is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
                     creator=options.get("creator", None),
-                    **get_default_values_for_stream_permission_group_settings(realm),
+                    **get_default_values_for_stream_permission_group_settings(realm, creator),
                 ),
             )
     # Sort streams by name before creating them so that we can have a

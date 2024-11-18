@@ -616,7 +616,7 @@ def add_subscriptions_backend(
             if system_groups_name_dict is None:
                 system_groups_name_dict = get_role_based_system_groups_dict(realm)
             group_settings_map[setting_name] = get_stream_permission_default_group(
-                setting_name, system_groups_name_dict
+                setting_name, system_groups_name_dict, creator=user_profile
             )
             setting_groups_dict[group_settings_map[setting_name].id] = group_settings_map[
                 setting_name

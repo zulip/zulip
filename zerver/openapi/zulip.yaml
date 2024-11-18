@@ -24935,7 +24935,7 @@ components:
         The ID of the target user group.
       schema:
         type: integer
-      example: 35
+      example: 38
       required: true
     QueueId:
       name: queue_id

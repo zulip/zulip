@@ -1428,7 +1428,11 @@ Output:
             stream = get_stream(stream_name, user_profile.realm)
         except Stream.DoesNotExist:
             stream, from_stream_creation = create_stream_if_needed(
-                realm, stream_name, invite_only=invite_only, is_web_public=is_web_public
+                realm,
+                stream_name,
+                invite_only=invite_only,
+                is_web_public=is_web_public,
+                acting_user=user_profile,
             )
         bulk_add_subscriptions(realm, [stream], [user_profile], acting_user=None)
         return stream
