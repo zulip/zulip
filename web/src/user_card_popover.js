@@ -32,7 +32,7 @@ import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {hide_all} from "./popovers.ts";
 import * as rows from "./rows.ts";
-import * as settings_panel_menu from "./settings_panel_menu.js";
+import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as timerender from "./timerender.ts";

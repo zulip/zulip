@@ -16,7 +16,7 @@ import * as people from "./people.ts";
 import * as settings_bots from "./settings_bots.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import * as settings_panel_menu from "./settings_panel_menu.js";
+import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_preferences from "./settings_preferences.ts";
 import * as settings_sections from "./settings_sections.ts";
 import * as settings_toggle from "./settings_toggle.js";
