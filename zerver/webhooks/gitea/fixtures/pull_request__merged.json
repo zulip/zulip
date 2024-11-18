@@ -5,7 +5,7 @@
   "pull_request": {
     "id": 1905,
     "url": "https://try.gitea.io/kostekIV/test/pulls/4",
-    "number": 4,
+    "number": 1905,
     "user": {
       "id": 21818,
       "login": "kostekIV",
@@ -18,7 +18,7 @@
       "created": "2019-11-15T19:17:02Z",
       "username": "kostekIV"
     },
-    "title": "New pr",
+    "title": "Fix remove-op on reaction event",
     "body": "Body",
     "labels": [],
     "milestone": null,
@@ -47,7 +47,7 @@
     },
     "base": {
       "label": "master",
-      "ref": "master",
+      "ref": "main",
       "sha": "1d40c3be7919f066f9158eaaaecaf696b3e22886",
       "repo_id": 14576,
       "repo": {
@@ -110,7 +110,7 @@
     },
     "head": {
       "label": "test-branch",
-      "ref": "test-branch",
+      "ref": "reaction-metadata",
       "sha": "01efc1fe09d4fba25397a386a6c623fd12eadd79",
       "repo_id": 14576,
       "repo": {
@@ -191,7 +191,7 @@
       "created": "2019-11-15T19:17:02Z",
       "username": "kostekIV"
     },
-    "name": "test",
+    "name": "zulip-terminal",
     "full_name": "kostekIV/test",
     "description": "",
     "empty": false,

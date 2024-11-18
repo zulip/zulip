@@ -30,8 +30,8 @@ class GiteaHookTests(WebhookTestCase):
         self.check_webhook("pull_request__opened", expected_topic_name, expected_message)
 
     def test_pull_request_merged(self) -> None:
-        expected_topic_name = "test / PR #1905 New pr"
-        expected_message = """kostekIV merged [PR #4](https://try.gitea.io/kostekIV/test/pulls/4) from `test-branch` to `master`."""
+        expected_topic_name = "zulip-terminal / PR #1905 Fix remove-op on reaction event"
+        expected_message = """kostekIV merged [PR #1905](https://try.gitea.io/kostekIV/test/pulls/4) from `reaction-metadata` to `main`."""
         self.check_webhook("pull_request__merged", expected_topic_name, expected_message)
 
     def test_pull_request_edited(self) -> None:
