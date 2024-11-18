@@ -3,7 +3,7 @@
         {{#if banner_text}}
         <p class="banner_content">{{banner_text}}</p>
         {{else}}
-        <div class="banner_content">{{> @partial-block}}</div>
+        <div class="banner_content">{{> @partial-block .}}</div>
         {{/if}}
         {{#if button_text}}
         {{#if button_link}}
