@@ -590,6 +590,7 @@ def add_subscriptions_backend(
     if principals is None:
         principals = []
 
+    setting_groups_dict = {}
     if can_remove_subscribers_group is not None:
         setting_value = parse_group_setting_value(
             can_remove_subscribers_group, "can_remove_subscribers_group"
@@ -603,6 +604,7 @@ def add_subscriptions_backend(
             setting_name="can_remove_subscribers_group",
             permission_configuration=permission_configuration,
         )
+        setting_groups_dict[can_remove_subscribers_group_value.id] = setting_value
     else:
         can_remove_subscribers_group_default_name = Stream.stream_permission_group_settings[
             "can_remove_subscribers_group"
@@ -611,6 +613,9 @@ def add_subscriptions_backend(
             name=can_remove_subscribers_group_default_name,
             realm=user_profile.realm,
             is_system_group=True,
+        )
+        setting_groups_dict[can_remove_subscribers_group_value.id] = (
+            can_remove_subscribers_group_value.id
         )
 
     for stream_obj in streams_raw:
@@ -655,7 +660,11 @@ def add_subscriptions_backend(
     # can_create_streams policy and check_stream_name policy is inside
     # list_to_streams.
     existing_streams, created_streams = list_to_streams(
-        stream_dicts, user_profile, autocreate=True, is_default_stream=is_default_stream
+        stream_dicts,
+        user_profile,
+        autocreate=True,
+        is_default_stream=is_default_stream,
+        setting_groups_dict=setting_groups_dict,
     )
     authorized_streams, unauthorized_streams = filter_stream_authorization(
         user_profile, existing_streams
