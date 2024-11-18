@@ -234,7 +234,10 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
 
     notify_users = admin_users_and_bots | subscribed_users
 
-    send_stream_creation_event(realm, stream, [user.id for user in notify_users], recent_traffic)
+    setting_groups_dict = get_group_setting_value_dict_for_streams([stream])
+    send_stream_creation_event(
+        realm, stream, [user.id for user in notify_users], recent_traffic, setting_groups_dict
+    )
 
     sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
     with override_language(stream.realm.default_language):
@@ -1235,7 +1238,10 @@ def do_change_stream_permission(
         notify_stream_creation_ids = non_guest_user_ids - old_can_access_stream_user_ids
 
         recent_traffic = get_streams_traffic({stream.id}, realm)
-        send_stream_creation_event(realm, stream, list(notify_stream_creation_ids), recent_traffic)
+        setting_groups_dict = get_group_setting_value_dict_for_streams([stream])
+        send_stream_creation_event(
+            realm, stream, list(notify_stream_creation_ids), recent_traffic, setting_groups_dict
+        )
 
         # Add subscribers info to the stream object. We need to send peer_add
         # events to users who were previously subscribed to the streams as

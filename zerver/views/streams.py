@@ -62,6 +62,7 @@ from zerver.lib.streams import (
     check_stream_name_available,
     do_get_streams,
     filter_stream_authorization,
+    get_group_setting_value_dict_for_streams,
     get_stream_permission_policy_name,
     list_to_streams,
     stream_to_dict,
@@ -895,7 +896,11 @@ def get_stream_backend(
     (stream, sub) = access_stream_by_id(user_profile, stream_id, allow_realm_admin=True)
 
     recent_traffic = get_streams_traffic({stream.id}, user_profile.realm)
-    return json_success(request, data={"stream": stream_to_dict(stream, recent_traffic)})
+    setting_groups_dict = get_group_setting_value_dict_for_streams([stream])
+
+    return json_success(
+        request, data={"stream": stream_to_dict(stream, recent_traffic, setting_groups_dict)}
+    )
 
 
 @typed_endpoint
