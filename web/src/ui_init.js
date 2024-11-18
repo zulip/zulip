@@ -185,7 +185,6 @@ function initialize_compose_box() {
                 giphy_enabled: giphy_state.is_giphy_enabled(),
                 max_stream_name_length: realm.max_stream_name_length,
                 max_topic_length: realm.max_topic_length,
-                max_message_length: realm.max_message_length,
             }),
         ),
     );

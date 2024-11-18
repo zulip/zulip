@@ -13,6 +13,7 @@ import {$t} from "./i18n.ts";
 import {pick_empty_narrow_banner} from "./narrow_banner.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as popover_menus from "./popover_menus.ts";
+import {realm} from "./state_data.ts";
 import {EXTRA_LONG_HOVER_DELAY, INSTANT_HOVER_DELAY, LONG_HOVER_DELAY} from "./tippyjs.ts";
 import {parse_html} from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
@@ -166,6 +167,21 @@ export function initialize(): void {
             return undefined;
         },
         appendTo: () => document.body,
+    });
+
+    tippy.delegate("body", {
+        target: "#compose-limit-indicator",
+        delay: INSTANT_HOVER_DELAY,
+        trigger: "mouseenter",
+        appendTo: () => document.body,
+        onShow(instance) {
+            instance.setContent(
+                $t(
+                    {defaultMessage: `Maximum message length: {max_length} characters`},
+                    {max_length: realm.max_message_length},
+                ),
+            );
+        },
     });
 
     tippy.delegate("body", {
