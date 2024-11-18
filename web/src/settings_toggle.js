@@ -2,7 +2,7 @@ import $ from "jquery";
 
 import * as components from "./components.ts";
 import {$t} from "./i18n.ts";
-import * as settings_panel_menu from "./settings_panel_menu.js";
+import * as settings_panel_menu from "./settings_panel_menu.ts";
 
 let toggler;
 

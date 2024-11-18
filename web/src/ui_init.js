@@ -106,7 +106,7 @@ import * as server_events from "./server_events.js";
 import * as settings from "./settings.js";
 import * as settings_data from "./settings_data.ts";
 import * as settings_notifications from "./settings_notifications.ts";
-import * as settings_panel_menu from "./settings_panel_menu.js";
+import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_preferences from "./settings_preferences.ts";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults.ts";
 import * as settings_sections from "./settings_sections.ts";

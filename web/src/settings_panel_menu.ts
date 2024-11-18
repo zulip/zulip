@@ -3,34 +3,36 @@ import $ from "jquery";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as components from "./components.ts";
+import type {Toggle} from "./components.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_sections from "./settings_sections.ts";
 import {redraw_active_users_list, redraw_deactivated_users_list} from "./settings_users.ts";
+import * as util from "./util.ts";
 
-export let normal_settings;
-export let org_settings;
+export let normal_settings: SettingsPanelMenu;
+export let org_settings: SettingsPanelMenu;
 
-export function mobile_deactivate_section() {
+export function mobile_deactivate_section(): void {
     const $settings_overlay_container = $("#settings_overlay_container");
     $settings_overlay_container.find(".right").removeClass("show");
     $settings_overlay_container.find(".settings-header.mobile").removeClass("slide-left");
 }
 
-export function mobile_activate_section() {
+export function mobile_activate_section(): void {
     const $settings_overlay_container = $("#settings_overlay_container");
     $settings_overlay_container.find(".right").addClass("show");
     $settings_overlay_container.find(".settings-header.mobile").addClass("slide-left");
 }
 
-function two_column_mode() {
+function two_column_mode(): boolean {
     return $("#settings_overlay_container").css("--single-column") === undefined;
 }
 
-function set_settings_header(key) {
-    const selected_tab_key = $("#settings_page .tab-switcher .selected").data("tab-key");
+function set_settings_header(key: string): void {
+    const selected_tab_key = $("#settings_page .tab-switcher .selected").attr("data-tab-key");
     let header_prefix = $t_html({defaultMessage: "Personal settings"});
     if (selected_tab_key === "organization") {
         header_prefix = $t_html({defaultMessage: "Organization settings"});
@@ -53,11 +55,18 @@ function set_settings_header(key) {
 }
 
 export class SettingsPanelMenu {
-    constructor(opts) {
+    $main_elem: JQuery;
+    hash_prefix: string;
+    $curr_li: JQuery;
+    current_tab: string;
+    current_user_settings_tab: string;
+    org_user_settings_toggler: Toggle;
+
+    constructor(opts: {$main_elem: JQuery; hash_prefix: string}) {
         this.$main_elem = opts.$main_elem;
         this.hash_prefix = opts.hash_prefix;
         this.$curr_li = this.$main_elem.children("li").eq(0);
-        this.current_tab = this.$curr_li.data("section");
+        this.current_tab = this.$curr_li.attr("data-section")!;
         this.current_user_settings_tab = "active";
         this.org_user_settings_toggler = components.toggle({
             html_class: "org-user-settings-switcher",
@@ -84,7 +93,7 @@ export class SettingsPanelMenu {
         });
 
         this.$main_elem.on("click", "li[data-section]", (e) => {
-            const section = $(e.currentTarget).attr("data-section");
+            const section = $(e.currentTarget).attr("data-section")!;
 
             this.activate_section_or_default(section, this.current_user_settings_tab);
             // You generally want to add logic to activate_section,
@@ -94,7 +103,7 @@ export class SettingsPanelMenu {
         });
     }
 
-    show() {
+    show(): void {
         this.$main_elem.show();
         const section = this.current_tab;
         const user_settings_tab = this.current_user_settings_tab;
@@ -104,9 +113,9 @@ export class SettingsPanelMenu {
         this.$curr_li.trigger("focus");
     }
 
-    show_org_user_settings_toggler() {
+    show_org_user_settings_toggler(): void {
         if ($("#admin-user-list").find(".tab-switcher").length === 0) {
-            const toggler_html = this.org_user_settings_toggler.get();
+            const toggler_html = util.the(this.org_user_settings_toggler.get());
             $("#admin-user-list .tab-container").html(toggler_html);
 
             // We need to re-register these handlers since they are
@@ -116,16 +125,16 @@ export class SettingsPanelMenu {
         }
     }
 
-    hide() {
+    hide(): void {
         this.$main_elem.hide();
     }
 
-    li_for_section(section) {
+    li_for_section(section: string): JQuery {
         const $li = $(`#settings_overlay_container li[data-section='${CSS.escape(section)}']`);
         return $li;
     }
 
-    set_key_handlers(toggler, $elem = this.$main_elem) {
+    set_key_handlers(toggler: Toggle, $elem = this.$main_elem): void {
         const {vim_left, vim_right, vim_up, vim_down} = keydown_util;
         keydown_util.handle({
             $elem,
@@ -145,17 +154,17 @@ export class SettingsPanelMenu {
         });
     }
 
-    prev() {
+    prev(): boolean {
         this.$curr_li.prevAll(":visible").first().trigger("focus").trigger("click");
         return true;
     }
 
-    next() {
+    next(): boolean {
         this.$curr_li.nextAll(":visible").first().trigger("focus").trigger("click");
         return true;
     }
 
-    enter_panel() {
+    enter_panel(): boolean {
         const $panel = this.get_panel();
         const $panel_elem = $panel.find("input:visible,button:visible,select:visible").first();
 
@@ -163,15 +172,19 @@ export class SettingsPanelMenu {
         return true;
     }
 
-    set_current_tab(tab) {
+    set_current_tab(tab: string): void {
         this.current_tab = tab;
     }
 
-    set_user_settings_tab(tab) {
+    set_user_settings_tab(tab: string): void {
         this.current_user_settings_tab = tab;
     }
 
-    activate_section_or_default(section, user_settings_tab, activate_section_for_mobile = true) {
+    activate_section_or_default(
+        section: string,
+        user_settings_tab: string,
+        activate_section_for_mobile = true,
+    ): void {
         popovers.hide_all();
         if (!section) {
             // No section is given so we display the default.
@@ -226,15 +239,15 @@ export class SettingsPanelMenu {
         set_settings_header(section);
     }
 
-    get_panel() {
-        const section = this.$curr_li.data("section");
+    get_panel(): JQuery {
+        const section = this.$curr_li.attr("data-section")!;
         const sel = `[data-name='${CSS.escape(section)}']`;
         const $panel = $(".settings-section" + sel);
         return $panel;
     }
 }
 
-export function initialize() {
+export function initialize(): void {
     normal_settings = new SettingsPanelMenu({
         $main_elem: $(".normal-settings-list"),
         hash_prefix: "settings/",
@@ -245,17 +258,17 @@ export function initialize() {
     });
 }
 
-export function show_normal_settings() {
+export function show_normal_settings(): void {
     org_settings.hide();
     normal_settings.show();
 }
 
-export function show_org_settings() {
+export function show_org_settings(): void {
     normal_settings.hide();
     org_settings.show();
 }
 
-export function set_key_handlers(toggler) {
+export function set_key_handlers(toggler: Toggle): void {
     normal_settings.set_key_handlers(toggler);
     org_settings.set_key_handlers(toggler);
 }
