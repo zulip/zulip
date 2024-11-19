@@ -142,6 +142,7 @@ ALL_ZULIP_TABLES = {
     "zerver_archivetransaction",
     "zerver_botconfigdata",
     "zerver_botstoragedata",
+    "zerver_channelemailaddress",
     "zerver_client",
     "zerver_customprofilefield",
     "zerver_customprofilefieldvalue",
@@ -271,6 +272,9 @@ NON_EXPORTED_TABLES = {
     # The importer cannot trust ImageAttachment objects anyway and needs to check
     # and process images for thumbnailing on its own.
     "zerver_imageattachment",
+    # ChannelEmailAddress entries are low value to export since
+    # channel email addresses include the server's hostname.
+    "zerver_channelemailaddress",
     # For any tables listed below here, it's a bug that they are not present in the export.
 }
 
@@ -905,7 +909,6 @@ def get_realm_config() -> Config:
     stream_config = Config(
         table="zerver_stream",
         model=Stream,
-        exclude=["email_token"],
         normal_parent=realm_config,
         include_rows="realm_id__in",
     )
@@ -2255,7 +2258,6 @@ def get_single_user_config() -> Config:
         virtual_parent=recipient_config,
         id_source=("zerver_recipient", "type_id"),
         source_filter=lambda r: r["type"] == Recipient.STREAM,
-        exclude=["email_token"],
     )
 
     Config(

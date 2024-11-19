@@ -38,7 +38,7 @@ from zerver.lib.send_email import FromAddress
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish, most_recent_message, most_recent_usermessage
-from zerver.models import Attachment, Recipient, Stream, UserProfile
+from zerver.models import Attachment, ChannelEmailAddress, Recipient, Stream, UserProfile
 from zerver.models.messages import Message
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -74,35 +74,32 @@ class TestEncodeDecode(ZulipTestCase):
         stream_name = "dev. help"
         stream = ensure_stream(realm, stream_name, acting_user=None)
         email_address = encode_email_address(stream)
-        self.assertEqual(email_address, f"dev-help.{stream.email_token}@testserver")
+        email_token = ChannelEmailAddress.objects.get(channel=stream).email_token
+        self.assertEqual(email_address, f"dev-help.{email_token}@testserver")
 
         # The default form of the email address (with an option - "include-footer"):
-        token, options = decode_email_address(
-            f"dev-help.{stream.email_token}.include-footer@testserver",
-        )
+        token, options = decode_email_address(f"dev-help.{email_token}.include-footer@testserver")
         self._assert_options(options, include_footer=True)
-        self.assertEqual(token, stream.email_token)
+        self.assertEqual(token, email_token)
 
         # Using + instead of . as the separator is also supported for backwards compatibility,
         # since that was the original form of addresses that we used:
-        token, options = decode_email_address(
-            f"dev-help+{stream.email_token}+include-footer@testserver",
-        )
+        token, options = decode_email_address(f"dev-help+{email_token}+include-footer@testserver")
         self._assert_options(options, include_footer=True)
-        self.assertEqual(token, stream.email_token)
+        self.assertEqual(token, email_token)
 
         token, options = decode_email_address(email_address)
         self._assert_options(options)
-        self.assertEqual(token, stream.email_token)
+        self.assertEqual(token, email_token)
 
         # We also handle mixing + and . but it shouldn't be recommended to users.
         email_address_all_options = (
             "dev-help.{}+include-footer.show-sender+include-quotes@testserver"
         )
-        email_address_all_options = email_address_all_options.format(stream.email_token)
+        email_address_all_options = email_address_all_options.format(email_token)
         token, options = decode_email_address(email_address_all_options)
         self._assert_options(options, show_sender=True, include_footer=True, include_quotes=True)
-        self.assertEqual(token, stream.email_token)
+        self.assertEqual(token, email_token)
 
         email_address = email_address.replace("@testserver", "@zulip.org")
         email_address_all_options = email_address_all_options.replace("@testserver", "@zulip.org")
@@ -115,13 +112,13 @@ class TestEncodeDecode(ZulipTestCase):
         with self.settings(EMAIL_GATEWAY_EXTRA_PATTERN_HACK="@zulip.org"):
             token, options = decode_email_address(email_address)
             self._assert_options(options)
-            self.assertEqual(token, stream.email_token)
+            self.assertEqual(token, email_token)
 
             token, options = decode_email_address(email_address_all_options)
             self._assert_options(
                 options, show_sender=True, include_footer=True, include_quotes=True
             )
-            self.assertEqual(token, stream.email_token)
+            self.assertEqual(token, email_token)
 
         with self.assertRaises(ZulipEmailForwardError):
             decode_email_address("bogus")
@@ -133,6 +130,7 @@ class TestEncodeDecode(ZulipTestCase):
         stream_name = "Тестовы some ascii letters"
         stream = ensure_stream(realm, stream_name, acting_user=None)
         email_address = encode_email_address(stream)
+        email_token = ChannelEmailAddress.objects.get(channel=stream).email_token
 
         msg_string = get_email_gateway_message_string_from_address(email_address)
         parts = msg_string.split("+")
@@ -143,7 +141,7 @@ class TestEncodeDecode(ZulipTestCase):
         # Correctly decode the resulting address that doesn't have the stream name:
         token, show_sender = decode_email_address(email_address)
         self.assertFalse(show_sender)
-        self.assertEqual(token, stream.email_token)
+        self.assertEqual(token, email_token)
 
         asciiable_stream_name = "ąężć"
         stream = ensure_stream(realm, asciiable_stream_name, acting_user=None)
@@ -153,24 +151,28 @@ class TestEncodeDecode(ZulipTestCase):
     def test_decode_ignores_stream_name(self) -> None:
         stream = get_stream("Denmark", get_realm("zulip"))
         stream_to_address = encode_email_address(stream)
+        email_token = ChannelEmailAddress.objects.get(channel=stream).email_token
         stream_to_address = stream_to_address.replace("denmark", "Some_name")
 
         # get the email_token:
         token = decode_email_address(stream_to_address)[0]
-        self.assertEqual(token, stream.email_token)
+        self.assertEqual(token, email_token)
 
     def test_encode_with_show_sender(self) -> None:
         stream = get_stream("Denmark", get_realm("zulip"))
         stream_to_address = encode_email_address(stream, show_sender=True)
+        email_token = ChannelEmailAddress.objects.get(channel=stream).email_token
 
         token, options = decode_email_address(stream_to_address)
         self._assert_options(options, show_sender=True)
-        self.assertEqual(token, stream.email_token)
+        self.assertEqual(token, email_token)
 
     def test_decode_prefer_text_options(self) -> None:
         stream = get_stream("Denmark", get_realm("zulip"))
-        address_prefer_text = f"Denmark.{stream.email_token}.prefer-text@testserver"
-        address_prefer_html = f"Denmark.{stream.email_token}.prefer-html@testserver"
+        encode_email_address(stream)
+        email_token = ChannelEmailAddress.objects.get(channel=stream).email_token
+        address_prefer_text = f"Denmark.{email_token}.prefer-text@testserver"
+        address_prefer_html = f"Denmark.{email_token}.prefer-html@testserver"
 
         token, options = decode_email_address(address_prefer_text)
         self._assert_options(options, prefer_text=True)
@@ -844,8 +846,10 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
-        stream_address = f"Denmark.{stream.email_token}@testserver"
-        stream_address_prefer_html = f"Denmark.{stream.email_token}.prefer-html@testserver"
+        encode_email_address(stream)
+        email_token = ChannelEmailAddress.objects.get(channel=stream).email_token
+        stream_address = f"Denmark.{email_token}@testserver"
+        stream_address_prefer_html = f"Denmark.{email_token}.prefer-html@testserver"
 
         text = "Test message"
         html = "<html><body><b>Test html message</b></body></html>"
@@ -877,7 +881,9 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
-        stream_address_prefer_html = f"Denmark.{stream.email_token}.prefer-html@testserver"
+        encode_email_address(stream)
+        email_token = ChannelEmailAddress.objects.get(channel=stream).email_token
+        stream_address_prefer_html = f"Denmark.{email_token}.prefer-html@testserver"
 
         text = "Test message"
         # This should be correctly identified as empty html body:
