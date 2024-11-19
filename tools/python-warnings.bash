@@ -10,9 +10,6 @@ PYTHONWARNINGS+=',default:check_home argument is deprecated and ignored.:Depreca
 # https://github.com/disqus/django-bitfield/pull/135
 PYTHONWARNINGS+=',default:Attribute s is deprecated and will be removed in Python 3.14; use value instead:DeprecationWarning:__main__'
 
-# https://github.com/jaysonsantos/python-binary-memcached/pull/257
-PYTHONWARNINGS+=',ignore:urllib.parse.splitport() is deprecated as of 3.8:DeprecationWarning:bmemcached.protocol'
-
 # https://github.com/boto/botocore/pull/3239
 PYTHONWARNINGS+=',ignore:datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version.:DeprecationWarning:botocore.auth'
 
