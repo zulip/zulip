@@ -580,7 +580,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
             {label: $t({defaultMessage: "Channels"}), key: "user-profile-streams-tab"},
             {label: $t({defaultMessage: "User groups"}), key: "user-profile-groups-tab"},
         ],
-        callback(_name: string, key: string) {
+        callback(_name: string | undefined, key: string) {
             $(".tabcontent").hide();
             $(`#${CSS.escape(key)}`).show();
             $("#user-profile-modal .modal__footer").hide();
