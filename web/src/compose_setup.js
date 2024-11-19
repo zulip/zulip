@@ -390,12 +390,12 @@ export function initialize() {
 
         let $target_textarea;
         let edit_message_id;
-        const compose_click_target = compose_ui.get_compose_click_target(this);
-        if ($(compose_click_target).parents(".message_edit_form").length === 1) {
-            edit_message_id = rows.id($(compose_click_target).parents(".message_row"));
+        const $compose_click_target = $(this);
+        if ($compose_click_target.parents(".message_edit_form").length === 1) {
+            edit_message_id = rows.id($compose_click_target.parents(".message_row"));
             $target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
         } else {
-            $target_textarea = $(compose_click_target).closest("form").find("textarea");
+            $target_textarea = $compose_click_target.closest("form").find("textarea");
         }
 
         if (!flatpickr.is_open()) {
@@ -405,7 +405,7 @@ export function initialize() {
             };
 
             flatpickr.show_flatpickr(
-                $(compose_click_target)[0],
+                $compose_click_target[0],
                 on_timestamp_selection,
                 get_timestamp_for_flatpickr(),
                 {
@@ -523,7 +523,7 @@ export function initialize() {
     });
 
     $("body").on("click", ".formatting_button", function (e) {
-        const $compose_click_target = $(compose_ui.get_compose_click_target(this));
+        const $compose_click_target = $(this);
         const $textarea = $compose_click_target.closest("form").find("textarea");
         const format_type = $(this).attr("data-format-type");
         compose_ui.format_text($textarea, format_type);

@@ -21,7 +21,6 @@ import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as markdown from "./markdown.ts";
 import * as people from "./people.ts";
-import * as popover_menus from "./popover_menus.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as rtl from "./rtl.ts";
@@ -1213,17 +1212,6 @@ export function show_compose_spinner(): void {
     loading.show_button_spinner($(".compose-submit-button .loader"), true);
     $(".compose-submit-button .zulip-icon-send").hide();
     $(".compose-submit-button").addClass("compose-button-disabled");
-}
-
-export function get_compose_click_target(element: HTMLElement): Element {
-    const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
-    if (
-        compose_control_buttons_popover &&
-        $(compose_control_buttons_popover.popper).has(element).length > 0
-    ) {
-        return compose_control_buttons_popover.reference;
-    }
-    return element;
 }
 
 export function render_and_show_preview(
