@@ -260,6 +260,7 @@
                                 </span>
                                 <object class="loader upgrade-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
+                            {% if not fixed_price_plan %}
                             <span class="not-editable-realm-field" id="upgrade-payment-by-invoice-container">
                                 {% if page_params.setup_payment_by_invoice %}
                                 or <a href="{{ page_params.billing_base_url }}/upgrade/?tier={{ page_params.tier }}">pay by card</a>
@@ -267,6 +268,7 @@
                                 or <a href="{{ page_params.billing_base_url }}/upgrade/?manual_license_management=true&tier={{ page_params.tier }}&setup_payment_by_invoice=true" id="upgrade-payment-by-invoice-link" data-tippy-content="Requires purchasing a fixed number of licenses" data-tippy-placement="right">pay by invoice</a>
                                 {% endif %}
                             </span>
+                            {% endif %}
                         </div>
                         {% if not page_params.free_trial_days and payment_method %}
                         <div class="stripe-billing-information not-editable-realm-field">
