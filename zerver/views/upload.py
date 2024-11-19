@@ -264,7 +264,7 @@ def serve_file(
         # We cannot use X-Accel-Redirect to offload the serving of
         # this image to nginx, because it does not preserve the status
         # code of this response, nor the Vary: header.
-        return FileResponse(open(static_path(image_path), "rb"), status=status)  # noqa: SIM115
+        return FileResponse(open(static_path(image_path), "rb"), status=status)
 
     if attachment is None:
         if preferred_accept(request, ["text/html", "image/png"]) == "image/png":
