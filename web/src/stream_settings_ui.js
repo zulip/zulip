@@ -872,7 +872,8 @@ export function switch_rows(event) {
         if ($("#search_stream_name").is(":focus")) {
             // remove focus from Filter streams input instead of switching rows
             // if Filter streams input is focused
-            return $("#search_stream_name").trigger("blur");
+            $("#search_stream_name").trigger("blur");
+            return true;
         }
     }
 
