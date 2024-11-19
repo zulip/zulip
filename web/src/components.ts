@@ -28,8 +28,10 @@ export type Toggle = {
 
 export function toggle(opts: {
     html_class?: string;
-    values: {label: string; label_html?: string; key: string}[];
-    callback?: (label: string, value: string) => void;
+    values: (({label: string; label_html?: never} | {label_html: string; label?: never}) & {
+        key: string;
+    })[];
+    callback?: (label: string | undefined, value: string) => void;
     child_wants_focus?: boolean;
     selected?: number;
 }): Toggle {
@@ -50,7 +52,7 @@ export function toggle(opts: {
         if (value.label_html !== undefined) {
             const html = value.label_html;
             $tab.html(html);
-        } else {
+        } else if (value.label !== undefined) {
             $tab.text(value.label);
         }
 

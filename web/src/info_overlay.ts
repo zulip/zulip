@@ -298,7 +298,7 @@ export function set_up_toggler(): void {
             {label: $t({defaultMessage: "Message formatting"}), key: "message-formatting"},
             {label: $t({defaultMessage: "Search filters"}), key: "search-operators"},
         ],
-        callback(_name: string, key: string) {
+        callback(_name: string | undefined, key: string) {
             $(".overlay-modal").hide();
             $(`#${CSS.escape(key)}`).show();
             scroll_util
