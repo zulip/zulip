@@ -110,12 +110,12 @@ class FrontHookTests(WebhookTestCase):
     # Scenario 2: Conversation starts from an inbound message.
 
     def test_inbound_message(self) -> None:
-        expected_topic_name = "cnv_keocka"
+        expected_topic_name = "2x9c5v"
         expected_message = (
             "[Inbound message](https://app.frontapp.com/open/msg_1176r8y) "
             "from **calculon@momsbot.com** "
             "to **support@planet-express.com**:\n"
-            "```quote\n*Subject*: Being a robot is great, but...\n```"
+            "```quote\n*Subject*: Cancellation Request for Subscription #SUB-67890\n```"
         )
 
         self.check_webhook(
