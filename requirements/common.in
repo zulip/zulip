@@ -160,6 +160,7 @@ requests-oauthlib
 
 # For OpenAPI schema validation.
 openapi-core
+werkzeug<3.1.2  # https://github.com/python-openapi/openapi-core/issues/938
 
 # For reporting errors to sentry.io
 sentry-sdk

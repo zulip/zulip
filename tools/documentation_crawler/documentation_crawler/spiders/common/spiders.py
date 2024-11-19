@@ -5,12 +5,15 @@ from collections.abc import Callable, Iterator
 from urllib.parse import urlsplit
 
 import scrapy
-from scrapy.http import Request, Response
+from scrapy.http.request import Request
+from scrapy.http.response import Response
+from scrapy.http.response.text import TextResponse
 from scrapy.linkextractors import IGNORED_EXTENSIONS
 from scrapy.linkextractors.lxmlhtml import LxmlLinkExtractor
 from scrapy.spidermiddlewares.httperror import HttpError
 from scrapy.utils.url import url_has_any_extension
 from twisted.python.failure import Failure
+from typing_extensions import override
 
 EXCLUDED_DOMAINS = [
     # Returns 429 rate-limiting errors
@@ -58,7 +61,6 @@ ZULIP_SERVER_GITHUB_DIRECTORY_PATH_PREFIX = "/zulip/zulip/tree/main"
 
 
 class BaseDocumentationSpider(scrapy.Spider):
-    name: str | None = None
     # Exclude domain address.
     deny_domains: list[str] = []
     start_urls: list[str] = []
@@ -113,6 +115,8 @@ class BaseDocumentationSpider(scrapy.Spider):
     def check_fragment(self, response: Response) -> None:
         self.log(response)
         xpath_template = "//*[@id='{fragment}' or @name='{fragment}']"
+        assert isinstance(response, TextResponse)
+        assert response.request is not None
         fragment = urlsplit(response.request.url).fragment
         # Check fragment existing on response page.
         if not response.selector.xpath(xpath_template.format(fragment=fragment)):
@@ -201,10 +205,12 @@ class BaseDocumentationSpider(scrapy.Spider):
             errback=self.error_callback,
         )
 
+    @override
     def start_requests(self) -> Iterator[Request]:
         for url in self.start_urls:
             yield from self._make_requests(url)
 
+    @override
     def parse(self, response: Response) -> Iterator[Request]:
         self.log(response)
 
@@ -218,6 +224,7 @@ class BaseDocumentationSpider(scrapy.Spider):
                 errback=self.error_callback,
             )
 
+        assert isinstance(response, TextResponse)
         for link in LxmlLinkExtractor(
             deny_domains=self.deny_domains,
             deny_extensions=["doc"],
@@ -240,6 +247,7 @@ class BaseDocumentationSpider(scrapy.Spider):
             # likely due to a redirect.
             if urlsplit(response.url).netloc == "idmsa.apple.com":
                 return None
+            assert response.request is not None
             if response.status == 405 and response.request.method == "HEAD":
                 # Method 'HEAD' not allowed, repeat request with 'GET'
                 return self.retry_request_with_get(response.request)
