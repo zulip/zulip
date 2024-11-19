@@ -591,6 +591,7 @@ export function set_up_handlers(): void {
     });
 
     set_up_group_setting_widgets();
+    settings_components.enable_opening_typeahead_on_clicking_label($container);
 }
 
 export function initialize(): void {
