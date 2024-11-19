@@ -17,6 +17,7 @@ from zerver.lib.stream_subscription import (
 )
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.streams import (
+    get_group_setting_value_dict_for_streams,
     get_setting_values_for_group_settings,
     get_web_public_streams_queryset,
     subscribed_to_stream,
@@ -31,7 +32,6 @@ from zerver.lib.types import (
     SubscriptionInfo,
     SubscriptionStreamDict,
 )
-from zerver.lib.user_groups import get_group_setting_value_for_api
 from zerver.models import Realm, Stream, Subscription, UserProfile
 from zerver.models.streams import get_all_streams
 
@@ -46,12 +46,13 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
         return color
 
     subscribed = []
-    for stream in get_web_public_streams_queryset(realm):
+    streams = get_web_public_streams_queryset(realm)
+    setting_groups_dict = get_group_setting_value_dict_for_streams(list(streams))
+
+    for stream in streams:
         # Add Stream fields.
         is_archived = stream.deactivated
-        can_remove_subscribers_group = get_group_setting_value_for_api(
-            stream.can_remove_subscribers_group
-        )
+        can_remove_subscribers_group = setting_groups_dict[stream.can_remove_subscribers_group_id]
         creator_id = stream.creator_id
         date_created = datetime_to_timestamp(stream.date_created)
         description = stream.description
