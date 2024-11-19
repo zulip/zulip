@@ -51,6 +51,14 @@ type MessageFetchOptions = {
     validate_filter_topic_post_fetch?: boolean | undefined;
 };
 
+type MessageFetchAPIParams = {
+    anchor: number | string;
+    num_before: number;
+    num_after: number;
+    client_gravatar: boolean;
+    narrow?: string;
+};
+
 let first_messages_fetch = true;
 export let initial_narrow_pointer: number | undefined;
 export let initial_narrow_offset: number | undefined;
@@ -305,7 +313,7 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
     return JSON.stringify(narrow_terms);
 }
 
-export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
+function get_parameters_for_message_fetch_api(opts: MessageFetchOptions): MessageFetchAPIParams {
     if (typeof opts.anchor === "number") {
         // Messages that have been locally echoed messages have
         // floating point temporary IDs, which is intended to be a.
@@ -313,13 +321,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         // the nearest integer before sending a request to the server.
         opts.anchor = opts.anchor.toFixed(0);
     }
-    const data: {
-        anchor: number | string;
-        num_before: number;
-        num_after: number;
-        client_gravatar: boolean;
-        narrow?: string;
-    } = {
+    const data: MessageFetchAPIParams = {
         anchor: opts.anchor,
         num_before: opts.num_before,
         num_after: opts.num_after,
@@ -349,11 +351,15 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         const narrow_param_string = JSON.stringify(narrow_data);
         data.narrow = handle_operators_supporting_id_based_api(narrow_param_string);
     }
+    return data;
+}
 
+export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
+    const data = get_parameters_for_message_fetch_api(opts);
     let update_loading_indicator =
         message_lists.current !== undefined && opts.msg_list === message_lists.current;
     if (opts.num_before > 0) {
-        msg_list_data.fetch_status.start_older_batch({
+        opts.msg_list_data.fetch_status.start_older_batch({
             update_loading_indicator,
         });
     }
@@ -361,7 +367,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
     if (opts.num_after > 0) {
         // We hide the bottom loading indicator when we're fetching both top and bottom messages.
         update_loading_indicator = update_loading_indicator && opts.num_before === 0;
-        msg_list_data.fetch_status.start_newer_batch({
+        opts.msg_list_data.fetch_status.start_newer_batch({
             update_loading_indicator,
         });
     }
