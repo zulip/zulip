@@ -76,7 +76,7 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_events from "./stream_events.js";
 import * as stream_list from "./stream_list.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
-import * as stream_settings_ui from "./stream_settings_ui.js";
+import * as stream_settings_ui from "./stream_settings_ui.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";

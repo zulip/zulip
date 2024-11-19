@@ -478,7 +478,7 @@ function populate_group_from_message(
             // Hack to handle unusual cases like the tutorial where
             // the streams used don't actually exist in the subs
             // module.  Ideally, we'd clean this up by making the
-            // tutorial populate stream_settings_ui.js "properly".
+            // tutorial populate stream_settings_ui.ts "properly".
             stream_id = -1;
         } else {
             stream_id = sub.stream_id;

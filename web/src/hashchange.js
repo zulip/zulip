@@ -28,7 +28,7 @@ import * as settings_toggle from "./settings_toggle.js";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spectators from "./spectators.ts";
 import {current_user} from "./state_data.ts";
-import * as stream_settings_ui from "./stream_settings_ui.js";
+import * as stream_settings_ui from "./stream_settings_ui.ts";
 import * as ui_report from "./ui_report.ts";
 import * as user_group_edit from "./user_group_edit.js";
 import * as user_profile from "./user_profile.ts";

@@ -15,7 +15,6 @@ import * as rendered_markdown from "./rendered_markdown.ts";
 import * as search from "./search.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
-import type {SettingsSubscription} from "./stream_settings_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 
 type MessageViewHeaderContext = {
@@ -176,7 +175,7 @@ export function render_title_area(): void {
 // This function checks if "modified_sub" which is the stream whose values
 // have been updated is the same as the stream which is currently
 // narrowed and rerenders if necessary
-export function maybe_rerender_title_area_for_stream(modified_sub: SettingsSubscription): void {
+export function maybe_rerender_title_area_for_stream(modified_sub: StreamSubscription): void {
     const current_stream_id = narrow_state.stream_id();
     if (current_stream_id === modified_sub.stream_id) {
         render_title_area();

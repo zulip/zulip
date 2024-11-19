@@ -24,7 +24,7 @@ import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
-import * as stream_settings_ui from "./stream_settings_ui.js";
+import * as stream_settings_ui from "./stream_settings_ui.ts";
 import * as sub_store from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
 import * as ui_util from "./ui_util.ts";
