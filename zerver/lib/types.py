@@ -220,7 +220,7 @@ class SubscriptionStreamDict(TypedDict):
 
 class NeverSubscribedStreamDict(TypedDict):
     is_archived: bool
-    can_remove_subscribers_group: int
+    can_remove_subscribers_group: int | AnonymousSettingGroupDict
     creator_id: int | None
     date_created: int
     description: str
