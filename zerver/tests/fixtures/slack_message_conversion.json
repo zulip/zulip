@@ -89,6 +89,11 @@
       "name": "new_line_test",
       "input": "\n*abc*\n",
       "conversion_output": "\n**abc**\n"
+    },
+    {
+      "name": "format_emoji_test",
+      "input": "*1️⃣ bold* some _1️⃣ italic_ word ~1️⃣ strike~",
+      "conversion_output": "**1️⃣ bold** some *1️⃣ italic* word ~~1️⃣ strike~~"
     }
   ]
 }
