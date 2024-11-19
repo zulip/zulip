@@ -48,21 +48,21 @@ SLACK_USERMENTION_REGEX = r"""
 # Hence, ~stri~ke doesn't format the word in Slack, but ~~stri~~ke
 # formats the word in Zulip
 SLACK_STRIKETHROUGH_REGEX = r"""
-                             (^|[ -(]|[+-/]|\*|\_|[:-?]|\{|\[|\||\^)     # Start after specified characters
+                             (\n|^|[ -(]|[+-/]|\*|\_|[:-?]|\{|\[|\||\^)     # Start after specified characters
                              (\~)                                  # followed by an asterisk
                                  ([ -)+-}—]*)([ -}]+)              # any character except asterisk
                              (\~)                                  # followed by an asterisk
                              ($|[ -']|[+-/]|[:-?]|\*|\_|\}|\)|\]|\||\^)  # ends with specified characters
                              """
 SLACK_ITALIC_REGEX = r"""
-                      (^|[ -*]|[+-/]|[:-?]|\{|\[|\||\^|~)
+                      (\n|^|[ -*]|[+-/]|[:-?]|\{|\[|\||\^|~)
                       (\_)
                           ([ -^`~—]*)([ -^`-~]+)                  # any character
                       (\_)
                       ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\*|\||\^|~)
                       """
 SLACK_BOLD_REGEX = r"""
-                    (^|[ -(]|[+-/]|[:-?]|\{|\[|\_|\||\^|~)
+                    (\n|^|[ -(]|[+-/]|[:-?]|\{|\[|\_|\||\^|~)
                     (\*)
                         ([ -)+-~—]*)([ -)+-~]+)                   # any character
                     (\*)
@@ -138,7 +138,7 @@ def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
     2. For bold formatting: This maps Slack's '*bold*' to Zulip's '**bold**'
     3. For italic formatting: This maps Slack's '_italic_' to Zulip's '*italic*'
     """
-    for match in re.finditer(regex, text, re.VERBOSE):
+    for match in re.finditer(regex, text, re.VERBOSE | re.MULTILINE):
         converted_token = (
             match.group(1)
             + zulip_keyword
