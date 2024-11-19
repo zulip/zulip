@@ -46,7 +46,7 @@ type MessageFetchOptions = {
     anchor: string | number;
     num_before: number;
     num_after: number;
-    cont: (data: MessageFetchResponse, args: MessageFetchOptions) => void;
+    cont?: (data: MessageFetchResponse, args: MessageFetchOptions) => void;
     fetch_again?: boolean;
     msg_list_data: MessageListData;
     msg_list?: MessageList | undefined;
@@ -67,6 +67,9 @@ export let initial_narrow_pointer: number | undefined;
 export let initial_narrow_offset: number | undefined;
 
 export const consts = {
+    // Percentage of times we verify that the cached data
+    // is correct based on server data when narrowing.
+    cached_data_verification_sampling_percent: 5,
     // Because most views are centered on the first unread message,
     // the user has a higher probability of wanting to scroll down
     // than, so extra fetched history after the cursor is more likely
@@ -646,6 +649,99 @@ export function maybe_load_newer_messages(opts: {msg_list: MessageList}): void {
         msg_list,
         msg_list_data: opts.msg_list.data,
         cont: load_more,
+    });
+}
+
+export function verify_cached_data(data: MessageListData): void {
+    type EventDetails = {
+        type: string;
+        // ...many more properties.
+    };
+    let events_since_restoring_cached_data: EventDetails[] = [];
+    // Since we are in tight race with events modifying data on
+    // server, we start by capturing any events that the client
+    // will receive to include in error logs for debugging.
+    $(document).on("server_event.zulip", (e) => {
+        events_since_restoring_cached_data = [
+            // @ts-expect-error: Fix by adding `events` as type to TriggeredEvent.
+            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+            ...(e.events as EventDetails[]),
+            ...events_since_restoring_cached_data,
+        ];
+    });
+
+    // Extract the data we want to verify to avoid it being
+    // changed by the time we received data from the server.
+    const messages = [...data.all_messages()];
+    // For empty narrows, we don't have a `local_id` to select,
+    // so we always end up contacting server for the latest data.
+    // Hence, we never reach here to verify data in that case.
+    assert(messages.length !== 0);
+    const has_found_newest = data.fetch_status.has_found_newest();
+    const has_found_oldest = data.fetch_status.has_found_oldest();
+    const history_limited = data.fetch_status.history_limited();
+    const first_message = messages[0];
+    assert(first_message !== undefined);
+    let anchor = first_message.id;
+    // If we have the oldest message, we can verify that the fetch
+    // status for that is correct by anchoring our request to first
+    // message. Since `num_before` is `0`, this is our only way of
+    // knowing if our fetch request has found the oldest data.
+    if (has_found_oldest) {
+        anchor = 0;
+    }
+    let num_after = messages.length;
+    // We need to fetch more than the number of messages in the data,
+    // to verify if the fetched data has has_found_newest.
+    if (has_found_newest) {
+        num_after += 1;
+    }
+    const opts: MessageFetchOptions = {
+        anchor,
+        num_before: 0,
+        num_after,
+        msg_list_data: data,
+    };
+    const fetch_request_params = get_parameters_for_message_fetch_api(opts);
+    void channel.get({
+        url: "/json/messages",
+        data: fetch_request_params,
+        success(raw_data) {
+            const data = response_schema.parse(raw_data);
+
+            // Verify that cached data with response from server.
+            try {
+                if (has_found_newest) {
+                    assert(data.found_newest);
+                }
+                assert(data.messages.length === messages.length);
+                const cached_msg_ids = new Set(messages.map((msg) => msg.id));
+                for (const msg of data.messages) {
+                    assert(cached_msg_ids.has(msg.id));
+                }
+                $(document).off("server_event.zulip");
+            } catch (error) {
+                setTimeout(() => {
+                    blueslip.error(
+                        "Mismatching cached and server data.",
+                        {
+                            fetch_request_params,
+                            server_data: data,
+                            cached_data: {
+                                has_found_newest,
+                                has_found_oldest,
+                                history_limited,
+                                messages,
+                            },
+                            events_since_restoring_cached_data,
+                        },
+                        error,
+                    );
+                    $(document).off("server_event.zulip");
+                    // Allow 10s for us receive any more relevant events.
+                }, 10000);
+            }
+        },
     });
 }
 

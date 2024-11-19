@@ -11,6 +11,7 @@ mock_esm("../src/loading", {
     destroy_indicator: noop,
 });
 set_global("addEventListener", noop);
+set_global("document", "document-stub");
 
 const channel = mock_esm("../src/channel");
 mock_esm("../src/reload_state", {
