@@ -30,6 +30,8 @@ async function open_settings(page: Page): Promise<void> {
         page_url.includes("/#settings/"),
         `Page url: ${page_url} does not contain /#settings/`,
     );
+    // Wait for settings overlay to open.
+    await page.waitForSelector("#settings_overlay_container", {visible: true});
 }
 
 async function close_settings_and_date_picker(page: Page): Promise<void> {
