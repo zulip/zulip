@@ -56,7 +56,6 @@ module = [
     "bitfield.*",
     "bmemcached.*",
     "circuitbreaker.*",
-    "defusedxml.*", # https://github.com/tiran/defusedxml/issues/46
     "digitalocean.*",
     "django_auth_ldap.*",
     "django_bmemcached.*",

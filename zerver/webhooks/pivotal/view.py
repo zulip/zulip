@@ -12,6 +12,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint_without_parameters
+from zerver.lib.utils import assert_is_not_none
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -21,16 +22,18 @@ def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> t
 
     def get_text(attrs: list[str]) -> str:
         start = payload
-        try:
-            for attr in attrs:
-                start = start.find(attr)
-            return start.text
-        except AttributeError:
-            return ""
+        for attr in attrs:
+            child = start.find(attr)
+            if child is None:
+                return ""
+            start = child
+        assert start.text is not None
+        return start.text
 
-    event_type = payload.find("event_type").text
-    description = payload.find("description").text
-    project_id = payload.find("project_id").text
+    event_type = assert_is_not_none(payload.find("event_type")).text
+    description = assert_is_not_none(payload.find("description")).text
+    assert description is not None
+    project_id = assert_is_not_none(payload.find("project_id")).text
     story_id = get_text(["stories", "story", "id"])
     # Ugh, the URL in the XML data is not a clickable URL that works for the user
     # so we try to build one that the user can actually click on
