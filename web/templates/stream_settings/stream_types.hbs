@@ -54,7 +54,7 @@
     <div class="advanced-configurations-collapase-view hide">
 
         <div class="input-group">
-            <label class="dropdown-title" for="{{prefix}}stream_post_policy">{{t 'Who can post to this channel'}}
+            <label class="dropdown-title settings-field-label" for="{{prefix}}stream_post_policy">{{t 'Who can post to this channel'}}
                 {{> ../help_link_widget link="/help/stream-sending-policy" }}
             </label>
             <select name="stream-post-policy" class="stream_post_policy_setting prop-element settings_select bootstrap-focus-style" id="{{prefix}}stream_post_policy" data-setting-widget-type="number">
@@ -74,7 +74,7 @@
         {{#if (or is_owner is_stream_edit)}}
             <div>
                 <div class="input-group inline-block message-retention-setting-group time-limit-setting">
-                    <label class="dropdown-title" for="{{prefix}}message_retention_days">{{t "Message retention period" }}
+                    <label class="dropdown-title settings-field-label" for="{{prefix}}message_retention_days">{{t "Message retention period" }}
                         {{> ../help_link_widget link="/help/message-retention-policy" }}
                     </label>
 
