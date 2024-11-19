@@ -84,6 +84,11 @@
       "name": "italic_and_strike_conversion",
       "input": "_~italic~_ and ~_strike_~",
       "conversion_output": "*~~italic~~* and ~~*strike*~~"
+    },
+    {
+      "name": "new_line_test",
+      "input": "\n*abc*\n",
+      "conversion_output": "\n**abc**\n"
     }
   ]
 }
