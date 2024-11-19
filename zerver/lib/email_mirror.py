@@ -31,7 +31,15 @@ from zerver.lib.send_email import FromAddress
 from zerver.lib.streams import access_stream_for_send_message
 from zerver.lib.string_validation import is_character_printable
 from zerver.lib.upload import upload_message_attachment
-from zerver.models import Message, MissedMessageEmailAddress, Realm, Recipient, Stream, UserProfile
+from zerver.models import (
+    ChannelEmailAddress,
+    Message,
+    MissedMessageEmailAddress,
+    Realm,
+    Recipient,
+    Stream,
+    UserProfile,
+)
 from zerver.models.clients import get_client
 from zerver.models.streams import get_stream_by_id_in_realm
 from zerver.models.users import get_system_bot, get_user_profile_by_id
@@ -359,11 +367,13 @@ def decode_stream_email_address(email: str) -> tuple[Stream, dict[str, bool]]:
     token, options = decode_email_address(email)
 
     try:
-        stream = Stream.objects.get(email_token=token)
-    except Stream.DoesNotExist:
+        channel_email_address = ChannelEmailAddress.objects.select_related("channel").get(
+            email_token=token
+        )
+    except ChannelEmailAddress.DoesNotExist:
         raise ZulipEmailForwardError("Bad stream token from email recipient " + email)
 
-    return stream, options
+    return channel_email_address.channel, options
 
 
 def find_emailgateway_recipient(message: EmailMessage) -> str:

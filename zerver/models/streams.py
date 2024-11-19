@@ -111,15 +111,6 @@ class Stream(models.Model):
     # and the reason for denormalizing field is performance.
     is_in_zephyr_realm = models.BooleanField(default=False)
 
-    # Used by the e-mail forwarder. The e-mail RFC specifies a maximum
-    # e-mail length of 254, and our max stream length is 30, so we
-    # have plenty of room for the token.
-    email_token = models.CharField(
-        max_length=32,
-        default=generate_email_token_for_stream,
-        unique=True,
-    )
-
     # For old messages being automatically deleted.
     # Value NULL means "use retention policy of the realm".
     # Value -1 means "disable retention policy for this stream unconditionally".
@@ -175,7 +166,6 @@ class Stream(models.Model):
     # Stream fields included whenever a Stream object is provided to
     # Zulip clients via the API.  A few details worth noting:
     # * "id" is represented as "stream_id" in most API interfaces.
-    # * "email_token" is not realm-public and thus is not included here.
     # * is_in_zephyr_realm is a backend-only optimization.
     # * "deactivated" streams are filtered from the API entirely.
     # * "realm" and "recipient" are not exposed to clients via the API.
@@ -400,3 +390,32 @@ class DefaultStreamGroup(models.Model):
 
 def get_default_stream_groups(realm: Realm) -> QuerySet[DefaultStreamGroup]:
     return DefaultStreamGroup.objects.filter(realm=realm)
+
+
+class ChannelEmailAddress(models.Model):
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    channel = models.ForeignKey(Stream, on_delete=CASCADE)
+    creator = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE, related_name="+")
+    sender = models.ForeignKey(UserProfile, on_delete=CASCADE, related_name="+")
+
+    # Used by the e-mail forwarder. The e-mail RFC specifies a maximum
+    # e-mail length of 254, and our max stream length is 30, so we
+    # have plenty of room for the token.
+    email_token = models.CharField(
+        max_length=32,
+        default=generate_email_token_for_stream,
+        unique=True,
+        db_index=True,
+    )
+
+    date_created = models.DateTimeField(default=timezone_now)
+    deactivated = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("channel", "creator", "sender")
+        indexes = [
+            models.Index(
+                fields=("realm", "channel"),
+                name="zerver_channelemailaddress_realm_id_channel_id_idx",
+            ),
+        ]

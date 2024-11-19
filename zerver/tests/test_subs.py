@@ -106,6 +106,7 @@ from zerver.lib.types import (
 )
 from zerver.models import (
     Attachment,
+    ChannelEmailAddress,
     DefaultStream,
     DefaultStreamGroup,
     Message,
@@ -5893,8 +5894,9 @@ class GetStreamsTest(ZulipTestCase):
         denmark_stream = get_stream("Denmark", realm)
         result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
         json = self.assert_json_success(result)
+        email_token = ChannelEmailAddress.objects.get(channel=denmark_stream).email_token
         denmark_email = encode_email_address_helper(
-            denmark_stream.name, denmark_stream.email_token, show_sender=True
+            denmark_stream.name, email_token, show_sender=True
         )
         self.assertEqual(json["email"], denmark_email)
 

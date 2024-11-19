@@ -59,6 +59,7 @@ from zerver.lib.users import (
 from zerver.models import (
     ArchivedAttachment,
     Attachment,
+    ChannelEmailAddress,
     DefaultStream,
     DefaultStreamGroup,
     Message,
@@ -89,6 +90,8 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
     was_web_public = stream.is_web_public
     stream.deactivated = True
     stream.save(update_fields=["deactivated"])
+
+    ChannelEmailAddress.objects.filter(realm=stream.realm, channel=stream).update(deactivated=True)
 
     assert stream.recipient_id is not None
     if was_web_public:
@@ -200,6 +203,8 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
             "is_web_public",
         ]
     )
+
+    ChannelEmailAddress.objects.filter(realm=realm, channel=stream).update(deactivated=False)
 
     # Update caches
     cache_set(display_recipient_cache_key(stream.recipient_id), new_name)
