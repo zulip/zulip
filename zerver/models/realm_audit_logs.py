@@ -124,6 +124,7 @@ class AuditLogEventType(IntEnum):
     REMOTE_SERVER_BILLING_MODALITY_CHANGED = 10211
     REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED = 10213
     REMOTE_SERVER_CREATED = 10215
+    REMOTE_SERVER_REGISTRATION_TRANSFERRED = 10216
 
     # This value is for RemoteRealmAuditLog entries tracking changes to the
     # RemoteRealm model resulting from modified realm information sent to us
