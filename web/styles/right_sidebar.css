@@ -52,13 +52,6 @@ $user_status_emoji_width: 24px;
     &.no-display {
         display: none;
     }
-
-    .buddy-list-user-link {
-        margin-left: calc(
-            var(--right-sidebar-toggle-width-offset) +
-                var(--right-sidebar-left-spacing)
-        );
-    }
 }
 
 .buddy-list-section-container.collapsed {
@@ -524,14 +517,9 @@ $user_status_emoji_width: 24px;
     }
 }
 
+.buddy-list-user-link,
 .invite-user-shortcut {
-    /* The margin top is calculated from a legacy 25px height,
-       from a 20px line of text and 5px of margin top. We calculate
-       a scaling margin-top by subtracting the em-unit line height
-       from the legacy value. */
-    margin-top: calc(25px - (var(--legacy-body-line-height-unitless) * 1em));
     margin-right: var(--width-simplebar-scroll-hover);
-    margin-bottom: var(--sidebar-bottom-spacing);
     padding-left: var(--right-sidebar-left-spacing);
     border-radius: 4px;
 
@@ -541,11 +529,11 @@ $user_status_emoji_width: 24px;
         color: var(--color-text-sidebar-action-heading-hover);
     }
 
+    .buddy-list-user-link-text,
     .invite-user-link {
         display: grid;
-        grid-template:
-            "user-icon row-text" var(--line-height-sidebar-row-prominent)
-            / auto 1fr;
+        grid-template-rows: var(--line-height-sidebar-row-prominent);
+        text-decoration: none;
         align-items: center;
         color: var(--color-text-sidebar-action-heading);
 
@@ -553,6 +541,23 @@ $user_status_emoji_width: 24px;
             transition: transform 80ms;
             transform: scale(0.96);
         }
+    }
+}
+
+.buddy-list-user-link {
+    margin-left: var(--right-sidebar-toggle-width-offset);
+}
+
+.invite-user-shortcut {
+    /* The margin top is calculated from a legacy 25px height,
+       from a 20px line of text and 5px of margin top. We calculate
+       a scaling margin-top by subtracting the em-unit line height
+       from the legacy value. */
+    margin-top: calc(25px - (var(--legacy-body-line-height-unitless) * 1em));
+    margin-bottom: var(--sidebar-bottom-spacing);
+
+    .invite-user-link {
+        grid-template-columns: auto minmax(0, 1fr);
 
         .zulip-icon-user-plus {
             padding-right: 5px;
