@@ -1187,14 +1187,13 @@ test("can_unsubscribe_others", ({override}) => {
     people.initialize_current_user(member_user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
 
-    // Even with the nobody system group, admins can still unsubscribe others.
+    // With the nobody system group, admins cannot unsubscribe others.
     sub.can_remove_subscribers_group = nobody.id;
     override(current_user, "is_admin", true);
-    assert.equal(stream_data.can_unsubscribe_others(sub), true);
-    override(current_user, "is_admin", false);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
 
     // This isn't a real state, but we want coverage on !can_view_subscribers.
+    sub.can_remove_subscribers_group = all.id;
     sub.subscribed = false;
     sub.invite_only = true;
     override(current_user, "is_admin", true);

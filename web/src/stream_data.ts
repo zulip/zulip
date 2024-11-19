@@ -565,10 +565,6 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
         return false;
     }
 
-    if (current_user.is_admin) {
-        return true;
-    }
-
     return user_groups.is_user_in_setting_group(
         sub.can_remove_subscribers_group,
         people.my_current_user_id(),
