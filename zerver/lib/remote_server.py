@@ -26,7 +26,7 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import queue_event_on_commit
-from zerver.lib.redis_utils import get_redis_client
+from zerver.lib.redis_utils import REDIS_KEY_PREFIX, get_redis_client
 from zerver.lib.types import AnalyticsDataUploadLevel
 from zerver.models import Realm, RealmAuditLog
 from zerver.models.realms import OrgTypeEnum
@@ -489,3 +489,16 @@ def maybe_enqueue_audit_log_upload(realm: Realm) -> None:
     if uses_notification_bouncer():
         event = {"type": "push_bouncer_update_for_realm", "realm_id": realm.id}
         queue_event_on_commit("deferred_work", event)
+
+
+SELF_HOSTING_REGISTRATION_TAKEOVER_CHALLENGE_TOKEN_REDIS_KEY = (
+    "self_hosting_domain_takeover_challenge_verify"
+)
+
+
+def prepare_for_registration_takeover_challenge(verification_secret: str) -> None:
+    redis_client.set(
+        REDIS_KEY_PREFIX + SELF_HOSTING_REGISTRATION_TAKEOVER_CHALLENGE_TOKEN_REDIS_KEY,
+        verification_secret,
+        ex=60 * 5,
+    )

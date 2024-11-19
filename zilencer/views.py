@@ -3,9 +3,11 @@ from collections import Counter
 from datetime import datetime, timedelta, timezone
 from email.headerregistry import Address
 from typing import Annotated, Any, TypedDict, TypeVar
-from uuid import UUID
+from urllib.parse import urljoin
+from uuid import UUID, uuid4
 
 import orjson
+import requests.exceptions
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
@@ -13,7 +15,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import Model
 from django.db.models.constants import OnConflict
 from django.http import HttpRequest, HttpResponse
-from django.utils.crypto import constant_time_compare
+from django.utils.crypto import constant_time_compare, get_random_string
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext as err_
@@ -43,6 +45,7 @@ from zerver.lib.exceptions import (
     RemoteRealmServerMismatchError,
     RemoteServerDeactivatedError,
 )
+from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.push_notifications import (
     InvalidRemotePushDeviceTokenError,
     UserPushIdentityCompat,
@@ -73,7 +76,11 @@ from zerver.lib.types import RemoteRealmDictValue
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import DisposableEmailError
 from zerver.views.push_notifications import validate_token
-from zilencer.auth import InvalidZulipServerKeyError
+from zilencer.auth import (
+    InvalidZulipServerKeyError,
+    generate_registration_takeover_verification_secret,
+    validate_registration_takeover_verification_secret,
+)
 from zilencer.models import (
     RemoteInstallationCount,
     RemotePushDeviceToken,
@@ -120,6 +127,33 @@ def deactivate_remote_server(
     return json_success(request)
 
 
+def validate_hostname_or_raise_error(hostname: str) -> None:
+    try:
+        # TODO: Ideally we'd not abuse the URL validator this way
+        url_validator = URLValidator()
+        url_validator("http://" + hostname)
+    except ValidationError:
+        raise JsonableError(_("{hostname} is not a valid hostname").format(hostname=hostname))
+
+
+@csrf_exempt
+@require_post
+@typed_endpoint
+def take_over_remote_server_registration(request: HttpRequest, *, hostname: str) -> HttpResponse:
+    validate_hostname_or_raise_error(hostname)
+
+    if not RemoteZulipServer.objects.filter(hostname=hostname).exists():
+        raise JsonableError(_("{hostname} not yet registered").format(hostname=hostname))
+
+    verification_secret = generate_registration_takeover_verification_secret(hostname)
+    return json_success(
+        request,
+        data={
+            "verification_secret": verification_secret,
+        },
+    )
+
+
 @csrf_exempt
 @require_post
 @typed_endpoint
@@ -146,12 +180,7 @@ def register_remote_server(
 ) -> HttpResponse:
     # StringConstraints validated the field lengths, but we still need to
     # validate the format of these fields.
-    try:
-        # TODO: Ideally we'd not abuse the URL validator this way
-        url_validator = URLValidator()
-        url_validator("http://" + hostname)
-    except ValidationError:
-        raise JsonableError(_("{hostname} is not a valid hostname").format(hostname=hostname))
+    validate_hostname_or_raise_error(hostname)
 
     try:
         validate_email(contact_email)
@@ -237,6 +266,107 @@ def register_remote_server(
             remote_server.save()
 
     return json_success(request, data={"created": created})
+
+
+@csrf_exempt
+@typed_endpoint
+def verify_registration_takeover_challenge_ack_endpoint(
+    request: HttpRequest,
+    *,
+    hostname: str,
+    verification_secret: str,
+) -> HttpResponse:
+    """
+    The host should POST to this endpoint to announce it is ready to serve the received
+    secret at {hostname}/zulip-services/verify.
+    If we successfully verify the secret, we will send the registration credentials
+    to the host, completing the whole flow.
+    """
+
+    validate_registration_takeover_verification_secret(verification_secret, hostname)
+
+    try:
+        remote_server = RemoteZulipServer.objects.get(hostname=hostname)
+    except RemoteZulipServer.DoesNotExist:
+        # This should generally not happen, aside of some race conditions, since if we made
+        # a verification_secret for this hostname, that means we had a registration for it.
+        raise JsonableError(_("Registration not found for this hostname"))
+
+    # The generous timeout and retries here are likely to be unnecessary; a functional Zulip server should
+    # respond instantly.
+    session = OutgoingSession(
+        role="verify_registration_takeover_challenge", timeout=5, max_retries=3
+    )
+    url = urljoin(f"https://{hostname}", "/zulip-services/verify")
+
+    exception_and_error_message: tuple[Exception, str] | None = None
+    try:
+        response = session.get(url)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        if check_takeover_challenge_response_secret_not_prepared(e.response):
+            logger.info("verify_registration_takeover:host:%s|secret_not_prepared", hostname)
+            raise JsonableError(_("The host reported it has no verification secret."))
+
+        error_message = _("Error response received from the host: {status_code}").format(
+            status_code=response.status_code
+        )
+        exception_and_error_message = (e, error_message)
+    except requests.exceptions.SSLError as e:
+        error_message = "SSL error occurred while communicating with the host."
+        exception_and_error_message = (e, error_message)
+    except requests.exceptions.ConnectionError as e:
+        error_message = "Connection error occurred while communicating with the host."
+        exception_and_error_message = (e, error_message)
+    except requests.exceptions.Timeout as e:
+        error_message = "The request timed out while communicating with the host."
+        exception_and_error_message = (e, error_message)
+    except requests.exceptions.RequestException as e:
+        error_message = "An error occurred while communicating with the host."
+        exception_and_error_message = (e, error_message)
+
+    if exception_and_error_message is not None:
+        exception, error_message = exception_and_error_message
+        logger.info("verify_registration_takeover:host:%s|exception:%s", hostname, exception)
+        raise JsonableError(error_message)
+    logger.info("verify_registration_takeover:host:%s|success", hostname)
+
+    data = response.json()
+    presented_secret = data["verification_secret"]
+    if presented_secret != verification_secret:
+        raise JsonableError(_("Verification secret provided by the host doesn't match."))
+
+    new_uuid = uuid4()
+    new_secret_key = get_random_string(RemoteZulipServer.API_KEY_LENGTH)
+    original_uuid = remote_server.uuid
+    with transaction.atomic(durable=True):
+        remote_server.uuid = new_uuid
+        remote_server.api_key = new_secret_key
+        remote_server.save(update_fields=["uuid", "api_key"])
+
+        RemoteZulipServerAuditLog.objects.create(
+            event_type=AuditLogEventType.REMOTE_SERVER_REGISTRATION_TRANSFERRED,
+            server=remote_server,
+            event_time=timezone_now(),
+            extra_data={"old_uuid": original_uuid, "new_uuid": new_uuid},
+        )
+
+    return json_success(
+        request,
+        data={"zulip_org_id": str(new_uuid), "zulip_org_key": new_secret_key},
+    )
+
+
+def check_takeover_challenge_response_secret_not_prepared(response: requests.Response) -> bool:
+    secret_not_prepared = False
+    try:
+        secret_not_prepared = (
+            response.status_code == 400
+            and response.json()["code"] == "REMOTE_SERVER_VERIFICATION_SECRET_NOT_PREPARED"
+        )
+    except Exception:
+        return False
+    return secret_not_prepared
 
 
 @typed_endpoint
