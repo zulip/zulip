@@ -51,21 +51,21 @@ SLACK_USERMENTION_REGEX = r"""
 SLACK_STRIKETHROUGH_REGEX = r"""
                              (^|[ -(]|[+-/]|\*|\_|[:-?]|\{|\[|\||\^)     # Start after specified characters
                              (\~)                                  # followed by an asterisk
-                                 ([ -}]+)              # any character except asterisk
+                                 ([^~]+)              # any character except asterisk
                              (\~)                                  # followed by an asterisk
                              ($|[ -']|[+-/]|[:-?]|\*|\_|\}|\)|\]|\||\^)  # ends with specified characters
                              """
 SLACK_ITALIC_REGEX = r"""
                       (^|[ -*]|[+-/]|[:-?]|\{|\[|\||\^|~)
                       (\_)
-                          ([ -^`-~]+)                  # any character
+                          ([^_]+)                # any character except _
                       (\_)
                       ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\*|\||\^|~)
                       """
 SLACK_BOLD_REGEX = r"""
                     (^|[ -(]|[+-/]|[:-?]|\{|\[|\_|\||\^|~)
                     (\*)
-                        ([ -)+-~]+)                   # any character
+                        ([^*]+)                 # any character except *
                     (\*)
                     ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\_|\||\^|~)
                     """
