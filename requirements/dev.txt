@@ -3236,6 +3236,10 @@ types-decorator==5.1.8.20240310 \
     --hash=sha256:3af75dc38f5baf65b9b53ea6661ce2056c5ca7d70d620d0b1f620285c1242757 \
     --hash=sha256:52e316b03783886a8a2abdc228f7071680ba65894545cd2085ebe3cf88684a0e
     # via -r requirements/mypy.in
+types-defusedxml==0.7.0.20240218 \
+    --hash=sha256:05688a7724dc66ea74c4af5ca0efc554a150c329cb28c13a64902cab878d06ed \
+    --hash=sha256:2b7f3c5ca14fdbe728fab0b846f5f7eb98c4bd4fd2b83d25f79e923caa790ced
+    # via -r requirements/mypy.in
 types-docutils==0.21.0.20241005 \
     --hash=sha256:48f804a2b50da3a1b1681c4ca1b6184416a6e4129e302d15c44e9d97c59b3365 \
     --hash=sha256:4d9021422f2f3fca8b0726fb8949395f66a06c0d951479eb3b1387d75b134430

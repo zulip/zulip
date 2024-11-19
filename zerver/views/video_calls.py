@@ -30,6 +30,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.url_encoding import append_url_query_string
+from zerver.lib.utils import assert_is_not_none
 from zerver.lib.validator import check_bool, check_dict, check_string
 from zerver.models import UserProfile
 from zerver.models.realms import get_realm
@@ -266,10 +267,10 @@ def join_bigbluebutton(request: HttpRequest, bigbluebutton: str = REQ()) -> Http
         raise JsonableError(_("Error connecting to the BigBlueButton server."))
 
     payload = ElementTree.fromstring(response.text)
-    if payload.find("messageKey").text == "checksumError":
+    if assert_is_not_none(payload.find("messageKey")).text == "checksumError":
         raise JsonableError(_("Error authenticating to the BigBlueButton server."))
 
-    if payload.find("returncode").text != "SUCCESS":
+    if assert_is_not_none(payload.find("returncode")).text != "SUCCESS":
         raise JsonableError(_("BigBlueButton server returned an unexpected error."))
 
     join_params = urlencode(
@@ -287,7 +288,7 @@ def join_bigbluebutton(request: HttpRequest, bigbluebutton: str = REQ()) -> Http
             # createTime parameter will be created, as the meeting on
             # the BigBlueButton server has to be recreated. (after a
             # few minutes)
-            "createTime": payload.find("createTime").text,
+            "createTime": assert_is_not_none(payload.find("createTime")).text,
         },
         quote_via=quote,
     )
