@@ -85,17 +85,11 @@ Here are a few common macros used to document Zulip's integrations:
   for a given integration and select **Generic bot** as the **Bot type**. For an
   example rendering, see [the docs for Zulip's Matrix integration][matrix].
 
-- `{!create-an-incoming-webhook.md!}` macro - Instructs users to create a bot
-  for a given integration and select **Incoming webhook** as the **Bot type**.
-  This macro is usually used right after `{!create-channel.md!}`. For an example
-  rendering, see **Step 2** of [the docs for Zulip's GitHub integration][github-integration].
-
   **Note:** If special configuration is
   required to set up the URL and you can't use this macro, be sure to use the
   `{{ api_url }}` template variable, so that your integration
   documentation will provide the correct URL for whatever server it is
-  deployed on. If special configuration is required to set the `SITE`
-  variable, you should document that too.
+  deployed on.
 
 - `{!generate-integration-url.md!}` - Instructs user how to get the URL for a
   bot for a given integration. An example URL is generated automatically for
