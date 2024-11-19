@@ -693,6 +693,14 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
             }
 
             if (select_immediately) {
+                // Verify that cached data is correct 5% of the time.
+                if (
+                    DEVELOPMENT ||
+                    Math.random() <
+                        message_fetch.consts.cached_data_verification_sampling_percent / 100
+                ) {
+                    message_fetch.verify_cached_data(msg_list.data);
+                }
                 // We can skip the initial fetch since we already have a
                 // message we can render and select and sufficient messages
                 // rendered in the view to provide context around the anchor.
