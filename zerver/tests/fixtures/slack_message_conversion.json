@@ -84,6 +84,16 @@
       "name": "italic_and_strike_conversion",
       "input": "_~italic~_ and ~_strike_~",
       "conversion_output": "*~~italic~~* and ~~*strike*~~"
+    },
+    {
+      "name": "new_line_test",
+      "input": "\n*abc*\n_helo_\n~stike~\n",
+      "conversion_output": "\n**abc**\n*helo*\n~~stike~~\n"
+    },
+    {
+      "name": "zero_width_identical_bold_matches_test",
+      "input": "*foo*\n*foo*\n*foo*",
+      "conversion_output": "**foo**\n**foo**\n**foo**"
     }
   ]
 }

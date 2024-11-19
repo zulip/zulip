@@ -150,7 +150,7 @@ def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
             + match.group(6)
         )
 
-    return re.sub(regex, replace_slack_format, text, flags=re.VERBOSE)
+    return re.sub(regex, replace_slack_format, text, flags=re.VERBOSE | re.MULTILINE)
 
 
 def convert_slack_workspace_mentions(text: str) -> str:
