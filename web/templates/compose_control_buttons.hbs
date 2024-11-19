@@ -32,15 +32,23 @@
     <div class="compose_control_button_container {{#unless giphy_enabled }}hide{{/unless}} preview_mode_disabled" data-tippy-content="{{t 'Add GIF' }}">
         <a role="button" class="compose_control_button compose_gif_icon zulip-icon zulip-icon-gif" aria-label="{{t 'Add GIF' }}" tabindex=0></a>
     </div>
-    <div class="show_popover_buttons_2">
+    <div class="divider"></div>
+    <div class="compose-control-buttons-container preview_mode_disabled">
+        <a role="button" data-format-type="link" class="compose_control_button zulip-icon zulip-icon-link formatting_button" aria-label="{{t 'Link' }}" {{#unless preview_mode_on}} tabindex=0 {{/unless}} data-tooltip-template-id="link-tooltip" data-tippy-maxWidth="none"></a>
+        <a role="button" data-format-type="bold" class="compose_control_button zulip-icon zulip-icon-bold formatting_button" aria-label="{{t 'Bold' }}" {{#unless preview_mode_on}} tabindex=0 {{/unless}} data-tooltip-template-id="bold-tooltip" data-tippy-maxWidth="none"></a>
+        <a role="button" data-format-type="italic" class="compose_control_button zulip-icon zulip-icon-italic formatting_button" aria-label="{{t 'Italic' }}" {{#unless preview_mode_on}} tabindex=0 {{/unless}} data-tooltip-template-id="italic-tooltip" data-tippy-maxWidth="none"></a>
+        <a role="button" data-format-type="strikethrough" class="compose_control_button zulip-icon zulip-icon-strikethrough formatting_button" aria-label="{{t 'Strikethrough' }}" {{#unless preview_mode_on}} tabindex=0 {{/unless}} data-tippy-content="{{t 'Strikethrough' }}"></a>
+    </div>
+    <div class="divider"></div>
+    <div class="compose-control-buttons-container preview_mode_disabled">
+        <a role="button" data-format-type="numbered" class="compose_control_button zulip-icon zulip-icon-ordered-list formatting_button" aria-label="{{t 'Numbered list' }}" {{#unless preview_mode_on}} tabindex=0 {{/unless}} data-tippy-content="{{t 'Numbered list' }}"></a>
+        <a role="button" data-format-type="bulleted" class="compose_control_button zulip-icon zulip-icon-unordered-list formatting_button" aria-label="{{t 'Bulleted list' }}" {{#unless preview_mode_on}} tabindex=0 {{/unless}} data-tippy-content="{{t 'Bulleted list' }}"></a>
         <div class="divider"></div>
-        {{> popovers/compose_control_buttons/compose_control_buttons_in_popover_2 .}}
+        <a role="button" data-format-type="quote" class="compose_control_button zulip-icon zulip-icon-quote formatting_button" aria-label="{{t 'Quote' }}" {{#unless preview_mode_on}} tabindex=0 {{/unless}} data-tippy-content="{{t 'Quote' }}"></a>
+        <a role="button" data-format-type="spoiler" class="compose_control_button zulip-icon zulip-icon-spoiler formatting_button" aria-label="{{t 'Spoiler' }}" {{#unless preview_mode_on}} tabindex=0 {{/unless}} data-tippy-content="{{t 'Spoiler' }}"></a>
+        <a role="button" data-format-type="code" class="compose_control_button zulip-icon zulip-icon-code formatting_button" aria-label="{{t 'Code' }}" {{#unless preview_mode_on}} tabindex=0 {{/unless}} data-tippy-content="{{t 'Code' }}"></a>
+        <a role="button" data-format-type="latex" class="compose_control_button zulip-icon zulip-icon-math formatting_button" aria-label="{{t 'Math (LaTeX)' }}" {{#unless preview_mode_on}} tabindex=0 {{/unless}} data-tippy-content="{{t 'Math (LaTeX)' }}"></a>
     </div>
-    <div class="show_popover_buttons">
-        <div class="divider"></div>
-        {{> popovers/compose_control_buttons/compose_control_buttons_in_popover .}}
-    </div>
-    <div class="compose_control_menu_wrapper" role="button" tabindex=0>
-        <a class="compose_control_button zulip-icon zulip-icon-more-vertical hide compose_control_menu" tabindex="-1" data-tippy-content="Compose actions"></a>
-    </div>
+    <div class="divider"></div>
+    <a role="button" class="compose_control_button compose_help_button zulip-icon zulip-icon-question" tabindex=0 data-tippy-content="{{t 'Message formatting' }}" data-overlay-trigger="message-formatting"></a>
 </div>

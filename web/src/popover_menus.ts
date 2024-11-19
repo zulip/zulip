@@ -119,10 +119,6 @@ export function is_scheduled_messages_popover_displayed(): boolean {
     return popover_instances.send_later?.state.isVisible ?? false;
 }
 
-export function get_compose_control_buttons_popover(): tippy.Instance | null {
-    return popover_instances.compose_control_buttons;
-}
-
 export function get_starred_messages_popover(): tippy.Instance | null {
     return popover_instances.starred_messages;
 }
