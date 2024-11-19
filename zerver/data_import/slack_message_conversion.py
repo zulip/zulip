@@ -383,3 +383,9 @@ def render_attachment(attachment: WildValue) -> str:
         pieces.append(f"<time:{time}>")
 
     return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
+
+
+def replace_links(text: str) -> str:
+    text, _ = convert_link_format(text)
+    text, _ = convert_mailto_format(text)
+    return text
