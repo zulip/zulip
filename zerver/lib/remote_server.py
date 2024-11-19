@@ -1,4 +1,5 @@
 import logging
+import secrets
 from collections.abc import Mapping
 from typing import Any
 from urllib.parse import urljoin
@@ -489,3 +490,19 @@ def maybe_enqueue_audit_log_upload(realm: Realm) -> None:
     if uses_notification_bouncer():
         event = {"type": "push_bouncer_update_for_realm", "realm_id": realm.id}
         queue_event_on_commit("deferred_work", event)
+
+
+SELF_HOSTING_REGISTRATION_TAKEOVER_CHALLENGE_TOKEN_REDIS_KEY = (
+    "self_hosting_domain_takeover_challenge_verify"
+)
+
+
+def prepare_for_registration_takeover_challenge(verification_secret: str) -> str:
+    access_token = secrets.token_urlsafe(32)
+    data_to_store = {"verification_secret": verification_secret, "access_token": access_token}
+    redis_client.set(
+        redis_utils.REDIS_KEY_PREFIX + SELF_HOSTING_REGISTRATION_TAKEOVER_CHALLENGE_TOKEN_REDIS_KEY,
+        orjson.dumps(data_to_store),
+        ex=10,
+    )
+    return access_token

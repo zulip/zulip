@@ -337,6 +337,18 @@ DEFAULT_RATE_LIMITING_RULES = {
 # DEFAULT_RATE_LIMITING_RULES.
 RATE_LIMITING_RULES: dict[str, list[tuple[int, int]]] = {}
 
+# Rate limits for endpoints which have absolute limits on how much
+# they can be used in a given time period.
+# These will be extremely rare, and most likely for zilencer endpoints
+# only, so we don't need a nice overriding system for them like we do
+# for RATE_LIMITING_RULES.
+ABSOLUTE_USAGE_LIMITS_BY_ENDPOINT = {
+    "verify_registration_takeover_challenge_ack_endpoint": [
+        # 30 requests per day
+        (86400, 30),
+    ],
+}
+
 # Two factor authentication is not yet implementation-complete
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
 

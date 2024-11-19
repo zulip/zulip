@@ -56,6 +56,7 @@ class ErrorCode(Enum):
     SYSTEM_GROUP_REQUIRED = auto()
     CANNOT_DEACTIVATE_GROUP_IN_USE = auto()
     CANNOT_ADMINISTER_CHANNEL = auto()
+    REMOTE_SERVER_VERIFICATION_SECRET_NOT_PREPARED = auto()
 
 
 class JsonableError(Exception):
