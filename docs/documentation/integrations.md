@@ -74,7 +74,7 @@ Here are a few common macros used to document Zulip's integrations:
 - `{!create-channel.md!}` macro - Recommends that users create a dedicated
   channel for a given integration. Usually the first step is setting up an
   integration or incoming webhook. For an example rendering, see **Step 1** of
-  [the docs for Zulip's GitHub integration][github-integration].
+  [the docs for Zulip's Zendesk integration][zendesk].
 
 - `{!create-an-incoming-webhook.md!}` macro - Instructs users to create a bot
   for a given integration and select **Incoming webhook** as the **Bot type**.
@@ -85,16 +85,20 @@ Here are a few common macros used to document Zulip's integrations:
   for a given integration and select **Generic bot** as the **Bot type**. For an
   example rendering, see [the docs for Zulip's Matrix integration][matrix].
 
-  **Note:** If special configuration is
-  required to set up the URL and you can't use this macro, be sure to use the
-  `{{ api_url }}` template variable, so that your integration
-  documentation will provide the correct URL for whatever server it is
-  deployed on.
+- `{!generate-webhook-url-basic.md!}` - Instructs user how to get the URL for a
+  bot for a given integration. Note that this macro should not be used with the
+  `{!create-channel.md!}` macro. For an example rendering, see **Step 2** of
+  [the docs for Zulip's GitHub integration][github-integration].
 
 - `{!generate-integration-url.md!}` - Instructs user how to get the URL for a
   bot for a given integration. An example URL is generated automatically for
   every incoming webhook by using attributes in the `WebhookIntegration` class
   in [zerver/lib/integrations.py][integrations-file].
+
+  **Note:** If special configuration is required to set up the URL and you can't
+  use these macros, be sure to use the `{{ api_url }}` template variable, so
+  that your integration documentation will provide the correct URL for whatever
+  server it is deployed on.
 
 - `{!append-channel-name.md!}` macro - Recommends appending `&stream=channel_name`
   to a URL in cases where supplying a channel name in the URL is optional.
