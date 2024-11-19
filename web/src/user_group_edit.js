@@ -117,19 +117,19 @@ function update_group_permission_settings_elements(group) {
     const $group_permission_settings = $("#group_permission_settings");
 
     const $permission_pill_container_elements = $group_permission_settings.find(".pill-container");
+    const $permission_input_groups = $group_permission_settings.find(".input-group");
 
     if (settings_data.can_manage_user_group(group.id)) {
         $permission_pill_container_elements.find(".input").prop("contenteditable", true);
-        $permission_pill_container_elements.removeClass("group_setting_disabled");
+        $permission_input_groups.removeClass("group_setting_disabled");
 
-        $permission_pill_container_elements.each(function () {
+        $permission_input_groups.each(function () {
             $(this)[0]._tippy?.destroy();
         });
         settings_components.enable_opening_typeahead_on_clicking_label($group_permission_settings);
     } else {
         $permission_pill_container_elements.find(".input").prop("contenteditable", false);
 
-        const $permission_input_groups = $group_permission_settings.find(".input-group");
         $permission_input_groups.addClass("group_setting_disabled");
         $permission_input_groups.each(function () {
             settings_components.initialize_disable_button_hint_popover(
@@ -154,36 +154,15 @@ function show_membership_settings(group) {
 }
 
 function show_general_settings(group) {
-    const $edit_container = get_edit_container(group);
-    settings_components.create_group_setting_widget({
-        $pill_container: $edit_container.find(".can-add-members-group-container .pill-container"),
-        setting_name: "can_add_members_group",
-        group,
-    });
+    const permission_settings = Object.keys(realm.server_supported_permission_settings.group);
+    for (const setting_name of permission_settings) {
+        settings_components.create_group_setting_widget({
+            $pill_container: $(`#id_${CSS.escape(setting_name)}`),
+            setting_name,
+            group,
+        });
+    }
 
-    settings_components.create_group_setting_widget({
-        $pill_container: $edit_container.find(".can-manage-group-container .pill-container"),
-        setting_name: "can_manage_group",
-        group,
-    });
-
-    settings_components.create_group_setting_widget({
-        $pill_container: $edit_container.find(".can-join-group-container .pill-container"),
-        setting_name: "can_join_group",
-        group,
-    });
-
-    settings_components.create_group_setting_widget({
-        $pill_container: $edit_container.find(".can-leave-group-container .pill-container"),
-        setting_name: "can_leave_group",
-        group,
-    });
-
-    settings_components.create_group_setting_widget({
-        $pill_container: $edit_container.find(".can-mention-group-container .pill-container"),
-        setting_name: "can_mention_group",
-        group,
-    });
     update_general_panel_ui(group);
 }
 

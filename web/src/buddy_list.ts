@@ -440,12 +440,12 @@ export class BuddyList extends BuddyListConf {
         const {current_sub, total_human_subscribers_count, other_users_count} = this.render_data;
         $(".buddy-list-subsection-header").empty();
 
-        // If we're in the mode of hiding headers, that means we're only showing the "other users"
+        // If we're in the mode of hiding headers, that means we're only showing the "others"
         // section, so hide the other two sections.
         $("#buddy-list-users-matching-view-container").toggleClass("no-display", hide_headers);
 
         // This is the case where every subscriber is in the participants list. In this case, we
-        // hide the "others in this channel" section.
+        // hide the "in this channel" section.
         if (
             show_participants_list &&
             total_human_subscribers_count === this.participant_user_ids.length
@@ -457,22 +457,11 @@ export class BuddyList extends BuddyListConf {
             return;
         }
 
-        let header_text;
-        if (current_sub) {
-            if (all_participant_ids.size) {
-                header_text = $t({defaultMessage: "Others in this channel"});
-            } else {
-                header_text = $t({defaultMessage: "In this channel"});
-            }
-        } else {
-            header_text = $t({defaultMessage: "In this conversation"});
-        }
-
         $("#buddy-list-participants-container .buddy-list-subsection-header").append(
             $(
                 render_section_header({
                     id: "buddy-list-participants-section-heading",
-                    header_text: $t({defaultMessage: "In this conversation"}),
+                    header_text: $t({defaultMessage: "THIS CONVERSATION"}),
                     user_count: get_formatted_sub_count(all_participant_ids.size),
                     is_collapsed: this.participants_is_collapsed,
                 }),
@@ -483,7 +472,9 @@ export class BuddyList extends BuddyListConf {
             $(
                 render_section_header({
                     id: "buddy-list-users-matching-view-section-heading",
-                    header_text,
+                    header_text: current_sub
+                        ? $t({defaultMessage: "THIS CHANNEL"})
+                        : $t({defaultMessage: "THIS CONVERSATION"}),
                     user_count: get_formatted_sub_count(
                         total_human_subscribers_count - all_participant_ids.size,
                     ),
@@ -496,7 +487,7 @@ export class BuddyList extends BuddyListConf {
             $(
                 render_section_header({
                     id: "buddy-list-other-users-section-heading",
-                    header_text: $t({defaultMessage: "Others"}),
+                    header_text: $t({defaultMessage: "OTHERS"}),
                     user_count: get_formatted_sub_count(other_users_count),
                     is_collapsed: this.other_users_is_collapsed,
                 }),

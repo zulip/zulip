@@ -13,6 +13,7 @@ import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as people from "./people.ts";
+import * as settings_components from "./settings_components.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_create_subscribers from "./stream_create_subscribers.ts";
@@ -20,6 +21,7 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
 import * as stream_ui_updates from "./stream_ui_updates.ts";
+import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
@@ -363,11 +365,10 @@ function create_stream(): void {
     const principals = JSON.stringify(user_ids);
     set_current_user_subscribed_to_created_stream(user_ids.includes(current_user.user_id));
 
-    assert(stream_settings_components.new_stream_can_remove_subscribers_group_widget !== null);
-    const widget_value =
-        stream_settings_components.new_stream_can_remove_subscribers_group_widget.value();
-    assert(typeof widget_value === "number");
-    const can_remove_subscribers_group_id = widget_value;
+    assert(can_remove_subscribers_group_widget !== undefined);
+    const can_remove_subscribers_group_value = settings_components.get_group_setting_widget_value(
+        can_remove_subscribers_group_widget,
+    );
 
     loading.make_indicator($("#stream_creating_indicator"), {
         text: $t({defaultMessage: "Creating channel..."}),
@@ -383,7 +384,7 @@ function create_stream(): void {
         message_retention_days: JSON.stringify(message_retention_selection),
         announce: JSON.stringify(announce),
         principals,
-        can_remove_subscribers_group: can_remove_subscribers_group_id,
+        can_remove_subscribers_group: JSON.stringify(can_remove_subscribers_group_value),
     };
 
     // Subscribe yourself and possible other people to a new stream.
@@ -506,6 +507,15 @@ export function show_new_stream_modal(): void {
     clear_error_display();
 }
 
+let can_remove_subscribers_group_widget: GroupSettingPillContainer | undefined;
+
+function set_up_group_setting_widgets(): void {
+    can_remove_subscribers_group_widget = settings_components.create_stream_group_setting_widget({
+        $pill_container: $("#id_new_can_remove_subscribers_group"),
+        setting_name: "can_remove_subscribers_group",
+    });
+}
+
 export function set_up_handlers(): void {
     stream_announce_previous_value =
         settings_data.user_can_create_public_streams() ||
@@ -580,8 +590,7 @@ export function set_up_handlers(): void {
         }
     });
 
-    assert(stream_settings_components.new_stream_can_remove_subscribers_group_widget !== null);
-    stream_settings_components.new_stream_can_remove_subscribers_group_widget.setup();
+    set_up_group_setting_widgets();
 }
 
 export function initialize(): void {

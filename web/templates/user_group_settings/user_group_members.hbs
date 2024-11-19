@@ -4,7 +4,7 @@
     </h4>
     <div class="member_list_settings">
         <div class="member_list_add float-left">
-            {{> add_members_form}}
+            {{> add_members_form .}}
             <div class="user_group_subscription_request_result"></div>
         </div>
         <div class="clear-float"></div>
@@ -16,6 +16,6 @@
         </span>
     </div>
     <div class="member-list-box">
-        {{> user_group_members_table}}
+        {{> user_group_members_table .}}
     </div>
 </div>

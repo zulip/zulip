@@ -138,6 +138,12 @@ class UserTopicDict(TypedDict, total=False):
     visibility_policy: int
 
 
+@dataclass
+class AnonymousSettingGroupDict:
+    direct_members: list[int]
+    direct_subgroups: list[int]
+
+
 # This next batch of types is for Stream/Subscription objects.
 class RawStreamDict(TypedDict):
     """Dictionary containing fields fetched from the Stream model that
@@ -185,7 +191,7 @@ class SubscriptionStreamDict(TypedDict):
     """
 
     audible_notifications: bool | None
-    can_remove_subscribers_group: int
+    can_remove_subscribers_group: int | AnonymousSettingGroupDict
     color: str
     creator_id: int | None
     date_created: int
@@ -239,7 +245,7 @@ class DefaultStreamDict(TypedDict):
     """
 
     is_archived: bool
-    can_remove_subscribers_group: int
+    can_remove_subscribers_group: int | AnonymousSettingGroupDict
     creator_id: int | None
     date_created: int
     description: str

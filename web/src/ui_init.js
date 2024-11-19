@@ -106,10 +106,10 @@ import * as server_events from "./server_events.js";
 import * as settings from "./settings.js";
 import * as settings_data from "./settings_data.ts";
 import * as settings_notifications from "./settings_notifications.ts";
-import * as settings_panel_menu from "./settings_panel_menu.js";
+import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_preferences from "./settings_preferences.ts";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults.ts";
-import * as settings_sections from "./settings_sections.js";
+import * as settings_sections from "./settings_sections.ts";
 import * as settings_toggle from "./settings_toggle.js";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spoilers from "./spoilers.ts";
@@ -185,7 +185,6 @@ function initialize_compose_box() {
                 giphy_enabled: giphy_state.is_giphy_enabled(),
                 max_stream_name_length: realm.max_stream_name_length,
                 max_topic_length: realm.max_topic_length,
-                max_message_length: realm.max_message_length,
             }),
         ),
     );

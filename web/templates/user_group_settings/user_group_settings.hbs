@@ -43,13 +43,7 @@
                     {{> ../settings/settings_save_discard_widget section_name="group-permissions" }}
                 </div>
 
-                {{> group_permissions
-                  can_add_members_group_widget_name="can_add_members_group"
-                  can_join_group_widget_name="can_join_group"
-                  can_leave_group_widget_name="can_leave_group"
-                  can_mention_group_widget_name="can_mention_group"
-                  can_manage_group_widget_name="can_manage_group"
-                  }}
+                {{> group_permissions prefix="id_"}}
             </div>
 
             <div class="group_detail_box">
@@ -59,7 +53,7 @@
                     </h3>
                 </div>
                 <div class="creator_details group_details_box_subsection">
-                    {{> ../creator_details }}
+                    {{> ../creator_details . }}
                 </div>
                 <div class="group_details_box_subsection">
                     {{t "User group ID"}}<br/>
@@ -70,7 +64,7 @@
 
         <div class="group_member_settings group_setting_section" data-group-section="members">
             <div class="edit_members_for_user_group">
-                {{> user_group_members}}
+                {{> user_group_members .}}
             </div>
         </div>
     </div>

@@ -21,10 +21,14 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import APIStreamDict
-from zerver.lib.user_groups import user_has_permission_for_group_setting
+from zerver.lib.types import AnonymousSettingGroupDict, APIStreamDict
+from zerver.lib.user_groups import (
+    get_group_setting_value_for_api,
+    user_has_permission_for_group_setting,
+)
 from zerver.models import (
     DefaultStreamGroup,
+    GroupGroupMembership,
     NamedUserGroup,
     Realm,
     RealmAuditLog,
@@ -32,6 +36,7 @@ from zerver.models import (
     Stream,
     Subscription,
     UserGroup,
+    UserGroupMembership,
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
@@ -123,8 +128,13 @@ def send_stream_creation_event(
     stream: Stream,
     user_ids: list[int],
     recent_traffic: dict[int, int] | None = None,
+    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
 ) -> None:
-    event = dict(type="stream", op="create", streams=[stream_to_dict(stream, recent_traffic)])
+    event = dict(
+        type="stream",
+        op="create",
+        streams=[stream_to_dict(stream, recent_traffic, setting_groups_dict)],
+    )
     send_event_on_commit(realm, event, user_ids)
 
 
@@ -141,6 +151,7 @@ def create_stream_if_needed(
     message_retention_days: int | None = None,
     can_remove_subscribers_group: UserGroup | None = None,
     acting_user: UserProfile | None = None,
+    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
 ) -> tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
         realm, invite_only, history_public_to_subscribers
@@ -187,21 +198,31 @@ def create_stream_if_needed(
             event_time=event_time,
         )
 
+        if setting_groups_dict is None:
+            setting_groups_dict = get_group_setting_value_dict_for_streams([stream])
+
         if stream.is_public():
             if stream.is_web_public:
                 notify_user_ids = active_user_ids(stream.realm_id)
             else:
                 notify_user_ids = active_non_guest_user_ids(stream.realm_id)
-            send_stream_creation_event(realm, stream, notify_user_ids)
+            send_stream_creation_event(
+                realm, stream, notify_user_ids, setting_groups_dict=setting_groups_dict
+            )
         else:
             realm_admin_ids = [user.id for user in stream.realm.get_admin_users_and_bots()]
-            send_stream_creation_event(realm, stream, realm_admin_ids)
+            send_stream_creation_event(
+                realm, stream, realm_admin_ids, setting_groups_dict=setting_groups_dict
+            )
 
     return stream, created
 
 
 def create_streams_if_needed(
-    realm: Realm, stream_dicts: list[StreamDict], acting_user: UserProfile | None = None
+    realm: Realm,
+    stream_dicts: list[StreamDict],
+    acting_user: UserProfile | None = None,
+    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
 ) -> tuple[list[Stream], list[Stream]]:
     """Note that stream_dict["name"] is assumed to already be stripped of
     whitespace"""
@@ -222,6 +243,7 @@ def create_streams_if_needed(
             message_retention_days=stream_dict.get("message_retention_days", None),
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
             acting_user=acting_user,
+            setting_groups_dict=setting_groups_dict,
         )
 
         if created:
@@ -707,6 +729,7 @@ def list_to_streams(
     autocreate: bool = False,
     unsubscribing_others: bool = False,
     is_default_stream: bool = False,
+    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
 ) -> tuple[list[Stream], list[Stream]]:
     """Converts list of dicts to a list of Streams, validating input in the process
 
@@ -807,7 +830,10 @@ def list_to_streams(
         # paranoid approach, since often on Zulip two people will discuss
         # creating a new stream, and both people eagerly do it.)
         created_streams, dup_streams = create_streams_if_needed(
-            realm=user_profile.realm, stream_dicts=missing_stream_dicts, acting_user=user_profile
+            realm=user_profile.realm,
+            stream_dicts=missing_stream_dicts,
+            acting_user=user_profile,
+            setting_groups_dict=setting_groups_dict,
         )
         existing_streams += dup_streams
 
@@ -870,7 +896,11 @@ def get_occupied_streams(realm: Realm) -> QuerySet[Stream]:
     return occupied_streams
 
 
-def stream_to_dict(stream: Stream, recent_traffic: dict[int, int] | None = None) -> APIStreamDict:
+def stream_to_dict(
+    stream: Stream,
+    recent_traffic: dict[int, int] | None = None,
+    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
+) -> APIStreamDict:
     if recent_traffic is not None:
         stream_weekly_traffic = get_average_weekly_stream_traffic(
             stream.id, stream.date_created, recent_traffic
@@ -884,9 +914,16 @@ def stream_to_dict(stream: Stream, recent_traffic: dict[int, int] | None = None)
         # passing stream data to spectators.
         stream_weekly_traffic = None
 
+    if setting_groups_dict is not None:
+        can_remove_subscribers_group = setting_groups_dict[stream.can_remove_subscribers_group_id]
+    else:
+        can_remove_subscribers_group = get_group_setting_value_for_api(
+            stream.can_remove_subscribers_group
+        )
+
     return APIStreamDict(
         is_archived=stream.deactivated,
-        can_remove_subscribers_group=stream.can_remove_subscribers_group_id,
+        can_remove_subscribers_group=can_remove_subscribers_group,
         creator_id=stream.creator_id,
         date_created=datetime_to_timestamp(stream.date_created),
         description=stream.description,
@@ -907,7 +944,8 @@ def stream_to_dict(stream: Stream, recent_traffic: dict[int, int] | None = None)
 def get_web_public_streams(realm: Realm) -> list[APIStreamDict]:  # nocoverage
     query = get_web_public_streams_queryset(realm)
     streams = query.only(*Stream.API_FIELDS)
-    stream_dicts = [stream_to_dict(stream) for stream in streams]
+    setting_groups_dict = get_group_setting_value_dict_for_streams(list(streams))
+    stream_dicts = [stream_to_dict(stream, None, setting_groups_dict) for stream in streams]
     return stream_dicts
 
 
@@ -978,6 +1016,49 @@ def get_streams_for_user(
     return list(streams)
 
 
+def get_group_setting_value_dict_for_streams(
+    streams: list[Stream],
+) -> dict[int, int | AnonymousSettingGroupDict]:
+    setting_group_ids = set()
+    for stream in streams:
+        for setting_name in Stream.stream_permission_group_settings:
+            setting_group_ids.add(getattr(stream, setting_name + "_id"))
+
+    return get_setting_values_for_group_settings(list(setting_group_ids))
+
+
+def get_setting_values_for_group_settings(
+    group_ids: list[int],
+) -> dict[int, int | AnonymousSettingGroupDict]:
+    setting_value_dict = {}
+    setting_groups = UserGroup.objects.filter(id__in=group_ids).select_related("named_user_group")
+    anonymous_groups = []
+    for group in setting_groups:
+        if hasattr(group, "named_user_group"):
+            setting_value_dict[group.id] = group.id
+        else:
+            setting_value_dict[group.id] = AnonymousSettingGroupDict(
+                direct_members=[],
+                direct_subgroups=[],
+            )
+            anonymous_groups.append(group.id)
+
+    group_members = (
+        UserGroupMembership.objects.filter(user_group_id__in=anonymous_groups)
+        .exclude(user_profile__is_active=False)
+        .values_list("user_group_id", "user_profile_id")
+    )
+    group_subgroups = GroupGroupMembership.objects.filter(
+        supergroup_id__in=anonymous_groups
+    ).values_list("supergroup_id", "subgroup_id")
+    for user_group_id, user_profile_id in group_members:
+        setting_value_dict[user_group_id].direct_members.append(user_profile_id)
+    for supergroup_id, subgroup_id in group_subgroups:
+        setting_value_dict[supergroup_id].direct_subgroups.append(subgroup_id)
+
+    return setting_value_dict
+
+
 def do_get_streams(
     user_profile: UserProfile,
     include_public: bool = True,
@@ -1003,14 +1084,17 @@ def do_get_streams(
     stream_ids = {stream.id for stream in streams}
     recent_traffic = get_streams_traffic(stream_ids, user_profile.realm)
 
+    setting_groups_dict = get_group_setting_value_dict_for_streams(streams)
+
     stream_dicts = sorted(
-        (stream_to_dict(stream, recent_traffic) for stream in streams), key=lambda elt: elt["name"]
+        (stream_to_dict(stream, recent_traffic, setting_groups_dict) for stream in streams),
+        key=lambda elt: elt["name"],
     )
 
     if include_default:
         default_stream_ids = get_default_stream_ids_for_realm(user_profile.realm_id)
-        for stream in stream_dicts:
-            stream["is_default"] = stream["stream_id"] in default_stream_ids
+        for stream_dict in stream_dicts:
+            stream_dict["is_default"] = stream_dict["stream_id"] in default_stream_ids
 
     return stream_dicts
 

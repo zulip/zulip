@@ -123,7 +123,7 @@ export async function display_stacktrace(ex: unknown, message?: string): Promise
                     "constructor" in prototype
                         ? `thrown ${prototype.constructor.name}`
                         : "thrown",
-                message: ex === undefined ? message : String(ex),
+                message: ex === undefined ? message : `${String(ex)}: ${message}`,
                 stackframes: [],
             });
             break;

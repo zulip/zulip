@@ -6,7 +6,7 @@
                 <div tabindex="0" class="inbox-header-name">
                     <div class="inbox-header-name-focus-border">
                         <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
-                            {{> ../stream_privacy }}
+                            {{> ../stream_privacy . }}
                         </span>
                         <a tabindex="-1" href="{{stream_url}}">{{stream_name}}</a>
                         {{#if is_archived}}

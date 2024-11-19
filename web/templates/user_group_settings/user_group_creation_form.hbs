@@ -28,13 +28,7 @@
                                 </h3>
                             </div>
 
-                            {{> group_permissions
-                              can_add_members_group_widget_name="new_group_can_add_members_group"
-                              can_join_group_widget_name="new_group_can_join_group"
-                              can_leave_group_widget_name="new_group_can_leave_group"
-                              can_mention_group_widget_name="new_group_can_mention_group"
-                              can_manage_group_widget_name="new_group_can_manage_group"
-                              }}
+                            {{> group_permissions prefix="id_new_group_"}}
                         </div>
                     </section>
                 </div>

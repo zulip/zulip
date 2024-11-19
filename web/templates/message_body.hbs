@@ -1,5 +1,5 @@
 {{#if include_sender}}
-    {{> message_avatar ~}}
+    {{> message_avatar . ~}}
 {{/if}}
 <span class="message_sender">
     {{#if include_sender}}
@@ -17,11 +17,11 @@
         {{#if status_message}}
             <span class="rendered_markdown status-message">{{rendered_markdown status_message}}</span>
             {{#if message_edit_notices_for_status_message}}
-                {{> edited_notice}}
+                {{> edited_notice .}}
             {{/if}}
         {{/if}}
         {{#if message_edit_notices_alongside_sender}}
-            {{> edited_notice}}
+            {{> edited_notice .}}
         {{/if}}
     {{/if}}
 </span>
@@ -43,7 +43,7 @@
             {{> message_controls_failed_msg}}
         {{/if}}
     {{else}}
-        {{> message_controls}}
+        {{> message_controls .}}
     {{/if}}
 </div>
 
@@ -64,11 +64,11 @@
 {{/unless}}
 
 {{#if message_edit_notices_in_left_col}}
-{{> edited_notice}}
+{{> edited_notice .}}
 {{/if}}
 
 <div class="message_length_controller"></div>
 
 {{#if (and (not is_hidden) msg.message_reactions)}}
-    {{> message_reactions }}
+    {{> message_reactions . }}
 {{/if}}

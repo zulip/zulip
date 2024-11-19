@@ -1,49 +1,24 @@
-<div class="input-group can-manage-group-container">
-    <label class="group-setting-label">{{t "Who can administer this group" }}</label>
-    <div class="pill-container person_picker prop-element" id="id_{{can_manage_group_widget_name}}" data-setting-widget-type="group-setting-type">
-        <div class="input" contenteditable="true"
-          data-placeholder="{{t 'Add roles, groups or users' }}">
-            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
-        </div>
-    </div>
-</div>
+{{> ../settings/group_setting_value_pill_input
+  setting_name="can_manage_group"
+  label=(t 'Who can administer this group')
+  prefix=prefix }}
 
-<div class="input-group can-mention-group-container">
-    <label class="group-setting-label">{{t "Who can mention this group" }}</label>
-    <div class="pill-container person_picker prop-element" id="id_{{can_mention_group_widget_name}}" data-setting-widget-type="group-setting-type">
-        <div class="input" contenteditable="true"
-          data-placeholder="{{t 'Add roles, groups or users' }}">
-            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
-        </div>
-    </div>
-</div>
+{{> ../settings/group_setting_value_pill_input
+  setting_name="can_mention_group"
+  label=(t 'Who can mention this group')
+  prefix=prefix }}
 
-<div class="input-group can-add-members-group-container">
-    <label class="group-setting-label">{{t "Who can add members to this group" }}</label>
-    <div class="pill-container person_picker prop-element" id="id_{{can_add_members_group_widget_name}}" data-setting-widget-type="group-setting-type">
-        <div class="input" contenteditable="true"
-          data-placeholder="{{t 'Add roles, groups or users' }}">
-            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
-        </div>
-    </div>
-</div>
+{{> ../settings/group_setting_value_pill_input
+  setting_name="can_add_members_group"
+  label=(t 'Who can add members to this group')
+  prefix=prefix }}
 
-<div class="input-group can-join-group-container">
-    <label class="group-setting-label">{{t "Who can join this group" }}</label>
-    <div class="pill-container person_picker prop-element" id="id_{{can_join_group_widget_name}}" data-setting-widget-type="group-setting-type">
-        <div class="input" contenteditable="true"
-          data-placeholder="{{t 'Add roles, groups or users' }}">
-            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
-        </div>
-    </div>
-</div>
+{{> ../settings/group_setting_value_pill_input
+  setting_name="can_join_group"
+  label=(t 'Who can join this group')
+  prefix=prefix }}
 
-<div class="input-group can-leave-group-container">
-    <label class="group-setting-label">{{t "Who can leave this group" }}</label>
-    <div class="pill-container person_picker prop-element" id="id_{{can_leave_group_widget_name}}" data-setting-widget-type="group-setting-type">
-        <div class="input" contenteditable="true"
-          data-placeholder="{{t 'Add roles, groups or users' }}">
-            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
-        </div>
-    </div>
-</div>
+{{> ../settings/group_setting_value_pill_input
+  setting_name="can_leave_group"
+  label=(t 'Who can leave this group')
+  prefix=prefix }}

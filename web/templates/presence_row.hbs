@@ -5,7 +5,7 @@
             <a class="user-presence-link" href="{{href}}">
                 <div class="user-name-and-status-wrapper">
                     <div class="user-name-and-status-emoji">
-                        {{> user_full_name}}
+                        {{> user_full_name .}}
                         {{> status_emoji status_emoji_info}}
                     </div>
                     <span class="status-text">{{status_text}}</span>
@@ -19,7 +19,7 @@
             <a class="user-presence-link" href="{{href}}">
                 <div class="user-name-and-status-wrapper">
                     <div class="user-name-and-status-emoji">
-                        {{> user_full_name}}
+                        {{> user_full_name .}}
                         {{> status_emoji status_emoji_info}}
                     </div>
                     <span class="status-text">{{status_text}}</span>
@@ -29,7 +29,7 @@
             <span class="{{user_circle_class}} user_circle"></span>
             <a class="user-presence-link" href="{{href}}">
                 <div class="user-name-and-status-emoji">
-                    {{> user_full_name}}
+                    {{> user_full_name .}}
                     {{> status_emoji status_emoji_info}}
                 </div>
             </a>

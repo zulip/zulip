@@ -35,10 +35,11 @@ import * as settings_notifications from "./settings_notifications.ts";
 import * as settings_preferences from "./settings_preferences.ts";
 import * as settings_realm_domains from "./settings_realm_domains.ts";
 import * as settings_ui from "./settings_ui.ts";
-import {current_user, group_setting_value_schema, realm, realm_schema} from "./state_data.ts";
+import {current_user, realm, realm_schema} from "./state_data.ts";
 import type {Realm} from "./state_data.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import {group_setting_value_schema} from "./types.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
 import * as user_groups from "./user_groups.ts";
@@ -607,13 +608,15 @@ export function discard_stream_property_element_changes(
         sub,
     );
     switch (property_name) {
-        case "can_remove_subscribers_group":
-            assert(typeof property_value === "number");
-            settings_components.set_dropdown_list_widget_setting_value(
-                property_name,
-                property_value,
+        case "can_remove_subscribers_group": {
+            const pill_widget = settings_components.get_group_setting_widget(property_name);
+            assert(pill_widget !== null);
+            settings_components.set_group_setting_widget_value(
+                pill_widget,
+                group_setting_value_schema.parse(property_value),
             );
             break;
+        }
         case "stream_privacy": {
             assert(typeof property_value === "string");
             $elem.find(`input[value='${CSS.escape(property_value)}']`).prop("checked", true);

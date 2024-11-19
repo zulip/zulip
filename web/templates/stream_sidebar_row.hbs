@@ -5,7 +5,7 @@
         <div class="subscription_block selectable_sidebar_block {{#if hide_unread_count}}hide_unread_counts{{/if}}">
 
             <span class="stream-privacy-original-color-{{id}} stream-privacy filter-icon" style="color: {{color}}">
-                {{> stream_privacy }}
+                {{> stream_privacy . }}
             </span>
 
             <a href="{{url}}" class="stream-name">{{name}}</a>

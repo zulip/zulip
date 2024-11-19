@@ -87,14 +87,8 @@ run_test("create_item", ({override}) => {
 });
 
 run_test("display_value", () => {
-    assert.deepEqual(
-        stream_pill.get_display_value_from_item(denmark_pill),
-        "translated: Denmark: 3 users",
-    );
-    assert.deepEqual(
-        stream_pill.get_display_value_from_item(sweden_pill),
-        "translated: Sweden: 5 users",
-    );
+    assert.deepEqual(stream_pill.get_display_value_from_item(denmark_pill), "Denmark");
+    assert.deepEqual(stream_pill.get_display_value_from_item(sweden_pill), "Sweden");
     sweden_pill.show_subscriber_count = false;
     assert.deepEqual(stream_pill.get_display_value_from_item(sweden_pill), "Sweden");
 });
@@ -125,7 +119,7 @@ run_test("generate_pill_html", () => {
         "<div class='pill 'data-stream-id=\"101\" tabindex=0>\n" +
             '    <span class="pill-label">\n' +
             '        <span class="pill-value">\n' +
-            '<i class="zulip-icon zulip-icon-hashtag stream-privacy-type-icon" aria-hidden="true"></i>            translated: Denmark: 3 users\n' +
+            '<i class="zulip-icon zulip-icon-hashtag stream-privacy-type-icon" aria-hidden="true"></i>            Denmark\n' +
             "        </span></span>\n" +
             '    <div class="exit">\n' +
             '        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n' +

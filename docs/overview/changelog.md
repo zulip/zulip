@@ -13,8 +13,134 @@ log][commit-log] for an up-to-date list of all changes.
 
 _Unreleased_
 
+#### Highlights
+
+- Redesigned the left sidebar visually, adding convenient "New topic"
+  and "New direct message" buttons.
+- Redesigned the right sidebar buddy list visually, adding a new "THIS
+  CONVERSATION" section showing just the users who've participated
+  recently in the currently viewed conversation, and improving its
+  filtering component.
+- User groups are now much more powerful, supporting subgroups and
+  with new permissions settings for who can administer the group, join
+  it, or edit its membership. Permission for creating new groups is
+  now separate from permission to administer all groups.
+- Most permissions settings in Zulip have been reimplemented with a
+  new flexible system based on groups, and can have a value of any
+  combination of roles, groups, and individual users. Groups can be
+  nested as subgroups of other groups. Groups are now deactivated,
+  rather than being fully deleted, so Zulip's audit logs still
+  maintain a complete history of permissions changes.
+- Added a right sidebar buddy list style option showing user avatars,
+  designed for smaller organizations.
+- Changes the semantics for when messages are marked as read when
+  scrolling the blue selection box past them and the bottom of the
+  feed is not visible to avoid shifting one's place when briefly
+  visiting a conversation.
+- Reworked the "archive channel" functionality to not mutate their
+  names or make content inaccessible, with a view towards supporting
+  unarchiving channels.
+- Significantly improved the performance of rendering messages in the
+  web application, and optimized common views to load near-instantly,
+  without making any network requests.
+- Added a new syntax for entering a direct link to a message in the
+  compose box; message links pasted in the compose box are
+  automatically converted into this syntax. (The original URL is
+  accessible via browser undo or plain-text paste).
+- Added support for uploading arbitrarily large files using the TUS
+  chunked-upload protocol. The existing `MAX_FILE_UPLOAD_SIZE` setting
+  will need to updated for most self-hosted installations; see the
+  upgrade notes below.
+
+#### Full feature changelog
+
+- Redesigned icons for bots, copying, and various other actions.
+- Added support for syncing user roles with the SCIM integration.
+- Added support for configuring certain custom profile fields to not
+  be editable by the user, for fields that are maintained by
+  administrators or synced from a third-party service.
+- Added support for personal Microsoft accounts in the EntraID/AzureAD
+  authentication backend.
+- Added `*` keyboard shortcut for navigating to starred messages view.
+- Added UI support for data exports with member consent.
+- Added new prompt when editing a message to remove the last reference
+  to a previously uploaded file.
+- Added the "Enter sends" setting to the Preferences settings
+  panel. Previously, it was only accessible in the compose area.
+- Added a new channel details menu when clicking channel pills.
+- Added live-update support to reactions, starred messages, followed
+  topics, and similar views that previously did not support it.
+- Added a clarifying modal the first time a user tries to resolve a
+  topic, confirming that they understand it's resolved for everyone.
+- Added informative new error output when attempting to load a data
+  export into a Zulip server running a different server version.
+- Added a new API endpoint for bulk-fetching messages by ID. Improved
+  API support for fetching users by email address.
+- Added API support for changing another user's email address, with a
+  `can_change_user_emails` administrative permission issued via
+  management shell.
+- Clicking on the channel name while viewing a topic in a channel is
+  now another way to reach the Channel Feed for that channel.
+- New Airbyte integration. Updated GitHub, GitLab, GoCD, Linear, and
+  NewRelic integrations. Removed the OpsBeat integration as the
+  product is defunct.
+- The GitHub webhook now has a flag to filter activity from private
+  repositories.
+- The `ignore_pull_requests` flag for the Travis CI integration was
+  removed in favor of Zulip's generic event-filtering support.
+- System bot avatars are now shipped with the server, instead of
+  relying on Gravatar.
+- Deactivated users and bot users are now displayed more consistently
+  across the UI.
+- Search results now show the full date on every result.
+- The year is now always displayed on the first recipient/date bar
+  entering the current year (Previously, one might see "June 12, 2022"
+  followed by "July 15" and incorrectly think the latter was July 15, 2022).
+- Improved hotkey documentation for macOS users with non-Mac keyboards.
+- Improved search keyboard UI in several subtle ways.
+- Improved how guest users are present in the invitation UI.
+- Improved bottom-of-feed bookends for unsubscribed channels.
+- Fixed a nasty bug where messages could be marked as read when they
+  arrived onscreen at an unattended computer with Zulip focused.
+- Fixed several bugs involving clicking on message feed elements like
+  mentions in drafts, scheduled messages, and preview send components.
+- Fixed a line-wrapping bug where punctuation could weirdly wrap to
+  the next line after mentions or global times.
+- Fixed error handling of 502s caused by timeouts.
+- Fixed several bugs involving deactivated users' group membership.
+- Fixed several bugs in the logical data import/export system.
+- Fixed several subtle race bugs involving local echo of sent messages.
+- Fixed buggy URL-escaping of filenames in tooltips.
+- Fixed bugs preventing reliably rolling restart of server processes.
+- Fixed handling of several rare race conditions.
+- Fixed inconsistencies in display order of group direct message recipients.
+- Renamed `stream` to `channel` in generated URLs, now that enough
+  time has passed since `channel` support was added to mobile clients.
+- Optimized the presence synchronization protocol to use dramatically
+  less network and CPU resources in large organizations.
+- Optimized new database creation runtime by squashing almost 700
+  database migrations.
+- Optimized the performance of creating channels with thousands of
+  initial subscribers.
+- Reduced the size of static assets for an initial page load of the web
+  app by 22% using `zopfli` compression. Emoji spritesheets are also
+  now 30% smaller thanks to using the modern `webp` format.
+- Migrated the remainder of the server's API parsing code to the
+  `typed_endpoint` abstraction backed by Pydantic v2, improving
+  performance and readability of the server project.
+- Migrate almost all of the remaining JavaScript code to TypeScript,
+  fixing many minor bugs and latent issues.
+
 #### Upgrade notes for 10.0
 
+- This release adds support for uploading arbitrarily large
+  files. Because prior releases wrote the old default value of 25 (MB)
+  for the `MAX_FILE_UPLOAD_SIZE` setting into `/etc/zulip/settings.py`
+  during installation, you'll want to consider increasing that. The
+  new default value is 100. Since there is no technical limit, we
+  recommend considering how much storage you allocated to your Zulip
+  instance and the policy policy question of how you want to encourage
+  your users to share videos or other very large files.
 - The `SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT` setting is deprecated in favor of the
   more general `SOCIAL_AUTH_SYNC_ATTRS_DICT` setting structure, but still works in
   this release for a smooth upgrade experience. The new setting supports

@@ -24,7 +24,7 @@ import * as stream_color_events from "./stream_color_events.ts";
 import * as stream_create from "./stream_create.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
-import * as stream_muting from "./stream_muting.js";
+import * as stream_muting from "./stream_muting.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_settings_ui from "./stream_settings_ui.js";
 import * as sub_store from "./sub_store.ts";
@@ -107,7 +107,7 @@ export function update_property(stream_id, property, value, other_values) {
             stream_settings_ui.update_message_retention_setting(sub, value);
             break;
         case "can_remove_subscribers_group":
-            stream_settings_ui.update_can_remove_subscribers_group_id(sub, value);
+            stream_settings_ui.update_can_remove_subscribers_group(sub, value);
             break;
         default:
             blueslip.warn("Unexpected subscription property type", {

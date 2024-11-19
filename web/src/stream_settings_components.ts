@@ -1,5 +1,4 @@
 import $ from "jquery";
-import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
@@ -8,8 +7,6 @@ import render_selected_stream_title from "../templates/stream_settings/selected_
 
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
-import * as dropdown_widget from "./dropdown_widget.ts";
-import type {DropdownWidget} from "./dropdown_widget.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
@@ -21,7 +18,6 @@ import {current_user} from "./state_data.ts";
 import * as stream_ui_updates from "./stream_ui_updates.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
-import * as user_groups from "./user_groups.ts";
 
 export function set_right_panel_title(sub: StreamSubscription): void {
     let title_icon_color = "#333333";
@@ -106,33 +102,6 @@ export function get_active_data(): {
         id: valid_active_id,
         $tabs: $active_tabs,
     };
-}
-
-export let new_stream_can_remove_subscribers_group_widget: DropdownWidget | null = null;
-
-export function dropdown_setup(): void {
-    new_stream_can_remove_subscribers_group_widget = new dropdown_widget.DropdownWidget({
-        widget_name: "new_stream_can_remove_subscribers_group",
-        get_options: () =>
-            user_groups.get_realm_user_groups_for_dropdown_list_widget(
-                "can_remove_subscribers_group",
-                "stream",
-            ),
-        item_click_callback(event, dropdown) {
-            dropdown.hide();
-            event.preventDefault();
-            event.stopPropagation();
-            assert(new_stream_can_remove_subscribers_group_widget !== null);
-            new_stream_can_remove_subscribers_group_widget.render();
-        },
-        $events_container: $("#subscription_overlay"),
-        on_mount_callback(dropdown) {
-            $(dropdown.popper).css("min-width", "300px");
-            $(dropdown.popper).find(".simplebar-content").css("width", "max-content");
-        },
-        default_id: user_groups.get_user_group_from_name("role:administrators")!.id,
-        unique_id_type: dropdown_widget.DataTypes.NUMBER,
-    });
 }
 
 /* For the given stream_row, remove the tick and replace by a spinner. */

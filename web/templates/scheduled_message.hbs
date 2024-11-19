@@ -6,7 +6,7 @@
                 <div class="message-header-contents" style="background: {{recipient_bar_color}};">
                     <div class="message_label_clickable stream_label">
                         <span class="stream-privacy-modified-color-{{stream_id}} stream-privacy filter-icon"  style="color: {{stream_privacy_icon_color}}">
-                            {{> stream_privacy}}
+                            {{> stream_privacy .}}
                         </span>
                         {{stream_name}}
                     </div>
@@ -17,7 +17,7 @@
                         </div>
                     </span>
                     <span class="recipient_bar_controls"></span>
-                    {{> scheduled_message_stream_pm_common}}
+                    {{> scheduled_message_stream_pm_common .}}
                 </div>
             </div>
             {{else}}
@@ -27,7 +27,7 @@
                         <span class="private_message_header_icon"><i class="zulip-icon zulip-icon-user"></i></span>
                         <span class="private_message_header_name">{{t "You and {recipients}" }}</span>
                     </div>
-                    {{> scheduled_message_stream_pm_common}}
+                    {{> scheduled_message_stream_pm_common .}}
                 </div>
             </div>
             {{/if}}
