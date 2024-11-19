@@ -84,6 +84,16 @@
       "name": "italic_and_strike_conversion",
       "input": "_~italic~_ and ~_strike_~",
       "conversion_output": "*~~italic~~* and ~~*strike*~~"
+    },
+    {
+      "name": "new_line_test",
+      "input": "\n*abc*\n_helo_\n~stike~\n",
+      "conversion_output": "\n**abc**\n*helo*\n~~stike~~\n"
+    },
+    {
+      "name": "overlapping_bold_new_line_test",
+      "input": "*alert:*\n*aescription:*\n*alert:*\n*description:*",
+      "conversion_output": "**alert:**\n**aescription:**\n**alert:**\n**description:**"
     }
   ]
 }
