@@ -60,7 +60,7 @@ SLACK_STRIKETHROUGH_REGEX = r"""
                                 [\p{P}\p{Zs}\p{S}]|^
                              )
                              (\~)                                  # followed by a ~
-                                 ([ -}]+)                          # any character except ~
+                                 ([^~]+)                           # any character except ~
                              (\~)                                  # followed by a ~
                              (
                                 # Capture punctuation, white space, symbols or end of
@@ -80,7 +80,7 @@ SLACK_ITALIC_REGEX = r"""
                         [\p{P}\p{Zs}\p{S}]|^
                       )
                       (\_)
-                          ([ -^`-~]+)                # any character except _
+                          ([^_]+)                    # any character except _
                       (\_)
                       (
                         (?![_`@\\\p{Pi}\p{Ps}])
@@ -95,7 +95,7 @@ SLACK_BOLD_REGEX = r"""
                         [\p{P}\p{Zs}\p{S}]|^
                     )
                     (\*)
-                        ([ -)+-~]+)                   # any character except *
+                        ([^*]+)                       # any character except *
                     (\*)
                     (
                         (?![*`@\\\p{Pi}\p{Ps}])
