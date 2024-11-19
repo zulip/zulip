@@ -384,7 +384,7 @@ function remove_subscriber({
     );
 }
 
-export function update_subscribers_list(sub: SettingsSubscription): void {
+export function update_subscribers_list(sub: StreamSubscription): void {
     // This is for the "Subscribers" tab of the right panel.
     // Render subscriptions only if stream settings is open
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
