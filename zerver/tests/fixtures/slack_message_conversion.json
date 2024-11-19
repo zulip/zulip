@@ -94,6 +94,11 @@
       "name": "overlapping_bold_new_line_test",
       "input": "*alert:*\n*aescription:*\n*alert:*\n*description:*",
       "conversion_output": "**alert:**\n**aescription:**\n**alert:**\n**description:**"
+    },
+    {
+      "name": "format_emoji_test",
+      "input": "*1️⃣ bold* some _1️⃣ italic_ word ~1️⃣ strike~",
+      "conversion_output": "**1️⃣ bold** some *1️⃣ italic* word ~~1️⃣ strike~~"
     }
   ]
 }
