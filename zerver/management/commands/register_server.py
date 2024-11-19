@@ -111,8 +111,6 @@ class Command(ZulipBaseCommand):
             "/api/v1/remotes/server/register", request
         )
 
-        # Makes sure that we have a current state of user count when first
-        # logging in after the RemoteRealm flow.
         send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
         if response.json()["created"]:
