@@ -51,4 +51,4 @@ API_FEATURE_LEVEL = (
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (302, 0)  # bumped 2024-11-18 to upgrade Python requirements
+PROVISION_VERSION = (303, 0)  # bumped 2024-11-18 for types-defusedxml

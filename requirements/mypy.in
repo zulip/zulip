@@ -11,6 +11,7 @@ types-beautifulsoup4
 types-boto
 types-chardet
 types-decorator
+types-defusedxml
 types-jsonschema
 types-Markdown
 types-oauthlib
