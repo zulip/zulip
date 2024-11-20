@@ -1,7 +1,9 @@
 import $ from "jquery";
 import _ from "lodash";
+import {z} from "zod";
 
 import type {Filter} from "./filter.ts";
+import {localstorage} from "./localstorage.ts";
 import * as pm_list_data from "./pm_list_data.ts";
 import * as pm_list_dom from "./pm_list_dom.ts";
 import type {PMNode} from "./pm_list_dom.ts";
@@ -16,6 +18,9 @@ let prior_dom: vdom.Tag<PMNode> | undefined;
 // This module manages the direct messages section in the upper
 // left corner of the app.  This was split out from stream_list.ts.
 
+const ls_key = "left_sidebar_direct_messages_collapsed_state";
+const ls_schema = z.boolean().default(false);
+const ls = localstorage();
 let private_messages_collapsed = false;
 
 // The direct messages section can be zoomed in to view more messages.
@@ -36,6 +41,7 @@ export function set_count(count: number): void {
 
 export function close(): void {
     private_messages_collapsed = true;
+    ls.set(ls_key, private_messages_collapsed);
     $("#toggle-direct-messages-section-icon").removeClass("rotate-icon-down");
     $("#toggle-direct-messages-section-icon").addClass("rotate-icon-right");
 
@@ -108,6 +114,7 @@ export function update_private_messages(): void {
 
 export function expand(): void {
     private_messages_collapsed = false;
+    ls.set(ls_key, private_messages_collapsed);
 
     $("#toggle-direct-messages-section-icon").addClass("rotate-icon-down");
     $("#toggle-direct-messages-section-icon").removeClass("rotate-icon-right");
@@ -229,6 +236,14 @@ export function clear_search(force_rerender = false): void {
 }
 
 export function initialize(): void {
+    // Restore collapsed status.
+    private_messages_collapsed = ls_schema.parse(ls.get(ls_key));
+    if (private_messages_collapsed) {
+        close();
+    } else {
+        expand();
+    }
+
     const throttled_update_private_message = _.throttle(update_private_messages, 50);
     $(".direct-messages-container").on("click", "#show-more-direct-messages", (e) => {
         e.stopPropagation();
