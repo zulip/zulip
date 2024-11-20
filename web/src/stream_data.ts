@@ -306,7 +306,6 @@ export function delete_sub(stream_id: number): void {
         return;
     }
     sub.is_archived = true;
-    stream_info.set_false(stream_id, sub);
 }
 
 export function get_non_default_stream_names(): {name: string; unique_id: number}[] {
