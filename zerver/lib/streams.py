@@ -2,7 +2,7 @@ from collections.abc import Collection
 from typing import TypedDict
 
 from django.db import transaction
-from django.db.models import Exists, OuterRef, Q, QuerySet
+from django.db.models import Exists, OuterRef, Q, QuerySet, Value
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
@@ -1033,33 +1033,46 @@ def get_group_setting_value_dict_for_streams(
 def get_setting_values_for_group_settings(
     group_ids: list[int],
 ) -> dict[int, int | AnonymousSettingGroupDict]:
-    setting_value_dict = {}
-    setting_groups = UserGroup.objects.filter(id__in=group_ids).select_related("named_user_group")
-    anonymous_groups = []
-    for group in setting_groups:
-        if hasattr(group, "named_user_group"):
-            setting_value_dict[group.id] = group.id
-        else:
-            setting_value_dict[group.id] = AnonymousSettingGroupDict(
+    user_members = (
+        UserGroupMembership.objects.filter(user_group_id__in=group_ids)
+        .annotate(
+            member_type=Value("user"),
+            is_named_group=Q(user_group__named_user_group__isnull=False),
+        )
+        .values_list("member_type", "is_named_group", "user_group_id", "user_profile_id")
+    )
+
+    group_subgroups = (
+        GroupGroupMembership.objects.filter(supergroup_id__in=group_ids)
+        .annotate(
+            member_type=Value("group"),
+            is_named_group=Q(supergroup__named_user_group__isnull=False),
+        )
+        .values_list("member_type", "is_named_group", "supergroup_id", "subgroup_id")
+    )
+
+    all_members = user_members.union(group_subgroups)
+    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] = dict()
+    for member_type, is_named_group, group_id, member_id in all_members:
+        if is_named_group:
+            if group_id not in setting_groups_dict:
+                setting_groups_dict[group_id] = group_id
+            continue
+
+        if group_id not in setting_groups_dict:
+            setting_groups_dict[group_id] = AnonymousSettingGroupDict(
                 direct_members=[],
                 direct_subgroups=[],
             )
-            anonymous_groups.append(group.id)
 
-    group_members = (
-        UserGroupMembership.objects.filter(user_group_id__in=anonymous_groups)
-        .exclude(user_profile__is_active=False)
-        .values_list("user_group_id", "user_profile_id")
-    )
-    group_subgroups = GroupGroupMembership.objects.filter(
-        supergroup_id__in=anonymous_groups
-    ).values_list("supergroup_id", "subgroup_id")
-    for user_group_id, user_profile_id in group_members:
-        setting_value_dict[user_group_id].direct_members.append(user_profile_id)
-    for supergroup_id, subgroup_id in group_subgroups:
-        setting_value_dict[supergroup_id].direct_subgroups.append(subgroup_id)
+        anonymous_group_dict = setting_groups_dict[group_id]
+        assert isinstance(anonymous_group_dict, AnonymousSettingGroupDict)
+        if member_type == "user":
+            anonymous_group_dict.direct_members.append(member_id)
+        else:
+            anonymous_group_dict.direct_subgroups.append(member_id)
 
-    return setting_value_dict
+    return setting_groups_dict
 
 
 def do_get_streams(
