@@ -397,6 +397,13 @@ $user_status_emoji_width: 24px;
     align-content: baseline;
     margin-right: var(--width-simplebar-scroll-hover);
     margin-left: var(--right-sidebar-toggle-width-offset);
+    /* When both the left circle and three dot menu are present, we want
+       the space to the left of the circle to be more similar to the space
+       to the right of the three dot menu. */
+    &:not(.with_avatar) {
+        padding-left: 2px;
+        margin-left: calc(var(--right-sidebar-toggle-width-offset) - 2px);
+    }
 
     .user-name-and-status-emoji {
         display: flex;
