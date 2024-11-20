@@ -30,22 +30,22 @@
       "duration": 300
     }
   ],
-  "violations2": {
+  "violations": {
     "test-source": [
       {
-        "metric": "librato.cpu.percent.idle",
+        "metric": "system.cpu.percent.idle",
         "value": 2,
         "recorded_at": 1459415502,
         "condition_violated": 3543146
       },
       {
-        "metric": "librato.swap.swap.cached",
+        "metric": "system.swap.swap.cached",
         "value": 42,
         "recorded_at": 1459415502,
         "condition_violated": 3651148
       },
       {
-        "metric": "librato.swap.swap.cached",
+        "metric": "system.swap.swap.cached",
         "value": 51,
         "recorded_at": 1459415502,
         "condition_violated": 3651902

@@ -44,7 +44,7 @@
         "condition_violated": 4299396
       },
       {
-        "metric": "librato.swap.swap.cached",
+        "metric": "system.swap.swap.cached",
         "value": 42,
         "recorded_at": 1460407214,
         "condition_violated": 3651148
