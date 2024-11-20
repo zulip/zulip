@@ -61,7 +61,7 @@ def create_integration_bot(integration: Integration, bot_name: str | None = None
     owner = get_user_by_delivery_email("iago@zulip.com", realm)
     bot_email = f"{integration.name}-bot@example.com"
     if bot_name is None:
-        bot_name = f"{integration.name.capitalize()} Bot"
+        bot_name = f"{integration.display_name} Bot"
     try:
         bot = UserProfile.objects.get(email=bot_email)
     except UserProfile.DoesNotExist:
