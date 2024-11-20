@@ -62,7 +62,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import CommonPolicyEnum, InviteToRealmPolicyEnum, get_realm
+from zerver.models.realms import CommonPolicyEnum, get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 
@@ -848,7 +848,6 @@ class RealmTest(ZulipTestCase):
             digest_weekday=10,
             message_content_delete_limit_seconds=-10,
             wildcard_mention_policy=10,
-            invite_to_realm_policy=10,
             message_content_edit_limit_seconds=0,
             move_messages_within_stream_limit_seconds=0,
             move_messages_between_streams_limit_seconds=0,
@@ -1695,7 +1694,6 @@ class RealmAPITest(ZulipTestCase):
                 Realm.GIPHY_RATING_OPTIONS["r"]["id"],
             ],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
-            invite_to_realm_policy=Realm.INVITE_TO_REALM_POLICY_TYPES,
             message_content_edit_limit_seconds=[1000, 1100, 1200],
             move_messages_within_stream_limit_seconds=[1000, 1100, 1200],
             move_messages_between_streams_limit_seconds=[1000, 1100, 1200],
@@ -2291,10 +2289,6 @@ class RealmAPITest(ZulipTestCase):
     def do_test_changing_settings_by_owners_only(self, setting_name: str) -> None:
         bool_tests: list[bool] = [False, True]
         test_values: dict[str, Any] = dict(
-            invite_to_realm_policy=[
-                InviteToRealmPolicyEnum.MEMBERS_ONLY,
-                InviteToRealmPolicyEnum.ADMINS_ONLY,
-            ],
             waiting_period_threshold=[10, 20],
         )
 
@@ -2320,7 +2314,6 @@ class RealmAPITest(ZulipTestCase):
         self.assertEqual(getattr(realm, setting_name), vals[1])
 
     def test_changing_user_joining_settings_require_owners(self) -> None:
-        self.do_test_changing_settings_by_owners_only("invite_to_realm_policy")
         self.do_test_changing_settings_by_owners_only("invite_required")
         self.do_test_changing_settings_by_owners_only("emails_restricted_to_domains")
         self.do_test_changing_settings_by_owners_only("disallow_disposable_email_addresses")
