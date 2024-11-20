@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 321**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_invite_users_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to send email invitations for inviting other users to the
+  organization.
+
 **Feature level 320**
 
 * [`GET /users/me/subscriptions`](/api/get-subscriptions),

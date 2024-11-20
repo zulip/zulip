@@ -164,7 +164,6 @@ export function enable_or_disable_group_permission_settings(): void {
 type OrganizationSettingsOptions = {
     common_policy_values: SettingOptionValueWithKey[];
     wildcard_mention_policy_values: SettingOptionValueWithKey[];
-    invite_to_realm_policy_values: SettingOptionValueWithKey[];
 };
 
 export function get_organization_settings_options(): OrganizationSettingsOptions {
@@ -174,9 +173,6 @@ export function get_organization_settings_options(): OrganizationSettingsOptions
         ),
         wildcard_mention_policy_values: settings_components.get_sorted_options_list(
             settings_config.wildcard_mention_policy_values,
-        ),
-        invite_to_realm_policy_values: settings_components.get_sorted_options_list(
-            settings_config.email_invite_to_realm_policy_values,
         ),
     };
 }
@@ -528,6 +524,7 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_can_create_private_channel_group":
         case "realm_can_delete_any_message_group":
         case "realm_can_delete_own_message_group":
+        case "realm_can_invite_users_group":
         case "realm_can_manage_all_groups":
         case "realm_can_move_messages_between_channels_group":
         case "realm_can_move_messages_between_topics_group":

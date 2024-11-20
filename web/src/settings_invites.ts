@@ -15,7 +15,7 @@ import * as loading from "./loading.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import {current_user, realm} from "./state_data.ts";
+import {current_user} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
@@ -319,55 +319,18 @@ export function on_load_success(
 }
 
 export function update_invite_users_setting_tip(): void {
-    if (settings_data.user_can_invite_users_by_email() && !current_user.is_admin) {
+    if (settings_data.user_can_invite_users_by_email()) {
         $(".invite-user-settings-tip").hide();
         return;
     }
-    const permission_type = settings_config.email_invite_to_realm_policy_values;
-    const current_permission = realm.realm_invite_to_realm_policy;
-    let tip_text;
-    switch (current_permission) {
-        case permission_type.by_admins_only.code: {
-            tip_text = $t({
-                defaultMessage:
-                    "This organization is configured so that admins can invite users to this organization.",
-            });
 
-            break;
-        }
-        case permission_type.by_moderators_only.code: {
-            tip_text = $t({
-                defaultMessage:
-                    "This organization is configured so that admins and moderators can invite users to this organization.",
-            });
-
-            break;
-        }
-        case permission_type.by_members.code: {
-            tip_text = $t({
-                defaultMessage:
-                    "This organization is configured so that admins, moderators and members can invite users to this organization.",
-            });
-
-            break;
-        }
-        case permission_type.by_full_members.code: {
-            tip_text = $t({
-                defaultMessage:
-                    "This organization is configured so that admins, moderators and full members can invite users to this organization.",
-            });
-
-            break;
-        }
-        default: {
-            tip_text = $t({
-                defaultMessage:
-                    "This organization is configured so that nobody can invite users to this organization.",
-            });
-        }
-    }
     $(".invite-user-settings-tip").show();
-    $(".invite-user-settings-tip").text(tip_text);
+    $(".invite-user-settings-tip").text(
+        $t({
+            defaultMessage:
+                "You do not have permission to send invite emails in this organization.",
+        }),
+    );
 }
 
 export function update_invite_user_panel(): void {

@@ -266,34 +266,6 @@ export const common_policy_values = {
     },
 };
 
-export const email_invite_to_realm_policy_values = {
-    nobody: {
-        order: 1,
-        code: 6,
-        description: $t({defaultMessage: "Nobody"}),
-    },
-    by_admins_only: {
-        order: 2,
-        code: 2,
-        description: $t({defaultMessage: "Admins"}),
-    },
-    by_moderators_only: {
-        order: 3,
-        code: 4,
-        description: $t({defaultMessage: "Admins and moderators"}),
-    },
-    by_full_members: {
-        order: 4,
-        code: 3,
-        description: $t({defaultMessage: "Admins, moderators and full members"}),
-    },
-    by_members: {
-        order: 5,
-        code: 1,
-        description: $t({defaultMessage: "Admins, moderators and members"}),
-    },
-};
-
 export const wildcard_mention_policy_values = {
     by_everyone: {
         order: 1,

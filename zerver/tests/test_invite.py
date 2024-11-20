@@ -43,6 +43,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_plan_type,
     do_set_realm_property,
 )
+from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_full_name
 from zerver.actions.users import change_user_is_active
 from zerver.context_processors import common_context
@@ -68,7 +69,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import CommonPolicyEnum, InviteToRealmPolicyEnum, get_realm
+from zerver.models.realms import CommonPolicyEnum, get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
 from zerver.views.invite import INVITATION_LINK_VALIDITY_MINUTES, get_invitee_emails_set
@@ -850,26 +851,33 @@ class InviteUserTest(InviteUserBase):
         self.submit_reg_form_for_user(invitee, "password")
         self.check_user_subscribed_only_to_streams("test1", [denmark, sandbox, verona, zulip])
 
-    def test_can_invite_others_to_realm(self) -> None:
-        def validation_func(user_profile: UserProfile) -> bool:
-            return user_profile.can_invite_users_by_email()
-
-        realm = get_realm("zulip")
-        do_set_realm_property(
-            realm, "invite_to_realm_policy", InviteToRealmPolicyEnum.NOBODY, acting_user=None
-        )
-        desdemona = self.example_user("desdemona")
-        self.assertFalse(validation_func(desdemona))
-
-        self.check_has_permission_policies("invite_to_realm_policy", validation_func)
-
     def test_invite_others_to_realm_setting(self) -> None:
         """
-        The invite_to_realm_policy realm setting works properly.
+        The `can_invite_users_group` realm setting works properly.
         """
         realm = get_realm("zulip")
-        do_set_realm_property(
-            realm, "invite_to_realm_policy", InviteToRealmPolicyEnum.NOBODY, acting_user=None
+
+        administrators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        full_members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+        )
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_invite_users_group",
+            nobody_system_group,
+            acting_user=None,
         )
         self.login("desdemona")
         email = "alice-test@zulip.com"
@@ -880,8 +888,11 @@ class InviteUserTest(InviteUserBase):
             "Insufficient permission",
         )
 
-        do_set_realm_property(
-            realm, "invite_to_realm_policy", InviteToRealmPolicyEnum.ADMINS_ONLY, acting_user=None
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_invite_users_group",
+            administrators_system_group,
+            acting_user=None,
         )
 
         self.login("shiva")
@@ -900,10 +911,10 @@ class InviteUserTest(InviteUserBase):
 
         mail.outbox = []
 
-        do_set_realm_property(
+        do_change_realm_permission_group_setting(
             realm,
-            "invite_to_realm_policy",
-            InviteToRealmPolicyEnum.MODERATORS_ONLY,
+            "can_invite_users_group",
+            moderators_system_group,
             acting_user=None,
         )
         self.login("hamlet")
@@ -923,8 +934,11 @@ class InviteUserTest(InviteUserBase):
 
         mail.outbox = []
 
-        do_set_realm_property(
-            realm, "invite_to_realm_policy", InviteToRealmPolicyEnum.MEMBERS_ONLY, acting_user=None
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_invite_users_group",
+            members_system_group,
+            acting_user=None,
         )
 
         self.login("polonius")
@@ -941,16 +955,17 @@ class InviteUserTest(InviteUserBase):
 
         mail.outbox = []
 
-        do_set_realm_property(
+        do_change_realm_permission_group_setting(
             realm,
-            "invite_to_realm_policy",
-            InviteToRealmPolicyEnum.FULL_MEMBERS_ONLY,
+            "can_invite_users_group",
+            full_members_system_group,
             acting_user=None,
         )
-        do_set_realm_property(realm, "waiting_period_threshold", 1000, acting_user=None)
 
         hamlet = self.example_user("hamlet")
-        hamlet.date_joined = timezone_now() - timedelta(days=realm.waiting_period_threshold - 1)
+        hamlet.date_joined = timezone_now() - timedelta(days=9)
+
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
 
         email = "issac-test@zulip.com"
         email2 = "steven-test@zulip.com"
@@ -966,6 +981,60 @@ class InviteUserTest(InviteUserBase):
         self.assertTrue(find_key_by_email(email))
         self.assertTrue(find_key_by_email(email2))
         self.check_sent_emails([email, email2])
+
+        cordelia = self.example_user("cordelia")
+
+        # Test for checking setting for non-system user group.
+        user_group = check_add_user_group(
+            realm, "new_group", [hamlet, cordelia], acting_user=hamlet
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_invite_users_group", user_group, acting_user=None
+        )
+
+        # Hamlet and Cordelia are in the allowed user group, so can send email
+        # invitations.
+        self.login("hamlet")
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+        self.login("cordelia")
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+
+        # Iago is not in the allowed user group, so cannot send email
+        # invitations.
+        self.login("iago")
+        self.assert_json_error(
+            self.invite(invitee, ["Denmark"]),
+            "Insufficient permission",
+        )
+
+        # Test for checking the setting for anonymous user group.
+        anonymous_user_group = self.create_or_update_anonymous_group_for_setting(
+            [hamlet],
+            [administrators_system_group],
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_invite_users_group",
+            anonymous_user_group,
+            acting_user=None,
+        )
+
+        # Hamlet is the direct member of the anonymous user group, so can send
+        # email invitations.
+        self.login("hamlet")
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+        # Iago is in the `administrators_system_group` subgroup, so can send email
+        # invitations.
+        self.login("iago")
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+
+        # Shiva is not in the anonymous user group, so cannot send email
+        # invitations.
+        self.login("shiva")
+        self.assert_json_error(
+            self.invite(invitee, ["Denmark"]),
+            "Insufficient permission",
+        )
 
     def test_invite_user_signup_initial_history(self) -> None:
         """

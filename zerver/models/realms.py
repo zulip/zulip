@@ -305,6 +305,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         default=InviteToRealmPolicyEnum.MEMBERS_ONLY
     )
 
+    # UserGroup whose members are allowed to invite other users to organization.
+    can_invite_users_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # UserGroup whose members are allowed to create invite link.
     create_multiuse_invite_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
@@ -759,6 +764,15 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             default_group_name=SystemGroups.EVERYONE,
             id_field_name="can_delete_own_message_group_id",
         ),
+        can_invite_users_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.MEMBERS,
+            id_field_name="can_invite_users_group_id",
+        ),
         can_manage_all_groups=GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
@@ -1198,6 +1212,8 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "can_delete_any_message_group__named_user_group",
         "can_delete_own_message_group",
         "can_delete_own_message_group__named_user_group",
+        "can_invite_users_group",
+        "can_invite_users_group__named_user_group",
         "can_manage_all_groups",
         "can_manage_all_groups__named_user_group",
         "can_move_messages_between_channels_group",

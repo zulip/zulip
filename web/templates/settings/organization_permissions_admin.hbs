@@ -10,18 +10,10 @@
                 {{> settings_save_discard_widget section_name="join-settings" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
-                <div class="input-group">
-                    {{> settings_checkbox
-                      setting_name="realm_invite_required"
-                      prefix="id_"
-                      is_checked=realm_invite_required
-                      label=admin_settings_label.realm_invite_required}}
-                    <label for="id_realm_invite_to_realm_policy" class="settings-field-label">{{t "Who can send email invitations to new users" }}
-                    </label>
-                    <select name="realm_invite_to_realm_policy" id="id_realm_invite_to_realm_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=invite_to_realm_policy_values}}
-                    </select>
-                </div>
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_invite_users_group"
+                  label=(t 'Who can send email invitations to new users')}}
 
                 {{> group_setting_value_pill_input
                   setting_name="realm_create_multiuse_invite_group"

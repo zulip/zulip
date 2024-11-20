@@ -59,14 +59,6 @@ export function user_can_change_logo(): boolean {
 }
 
 function user_has_permission(policy_value: number): boolean {
-    /* At present, nobody is not present in common_policy_values,
-     * but we include a check for it here, so that code using
-     * email_invite_to_realm_policy_values or other supersets can
-     * use this function. */
-    if (policy_value === settings_config.email_invite_to_realm_policy_values.nobody.code) {
-        return false;
-    }
-
     if (current_user.is_admin) {
         return true;
     }
@@ -121,7 +113,11 @@ export function user_has_permission_for_group_setting(
 }
 
 export function user_can_invite_users_by_email(): boolean {
-    return user_has_permission(realm.realm_invite_to_realm_policy);
+    return user_has_permission_for_group_setting(
+        realm.realm_can_invite_users_group,
+        "can_invite_users_group",
+        "realm",
+    );
 }
 
 export function user_can_create_multiuse_invite(): boolean {
