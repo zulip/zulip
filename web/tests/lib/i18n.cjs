@@ -73,3 +73,5 @@ exports.$t_html = (descriptor, values = {}) => {
         })
     );
 };
+
+exports.$html_t = (descriptor, values) => ({__html: exports.$t_html(descriptor, values)});
