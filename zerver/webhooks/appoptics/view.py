@@ -19,8 +19,8 @@ ALERT_VIOLATION = "violations"
 SNAPSHOT = "image_url"
 
 
-class LibratoWebhookParser:
-    ALERT_URL_TEMPLATE = "https://metrics.librato.com/alerts#/{alert_id}"
+class AppOpticsWebhookParser:
+    ALERT_URL_TEMPLATE = "https://my.appoptics.com/alerts#/{alert_id}"
 
     def __init__(self, payload: Mapping[str, Any], attachments: list[dict[str, Any]]) -> None:
         self.payload = payload
@@ -65,7 +65,7 @@ class LibratoWebhookParser:
         return author_name, image_url, title
 
 
-class LibratoWebhookHandler(LibratoWebhookParser):
+class AppOpticsWebhookHandler(AppOpticsWebhookParser):
     def __init__(self, payload: Mapping[str, Any], attachments: list[dict[str, Any]]) -> None:
         super().__init__(payload, attachments)
         self.payload_available_types = {
@@ -159,9 +159,9 @@ class LibratoWebhookHandler(LibratoWebhookParser):
         return content
 
 
-@webhook_view("Librato")
+@webhook_view("AppOptics")
 @typed_endpoint
-def api_librato_webhook(
+def api_appoptics_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
@@ -175,7 +175,7 @@ def api_librato_webhook(
     if not attachments and not payload:
         raise JsonableError(_("Malformed JSON input"))
 
-    message_handler = LibratoWebhookHandler(payload, attachments)
+    message_handler = AppOpticsWebhookHandler(payload, attachments)
     topic_name = message_handler.generate_topic()
 
     try:
