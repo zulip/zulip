@@ -28,6 +28,10 @@ format used by the Zulip server that they are interacting with.
   [group-setting value](/api/group-setting-values) describing the set of users
   with permission to send email invitations for inviting other users to the
   organization.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `invite_to_realm_policy` property, as the permission to send email invitations
+  for inviting other users to the organization is now controlled by
+  `can_invite_users_group` setting.
 
 **Feature level 320**
 

@@ -4753,14 +4753,6 @@ paths:
                                       type: boolean
                                       description: |
                                         Whether an invitation is required to join this organization.
-                                    invite_to_realm_policy:
-                                      type: integer
-                                      description: |
-                                        The [policy](/api/roles-and-permissions#permission-levels)
-                                        for which users can invite other users to join the organization.
-
-                                        **Changes**: New in Zulip 4.0 (feature level 50) replacing the
-                                        previous `invite_by_admins_only` boolean.
                                     invite_to_stream_policy:
                                       type: integer
                                       description: |
@@ -16666,26 +16658,6 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether an invitation is required to join this organization.
-                      realm_invite_to_realm_policy:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          [Policy][permission-level] for [who can invite new
-                          users](/help/restrict-account-creation#change-who-can-send-invitations)
-                          to join the organization:
-
-                          - 1 = Members only
-                          - 2 = Administrators only
-                          - 3 = [Full members][calc-full-member] only
-                          - 4 = Moderators only
-                          - 6 = Nobody
-
-                          **Changes**: New in Zulip 4.0 (feature level 50) replacing the
-                          previous `realm_invite_by_admins_only` boolean.
-
-                          [permission-level]: /api/roles-and-permissions#permission-levels
-                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_create_multiuse_invite_group:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"

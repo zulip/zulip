@@ -106,14 +106,6 @@ class CommonPolicyEnum(IntEnum):
     MODERATORS_ONLY = 4
 
 
-class InviteToRealmPolicyEnum(IntEnum):
-    MEMBERS_ONLY = 1
-    ADMINS_ONLY = 2
-    FULL_MEMBERS_ONLY = 3
-    MODERATORS_ONLY = 4
-    NOBODY = 6
-
-
 class CreateWebPublicStreamPolicyEnum(IntEnum):
     # We don't allow granting roles less than Moderator access to
     # create web-public streams, since it's a sensitive feature that
@@ -253,8 +245,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     COMMON_POLICY_TYPES = [field.value for field in CommonPolicyEnum]
 
-    INVITE_TO_REALM_POLICY_TYPES = [field.value for field in InviteToRealmPolicyEnum]
-
     CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES = [
         field.value for field in CreateWebPublicStreamPolicyEnum
     ]
@@ -298,11 +288,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # UserGroup which is allowed to move messages between topics.
     can_move_messages_between_topics_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
-    )
-
-    # Who in the organization is allowed to invite other users to organization.
-    invite_to_realm_policy = models.PositiveSmallIntegerField(
-        default=InviteToRealmPolicyEnum.MEMBERS_ONLY
     )
 
     # UserGroup whose members are allowed to invite other users to organization.
@@ -654,7 +639,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         inline_image_preview=bool,
         inline_url_embed_preview=bool,
         invite_required=bool,
-        invite_to_realm_policy=int,
         invite_to_stream_policy=int,
         jitsi_server_url=(str, type(None)),
         mandatory_topics=bool,
