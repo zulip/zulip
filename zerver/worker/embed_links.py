@@ -34,7 +34,14 @@ class FetchLinksEmbedData(QueueProcessingWorker):
                 "Time spent on get_link_embed_data for %s: %s", url, time.time() - start_time
             )
 
-        with transaction.atomic():
+        # Ideally, we should use `durable=True` here. However, in the
+        # `test_message_update_race_condition` test, this function is not called
+        # as the outermost transaction. As a result, it's acceptable to make an
+        # exception and not use `durable=True` in this case.
+        #
+        # For more details on why the `consume` method is called directly in tests, see:
+        # https://zulip.readthedocs.io/en/latest/subsystems/queuing.html#publishing-events-into-a-queue
+        with transaction.atomic(savepoint=False):
             try:
                 message = Message.objects.select_for_update().get(id=event["message_id"])
             except Message.DoesNotExist:
