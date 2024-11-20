@@ -23,13 +23,6 @@ const cached_height = new util.CachedValue({compute_value: () => $scroll_contain
 export const width = cached_width.get.bind(cached_width);
 export const height = cached_height.get.bind(cached_height);
 
-// TODO: This function lets us use the DOM API instead of jquery
-// (<10x faster) for condense.js, but we want to eventually do a
-// bigger of refactor `height` and `width` above to do the same.
-export function max_message_height(): number {
-    return document.querySelector("html")!.offsetHeight * 0.65;
-}
-
 // Includes both scroll and arrow events. Negative means scroll up,
 // positive means scroll down.
 export let last_movement_direction = 1;
