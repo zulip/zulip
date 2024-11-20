@@ -228,9 +228,8 @@ export function clear_search(force_rerender = false): void {
     $filter.trigger("blur");
 }
 
-const throttled_update_private_message = _.throttle(update_private_messages, 50);
-
 export function initialize(): void {
+    const throttled_update_private_message = _.throttle(update_private_messages, 50);
     $(".direct-messages-container").on("click", "#show-more-direct-messages", (e) => {
         e.stopPropagation();
         e.preventDefault();
