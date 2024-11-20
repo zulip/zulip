@@ -4531,6 +4531,21 @@ paths:
                                             setting controlled this permission; `true` corresponded to `Everyone`, and
                                             `false` to `Admins`.
                                         - $ref: "#/components/schemas/GroupSettingValue"
+                                    can_invite_users_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to send email invitations for inviting other users
+                                            to the organization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 321). Previously, this
+                                            permission was controlled by the enum `invite_to_realm_policy`. Values
+                                            were 1=Members, 2=Admins, 3=Full members, 4=Moderators, 6=Nobody.
+
+                                            Before Zulip 4.0 (feature level 50), the `invite_by_admins_only` boolean
+                                            setting controlled this permission; `true` corresponded to `Admins`, and
+                                            `false` to `Members`.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_move_messages_between_channels_group:
                                       allOf:
                                         - description: |
@@ -16361,6 +16376,23 @@ paths:
                               Before Zulip 5.0 (feature level 101), the `allow_message_deleting` boolean
                               setting controlled this permission; `true` corresponded to `Everyone`, and
                               `false` to `Admins`.
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                      realm_can_invite_users_group:
+                        allOf:
+                          - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to send email invitations for inviting other users
+                              to the organization.
+
+                              **Changes**: New in Zulip 10.0 (feature level 321). Previously, this
+                              permission was controlled by the enum `invite_to_realm_policy`. Values
+                              were 1=Members, 2=Admins, 3=Full members, 4=Moderators, 6=Nobody.
+
+                              Before Zulip 4.0 (feature level 50), the `invite_by_admins_only` boolean
+                              setting controlled this permission; `true` corresponded to `Admins`, and
+                              `false` to `Members`.
                           - $ref: "#/components/schemas/GroupSettingValue"
                       realm_can_move_messages_between_channels_group:
                         allOf:

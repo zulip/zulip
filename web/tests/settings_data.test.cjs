@@ -157,11 +157,6 @@ test_policy(
     "realm_invite_to_stream_policy",
     settings_data.user_can_subscribe_other_users,
 );
-test_policy(
-    "user_can_invite_others_to_realm",
-    "realm_invite_to_realm_policy",
-    settings_data.user_can_invite_users_by_email,
-);
 
 test_realm_group_settings(
     "realm_can_add_custom_emoji_group",
@@ -176,6 +171,11 @@ test_realm_group_settings(
 test_realm_group_settings(
     "realm_can_delete_own_message_group",
     settings_data.user_can_delete_own_message,
+);
+
+test_realm_group_settings(
+    "realm_can_invite_users_group",
+    settings_data.user_can_invite_users_by_email,
 );
 
 test_realm_group_settings(
@@ -208,17 +208,6 @@ run_test("using_dark_theme", ({override}) => {
 
     override(user_settings, "color_scheme", settings_config.color_scheme_values.light.code);
     assert.equal(settings_data.using_dark_theme(), false);
-});
-
-run_test("user_can_invite_others_to_realm_nobody_case", ({override}) => {
-    override(current_user, "is_admin", true);
-    override(current_user, "is_guest", false);
-    override(
-        realm,
-        "realm_invite_to_realm_policy",
-        settings_config.email_invite_to_realm_policy_values.nobody.code,
-    );
-    assert.equal(settings_data.user_can_invite_users_by_email(), false);
 });
 
 run_test("user_email_not_configured", ({override}) => {

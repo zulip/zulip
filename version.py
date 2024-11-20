@@ -34,9 +34,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = (
-    320  # Last bumped for supporting anonymous groups for can_remove_subscribers_group
-)
+API_FEATURE_LEVEL = 321  # Last bumped for can_invite_users_group
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump

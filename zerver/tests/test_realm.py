@@ -113,13 +113,13 @@ class RealmTest(ZulipTestCase):
         )
         self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
 
-        self.assertEqual(realm.invite_to_realm_policy, InviteToRealmPolicyEnum.ADMINS_ONLY)
         self.assertEqual(realm.invite_to_stream_policy, CommonPolicyEnum.MODERATORS_ONLY)
         realm = get_realm("test_education_non_profit")
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
         self.assertEqual(realm.can_create_groups.id, moderators_group.id)
+        self.assertEqual(realm.can_invite_users_group.id, admins_group.id)
         self.assertEqual(realm.can_move_messages_between_channels_group.id, moderators_group.id)
 
     def test_permission_for_education_for_profit_organization(self) -> None:
@@ -134,13 +134,13 @@ class RealmTest(ZulipTestCase):
         )
         self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
 
-        self.assertEqual(realm.invite_to_realm_policy, InviteToRealmPolicyEnum.ADMINS_ONLY)
         self.assertEqual(realm.invite_to_stream_policy, CommonPolicyEnum.MODERATORS_ONLY)
         realm = get_realm("test_education_for_profit")
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
         self.assertEqual(realm.can_create_groups.id, moderators_group.id)
+        self.assertEqual(realm.can_invite_users_group.id, admins_group.id)
         self.assertEqual(realm.can_move_messages_between_channels_group.id, moderators_group.id)
 
     def test_realm_enable_spectator_access(self) -> None:
@@ -2348,6 +2348,9 @@ class RealmAPITest(ZulipTestCase):
 
     def test_can_create_groups_setting_requires_owner(self) -> None:
         self.do_test_changing_groups_setting_by_owners_only("can_create_groups")
+
+    def test_can_invite_users_group_setting_requires_owner(self) -> None:
+        self.do_test_changing_groups_setting_by_owners_only("can_invite_users_group")
 
     def test_can_manage_all_groups_setting_requires_owner(self) -> None:
         self.do_test_changing_groups_setting_by_owners_only("can_manage_all_groups")

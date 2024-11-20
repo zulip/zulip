@@ -233,7 +233,6 @@ export function dispatch_normal_event(event) {
                 disallow_disposable_email_addresses: noop,
                 inline_image_preview: noop,
                 inline_url_embed_preview: noop,
-                invite_to_realm_policy: noop,
                 invite_required: noop,
                 mandatory_topics: noop,
                 message_content_edit_limit_seconds: noop,
@@ -273,12 +272,6 @@ export function dispatch_normal_event(event) {
                             electron_bridge?.send_event("realm_name", event.value);
                         }
 
-                        if (event.property === "invite_to_realm_policy") {
-                            settings_invites.update_invite_user_panel();
-                            sidebar_ui.update_invite_user_option();
-                            gear_menu.rerender();
-                        }
-
                         if (event.property === "enable_spectator_access") {
                             stream_settings_ui.update_stream_privacy_choices(
                                 "can_create_web_public_channel_group",
@@ -300,7 +293,10 @@ export function dispatch_normal_event(event) {
                                     settings_org.sync_realm_settings(key);
                                 }
 
-                                if (key === "create_multiuse_invite_group") {
+                                if (
+                                    key === "create_multiuse_invite_group" ||
+                                    key === "can_invite_users_group"
+                                ) {
                                     settings_invites.update_invite_user_panel();
                                     sidebar_ui.update_invite_user_option();
                                     gear_menu.rerender();

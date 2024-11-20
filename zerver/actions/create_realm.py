@@ -37,7 +37,7 @@ from zerver.models import (
 from zerver.models.groups import SystemGroups
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import CommonPolicyEnum, InviteToRealmPolicyEnum
+from zerver.models.realms import CommonPolicyEnum
 from zproject.backends import all_default_backend_names
 
 
@@ -115,8 +115,6 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
         Realm.ORG_TYPES["education_nonprofit"]["id"],
         Realm.ORG_TYPES["education"]["id"],
     ):
-        # Limit user creation to administrators.
-        realm.invite_to_realm_policy = InviteToRealmPolicyEnum.ADMINS_ONLY
         # Don't allow members (students) to manage user groups or
         # stream subscriptions.
         realm.invite_to_stream_policy = CommonPolicyEnum.MODERATORS_ONLY
@@ -289,6 +287,10 @@ def do_create_realm(
             "can_create_groups": {
                 Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.MODERATORS,
                 Realm.ORG_TYPES["education"]["id"]: SystemGroups.MODERATORS,
+            },
+            "can_invite_users_group": {
+                Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.ADMINISTRATORS,
+                Realm.ORG_TYPES["education"]["id"]: SystemGroups.ADMINISTRATORS,
             },
             "can_move_messages_between_channels_group": {
                 Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.MODERATORS,
