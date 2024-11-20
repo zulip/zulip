@@ -69,8 +69,8 @@ class Integration:
     def __init__(
         self,
         name: str,
-        client_name: str,
         categories: list[str],
+        client_name: str | None = None,
         logo: str | None = None,
         secondary_line_text: str | None = None,
         display_name: str | None = None,
@@ -80,7 +80,7 @@ class Integration:
         config_options: Sequence[WebhookConfigOption] = [],
     ) -> None:
         self.name = name
-        self.client_name = client_name
+        self.client_name = client_name if client_name is not None else name
         self.secondary_line_text = secondary_line_text
         self.legacy = legacy
         self.doc = doc
@@ -210,8 +210,8 @@ class WebhookIntegration(Integration):
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
         super().__init__(
             name,
-            client_name,
             categories,
+            client_name=client_name,
             logo=logo,
             secondary_line_text=secondary_line_text,
             display_name=display_name,
@@ -312,7 +312,6 @@ class HubotIntegration(Integration):
 
         super().__init__(
             name,
-            name,
             categories,
             logo=logo,
             display_name=display_name,
@@ -331,8 +330,8 @@ class EmbeddedBotIntegration(Integration):
 
     def __init__(self, name: str, *args: Any, **kwargs: Any) -> None:
         assert kwargs.get("client_name") is None
-        client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
-        super().__init__(name, client_name, *args, **kwargs)
+        kwargs["client_name"] = self.DEFAULT_CLIENT_NAME.format(name=name.title())
+        super().__init__(name, *args, **kwargs)
 
 
 EMBEDDED_BOTS: list[EmbeddedBotIntegration] = [
@@ -506,11 +505,8 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
 ]
 
 INTEGRATIONS: dict[str, Integration] = {
-    "asana": Integration(
-        "asana", "asana", ["project-management"], doc="zerver/integrations/asana.md"
-    ),
+    "asana": Integration("asana", ["project-management"], doc="zerver/integrations/asana.md"),
     "big-blue-button": Integration(
-        "big-blue-button",
         "big-blue-button",
         ["communication"],
         logo="images/integrations/logos/bigbluebutton.svg",
@@ -519,23 +515,19 @@ INTEGRATIONS: dict[str, Integration] = {
     ),
     "capistrano": Integration(
         "capistrano",
-        "capistrano",
         ["deployment"],
         display_name="Capistrano",
         doc="zerver/integrations/capistrano.md",
     ),
-    "codebase": Integration(
-        "codebase", "codebase", ["version-control"], doc="zerver/integrations/codebase.md"
-    ),
+    "codebase": Integration("codebase", ["version-control"], doc="zerver/integrations/codebase.md"),
     "discourse": Integration(
-        "discourse", "discourse", ["communication"], doc="zerver/integrations/discourse.md"
+        "discourse", ["communication"], doc="zerver/integrations/discourse.md"
     ),
-    "email": Integration("email", "email", ["communication"], doc="zerver/integrations/email.md"),
+    "email": Integration("email", ["communication"], doc="zerver/integrations/email.md"),
     "errbot": Integration(
-        "errbot", "errbot", ["meta-integration", "bots"], doc="zerver/integrations/errbot.md"
+        "errbot", ["meta-integration", "bots"], doc="zerver/integrations/errbot.md"
     ),
     "giphy": Integration(
-        "giphy",
         "giphy",
         display_name="GIPHY",
         categories=["misc"],
@@ -543,10 +535,9 @@ INTEGRATIONS: dict[str, Integration] = {
         logo="images/integrations/giphy/GIPHY_big_logo.png",
     ),
     "git": Integration(
-        "git", "git", ["version-control"], stream_name="commits", doc="zerver/integrations/git.md"
+        "git", ["version-control"], stream_name="commits", doc="zerver/integrations/git.md"
     ),
     "github-actions": Integration(
-        "github-actions",
         "github-actions",
         ["continuous-integration"],
         display_name="GitHub Actions",
@@ -554,26 +545,21 @@ INTEGRATIONS: dict[str, Integration] = {
     ),
     "google-calendar": Integration(
         "google-calendar",
-        "google-calendar",
         ["productivity"],
         display_name="Google Calendar",
         doc="zerver/integrations/google-calendar.md",
     ),
-    "hubot": Integration(
-        "hubot", "hubot", ["meta-integration", "bots"], doc="zerver/integrations/hubot.md"
-    ),
+    "hubot": Integration("hubot", ["meta-integration", "bots"], doc="zerver/integrations/hubot.md"),
     "irc": Integration(
-        "irc", "irc", ["communication"], display_name="IRC", doc="zerver/integrations/irc.md"
+        "irc", ["communication"], display_name="IRC", doc="zerver/integrations/irc.md"
     ),
     "jenkins": Integration(
-        "jenkins",
         "jenkins",
         ["continuous-integration"],
         secondary_line_text="(or Hudson)",
         doc="zerver/integrations/jenkins.md",
     ),
     "jira-plugin": Integration(
-        "jira-plugin",
         "jira-plugin",
         ["project-management"],
         logo="images/integrations/logos/jira.svg",
@@ -585,7 +571,6 @@ INTEGRATIONS: dict[str, Integration] = {
     ),
     "jitsi": Integration(
         "jitsi",
-        "jitsi",
         ["communication"],
         logo="images/integrations/logos/jitsi.svg",
         display_name="Jitsi Meet",
@@ -593,50 +578,38 @@ INTEGRATIONS: dict[str, Integration] = {
     ),
     "mastodon": Integration(
         "mastodon",
-        "mastodon",
         ["communication"],
         doc="zerver/integrations/mastodon.md",
     ),
-    "matrix": Integration(
-        "matrix", "matrix", ["communication"], doc="zerver/integrations/matrix.md"
-    ),
+    "matrix": Integration("matrix", ["communication"], doc="zerver/integrations/matrix.md"),
     "mercurial": Integration(
-        "mercurial",
         "mercurial",
         ["version-control"],
         display_name="Mercurial (hg)",
         doc="zerver/integrations/mercurial.md",
         stream_name="commits",
     ),
-    "nagios": Integration("nagios", "nagios", ["monitoring"], doc="zerver/integrations/nagios.md"),
-    "notion": Integration(
-        "notion", "notion", ["productivity"], doc="zerver/integrations/notion.md"
-    ),
+    "nagios": Integration("nagios", ["monitoring"], doc="zerver/integrations/nagios.md"),
+    "notion": Integration("notion", ["productivity"], doc="zerver/integrations/notion.md"),
     "openshift": Integration(
-        "openshift",
         "openshift",
         ["deployment"],
         display_name="OpenShift",
         doc="zerver/integrations/openshift.md",
         stream_name="deployments",
     ),
-    "perforce": Integration(
-        "perforce", "perforce", ["version-control"], doc="zerver/integrations/perforce.md"
-    ),
+    "perforce": Integration("perforce", ["version-control"], doc="zerver/integrations/perforce.md"),
     "phabricator": Integration(
-        "phabricator", "phabricator", ["version-control"], doc="zerver/integrations/phabricator.md"
+        "phabricator", ["version-control"], doc="zerver/integrations/phabricator.md"
     ),
-    "puppet": Integration("puppet", "puppet", ["deployment"], doc="zerver/integrations/puppet.md"),
-    "redmine": Integration(
-        "redmine", "redmine", ["project-management"], doc="zerver/integrations/redmine.md"
-    ),
+    "puppet": Integration("puppet", ["deployment"], doc="zerver/integrations/puppet.md"),
+    "redmine": Integration("redmine", ["project-management"], doc="zerver/integrations/redmine.md"),
     "rss": Integration(
-        "rss", "rss", ["communication"], display_name="RSS", doc="zerver/integrations/rss.md"
+        "rss", ["communication"], display_name="RSS", doc="zerver/integrations/rss.md"
     ),
-    "svn": Integration("svn", "svn", ["version-control"], doc="zerver/integrations/svn.md"),
-    "trac": Integration("trac", "trac", ["project-management"], doc="zerver/integrations/trac.md"),
+    "svn": Integration("svn", ["version-control"], doc="zerver/integrations/svn.md"),
+    "trac": Integration("trac", ["project-management"], doc="zerver/integrations/trac.md"),
     "twitter": Integration(
-        "twitter",
         "twitter",
         ["customer-support", "marketing"],
         # _ needed to get around adblock plus
@@ -644,7 +617,6 @@ INTEGRATIONS: dict[str, Integration] = {
         doc="zerver/integrations/twitter.md",
     ),
     "zoom": Integration(
-        "zoom",
         "zoom",
         ["communication"],
         logo="images/integrations/logos/zoom.svg",
