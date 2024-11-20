@@ -8,9 +8,9 @@ import type {
     Options as IntlMessageFormatOptions,
     PrimitiveType,
 } from "intl-messageformat";
-import _ from "lodash";
 
 import {page_params} from "./base_page_params.ts";
+import {type Html, type ToHtml, to_html} from "./html.ts";
 
 const cache = createIntlCache();
 export const intl = createIntl(
@@ -47,14 +47,16 @@ export const default_html_elements = Object.fromEntries(
 
 export function $t_html(
     descriptor: MessageDescriptor,
-    values?: Record<string, PrimitiveType | FormatXMLElementFn<string, string>>,
+    values: Record<string, ToHtml | ((content: Html) => ToHtml)> = {},
 ): string {
     return intl.formatMessage(descriptor, {
         ...default_html_elements,
         ...Object.fromEntries(
-            Object.entries(values ?? {}).map(([key, value]) => [
+            Object.entries(values).map(([key, value]) => [
                 key,
-                typeof value === "function" ? value : _.escape(value?.toString()),
+                typeof value === "function"
+                    ? (content_html) => to_html(value({__html: content_html.join("")}))
+                    : to_html(value),
             ]),
         ),
     });

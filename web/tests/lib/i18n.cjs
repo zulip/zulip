@@ -1,7 +1,7 @@
 "use strict";
 
 const {createIntl, createIntlCache} = require("@formatjs/intl");
-const _ = require("lodash");
+const {escape} = require("lodash");
 
 const cache = createIntlCache();
 
@@ -35,7 +35,25 @@ const default_html_elements = Object.fromEntries(
     ]),
 );
 
-exports.$t_html = (descriptor, values) => {
+function to_html(value) {
+    switch (typeof value) {
+        case "string":
+            return escape(value);
+        case "number":
+            return `${value}`;
+        case "object":
+            if (value === null) {
+                return "";
+            } else if ("__html" in value) {
+                return value.__html;
+            }
+            return value.map((item) => to_html(item)).join("");
+        default:
+            return "";
+    }
+}
+
+exports.$t_html = (descriptor, values = {}) => {
     descriptor = {
         id: `${descriptor.defaultMessage}#${descriptor.description}`,
         ...descriptor,
@@ -45,9 +63,11 @@ exports.$t_html = (descriptor, values) => {
         exports.intl.formatMessage(descriptor, {
             ...default_html_elements,
             ...Object.fromEntries(
-                Object.entries(values ?? {}).map(([key, value]) => [
+                Object.entries(values).map(([key, value]) => [
                     key,
-                    typeof value === "function" ? value : _.escape(value),
+                    typeof value === "function"
+                        ? (content_html) => to_html(value({__html: content_html.join("")}))
+                        : to_html(value),
                 ]),
             ),
         })

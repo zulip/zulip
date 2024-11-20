@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 
 import * as compose_validate from "./compose_validate.ts";
 import type {Filter} from "./filter.ts";
+import {html} from "./html.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import type {NarrowBannerData, SearchData} from "./narrow_error.ts";
@@ -22,10 +23,10 @@ const SPECTATOR_STREAM_NARROW_BANNER = {
             defaultMessage: "This is not a <z-link>publicly accessible</z-link> conversation.",
         },
         {
-            "z-link": (content_html) =>
-                `<a target="_blank" rel="noopener noreferrer" href="/help/public-access-option">${content_html.join(
-                    "",
-                )}</a>`,
+            "z-link": (content) =>
+                html`<a target="_blank" rel="noopener noreferrer" href="/help/public-access-option"
+                    >${content}</a
+                >`,
         },
     ),
 };
@@ -38,10 +39,13 @@ const MENTIONS_VIEW_EMPTY_BANNER = {
                 "To call attention to a message, you can mention a user, a group, topic participants, or all subscribers to a channel. Type @ in the compose box, and choose who you'd like to mention from the list of suggestions. <z-link>Learn more</z-link>",
         },
         {
-            "z-link": (content_html) =>
-                `<a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">${content_html.join(
-                    "",
-                )}</a>`,
+            "z-link": (content) =>
+                html`<a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="/help/mention-a-user-or-group"
+                    >${content}</a
+                >`,
         },
     ),
 };
@@ -54,11 +58,11 @@ const STARRED_MESSAGES_VIEW_EMPTY_BANNER = {
                 "Starring messages is a good way to keep track of important messages, such as tasks you need to go back to, or useful references. To star a message, hover over a message and click the <star-icon></star-icon>. <z-link>Learn more</z-link>",
         },
         {
-            "star-icon": () => `<i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>`,
-            "z-link": (content_html) =>
-                `<a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">${content_html.join(
-                    "",
-                )}</a>`,
+            "star-icon": () => html`<i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>`,
+            "z-link": (content) =>
+                html`<a target="_blank" rel="noopener noreferrer" href="/help/star-a-message"
+                    >${content}</a
+                >`,
         },
     ),
 };
@@ -73,8 +77,10 @@ const MUTED_TOPICS_IN_CHANNEL_EMPTY_BANNER = {
                 "To view a muted topic, click <b>show all topics</b> in the left sidebar, and select one from the list. <z-link>Learn more</z-link>",
         },
         {
-            "z-link": (content_html) =>
-                `<a target="_blank" rel="noopener noreferrer" href="/help/mute-a-topic">${content_html.join("")}</a>`,
+            "z-link": (content) =>
+                html`<a target="_blank" rel="noopener noreferrer" href="/help/mute-a-topic"
+                    >${content}</a
+                >`,
         },
     ),
 };
@@ -128,10 +134,8 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                       defaultMessage: "Why not <z-link>start the conversation</z-link>?",
                   },
                   {
-                      "z-link": (content_html) =>
-                          `<a href="#" class="empty_feed_compose_stream">${content_html.join(
-                              "",
-                          )}</a>`,
+                      "z-link": (content) =>
+                          html`<a href="#" class="empty_feed_compose_stream">${content}</a>`,
                   },
               ),
     };
@@ -148,8 +152,8 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                               "Would you like to <z-link>view messages in all public channels</z-link>?",
                       },
                       {
-                          "z-link": (content_html) =>
-                              `<a href="#narrow/channels/public">${content_html.join("")}</a>`,
+                          "z-link": (content) =>
+                              html`<a href="#narrow/channels/public">${content}</a>`,
                       },
                   ),
         };
@@ -240,10 +244,13 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                         defaultMessage: "Learn more about emoji reactions <z-link>here</z-link>.",
                     },
                     {
-                        "z-link": (content_html) =>
-                            `<a target="_blank" rel="noopener noreferrer" href="/help/emoji-reactions">${content_html.join(
-                                "",
-                            )}</a>`,
+                        "z-link": (content) =>
+                            html`<a
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                href="/help/emoji-reactions"
+                                >${content}</a
+                            >`,
                     },
                 ),
             };
@@ -273,10 +280,10 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                             {
                                 // TODO: The href here is a bit weird; we probably want to migrate
                                 // this to a button element down the line.
-                                "z-link": (content_html) =>
-                                    `<a href="#" class="empty_feed_compose_private">${content_html.join(
-                                        "",
-                                    )}</a>`,
+                                "z-link": (content) =>
+                                    html`<a href="#" class="empty_feed_compose_private"
+                                        >${content}</a
+                                    >`,
                             },
                         ),
                     };
@@ -372,8 +379,13 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                             defaultMessage: "<z-link>Learn more.</z-link>",
                         },
                         {
-                            "z-link": (content_html) =>
-                                `<a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">${content_html.join("")}</a>`,
+                            "z-link": (content) =>
+                                html`<a
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    href="/help/restrict-direct-messages"
+                                    >${content}</a
+                                >`,
                         },
                     ),
                 };
@@ -415,10 +427,8 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                             defaultMessage: "Why not <z-link>start the conversation</z-link>?",
                         },
                         {
-                            "z-link": (content_html) =>
-                                `<a href="#" class="empty_feed_compose_private">${content_html.join(
-                                    "",
-                                )}</a>`,
+                            "z-link": (content) =>
+                                html`<a href="#" class="empty_feed_compose_private">${content}</a>`,
                         },
                     ),
                 };
@@ -435,10 +445,8 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                         defaultMessage: "Why not <z-link>start the conversation</z-link>?",
                     },
                     {
-                        "z-link": (content_html) =>
-                            `<a href="#" class="empty_feed_compose_private">${content_html.join(
-                                "",
-                            )}</a>`,
+                        "z-link": (content) =>
+                            html`<a href="#" class="empty_feed_compose_private">${content}</a>`,
                     },
                 ),
             };
@@ -498,8 +506,13 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                             defaultMessage: "<z-link>Learn more.</z-link>",
                         },
                         {
-                            "z-link": (content_html) =>
-                                `<a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">${content_html.join("")}</a>`,
+                            "z-link": (content) =>
+                                html`<a
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    href="/help/restrict-direct-messages"
+                                    >${content}</a
+                                >`,
                         },
                     ),
                 };

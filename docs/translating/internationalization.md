@@ -119,7 +119,7 @@ locally to the translation, or use a Handlebars template:
 ```js
 $t_html(
     {defaultMessage: "<b>HTML</b> linking to the <z-link>login page</z-link>"},
-    {"z-link": (content_html) => `<a href="/login/">${content_html.join("")}</a>`},
+    {"z-link": (content) => html`<a href="/login/">${content}</a>`},
 )
 ```
 

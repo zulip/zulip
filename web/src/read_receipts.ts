@@ -7,6 +7,7 @@ import render_read_receipts from "../templates/read_receipts.hbs";
 import render_read_receipts_modal from "../templates/read_receipts_modal.hbs";
 
 import * as channel from "./channel.ts";
+import {html} from "./html.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as message_store from "./message_store.ts";
@@ -90,10 +91,13 @@ export function fetch_read_receipts(message_id: number): void {
                         },
                         {
                             num_of_people: users.length,
-                            "z-link": (content_html) =>
-                                `<a href="/help/read-receipts" target="_blank" rel="noopener noreferrer">${content_html.join(
-                                    "",
-                                )}</a>`,
+                            "z-link": (content) =>
+                                html`<a
+                                    href="/help/read-receipts"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    >${content}</a
+                                >`,
                         },
                     ),
                 );
