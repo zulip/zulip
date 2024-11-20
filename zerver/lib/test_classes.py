@@ -894,6 +894,7 @@ Output:
         realm_type: int = Realm.ORG_TYPES["business"]["id"],
         realm_default_language: str = "en",
         realm_in_root_domain: str | None = None,
+        import_from: str = "none",
     ) -> "TestHttpResponse":
         payload = {
             "email": email,
@@ -901,7 +902,7 @@ Output:
             "realm_type": realm_type,
             "realm_default_language": realm_default_language,
             "realm_subdomain": realm_subdomain,
-            "import_from": "none",
+            "import_from": import_from,
         }
         if realm_in_root_domain is not None:
             payload["realm_in_root_domain"] = realm_in_root_domain
