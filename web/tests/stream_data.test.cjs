@@ -727,7 +727,7 @@ test("delete_sub", () => {
     assert.ok(stream_data.is_subscribed(canada.stream_id));
     assert.ok(stream_data.get_sub("Canada"));
     assert.ok(sub_store.get(canada.stream_id));
-    assert.equal(stream_data.num_subscribed_subs(), num_subscribed_subs - 1);
+    assert.equal(stream_data.num_subscribed_subs(), num_subscribed_subs);
 
     blueslip.expect("warn", "Failed to archive stream 99999");
     stream_data.delete_sub(99999);

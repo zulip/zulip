@@ -89,7 +89,7 @@ export function get_unmatched_streams_for_notification_settings(): ({
     invite_only: boolean;
     is_web_public: boolean;
 })[] {
-    const subscribed_rows = stream_data.subscribed_subs();
+    const subscribed_rows = stream_data.subscribed_subs().filter((sub) => !sub.is_archived);
     subscribed_rows.sort((a, b) => util.strcmp(a.name, b.name));
 
     const notification_settings = [];
