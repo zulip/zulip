@@ -8,6 +8,7 @@ import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as rows from "./rows.ts";
+import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 /*
@@ -169,9 +170,23 @@ export function condense_and_collapse(elems: JQuery): void {
         return;
     }
 
-    const height_cutoff = message_viewport.max_message_height();
-    const rows_to_resize = [];
+    // For unread messages, we allow them to expand to most of a
+    // desktop monitor's height, with stricter limits for mobile web
+    // devices, especially in landscape mode.
+    //
+    // About 10em is the header/footer, plus some buffer for being
+    // able to see edges of adjacent messages.
+    const header_footer_and_buffer_height = 12 * user_settings.web_font_size_px;
+    const height_cutoff_unread = Math.max(
+        35 * user_settings.web_font_size_px,
+        message_viewport.height() - header_footer_and_buffer_height,
+    );
+    const height_cutoff_read = Math.max(
+        35 * user_settings.web_font_size_px,
+        0.65 * message_viewport.height(),
+    );
 
+    const rows_to_resize = [];
     for (const elem of elems) {
         const $content = $(elem).find(".message_content");
 
@@ -207,6 +222,7 @@ export function condense_and_collapse(elems: JQuery): void {
     // changing the layout of the page, which is more performanant.
     // More information here: https://web.dev/avoid-large-complex-layouts-and-layout-thrashing/#avoid-layout-thrashing
     for (const {elem, $content, message, message_height} of rows_to_resize) {
+        const height_cutoff = message.unread ? height_cutoff_unread : height_cutoff_read;
         const long_message = message_height > height_cutoff;
         if (long_message) {
             // All long messages are flagged as such.
