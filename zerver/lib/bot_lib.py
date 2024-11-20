@@ -7,6 +7,7 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 from zulip_bots.lib import BotIdentity, RateLimit
 
+from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.message_send import (
     internal_send_group_direct_message,
     internal_send_private_message,
@@ -153,3 +154,10 @@ class EmbeddedBotHandler:
 
     def quit(self, message: str = "") -> None:
         raise EmbeddedBotQuitError(message)
+
+
+def do_flag_service_bots_messages_as_processed(
+    bot_profile: UserProfile, message_ids: list[int]
+) -> None:
+    assert bot_profile.is_bot is True and bot_profile.bot_type in UserProfile.SERVICE_BOT_TYPES
+    do_update_message_flags(bot_profile, "add", "read", message_ids)
