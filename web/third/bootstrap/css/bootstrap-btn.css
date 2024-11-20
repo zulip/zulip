@@ -77,33 +77,3 @@ THE SOFTWARE.
           box-shadow: none;
   opacity: .65;
 }
-.bootstrap-btn-default {
-  color: #333;
-  background-color: #fff;
-  border-color: #ccc;
-}
-.bootstrap-btn-default:hover,
-.bootstrap-btn-default:focus,
-.bootstrap-btn-default:active,
-.bootstrap-btn-default.active {
-  color: #333;
-  background-color: #ebebeb;
-  border-color: #adadad;
-}
-.bootstrap-btn-default:active,
-.bootstrap-btn-default.active {
-  background-image: none;
-}
-.bootstrap-btn-default.disabled,
-.bootstrap-btn-default[disabled],
-.bootstrap-btn-default.disabled:hover,
-.bootstrap-btn-default[disabled]:hover,
-.bootstrap-btn-default.disabled:focus,
-.bootstrap-btn-default[disabled]:focus,
-.bootstrap-btn-default.disabled:active,
-.bootstrap-btn-default[disabled]:active,
-.bootstrap-btn-default.disabled.active,
-.bootstrap-btn-default[disabled].active {
-  background-color: #fff;
-  border-color: #ccc;
-}
