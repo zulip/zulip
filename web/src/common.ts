@@ -1,6 +1,7 @@
 import $ from "jquery";
 import * as tippy from "tippy.js";
 
+import {type Html, html} from "./html.ts";
 import {$t} from "./i18n.ts";
 import * as util from "./util.ts";
 
@@ -177,4 +178,33 @@ export function setup_password_visibility_toggle(
             toggle_password_visibility(password_field_id, password_selector, tippy_tooltips);
         }
     });
+}
+
+export function tooltip_hotkey_hints(...hotkeys: string[]): Html {
+    adjust_mac_hotkey_hints(hotkeys);
+    const hotkey_hints = hotkeys.map(
+        (hotkey) => html`<span class="tooltip-hotkey-hint">${hotkey}</span>`,
+    );
+    return html`<span class="tooltip-hotkey-hints">${hotkey_hints}</span>`;
+}
+
+export function popover_hotkey_hints(...hotkeys: string[]): Html {
+    adjust_mac_hotkey_hints(hotkeys);
+    const shift_hotkey_exists = adjust_shift_hotkey(hotkeys);
+    const hotkey_hints = hotkeys.map((hotkey) =>
+        // The ⌘ symbol isn't vertically centered, so we use an icon.
+        hotkey === "⌘"
+            ? html`<span class="popover-menu-hotkey-hint"
+                  ><i class="zulip-icon zulip-icon-mac-command" aria-hidden="true"></i
+              ></span>`
+            : html`<span class="popover-menu-hotkey-hint">${hotkey}</span>`,
+    );
+    if (shift_hotkey_exists) {
+        return html`<span
+            class="popover-menu-hotkey-hints popover-contains-shift-hotkey"
+            data-hotkey-hints="${hotkeys.join(",")}"
+            >${hotkey_hints}</span
+        >`;
+    }
+    return html`<span class="popover-menu-hotkey-hints">${hotkey_hints}</span>`;
 }
