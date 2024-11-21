@@ -151,6 +151,17 @@ def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
     return text
 
 
+def convert_slack_workspace_mentions(text: str) -> str:
+    # Map Slack's '<!everyone>', '<!channel>' and '<!here>'
+    # mentions to Zulip's '@**all**' wildcard mention.
+    # No regex for these as they can be present anywhere
+    # in the sentence.
+    text = text.replace("<!everyone>", "@**all**")
+    text = text.replace("<!channel>", "@**all**")
+    text = text.replace("<!here>", "@**all**")
+    return text
+
+
 # Markdown mapping
 def convert_to_zulip_markdown(
     text: str,
@@ -163,13 +174,7 @@ def convert_to_zulip_markdown(
     text = convert_markdown_syntax(text, SLACK_STRIKETHROUGH_REGEX, "~~")
     text = convert_markdown_syntax(text, SLACK_ITALIC_REGEX, "*")
 
-    # Map Slack's mention all: '<!everyone>' to '@**all** '
-    # Map Slack's mention all: '<!channel>' to '@**all** '
-    # Map Slack's mention all: '<!here>' to '@**all** '
-    # No regex for this as it can be present anywhere in the sentence
-    text = text.replace("<!everyone>", "@**all**")
-    text = text.replace("<!channel>", "@**all**")
-    text = text.replace("<!here>", "@**all**")
+    text = convert_slack_workspace_mentions(text)
 
     # Map Slack channel mention: '<#C5Z73A7RA|general>' to '#**general**'
     for cname, ids in added_channels.items():
