@@ -552,7 +552,7 @@ help.
 :::{tab-item} Windows (WSL)
 :sync: os-windows
 
-```{include} setup/vagrant-rebuild.md
+```{include} setup/wsl-rebuild.md
 
 ```
 
