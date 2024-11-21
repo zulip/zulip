@@ -42,6 +42,7 @@ async function close_settings_and_date_picker(page: Page): Promise<void> {
 
     await page.keyboard.press("Escape");
     await page.waitForSelector(".flatpickr-calendar", {hidden: true});
+    await page.waitForSelector("#settings_overlay_container", {hidden: true});
 }
 
 async function test_change_full_name(page: Page): Promise<void> {
