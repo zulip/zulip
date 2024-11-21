@@ -139,6 +139,9 @@ class Integration:
 
         return None
 
+    def get_translated_categories(self) -> list[str]:
+        return [str(category) for category in self.categories]
+
 
 class BotIntegration(Integration):
     DEFAULT_LOGO_STATIC_PATH_PNG = "generated/bots/{name}/logo.png"
