@@ -13,6 +13,11 @@ export function is_navbar_menus_displayed() {
 }
 
 export function handle_keyboard_events(event_name) {
+    const allowed_events = new Set(["gear_menu", "left_arrow", "right_arrow"]);
+    if (!allowed_events.has(event_name)) {
+        return false;
+    }
+
     // We don't need to process arrow keys in navbar menus for spectators
     // since they only have gear menu present.
     if (
