@@ -9,9 +9,9 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.exceptions import (
+    CannotAdministerChannelError,
     IncompatibleParametersError,
     JsonableError,
-    OrganizationAdministratorRequiredError,
     OrganizationOwnerRequiredError,
 )
 from zerver.lib.markdown import markdown_convert
@@ -430,7 +430,10 @@ def check_stream_access_for_delete_or_update(
     if sub is None and stream.invite_only:
         raise JsonableError(error)
 
-    raise OrganizationAdministratorRequiredError
+    if can_administer_channel(stream, user_profile):
+        return
+
+    raise CannotAdministerChannelError
 
 
 def access_stream_for_delete_or_update(
@@ -734,6 +737,16 @@ def can_remove_subscribers_from_stream(
         group_allowed_to_remove_subscribers,
         user_profile,
         Stream.stream_permission_group_settings["can_remove_subscribers_group"],
+    )
+
+
+def can_administer_channel(channel: Stream, user_profile: UserProfile) -> bool:
+    group_allowed_to_administer_channel = channel.can_administer_channel_group
+    assert group_allowed_to_administer_channel is not None
+    return user_has_permission_for_group_setting(
+        group_allowed_to_administer_channel,
+        user_profile,
+        Stream.stream_permission_group_settings["can_administer_channel_group"],
     )
 
 

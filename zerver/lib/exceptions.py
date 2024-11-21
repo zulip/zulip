@@ -55,6 +55,7 @@ class ErrorCode(Enum):
     EXPECTATION_MISMATCH = auto()
     SYSTEM_GROUP_REQUIRED = auto()
     CANNOT_DEACTIVATE_GROUP_IN_USE = auto()
+    CANNOT_ADMINISTER_CHANNEL = auto()
 
 
 class JsonableError(Exception):
@@ -732,3 +733,13 @@ class CannotDeactivateGroupInUseError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Cannot deactivate user group in use.")
+
+
+class CannotAdministerChannelError(JsonableError):
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("You do not have permission to administer this channel.")

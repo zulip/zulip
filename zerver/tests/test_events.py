@@ -4479,7 +4479,7 @@ class SubscribeActionTest(BaseAction):
                 invite_only=False,
                 history_public_to_subscribers=True,
                 is_web_public=True,
-                acting_user=self.example_user("hamlet"),
+                acting_user=iago,
             )
         check_stream_update("events[0]", events[0])
         check_message("events[1]", events[1])
@@ -4491,7 +4491,7 @@ class SubscribeActionTest(BaseAction):
                 invite_only=True,
                 history_public_to_subscribers=True,
                 is_web_public=False,
-                acting_user=self.example_user("hamlet"),
+                acting_user=iago,
             )
         check_stream_update("events[0]", events[0])
         check_message("events[1]", events[1])
@@ -4504,7 +4504,7 @@ class SubscribeActionTest(BaseAction):
                 invite_only=False,
                 history_public_to_subscribers=True,
                 is_web_public=False,
-                acting_user=self.example_user("hamlet"),
+                acting_user=iago,
             )
         check_stream_create("events[0]", events[0])
         check_subscription_peer_add("events[1]", events[1])
@@ -4514,7 +4514,7 @@ class SubscribeActionTest(BaseAction):
             invite_only=True,
             history_public_to_subscribers=True,
             is_web_public=False,
-            acting_user=self.example_user("hamlet"),
+            acting_user=iago,
         )
         self.subscribe(self.example_user("cordelia"), stream.name)
         self.unsubscribe(self.example_user("cordelia"), stream.name)
@@ -4526,7 +4526,7 @@ class SubscribeActionTest(BaseAction):
                 invite_only=False,
                 history_public_to_subscribers=True,
                 is_web_public=False,
-                acting_user=self.example_user("hamlet"),
+                acting_user=iago,
             )
 
         self.user_profile = self.example_user("hamlet")
@@ -4552,7 +4552,7 @@ class SubscribeActionTest(BaseAction):
                 stream,
                 "can_remove_subscribers_group",
                 moderators_group,
-                acting_user=self.example_user("hamlet"),
+                acting_user=iago,
             )
         check_stream_update("events[0]", events[0])
         self.assertEqual(events[0]["value"], moderators_group.id)
@@ -4566,7 +4566,7 @@ class SubscribeActionTest(BaseAction):
                 stream,
                 "can_remove_subscribers_group",
                 setting_group,
-                acting_user=self.example_user("hamlet"),
+                acting_user=iago,
             )
         check_stream_update("events[0]", events[0])
         self.assertEqual(
@@ -4586,7 +4586,7 @@ class SubscribeActionTest(BaseAction):
                 stream,
                 "can_administer_channel_group",
                 moderators_group,
-                acting_user=self.example_user("hamlet"),
+                acting_user=iago,
             )
         check_stream_update("events[0]", events[0])
         self.assertEqual(events[0]["value"], moderators_group.id)
@@ -4600,7 +4600,7 @@ class SubscribeActionTest(BaseAction):
                 stream,
                 "can_administer_channel_group",
                 setting_group,
-                acting_user=self.example_user("hamlet"),
+                acting_user=iago,
             )
         check_stream_update("events[0]", events[0])
         self.assertEqual(
