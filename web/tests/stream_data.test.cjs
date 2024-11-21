@@ -439,7 +439,7 @@ test("renames", () => {
 });
 
 test("admin_options", ({override}) => {
-    function make_sub() {
+    function make_sub(can_administer_channel_group) {
         const sub = {
             subscribed: false,
             color: "blue",
@@ -448,6 +448,7 @@ test("admin_options", ({override}) => {
             is_muted: true,
             invite_only: false,
             can_remove_subscribers_group: admins_group.id,
+            can_administer_channel_group,
             date_created: 1691057093,
             creator_id: null,
         };
@@ -463,9 +464,10 @@ test("admin_options", ({override}) => {
         return stream_settings_data.get_sub_for_settings(sub).can_change_stream_permissions;
     }
 
+    // Test with can_administer_channel_group set to nobody.
     // non-admins can't do anything
     override(current_user, "is_admin", false);
-    let sub = make_sub();
+    let sub = make_sub(nobody_group.id);
     assert.ok(!is_realm_admin(sub));
     assert.ok(!can_change_stream_permissions(sub));
 
@@ -476,22 +478,48 @@ test("admin_options", ({override}) => {
     override(current_user, "is_admin", true);
 
     // admins can make public streams become private
-    sub = make_sub();
+    sub = make_sub(nobody_group.id);
     assert.ok(is_realm_admin(sub));
     assert.ok(can_change_stream_permissions(sub));
 
     // admins can only make private streams become public
     // if they are subscribed
-    sub = make_sub();
+    sub = make_sub(nobody_group.id);
     sub.invite_only = true;
     sub.subscribed = false;
     assert.ok(is_realm_admin(sub));
     assert.ok(!can_change_stream_permissions(sub));
 
-    sub = make_sub();
+    sub = make_sub(nobody_group.id);
     sub.invite_only = true;
     sub.subscribed = true;
     assert.ok(is_realm_admin(sub));
+    assert.ok(can_change_stream_permissions(sub));
+
+    // Test with can_administer_channel_group set to moderators.
+    override(current_user, "is_admin", false);
+    people.initialize_current_user(moderator_user_id);
+    sub = make_sub(moderators_group.id);
+    assert.ok(!is_realm_admin(sub));
+    assert.ok(can_change_stream_permissions(sub));
+
+    // Users in setting group can make public streams become private
+    sub = make_sub(moderators_group.id);
+    assert.ok(!is_realm_admin(sub));
+    assert.ok(can_change_stream_permissions(sub));
+
+    // Users in setting group can only make private streams become
+    // public if they are subscribed
+    sub = make_sub(moderators_group.id);
+    sub.invite_only = true;
+    sub.subscribed = false;
+    assert.ok(!is_realm_admin(sub));
+    assert.ok(!can_change_stream_permissions(sub));
+
+    sub = make_sub(moderators_group.id);
+    sub.invite_only = true;
+    sub.subscribed = true;
+    assert.ok(!is_realm_admin(sub));
     assert.ok(can_change_stream_permissions(sub));
 });
 
@@ -503,6 +531,7 @@ test("stream_settings", ({override}) => {
         subscribed: true,
         invite_only: false,
         can_remove_subscribers_group: admins_group.id,
+        can_administer_channel_group: nobody_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -514,6 +543,7 @@ test("stream_settings", ({override}) => {
         subscribed: false,
         invite_only: false,
         can_remove_subscribers_group: admins_group.id,
+        can_administer_channel_group: nobody_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -528,6 +558,7 @@ test("stream_settings", ({override}) => {
         stream_post_policy: settings_config.stream_post_policy_values.admins.code,
         message_retention_days: 10,
         can_remove_subscribers_group: admins_group.id,
+        can_administer_channel_group: nobody_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -567,11 +598,17 @@ test("stream_settings", ({override}) => {
         sub,
         moderators_group.id,
     );
+    stream_data.update_stream_permission_group_setting(
+        "can_administer_channel_group",
+        sub,
+        moderators_group.id,
+    );
     assert.equal(sub.invite_only, false);
     assert.equal(sub.history_public_to_subscribers, false);
     assert.equal(sub.stream_post_policy, settings_config.stream_post_policy_values.everyone.code);
     assert.equal(sub.message_retention_days, -1);
     assert.equal(sub.can_remove_subscribers_group, moderators_group.id);
+    assert.equal(sub.can_administer_channel_group, moderators_group.id);
 
     // For guest user only retrieve subscribed streams
     sub_rows = stream_settings_data.get_updated_unsorted_subs();
@@ -1174,6 +1211,7 @@ test("can_unsubscribe_others", ({override}) => {
         color: "red",
         stream_id: 1,
         can_remove_subscribers_group: admins_group.id,
+        can_administer_channel_group: nobody_group.id,
     };
     stream_data.add_sub(sub);
 

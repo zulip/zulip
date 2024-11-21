@@ -544,6 +544,16 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
 
     override(realm, "server_supported_permission_settings", {
         stream: {
+            can_administer_channel_group: {
+                require_system_group: true,
+                allow_internet_group: false,
+                allow_owners_group: true,
+                allow_nobody_group: true,
+                allow_everyone_group: false,
+                default_group_name: "stream_creator_or_nobody",
+                id_field_name: "can_administer_channel_group_id",
+                allowed_system_groups: [],
+            },
             can_remove_subscribers_group: {
                 require_system_group: true,
                 allow_internet_group: false,

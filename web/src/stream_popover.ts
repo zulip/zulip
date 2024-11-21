@@ -158,7 +158,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
 
                 // Admin can change any stream's name & description either stream is public or
                 // private, subscribed or unsubscribed.
-                const can_change_name_description = stream_data.can_edit_description();
+                const can_change_name_description = stream_data.can_edit_description(sub);
                 const can_change_stream_permissions = stream_data.can_change_permissions(sub);
                 let stream_edit_hash = hash_util.channels_settings_edit_url(sub, "general");
                 if (!can_change_stream_permissions && !can_change_name_description) {

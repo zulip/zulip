@@ -603,7 +603,8 @@ export function discard_stream_property_element_changes(
         sub,
     );
     switch (property_name) {
-        case "can_remove_subscribers_group": {
+        case "can_remove_subscribers_group":
+        case "can_administer_channel_group": {
             const pill_widget = settings_components.get_group_setting_widget(property_name);
             assert(pill_widget !== null);
             settings_components.set_group_setting_widget_value(
