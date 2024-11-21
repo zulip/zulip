@@ -23,6 +23,7 @@ import "katex/dist/katex.css";
 import "flatpickr/dist/flatpickr.css";
 import "flatpickr/dist/plugins/confirmDate/confirmDate.css";
 import "../../third/bootstrap/css/bootstrap.app.css";
+import "../../third/bootstrap/css/bootstrap-btn.css";
 import "../../styles/typeahead.css";
 import "../../styles/app_variables.css";
 import "../../styles/tooltips.css";

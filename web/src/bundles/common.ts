@@ -3,7 +3,6 @@ import "../../debug-require.cjs";
 import "../alert_popup.ts";
 import "../csrf.ts";
 import "../blueslip.ts";
-import "../../third/bootstrap/css/bootstrap-btn.css";
 import "simplebar/dist/simplebar.css";
 import "font-awesome/css/font-awesome.css";
 import "../../images/icons/zulip-icons.font.cjs";
