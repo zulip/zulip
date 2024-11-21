@@ -118,7 +118,9 @@ const update_integrations = _.debounce(() => {
             const display_name = INTEGRATIONS.get($integration.attr("data-name"));
             const display =
                 common.phrase_match(state.query, display_name) &&
-                ($integration.attr("data-categories").includes(CATEGORIES.get(state.category)) ||
+                (JSON.parse($integration.attr("data-categories")).includes(
+                    CATEGORIES.get(state.category),
+                ) ||
                     state.category === "all");
 
             if (display) {
@@ -140,11 +142,9 @@ function hide_catalog_show_integration() {
     ).clone(false);
     $lozenge_icon.removeClass("legacy");
 
-    const categories = $(`.integration-${CSS.escape(state.integration)}`)
-        .attr("data-categories")
-        .slice(1, -1)
-        .split(",")
-        .map((category) => category.trim().slice(1, -1));
+    const categories = JSON.parse(
+        $(`.integration-${CSS.escape(state.integration)}`).attr("data-categories"),
+    );
 
     function show_integration(doc) {
         $("#integration-instructions-group .name").text(INTEGRATIONS.get(state.integration));
