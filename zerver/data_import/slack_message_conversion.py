@@ -162,6 +162,13 @@ def convert_slack_workspace_mentions(text: str) -> str:
     return text
 
 
+def convert_slack_formatting(text: str) -> str:
+    text = convert_markdown_syntax(text, SLACK_BOLD_REGEX, "**")
+    text = convert_markdown_syntax(text, SLACK_STRIKETHROUGH_REGEX, "~~")
+    text = convert_markdown_syntax(text, SLACK_ITALIC_REGEX, "*")
+    return text
+
+
 # Markdown mapping
 def convert_to_zulip_markdown(
     text: str,
@@ -170,10 +177,7 @@ def convert_to_zulip_markdown(
     slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
 ) -> tuple[str, list[int], bool]:
     mentioned_users_id = []
-    text = convert_markdown_syntax(text, SLACK_BOLD_REGEX, "**")
-    text = convert_markdown_syntax(text, SLACK_STRIKETHROUGH_REGEX, "~~")
-    text = convert_markdown_syntax(text, SLACK_ITALIC_REGEX, "*")
-
+    text = convert_slack_formatting(text)
     text = convert_slack_workspace_mentions(text)
 
     # Map Slack channel mention: '<#C5Z73A7RA|general>' to '#**general**'
