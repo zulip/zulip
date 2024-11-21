@@ -283,6 +283,8 @@ class CustomerPlanOffer(AbstractCustomerPlan):
     audit purpose with status=PROCESSED.
     """
 
+    TIER_CLOUD_STANDARD = 1
+    TIER_CLOUD_PLUS = 2
     TIER_SELF_HOSTED_BASIC = 103
     TIER_SELF_HOSTED_BUSINESS = 104
     tier = models.SmallIntegerField()
@@ -310,6 +312,8 @@ class CustomerPlanOffer(AbstractCustomerPlan):
     @staticmethod
     def name_from_tier(tier: int) -> str:
         return {
+            CustomerPlanOffer.TIER_CLOUD_STANDARD: "Zulip Cloud Standard",
+            CustomerPlanOffer.TIER_CLOUD_PLUS: "Zulip Cloud Plus",
             CustomerPlanOffer.TIER_SELF_HOSTED_BASIC: "Zulip Basic",
             CustomerPlanOffer.TIER_SELF_HOSTED_BUSINESS: "Zulip Business",
         }[tier]

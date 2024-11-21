@@ -135,6 +135,27 @@
     </div>
     {% endif %}
 
+    {% if realm_support_data[realm.id].plan_data.next_plan %}
+    <div class="next-plan-container">
+        {% with %}
+            {% set plan_data = realm_support_data[realm.id].plan_data %}
+            {% set dollar_amount = dollar_amount %}
+            {% set remote_id = realm.id %}
+            {% set remote_type = "realm_id" %}
+            {% include 'corporate/support/next_plan_details.html' %}
+        {% endwith %}
+    </div>
+    {% elif not realm.deactivated %}
+    <div class="next-plan-container">
+        {% with %}
+            {% set plan_data = realm_support_data[realm.id].plan_data %}
+            {% set remote_id = realm.id %}
+            {% set remote_type = "realm_id" %}
+            {% include 'corporate/support/next_plan_forms_support.html' %}
+        {% endwith %}
+    </div>
+    {% endif %}
+
     <form method="POST" class="scrub-realm-form support-form">
         <h3>❌ Scrub realm</h3>
         {{ csrf_input }}

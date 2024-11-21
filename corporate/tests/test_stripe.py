@@ -6073,6 +6073,113 @@ class InvoiceTest(StripeTestCase):
         for key, value in line_item_params.items():
             self.assertEqual(item.get(key), value)
 
+    @mock_stripe()
+    def test_upgrade_to_fixed_price_plus_plan(self, *mocks: Mock) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        realm = get_realm("zulip")
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
+
+        self.login_user(hamlet)
+        with time_machine.travel(self.now, tick=False):
+            self.upgrade(invoice=True)
+        plan = CustomerPlan.objects.first()
+        assert plan is not None
+        self.assertIsNone(plan.end_date)
+        self.assertEqual(plan.tier, CustomerPlan.TIER_CLOUD_STANDARD)
+        realm.refresh_from_db()
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
+
+        billing_session = RealmBillingSession(user=hamlet, realm=realm)
+        next_billing_cycle = billing_session.get_next_billing_cycle(plan)
+        plan_end_date_string = next_billing_cycle.strftime("%Y-%m-%d")
+        plan_end_date = datetime.strptime(plan_end_date_string, "%Y-%m-%d").replace(
+            tzinfo=timezone.utc
+        )
+
+        self.logout()
+        self.login_user(iago)
+
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{realm.id}",
+                "required_plan_tier": f"{CustomerPlanOffer.TIER_CLOUD_PLUS}",
+            },
+        )
+        self.assert_in_success_response(
+            ["Required plan tier for zulip set to Zulip Cloud Plus."],
+            result,
+        )
+
+        with time_machine.travel(self.now, tick=False):
+            result = self.client_post(
+                "/activity/support",
+                {
+                    "realm_id": f"{realm.id}",
+                    "plan_end_date": plan_end_date_string,
+                },
+            )
+        self.assert_in_success_response(
+            [f"Current plan for zulip updated to end on {plan_end_date_string}."],
+            result,
+        )
+
+        plan.refresh_from_db()
+        self.assertEqual(plan.end_date, plan_end_date)
+
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{realm.id}",
+                "fixed_price": 360,
+            },
+        )
+        self.assert_in_success_response(
+            [f"Fixed price Zulip Cloud Plus plan scheduled to start on {plan_end_date_string}."],
+            result,
+        )
+
+        plan.refresh_from_db()
+        self.assertEqual(plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END)
+        self.assertEqual(plan.next_invoice_date, plan_end_date)
+        new_plan = CustomerPlan.objects.filter(fixed_price__isnull=False).first()
+        assert new_plan is not None
+        self.assertEqual(new_plan.next_invoice_date, plan_end_date)
+        self.assertEqual(
+            new_plan.invoicing_status, CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT
+        )
+
+        with time_machine.travel(next_billing_cycle, tick=False):
+            invoice_plans_as_needed()
+
+        plan.refresh_from_db()
+        self.assertEqual(plan.status, CustomerPlan.ENDED)
+        self.assertEqual(plan.next_invoice_date, None)
+
+        new_plan.refresh_from_db()
+        self.assertEqual(new_plan.tier, CustomerPlan.TIER_CLOUD_PLUS)
+        self.assertIsNotNone(new_plan.fixed_price)
+        self.assertIsNone(new_plan.price_per_license)
+
+        realm.refresh_from_db()
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_PLUS)
+
+        # Visit /billing
+        self.logout()
+        self.login_user(hamlet)
+        with time_machine.travel(plan_end_date + timedelta(days=1), tick=False):
+            response = self.client_get(f"{self.billing_session.billing_base_url}/billing/")
+        for substring in [
+            "Zulip Cloud Plus",
+            "Annual",
+            "Invoice",
+            "This is a fixed-price plan",
+            "You will be contacted by Zulip Sales",
+        ]:
+            self.assert_in_response(substring, response)
+        self.assert_not_in_success_response(["Update card"], response)
+
     def test_no_invoice_needed(self) -> None:
         # local_upgrade uses hamlet as user, therefore realm is zulip.
         with time_machine.travel(self.now, tick=False):

@@ -1613,9 +1613,9 @@ class BillingSession(ABC):
                     }
                     plan.next_invoice_date = new_end_date
                 # We send a reminder email 2 months before the end date of
-                # remote server and remote realm fixed-price plans so that
-                # billing support can follow-up about continuing service.
-                # Reset it when we are extending the end_date.
+                # fixed-price plans so that billing support can follow-up
+                # about continuing service. Reset it when we are extending
+                # the end_date.
                 reminder_to_review_plan_email_sent_changed_extra_data = None
                 if (
                     plan.reminder_to_review_plan_email_sent
@@ -5389,29 +5389,29 @@ def invoice_plans_as_needed(event_time: datetime | None = None) -> None:
 
         assert plan.next_invoice_date is not None  # for mypy
 
-        if remote_server:
-            if (
-                plan.fixed_price is not None
-                and not plan.reminder_to_review_plan_email_sent
-                and plan.end_date is not None  # for mypy
-                # The max gap between two months is 62 days. (1 Jul - 1 Sep)
-                and plan.end_date - plan.next_invoice_date <= timedelta(days=62)
-            ):
-                context = {
-                    "billing_entity": billing_session.billing_entity_display_name,
-                    "end_date": plan.end_date.strftime("%Y-%m-%d"),
-                    "support_url": billing_session.support_url(),
-                    "notice_reason": "fixed_price_plan_ends_soon",
-                }
-                send_email(
-                    "zerver/emails/internal_billing_notice",
-                    to_emails=[BILLING_SUPPORT_EMAIL],
-                    from_address=FromAddress.tokenized_no_reply_address(),
-                    context=context,
-                )
-                plan.reminder_to_review_plan_email_sent = True
-                plan.save(update_fields=["reminder_to_review_plan_email_sent"])
+        if (
+            plan.fixed_price is not None
+            and not plan.reminder_to_review_plan_email_sent
+            and plan.end_date is not None  # for mypy
+            # The max gap between two months is 62 days. (1 Jul - 1 Sep)
+            and plan.end_date - plan.next_invoice_date <= timedelta(days=62)
+        ):
+            context = {
+                "billing_entity": billing_session.billing_entity_display_name,
+                "end_date": plan.end_date.strftime("%Y-%m-%d"),
+                "support_url": billing_session.support_url(),
+                "notice_reason": "fixed_price_plan_ends_soon",
+            }
+            send_email(
+                "zerver/emails/internal_billing_notice",
+                to_emails=[BILLING_SUPPORT_EMAIL],
+                from_address=FromAddress.tokenized_no_reply_address(),
+                context=context,
+            )
+            plan.reminder_to_review_plan_email_sent = True
+            plan.save(update_fields=["reminder_to_review_plan_email_sent"])
 
+        if remote_server:
             free_plan_with_no_next_plan = (
                 not plan.is_a_paid_plan() and plan.status == CustomerPlan.ACTIVE
             )

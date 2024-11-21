@@ -421,6 +421,9 @@ def support(
     max_invites: Json[NonNegativeInt] | None = None,
     plan_end_date: Annotated[str, AfterValidator(lambda x: check_date("plan_end_date", x))]
     | None = None,
+    fixed_price: Json[NonNegativeInt] | None = None,
+    sent_invoice_id: str | None = None,
+    delete_fixed_price_next_plan: Json[bool] = False,
 ) -> HttpResponse:
     from corporate.lib.stripe import (
         RealmBillingSession,
@@ -488,6 +491,19 @@ def support(
             support_view_request = SupportViewRequest(
                 support_type=SupportType.update_plan_end_date,
                 plan_end_date=plan_end_date,
+            )
+        elif fixed_price is not None:
+            # Treat empty string for send_invoice_id as None.
+            if sent_invoice_id is not None and sent_invoice_id.strip() == "":
+                sent_invoice_id = None
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.configure_fixed_price_plan,
+                fixed_price=fixed_price,
+                sent_invoice_id=sent_invoice_id,
+            )
+        elif delete_fixed_price_next_plan:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.delete_fixed_price_next_plan,
             )
         elif plan_type is not None:
             current_plan_type = realm.plan_type

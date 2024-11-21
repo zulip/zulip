@@ -12,11 +12,13 @@ from corporate.lib.stripe import (
     RealmBillingSession,
     RemoteRealmBillingSession,
     add_months,
+    get_configured_fixed_price_plan_offer,
     start_of_next_billing_cycle,
 )
 from corporate.models import (
     Customer,
     CustomerPlan,
+    CustomerPlanOffer,
     LicenseLedger,
     SponsoredPlanTypes,
     ZulipSponsorshipRequest,
@@ -1568,6 +1570,231 @@ class TestSupportEndpoint(ZulipTestCase):
         current_plan.refresh_from_db()
         self.assertEqual(current_plan.end_date, datetime(2050, 3, 1, tzinfo=timezone.utc))
         self.assertEqual(current_plan.next_invoice_date, next_invoice_date)
+
+    def test_configure_fixed_price_plan_without_current_plan(self) -> None:
+        plan_offer_tier = CustomerPlanOffer.TIER_CLOUD_STANDARD
+        plan_offer_tier_name = CustomerPlanOffer.name_from_tier(plan_offer_tier)
+
+        lear_realm = get_realm("lear")
+        customer = get_customer_by_realm(lear_realm)
+        assert customer is None
+
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        # Configuring a fixed-price plan requires setting
+        # a required plan tier for the organization.
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "fixed_price": 360,
+            },
+        )
+        self.assert_in_success_response(
+            ["Required plan tier should not be set to None"],
+            result,
+        )
+
+        customer = get_customer_by_realm(lear_realm)
+        assert customer is not None
+        self.assertIsNone(customer.required_plan_tier)
+        plan = get_current_plan_by_customer(customer)
+        assert plan is None
+
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "required_plan_tier": f"{plan_offer_tier}",
+            },
+        )
+        self.assert_in_success_response(
+            [f"Required plan tier for lear set to {plan_offer_tier_name}."],
+            result,
+        )
+
+        customer.refresh_from_db()
+        assert customer.required_plan_tier is not None
+        plan_offer = get_configured_fixed_price_plan_offer(customer, customer.required_plan_tier)
+        assert plan_offer is None
+
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "fixed_price": 360,
+            },
+        )
+        self.assert_in_success_response(
+            [f"Customer can now buy a fixed price {plan_offer_tier_name} plan."],
+            result,
+        )
+
+        customer.refresh_from_db()
+        plan_offer = get_configured_fixed_price_plan_offer(customer, customer.required_plan_tier)
+        assert plan_offer is not None
+        self.assertEqual(plan_offer.status, CustomerPlanOffer.CONFIGURED)
+        self.assertEqual(plan_offer.fixed_price, 36000)
+        self.assertIsNone(plan_offer.sent_invoice_id)
+
+        # Test deleting the fixed-price plan offer via support.
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "delete_fixed_price_next_plan": "true",
+            },
+        )
+        self.assert_in_success_response(
+            ["Fixed price offer deleted"],
+            result,
+        )
+        customer.refresh_from_db()
+        plan_offer = get_configured_fixed_price_plan_offer(customer, customer.required_plan_tier)
+        self.assertIsNone(plan_offer)
+
+    def test_configure_upgrade_fixed_price_plan_with_current_plan(self) -> None:
+        plan_offer_tier = CustomerPlanOffer.TIER_CLOUD_PLUS
+        plan_offer_tier_name = CustomerPlanOffer.name_from_tier(plan_offer_tier)
+
+        lear_realm = get_realm("lear")
+        customer = self.create_customer_and_plan(lear_realm, True)
+        plan = get_current_plan_by_customer(customer)
+        assert plan is not None
+        self.assertIsNone(plan.end_date)
+
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        # Configuring a fixed-price plan requires setting
+        # a required plan tier for the organization.
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "fixed_price": 360,
+            },
+        )
+        self.assert_in_success_response(
+            ["Required plan tier should not be set to None"],
+            result,
+        )
+
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "required_plan_tier": f"{plan_offer_tier}",
+            },
+        )
+        self.assert_in_success_response(
+            [f"Required plan tier for lear set to {plan_offer_tier_name}."],
+            result,
+        )
+
+        # Configuring a fixed-price plan requires any current
+        # plan to have an end date set.
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "fixed_price": 360,
+            },
+        )
+        self.assert_in_success_response(
+            ["Configure lear current plan end-date, before scheduling a new plan."],
+            result,
+        )
+
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "plan_end_date": "2050-03-01",
+            },
+        )
+        self.assert_in_success_response(
+            ["Current plan for lear updated to end on 2050-03-01."],
+            result,
+        )
+
+        plan.refresh_from_db()
+        self.assertEqual(plan.end_date, datetime(2050, 3, 1, tzinfo=timezone.utc))
+
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "required_plan_tier": f"{plan_offer_tier}",
+            },
+        )
+        self.assert_in_success_response(
+            [f"Required plan tier for lear set to {plan_offer_tier_name}."],
+            result,
+        )
+
+        # Configuring a fixed-price plan requires any current
+        # plan to have all invoices prior to the final invoice
+        # processed.
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "fixed_price": 360,
+            },
+        )
+        self.assert_in_success_response(
+            [
+                "New plan for lear cannot be scheduled until all the invoices of the current plan are processed."
+            ],
+            result,
+        )
+
+        billing_session = RealmBillingSession(user=iago, realm=lear_realm, support_session=True)
+        next_billing_cycle = billing_session.get_next_billing_cycle(plan).strftime("%Y-%m-%d")
+        with time_machine.travel(datetime(2016, 1, 3, tzinfo=timezone.utc), tick=False):
+            result = self.client_post(
+                "/activity/support",
+                {
+                    "realm_id": f"{lear_realm.id}",
+                    "plan_end_date": next_billing_cycle,
+                },
+            )
+        self.assert_in_success_response(
+            [f"Current plan for lear updated to end on {next_billing_cycle}."],
+            result,
+        )
+
+        plan.refresh_from_db()
+        self.assertEqual(plan.end_date, datetime(2016, 2, 2, tzinfo=timezone.utc))
+        self.assertEqual(plan.status, CustomerPlan.ACTIVE)
+        next_plan = billing_session.get_next_plan(plan)
+        assert next_plan is None
+
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "fixed_price": 360,
+            },
+        )
+        self.assert_in_success_response(
+            [
+                f"Fixed price {plan_offer_tier_name} plan scheduled to start on {next_billing_cycle}."
+            ],
+            result,
+        )
+
+        plan.refresh_from_db()
+        self.assertEqual(plan.end_date, datetime(2016, 2, 2, tzinfo=timezone.utc))
+        self.assertEqual(plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END)
+        next_plan = billing_session.get_next_plan(plan)
+        assert next_plan is not None
+        self.assertEqual(next_plan.fixed_price, 36000)
+        self.assertEqual(next_plan.billing_cycle_anchor, plan.end_date)
+        self.assertEqual(next_plan.charge_automatically, plan.charge_automatically)
+        self.assertTrue(next_plan.automanage_licenses)
 
     def test_approve_sponsorship_deactivated_realm(self) -> None:
         support_admin = self.example_user("iago")
