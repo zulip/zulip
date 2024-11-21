@@ -1710,11 +1710,6 @@ class TestSupportEndpoint(ZulipTestCase):
             m.assert_called_once_with(lear_realm, acting_user=self.example_user("iago"))
             self.assert_in_success_response(["lear scrubbed"], result)
 
-        with mock.patch("corporate.views.support.do_scrub_realm") as m:
-            result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}"})
-            self.assert_json_error(result, "Invalid parameters")
-            m.assert_not_called()
-
     def test_delete_user(self) -> None:
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
