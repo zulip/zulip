@@ -19992,6 +19992,8 @@ paths:
                     The set of users who have permission to unsubscribe others from this
                     channel expressed as an [update to a group-setting value][update-group-setting].
 
+                    Administrators can always unsubscribe others from a channel.
+
                     Note that a user who is a member of the specified user group must
                     also [have access](/help/channel-permissions) to the channel in
                     order to unsubscribe others.
@@ -24569,6 +24571,8 @@ components:
         - description: |
             A [group-setting value][setting-values] defining the set of users
             who have permission to remove subscribers from this channel.
+
+            Administrators can always unsubscribe others from a channel.
 
             Note that a user who is a member of the specified user group must
             also [have access](/help/channel-permissions) to the channel in
