@@ -79,6 +79,78 @@ def get_user_full_name(user: ZerverFieldsT) -> str:
         return user["name"]
 
 
+def get_user_mentions(
+    token: str, users: list[ZerverFieldsT], slack_user_id_to_zulip_user_id: SlackToZulipUserIDT
+) -> tuple[str, int | None]:
+    slack_usermention_match = re.search(SLACK_USERMENTION_REGEX, token, re.VERBOSE)
+    assert slack_usermention_match is not None
+    short_name = slack_usermention_match.group(4)
+    slack_id = slack_usermention_match.group(2)
+    for user in users:
+        if (user["id"] == slack_id and user["name"] == short_name and short_name) or (
+            user["id"] == slack_id and short_name is None
+        ):
+            full_name = get_user_full_name(user)
+            user_id = slack_user_id_to_zulip_user_id[slack_id]
+            mention = "@**" + full_name + "**"
+            token = re.sub(SLACK_USERMENTION_REGEX, mention, token, flags=re.VERBOSE)
+            return token, user_id
+    return token, None
+
+
+def convert_link_format(text: str) -> tuple[str, bool]:
+    """
+    1. Converts '<https://foo.com>' to 'https://foo.com'
+    2. Converts '<https://foo.com|foo>' to '[foo](https://foo.com)'
+    """
+    has_link = False
+    for match in re.finditer(LINK_REGEX, text, re.VERBOSE):
+        slack_url = match.group(0)
+        url_parts = slack_url[1:-1].split("|", maxsplit=1)
+        # Check if there's a pipe with text after it
+        if len(url_parts) == 2:
+            converted_url = f"[{url_parts[1]}]({url_parts[0]})"
+        else:
+            converted_url = url_parts[0]
+
+        has_link = True
+        text = text.replace(slack_url, converted_url)
+    return text, has_link
+
+
+def convert_mailto_format(text: str) -> tuple[str, bool]:
+    """
+    1. Converts '<mailto:foo@foo.com>' to 'mailto:foo@foo.com'
+    2. Converts '<mailto:foo@foo.com|foo@foo.com>' to 'mailto:foo@foo.com'
+    """
+    has_link = False
+    for match in re.finditer(SLACK_MAILTO_REGEX, text, re.VERBOSE):
+        has_link = True
+        text = text.replace(match.group(0), match.group(1))
+    return text, has_link
+
+
+# Map italic, bold and strikethrough Markdown
+def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
+    """
+    Returns:
+    1. For strikethrough formatting: This maps Slack's '~strike~' to Zulip's '~~strike~~'
+    2. For bold formatting: This maps Slack's '*bold*' to Zulip's '**bold**'
+    3. For italic formatting: This maps Slack's '_italic_' to Zulip's '*italic*'
+    """
+    for match in re.finditer(regex, text, re.VERBOSE):
+        converted_token = (
+            match.group(1)
+            + zulip_keyword
+            + match.group(3)
+            + match.group(4)
+            + zulip_keyword
+            + match.group(6)
+        )
+        text = text.replace(match.group(0), converted_token)
+    return text
+
+
 # Markdown mapping
 def convert_to_zulip_markdown(
     text: str,
@@ -125,78 +197,6 @@ def convert_to_zulip_markdown(
     message_has_link = has_link or has_mailto_link
 
     return text, mentioned_users_id, message_has_link
-
-
-def get_user_mentions(
-    token: str, users: list[ZerverFieldsT], slack_user_id_to_zulip_user_id: SlackToZulipUserIDT
-) -> tuple[str, int | None]:
-    slack_usermention_match = re.search(SLACK_USERMENTION_REGEX, token, re.VERBOSE)
-    assert slack_usermention_match is not None
-    short_name = slack_usermention_match.group(4)
-    slack_id = slack_usermention_match.group(2)
-    for user in users:
-        if (user["id"] == slack_id and user["name"] == short_name and short_name) or (
-            user["id"] == slack_id and short_name is None
-        ):
-            full_name = get_user_full_name(user)
-            user_id = slack_user_id_to_zulip_user_id[slack_id]
-            mention = "@**" + full_name + "**"
-            token = re.sub(SLACK_USERMENTION_REGEX, mention, token, flags=re.VERBOSE)
-            return token, user_id
-    return token, None
-
-
-# Map italic, bold and strikethrough Markdown
-def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
-    """
-    Returns:
-    1. For strikethrough formatting: This maps Slack's '~strike~' to Zulip's '~~strike~~'
-    2. For bold formatting: This maps Slack's '*bold*' to Zulip's '**bold**'
-    3. For italic formatting: This maps Slack's '_italic_' to Zulip's '*italic*'
-    """
-    for match in re.finditer(regex, text, re.VERBOSE):
-        converted_token = (
-            match.group(1)
-            + zulip_keyword
-            + match.group(3)
-            + match.group(4)
-            + zulip_keyword
-            + match.group(6)
-        )
-        text = text.replace(match.group(0), converted_token)
-    return text
-
-
-def convert_link_format(text: str) -> tuple[str, bool]:
-    """
-    1. Converts '<https://foo.com>' to 'https://foo.com'
-    2. Converts '<https://foo.com|foo>' to '[foo](https://foo.com)'
-    """
-    has_link = False
-    for match in re.finditer(LINK_REGEX, text, re.VERBOSE):
-        slack_url = match.group(0)
-        url_parts = slack_url[1:-1].split("|", maxsplit=1)
-        # Check if there's a pipe with text after it
-        if len(url_parts) == 2:
-            converted_url = f"[{url_parts[1]}]({url_parts[0]})"
-        else:
-            converted_url = url_parts[0]
-
-        has_link = True
-        text = text.replace(slack_url, converted_url)
-    return text, has_link
-
-
-def convert_mailto_format(text: str) -> tuple[str, bool]:
-    """
-    1. Converts '<mailto:foo@foo.com>' to 'mailto:foo@foo.com'
-    2. Converts '<mailto:foo@foo.com|foo@foo.com>' to 'mailto:foo@foo.com'
-    """
-    has_link = False
-    for match in re.finditer(SLACK_MAILTO_REGEX, text, re.VERBOSE):
-        has_link = True
-        text = text.replace(match.group(0), match.group(1))
-    return text, has_link
 
 
 def render_block(block: WildValue) -> str:
