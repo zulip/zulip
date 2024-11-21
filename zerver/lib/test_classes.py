@@ -1462,10 +1462,10 @@ Output:
             "invite_only": orjson.dumps(invite_only).decode(),
         }
         post_data.update(extra_post_data)
-        # We wrap the API call with a 'transaction.atomic()' context
+        # We wrap the API call with a 'transaction.atomic' context
         # manager as it helps us with NOT rolling back the entire
         # test transaction due to error responses.
-        with transaction.atomic():
+        with transaction.atomic(savepoint=True):
             result = self.api_post(
                 user,
                 "/api/v1/users/me/subscriptions",

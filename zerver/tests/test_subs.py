@@ -4124,7 +4124,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
         def thunk2() -> HttpResponse:
             raise JsonableError("random failure")
 
-        with transaction.atomic(), self.assertRaises(JsonableError):
+        with transaction.atomic(savepoint=True), self.assertRaises(JsonableError):
             # The atomic() wrapper helps to avoid JsonableError breaking
             # the test's transaction.
             compose_views([thunk1, thunk2])
