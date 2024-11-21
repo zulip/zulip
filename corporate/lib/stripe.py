@@ -1816,7 +1816,7 @@ class BillingSession(ABC):
         )
 
         # TODO: The correctness of this relies on user creation, deactivation, etc being
-        # in a transaction.atomic() with the relevant RealmAuditLog entries
+        # in a transaction.atomic block with the relevant RealmAuditLog entries
         with transaction.atomic(durable=True):
             # We get the current license count here in case the number of billable
             # licenses has changed since the upgrade process began.
