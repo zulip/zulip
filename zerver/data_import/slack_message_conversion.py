@@ -98,6 +98,26 @@ def get_user_mentions(
     return token, None
 
 
+def convert_link_format(text: str) -> tuple[str, bool]:
+    """
+    1. Converts '<https://foo.com>' to 'https://foo.com'
+    2. Converts '<https://foo.com|foo>' to '[foo](https://foo.com)'
+    """
+    has_link = False
+    for match in re.finditer(LINK_REGEX, text, re.VERBOSE):
+        slack_url = match.group(0)
+        url_parts = slack_url[1:-1].split("|", maxsplit=1)
+        # Check if there's a pipe with text after it
+        if len(url_parts) == 2:
+            converted_url = f"[{url_parts[1]}]({url_parts[0]})"
+        else:
+            converted_url = url_parts[0]
+
+        has_link = True
+        text = text.replace(slack_url, converted_url)
+    return text, has_link
+
+
 # Map italic, bold and strikethrough Markdown
 def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
     """
@@ -165,26 +185,6 @@ def convert_to_zulip_markdown(
     message_has_link = has_link or has_mailto_link
 
     return text, mentioned_users_id, message_has_link
-
-
-def convert_link_format(text: str) -> tuple[str, bool]:
-    """
-    1. Converts '<https://foo.com>' to 'https://foo.com'
-    2. Converts '<https://foo.com|foo>' to '[foo](https://foo.com)'
-    """
-    has_link = False
-    for match in re.finditer(LINK_REGEX, text, re.VERBOSE):
-        slack_url = match.group(0)
-        url_parts = slack_url[1:-1].split("|", maxsplit=1)
-        # Check if there's a pipe with text after it
-        if len(url_parts) == 2:
-            converted_url = f"[{url_parts[1]}]({url_parts[0]})"
-        else:
-            converted_url = url_parts[0]
-
-        has_link = True
-        text = text.replace(slack_url, converted_url)
-    return text, has_link
 
 
 def convert_mailto_format(text: str) -> tuple[str, bool]:
