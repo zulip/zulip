@@ -70,7 +70,7 @@ class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
     @override
     def tearDown(self) -> None:
         # Clean up the user groups created to minimize leakage
-        with transaction.atomic():
+        with transaction.atomic(durable=True):
             for group in self.created_user_groups:
                 # can_manage_group can be deleted as long as it's the
                 # default group_creator. If we start using non-default
