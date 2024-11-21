@@ -17,7 +17,6 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils.timesince import timesince
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import gettext as _
 from pydantic import AfterValidator, Json, NonNegativeInt
 
 from confirmation.models import Confirmation, confirmation_url
@@ -41,7 +40,6 @@ from zerver.actions.realm_settings import (
 from zerver.actions.users import do_delete_user_preserving_messages
 from zerver.decorator import require_server_admin, zulip_login_required
 from zerver.forms import check_subdomain_available
-from zerver.lib.exceptions import JsonableError
 from zerver.lib.rate_limiter import rate_limit_request_by_ip
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.send_email import FromAddress, send_email
@@ -443,12 +441,6 @@ def support(
         # realm_id and a field to change.
         keys = set(request.POST.keys())
         keys.discard("csrfmiddlewaretoken")
-        REQUIRED_KEYS = 2
-        if monthly_discounted_price is not None or annual_discounted_price is not None:
-            REQUIRED_KEYS = 3
-
-        if len(keys) != REQUIRED_KEYS:
-            raise JsonableError(_("Invalid parameters"))
 
         assert realm_id is not None
         realm = Realm.objects.get(id=realm_id)
