@@ -98,6 +98,27 @@ def get_user_mentions(
     return token, None
 
 
+# Map italic, bold and strikethrough Markdown
+def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
+    """
+    Returns:
+    1. For strikethrough formatting: This maps Slack's '~strike~' to Zulip's '~~strike~~'
+    2. For bold formatting: This maps Slack's '*bold*' to Zulip's '**bold**'
+    3. For italic formatting: This maps Slack's '_italic_' to Zulip's '*italic*'
+    """
+    for match in re.finditer(regex, text, re.VERBOSE):
+        converted_token = (
+            match.group(1)
+            + zulip_keyword
+            + match.group(3)
+            + match.group(4)
+            + zulip_keyword
+            + match.group(6)
+        )
+        text = text.replace(match.group(0), converted_token)
+    return text
+
+
 # Markdown mapping
 def convert_to_zulip_markdown(
     text: str,
@@ -144,27 +165,6 @@ def convert_to_zulip_markdown(
     message_has_link = has_link or has_mailto_link
 
     return text, mentioned_users_id, message_has_link
-
-
-# Map italic, bold and strikethrough Markdown
-def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
-    """
-    Returns:
-    1. For strikethrough formatting: This maps Slack's '~strike~' to Zulip's '~~strike~~'
-    2. For bold formatting: This maps Slack's '*bold*' to Zulip's '**bold**'
-    3. For italic formatting: This maps Slack's '_italic_' to Zulip's '*italic*'
-    """
-    for match in re.finditer(regex, text, re.VERBOSE):
-        converted_token = (
-            match.group(1)
-            + zulip_keyword
-            + match.group(3)
-            + match.group(4)
-            + zulip_keyword
-            + match.group(6)
-        )
-        text = text.replace(match.group(0), converted_token)
-    return text
 
 
 def convert_link_format(text: str) -> tuple[str, bool]:
