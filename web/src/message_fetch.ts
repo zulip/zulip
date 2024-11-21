@@ -656,6 +656,9 @@ export function maybe_load_newer_messages(opts: {msg_list: MessageList}): void {
 export function verify_cached_data(data: MessageListData): void {
     type EventDetails = {
         type: string;
+        message?: {
+            id: number;
+        };
         // ...many more properties.
     };
     let events_since_restoring_cached_data: EventDetails[] = [];
@@ -715,11 +718,26 @@ export function verify_cached_data(data: MessageListData): void {
                 if (has_found_newest) {
                     assert(data.found_newest);
                 }
-                assert(data.messages.length === messages.length);
+
                 const cached_msg_ids = new Set(messages.map((msg) => msg.id));
-                for (const msg of data.messages) {
-                    assert(cached_msg_ids.has(msg.id));
+                const server_msg_ids = new Set(data.messages.map((msg) => msg.id));
+                const msgs_not_found = server_msg_ids.difference(cached_msg_ids);
+                msgs_not_found.union(cached_msg_ids.difference(server_msg_ids));
+                if (msgs_not_found.size > 0) {
+                    // Check if the missing messages were recently added.
+                    for (const event of events_since_restoring_cached_data) {
+                        if (
+                            event.type === "message" &&
+                            event.message !== undefined &&
+                            msgs_not_found.has(event.message.id)
+                        ) {
+                            continue;
+                        } else {
+                            assert(msgs_not_found.size === 0);
+                        }
+                    }
                 }
+                assert(msgs_not_found.size === 0);
                 $(document).off("server_event.zulip");
             } catch (error) {
                 setTimeout(() => {
