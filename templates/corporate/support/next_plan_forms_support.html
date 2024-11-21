@@ -12,7 +12,7 @@
     {% endif %}
     <button type="submit" class="support-submit-button">Schedule</button>
 </form>
-{% if not plan_data.current_plan %}
+{% if not plan_data.current_plan and remote_support_view %}
 <form method="POST" class="support-form">
     <b>Configure temporary courtesy plan:</b><br />
     <i>Once created, the end date for the temporary courtesy plan can be extended.</i><br />
