@@ -671,6 +671,7 @@ def support(
     context["ORGANIZATION_TYPES"] = sorted(
         Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]
     )
+    context["remote_support_view"] = False
 
     return render(request, "corporate/support/support.html", context=context)
 
@@ -957,6 +958,7 @@ def remote_servers_support(
     )
     context["get_remote_realm_billing_user_emails"] = get_remote_realm_billing_user_emails_as_string
     context["SPONSORED_PLAN_TYPE"] = RemoteZulipServer.PLAN_TYPE_COMMUNITY
+    context["remote_support_view"] = True
 
     return render(
         request,
