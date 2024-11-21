@@ -242,8 +242,7 @@ input:focus:invalid:focus {
 .form-inline .hide {
   display: none;
 }
-.form-inline label,
-.form-inline .bootstrap-btn-group {
+.form-inline label {
   display: inline-block;
 }
 .dropdown {
