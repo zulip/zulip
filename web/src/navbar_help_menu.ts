@@ -36,10 +36,12 @@ export function initialize(): void {
                     }),
                 ),
             );
+            $("#help-menu").addClass("active-navbar-menu");
         },
         onHidden(instance) {
             instance.destroy();
             popover_menus.popover_instances.help_menu = null;
+            $("#help-menu").removeClass("active-navbar-menu");
         },
     });
 }
