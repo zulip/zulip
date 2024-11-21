@@ -308,16 +308,14 @@ class CustomerPlanOffer(AbstractCustomerPlan):
         }[self.status]
 
     @staticmethod
-    def name_from_tier(tier: int) -> str:  # nocoverage
+    def name_from_tier(tier: int) -> str:
         return {
             CustomerPlanOffer.TIER_SELF_HOSTED_BASIC: "Zulip Basic",
             CustomerPlanOffer.TIER_SELF_HOSTED_BUSINESS: "Zulip Business",
         }[tier]
 
     @property
-    def name(self) -> str:  # nocoverage
-        # TODO: This is used in `check_customer_not_on_paid_plan` as
-        # 'next_plan.name'. Related to sponsorship, add coverage.
+    def name(self) -> str:
         return self.name_from_tier(self.tier)
 
 
