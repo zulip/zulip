@@ -34,7 +34,7 @@
             </div>
         </div>
         {{/if}}
-        <div class="message_row{{^is_stream}} private-message{{/is_stream}}" role="listitem">
+        <div class="message_row{{#unless is_stream}} private-message{{/unless}}" role="listitem">
             <div class="messagebox">
                 <div class="messagebox-content">
                     <div class="message_top_line">
