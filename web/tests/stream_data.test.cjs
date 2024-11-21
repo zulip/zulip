@@ -1154,8 +1154,15 @@ test("can_unsubscribe_others", ({override}) => {
         is_system_group: true,
         direct_subgroup_ids: new Set([]),
     };
+    const students = {
+        name: "Students",
+        id: 5,
+        members: new Set([member_user_id]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([]),
+    };
 
-    user_groups.initialize({realm_user_groups: [admins, moderators, all, nobody]});
+    user_groups.initialize({realm_user_groups: [admins, moderators, all, nobody, students]});
 
     const sub = {
         name: "Denmark",
@@ -1187,10 +1194,17 @@ test("can_unsubscribe_others", ({override}) => {
     people.initialize_current_user(member_user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
 
-    // With the nobody system group, admins cannot unsubscribe others.
-    sub.can_remove_subscribers_group = nobody.id;
+    // With the setting set to user defined group not including admin,
+    // admin can still unsubscribe others.
+    sub.can_remove_subscribers_group = students.id;
     override(current_user, "is_admin", true);
+    people.initialize_current_user(admin_user_id);
+    assert.equal(stream_data.can_unsubscribe_others(sub), true);
+    override(current_user, "is_admin", false);
+    people.initialize_current_user(moderator_user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
+    people.initialize_current_user(member_user_id);
+    assert.equal(stream_data.can_unsubscribe_others(sub), true);
 
     // This isn't a real state, but we want coverage on !can_view_subscribers.
     sub.can_remove_subscribers_group = all.id;

@@ -2714,7 +2714,7 @@ class StreamAdminTest(ZulipTestCase):
         those you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=15,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2741,7 +2741,7 @@ class StreamAdminTest(ZulipTestCase):
             for name in ["cordelia", "prospero", "iago", "hamlet", "outgoing_webhook_bot"]
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=24,
+            query_count=22,
             cache_count=8,
             target_users=target_users,
             is_realm_admin=True,
@@ -2759,7 +2759,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=18,
+            query_count=17,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2776,7 +2776,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=18,
+            query_count=17,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -2802,7 +2802,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=15,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2816,7 +2816,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=19,
+            query_count=17,
             target_users=[self.example_user("cordelia"), self.example_user("prospero")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2830,7 +2830,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_remove_unsubbed_user_along_with_subbed(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=16,
+            query_count=14,
             target_users=[self.example_user("cordelia"), self.example_user("iago")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2847,7 +2847,7 @@ class StreamAdminTest(ZulipTestCase):
         fails gracefully.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=9,
+            query_count=7,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -2929,8 +2929,10 @@ class StreamAdminTest(ZulipTestCase):
             self.assert_length(json["not_removed"], 0)
 
         check_unsubscribing_user(self.example_user("hamlet"), leadership_group, expect_fail=True)
-        check_unsubscribing_user(self.example_user("desdemona"), leadership_group, expect_fail=True)
         check_unsubscribing_user(self.example_user("iago"), leadership_group)
+        # Owners can always unsubscribe others even when they are not a member
+        # allowed group.
+        check_unsubscribing_user(self.example_user("desdemona"), leadership_group)
 
         check_unsubscribing_user(self.example_user("othello"), managers_group, expect_fail=True)
         check_unsubscribing_user(self.example_user("shiva"), managers_group)
@@ -2942,7 +2944,9 @@ class StreamAdminTest(ZulipTestCase):
         # are not subscribed to even if they are member of the allowed group.
         check_unsubscribing_user(self.example_user("shiva"), leadership_group, expect_fail=True)
         check_unsubscribing_user(self.example_user("iago"), leadership_group)
-
+        # Owners can always unsubscribe others even when they are not a member
+        # allowed group.
+        check_unsubscribing_user(self.example_user("desdemona"), leadership_group)
         self.subscribe(self.example_user("shiva"), stream.name)
         check_unsubscribing_user(self.example_user("shiva"), leadership_group)
 
@@ -2952,10 +2956,18 @@ class StreamAdminTest(ZulipTestCase):
             [leadership_group],
         )
         check_unsubscribing_user(self.example_user("othello"), setting_group, expect_fail=True)
-        check_unsubscribing_user(self.example_user("desdemona"), setting_group, expect_fail=True)
         check_unsubscribing_user(self.example_user("hamlet"), setting_group)
         check_unsubscribing_user(self.example_user("iago"), setting_group)
         check_unsubscribing_user(self.example_user("shiva"), setting_group)
+
+        # Admins can unsubscribe others even when they are not a member of the
+        # allowed group.
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [hamlet],
+            [],
+        )
+        check_unsubscribing_user(self.example_user("desdemona"), setting_group)
+        check_unsubscribing_user(self.example_user("iago"), setting_group)
 
     def test_remove_invalid_user(self) -> None:
         """

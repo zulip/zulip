@@ -675,6 +675,9 @@ def can_remove_subscribers_from_stream(
     if not check_basic_stream_access(user_profile, stream, sub, allow_realm_admin=True):
         return False
 
+    if user_profile.is_realm_admin:
+        return True
+
     group_allowed_to_remove_subscribers = stream.can_remove_subscribers_group
     assert group_allowed_to_remove_subscribers is not None
     return user_has_permission_for_group_setting(
