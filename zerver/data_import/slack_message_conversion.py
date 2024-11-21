@@ -79,6 +79,25 @@ def get_user_full_name(user: ZerverFieldsT) -> str:
         return user["name"]
 
 
+def get_user_mentions(
+    token: str, users: list[ZerverFieldsT], slack_user_id_to_zulip_user_id: SlackToZulipUserIDT
+) -> tuple[str, int | None]:
+    slack_usermention_match = re.search(SLACK_USERMENTION_REGEX, token, re.VERBOSE)
+    assert slack_usermention_match is not None
+    short_name = slack_usermention_match.group(4)
+    slack_id = slack_usermention_match.group(2)
+    for user in users:
+        if (user["id"] == slack_id and user["name"] == short_name and short_name) or (
+            user["id"] == slack_id and short_name is None
+        ):
+            full_name = get_user_full_name(user)
+            user_id = slack_user_id_to_zulip_user_id[slack_id]
+            mention = "@**" + full_name + "**"
+            token = re.sub(SLACK_USERMENTION_REGEX, mention, token, flags=re.VERBOSE)
+            return token, user_id
+    return token, None
+
+
 # Markdown mapping
 def convert_to_zulip_markdown(
     text: str,
@@ -125,25 +144,6 @@ def convert_to_zulip_markdown(
     message_has_link = has_link or has_mailto_link
 
     return text, mentioned_users_id, message_has_link
-
-
-def get_user_mentions(
-    token: str, users: list[ZerverFieldsT], slack_user_id_to_zulip_user_id: SlackToZulipUserIDT
-) -> tuple[str, int | None]:
-    slack_usermention_match = re.search(SLACK_USERMENTION_REGEX, token, re.VERBOSE)
-    assert slack_usermention_match is not None
-    short_name = slack_usermention_match.group(4)
-    slack_id = slack_usermention_match.group(2)
-    for user in users:
-        if (user["id"] == slack_id and user["name"] == short_name and short_name) or (
-            user["id"] == slack_id and short_name is None
-        ):
-            full_name = get_user_full_name(user)
-            user_id = slack_user_id_to_zulip_user_id[slack_id]
-            mention = "@**" + full_name + "**"
-            token = re.sub(SLACK_USERMENTION_REGEX, mention, token, flags=re.VERBOSE)
-            return token, user_id
-    return token, None
 
 
 # Map italic, bold and strikethrough Markdown
