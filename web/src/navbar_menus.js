@@ -17,7 +17,10 @@ export function handle_keyboard_events(event_name) {
     if (!allowed_events.has(event_name)) {
         return false;
     }
+    return change_active_navbar_menu(event_name);
+}
 
+function change_active_navbar_menu(event_name) {
     // We don't need to process arrow keys in navbar menus for spectators
     // since they only have gear menu present.
     if (
