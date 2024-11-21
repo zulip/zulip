@@ -319,9 +319,7 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
         for t in types:
             if isinstance(t, tuple):
                 return t  # e.g. (list, dict) or (list, str)
-            v = priority.get(t, 6)
-            if v < val:
-                val = v
+            val = min(val, priority.get(t, 6))
         return tyiroirp.get(val, types[0])
 
     def get_standardized_argument_type(self, t: Any) -> type | tuple[type, object]:
