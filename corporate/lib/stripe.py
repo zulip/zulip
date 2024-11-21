@@ -1496,17 +1496,41 @@ class BillingSession(ABC):
             current_plan.save(update_fields=["status", "next_invoice_date"])
             return f"Fixed price {required_plan_tier_name} plan scheduled to start on {current_plan.end_date.date()}."
 
+        # TODO: Use normal 'pay by invoice' flow for fixed-price plan offers,
+        # which requires handling automated license management for these plan
+        # offers via that flow.
         if sent_invoice_id is not None:
             sent_invoice_id = sent_invoice_id.strip()
-            # Verify 'sent_invoice_id' before storing in database.
+            # Verify 'sent_invoice_id' and 'stripe_customer_id' before
+            # storing in database.
             try:
                 invoice = stripe.Invoice.retrieve(sent_invoice_id)
                 if invoice.status != "open":
                     raise SupportRequestError(
                         "Invoice status should be open. Please verify sent_invoice_id."
                     )
+                invoice_customer_id = invoice.customer
+                if not invoice_customer_id:  # nocoverage
+                    raise SupportRequestError(
+                        "Invoice missing Stripe customer ID. Please review invoice."
+                    )
+                if customer.stripe_customer_id and customer.stripe_customer_id != str(
+                    invoice_customer_id
+                ):  # nocoverage
+                    raise SupportRequestError(
+                        "Invoice Stripe customer ID does not match. Please attach invoice to correct customer in Stripe."
+                    )
             except Exception as e:
                 raise SupportRequestError(str(e))
+
+            if customer.stripe_customer_id is None:
+                # Note this is an exception to our normal support panel actions,
+                # which do not set any stripe billing information. Since these
+                # invoices are manually created first in stripe, it's important
+                # for our billing page to have our Customer object correctly
+                # linked to the customer in stripe.
+                customer.stripe_customer_id = str(invoice_customer_id)
+                customer.save(update_fields=["stripe_customer_id"])
 
             fixed_price_plan_params["sent_invoice_id"] = sent_invoice_id
             Invoice.objects.create(

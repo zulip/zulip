@@ -7686,11 +7686,19 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             ["Invoice status should be open. Please verify sent_invoice_id."], result
         )
 
+        hamlet = self.example_user("hamlet")
         sent_invoice_id = "test_sent_invoice_id"
+        stripe_customer_id = "cus_123"
         mock_invoice = MagicMock()
         mock_invoice.status = "open"
         mock_invoice.sent_invoice_id = sent_invoice_id
-        with mock.patch("stripe.Invoice.retrieve", return_value=mock_invoice):
+        with (
+            patch(
+                "stripe.Customer.retrieve",
+                return_value=Mock(id=stripe_customer_id, email=hamlet.delivery_email),
+            ),
+            patch("stripe.Invoice.retrieve", return_value=mock_invoice),
+        ):
             result = self.client_post(
                 "/activity/remote/support",
                 {
@@ -7716,7 +7724,6 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
 
         self.logout()
         self.login("hamlet")
-        hamlet = self.example_user("hamlet")
 
         # Customer don't need to visit /upgrade to buy plan.
         # In case they visit, we inform them about the mail to which
@@ -7726,7 +7733,15 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         mock_invoice.hosted_invoice_url = "payments_page_url"
         with (
             time_machine.travel(self.now, tick=False),
-            mock.patch("stripe.Invoice.retrieve", return_value=mock_invoice),
+            patch(
+                "corporate.lib.stripe.customer_has_credit_card_as_default_payment_method",
+                return_value=False,
+            ),
+            patch(
+                "stripe.Customer.retrieve",
+                return_value=Mock(id=stripe_customer_id, email=hamlet.delivery_email),
+            ),
+            patch("stripe.Invoice.retrieve", return_value=mock_invoice),
         ):
             result = self.client_get(
                 f"{self.billing_session.billing_base_url}/upgrade/?tier={CustomerPlan.TIER_SELF_HOSTED_BASIC}",
@@ -7767,6 +7782,34 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         fixed_price_plan_offer.refresh_from_db()
         self.assertEqual(invoice.status, Invoice.PAID)
         self.assertEqual(fixed_price_plan_offer.status, CustomerPlanOffer.PROCESSED)
+
+        # Visit /billing
+        self.execute_remote_billing_authentication_flow(
+            hamlet, expect_tos=False, first_time_login=False
+        )
+        with (
+            time_machine.travel(self.now + timedelta(days=1), tick=False),
+            patch(
+                "corporate.lib.stripe.customer_has_credit_card_as_default_payment_method",
+                return_value=False,
+            ),
+            patch(
+                "stripe.Customer.retrieve",
+                return_value=Mock(id=stripe_customer_id, email=hamlet.delivery_email),
+            ),
+            patch("stripe.Invoice.retrieve", return_value=mock_invoice),
+        ):
+            response = self.client_get(
+                f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
+            )
+        for substring in [
+            "Zulip Basic",
+            hamlet.delivery_email,
+            "Annual",
+            "This is a fixed-price plan",
+            "You will be contacted by Zulip Sales",
+        ]:
+            self.assert_in_response(substring, response)
 
     @responses.activate
     @mock_stripe()
@@ -9505,12 +9548,20 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         )
 
         # Configure fixed-price plan with ID of manually sent invoice.
+        hamlet = self.example_user("hamlet")
         sent_invoice_id = "test_sent_invoice_id"
+        stripe_customer_id = "cus_123"
         annual_fixed_price = 1200
         mock_invoice = MagicMock()
         mock_invoice.status = "open"
         mock_invoice.sent_invoice_id = sent_invoice_id
-        with mock.patch("stripe.Invoice.retrieve", return_value=mock_invoice):
+        with (
+            patch(
+                "stripe.Customer.retrieve",
+                return_value=Mock(id=stripe_customer_id, email=hamlet.delivery_email),
+            ),
+            patch("stripe.Invoice.retrieve", return_value=mock_invoice),
+        ):
             result = self.client_post(
                 "/activity/remote/support",
                 {
@@ -9536,7 +9587,6 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
 
         self.logout()
         self.login("hamlet")
-        hamlet = self.example_user("hamlet")
 
         # Customer don't need to visit /upgrade to buy plan.
         # In case they visit, we inform them about the mail to which
@@ -9546,7 +9596,15 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         mock_invoice.hosted_invoice_url = "payments_page_url"
         with (
             time_machine.travel(self.now, tick=False),
-            mock.patch("stripe.Invoice.retrieve", return_value=mock_invoice),
+            patch(
+                "corporate.lib.stripe.customer_has_credit_card_as_default_payment_method",
+                return_value=False,
+            ),
+            patch(
+                "stripe.Customer.retrieve",
+                return_value=Mock(id=stripe_customer_id, email=hamlet.delivery_email),
+            ),
+            patch("stripe.Invoice.retrieve", return_value=mock_invoice),
         ):
             result = self.client_get(
                 f"{self.billing_session.billing_base_url}/upgrade/?tier={CustomerPlan.TIER_SELF_HOSTED_BASIC}",
@@ -9587,6 +9645,34 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         fixed_price_plan_offer.refresh_from_db()
         self.assertEqual(invoice.status, Invoice.PAID)
         self.assertEqual(fixed_price_plan_offer.status, CustomerPlanOffer.PROCESSED)
+
+        # Visit /billing
+        self.execute_remote_billing_authentication_flow(
+            hamlet.delivery_email, hamlet.full_name, expect_tos=False
+        )
+        with (
+            time_machine.travel(self.now + timedelta(days=1), tick=False),
+            patch(
+                "corporate.lib.stripe.customer_has_credit_card_as_default_payment_method",
+                return_value=False,
+            ),
+            patch(
+                "stripe.Customer.retrieve",
+                return_value=Mock(id=stripe_customer_id, email=hamlet.delivery_email),
+            ),
+            patch("stripe.Invoice.retrieve", return_value=mock_invoice),
+        ):
+            response = self.client_get(
+                f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
+            )
+        for substring in [
+            "Zulip Basic",
+            hamlet.delivery_email,
+            "Annual",
+            "This is a fixed-price plan",
+            "You will be contacted by Zulip Sales",
+        ]:
+            self.assert_in_response(substring, response)
 
     @responses.activate
     @mock_stripe()
