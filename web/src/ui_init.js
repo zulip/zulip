@@ -3,11 +3,11 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import generated_emoji_codes from "../../static/generated/emoji/emoji_codes.json";
-import render_compose from "../templates/compose.hbs";
-import render_message_feed_errors from "../templates/message_feed_errors.hbs";
-import render_navbar from "../templates/navbar.hbs";
-import render_try_zulip_modal from "../templates/try_zulip_modal.hbs";
-import render_view_bottom_loading_indicator from "../templates/view_bottom_loading_indicator.hbs";
+import render_compose from "../templates/compose.ts";
+import render_message_feed_errors from "../templates/message_feed_errors.ts";
+import render_navbar from "../templates/navbar.ts";
+import render_try_zulip_modal from "../templates/try_zulip_modal.ts";
+import render_view_bottom_loading_indicator from "../templates/view_bottom_loading_indicator.ts";
 
 import * as about_zulip from "./about_zulip.ts";
 import * as activity from "./activity.ts";

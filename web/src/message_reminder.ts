@@ -1,7 +1,7 @@
 import $ from "jquery";
 import type * as z from "zod/mini";
 
-import render_message_reminders from "../templates/message_reminders.hbs";
+import render_message_reminders from "../templates/message_reminders.ts";
 
 import * as channel from "./channel.ts";
 import * as feedback_widget from "./feedback_widget.ts";

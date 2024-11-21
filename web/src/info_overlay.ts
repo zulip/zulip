@@ -1,8 +1,8 @@
 import $ from "jquery";
 
-import render_keyboard_shortcut from "../templates/keyboard_shortcuts.hbs";
-import render_markdown_help from "../templates/markdown_help.hbs";
-import render_search_operator from "../templates/search_operators.hbs";
+import render_keyboard_shortcut from "../templates/keyboard_shortcuts.ts";
+import render_markdown_help from "../templates/markdown_help.ts";
+import render_search_operator from "../templates/search_operators.ts";
 
 import * as browser_history from "./browser_history.ts";
 import * as common from "./common.ts";

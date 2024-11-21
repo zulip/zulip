@@ -1,6 +1,6 @@
 import assert from "minimalistic-assert";
 
-import render_input_pill from "../templates/input_pill.hbs";
+import render_input_pill from "../templates/input_pill.ts";
 
 import * as blueslip from "./blueslip.ts";
 import type {EmojiRenderingDetails} from "./emoji.ts";

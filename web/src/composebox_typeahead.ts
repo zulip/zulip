@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
+import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.ts";
 
 import {MAX_ITEMS, Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";

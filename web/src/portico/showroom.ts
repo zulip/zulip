@@ -2,8 +2,8 @@ import Handlebars from "handlebars/runtime.js";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_banner from "../../templates/components/banner.hbs";
-import render_filter_input from "../../templates/components/showroom/filter_input.hbs";
+import render_banner from "../../templates/components/banner.ts";
+import render_filter_input from "../../templates/components/showroom/filter_input.ts";
 import {$t, $t_html} from "../i18n.ts";
 import type {HTMLSelectOneElement} from "../types.ts";
 

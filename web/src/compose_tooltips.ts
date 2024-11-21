@@ -3,8 +3,8 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
-import render_drafts_tooltip from "../templates/drafts_tooltip.hbs";
-import render_narrow_to_compose_recipients_tooltip from "../templates/narrow_to_compose_recipients_tooltip.hbs";
+import render_drafts_tooltip from "../templates/drafts_tooltip.ts";
+import render_narrow_to_compose_recipients_tooltip from "../templates/narrow_to_compose_recipients_tooltip.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as compose_state from "./compose_state.ts";

@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_reply_recipient_label from "../templates/reply_recipient_label.hbs";
+import render_reply_recipient_label from "../templates/reply_recipient_label.ts";
 
 import * as compose_actions from "./compose_actions.ts";
 import {$t} from "./i18n.ts";

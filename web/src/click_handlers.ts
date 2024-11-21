@@ -5,7 +5,7 @@ import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
-import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
+import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.ts";
 
 import * as activity_ui from "./activity_ui.ts";
 import * as browser_history from "./browser_history.ts";

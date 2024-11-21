@@ -1,7 +1,7 @@
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import render_search_description from "../templates/search_description.hbs";
+import render_search_description from "../templates/search_description.ts";
 
 import * as filter_util from "./filter_util.ts";
 import * as hash_parser from "./hash_parser.ts";

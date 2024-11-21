@@ -2,8 +2,8 @@ import {parseISO} from "date-fns";
 import $ from "jquery";
 
 import timezones from "../generated/timezones.json";
-import render_settings_overlay from "../templates/settings_overlay.hbs";
-import render_settings_tab from "../templates/settings_tab.hbs";
+import render_settings_overlay from "../templates/settings_overlay.ts";
+import render_settings_tab from "../templates/settings_tab.ts";
 
 import * as browser_history from "./browser_history.ts";
 import * as common from "./common.ts";

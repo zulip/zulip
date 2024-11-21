@@ -3,11 +3,11 @@ import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import timezones from "../generated/timezones.json";
-import render_change_email_modal from "../templates/change_email_modal.hbs";
-import render_demo_organization_add_email_modal from "../templates/demo_organization_add_email_modal.hbs";
-import render_dialog_change_password from "../templates/dialog_change_password.hbs";
-import render_settings_api_key_modal from "../templates/settings/api_key_modal.hbs";
-import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
+import render_change_email_modal from "../templates/change_email_modal.ts";
+import render_demo_organization_add_email_modal from "../templates/demo_organization_add_email_modal.ts";
+import render_dialog_change_password from "../templates/dialog_change_password.ts";
+import render_settings_api_key_modal from "../templates/settings/api_key_modal.ts";
+import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.ts";
 
 import * as avatar from "./avatar.ts";
 import * as bot_helper from "./bot_helper.ts";

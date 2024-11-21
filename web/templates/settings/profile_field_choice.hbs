@@ -1,8 +1,0 @@
-<div class='choice-row movable-row' data-value="{{value}}">
-    <span class="move-handle {{#if new_empty_choice_row}}invisible{{/if}}">
-        <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
-        <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
-    </span>
-    <input type='text' class="modal_text_input" placeholder='{{t "New option" }}' value="{{ text }}" />
-    {{> ../components/icon_button intent="danger" custom_classes="delete-choice tippy-zulip-tooltip" hidden=new_empty_choice_row icon="trash" data-tippy-content=(t "Delete") aria-label=(t "Delete") }}
-</div>

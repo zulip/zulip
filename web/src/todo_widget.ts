@@ -3,9 +3,9 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import render_message_hidden_dialog from "../templates/message_hidden_dialog.hbs";
-import render_widgets_todo_widget from "../templates/widgets/todo_widget.hbs";
-import render_widgets_todo_widget_tasks from "../templates/widgets/todo_widget_tasks.hbs";
+import render_message_hidden_dialog from "../templates/message_hidden_dialog.ts";
+import render_widgets_todo_widget from "../templates/widgets/todo_widget.ts";
+import render_widgets_todo_widget_tasks from "../templates/widgets/todo_widget_tasks.ts";
 
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";

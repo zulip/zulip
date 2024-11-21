@@ -1,4 +1,4 @@
-import render_input_pill from "../templates/input_pill.hbs";
+import render_input_pill from "../templates/input_pill.ts";
 
 import {$t} from "./i18n.ts";
 import type {InputPillConfig, InputPillContainer} from "./input_pill.ts";

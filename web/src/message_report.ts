@@ -2,7 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_report_message_modal from "../templates/report_message_modal.hbs";
+import render_report_message_modal from "../templates/report_message_modal.ts";
 
 import * as channel from "./channel.ts";
 import * as condense from "./condense.ts";

@@ -3,9 +3,9 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
-import render_confirm_disable_all_notifications from "../templates/confirm_dialog/confirm_disable_all_notifications.hbs";
-import render_confirm_reset_stream_notifications from "../templates/confirm_dialog/confirm_reset_stream_notifications.hbs";
-import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.hbs";
+import render_confirm_disable_all_notifications from "../templates/confirm_dialog/confirm_disable_all_notifications.ts";
+import render_confirm_reset_stream_notifications from "../templates/confirm_dialog/confirm_reset_stream_notifications.ts";
+import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.ts";
 
 import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";

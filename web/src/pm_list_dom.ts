@@ -1,7 +1,7 @@
 import _ from "lodash";
 
-import render_more_private_conversations from "../templates/more_pms.hbs";
-import render_pm_list_item from "../templates/pm_list_item.hbs";
+import render_more_private_conversations from "../templates/more_pms.ts";
+import render_pm_list_item from "../templates/pm_list_item.ts";
 
 import * as vdom from "./vdom.ts";
 

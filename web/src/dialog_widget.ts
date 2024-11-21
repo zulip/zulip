@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import render_dialog_widget from "../templates/dialog_widget.hbs";
+import render_dialog_widget from "../templates/dialog_widget.ts";
 
 import type {AjaxRequestHandler} from "./channel.ts";
 import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";

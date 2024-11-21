@@ -1,10 +1,10 @@
 import $ from "jquery";
 import type * as tippy from "tippy.js";
 
-import render_announce_stream_checkbox from "../templates/stream_settings/announce_stream_checkbox.hbs";
-import render_stream_can_subscribe_group_label from "../templates/stream_settings/stream_can_subscribe_group_label.hbs";
-import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
-import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
+import render_announce_stream_checkbox from "../templates/stream_settings/announce_stream_checkbox.ts";
+import render_stream_can_subscribe_group_label from "../templates/stream_settings/stream_can_subscribe_group_label.ts";
+import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.ts";
+import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.ts";
 
 import * as channel_folders from "./channel_folders.ts";
 import * as hash_parser from "./hash_parser.ts";

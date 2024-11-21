@@ -2,7 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as z from "zod/mini";
 
-import render_navigation_tour_video_modal from "../templates/navigation_tour_video_modal.hbs";
+import render_navigation_tour_video_modal from "../templates/navigation_tour_video_modal.ts";
 
 import * as channel from "./channel.ts";
 import * as compose_recipient from "./compose_recipient.ts";

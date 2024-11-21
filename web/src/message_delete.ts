@@ -2,7 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
+import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.ts";
 
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";

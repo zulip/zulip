@@ -2,12 +2,12 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
-import render_section_header from "../templates/buddy_list/section_header.hbs";
-import render_view_all_subscribers from "../templates/buddy_list/view_all_subscribers.hbs";
-import render_view_all_users from "../templates/buddy_list/view_all_users.hbs";
-import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.hbs";
-import render_presence_row from "../templates/presence_row.hbs";
-import render_presence_rows from "../templates/presence_rows.hbs";
+import render_section_header from "../templates/buddy_list/section_header.ts";
+import render_view_all_subscribers from "../templates/buddy_list/view_all_subscribers.ts";
+import render_view_all_users from "../templates/buddy_list/view_all_users.ts";
+import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.ts";
+import render_presence_row from "../templates/presence_row.ts";
+import render_presence_rows from "../templates/presence_rows.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";

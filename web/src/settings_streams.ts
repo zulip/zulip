@@ -1,9 +1,9 @@
 import $ from "jquery";
 import type * as tippy from "tippy.js";
 
-import render_add_default_streams from "../templates/settings/add_default_streams.hbs";
-import render_admin_default_streams_list from "../templates/settings/admin_default_streams_list.hbs";
-import render_default_stream_choice from "../templates/settings/default_stream_choice.hbs";
+import render_add_default_streams from "../templates/settings/add_default_streams.ts";
+import render_admin_default_streams_list from "../templates/settings/admin_default_streams_list.ts";
+import render_default_stream_choice from "../templates/settings/default_stream_choice.ts";
 
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";

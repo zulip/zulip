@@ -1,8 +1,8 @@
 import $ from "jquery";
 import SortableJS from "sortablejs";
 
-import render_poll_modal_option from "../templates/poll_modal_option.hbs";
-import render_todo_modal_task from "../templates/todo_modal_task.hbs";
+import render_poll_modal_option from "../templates/poll_modal_option.ts";
+import render_todo_modal_task from "../templates/todo_modal_task.ts";
 
 import * as util from "./util.ts";
 

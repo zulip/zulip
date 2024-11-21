@@ -11,7 +11,7 @@ import {
 } from "date-fns";
 import $ from "jquery";
 
-import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.hbs";
+import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.ts";
 
 import {$t} from "./i18n.ts";
 import {parse_html} from "./ui_util.ts";

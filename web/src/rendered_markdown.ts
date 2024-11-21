@@ -3,12 +3,12 @@ import {isValid, parseISO} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_channel_message_link from "../templates/channel_message_link.hbs";
-import code_buttons_container from "../templates/code_buttons_container.hbs";
-import render_markdown_audio from "../templates/markdown_audio.hbs";
-import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
-import render_mention_content_wrapper from "../templates/mention_content_wrapper.hbs";
-import render_topic_link from "../templates/topic_link.hbs";
+import render_channel_message_link from "../templates/channel_message_link.ts";
+import code_buttons_container from "../templates/code_buttons_container.ts";
+import render_markdown_audio from "../templates/markdown_audio.ts";
+import render_markdown_timestamp from "../templates/markdown_timestamp.ts";
+import render_mention_content_wrapper from "../templates/mention_content_wrapper.ts";
+import render_topic_link from "../templates/topic_link.ts";
 
 import * as blueslip from "./blueslip.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";

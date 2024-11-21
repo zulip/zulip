@@ -4,10 +4,10 @@ import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
 import emoji_codes from "../../static/generated/emoji/emoji_codes.json";
-import render_emoji_popover from "../templates/popovers/emoji/emoji_popover.hbs";
-import render_emoji_popover_emoji_map from "../templates/popovers/emoji/emoji_popover_emoji_map.hbs";
-import render_emoji_popover_search_results from "../templates/popovers/emoji/emoji_popover_search_results.hbs";
-import render_emoji_showcase from "../templates/popovers/emoji/emoji_showcase.hbs";
+import render_emoji_popover from "../templates/popovers/emoji/emoji_popover.ts";
+import render_emoji_popover_emoji_map from "../templates/popovers/emoji/emoji_popover_emoji_map.ts";
+import render_emoji_popover_search_results from "../templates/popovers/emoji/emoji_popover_search_results.ts";
+import render_emoji_showcase from "../templates/popovers/emoji/emoji_showcase.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as common from "./common.ts";
