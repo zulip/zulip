@@ -860,7 +860,8 @@ export function check_stream_settings_property_changed(
     const current_val = get_stream_settings_property_value(property_name, sub);
     let proposed_val;
     switch (property_name) {
-        case "can_remove_subscribers_group": {
+        case "can_remove_subscribers_group":
+        case "can_administer_channel_group": {
             const pill_widget = get_group_setting_widget(property_name);
             assert(pill_widget !== null);
             proposed_val = get_group_setting_widget_value(pill_widget);
@@ -1502,6 +1503,7 @@ export function disable_group_permission_setting($container: JQuery): void {
 
 export const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
     ["can_add_members_group", null],
+    ["can_administer_channel_group", null],
     ["can_join_group", null],
     ["can_leave_group", null],
     ["can_manage_group", null],
@@ -1728,8 +1730,15 @@ export function create_stream_group_setting_widget({
             setting_name,
             "stream",
         )!.default_group_name;
-        const default_group_id = user_groups.get_user_group_from_name(default_group_name)!.id;
-        set_group_setting_widget_value(pill_widget, default_group_id);
+        if (default_group_name === "stream_creator_or_nobody") {
+            set_group_setting_widget_value(pill_widget, {
+                direct_members: [current_user.user_id],
+                direct_subgroups: [],
+            });
+        } else {
+            const default_group_id = user_groups.get_user_group_from_name(default_group_name)!.id;
+            set_group_setting_widget_value(pill_widget, default_group_id);
+        }
     }
 
     return pill_widget;

@@ -35,15 +35,26 @@ set_realm({});
 set_current_user({});
 initialize_user_settings({user_settings: {}});
 
+const admins_group = {
+    name: "Admins",
+    id: 1,
+    members: new Set([1]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+const nobody_group = {
+    name: "Nobody",
+    id: 2,
+    members: new Set([]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+const initialize_user_groups = () => {
+    user_groups.initialize({realm_user_groups: [admins_group, nobody_group]});
+};
+
 run_test("redraw_left_panel", ({mock_template}) => {
-    const admins_group = {
-        name: "Admins",
-        id: 1,
-        members: new Set([1]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([]),
-    };
-    user_groups.initialize({realm_user_groups: [admins_group]});
+    initialize_user_groups();
 
     // set-up sub rows stubs
     const denmark = {
@@ -55,6 +66,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         subscribers: [1],
         stream_weekly_traffic: null,
         color: "red",
+        can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
@@ -68,6 +80,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         subscribers: [1, 2, 3],
         stream_weekly_traffic: 13,
         color: "red",
+        can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
@@ -82,6 +95,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         stream_weekly_traffic: 0,
         color: "red",
         can_remove_subscribers_group: admins_group.id,
+        can_administer_channel_group: nobody_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -94,6 +108,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         subscribers: [1, 2],
         stream_weekly_traffic: 6,
         color: "red",
+        can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
@@ -107,6 +122,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         subscribers: [1, 2],
         stream_weekly_traffic: 6,
         color: "red",
+        can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
@@ -120,6 +136,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         subscribers: [1, 2, 3],
         stream_weekly_traffic: 0,
         color: "red",
+        can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
@@ -133,6 +150,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         subscribers: [1, 2, 3, 4],
         stream_weekly_traffic: 8,
         color: "red",
+        can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
@@ -146,6 +164,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         subscribers: [1],
         stream_weekly_traffic: 4,
         color: "red",
+        can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
@@ -322,14 +341,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
 
 run_test("close color container when scrolling", ({mock_template}) => {
     // Test to see if logic of the colorpicker closing is correct
-    const admins_group = {
-        name: "Admins",
-        id: 1,
-        members: new Set([1]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([]),
-    };
-    user_groups.initialize({realm_user_groups: [admins_group]});
+    initialize_user_groups();
 
     const denmark = {
         elem: "denmark",
@@ -341,6 +353,7 @@ run_test("close color container when scrolling", ({mock_template}) => {
         stream_weekly_traffic: null,
         color: "red",
         can_remove_subscribers_group: admins_group.id,
+        can_administer_channel_group: nobody_group.id,
     };
 
     const populated_subs = [denmark];

@@ -516,11 +516,35 @@ export function can_preview(sub: StreamSubscription): boolean {
 }
 
 export function can_change_permissions(sub: StreamSubscription): boolean {
-    return current_user.is_admin && (!sub.invite_only || sub.subscribed);
+    // Whether the current user has permission to administer this stream.
+    // Organisation admins have this permission regardless of whether
+    // they are part of can_administer_channel_group. Non-subscribers with
+    // these permission can edit name and description of a private channel
+    // without being subscribed to it.
+
+    if (sub.invite_only && !sub.subscribed) {
+        return false;
+    }
+
+    if (current_user.is_admin) {
+        return true;
+    }
+
+    return user_groups.is_user_in_setting_group(
+        sub.can_administer_channel_group,
+        people.my_current_user_id(),
+    );
 }
 
-export function can_edit_description(): boolean {
-    return current_user.is_admin;
+export function can_edit_description(sub: StreamSubscription): boolean {
+    if (current_user.is_admin) {
+        return true;
+    }
+
+    return user_groups.is_user_in_setting_group(
+        sub.can_administer_channel_group,
+        people.my_current_user_id(),
+    );
 }
 
 export function can_view_subscribers(sub: StreamSubscription): boolean {

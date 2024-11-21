@@ -156,6 +156,13 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             update_stream_setting(sub, value, "is_recently_active");
             stream_list.update_streams_sidebar();
         },
+        can_administer_channel_group(value) {
+            stream_settings_ui.update_stream_permission_group_setting(
+                "can_administer_channel_group",
+                sub,
+                value,
+            );
+        },
     };
 
     if (Object.hasOwn(updaters, property) && updaters[property] !== undefined) {

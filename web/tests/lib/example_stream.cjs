@@ -18,6 +18,7 @@ exports.make_stream = (opts = {}) => {
         /* BUG: This should always be a group ID. But it's annoying to
          * fix without assuming groups exist in the data set. */
         can_remove_subscribers_group: 0,
+        can_administer_channel_group: 2,
         color: "abcd12",
         /* This is rarely going to be the case, but a valid possibility. */
         creator_id: null,
