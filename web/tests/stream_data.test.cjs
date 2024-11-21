@@ -50,21 +50,23 @@ const test_user = {
     user_id: 101,
 };
 
+const admin_user_id = 1;
+const moderator_user_id = 2;
 // set up user data
 const admins_group = {
     name: "Admins",
     id: 1,
-    members: new Set([1]),
+    members: new Set([admin_user_id]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
 };
 
 const moderators_group = {
-    name: "Members",
+    name: "Moderators",
     id: 2,
-    members: new Set([2]),
+    members: new Set([moderator_user_id]),
     is_system_group: true,
-    direct_subgroup_ids: new Set([1]),
+    direct_subgroup_ids: new Set([admins_group.id]),
 };
 
 const everyone_group = {
@@ -72,6 +74,22 @@ const everyone_group = {
     id: 3,
     members: new Set([me.user_id, test_user.user_id]),
     is_system_group: true,
+    direct_subgroup_ids: new Set([moderators_group.id]),
+};
+
+const nobody_group = {
+    name: "Nobody",
+    id: 4,
+    members: new Set([]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+
+const students = {
+    name: "Students",
+    id: 5,
+    members: new Set([test_user.user_id]),
+    is_system_group: false,
     direct_subgroup_ids: new Set([]),
 };
 
@@ -85,7 +103,13 @@ function test(label, f) {
         people.initialize_current_user(me.user_id);
         stream_data.clear_subscriptions();
         user_groups.initialize({
-            realm_user_groups: [admins_group, moderators_group, everyone_group],
+            realm_user_groups: [
+                admins_group,
+                moderators_group,
+                everyone_group,
+                nobody_group,
+                students,
+            ],
         });
         f(helpers);
     });
@@ -1144,54 +1168,12 @@ test("can_post_messages_in_stream", ({override}) => {
 });
 
 test("can_unsubscribe_others", ({override}) => {
-    const admin_user_id = 1;
-    const moderator_user_id = 2;
-    const member_user_id = 3;
-
-    const admins = {
-        name: "Admins",
-        id: 1,
-        members: new Set([admin_user_id]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([]),
-    };
-    const moderators = {
-        name: "Moderators",
-        id: 2,
-        members: new Set([moderator_user_id]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([1]),
-    };
-    const all = {
-        name: "Everyone",
-        id: 3,
-        members: new Set([member_user_id]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([2]),
-    };
-    const nobody = {
-        name: "Nobody",
-        id: 4,
-        members: new Set([]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([]),
-    };
-    const students = {
-        name: "Students",
-        id: 5,
-        members: new Set([member_user_id]),
-        is_system_group: false,
-        direct_subgroup_ids: new Set([]),
-    };
-
-    user_groups.initialize({realm_user_groups: [admins, moderators, all, nobody, students]});
-
     const sub = {
         name: "Denmark",
         subscribed: true,
         color: "red",
         stream_id: 1,
-        can_remove_subscribers_group: admins.id,
+        can_remove_subscribers_group: admins_group.id,
     };
     stream_data.add_sub(sub);
 
@@ -1200,20 +1182,20 @@ test("can_unsubscribe_others", ({override}) => {
     people.initialize_current_user(moderator_user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
 
-    sub.can_remove_subscribers_group = moderators.id;
+    sub.can_remove_subscribers_group = moderators_group.id;
     people.initialize_current_user(admin_user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
     people.initialize_current_user(moderator_user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
-    people.initialize_current_user(member_user_id);
+    people.initialize_current_user(test_user.user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
 
-    sub.can_remove_subscribers_group = all.id;
+    sub.can_remove_subscribers_group = everyone_group.id;
     people.initialize_current_user(admin_user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
     people.initialize_current_user(moderator_user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
-    people.initialize_current_user(member_user_id);
+    people.initialize_current_user(test_user.user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
 
     // With the setting set to user defined group not including admin,
@@ -1225,11 +1207,11 @@ test("can_unsubscribe_others", ({override}) => {
     override(current_user, "is_admin", false);
     people.initialize_current_user(moderator_user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
-    people.initialize_current_user(member_user_id);
+    people.initialize_current_user(test_user.user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
 
     // This isn't a real state, but we want coverage on !can_view_subscribers.
-    sub.can_remove_subscribers_group = all.id;
+    sub.can_remove_subscribers_group = everyone_group.id;
     sub.subscribed = false;
     sub.invite_only = true;
     override(current_user, "is_admin", true);
