@@ -118,6 +118,18 @@ def convert_link_format(text: str) -> tuple[str, bool]:
     return text, has_link
 
 
+def convert_mailto_format(text: str) -> tuple[str, bool]:
+    """
+    1. Converts '<mailto:foo@foo.com>' to 'mailto:foo@foo.com'
+    2. Converts '<mailto:foo@foo.com|foo@foo.com>' to 'mailto:foo@foo.com'
+    """
+    has_link = False
+    for match in re.finditer(SLACK_MAILTO_REGEX, text, re.VERBOSE):
+        has_link = True
+        text = text.replace(match.group(0), match.group(1))
+    return text, has_link
+
+
 # Map italic, bold and strikethrough Markdown
 def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
     """
@@ -185,18 +197,6 @@ def convert_to_zulip_markdown(
     message_has_link = has_link or has_mailto_link
 
     return text, mentioned_users_id, message_has_link
-
-
-def convert_mailto_format(text: str) -> tuple[str, bool]:
-    """
-    1. Converts '<mailto:foo@foo.com>' to 'mailto:foo@foo.com'
-    2. Converts '<mailto:foo@foo.com|foo@foo.com>' to 'mailto:foo@foo.com'
-    """
-    has_link = False
-    for match in re.finditer(SLACK_MAILTO_REGEX, text, re.VERBOSE):
-        has_link = True
-        text = text.replace(match.group(0), match.group(1))
-    return text, has_link
 
 
 def render_block(block: WildValue) -> str:
