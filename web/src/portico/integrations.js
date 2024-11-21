@@ -15,7 +15,7 @@ const CATEGORIES = new Map();
 
 function load_data() {
     for (const integration of $(".integration-lozenge")) {
-        const name = $(integration).data("name");
+        const name = $(integration).attr("data-name");
         const display_name = $(integration).find(".integration-name").text().trim();
 
         if (display_name && name) {
@@ -24,7 +24,7 @@ function load_data() {
     }
 
     for (const category of $(".integration-category")) {
-        const name = $(category).data("category");
+        const name = $(category).attr("data-category");
         const display_name = $(category).text().trim();
 
         if (display_name && name) {
@@ -115,10 +115,10 @@ const update_integrations = _.debounce(() => {
         }
 
         if (!$integration.hasClass("integration-create-your-own")) {
-            const display_name = INTEGRATIONS.get($integration.data("name"));
+            const display_name = INTEGRATIONS.get($integration.attr("data-name"));
             const display =
                 common.phrase_match(state.query, display_name) &&
-                ($integration.data("categories").includes(CATEGORIES.get(state.category)) ||
+                ($integration.attr("data-categories").includes(CATEGORIES.get(state.category)) ||
                     state.category === "all");
 
             if (display) {
@@ -141,7 +141,7 @@ function hide_catalog_show_integration() {
     $lozenge_icon.removeClass("legacy");
 
     const categories = $(`.integration-${CSS.escape(state.integration)}`)
-        .data("categories")
+        .attr("data-categories")
         .slice(1, -1)
         .split(",")
         .map((category) => category.trim().slice(1, -1));
@@ -324,13 +324,13 @@ function integration_events() {
 
     $(".integration-instruction-block").on("click", "a .integration-category", (e) => {
         e.preventDefault();
-        const category = $(e.target).data("category");
+        const category = $(e.target).attr("data-category");
         dispatch("SHOW_CATEGORY", {category});
     });
 
     $(".integrations a .integration-category").on("click", (e) => {
         e.preventDefault();
-        const category = $(e.target).data("category");
+        const category = $(e.target).attr("data-category");
         dispatch("CHANGE_CATEGORY", {category});
         toggle_categories_dropdown();
     });
@@ -338,7 +338,7 @@ function integration_events() {
     $(".integrations a .integration-lozenge").on("click", (e) => {
         if (!$(e.target).closest(".integration-lozenge").hasClass("integration-create-your-own")) {
             e.preventDefault();
-            const integration = $(e.target).closest(".integration-lozenge").data("name");
+            const integration = $(e.target).closest(".integration-lozenge").attr("data-name");
             dispatch("SHOW_INTEGRATION", {integration});
         }
     });
