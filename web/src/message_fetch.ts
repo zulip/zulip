@@ -745,14 +745,18 @@ export function verify_cached_data(data: MessageListData): void {
                         "Mismatching cached and server data.",
                         {
                             fetch_request_params,
-                            server_data: data,
+                            server_data: {
+                                ...data,
+                                messages: "Removed for sentry logs",
+                                msg_ids: JSON.stringify(data.messages.map((msg) => msg.id)),
+                            },
                             cached_data: {
                                 has_found_newest,
                                 has_found_oldest,
                                 history_limited,
-                                messages,
+                                msg_ids: JSON.stringify(messages.map((msg) => msg.id)),
                             },
-                            events_since_restoring_cached_data,
+                            events: JSON.stringify(events_since_restoring_cached_data),
                         },
                         error,
                     );
