@@ -443,10 +443,7 @@ def get_recipient_info(
         lambda r: not r["enable_offline_push_notifications"]
     )
 
-    # Service bots don't get UserMessage rows.
-    um_eligible_user_ids = get_ids_for(
-        lambda r: not r["is_bot"] or r["bot_type"] not in UserProfile.SERVICE_BOT_TYPES,
-    )
+    um_eligible_user_ids = get_ids_for(lambda r: True)
 
     long_term_idle_user_ids = get_ids_for(
         lambda r: r["long_term_idle"],
