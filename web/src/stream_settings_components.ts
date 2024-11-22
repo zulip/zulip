@@ -1,9 +1,9 @@
 import $ from "jquery";
 import {z} from "zod";
 
-import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
-import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
-import render_selected_stream_title from "../templates/stream_settings/selected_stream_title.hbs";
+import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.ts";
+import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.ts";
+import render_selected_stream_title from "../templates/stream_settings/selected_stream_title.ts";
 
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";

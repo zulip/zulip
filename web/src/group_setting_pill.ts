@@ -1,6 +1,6 @@
 import assert from "minimalistic-assert";
 
-import render_input_pill from "../templates/input_pill.hbs";
+import render_input_pill from "../templates/input_pill.ts";
 
 import * as group_permission_settings from "./group_permission_settings.ts";
 import * as input_pill from "./input_pill.ts";

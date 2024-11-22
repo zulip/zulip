@@ -1,7 +1,7 @@
 import $ from "jquery";
 
-import render_set_status_overlay from "../templates/set_status_overlay.hbs";
-import render_status_emoji_selector from "../templates/status_emoji_selector.hbs";
+import render_set_status_overlay from "../templates/set_status_overlay.ts";
+import render_status_emoji_selector from "../templates/status_emoji_selector.ts";
 
 import * as dialog_widget from "./dialog_widget.ts";
 import * as emoji from "./emoji.ts";

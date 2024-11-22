@@ -3,8 +3,9 @@ import assert from "minimalistic-assert";
 import SimpleBar from "simplebar";
 import {z} from "zod";
 
-import render_read_receipts from "../templates/read_receipts.hbs";
-import render_read_receipts_modal from "../templates/read_receipts_modal.hbs";
+import {html} from "../shared/src/html.ts";
+import render_read_receipts from "../templates/read_receipts.ts";
+import render_read_receipts_modal from "../templates/read_receipts_modal.ts";
 
 import * as channel from "./channel.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -77,10 +78,13 @@ export function show_user_list(message_id: number): void {
                                     },
                                     {
                                         num_of_people: users.length,
-                                        "z-link": (content_html) =>
-                                            `<a href="/help/read-receipts" target="_blank" rel="noopener noreferrer">${content_html.join(
-                                                "",
-                                            )}</a>`,
+                                        "z-link": (content) =>
+                                            html`<a
+                                                href="/help/read-receipts"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                >${content}</a
+                                            >`,
                                     },
                                 ),
                             );

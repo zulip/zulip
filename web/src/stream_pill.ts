@@ -1,6 +1,6 @@
 import assert from "minimalistic-assert";
 
-import render_input_pill from "../templates/input_pill.hbs";
+import render_input_pill from "../templates/input_pill.ts";
 
 import type {InputPillContainer} from "./input_pill.ts";
 import * as peer_data from "./peer_data.ts";

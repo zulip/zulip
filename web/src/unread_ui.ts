@@ -1,9 +1,9 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_mark_as_read_disabled_banner from "../templates/unread_banner/mark_as_read_disabled_banner.hbs";
-import render_mark_as_read_only_in_conversation_view from "../templates/unread_banner/mark_as_read_only_in_conversation_view.hbs";
-import render_mark_as_read_turned_off_banner from "../templates/unread_banner/mark_as_read_turned_off_banner.hbs";
+import render_mark_as_read_disabled_banner from "../templates/unread_banner/mark_as_read_disabled_banner.ts";
+import render_mark_as_read_only_in_conversation_view from "../templates/unread_banner/mark_as_read_only_in_conversation_view.ts";
+import render_mark_as_read_turned_off_banner from "../templates/unread_banner/mark_as_read_turned_off_banner.ts";
 
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";

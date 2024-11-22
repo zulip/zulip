@@ -1,12 +1,12 @@
 import $ from "jquery";
 
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
-import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
-import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
-import render_private_stream_warning from "../templates/compose_banner/private_stream_warning.hbs";
-import render_stream_wildcard_warning from "../templates/compose_banner/stream_wildcard_warning.hbs";
-import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
-import render_compose_limit_indicator from "../templates/compose_limit_indicator.hbs";
+import render_compose_banner from "../templates/compose_banner/compose_banner.ts";
+import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.ts";
+import render_private_stream_warning from "../templates/compose_banner/private_stream_warning.ts";
+import render_stream_wildcard_warning from "../templates/compose_banner/stream_wildcard_warning.ts";
+import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.ts";
+import render_compose_limit_indicator from "../templates/compose_limit_indicator.ts";
 
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";

@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import render_scheduled_messages_indicator from "../templates/scheduled_messages_indicator.hbs";
+import render_scheduled_messages_indicator from "../templates/scheduled_messages_indicator.ts";
 
 import * as narrow_state from "./narrow_state.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";

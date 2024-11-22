@@ -1,7 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import render_dialog_widget from "../templates/dialog_widget.hbs";
+import render_dialog_widget from "../templates/dialog_widget.ts";
 
 import type {AjaxRequestHandler} from "./channel.ts";
 import {$t_html} from "./i18n.ts";

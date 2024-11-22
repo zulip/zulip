@@ -4,7 +4,7 @@ import assert from "minimalistic-assert";
 
 import * as typeahead from "../shared/src/typeahead.ts";
 import type {EmojiSuggestion} from "../shared/src/typeahead.ts";
-import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
+import render_typeahead_list_item from "../templates/typeahead_list_item.ts";
 
 import {MAX_ITEMS} from "./bootstrap_typeahead.ts";
 import * as buddy_data from "./buddy_data.ts";

@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import render_widgets_zform_choices from "../templates/widgets/zform_choices.hbs";
+import render_widgets_zform_choices from "../templates/widgets/zform_choices.ts";
 
 import * as blueslip from "./blueslip.ts";
 import {zform_widget_extra_data_schema} from "./submessage.ts";

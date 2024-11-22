@@ -4,12 +4,12 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import copy_invite_link from "../templates/copy_invite_link.hbs";
-import render_guest_visible_users_message from "../templates/guest_visible_users_message.hbs";
-import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";
-import render_invite_user_modal from "../templates/invite_user_modal.hbs";
-import render_invite_tips_banner from "../templates/modal_banner/invite_tips_banner.hbs";
-import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
+import copy_invite_link from "../templates/copy_invite_link.ts";
+import render_guest_visible_users_message from "../templates/guest_visible_users_message.ts";
+import render_invitation_failed_error from "../templates/invitation_failed_error.ts";
+import render_invite_user_modal from "../templates/invite_user_modal.ts";
+import render_invite_tips_banner from "../templates/modal_banner/invite_tips_banner.ts";
+import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.ts";
 
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";

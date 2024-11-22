@@ -3,9 +3,9 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import render_add_new_bot_form from "../templates/settings/add_new_bot_form.hbs";
-import render_bot_avatar_row from "../templates/settings/bot_avatar_row.hbs";
-import render_bot_settings_tip from "../templates/settings/bot_settings_tip.hbs";
+import render_add_new_bot_form from "../templates/settings/add_new_bot_form.ts";
+import render_bot_avatar_row from "../templates/settings/bot_avatar_row.ts";
+import render_bot_settings_tip from "../templates/settings/bot_settings_tip.ts";
 
 import * as avatar from "./avatar.ts";
 import * as bot_data from "./bot_data.ts";

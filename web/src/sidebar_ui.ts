@@ -1,8 +1,8 @@
 import $ from "jquery";
 
-import render_left_sidebar from "../templates/left_sidebar.hbs";
-import render_buddy_list_popover from "../templates/popovers/buddy_list_popover.hbs";
-import render_right_sidebar from "../templates/right_sidebar.hbs";
+import render_left_sidebar from "../templates/left_sidebar.ts";
+import render_buddy_list_popover from "../templates/popovers/buddy_list_popover.ts";
+import render_right_sidebar from "../templates/right_sidebar.ts";
 
 import {buddy_list} from "./buddy_list.ts";
 import {media_breakpoints_num} from "./css_variables.js";

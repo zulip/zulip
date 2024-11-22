@@ -5,11 +5,11 @@ import type * as tippy from "tippy.js";
 import {z} from "zod";
 
 import * as typeahead from "../shared/src/typeahead.ts";
-import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
-import render_recent_view_filters from "../templates/recent_view_filters.hbs";
-import render_recent_view_row from "../templates/recent_view_row.hbs";
-import render_recent_view_body from "../templates/recent_view_table.hbs";
-import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
+import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.ts";
+import render_recent_view_filters from "../templates/recent_view_filters.ts";
+import render_recent_view_row from "../templates/recent_view_row.ts";
+import render_recent_view_body from "../templates/recent_view_table.ts";
+import render_user_with_status_icon from "../templates/user_with_status_icon.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";

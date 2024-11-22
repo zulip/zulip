@@ -3,7 +3,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_input_pill from "../templates/input_pill.hbs";
+import render_input_pill from "../templates/input_pill.ts";
 
 import * as keydown_util from "./keydown_util.ts";
 import * as ui_util from "./ui_util.ts";

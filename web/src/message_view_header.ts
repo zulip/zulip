@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_message_view_header from "../templates/message_view_header.hbs";
+import render_message_view_header from "../templates/message_view_header.ts";
 
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";

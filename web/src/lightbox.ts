@@ -3,7 +3,7 @@ import assert from "minimalistic-assert";
 import panzoom from "panzoom";
 import type {PanZoom} from "panzoom";
 
-import render_lightbox_overlay from "../templates/lightbox_overlay.hbs";
+import render_lightbox_overlay from "../templates/lightbox_overlay.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as message_store from "./message_store.ts";

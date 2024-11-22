@@ -7,8 +7,8 @@ import type {
     QuestionOutboundData,
     VoteOutboundData,
 } from "../shared/src/poll_data.ts";
-import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
-import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
+import render_widgets_poll_widget from "../templates/widgets/poll_widget.ts";
+import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.ts";
 
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";

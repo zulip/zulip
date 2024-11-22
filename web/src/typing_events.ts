@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_typing_notifications from "../templates/typing_notifications.hbs";
+import render_typing_notifications from "../templates/typing_notifications.ts";
 
 import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";

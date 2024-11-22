@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.hbs";
+import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.ts";
 
 import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";

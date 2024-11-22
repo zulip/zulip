@@ -5,7 +5,7 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_giphy_picker from "../templates/giphy_picker.hbs";
+import render_giphy_picker from "../templates/giphy_picker.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as compose_ui from "./compose_ui.ts";

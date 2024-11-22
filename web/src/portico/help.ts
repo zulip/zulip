@@ -4,7 +4,7 @@ import assert from "minimalistic-assert";
 import SimpleBar from "simplebar";
 import * as tippy from "tippy.js";
 
-import zulip_copy_icon from "../../templates/zulip_copy_icon.hbs";
+import zulip_copy_icon from "../../templates/zulip_copy_icon.ts";
 import * as common from "../common.ts";
 import {show_copied_confirmation} from "../copied_tooltip.ts";
 import * as util from "../util.ts";

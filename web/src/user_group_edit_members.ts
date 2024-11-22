@@ -2,11 +2,11 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import render_leave_user_group_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
-import render_user_group_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
-import render_user_group_members_table from "../templates/user_group_settings/user_group_members_table.hbs";
-import render_user_group_membership_request_result from "../templates/user_group_settings/user_group_membership_request_result.hbs";
-import render_user_group_subgroup_entry from "../templates/user_group_settings/user_group_subgroup_entry.hbs";
+import render_leave_user_group_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.ts";
+import render_user_group_member_list_entry from "../templates/stream_settings/stream_member_list_entry.ts";
+import render_user_group_members_table from "../templates/user_group_settings/user_group_members_table.ts";
+import render_user_group_membership_request_result from "../templates/user_group_settings/user_group_membership_request_result.ts";
+import render_user_group_subgroup_entry from "../templates/user_group_settings/user_group_subgroup_entry.ts";
 
 import * as add_group_members_pill from "./add_group_members_pill.ts";
 import * as blueslip from "./blueslip.ts";

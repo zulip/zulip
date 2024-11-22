@@ -1,8 +1,8 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_scheduled_message from "../templates/scheduled_message.hbs";
-import render_scheduled_messages_overlay from "../templates/scheduled_messages_overlay.hbs";
+import render_scheduled_message from "../templates/scheduled_message.ts";
+import render_scheduled_messages_overlay from "../templates/scheduled_messages_overlay.ts";
 
 import * as browser_history from "./browser_history.ts";
 import * as messages_overlay_ui from "./messages_overlay_ui.ts";

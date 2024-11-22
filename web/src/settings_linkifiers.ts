@@ -3,9 +3,9 @@ import assert from "minimalistic-assert";
 import SortableJS from "sortablejs";
 import {z} from "zod";
 
-import render_confirm_delete_linkifier from "../templates/confirm_dialog/confirm_delete_linkifier.hbs";
-import render_admin_linkifier_edit_form from "../templates/settings/admin_linkifier_edit_form.hbs";
-import render_admin_linkifier_list from "../templates/settings/admin_linkifier_list.hbs";
+import render_confirm_delete_linkifier from "../templates/confirm_dialog/confirm_delete_linkifier.ts";
+import render_admin_linkifier_edit_form from "../templates/settings/admin_linkifier_edit_form.ts";
+import render_admin_linkifier_list from "../templates/settings/admin_linkifier_list.ts";
 
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";

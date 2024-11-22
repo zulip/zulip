@@ -1,7 +1,7 @@
 import $ from "jquery";
 
 import {unresolve_name} from "../shared/src/resolved_topic.ts";
-import render_add_poll_modal from "../templates/add_poll_modal.hbs";
+import render_add_poll_modal from "../templates/add_poll_modal.ts";
 
 import * as compose from "./compose.js";
 import * as compose_actions from "./compose_actions.ts";

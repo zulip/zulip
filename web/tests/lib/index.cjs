@@ -36,6 +36,7 @@ require("@babel/register")({
     only: [
         new RegExp("^" + _.escapeRegExp(path.resolve(__dirname, "../../shared/src") + path.sep)),
         new RegExp("^" + _.escapeRegExp(path.resolve(__dirname, "../../src") + path.sep)),
+        new RegExp("^" + _.escapeRegExp(path.resolve(__dirname, "../../templates") + path.sep)),
     ],
     plugins: [
         ...(process.env.USING_INSTRUMENTED_CODE ? [["istanbul", {exclude: []}]] : []),

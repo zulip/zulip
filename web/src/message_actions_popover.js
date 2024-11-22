@@ -2,7 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_message_actions_popover from "../templates/popovers/message_actions_popover.hbs";
+import render_message_actions_popover from "../templates/popovers/message_actions_popover.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as compose_reply from "./compose_reply.ts";

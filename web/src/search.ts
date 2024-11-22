@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_search_list_item from "../templates/search_list_item.hbs";
+import render_search_list_item from "../templates/search_list_item.ts";
 
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";

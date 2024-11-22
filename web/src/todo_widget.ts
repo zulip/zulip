@@ -2,8 +2,8 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import render_widgets_todo_widget from "../templates/widgets/todo_widget.hbs";
-import render_widgets_todo_widget_tasks from "../templates/widgets/todo_widget_tasks.hbs";
+import render_widgets_todo_widget from "../templates/widgets/todo_widget.ts";
+import render_widgets_todo_widget_tasks from "../templates/widgets/todo_widget_tasks.ts";
 
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";

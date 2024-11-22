@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_message_length_toggle from "../templates/message_length_toggle.hbs";
+import render_message_length_toggle from "../templates/message_length_toggle.ts";
 
 import * as message_flags from "./message_flags.ts";
 import * as message_lists from "./message_lists.ts";

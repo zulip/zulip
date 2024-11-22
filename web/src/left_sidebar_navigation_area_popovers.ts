@@ -2,12 +2,12 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_left_sidebar_all_messages_popover from "../templates/popovers/left_sidebar/left_sidebar_all_messages_popover.hbs";
-import render_left_sidebar_condensed_views_popover from "../templates/popovers/left_sidebar/left_sidebar_condensed_views_popover.hbs";
-import render_left_sidebar_drafts_popover from "../templates/popovers/left_sidebar/left_sidebar_drafts_popover.hbs";
-import render_left_sidebar_inbox_popover from "../templates/popovers/left_sidebar/left_sidebar_inbox_popover.hbs";
-import render_left_sidebar_recent_view_popover from "../templates/popovers/left_sidebar/left_sidebar_recent_view_popover.hbs";
-import render_left_sidebar_starred_messages_popover from "../templates/popovers/left_sidebar/left_sidebar_starred_messages_popover.hbs";
+import render_left_sidebar_all_messages_popover from "../templates/popovers/left_sidebar/left_sidebar_all_messages_popover.ts";
+import render_left_sidebar_condensed_views_popover from "../templates/popovers/left_sidebar/left_sidebar_condensed_views_popover.ts";
+import render_left_sidebar_drafts_popover from "../templates/popovers/left_sidebar/left_sidebar_drafts_popover.ts";
+import render_left_sidebar_inbox_popover from "../templates/popovers/left_sidebar/left_sidebar_inbox_popover.ts";
+import render_left_sidebar_recent_view_popover from "../templates/popovers/left_sidebar/left_sidebar_recent_view_popover.ts";
+import render_left_sidebar_starred_messages_popover from "../templates/popovers/left_sidebar/left_sidebar_starred_messages_popover.ts";
 
 import * as channel from "./channel.ts";
 import * as drafts from "./drafts.ts";

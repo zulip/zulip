@@ -2,15 +2,15 @@ import {addDays} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_bankruptcy_alert_content from "../templates/navbar_alerts/bankruptcy.hbs";
-import render_configure_email_alert_content from "../templates/navbar_alerts/configure_outgoing_email.hbs";
-import render_demo_organization_deadline_content from "../templates/navbar_alerts/demo_organization_deadline.hbs";
-import render_desktop_notifications_alert_content from "../templates/navbar_alerts/desktop_notifications.hbs";
-import render_empty_required_profile_fields from "../templates/navbar_alerts/empty_required_profile_fields.hbs";
-import render_insecure_desktop_app_alert_content from "../templates/navbar_alerts/insecure_desktop_app.hbs";
-import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert_wrapper.hbs";
-import render_profile_incomplete_alert_content from "../templates/navbar_alerts/profile_incomplete.hbs";
-import render_server_needs_upgrade_alert_content from "../templates/navbar_alerts/server_needs_upgrade.hbs";
+import render_bankruptcy_alert_content from "../templates/navbar_alerts/bankruptcy.ts";
+import render_configure_email_alert_content from "../templates/navbar_alerts/configure_outgoing_email.ts";
+import render_demo_organization_deadline_content from "../templates/navbar_alerts/demo_organization_deadline.ts";
+import render_desktop_notifications_alert_content from "../templates/navbar_alerts/desktop_notifications.ts";
+import render_empty_required_profile_fields from "../templates/navbar_alerts/empty_required_profile_fields.ts";
+import render_insecure_desktop_app_alert_content from "../templates/navbar_alerts/insecure_desktop_app.ts";
+import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert_wrapper.ts";
+import render_profile_incomplete_alert_content from "../templates/navbar_alerts/profile_incomplete.ts";
+import render_server_needs_upgrade_alert_content from "../templates/navbar_alerts/server_needs_upgrade.ts";
 
 import * as desktop_notifications from "./desktop_notifications.ts";
 import * as keydown_util from "./keydown_util.ts";

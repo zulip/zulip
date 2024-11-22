@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_edit_content_button from "../templates/edit_content_button.hbs";
+import render_edit_content_button from "../templates/edit_content_button.ts";
 
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";

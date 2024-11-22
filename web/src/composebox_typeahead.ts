@@ -4,7 +4,7 @@ import assert from "minimalistic-assert";
 
 import * as typeahead from "../shared/src/typeahead.ts";
 import type {Emoji, EmojiSuggestion} from "../shared/src/typeahead.ts";
-import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
+import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.ts";
 
 import {MAX_ITEMS, Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";

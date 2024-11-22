@@ -1,11 +1,11 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_automatic_new_visibility_policy_banner from "../templates/compose_banner/automatic_new_visibility_policy_banner.hbs";
-import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
-import render_jump_to_sent_message_conversation_banner from "../templates/compose_banner/jump_to_sent_message_conversation_banner.hbs";
-import render_message_sent_banner from "../templates/compose_banner/message_sent_banner.hbs";
-import render_unmute_topic_banner from "../templates/compose_banner/unmute_topic_banner.hbs";
+import render_automatic_new_visibility_policy_banner from "../templates/compose_banner/automatic_new_visibility_policy_banner.ts";
+import render_compose_banner from "../templates/compose_banner/compose_banner.ts";
+import render_jump_to_sent_message_conversation_banner from "../templates/compose_banner/jump_to_sent_message_conversation_banner.ts";
+import render_message_sent_banner from "../templates/compose_banner/message_sent_banner.ts";
+import render_unmute_topic_banner from "../templates/compose_banner/unmute_topic_banner.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as compose_banner from "./compose_banner.ts";

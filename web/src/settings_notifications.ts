@@ -2,8 +2,8 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import render_confirm_disable_all_notifications from "../templates/confirm_dialog/confirm_disable_all_notifications.hbs";
-import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.hbs";
+import render_confirm_disable_all_notifications from "../templates/confirm_dialog/confirm_disable_all_notifications.ts";
+import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";

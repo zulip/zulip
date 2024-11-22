@@ -1,11 +1,11 @@
 import $ from "jquery";
 import {z} from "zod";
 
-import render_settings_deactivation_bot_modal from "../templates/confirm_dialog/confirm_deactivate_bot.hbs";
-import render_confirm_deactivate_own_user from "../templates/confirm_dialog/confirm_deactivate_own_user.hbs";
-import render_settings_deactivation_user_modal from "../templates/confirm_dialog/confirm_deactivate_user.hbs";
-import render_settings_reactivation_bot_modal from "../templates/confirm_dialog/confirm_reactivate_bot.hbs";
-import render_settings_reactivation_user_modal from "../templates/confirm_dialog/confirm_reactivate_user.hbs";
+import render_settings_deactivation_bot_modal from "../templates/confirm_dialog/confirm_deactivate_bot.ts";
+import render_confirm_deactivate_own_user from "../templates/confirm_dialog/confirm_deactivate_own_user.ts";
+import render_settings_deactivation_user_modal from "../templates/confirm_dialog/confirm_deactivate_user.ts";
+import render_settings_reactivation_bot_modal from "../templates/confirm_dialog/confirm_reactivate_bot.ts";
+import render_settings_reactivation_user_modal from "../templates/confirm_dialog/confirm_reactivate_user.ts";
 
 import * as bot_data from "./bot_data.ts";
 import * as channel from "./channel.ts";

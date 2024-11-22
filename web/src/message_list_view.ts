@@ -4,12 +4,12 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
-import render_bookend from "../templates/bookend.hbs";
-import render_login_to_view_image_button from "../templates/login_to_view_image_button.hbs";
-import render_message_group from "../templates/message_group.hbs";
-import render_message_list from "../templates/message_list.hbs";
-import render_recipient_row from "../templates/recipient_row.hbs";
-import render_single_message from "../templates/single_message.hbs";
+import render_bookend from "../templates/bookend.ts";
+import render_login_to_view_image_button from "../templates/login_to_view_image_button.ts";
+import render_message_group from "../templates/message_group.ts";
+import render_message_list from "../templates/message_list.ts";
+import render_recipient_row from "../templates/recipient_row.ts";
+import render_single_message from "../templates/single_message.ts";
 
 import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";

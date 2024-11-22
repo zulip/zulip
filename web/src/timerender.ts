@@ -8,7 +8,7 @@ import {
 } from "date-fns";
 import $ from "jquery";
 
-import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.hbs";
+import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.ts";
 
 import {$t} from "./i18n.ts";
 import {difference_in_calendar_days, get_offset, start_of_day} from "./time_zone_util.ts";

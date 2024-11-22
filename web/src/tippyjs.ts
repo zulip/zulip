@@ -2,10 +2,10 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
-import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.hbs";
-import render_change_visibility_policy_button_tooltip from "../templates/change_visibility_policy_button_tooltip.hbs";
-import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
-import render_tooltip_templates from "../templates/tooltip_templates.hbs";
+import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.ts";
+import render_change_visibility_policy_button_tooltip from "../templates/change_visibility_policy_button_tooltip.ts";
+import render_org_logo_tooltip from "../templates/org_logo_tooltip.ts";
+import render_tooltip_templates from "../templates/tooltip_templates.ts";
 
 import {$t} from "./i18n.ts";
 import * as people from "./people.ts";

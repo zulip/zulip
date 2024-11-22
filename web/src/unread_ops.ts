@@ -3,7 +3,7 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import render_confirm_mark_all_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.hbs";
+import render_confirm_mark_all_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";

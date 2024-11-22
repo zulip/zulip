@@ -1,12 +1,12 @@
 import $ from "jquery";
 
-import render_confirm_delete_user from "../templates/confirm_dialog/confirm_delete_user.hbs";
-import render_group_info_banner from "../templates/modal_banner/user_group_info_banner.hbs";
-import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.hbs";
-import render_cannot_deactivate_group_banner from "../templates/user_group_settings/cannot_deactivate_group_banner.hbs";
-import render_change_user_group_info_modal from "../templates/user_group_settings/change_user_group_info_modal.hbs";
-import render_user_group_settings from "../templates/user_group_settings/user_group_settings.hbs";
-import render_user_group_settings_overlay from "../templates/user_group_settings/user_group_settings_overlay.hbs";
+import render_confirm_delete_user from "../templates/confirm_dialog/confirm_delete_user.ts";
+import render_group_info_banner from "../templates/modal_banner/user_group_info_banner.ts";
+import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.ts";
+import render_cannot_deactivate_group_banner from "../templates/user_group_settings/cannot_deactivate_group_banner.ts";
+import render_change_user_group_info_modal from "../templates/user_group_settings/change_user_group_info_modal.ts";
+import render_user_group_settings from "../templates/user_group_settings/user_group_settings.ts";
+import render_user_group_settings_overlay from "../templates/user_group_settings/user_group_settings_overlay.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";

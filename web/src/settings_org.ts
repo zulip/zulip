@@ -2,8 +2,8 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import render_settings_deactivate_realm_modal from "../templates/confirm_dialog/confirm_deactivate_realm.hbs";
-import render_settings_admin_auth_methods_list from "../templates/settings/admin_auth_methods_list.hbs";
+import render_settings_deactivate_realm_modal from "../templates/confirm_dialog/confirm_deactivate_realm.ts";
+import render_settings_admin_auth_methods_list from "../templates/settings/admin_auth_methods_list.ts";
 
 import * as audible_notifications from "./audible_notifications.ts";
 import * as blueslip from "./blueslip.ts";

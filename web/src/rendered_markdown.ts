@@ -3,9 +3,9 @@ import {isValid, parseISO} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import code_buttons_container from "../templates/code_buttons_container.hbs";
-import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
-import render_mention_content_wrapper from "../templates/mention_content_wrapper.hbs";
+import code_buttons_container from "../templates/code_buttons_container.ts";
+import render_markdown_timestamp from "../templates/markdown_timestamp.ts";
+import render_mention_content_wrapper from "../templates/mention_content_wrapper.ts";
 
 import * as blueslip from "./blueslip.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";

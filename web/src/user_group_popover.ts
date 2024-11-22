@@ -2,7 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_user_group_info_popover from "../templates/popovers/user_group_info_popover.hbs";
+import render_user_group_info_popover from "../templates/popovers/user_group_info_popover.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";

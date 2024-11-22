@@ -1,7 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import render_draft_table_body from "../templates/draft_table_body.hbs";
+import render_draft_table_body from "../templates/draft_table_body.ts";
 
 import * as browser_history from "./browser_history.ts";
 import * as compose_actions from "./compose_actions.ts";

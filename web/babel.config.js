@@ -3,7 +3,7 @@ export default {
         [
             "formatjs",
             {
-                additionalFunctionNames: ["$t", "$t_html"],
+                additionalFunctionNames: ["$html_t", "$t", "$t_html"],
                 overrideIdFn: (_id, defaultMessage) => defaultMessage,
             },
         ],

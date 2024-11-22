@@ -2,9 +2,9 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
-import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
-import render_left_sidebar_stream_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_stream_actions_popover.hbs";
+import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.ts";
+import render_move_topic_to_stream from "../templates/move_topic_to_stream.ts";
+import render_left_sidebar_stream_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_stream_actions_popover.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";

@@ -6,16 +6,16 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import {z} from "zod";
 
-import render_profile_access_error_model from "../templates/profile_access_error_modal.hbs";
-import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
-import render_edit_bot_form from "../templates/settings/edit_bot_form.hbs";
-import render_settings_edit_embedded_bot_service from "../templates/settings/edit_embedded_bot_service.hbs";
-import render_settings_edit_outgoing_webhook_service from "../templates/settings/edit_outgoing_webhook_service.hbs";
-import render_user_custom_profile_fields from "../templates/user_custom_profile_fields.hbs";
-import render_user_full_name from "../templates/user_full_name.hbs";
-import render_user_group_list_item from "../templates/user_group_list_item.hbs";
-import render_user_profile_modal from "../templates/user_profile_modal.hbs";
-import render_user_stream_list_item from "../templates/user_stream_list_item.hbs";
+import render_profile_access_error_model from "../templates/profile_access_error_modal.ts";
+import render_admin_human_form from "../templates/settings/admin_human_form.ts";
+import render_edit_bot_form from "../templates/settings/edit_bot_form.ts";
+import render_settings_edit_embedded_bot_service from "../templates/settings/edit_embedded_bot_service.ts";
+import render_settings_edit_outgoing_webhook_service from "../templates/settings/edit_outgoing_webhook_service.ts";
+import render_user_custom_profile_fields from "../templates/user_custom_profile_fields.ts";
+import render_user_full_name from "../templates/user_full_name.ts";
+import render_user_group_list_item from "../templates/user_group_list_item.ts";
+import render_user_profile_modal from "../templates/user_profile_modal.ts";
+import render_user_stream_list_item from "../templates/user_stream_list_item.ts";
 
 import * as avatar from "./avatar.ts";
 import * as bot_data from "./bot_data.ts";

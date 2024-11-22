@@ -1,8 +1,8 @@
 import $ from "jquery";
 import {z} from "zod";
 
-import render_convert_demo_organization_form from "../templates/settings/convert_demo_organization_form.hbs";
-import render_demo_organization_warning from "../templates/settings/demo_organization_warning.hbs";
+import render_convert_demo_organization_form from "../templates/settings/convert_demo_organization_form.ts";
+import render_demo_organization_warning from "../templates/settings/demo_organization_warning.ts";
 
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";

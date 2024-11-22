@@ -1,7 +1,7 @@
 import $ from "jquery";
 
-import render_settings_admin_realm_domains_list from "../templates/settings/admin_realm_domains_list.hbs";
-import render_realm_domains_modal from "../templates/settings/realm_domains_modal.hbs";
+import render_settings_admin_realm_domains_list from "../templates/settings/admin_realm_domains_list.ts";
+import render_realm_domains_modal from "../templates/settings/realm_domains_modal.ts";
 
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";

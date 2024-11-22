@@ -4,11 +4,11 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import {z} from "zod";
 
-import render_inbox_row from "../templates/inbox_view/inbox_row.hbs";
-import render_inbox_stream_container from "../templates/inbox_view/inbox_stream_container.hbs";
-import render_inbox_view from "../templates/inbox_view/inbox_view.hbs";
-import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
-import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
+import render_inbox_row from "../templates/inbox_view/inbox_row.ts";
+import render_inbox_stream_container from "../templates/inbox_view/inbox_stream_container.ts";
+import render_inbox_view from "../templates/inbox_view/inbox_view.ts";
+import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.ts";
+import render_user_with_status_icon from "../templates/user_with_status_icon.ts";
 
 import * as buddy_data from "./buddy_data.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";

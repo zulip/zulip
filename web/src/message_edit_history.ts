@@ -2,8 +2,8 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import render_message_edit_history from "../templates/message_edit_history.hbs";
-import render_message_history_overlay from "../templates/message_history_overlay.hbs";
+import render_message_edit_history from "../templates/message_edit_history.ts";
+import render_message_history_overlay from "../templates/message_history_overlay.ts";
 
 import {exit_overlay} from "./browser_history.ts";
 import * as channel from "./channel.ts";

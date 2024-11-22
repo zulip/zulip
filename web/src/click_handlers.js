@@ -4,7 +4,7 @@ import * as tippy from "tippy.js";
 
 // You won't find every click handler here, but it's a good place to start!
 
-import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
+import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.ts";
 
 import * as activity_ui from "./activity_ui.ts";
 import * as browser_history from "./browser_history.ts";

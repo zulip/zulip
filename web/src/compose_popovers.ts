@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_compose_control_buttons_popover from "../templates/popovers/compose_control_buttons/compose_control_buttons_popover.hbs";
+import render_compose_control_buttons_popover from "../templates/popovers/compose_control_buttons/compose_control_buttons_popover.ts";
 
 import * as giphy_state from "./giphy_state.ts";
 import * as popover_menus from "./popover_menus.ts";

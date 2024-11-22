@@ -1,8 +1,8 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
-import render_first_stream_created_modal from "../templates/stream_settings/first_stream_created_modal.hbs";
+import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.ts";
+import render_first_stream_created_modal from "../templates/stream_settings/first_stream_created_modal.ts";
 
 import * as activity_ui from "./activity_ui.ts";
 import * as blueslip from "./blueslip.ts";

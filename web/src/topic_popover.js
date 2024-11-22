@@ -1,8 +1,8 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 
-import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
-import render_left_sidebar_topic_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_actions_popover.hbs";
+import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.ts";
+import render_left_sidebar_topic_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_actions_popover.ts";
 
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t_html} from "./i18n.ts";

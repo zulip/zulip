@@ -1,7 +1,7 @@
 import $ from "jquery";
 import WinChan from "winchan";
 
-import render_navbar_gear_menu_popover from "../templates/popovers/navbar/navbar_gear_menu_popover.hbs";
+import render_navbar_gear_menu_popover from "../templates/popovers/navbar/navbar_gear_menu_popover.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";

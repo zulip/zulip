@@ -3,7 +3,7 @@ import $ from "jquery";
 import type StackFrame from "stackframe";
 import StackTraceGPS from "stacktrace-gps";
 
-import render_blueslip_stacktrace from "../templates/blueslip_stacktrace.hbs";
+import render_blueslip_stacktrace from "../templates/blueslip_stacktrace.ts";
 
 export class BlueslipError extends Error {
     override name = "BlueslipError";

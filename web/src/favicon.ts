@@ -1,7 +1,7 @@
 import $ from "jquery";
 
 import static_favicon_image from "../../static/images/favicon.svg";
-import render_favicon_svg from "../templates/favicon.svg.hbs";
+import render_favicon_svg from "../templates/favicon.svg.ts";
 
 import * as blueslip from "./blueslip.ts";
 import favicon_font_url from "./favicon_font_url!=!url-loader!font-subset-loader2?glyphs=0123456789KMGT∞!source-sans/TTF/SourceSans3-Bold.ttf"; // eslint-disable-line import/extensions

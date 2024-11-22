@@ -3,10 +3,10 @@ import $ from "jquery";
 import type * as tippy from "tippy.js";
 import {z} from "zod";
 
-import render_generate_integration_url_config_checkbox_modal from "../templates/settings/generate_integration_url_config_checkbox_modal.hbs";
-import render_generate_integration_url_config_text_modal from "../templates/settings/generate_integration_url_config_text_modal.hbs";
-import render_generate_integration_url_modal from "../templates/settings/generate_integration_url_modal.hbs";
-import render_integration_events from "../templates/settings/integration_events.hbs";
+import render_generate_integration_url_config_checkbox_modal from "../templates/settings/generate_integration_url_config_checkbox_modal.ts";
+import render_generate_integration_url_config_text_modal from "../templates/settings/generate_integration_url_config_text_modal.ts";
+import render_generate_integration_url_modal from "../templates/settings/generate_integration_url_modal.ts";
+import render_integration_events from "../templates/settings/integration_events.ts";
 
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";

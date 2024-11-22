@@ -2,8 +2,8 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import render_message_controls from "../templates/message_controls.hbs";
-import render_message_controls_failed_msg from "../templates/message_controls_failed_msg.hbs";
+import render_message_controls from "../templates/message_controls.ts";
+import render_message_controls_failed_msg from "../templates/message_controls_failed_msg.ts";
 
 import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";

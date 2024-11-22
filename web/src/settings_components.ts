@@ -4,7 +4,7 @@ import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 import {z} from "zod";
 
-import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
+import render_compose_banner from "../templates/compose_banner/compose_banner.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as compose_banner from "./compose_banner.ts";

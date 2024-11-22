@@ -1,8 +1,8 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_input_pill from "../templates/input_pill.hbs";
-import render_search_user_pill from "../templates/search_user_pill.hbs";
+import render_input_pill from "../templates/input_pill.ts";
+import render_search_user_pill from "../templates/search_user_pill.ts";
 
 import {Filter} from "./filter.ts";
 import * as input_pill from "./input_pill.ts";

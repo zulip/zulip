@@ -2,10 +2,10 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import emoji_codes from "../../static/generated/emoji/emoji_codes.json";
-import render_confirm_deactivate_custom_emoji from "../templates/confirm_dialog/confirm_deactivate_custom_emoji.hbs";
-import emoji_settings_warning_modal from "../templates/confirm_dialog/confirm_emoji_settings_warning.hbs";
-import render_add_emoji from "../templates/settings/add_emoji.hbs";
-import render_admin_emoji_list from "../templates/settings/admin_emoji_list.hbs";
+import render_confirm_deactivate_custom_emoji from "../templates/confirm_dialog/confirm_deactivate_custom_emoji.ts";
+import emoji_settings_warning_modal from "../templates/confirm_dialog/confirm_emoji_settings_warning.ts";
+import render_add_emoji from "../templates/settings/add_emoji.ts";
+import render_admin_emoji_list from "../templates/settings/admin_emoji_list.ts";
 
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";

@@ -2,11 +2,11 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
-import render_dropdown_current_value_not_in_options from "../templates/dropdown_current_value_not_in_options.hbs";
-import render_dropdown_disabled_state from "../templates/dropdown_disabled_state.hbs";
-import render_dropdown_list from "../templates/dropdown_list.hbs";
-import render_dropdown_list_container from "../templates/dropdown_list_container.hbs";
-import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
+import render_dropdown_current_value_not_in_options from "../templates/dropdown_current_value_not_in_options.ts";
+import render_dropdown_disabled_state from "../templates/dropdown_disabled_state.ts";
+import render_dropdown_list from "../templates/dropdown_list.ts";
+import render_dropdown_list_container from "../templates/dropdown_list_container.ts";
+import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as ListWidget from "./list_widget.ts";

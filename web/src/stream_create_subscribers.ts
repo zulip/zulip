@@ -1,7 +1,7 @@
 import $ from "jquery";
 
-import render_new_stream_user from "../templates/stream_settings/new_stream_user.hbs";
-import render_new_stream_users from "../templates/stream_settings/new_stream_users.hbs";
+import render_new_stream_user from "../templates/stream_settings/new_stream_user.ts";
+import render_new_stream_users from "../templates/stream_settings/new_stream_users.ts";
 
 import * as add_subscribers_pill from "./add_subscribers_pill.ts";
 import * as ListWidget from "./list_widget.ts";

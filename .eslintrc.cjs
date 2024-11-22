@@ -24,7 +24,7 @@ module.exports = {
     plugins: ["formatjs", "no-jquery"],
     settings: {
         formatjs: {
-            additionalFunctionNames: ["$t", "$t_html"],
+            additionalFunctionNames: ["$html_t", "$t", "$t_html"],
         },
         "no-jquery": {
             collectionReturningPlugins: {

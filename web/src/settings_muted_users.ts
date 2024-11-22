@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import render_muted_user_ui_row from "../templates/muted_user_ui_row.hbs";
+import render_muted_user_ui_row from "../templates/muted_user_ui_row.ts";
 
 import * as ListWidget from "./list_widget.ts";
 import * as muted_users from "./muted_users.ts";

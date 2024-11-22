@@ -122,6 +122,7 @@ const config = (
                     include: [
                         path.resolve(import.meta.dirname, "shared/src"),
                         path.resolve(import.meta.dirname, "src"),
+                        path.resolve(import.meta.dirname, "templates"),
                     ],
                     loader: "babel-loader",
                 },

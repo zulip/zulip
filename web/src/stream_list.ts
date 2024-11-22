@@ -3,12 +3,12 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
-import render_filter_topics from "../templates/filter_topics.hbs";
-import render_go_to_channel_feed_tooltip from "../templates/go_to_channel_feed_tooltip.hbs";
-import render_stream_privacy from "../templates/stream_privacy.hbs";
-import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
-import render_stream_subheader from "../templates/streams_subheader.hbs";
-import render_subscribe_to_more_streams from "../templates/subscribe_to_more_streams.hbs";
+import render_filter_topics from "../templates/filter_topics.ts";
+import render_go_to_channel_feed_tooltip from "../templates/go_to_channel_feed_tooltip.ts";
+import render_stream_privacy from "../templates/stream_privacy.ts";
+import render_stream_sidebar_row from "../templates/stream_sidebar_row.ts";
+import render_stream_subheader from "../templates/streams_subheader.ts";
+import render_subscribe_to_more_streams from "../templates/subscribe_to_more_streams.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";

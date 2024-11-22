@@ -1,4 +1,4 @@
-import render_empty_feed_notice from "../templates/empty_feed_notice.hbs";
+import render_empty_feed_notice from "../templates/empty_feed_notice.ts";
 
 type QueryWord = {
     query_word: string;

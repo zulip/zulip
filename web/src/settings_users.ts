@@ -2,7 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_admin_user_list from "../templates/settings/admin_user_list.hbs";
+import render_admin_user_list from "../templates/settings/admin_user_list.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";

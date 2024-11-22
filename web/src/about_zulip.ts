@@ -2,7 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_about_zulip from "../templates/about_zulip.hbs";
+import render_about_zulip from "../templates/about_zulip.ts";
 
 import * as browser_history from "./browser_history.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";

@@ -4,10 +4,10 @@ import assert from "minimalistic-assert";
 
 import generated_emoji_codes from "../../static/generated/emoji/emoji_codes.json";
 import * as fenced_code from "../shared/src/fenced_code.ts";
-import render_compose from "../templates/compose.hbs";
-import render_message_feed_bottom_whitespace from "../templates/message_feed_bottom_whitespace.hbs";
-import render_message_feed_errors from "../templates/message_feed_errors.hbs";
-import render_navbar from "../templates/navbar.hbs";
+import render_compose from "../templates/compose.ts";
+import render_message_feed_bottom_whitespace from "../templates/message_feed_bottom_whitespace.ts";
+import render_message_feed_errors from "../templates/message_feed_errors.ts";
+import render_navbar from "../templates/navbar.ts";
 
 import * as about_zulip from "./about_zulip.ts";
 import * as activity from "./activity.ts";

@@ -2,7 +2,8 @@ import $ from "jquery";
 import Cookies from "js-cookie";
 import assert from "minimalistic-assert";
 
-import render_dialog_default_language from "../templates/default_language_modal.hbs";
+import {html} from "../shared/src/html.ts";
+import render_dialog_default_language from "../templates/default_language_modal.ts";
 
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -161,8 +162,7 @@ function user_default_language_modal_post_render(): void {
                             "Saved. Please <z-link>reload</z-link> for the change to take effect.",
                     },
                     {
-                        "z-link": (content_html) =>
-                            `<a class='reload_link'>${content_html.join("")}</a>`,
+                        "z-link": (content) => html`<a class="reload_link">${content}</a>`,
                     },
                 ),
                 true,

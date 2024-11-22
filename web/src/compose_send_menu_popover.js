@@ -1,9 +1,9 @@
 import $ from "jquery";
 import * as tippy from "tippy.js";
 
-import render_send_later_popover from "../templates/popovers/send_later_popover.hbs";
-import render_send_later_modal from "../templates/send_later_modal.hbs";
-import render_send_later_modal_options from "../templates/send_later_modal_options.hbs";
+import render_send_later_popover from "../templates/popovers/send_later_popover.ts";
+import render_send_later_modal from "../templates/send_later_modal.ts";
+import render_send_later_modal_options from "../templates/send_later_modal_options.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";

@@ -1,10 +1,10 @@
 import $ from "jquery";
 import type {z} from "zod";
 
-import render_confirm_delete_attachment from "../templates/confirm_dialog/confirm_delete_attachment.hbs";
-import render_confirm_delete_detached_attachments_modal from "../templates/confirm_dialog/confirm_delete_detached_attachments.hbs";
-import render_settings_upload_space_stats from "../templates/settings/upload_space_stats.hbs";
-import render_uploaded_files_list from "../templates/settings/uploaded_files_list.hbs";
+import render_confirm_delete_attachment from "../templates/confirm_dialog/confirm_delete_attachment.ts";
+import render_confirm_delete_detached_attachments_modal from "../templates/confirm_dialog/confirm_delete_detached_attachments.ts";
+import render_settings_upload_space_stats from "../templates/settings/upload_space_stats.ts";
+import render_uploaded_files_list from "../templates/settings/uploaded_files_list.ts";
 
 import {attachment_api_response_schema} from "./attachments.ts";
 import * as channel from "./channel.ts";

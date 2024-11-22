@@ -2,9 +2,9 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import render_more_topics from "../templates/more_topics.hbs";
-import render_more_topics_spinner from "../templates/more_topics_spinner.hbs";
-import render_topic_list_item from "../templates/topic_list_item.hbs";
+import render_more_topics from "../templates/more_topics.ts";
+import render_more_topics_spinner from "../templates/more_topics_spinner.ts";
+import render_topic_list_item from "../templates/topic_list_item.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as popover_menus from "./popover_menus.ts";

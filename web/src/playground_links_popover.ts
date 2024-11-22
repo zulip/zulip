@@ -2,7 +2,7 @@ import $ from "jquery";
 import type * as tippy from "tippy.js";
 import url_template_lib from "url-template";
 
-import render_playground_links_popover from "../templates/popovers/playground_links_popover.hbs";
+import render_playground_links_popover from "../templates/popovers/playground_links_popover.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as popover_menus from "./popover_menus.ts";

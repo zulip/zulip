@@ -1,9 +1,9 @@
 import $ from "jquery";
 import {z} from "zod";
 
-import render_settings_resend_invite_modal from "../templates/confirm_dialog/confirm_resend_invite.hbs";
-import render_settings_revoke_invite_modal from "../templates/confirm_dialog/confirm_revoke_invite.hbs";
-import render_admin_invites_list from "../templates/settings/admin_invites_list.hbs";
+import render_settings_resend_invite_modal from "../templates/confirm_dialog/confirm_resend_invite.ts";
+import render_settings_revoke_invite_modal from "../templates/confirm_dialog/confirm_revoke_invite.ts";
+import render_admin_invites_list from "../templates/settings/admin_invites_list.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";

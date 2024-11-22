@@ -1,7 +1,7 @@
 import Handlebars from "handlebars/runtime.js";
 import assert from "minimalistic-assert";
 
-import render_user_pill from "../templates/user_pill.hbs";
+import render_user_pill from "../templates/user_pill.ts";
 
 import {MAX_ITEMS} from "./bootstrap_typeahead.ts";
 import * as common from "./common.ts";

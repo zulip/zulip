@@ -1,5 +1,5 @@
-import render_confirm_unstar_all_messages from "../templates/confirm_dialog/confirm_unstar_all_messages.hbs";
-import render_confirm_unstar_all_messages_in_topic from "../templates/confirm_dialog/confirm_unstar_all_messages_in_topic.hbs";
+import render_confirm_unstar_all_messages from "../templates/confirm_dialog/confirm_unstar_all_messages.ts";
+import render_confirm_unstar_all_messages_in_topic from "../templates/confirm_dialog/confirm_unstar_all_messages_in_topic.ts";
 
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t_html} from "./i18n.ts";

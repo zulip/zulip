@@ -5,7 +5,7 @@ import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 import {z} from "zod";
 
-import render_confirm_delete_all_drafts from "../templates/confirm_dialog/confirm_delete_all_drafts.hbs";
+import render_confirm_delete_all_drafts from "../templates/confirm_dialog/confirm_delete_all_drafts.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as compose_state from "./compose_state.ts";
