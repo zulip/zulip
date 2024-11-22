@@ -1033,32 +1033,34 @@ def get_group_setting_value_dict_for_streams(
 def get_setting_values_for_group_settings(
     group_ids: list[int],
 ) -> dict[int, int | AnonymousSettingGroupDict]:
+    user_groups = UserGroup.objects.filter(id__in=group_ids).select_related("named_user_group")
+
+    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] = dict()
+    anonymous_group_ids = []
+    for group in user_groups:
+        if hasattr(group, "named_user_group"):
+            setting_groups_dict[group.id] = group.id
+        else:
+            anonymous_group_ids.append(group.id)
+
     user_members = (
-        UserGroupMembership.objects.filter(user_group_id__in=group_ids)
+        UserGroupMembership.objects.filter(user_group_id__in=anonymous_group_ids)
         .annotate(
             member_type=Value("user"),
-            is_named_group=Q(user_group__named_user_group__isnull=False),
         )
-        .values_list("member_type", "is_named_group", "user_group_id", "user_profile_id")
+        .values_list("member_type", "user_group_id", "user_profile_id")
     )
 
     group_subgroups = (
-        GroupGroupMembership.objects.filter(supergroup_id__in=group_ids)
+        GroupGroupMembership.objects.filter(supergroup_id__in=anonymous_group_ids)
         .annotate(
             member_type=Value("group"),
-            is_named_group=Q(supergroup__named_user_group__isnull=False),
         )
-        .values_list("member_type", "is_named_group", "supergroup_id", "subgroup_id")
+        .values_list("member_type", "supergroup_id", "subgroup_id")
     )
 
     all_members = user_members.union(group_subgroups)
-    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] = dict()
-    for member_type, is_named_group, group_id, member_id in all_members:
-        if is_named_group:
-            if group_id not in setting_groups_dict:
-                setting_groups_dict[group_id] = group_id
-            continue
-
+    for member_type, group_id, member_id in all_members:
         if group_id not in setting_groups_dict:
             setting_groups_dict[group_id] = AnonymousSettingGroupDict(
                 direct_members=[],
