@@ -16,6 +16,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_view from "./message_view.ts";
+import * as narrow_state from "./narrow_state.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {left_sidebar_tippy_options} from "./popover_menus.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
@@ -389,11 +390,20 @@ export async function build_move_topic_to_stream_popover(
         const move_limit_buffer = 5;
         args.disable_topic_input = !message_edit.is_topic_editable(message, move_limit_buffer);
         disable_stream_input = !message_edit.is_stream_editable(message, move_limit_buffer);
-        args.message_placement = await get_message_placement_in_conversation(
-            current_stream_id,
-            topic_name,
-            message.id,
-        );
+
+        // If message is in a search view, default to "move only this message" option,
+        // same as if it were the last message in any view.
+        if (narrow_state.is_search_view()) {
+            args.message_placement = "last";
+        }
+        // Else, default option is based on the message placement in the view.
+        else {
+            args.message_placement = await get_message_placement_in_conversation(
+                current_stream_id,
+                topic_name,
+                message.id,
+            );
+        }
     }
 
     function get_params_from_form() {
