@@ -154,6 +154,47 @@ _Unreleased_
 
 ## Zulip Server 9.x series
 
+### Zulip Server 9.3
+
+_Released 2024-11-22_
+
+- The documentation for the Docker image no longer inaccurately
+  describes it as alpha/experimental software.
+- Fixed the database migration in 9.2,
+  `0576_backfill_imageattachment.py`, to correctly find the files to
+  process for installations using the S3 backend. Also added a
+  progress indicator and a duplicate migration `0622` to rerun the
+  migration code on files that were not processed due to the bug in 0576.
+- Fixed a regression in 9.2 where `libldap-common` was missing on
+  Docker systems, breaking LDAP authentication for some systems.
+- Fixed the backup tool's handling of configuration file symlinks in
+  Docker systems.
+- Fixed emoji appearing huge when viewing email notifications in
+  Microsoft Outlook.
+- Fixed the [slack-compatible incoming
+  webhook](https://zulip.com/integrations/doc/slack_incoming) to
+  return success/failure HTTP responses in the correct format.
+- Fixed several bugs with the data import tools, primarily around
+  thumbnailing of images and input validation.
+- Fixed a bug that could cause the recent view to show incomplete data.
+- Fixed a rare bug where sending a message to a different conversation
+  could result in navigating to that view with the newly sent message
+  missing until the user reloaded that view.
+- Fixed minor bugs with the lightbox's image carousel.
+- Fixed some rare deadlocks in the thumbnailing system.
+- Fixed exceptions involving topics containing Unicode whitespace
+  variables.
+- Fixed certain Unicode characters being improperly escaped in email
+  notifications.
+- Fixed performance when deleting thousands of messages at once.
+- Fixed previously-imported users who are invited to join Zulip using
+  the imported role rather than invitation's role.
+- Improved hardening of desktop app against hypothetical DOM
+  clobbering attacks.
+- Added support for release events to the GitLab integration.
+- Updated Python dependencies.
+- Updated translations.
+
 ### Zulip Server 9.2
 
 _Released 2024-09-12_
