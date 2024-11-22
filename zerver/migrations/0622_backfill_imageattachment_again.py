@@ -49,21 +49,24 @@ def backfill_imageattachment(apps: StateApps, schema_editor: BaseDatabaseSchemaE
         extension_limits,
     )
 
+    attachments_query = (
+        Attachment.objects.alias(
+            has_imageattachment=Exists(ImageAttachment.objects.filter(path_id=OuterRef("path_id")))
+        )
+        .filter(extension_limits, has_imageattachment=False)
+        .order_by("id")
+    )
+
+    already_processed = 0
+    total_to_process = attachments_query.count()
     min_id: int | None = 0
     while True:
-        attachments = (
-            Attachment.objects.alias(
-                has_imageattachment=Exists(
-                    ImageAttachment.objects.filter(path_id=OuterRef("path_id"))
-                )
-            )
-            .filter(extension_limits, has_imageattachment=False, id__gt=min_id)
-            .order_by("id")
-        )[:1000]
+        attachments = attachments_query.filter(id__gt=min_id)[:100]
 
         min_id = None
         for attachment in attachments:
             min_id = attachment.id
+            already_processed += 1
 
             if settings.LOCAL_UPLOADS_DIR is None:
                 try:
@@ -113,6 +116,7 @@ def backfill_imageattachment(apps: StateApps, schema_editor: BaseDatabaseSchemaE
             except pyvips.Error:
                 pass
 
+        print(f"Processed {already_processed}/{total_to_process}")
         if min_id is None:
             break
 
