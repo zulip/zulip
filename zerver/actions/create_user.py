@@ -1,7 +1,6 @@
 from collections import defaultdict
 from collections.abc import Iterable, Sequence
 from contextlib import suppress
-from datetime import timedelta
 from typing import Any
 
 from django.conf import settings
@@ -70,12 +69,6 @@ from zerver.tornado.django_api import send_event_on_commit
 
 MAX_NUM_RECENT_MESSAGES = 1000
 MAX_NUM_RECENT_UNREAD_MESSAGES = 20
-
-# We don't want to mark years-old messages as unread, since that might
-# feel like Zulip is buggy, but in low-traffic or bursty-traffic
-# organizations, it's reasonable for the most recent 20 messages to be
-# several weeks old and still be a good place to start.
-RECENT_MESSAGES_TIMEDELTA = timedelta(weeks=12)
 
 
 def send_message_to_signup_notification_stream(
@@ -201,13 +194,11 @@ def add_new_user_history(
     ]
 
     # Start by finding recent messages matching those recipients.
-    cutoff_date = timezone_now() - RECENT_MESSAGES_TIMEDELTA
     recent_message_ids = set(
         Message.objects.filter(
             # Uses index: zerver_message_realm_recipient_id
             realm_id=realm.id,
             recipient_id__in=recipient_ids,
-            date_sent__gt=cutoff_date,
         )
         .order_by("-id")
         .values_list("id", flat=True)[0:MAX_NUM_RECENT_MESSAGES]

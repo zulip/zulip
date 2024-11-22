@@ -1025,23 +1025,10 @@ class LoginTest(ZulipTestCase):
         reset_email_visibility_to_everyone_in_zulip_realm()
 
         realm = get_realm("zulip")
-        hamlet = self.example_user("hamlet")
         stream_names = [f"stream_{i}" for i in range(40)]
         for stream_name in stream_names:
             stream = self.make_stream(stream_name, realm=realm)
             DefaultStream.objects.create(stream=stream, realm=realm)
-
-        # Make sure there's at least one recent message to be mark
-        # unread.  This prevents a bug where this test would start
-        # failing the test database was generated more than
-        # RECENT_MESSAGES_TIMEDELTA ago.
-        self.subscribe(hamlet, "stream_0")
-        self.send_stream_message(
-            hamlet,
-            "stream_0",
-            topic_name="test topic",
-            content="test message",
-        )
 
         # Clear the ContentType cache.
         ContentType.objects.clear_cache()
