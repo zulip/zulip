@@ -49,7 +49,7 @@ export function set_upload_in_progress(status: boolean): void {
     update_send_button_status();
 }
 
-function set_message_too_long(status: boolean): void {
+function set_message_too_long_for_compose(status: boolean): void {
     message_too_long = status;
     update_send_button_status();
 }
@@ -734,7 +734,7 @@ export function check_overflow_text(): number {
                 remaining_characters,
             }),
         );
-        set_message_too_long(true);
+        set_message_too_long_for_compose(true);
     } else if (remaining_characters <= 900) {
         $indicator.removeClass("over_limit");
         $("textarea#compose-textarea").removeClass("over_limit");
@@ -743,12 +743,12 @@ export function check_overflow_text(): number {
                 remaining_characters,
             }),
         );
-        set_message_too_long(false);
+        set_message_too_long_for_compose(false);
     } else {
         $indicator.text("");
         $("textarea#compose-textarea").removeClass("over_limit");
 
-        set_message_too_long(false);
+        set_message_too_long_for_compose(false);
     }
 
     return text.length;
