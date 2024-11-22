@@ -193,13 +193,12 @@ export function initialize(): void {
         onShow(instance) {
             const stream_name = instance.reference.querySelector(".stream-name");
             assert(stream_name instanceof HTMLElement);
-            if (stream_name.offsetWidth < stream_name.scrollWidth) {
-                const truncated_stream_name = stream_name.textContent ?? "";
-                instance.setContent(truncated_stream_name);
-            } else {
+            if (stream_name.offsetWidth >= stream_name.scrollWidth) {
                 return false;
             }
-            return false;
+            const truncated_stream_name = stream_name.textContent ?? "";
+            instance.setContent(truncated_stream_name);
+            return undefined;
         },
     });
 
