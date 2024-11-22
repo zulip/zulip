@@ -864,6 +864,7 @@ export function get_options_for_dropdown_widget(): {
     stream: StreamSubscription;
 }[] {
     return subscribed_subs()
+        .filter((stream) => !stream.is_archived)
         .map((stream) => ({
             name: stream.name,
             unique_id: stream.stream_id,
