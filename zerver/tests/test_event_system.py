@@ -163,7 +163,7 @@ class EventsEndpointTest(ZulipTestCase):
     def test_events_register_spectators(self) -> None:
         # Verify that POST /register works for spectators, but not for
         # normal users.
-        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False), self.assert_database_query_count(2):
             result = self.client_post("/json/register")
             self.assert_json_error(
                 result,
@@ -171,11 +171,12 @@ class EventsEndpointTest(ZulipTestCase):
                 status_code=401,
             )
 
-        result = self.client_post("/json/register")
-        result_dict = self.assert_json_success(result)
-        self.assertEqual(result_dict["queue_id"], None)
-        self.assertEqual(result_dict["realm_url"], "http://zulip.testserver")
-        self.assertEqual(result_dict["realm_uri"], "http://zulip.testserver")
+        with self.assert_database_query_count(17):
+            result = self.client_post("/json/register")
+            result_dict = self.assert_json_success(result)
+            self.assertEqual(result_dict["queue_id"], None)
+            self.assertEqual(result_dict["realm_url"], "http://zulip.testserver")
+            self.assertEqual(result_dict["realm_uri"], "http://zulip.testserver")
 
         result = self.client_post("/json/register")
         self.assertEqual(result.status_code, 200)
