@@ -419,6 +419,8 @@ def support(
     query: Annotated[str | None, ApiParamConfig("q")] = None,
     org_type: Json[NonNegativeInt] | None = None,
     max_invites: Json[NonNegativeInt] | None = None,
+    plan_end_date: Annotated[str, AfterValidator(lambda x: check_date("plan_end_date", x))]
+    | None = None,
 ) -> HttpResponse:
     from corporate.lib.stripe import (
         RealmBillingSession,
@@ -482,6 +484,11 @@ def support(
             )
             if modify_plan == "upgrade_plan_tier":
                 support_view_request["new_plan_tier"] = CustomerPlan.TIER_CLOUD_PLUS
+        elif plan_end_date is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.update_plan_end_date,
+                plan_end_date=plan_end_date,
+            )
         elif plan_type is not None:
             current_plan_type = realm.plan_type
             do_change_realm_plan_type(realm, plan_type, acting_user=acting_user)

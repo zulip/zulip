@@ -9,7 +9,7 @@
     <button type="submit" class="support-submit-button">Update</button>
 </form>
 
-{% if current_plan.status == current_plan.ACTIVE and remote_support_view %}
+{% if current_plan.status == current_plan.ACTIVE %}
 <form method="POST" class="support-form">
     <b>Plan end date</b><br />
     {{ csrf_input }}
