@@ -99,6 +99,7 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
 )
 from zerver.lib.types import (
+    AnonymousSettingGroupDict,
     APIStreamDict,
     APISubscriptionDict,
     NeverSubscribedStreamDict,
@@ -6212,6 +6213,59 @@ class GetSubscribersTest(ZulipTestCase):
             if not sub["name"].startswith("stream_"):
                 continue
             self.assert_length(sub["subscribers"], len(users_to_subscribe))
+
+        # Test query count when setting is set to anonymous group.
+        realm = hamlet.realm
+        stream = get_stream("stream_1", realm)
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet], [admins_group])
+        do_change_stream_group_based_setting(
+            stream,
+            "can_remove_subscribers_group",
+            setting_group,
+            acting_user=None,
+        )
+        stream = get_stream("stream_2", realm)
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [cordelia],
+            [admins_group],
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_remove_subscribers_group",
+            setting_group,
+            acting_user=None,
+        )
+
+        with self.assert_database_query_count(6):
+            subscribed_streams, _ = gather_subscriptions(
+                self.user_profile, include_subscribers=True
+            )
+        self.assertGreaterEqual(len(subscribed_streams), 11)
+        for sub in subscribed_streams:
+            if not sub["name"].startswith("stream_"):
+                continue
+            self.assert_length(sub["subscribers"], len(users_to_subscribe))
+            if sub["name"] == "stream_1":
+                self.assertEqual(
+                    sub["can_remove_subscribers_group"],
+                    AnonymousSettingGroupDict(
+                        direct_members=[hamlet.id],
+                        direct_subgroups=[admins_group.id],
+                    ),
+                )
+            elif sub["name"] == "stream_2":
+                self.assertEqual(
+                    sub["can_remove_subscribers_group"],
+                    AnonymousSettingGroupDict(
+                        direct_members=[cordelia.id],
+                        direct_subgroups=[admins_group.id],
+                    ),
+                )
+            else:
+                self.assertEqual(sub["can_remove_subscribers_group"], admins_group.id)
 
     def test_never_subscribed_streams(self) -> None:
         """
