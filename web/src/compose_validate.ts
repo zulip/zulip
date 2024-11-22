@@ -721,6 +721,7 @@ export function check_overflow_text(): number {
     // This function is called when typing every character in the
     // compose box, so it's important that it not doing anything
     // expensive.
+    const $textarea = $("textarea#compose-textarea");
     const text = compose_state.message_content();
     const max_length = realm.max_message_length;
     const remaining_characters = max_length - text.length;
@@ -728,7 +729,7 @@ export function check_overflow_text(): number {
 
     if (text.length > max_length) {
         $indicator.addClass("over_limit");
-        $("textarea#compose-textarea").addClass("over_limit");
+        $textarea.addClass("over_limit");
         $indicator.html(
             render_compose_limit_indicator({
                 remaining_characters,
@@ -737,7 +738,7 @@ export function check_overflow_text(): number {
         set_message_too_long_for_compose(true);
     } else if (remaining_characters <= 900) {
         $indicator.removeClass("over_limit");
-        $("textarea#compose-textarea").removeClass("over_limit");
+        $textarea.removeClass("over_limit");
         $indicator.html(
             render_compose_limit_indicator({
                 remaining_characters,
@@ -746,7 +747,7 @@ export function check_overflow_text(): number {
         set_message_too_long_for_compose(false);
     } else {
         $indicator.text("");
-        $("textarea#compose-textarea").removeClass("over_limit");
+        $textarea.removeClass("over_limit");
 
         set_message_too_long_for_compose(false);
     }
@@ -755,9 +756,10 @@ export function check_overflow_text(): number {
 }
 
 export function validate_message_length(): boolean {
+    const $textarea = $("textarea#compose-textarea");
     if (compose_state.message_content().length > realm.max_message_length) {
-        $("textarea#compose-textarea").addClass("flash");
-        setTimeout(() => $("textarea#compose-textarea").removeClass("flash"), 1500);
+        $textarea.addClass("flash");
+        setTimeout(() => $textarea.removeClass("flash"), 1500);
         return false;
     }
     return true;
