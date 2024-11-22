@@ -1612,7 +1612,9 @@ class BillingSession(ABC):
                         "property": "next_invoice_date",
                     }
                     plan.next_invoice_date = new_end_date
-                # Currently, we send a reminder email 2 months before the end date.
+                # We send a reminder email 2 months before the end date of
+                # remote server and remote realm fixed-price plans so that
+                # billing support can follow-up about continuing service.
                 # Reset it when we are extending the end_date.
                 reminder_to_review_plan_email_sent_changed_extra_data = None
                 if (
@@ -1659,9 +1661,7 @@ class BillingSession(ABC):
                     )
 
                 return f"Current plan for {self.billing_entity_display_name} updated to end on {end_date_string}."
-        raise SupportRequestError(
-            f"No current plan for {self.billing_entity_display_name}."
-        )  # nocoverage
+        raise SupportRequestError(f"No current plan for {self.billing_entity_display_name}.")
 
     def generate_stripe_invoice(
         self,

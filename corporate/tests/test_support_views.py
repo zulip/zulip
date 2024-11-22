@@ -1513,6 +1513,62 @@ class TestSupportEndpoint(ZulipTestCase):
         )
         self.assert_length(messages, 1)
 
+    def test_update_current_plan_end_date(self) -> None:
+        lear_realm = get_realm("lear")
+        customer = get_customer_by_realm(lear_realm)
+        assert customer is None
+
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "plan_end_date": "2020-01-01",
+            },
+        )
+        self.assert_in_success_response(
+            ["Cannot update current plan for lear to end on 2020-01-01."],
+            result,
+        )
+
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "plan_end_date": "2050-03-01",
+            },
+        )
+        self.assert_in_success_response(
+            ["No current plan for lear."],
+            result,
+        )
+
+        customer = self.create_customer_and_plan(lear_realm, True)
+        assert customer is not None
+        current_plan = get_current_plan_by_customer(customer)
+        assert current_plan is not None
+        self.assertIsNone(current_plan.end_date)
+        next_invoice_date = current_plan.next_invoice_date
+        assert next_invoice_date is not None
+
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "plan_end_date": "2050-03-01",
+            },
+        )
+        self.assert_in_success_response(
+            ["Current plan for lear updated to end on 2050-03-01."],
+            result,
+        )
+
+        current_plan.refresh_from_db()
+        self.assertEqual(current_plan.end_date, datetime(2050, 3, 1, tzinfo=timezone.utc))
+        self.assertEqual(current_plan.next_invoice_date, next_invoice_date)
+
     def test_approve_sponsorship_deactivated_realm(self) -> None:
         support_admin = self.example_user("iago")
         with self.settings(BILLING_ENABLED=True):
