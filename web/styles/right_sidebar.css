@@ -556,12 +556,16 @@ $user_status_emoji_width: 24px;
        from the legacy value. */
     margin-top: calc(25px - (var(--legacy-body-line-height-unitless) * 1em));
     margin-bottom: var(--sidebar-bottom-spacing);
+    padding-left: 0;
 
     .invite-user-link {
-        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-columns: var(--right-sidebar-header-icon-toggle-width) minmax(
+                0,
+                1fr
+            );
 
         .zulip-icon-user-plus {
-            padding-right: 5px;
+            justify-self: center;
         }
     }
 }
