@@ -273,6 +273,24 @@ test("basics", () => {
             unique_id: 3,
         },
     ]);
+
+    test.is_archived = true;
+    assert.deepEqual(stream_data.get_options_for_dropdown_widget(), [
+        {
+            name: "social",
+            stream: {
+                color: "red",
+                history_public_to_subscribers: false,
+                invite_only: true,
+                is_muted: false,
+                name: "social",
+                stream_id: 2,
+                stream_post_policy: 2,
+                subscribed: true,
+            },
+            unique_id: 2,
+        },
+    ]);
 });
 
 test("get_streams_for_user", ({override}) => {
