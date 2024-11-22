@@ -1382,13 +1382,6 @@ class StreamMessagesTest(ZulipTestCase):
         realm = get_realm("zulip")
         subscribers = self.users_subscribed_to_stream(stream_name, realm)
 
-        # Outgoing webhook bots don't store UserMessage rows; they will be processed later.
-        subscribers = [
-            subscriber
-            for subscriber in subscribers
-            if subscriber.bot_type != UserProfile.OUTGOING_WEBHOOK_BOT
-        ]
-
         old_subscriber_messages = list(map(message_stream_count, subscribers))
 
         non_subscribers = [
