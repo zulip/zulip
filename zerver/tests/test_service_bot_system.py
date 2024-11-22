@@ -608,13 +608,12 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         self.assertFalse(mock_queue_event_on_commit.called)
 
     @responses.activate
-    def test_flag_messages_outgoing_webhook_bot_has_processed(self) -> None:
+    @for_all_bot_types
+    def test_flag_messages_service_bots_has_processed(self) -> None:
         """
-        Verifies that once an event has been processed by the outgoing webhook
-        bot's queue processor, the message is marked as processed (flagged with `read`).
+        Verifies that once an event has been processed by the service bot's
+        queue processor, the message is marked as processed (flagged with `read`).
         """
-        self.bot_profile.bot_type = UserProfile.OUTGOING_WEBHOOK_BOT
-        self.bot_profile.save()
         sender = self.user_profile
         recipients = [self.user_profile, self.bot_profile, self.second_bot_profile]
         responses.add(
