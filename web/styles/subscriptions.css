@@ -379,7 +379,7 @@ h4.user_group_setting_subsection_title {
         margin-right: 2em;
 
         .settings-empty-option-text {
-            color: hsl(0deg 0% 67%);
+            color: var(--color-text-item);
         }
     }
 
@@ -405,7 +405,7 @@ h4.user_group_setting_subsection_title {
             text-align: center;
 
             .settings-empty-option-text {
-                color: hsl(0deg 0% 67%);
+                color: var(--color-text-item);
             }
 
             .upgrade-or-sponsorship-tip,
