@@ -760,7 +760,8 @@ class NarrowBuilder:
         return query.where(maybe_negate(cond))
 
     def by_search(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
-        if settings.USING_PARADEDB:
+        if settings.USING_PARADEDB and operand.strip().startswith("!paradedb"):
+            operand = operand.strip()[len("!paradedb") :].strip()
             return self._by_search_paradedb(query, operand, maybe_negate)
         elif settings.USING_PGROONGA:
             return self._by_search_pgroonga(query, operand, maybe_negate)
