@@ -1,6 +1,6 @@
 <tr class="user_row{{#if is_active}} active-user{{else}} deactivated_user{{/if}}" data-user-id="{{user_id}}">
     <td class="user_name panel_user_list">
-        {{> ../user_display_only_pill display_value=full_name user_id=user_id img_src=img_src}}
+        {{> ../user_display_only_pill display_value=full_name user_id=user_id img_src=img_src is_active=is_active is_current_user=is_current_user}}
     </td>
     {{#if display_email}}
     <td class="email settings-email-column">
