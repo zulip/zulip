@@ -1076,6 +1076,9 @@ def get_setting_values_for_group_settings(
         else:
             anonymous_group_ids.append(group.id)
 
+    if len(anonymous_group_ids) == 0:
+        return setting_groups_dict
+
     user_members = (
         UserGroupMembership.objects.filter(user_group_id__in=anonymous_group_ids)
         .annotate(
