@@ -1255,7 +1255,7 @@ export function maybe_show_edit($row: JQuery, id: number): void {
 
 function warn_user_about_unread_msgs(last_sent_msg_id: number, num_unread: number): void {
     confirm_dialog.launch({
-        html_heading: $t({defaultMessage: "Edit last sent message"}),
+        html_heading: $t({defaultMessage: "Edit your last message?"}),
         html_body: render_confirm_edit_messages({
             num_unread,
         }),
