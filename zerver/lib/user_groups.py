@@ -57,6 +57,7 @@ class UserGroupDict(TypedDict):
     can_leave_group: int | AnonymousSettingGroupDict
     can_manage_group: int | AnonymousSettingGroupDict
     can_mention_group: int | AnonymousSettingGroupDict
+    can_remove_members_group: int | AnonymousSettingGroupDict
     deactivated: bool
 
 
@@ -562,6 +563,8 @@ def user_groups_in_realm_serialized(
         "can_manage_group__named_user_group",
         "can_mention_group",
         "can_mention_group__named_user_group",
+        "can_remove_members_group",
+        "can_remove_members_group__named_user_group",
     ).filter(realm=realm)
 
     if not include_deactivated_groups:
@@ -626,6 +629,9 @@ def user_groups_in_realm_serialized(
             ),
             can_mention_group=get_setting_value_for_user_group_object(
                 user_group.can_mention_group, group_members, group_subgroups
+            ),
+            can_remove_members_group=get_setting_value_for_user_group_object(
+                user_group.can_remove_members_group, group_members, group_subgroups
             ),
             deactivated=user_group.deactivated,
         )
@@ -842,12 +848,13 @@ def bulk_create_system_user_groups(groups: list[dict[str, str]], realm: Realm) -
         user_group_ids = [id for (id,) in cursor.fetchall()]
 
     rows = [
-        SQL("({},{},{},{},{},{},{},{},{},{},{})").format(
+        SQL("({},{},{},{},{},{},{},{},{},{},{},{})").format(
             Literal(user_group_ids[idx]),
             Literal(realm.id),
             Literal(group["name"]),
             Literal(group["description"]),
             Literal(True),
+            Literal(initial_group_setting_value),
             Literal(initial_group_setting_value),
             Literal(initial_group_setting_value),
             Literal(initial_group_setting_value),
@@ -859,7 +866,7 @@ def bulk_create_system_user_groups(groups: list[dict[str, str]], realm: Realm) -
     ]
     query = SQL(
         """
-        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_add_members_group_id, can_join_group_id, can_leave_group_id, can_manage_group_id, can_mention_group_id, deactivated)
+        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_add_members_group_id, can_join_group_id, can_leave_group_id, can_manage_group_id, can_mention_group_id, can_remove_members_group_id, deactivated)
         VALUES {rows}
         """
     ).format(rows=SQL(", ").join(rows))
@@ -944,6 +951,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> dict[str, NamedUserGrou
             "can_leave_group",
             "can_manage_group",
             "can_mention_group",
+            "can_remove_members_group",
         ],
     )
 

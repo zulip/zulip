@@ -3220,6 +3220,7 @@ paths:
                                       "can_leave_group": 15,
                                       "can_manage_group": 16,
                                       "can_mention_group": 11,
+                                      "can_remove_members_group": 16,
                                     },
                                   "id": 0,
                                 }
@@ -3350,6 +3351,20 @@ paths:
                                             [setting-values]: /api/group-setting-values
                                             [system-groups]: /api/group-setting-values#system-groups
                                             [mentions]: /help/mention-a-user-or-group
+                                    can_remove_members_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value][setting-values] defining the set of users who
+                                            have permission to remove members from this group. Only present if this
+                                            user group permission setting changed.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 324). Previously, this
+                                            permission was controlled by the `can_manage_group` setting.
+
+                                            Will be one of the following:
+
+                                            [setting-values]: /api/group-setting-values
                                     deactivated:
                                       type: boolean
                                       description: |
@@ -20548,6 +20563,19 @@ paths:
                         [mentions]: /help/mention-a-user-or-group
                     - $ref: "#/components/schemas/GroupSettingValue"
                   example: 11
+                can_remove_members_group:
+                  allOf:
+                    - description: |
+                        A [group-setting value][setting-values] defining the set of users who
+                        have permission to remove members from this user group.
+
+                        **Changes**: New in Zulip 10.0 (feature level 324). Previously, this
+                        permission was controlled by the `can_manage_group` setting.
+
+                        [setting-values]: /api/group-setting-values
+                        [system-groups]: /api/group-setting-values#system-groups
+                    - $ref: "#/components/schemas/GroupSettingValue"
+                  example: 11
               required:
                 - name
                 - description
@@ -20566,6 +20594,8 @@ paths:
               can_manage_group:
                 contentType: application/json
               can_mention_group:
+                contentType: application/json
+              can_remove_members_group:
                 contentType: application/json
       responses:
         "200":
@@ -20919,6 +20949,38 @@ paths:
                       "new": {"direct_members": [10], "direct_subgroups": [11]},
                       "old": 11,
                     }
+                can_remove_members_group:
+                  description: |
+                    The set of users who have permission to remove members from this user group
+                    expressed as an [update to a group-setting value][update-group-setting].
+
+                    **Changes**: New in Zulip 10.0 (feature level 324). Previously, this
+                    permission was controlled by the `can_manage_group` setting.
+
+                    [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+                    [system-groups]: /api/group-setting-values#system-groups
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    new:
+                      allOf:
+                        - description: |
+                            The new [group-setting value](/api/group-setting-values) for the set of users
+                            who would have the permission to remove members from the group.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                    old:
+                      allOf:
+                        - description: |
+                            The expected current [group-setting value](/api/group-setting-values) for
+                            the set of users who have the permission to remove members from the group.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                  required:
+                    - new
+                  example:
+                    {
+                      "new": {"direct_members": [10], "direct_subgroups": [11]},
+                      "old": 11,
+                    }
             encoding:
               can_add_members_group:
                 contentType: application/json
@@ -20929,6 +20991,8 @@ paths:
               can_manage_group:
                 contentType: application/json
               can_mention_group:
+                contentType: application/json
+              can_remove_members_group:
                 contentType: application/json
       responses:
         "200":
@@ -21144,6 +21208,19 @@ paths:
                                     [setting-values]: /api/group-setting-values
                                     [system-groups]: /api/group-setting-values#system-groups
                                     [mentions]: /help/mention-a-user-or-group
+                            can_remove_members_group:
+                              allOf:
+                                - $ref: "#/components/schemas/GroupSettingValue"
+                                - description: |
+                                    A [group-setting value][setting-values] defining the set of users who
+                                    have permission to remove members from this user group.
+
+                                    **Changes**: New in Zulip 10.0 (feature level 324). Previously, this
+                                    permission was controlled by the `can_manage_group` setting.
+
+                                    Will be one of the following:
+
+                                    [setting-values]: /api/group-setting-values
                             deactivated:
                               type: boolean
                               description: |
@@ -21174,6 +21251,7 @@ paths:
                               "can_leave_group": 15,
                               "can_manage_group": 16,
                               "can_mention_group": 11,
+                              "can_remove_members_group": 16,
                             },
                             {
                               "description": "Administrators of this organization, including owners",
@@ -21189,6 +21267,7 @@ paths:
                               "can_leave_group": 15,
                               "can_manage_group": 17,
                               "can_mention_group": 12,
+                              "can_remove_members_group": 16,
                             },
                             {
                               "description": "Characters of Hamlet",
@@ -21204,6 +21283,7 @@ paths:
                               "can_leave_group": 15,
                               "can_manage_group": 20,
                               "can_mention_group": 13,
+                              "can_remove_members_group": 16,
                             },
                           ],
                       }
@@ -22583,6 +22663,19 @@ components:
                 [setting-values]: /api/group-setting-values
                 [system-groups]: /api/group-setting-values#system-groups
                 [mentions]: /help/mention-a-user-or-group
+        can_remove_members_group:
+          allOf:
+            - $ref: "#/components/schemas/GroupSettingValue"
+            - description: |
+                A [group-setting value][setting-values] defining the set of users who
+                have permission to remove members from this user group.
+
+                **Changes**: New in Zulip 10.0 (feature level 324). Previously, this
+                permission was controlled by the `can_manage_group` setting.
+
+                Will be one of the following:
+
+                [setting-values]: /api/group-setting-values
         deactivated:
           type: boolean
           description: |

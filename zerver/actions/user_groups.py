@@ -193,6 +193,9 @@ def do_send_create_user_group_event(
             can_leave_group=get_group_setting_value_for_api(user_group.can_leave_group),
             can_manage_group=get_group_setting_value_for_api(user_group.can_manage_group),
             can_mention_group=get_group_setting_value_for_api(user_group.can_mention_group),
+            can_remove_members_group=get_group_setting_value_for_api(
+                user_group.can_remove_members_group
+            ),
             deactivated=False,
         ),
     )
