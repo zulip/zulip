@@ -3,16 +3,19 @@ import os
 import orjson
 from django.conf import settings
 from django.test import override_settings
+from typing_extensions import ParamSpec
 
 from zerver.lib.cache import cache_delete, get_realm_used_upload_space_cache_key
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import create_s3_buckets, use_s3_backend
+from zerver.lib.test_helpers import create_s3_buckets, find_key_by_email, use_s3_backend
 from zerver.lib.upload import sanitize_name, upload_backend, upload_message_attachment
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Attachment, Realm
+from zerver.models import Attachment, PreregistrationRealm, Realm
 from zerver.models.realms import get_realm
 from zerver.views.tusd import TusEvent, TusHook, TusHTTPRequest, TusUpload
+
+ParamT = ParamSpec("ParamT")
 
 
 class TusdHooksTest(ZulipTestCase):
@@ -98,7 +101,7 @@ class TusdHooksTest(ZulipTestCase):
 
 
 class TusdPreCreateTest(ZulipTestCase):
-    def request(self) -> TusHook:
+    def request(self, key: str = "") -> TusHook:
         return TusHook(
             type="pre-create",
             event=TusEvent(
@@ -114,6 +117,7 @@ class TusdPreCreateTest(ZulipTestCase):
                         "filetype": "text/plain",
                         "name": "zulip.txt",
                         "type": "text/plain",
+                        "key": key,
                     },
                     offset=0,
                     partial_uploads=None,
@@ -292,6 +296,162 @@ class TusdPreCreateTest(ZulipTestCase):
         self.assertEqual(
             orjson.loads(result_json["HttpResponse"]["Body"]),
             {"message": "Upload would exceed your organization's upload quota."},
+        )
+        self.assertEqual(result_json["RejectUpload"], True)
+
+    def test_realm_import_data_upload(self) -> None:
+        # Choose import from slack
+        email = "ete-slack-import@zulip.com"
+        self.submit_realm_creation_form(
+            email,
+            realm_subdomain="ete-slack-import",
+            realm_name="Slack import end to end",
+            # TODO: Uncomment after adding support to form.
+            # import_from="slack",
+        )
+        prereg_realm = PreregistrationRealm.objects.get(email=email)
+        # TODO: Uncomment after adding support to form.
+        # self.assertEqual(prereg_realm.data_import_metadata["import_from"], "slack")
+        prereg_realm.data_import_metadata["import_from"] = "slack"
+        prereg_realm.save()
+
+        confirmation_key = find_key_by_email(email)
+        assert confirmation_key is not None
+
+        with self.assertLogs(level="WARNING") as warn_log:
+            result = self.client_post(
+                "/api/internal/tusd",
+                self.request(key=confirmation_key).model_dump(),
+                content_type="application/json",
+            )
+        self.assertEqual(result.status_code, 200)
+        # Verify if we tried to remove any existing upload.
+        self.assertEqual(
+            warn_log.output,
+            ["WARNING:root:slack.zip does not exist. Its entry in the database will be removed."],
+        )
+        result_json = result.json()
+        self.assertEqual(result_json.get("HttpResponse", None), None)
+        self.assertEqual(result_json.get("RejectUpload", False), False)
+        self.assertEqual(list(result_json["ChangeFileInfo"].keys()), ["ID"])
+        filename = f"import/{prereg_realm.id}/slack.zip"
+        self.assertTrue(result_json["ChangeFileInfo"]["ID"].endswith(filename))
+
+        info = TusUpload(
+            id=filename,
+            size=len("zulip!"),
+            offset=0,
+            size_is_deferred=False,
+            meta_data={
+                "filename": filename,
+                "filetype": "text/plain",
+                "name": "zulip.zip",
+                "type": "text/plain",
+                "key": confirmation_key,
+            },
+            is_final=False,
+            is_partial=False,
+            partial_uploads=None,
+            storage=None,
+        )
+        request = TusHook(
+            type="pre-finish",
+            event=TusEvent(
+                upload=info,
+                http_request=TusHTTPRequest(
+                    method="PATCH",
+                    uri=f"/api/v1/tus/{info.id}",
+                    remote_addr="12.34.56.78",
+                    header={},
+                ),
+            ),
+        )
+
+        # Post the hook saying the file is in place
+        result = self.client_post(
+            "/api/internal/tusd",
+            request.model_dump(),
+            content_type="application/json",
+        )
+
+        self.assertEqual(result.status_code, 200)
+        prereg_realm.refresh_from_db()
+        self.assertTrue(
+            prereg_realm.data_import_metadata["uploaded_import_file_name"].endswith(filename)
+        )
+
+    def test_realm_import_data_upload_size_is_deferred(self) -> None:
+        # Choose import from slack
+        email = "ete-slack-import@zulip.com"
+        self.submit_realm_creation_form(
+            email,
+            realm_subdomain="ete-slack-import",
+            realm_name="Slack import end to end",
+            # TODO: Uncomment after adding support to form.
+            # import_from="slack",
+        )
+        prereg_realm = PreregistrationRealm.objects.get(email=email)
+        # TODO: Uncomment after adding support to form.
+        # self.assertEqual(prereg_realm.data_import_metadata["import_from"], "slack")
+        prereg_realm.data_import_metadata["import_from"] = "slack"
+        prereg_realm.save()
+
+        confirmation_key = find_key_by_email(email)
+        assert confirmation_key is not None
+
+        request = self.request(key=confirmation_key)
+        request.event.upload.size = None
+        request.event.upload.size_is_deferred = True
+        result = self.client_post(
+            "/api/internal/tusd",
+            request.model_dump(),
+            content_type="application/json",
+        )
+        self.assertEqual(result.status_code, 200)
+        result_json = result.json()
+        self.assertEqual(result_json["HttpResponse"]["StatusCode"], 411)
+        self.assertEqual(
+            orjson.loads(result_json["HttpResponse"]["Body"]),
+            {"message": "SizeIsDeferred is not supported"},
+        )
+        self.assertEqual(result_json["RejectUpload"], True)
+
+    def test_realm_import_data_upload_size_limit_exceeded(self) -> None:
+        # Choose import from slack
+        email = "ete-slack-import@zulip.com"
+        self.submit_realm_creation_form(
+            email,
+            realm_subdomain="ete-slack-import",
+            realm_name="Slack import end to end",
+            # TODO: Uncomment after adding support to form.
+            # import_from="slack",
+        )
+        prereg_realm = PreregistrationRealm.objects.get(email=email)
+        # TODO: Uncomment after adding support to form.
+        # self.assertEqual(prereg_realm.data_import_metadata["import_from"], "slack")
+        prereg_realm.data_import_metadata["import_from"] = "slack"
+        prereg_realm.save()
+
+        confirmation_key = find_key_by_email(email)
+        assert confirmation_key is not None
+
+        request = self.request(key=confirmation_key)
+
+        max_upload_size = settings.MAX_WEB_DATA_IMPORT_SIZE_MB * 1024 * 1024
+        request.event.upload.size = max_upload_size + 1
+        result = self.client_post(
+            "/api/internal/tusd",
+            request.model_dump(),
+            content_type="application/json",
+        )
+        self.assertEqual(result.status_code, 200)
+        result_json = result.json()
+        self.assertEqual(result_json["HttpResponse"]["StatusCode"], 413)
+        self.assertEqual(
+            orjson.loads(result_json["HttpResponse"]["Body"]),
+            {
+                "message": f"Uploaded file is larger than the allowed limit of {settings.MAX_WEB_DATA_IMPORT_SIZE_MB} MiB"
+            },
         )
         self.assertEqual(result_json["RejectUpload"], True)
 

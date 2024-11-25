@@ -674,3 +674,7 @@ CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION: Callable[..., Any] | None = None
 # notification to a stream and also delete the previous counter
 # notification.
 RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 60
+
+# For realm imports during registration, maximum size of file
+# that can be uploaded.
+MAX_WEB_DATA_IMPORT_SIZE_MB = 1024
