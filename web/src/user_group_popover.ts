@@ -93,13 +93,16 @@ export function toggle_user_group_info_popover(
                     message_lists.current.select_id(message_id);
                 }
                 user_group_popover_instance = instance;
+                const subgroups = user_groups.convert_name_to_display_name_for_groups(
+                    user_groups
+                        .get_direct_subgroups_of_group(group)
+                        .sort(user_group_components.sort_group_member_name),
+                );
                 const args = {
                     group_name: user_groups.get_display_group_name(group.name),
                     group_description: group.description,
                     members: sort_group_members(fetch_group_members([...group.members])),
-                    subgroups: user_groups
-                        .get_direct_subgroups_of_group(group)
-                        .sort(user_group_components.sort_group_member_name),
+                    subgroups,
                     group_edit_url: hash_util.group_edit_url(group, "general"),
                     is_guest: current_user.is_guest,
                     is_system_group: group.is_system_group,

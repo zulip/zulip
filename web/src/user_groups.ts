@@ -375,6 +375,13 @@ export function get_direct_subgroups_of_group(target_user_group: UserGroup): Use
     return direct_subgroups;
 }
 
+export function convert_name_to_display_name_for_groups(user_groups: UserGroup[]): UserGroup[] {
+    return user_groups.map((user_group) => ({
+        ...user_group,
+        name: get_display_group_name(user_group.name),
+    }));
+}
+
 export function is_user_in_group(
     user_group_id: number,
     user_id: number,
