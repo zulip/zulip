@@ -5,7 +5,7 @@ import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as echo from "./echo.ts";
 import * as loading from "./loading.ts";
-import * as message_events from "./message_events.js";
+import * as message_events from "./message_events.ts";
 import {page_params} from "./page_params.ts";
 import * as reload from "./reload.ts";
 import * as reload_state from "./reload_state.ts";
