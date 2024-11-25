@@ -31,7 +31,7 @@ import * as rows from "./rows.ts";
 import * as server_events from "./server_events.js";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_preferences from "./settings_preferences.ts";
-import * as settings_toggle from "./settings_toggle.js";
+import * as settings_toggle from "./settings_toggle.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spectators from "./spectators.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";

@@ -1,18 +1,19 @@
 import $ from "jquery";
 
 import * as components from "./components.ts";
+import type {Toggle} from "./components.ts";
 import {$t} from "./i18n.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 
-let toggler;
+let toggler: Toggle | undefined;
 
-export function goto(tab_name) {
+export function goto(tab_name: string): void {
     if (toggler) {
         toggler.goto(tab_name);
     }
 }
 
-export function initialize() {
+export function initialize(): void {
     toggler = components.toggle({
         child_wants_focus: true,
         values: [
@@ -34,7 +35,7 @@ export function initialize() {
 }
 
 // Handles the collapse/reveal of some tabs in the org settings for non-admins.
-export function toggle_org_setting_collapse() {
+export function toggle_org_setting_collapse(): void {
     const is_collapsed = $(".collapse-org-settings").hasClass("hide-org-settings");
     const show_fewer_settings_text = $t({defaultMessage: "Show fewer"});
     const show_more_settings_text = $t({defaultMessage: "Show more"});

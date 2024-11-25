@@ -24,7 +24,7 @@ import * as recent_view_util from "./recent_view_util.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as settings from "./settings.js";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
-import * as settings_toggle from "./settings_toggle.js";
+import * as settings_toggle from "./settings_toggle.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spectators from "./spectators.ts";
 import {current_user} from "./state_data.ts";
