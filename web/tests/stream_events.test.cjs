@@ -33,6 +33,7 @@ mock_esm("../src/recent_view_ui", {
 });
 mock_esm("../src/settings_notifications", {
     update_page() {},
+    user_settings_panel: "stub", // Not used, but can't be undefined
 });
 mock_esm("../src/overlays", {
     streams_open: () => true,
@@ -479,7 +480,18 @@ test("process_subscriber_update", ({override, override_rewire}) => {
     const userIds = [104, 2, 3];
     // Sample stream IDs
     const streamIds = [1, 2, 3];
-
+    stream_data.add_sub({
+        stream_id: 1,
+        name: "Rome",
+    });
+    stream_data.add_sub({
+        stream_id: 2,
+        name: "Denmark",
+    });
+    stream_data.add_sub({
+        stream_id: 3,
+        name: "Paris",
+    });
     // Call the function being tested
     stream_events.process_subscriber_update(userIds, streamIds);
 
