@@ -453,6 +453,7 @@ const hamletcharacters = user_group_item({
     can_leave_group: 2,
     can_manage_group: 2,
     can_mention_group: 2,
+    can_remove_members_group: 2,
     deactivated: false,
 });
 
@@ -470,6 +471,7 @@ const backend = user_group_item({
     can_leave_group: 2,
     can_manage_group: 1,
     can_mention_group: 1,
+    can_remove_members_group: 2,
     deactivated: false,
 });
 
@@ -487,6 +489,7 @@ const call_center = user_group_item({
     can_leave_group: 2,
     can_manage_group: 2,
     can_mention_group: 2,
+    can_remove_members_group: 2,
     deactivated: false,
 });
 

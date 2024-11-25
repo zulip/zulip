@@ -27,6 +27,7 @@ run_test("user_groups", () => {
         can_leave_group: 1,
         can_manage_group: 1,
         can_mention_group: 2,
+        can_remove_members_group: 1,
         deactivated: false,
     };
 
@@ -52,6 +53,7 @@ run_test("user_groups", () => {
         can_leave_group: 1,
         can_manage_group: 1,
         can_mention_group: 2,
+        can_remove_members_group: 1,
         deactivated: false,
     };
     const all = {

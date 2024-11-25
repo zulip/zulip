@@ -925,7 +925,8 @@ export function check_group_property_changed(elem: HTMLElement, group: UserGroup
         case "can_join_group":
         case "can_leave_group":
         case "can_manage_group":
-        case "can_mention_group": {
+        case "can_mention_group":
+        case "can_remove_members_group": {
             const pill_widget = get_group_setting_widget(property_name);
             assert(pill_widget !== null);
             proposed_val = get_group_setting_widget_value(pill_widget);
@@ -1505,6 +1506,7 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["can_leave_group", null],
     ["can_manage_group", null],
     ["can_mention_group", null],
+    ["can_remove_members_group", null],
     ["can_remove_subscribers_group", null],
     ["realm_can_add_custom_emoji_group", null],
     ["realm_can_create_groups", null],
@@ -1565,6 +1567,7 @@ export const group_setting_name_schema = z.enum([
     "can_leave_group",
     "can_manage_group",
     "can_mention_group",
+    "can_remove_members_group",
 ]);
 
 type GroupSettingName = z.infer<typeof group_setting_name_schema>;

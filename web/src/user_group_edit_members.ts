@@ -72,7 +72,7 @@ function format_member_list_elem(person: User): string {
         user_id: person.user_id,
         is_current_user: person.user_id === current_user.user_id,
         email: person.delivery_email,
-        can_remove_subscribers: settings_data.can_manage_user_group(current_group_id),
+        can_remove_subscribers: settings_data.can_remove_members_from_user_group(current_group_id),
         for_user_group_members: true,
         img_src: people.small_avatar_url_for_person(person),
     });
@@ -82,7 +82,7 @@ function format_subgroup_list_elem(group: UserGroup): string {
     return render_user_group_subgroup_entry({
         group_id: group.id,
         display_value: group.name,
-        can_edit: settings_data.can_manage_user_group(current_group_id),
+        can_remove_members: settings_data.can_remove_members_from_user_group(current_group_id),
     });
 }
 
@@ -167,7 +167,7 @@ export function rerender_members_list({
 }): void {
     $parent_container.find(".member-list-box").html(
         render_user_group_members_table({
-            can_edit: settings_data.can_manage_user_group(group.id),
+            can_remove_members: settings_data.can_remove_members_from_user_group(group.id),
         }),
     );
     member_list_widget = make_list_widget({
