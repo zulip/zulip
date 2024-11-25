@@ -64,11 +64,7 @@
 
 {end_tabs}
 
-## Add groups and users to a group
-
-You can add users to a group, or add a group to any other group. Nesting groups
-makes them easier to maintain. For example, moving a user from one team group to
-another can automatically update what department group they belong to.
+## Add users to a group
 
 {start_tabs}
 
@@ -80,14 +76,16 @@ another can automatically update what department group they belong to.
 
 1. Select the **Members** tab on the right.
 
-1. Under **Add members**, enter groups and users you want to add. You can enter
-   a `#channel` to add all subscribers to the group.
+1. Under **Add members**, enter users you want to add. You can enter a
+   `#channel` to add all subscribers to the group.
 
 1. Click **Add**. Zulip will notify everyone who is added to the group.
 
 {end_tabs}
 
-## Remove users from a user group
+## Add user groups to a group
+
+{!user-subgroups-intro.md!}
 
 {start_tabs}
 
@@ -99,7 +97,25 @@ another can automatically update what department group they belong to.
 
 1. Select the **Members** tab on the right.
 
-1. Under **Members**, find the user you would like to remove.
+1. Under **Add members**, enter groups you want to add.
+
+1. Click **Add**.
+
+{end_tabs}
+
+## Remove user or group from a group
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{relative|group|all}
+
+1. Select a user group.
+
+1. Select the **Members** tab on the right.
+
+1. Under **Members**, find the user or group you would like to remove.
 
 1. Click the **Remove** button in that row. Zulip will notify everyone who is
    removed from the group.

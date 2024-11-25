@@ -6,6 +6,9 @@
 
 {!user-groups-applications.md!}
 
+You can add a group to another user group, making it easy to express your
+organization's structure in Zulip's permissions system.
+
 ## Browse and join user groups
 
 {start_tabs}
