@@ -31,7 +31,7 @@ import * as scroll_util from "./scroll_util.ts";
 import * as search_util from "./search_util.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import {type GroupSettingValue, current_user, realm} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
 import * as stream_create from "./stream_create.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_edit from "./stream_edit.ts";
@@ -213,11 +213,11 @@ export function update_message_retention_setting(
     stream_ui_updates.update_setting_element(sub, "message_retention_days");
 }
 
-export function update_can_remove_subscribers_group(
+export function update_can_remove_subscribers_group_id(
     sub: StreamSubscription,
-    new_value: GroupSettingValue,
+    new_value: number,
 ): void {
-    stream_data.update_can_remove_subscribers_group(sub, new_value);
+    stream_data.update_can_remove_subscribers_group_id(sub, new_value);
     stream_ui_updates.update_setting_element(sub, "can_remove_subscribers_group");
     stream_edit_subscribers.rerender_subscribers_list(sub);
 }
@@ -749,6 +749,7 @@ function setup_page(callback: () => void): void {
 
         render_left_panel_superset();
         initialize_components();
+        stream_settings_components.dropdown_setup();
         redraw_left_panel();
         stream_create.set_up_handlers();
 
