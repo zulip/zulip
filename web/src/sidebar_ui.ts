@@ -5,6 +5,7 @@ import render_buddy_list_popover from "../templates/popovers/buddy_list_popover.
 import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import {buddy_list} from "./buddy_list.ts";
+import * as channel from "./channel.ts";
 import {media_breakpoints_num} from "./css_variables.ts";
 import {reorder_left_sidebar_navigation_list} from "./left_sidebar_navigation_area.ts";
 import {localstorage} from "./localstorage.ts";
@@ -16,6 +17,7 @@ import * as rendered_markdown from "./rendered_markdown.ts";
 import * as resize from "./resize.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
+import * as settings_preferences from "./settings_preferences.ts";
 import * as spectators from "./spectators.ts";
 import {current_user} from "./state_data.ts";
 import * as ui_util from "./ui_util.ts";
@@ -85,10 +87,8 @@ export function update_invite_user_option(): void {
         !settings_data.user_can_create_multiuse_invite()
     ) {
         $("#right-sidebar .invite-user-link").hide();
-        $("#buddy-list-menu-icon").hide();
     } else {
         $("#right-sidebar .invite-user-link").show();
-        $("#buddy-list-menu-icon").show();
     }
 }
 
@@ -294,18 +294,61 @@ export function initialize_right_sidebar(): void {
         buddy_list.toggle_other_users_section();
     });
 
+    function close_buddy_list_popover(): void {
+        if (popover_menus.popover_instances.buddy_list !== null) {
+            popover_menus.popover_instances.buddy_list.destroy();
+            popover_menus.popover_instances.buddy_list = null;
+        }
+    }
+
     popover_menus.register_popover_menu("#buddy-list-menu-icon", {
         theme: "popover-menu",
         placement: "right",
         onCreate(instance) {
             popover_menus.popover_instances.buddy_list = instance;
-            instance.setContent(ui_util.parse_html(render_buddy_list_popover()));
+            instance.setContent(
+                ui_util.parse_html(
+                    render_buddy_list_popover({
+                        display_style_options: settings_config.user_list_style_values,
+                        can_invite_users:
+                            settings_data.user_can_invite_users_by_email() ||
+                            settings_data.user_can_create_multiuse_invite(),
+                    }),
+                ),
+            );
+        },
+        onMount() {
+            const current_user_list_style =
+                settings_preferences.user_settings_panel.settings_object.user_list_style;
+            $("#buddy-list-actions-menu-popover")
+                .find(`.user_list_style_choice[value=${current_user_list_style}]`)
+                .prop("checked", true);
         },
         onHidden() {
-            if (popover_menus.popover_instances.buddy_list !== null) {
-                popover_menus.popover_instances.buddy_list.destroy();
-                popover_menus.popover_instances.buddy_list = null;
-            }
+            close_buddy_list_popover();
         },
     });
+
+    $("body").on(
+        "click",
+        "#buddy-list-actions-menu-popover .display-style-selector",
+        function (this: HTMLElement) {
+            const data = {user_list_style: $(this).val()};
+            const current_user_list_style =
+                settings_preferences.user_settings_panel.settings_object.user_list_style;
+
+            if (current_user_list_style === data.user_list_style) {
+                close_buddy_list_popover();
+                return;
+            }
+
+            void channel.patch({
+                url: "/json/settings",
+                data,
+                success() {
+                    close_buddy_list_popover();
+                },
+            });
+        },
+    );
 }

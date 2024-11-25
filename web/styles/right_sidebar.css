@@ -562,3 +562,31 @@ $user_status_emoji_width: 24px;
         }
     }
 }
+
+#buddy-list-actions-menu-popover {
+    .display-style-selector + .invite-user-link-item {
+        border-top: 1px solid var(--color-border-sidebar-subheader);
+    }
+
+    /* No hover effect on the label */
+    .display-style-selector-header:hover {
+        background: inherit;
+        cursor: default;
+    }
+
+    .popover-menu-link:not(.display-style-selector-header) {
+        display: grid;
+        grid-template: "left-icon row-content" auto / 18px 1fr;
+        align-items: center;
+
+        .popover-menu-icon,
+        .user_list_style_choice {
+            grid-area: left-icon;
+            justify-self: baseline;
+        }
+
+        .popover-menu-label {
+            grid-area: row-content;
+        }
+    }
+}
