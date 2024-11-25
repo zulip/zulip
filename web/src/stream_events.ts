@@ -28,6 +28,7 @@ import * as stream_muting from "./stream_muting.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
 import * as sub_store from "./sub_store.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 import * as unread_ui from "./unread_ui.ts";
 import * as user_profile from "./user_profile.ts";
 
@@ -35,13 +36,39 @@ import * as user_profile from "./user_profile.ts";
 // however, they are only called after a manual override, so
 // doing so is unnecessary with the current code.  Ideally, we'd do a
 // refactor to address that, however.
-function update_stream_setting(sub, value, setting) {
-    const $setting_checkbox = $(`#${CSS.escape(setting)}_${CSS.escape(sub.stream_id)}`);
+function update_stream_setting(
+    sub: StreamSubscription,
+    value: boolean | null,
+    setting:
+        | "desktop_notifications"
+        | "audible_notifications"
+        | "push_notifications"
+        | "email_notifications"
+        | "wildcard_mentions_notify"
+        | "pin_to_top",
+): void {
+    const $setting_checkbox = $(`#${CSS.escape(setting)}_${CSS.escape(sub.stream_id.toString())}`);
     $setting_checkbox.prop("checked", value);
+    if (setting === "pin_to_top") {
+        assert(value !== null);
+        sub[setting] = value;
+        return;
+    }
     sub[setting] = value;
 }
 
-export function update_property(stream_id, property, value, other_values) {
+type UpdatableStreamProperties = sub_store.ApiStreamSubscription & {in_home_view: boolean};
+
+export function update_property<P extends keyof UpdatableStreamProperties>(
+    stream_id: number,
+    property: P,
+    value: UpdatableStreamProperties[P],
+    other_values?: {
+        rendered_description: string;
+        history_public_to_subscribers: boolean;
+        is_web_public: boolean;
+    },
+): void {
     const sub = sub_store.get(stream_id);
     if (sub === undefined) {
         // This isn't a stream we know about, so ignore it.
@@ -53,71 +80,86 @@ export function update_property(stream_id, property, value, other_values) {
         return;
     }
 
-    switch (property) {
-        case "color":
+    const update_stream_specific_notification_setting =
+        (property: keyof sub_store.StreamSpecificNotificationSettings) =>
+        (value: boolean | null) => {
+            update_stream_setting(sub, value, property);
+            assert(settings_notifications.user_settings_panel !== undefined);
+            settings_notifications.update_page(settings_notifications.user_settings_panel);
+        };
+
+    const updaters: {
+        [P in keyof UpdatableStreamProperties]?: (value: UpdatableStreamProperties[P]) => void;
+    } = {
+        color(value) {
             stream_color_events.update_stream_color(sub, value);
-            break;
-        case "in_home_view":
+        },
+        in_home_view(_value) {
             // Legacy in_home_view events are only sent as duplicates of
             // modern is_muted events, which we handle below.
-            break;
-        case "is_muted":
+        },
+        is_muted(value) {
             stream_muting.update_is_muted(sub, value);
             stream_list.refresh_muted_or_unmuted_stream(sub);
             recent_view_ui.complete_rerender();
-            break;
-        case "desktop_notifications":
-        case "audible_notifications":
-        case "push_notifications":
-        case "email_notifications":
-        case "wildcard_mentions_notify":
-            update_stream_setting(sub, value, property);
-            settings_notifications.update_page(settings_notifications.user_settings_panel);
-            break;
-        case "name":
+        },
+        desktop_notifications: update_stream_specific_notification_setting("desktop_notifications"),
+        audible_notifications: update_stream_specific_notification_setting("audible_notifications"),
+        push_notifications: update_stream_specific_notification_setting("push_notifications"),
+        email_notifications: update_stream_specific_notification_setting("email_notifications"),
+        wildcard_mentions_notify: update_stream_specific_notification_setting(
+            "wildcard_mentions_notify",
+        ),
+        name(value) {
             stream_settings_ui.update_stream_name(sub, value);
             compose_recipient.possibly_update_stream_name_in_compose(sub.stream_id);
-            break;
-        case "description":
+        },
+        description(value) {
+            assert(other_values !== undefined);
             stream_settings_ui.update_stream_description(
                 sub,
                 value,
                 other_values.rendered_description,
             );
-            break;
-        case "email_address":
+        },
+        email_address(value) {
             sub.email_address = value;
-            break;
-        case "pin_to_top":
-            update_stream_setting(sub, value, property);
+        },
+        pin_to_top(value) {
+            update_stream_setting(sub, value, "pin_to_top");
             stream_list.refresh_pinned_or_unpinned_stream(sub);
-            break;
-        case "invite_only":
+        },
+        invite_only(value) {
+            assert(other_values !== undefined);
             stream_settings_ui.update_stream_privacy(sub, {
                 invite_only: value,
                 history_public_to_subscribers: other_values.history_public_to_subscribers,
                 is_web_public: other_values.is_web_public,
             });
             compose_recipient.on_compose_select_recipient_update();
-            break;
-        case "stream_post_policy":
+        },
+        stream_post_policy(value) {
             stream_settings_ui.update_stream_post_policy(sub, value);
-            break;
-        case "message_retention_days":
+        },
+        message_retention_days(value) {
             stream_settings_ui.update_message_retention_setting(sub, value);
-            break;
-        case "can_remove_subscribers_group":
+        },
+        can_remove_subscribers_group(value) {
             stream_settings_ui.update_can_remove_subscribers_group(sub, value);
-            break;
-        default:
-            blueslip.warn("Unexpected subscription property type", {
-                property,
-                value,
-            });
+        },
+    };
+
+    if (Object.hasOwn(updaters, property) && updaters[property] !== undefined) {
+        updaters[property](value);
+    } else {
+        blueslip.warn("Unexpected subscription property type", {
+            property,
+            value,
+        });
     }
 }
 
-function show_first_stream_created_modal(stream) {
+function show_first_stream_created_modal(stream: StreamSubscription): void {
     dialog_widget.launch({
         html_heading: $t_html(
             {defaultMessage: "Channel <b><z-stream></z-stream></b> created!"},
@@ -127,7 +169,9 @@ function show_first_stream_created_modal(stream) {
         ),
         html_body: render_first_stream_created_modal({stream}),
         id: "first_stream_created_modal",
-        on_click() {},
+        on_click(): void {
+            /* This modal is purely informational and doesn't do anything when closed. */
+        },
         html_submit_button: $t({defaultMessage: "Continue"}),
         close_on_submit: true,
         single_footer_button: true,
@@ -137,7 +181,11 @@ function show_first_stream_created_modal(stream) {
 // Add yourself to a stream we already know about client-side.
 // It's likely we should be passing in the full sub object from the caller/backend,
 // but for now we just pass in the subscribers and color (things likely to be different).
-export function mark_subscribed(sub, subscribers, color) {
+export function mark_subscribed(
+    sub: StreamSubscription | undefined,
+    subscribers: number[],
+    color: string | undefined,
+): void {
     if (sub === undefined) {
         blueslip.error("Undefined sub passed to mark_subscribed");
         return;
@@ -204,7 +252,7 @@ export function mark_subscribed(sub, subscribers, color) {
     user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
 }
 
-export function mark_unsubscribed(sub) {
+export function mark_unsubscribed(sub: StreamSubscription | undefined): void {
     if (sub === undefined) {
         // We don't know about this stream
         return;
@@ -242,7 +290,7 @@ export function mark_unsubscribed(sub) {
     user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
 }
 
-export function remove_deactivated_user_from_all_streams(user_id) {
+export function remove_deactivated_user_from_all_streams(user_id: number): void {
     const all_subs = stream_data.get_unsorted_subs();
 
     for (const sub of all_subs) {
@@ -253,13 +301,15 @@ export function remove_deactivated_user_from_all_streams(user_id) {
     }
 }
 
-export function process_subscriber_update(user_ids, stream_ids) {
+export function process_subscriber_update(user_ids: number[], stream_ids: number[]): void {
     for (const stream_id of stream_ids) {
         const sub = sub_store.get(stream_id);
+        assert(sub !== undefined);
         stream_settings_ui.update_subscribers_ui(sub);
     }
     user_profile.update_user_profile_streams_list_for_users(user_ids);
-    if (stream_ids.includes(narrow_state.stream_id())) {
+    const narrow_stream_id = narrow_state.stream_id();
+    if (narrow_stream_id && stream_ids.includes(narrow_stream_id)) {
         activity_ui.build_user_sidebar();
     }
 }

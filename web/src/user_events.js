@@ -24,7 +24,7 @@ import * as settings_realm_user_settings_defaults from "./settings_realm_user_se
 import * as settings_streams from "./settings_streams.ts";
 import * as settings_users from "./settings_users.ts";
 import {current_user, realm} from "./state_data.ts";
-import * as stream_events from "./stream_events.js";
+import * as stream_events from "./stream_events.ts";
 import * as user_group_edit from "./user_group_edit.js";
 import * as user_profile from "./user_profile.ts";
 

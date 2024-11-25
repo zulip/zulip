@@ -73,7 +73,7 @@ import * as starred_messages from "./starred_messages.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
-import * as stream_events from "./stream_events.js";
+import * as stream_events from "./stream_events.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
