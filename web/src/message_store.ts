@@ -153,7 +153,7 @@ export type Message = (
     // The original markup for the message, which we'll have if we
     // sent it or if we fetched it (usually, because the current user
     // tried to edit the message).
-    raw_content?: string;
+    raw_content?: string | undefined;
 
     // Added in `message_helper.process_new_message`.
     sent_by_me: boolean;

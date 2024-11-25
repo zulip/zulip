@@ -25,7 +25,7 @@ import * as information_density from "./information_density.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as linkifiers from "./linkifiers.ts";
 import * as message_edit from "./message_edit.ts";
-import * as message_events from "./message_events.js";
+import * as message_events from "./message_events.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as message_view from "./message_view.ts";
