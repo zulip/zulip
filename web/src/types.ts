@@ -21,6 +21,7 @@ export type UserGroupUpdateEvent = {
         can_leave_group?: number;
         can_manage_group?: number;
         can_mention_group?: number;
+        can_remove_members_group?: number;
         deactivated?: boolean;
     };
 };

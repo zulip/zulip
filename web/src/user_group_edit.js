@@ -654,6 +654,10 @@ export function update_group(event) {
             sync_group_permission_setting("can_leave_group", group);
             update_group_membership_button(group.id);
         }
+        if (event.data.can_remove_members_group !== undefined) {
+            sync_group_permission_setting("can_remove_members_group", group);
+            update_group_management_ui();
+        }
     }
 }
 

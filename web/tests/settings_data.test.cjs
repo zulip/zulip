@@ -44,6 +44,7 @@ const admins = {
     can_join_group: 4,
     can_manage_group: 4,
     can_mention_group: 1,
+    can_remove_members_group: 4,
 };
 const moderators = {
     description: "Moderators",
@@ -57,6 +58,7 @@ const moderators = {
     can_leave_group: 4,
     can_manage_group: 4,
     can_mention_group: 1,
+    can_remove_members_group: 4,
 };
 const members = {
     description: "Members",
@@ -70,6 +72,7 @@ const members = {
     can_leave_group: 4,
     can_manage_group: 4,
     can_mention_group: 4,
+    can_remove_members_group: 4,
 };
 const nobody = {
     description: "Nobody",
@@ -83,6 +86,7 @@ const nobody = {
     can_leave_group: 4,
     can_manage_group: 4,
     can_mention_group: 2,
+    can_remove_members_group: 4,
 };
 const students = {
     description: "Students group",
@@ -99,6 +103,7 @@ const students = {
         direct_subgroups: [],
     },
     can_mention_group: 3,
+    can_remove_members_group: 1,
     creator_id: 4,
 };
 
@@ -499,6 +504,31 @@ run_test("can_leave_user_group", ({override}) => {
         "can_leave_group",
         settings_data.can_leave_user_group,
     );
+
+    // User can leave the group if they have permission to remove
+    // others from the group.
+    override(realm, "realm_can_manage_all_groups", nobody.id);
+    const event = {
+        group_id: students.id,
+        data: {
+            can_manage_group: nobody.id,
+            can_leave_group: nobody.id,
+            can_remove_members_group: {
+                direct_members: [5],
+                direct_subgroups: [admins.id],
+            },
+        },
+    };
+    user_groups.update(event);
+
+    override(current_user, "user_id", 2);
+    assert.ok(!settings_data.can_leave_user_group(students.id));
+
+    override(current_user, "user_id", 5);
+    assert.ok(settings_data.can_leave_user_group(students.id));
+
+    override(current_user, "user_id", 1);
+    assert.ok(settings_data.can_leave_user_group(students.id));
 });
 
 run_test("can_add_members_user_group", ({override}) => {
@@ -506,6 +536,14 @@ run_test("can_add_members_user_group", ({override}) => {
         override,
         "can_add_members_group",
         settings_data.can_add_members_to_user_group,
+    );
+});
+
+run_test("can_remove_members_user_group", ({override}) => {
+    test_user_group_permission_setting(
+        override,
+        "can_remove_members_group",
+        settings_data.can_remove_members_from_user_group,
     );
 });
 

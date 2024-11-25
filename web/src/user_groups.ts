@@ -56,6 +56,7 @@ export function add(user_group_raw: UserGroupRaw): UserGroup {
         can_leave_group: user_group_raw.can_leave_group,
         can_manage_group: user_group_raw.can_manage_group,
         can_mention_group: user_group_raw.can_mention_group,
+        can_remove_members_group: user_group_raw.can_remove_members_group,
         deactivated: user_group_raw.deactivated,
     };
 
@@ -126,6 +127,12 @@ export function update(event: UserGroupUpdateEvent): void {
 
     if (event.data.can_leave_group !== undefined) {
         group.can_leave_group = event.data.can_leave_group;
+        user_group_name_dict.delete(group.name);
+        user_group_name_dict.set(group.name, group);
+    }
+
+    if (event.data.can_remove_members_group !== undefined) {
+        group.can_remove_members_group = event.data.can_remove_members_group;
         user_group_name_dict.delete(group.name);
         user_group_name_dict.set(group.name, group);
     }

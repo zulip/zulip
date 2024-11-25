@@ -4,7 +4,7 @@
         <thead class="table-sticky-headers">
             <th data-sort="name">{{t "Name" }}</th>
             <th class="settings-email-column" data-sort="email">{{t "Email" }}</th>
-            <th class="user-remove-actions" {{#unless can_edit}}style="display:none"{{/unless}}>{{t "Actions" }}</th>
+            <th class="user-remove-actions" {{#unless can_remove_members}}style="display:none"{{/unless}}>{{t "Actions" }}</th>
         </thead>
         <tbody class="member_table" data-empty="{{t 'This group has no members.' }}" data-search-results-empty="{{t 'No group members match your current filter.'}}"></tbody>
     </table>
