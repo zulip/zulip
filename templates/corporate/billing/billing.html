@@ -41,7 +41,7 @@
         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
         <div class="white-box">
             <div id="billing-page-details">
-                <div class="input-box billing-page-field no-validation">
+                <div class="input-box billing-page-field">
                     <label for="org-current-plan" class="inline-block label-title">Your plan</label>
                     <div id="org-current-plan" class="not-editable-realm-field">
                         {% if free_trial or downgrade_at_end_of_free_trial %}
@@ -61,13 +61,13 @@
                     </div>
                 </div>
                 {% if is_server_on_legacy_plan %}
-                <div class="input-box billing-page-field no-validation" id="legacy-server-push-notification-notice-wrapper">
+                <div class="input-box billing-page-field" id="legacy-server-push-notification-notice-wrapper">
                     <div id="legacy-server-push-notification-notice" class="not-editable-realm-field">
                         <i>This is a legacy plan that ends on {{ remote_server_legacy_plan_end_date }}.</i>
                     </div>
                 </div>
                 {% endif %}
-                <div class="input-box billing-page-field no-validation org-billing-frequency-wrapper"
+                <div class="input-box billing-page-field org-billing-frequency-wrapper"
                   data-current-billing-frequency="{{ billing_frequency }}"
                   {%if free_trial %}data-free-trial="true"{% endif %}
                   {%if downgrade_at_end_of_cycle %}data-downgrade-eoc="true"{% endif %}
@@ -108,7 +108,7 @@
                 </div>
                 {% if is_server_on_legacy_plan or fixed_price_plan %}
                 {% elif automanage_licenses %}
-                <div class="input-box billing-page-field no-validation">
+                <div class="input-box billing-page-field">
                     <label for="automatic-license-count" class="inline-block label-title">
                         Number of licenses
                         {% if is_self_hosted_billing %}
@@ -134,7 +134,7 @@
                 </div>
                 {% else %}
                 {% if not (free_trial or downgrade_at_end_of_free_trial) %}
-                <div class="input-box billing-page-field no-validation input-box-number">
+                <div class="input-box billing-page-field input-box-number">
                     <label for="current-manual-license-count" class="inline-block label-title">
                         Number of licenses for current billing period
                         {% if is_self_hosted_billing %}
@@ -168,7 +168,7 @@
                 </div>
                 {% endif %}
                 {% if not (downgrade_at_end_of_cycle or downgrade_at_end_of_free_trial) %}
-                <div class="input-box billing-page-field no-validation input-box-number">
+                <div class="input-box billing-page-field input-box-number">
                     <label for="next-manual-license-count" class="inline-block label-title">
                         Number of licenses for next billing period
                         {% if is_self_hosted_billing %}
@@ -199,20 +199,20 @@
                     <input name="toggle_license_management" type="hidden" value="true" />
                 </form>
                 <div id="toggle-license-management-error" class="alert alert-danger"></div>
-                <div class="input-box no-validation billing-page-field">
+                <div class="input-box billing-page-field">
                     <label for="billing-contact" class="inline-block label-title">Billing contact</label>
                     <div id="billing-contact" class="not-editable-realm-field">
                         <a href="mailto:{{ stripe_email }}">{{ stripe_email }}</a>
                     </div>
                 </div>
                 <div id="cardchange-error" class="alert alert-danger"></div>
-                <div class="input-box billing-page-field no-validation">
+                <div class="input-box billing-page-field">
                     <label for="customer-payment-method" class="inline-block label-title">Payment method</label>
                     <div id="customer-payment-method" class="not-editable-realm-field">
                         {{ payment_method }}
                     </div>
                     {% if charge_automatically %}
-                    <div class="user-stripe-card-update input-box billing-page-field no-validation">
+                    <div class="user-stripe-card-update input-box billing-page-field">
                         <button class="user-stripe-card-update-button" id="update-card-button">
                             <span class="billing-button-text">Update card</span>
                             <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
@@ -224,7 +224,7 @@
                         <a href="{{ billing_base_url }}/customer_portal/?return_to_billing_page=true">View and update</a> billing information that will be displayed on your next invoice and receipt.
                     </div>
                 </div>
-                <div class="input-box billing-page-field no-validation">
+                <div class="input-box billing-page-field">
                     <div class="next-payment-info not-editable-realm-field">
                         {% if renewal_amount %}
                             {% if downgrade_at_end_of_cycle %}
@@ -316,7 +316,7 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="input-box billing-page-field no-validation">
+                <div class="input-box billing-page-field">
                     <label class="inline-block label-title">Invoices</label>
                     <div class="not-editable-realm-field">
                         <a href="{{ billing_base_url }}/invoices/">
@@ -333,14 +333,14 @@
                 <div id="planchange-error" class="alert alert-danger"></div>
                 <div id="planchange-input-section">
                     {% if free_trial and not downgrade_at_end_of_free_trial %}
-                        <div class="end-free-trial plan-toggle-action input-box billing-page-field no-validation" id="end-free-trial">
+                        <div class="end-free-trial plan-toggle-action input-box billing-page-field" id="end-free-trial">
                             <button class="end-free-trial-button plan-toggle-action-button">
                                 <span class="billing-button-text">Cancel plan</span>
                                 <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
                         </div>
                     {% elif downgrade_at_end_of_cycle or downgrade_at_end_of_free_trial %}
-                        <div class="reactivate-current-plan plan-toggle-action input-box billing-page-field no-validation" id="reactivate-subscription">
+                        <div class="reactivate-current-plan plan-toggle-action input-box billing-page-field" id="reactivate-subscription">
                             <button class="reactivate-current-plan-button plan-toggle-action-button">
                                 <span class="billing-button-text">
                                     {% if downgrade_at_end_of_free_trial %}
@@ -353,14 +353,14 @@
                             </button>
                         </div>
                     {% elif is_server_on_legacy_plan %}
-                        <div class="plan-toggle-action input-box billing-page-field no-validation" id="cancel-legacy-server-upgrade">
+                        <div class="plan-toggle-action input-box billing-page-field" id="cancel-legacy-server-upgrade">
                             <button class="cancel-legacy-server-upgrade-button plan-toggle-action-button">
                                 <span class="billing-button-text">Cancel upgrade</span>
                                 <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
                         </div>
                     {% else %}
-                        <div class="cancel-current-plan plan-toggle-action input-box billing-page-field no-validation" id="cancel-subscription">
+                        <div class="cancel-current-plan plan-toggle-action input-box billing-page-field" id="cancel-subscription">
                             <button class="plan-toggle-action-button {% if is_self_hosted_billing %}cancel-current-self-hosted-plan-button{% else %}cancel-current-cloud-plan-button{% endif %}">
                                 <span class="billing-button-text">Cancel plan</span>
                                 <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>

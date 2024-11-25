@@ -86,9 +86,8 @@ page can be easily identified in it's respective JavaScript file. -->
                             {% endif %}
                             {{ csrf_input }}
 
-                            <!-- .no-validation is for removing the red star in CSS -->
                             {% if not two_factor_authentication_enabled or wizard.steps.current == 'auth' %}
-                            <div class="input-box no-validation">
+                            <div class="input-box">
                                 <input id="id_username" type="{% if not require_email_format_usernames %}text{% else %}email{% endif %}"
                                   name="username" class="{% if require_email_format_usernames %}email {% endif %}required"
                                   {% if email %} value="{{ email }}" {% else %} value="" autofocus {% endif %}
@@ -104,7 +103,7 @@ page can be easily identified in it's respective JavaScript file. -->
                                 </label>
                             </div>
 
-                            <div class="input-box no-validation password-div">
+                            <div class="input-box password-div">
                                 <input id="id_password" name="password" class="required" type="password" autocomplete="off"
                                   {% if email %} autofocus {% endif %}
                                   required />
