@@ -595,7 +595,7 @@ function start_data_load(): void {
 function handle_deactivation($tbody: JQuery): void {
     $tbody.on("click", ".deactivate", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
-        // will not show up because of a call to `close_active` in `settings.js`.
+        // will not show up because of a call to `close_active` in `settings.ts`.
         e.preventDefault();
         e.stopPropagation();
 
