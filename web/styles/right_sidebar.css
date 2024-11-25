@@ -537,11 +537,6 @@ $user_status_emoji_width: 24px;
         text-decoration: none;
         align-items: center;
         color: var(--color-text-sidebar-action-heading);
-
-        &:active {
-            transition: transform 80ms;
-            transform: scale(0.96);
-        }
     }
 }
 

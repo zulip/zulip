@@ -438,11 +438,6 @@
         align-items: center;
         color: var(--color-text-sidebar-action-heading);
         text-decoration: none;
-
-        &:active {
-            transition: transform 80ms;
-            transform: scale(0.96);
-        }
     }
 }
 
