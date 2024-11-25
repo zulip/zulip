@@ -1,0 +1,356 @@
+.action-button {
+    display: flex;
+    gap: 0.5ch;
+    justify-content: center;
+    align-items: center;
+    line-height: 1.3333;
+    font-size: var(--base-font-size-px);
+    font-family: "Source Sans 3 VF", sans-serif;
+    font-weight: 550;
+    letter-spacing: 0.02ch;
+    padding: 0.2667em 0.6667em;
+    color: var(--color-text-neutral-quiet-action-button);
+    background-color: var(--color-background-neutral-quiet-action-button);
+    border-radius: 4px;
+    white-space: nowrap;
+    user-select: none;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+        background-color: var(
+            --color-background-neutral-quiet-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-neutral-quiet-action-button-active
+        );
+        scale: 0.96;
+    }
+}
+
+.action-button-label {
+    max-width: 32ch;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* Action buttons -- Neutral Intent */
+.action-button-primary-neutral {
+    color: var(--color-text-neutral-primary-action-button);
+    background-color: var(--color-background-neutral-primary-action-button);
+
+    &:hover {
+        background-color: var(
+            --color-background-neutral-primary-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-neutral-primary-action-button-active
+        );
+    }
+}
+
+.action-button-quiet-neutral {
+    color: var(--color-text-neutral-quiet-action-button);
+    background-color: var(--color-background-neutral-quiet-action-button);
+    box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
+
+    &:hover {
+        background-color: var(
+            --color-background-neutral-quiet-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-neutral-quiet-action-button-active
+        );
+    }
+}
+
+.action-button-borderless-neutral {
+    color: var(--color-text-neutral-borderless-action-button);
+    background-color: transparent;
+
+    &:hover {
+        background-color: var(
+            --color-background-neutral-borderless-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-neutral-borderless-action-button-active
+        );
+    }
+}
+
+/* Action buttons -- Brand Intent */
+.action-button-primary-brand {
+    color: var(--color-text-brand-primary-action-button);
+    background-color: var(--color-background-brand-primary-action-button);
+
+    &:hover {
+        background-color: var(
+            --color-background-brand-primary-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-brand-primary-action-button-active
+        );
+    }
+}
+
+.action-button-quiet-brand {
+    color: var(--color-text-brand-quiet-action-button);
+    background-color: var(--color-background-brand-quiet-action-button);
+    box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
+
+    &:hover {
+        background-color: var(
+            --color-background-brand-quiet-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-brand-quiet-action-button-active
+        );
+    }
+}
+
+.action-button-borderless-brand {
+    color: var(--color-text-brand-borderless-action-button);
+    background-color: transparent;
+
+    &:hover {
+        background-color: var(
+            --color-background-brand-borderless-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-brand-borderless-action-button-active
+        );
+    }
+}
+
+/* Action buttons -- Info Intent */
+.action-button-primary-info {
+    color: var(--color-text-info-primary-action-button);
+    background-color: var(--color-background-info-primary-action-button);
+
+    &:hover {
+        background-color: var(
+            --color-background-info-primary-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-info-primary-action-button-active
+        );
+    }
+}
+
+.action-button-quiet-info {
+    color: var(--color-text-info-quiet-action-button);
+    background-color: var(--color-background-info-quiet-action-button);
+    box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
+
+    &:hover {
+        background-color: var(
+            --color-background-info-quiet-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-info-quiet-action-button-active
+        );
+    }
+}
+
+.action-button-borderless-info {
+    color: var(--color-text-info-borderless-action-button);
+    background-color: transparent;
+
+    &:hover {
+        background-color: var(
+            --color-background-info-borderless-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-info-borderless-action-button-active
+        );
+    }
+}
+
+/* Action buttons -- Success Intent */
+.action-button-primary-success {
+    color: var(--color-text-success-primary-action-button);
+    background-color: var(--color-background-success-primary-action-button);
+
+    &:hover {
+        background-color: var(
+            --color-background-success-primary-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-success-primary-action-button-active
+        );
+    }
+}
+
+.action-button-quiet-success {
+    color: var(--color-text-success-quiet-action-button);
+    background-color: var(--color-background-success-quiet-action-button);
+    box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
+
+    &:hover {
+        background-color: var(
+            --color-background-success-quiet-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-success-quiet-action-button-active
+        );
+    }
+}
+
+.action-button-borderless-success {
+    color: var(--color-text-success-borderless-action-button);
+    background-color: transparent;
+
+    &:hover {
+        background-color: var(
+            --color-background-success-borderless-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-success-borderless-action-button-active
+        );
+    }
+}
+
+/* Action buttons -- Warning Intent */
+.action-button-primary-warning {
+    color: var(--color-text-warning-primary-action-button);
+    background-color: var(--color-background-warning-primary-action-button);
+
+    &:hover {
+        background-color: var(
+            --color-background-warning-primary-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-warning-primary-action-button-active
+        );
+    }
+}
+
+.action-button-quiet-warning {
+    color: var(--color-text-warning-quiet-action-button);
+    background-color: var(--color-background-warning-quiet-action-button);
+    box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
+
+    &:hover {
+        background-color: var(
+            --color-background-warning-quiet-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-warning-quiet-action-button-active
+        );
+    }
+}
+
+.action-button-borderless-warning {
+    color: var(--color-text-warning-borderless-action-button);
+    background-color: transparent;
+
+    &:hover {
+        background-color: var(
+            --color-background-warning-borderless-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-warning-borderless-action-button-active
+        );
+    }
+}
+
+/* Action buttons -- Danger Intent */
+.action-button-primary-danger {
+    color: var(--color-text-danger-primary-action-button);
+    background-color: var(--color-background-danger-primary-action-button);
+
+    &:hover {
+        background-color: var(
+            --color-background-danger-primary-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-danger-primary-action-button-active
+        );
+    }
+}
+
+.action-button-quiet-danger {
+    color: var(--color-text-danger-quiet-action-button);
+    background-color: var(--color-background-danger-quiet-action-button);
+    box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
+
+    &:hover {
+        background-color: var(
+            --color-background-danger-quiet-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-danger-quiet-action-button-active
+        );
+    }
+}
+
+.action-button-borderless-danger {
+    color: var(--color-text-danger-borderless-action-button);
+    background-color: transparent;
+
+    &:hover {
+        background-color: var(
+            --color-background-danger-borderless-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-danger-borderless-action-button-active
+        );
+    }
+}

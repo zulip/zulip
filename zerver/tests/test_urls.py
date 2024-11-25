@@ -56,6 +56,16 @@ class PublicURLTest(ZulipTestCase):
                 self.assertIn(expected_tag, response.content.decode())
                 self.assertEqual(response.status_code, 200)
 
+    def test_design_testing_pages(self) -> None:
+        urls = {
+            "/devtools/buttons/": "Button styles browser",
+        }
+
+        for url, expected_content in urls.items():
+            result = self.client_get(url)
+            self.assertEqual(result.status_code, 200)
+            self.assert_in_success_response([expected_content], result)
+
     def test_public_urls(self) -> None:
         """
         Test which views are accessible when not logged in.
