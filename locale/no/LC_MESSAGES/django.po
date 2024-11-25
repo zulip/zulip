@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-17 20:45+0000\n"
+"POT-Creation-Date: 2024-11-23 20:09+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -164,90 +164,90 @@ msgstr ""
 msgid "Something went wrong. Please wait a few seconds and try again."
 msgstr ""
 
-#: corporate/lib/stripe.py:1836
+#: corporate/lib/stripe.py:1860
 msgid "Please add a credit card before starting your free trial."
 msgstr ""
 
-#: corporate/lib/stripe.py:1858
+#: corporate/lib/stripe.py:1882
 msgid "Please add a credit card to schedule upgrade."
 msgstr ""
 
-#: corporate/lib/stripe.py:2894
+#: corporate/lib/stripe.py:2918
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new "
 "plan."
 msgstr ""
 
-#: corporate/lib/stripe.py:2899
+#: corporate/lib/stripe.py:2923
 msgid "Unable to update the plan. The plan has ended."
 msgstr ""
 
-#: corporate/lib/stripe.py:2967
+#: corporate/lib/stripe.py:2991
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
 
-#: corporate/lib/stripe.py:2972 corporate/lib/stripe.py:3000
+#: corporate/lib/stripe.py:2996 corporate/lib/stripe.py:3024
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
 msgstr ""
 
-#: corporate/lib/stripe.py:2978
+#: corporate/lib/stripe.py:3002
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr ""
 
-#: corporate/lib/stripe.py:2983
+#: corporate/lib/stripe.py:3007
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr ""
 
-#: corporate/lib/stripe.py:3009
+#: corporate/lib/stripe.py:3033
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
 msgstr ""
 
-#: corporate/lib/stripe.py:3015
+#: corporate/lib/stripe.py:3039
 #, python-brace-format
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
 msgstr ""
 
-#: corporate/lib/stripe.py:3039
+#: corporate/lib/stripe.py:3063
 #, python-brace-format
 msgid ""
 "You’ve already purchased {licenses_at_next_renewal} licenses for the next "
 "billing period."
 msgstr ""
 
-#: corporate/lib/stripe.py:3061
+#: corporate/lib/stripe.py:3085
 msgid "Nothing to change."
 msgstr ""
 
-#: corporate/lib/stripe.py:3311
+#: corporate/lib/stripe.py:3335
 msgid "No customer for this organization!"
 msgstr ""
 
-#: corporate/lib/stripe.py:3320
+#: corporate/lib/stripe.py:3344
 msgid "Session not found"
 msgstr ""
 
-#: corporate/lib/stripe.py:3326 zerver/decorator.py:191
+#: corporate/lib/stripe.py:3350 zerver/decorator.py:191
 msgid "Must be a billing administrator or an organization owner"
 msgstr ""
 
-#: corporate/lib/stripe.py:3337
+#: corporate/lib/stripe.py:3361
 msgid "Payment intent not found"
 msgstr ""
 
-#: corporate/lib/stripe.py:3340
+#: corporate/lib/stripe.py:3364
 msgid "Pass stripe_session_id or stripe_invoice_id"
 msgstr ""
 
-#: corporate/lib/stripe.py:4102
+#: corporate/lib/stripe.py:4126
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You "
@@ -297,8 +297,8 @@ msgstr ""
 msgid "Your server registration has been deactivated."
 msgstr ""
 
-#: corporate/views/support.py:387 zerver/views/streams.py:297
-#: zerver/views/streams.py:301 zerver/views/streams.py:309
+#: corporate/views/support.py:387 zerver/views/streams.py:298
+#: zerver/views/streams.py:302 zerver/views/streams.py:310
 msgid "Invalid parameters"
 msgstr ""
 
@@ -617,7 +617,7 @@ msgstr ""
 #: templates/corporate/billing/billing.html:542
 #: templates/corporate/billing/billing.html:570
 #: templates/corporate/billing/billing.html:604
-#: templates/corporate/billing/upgrade.html:339
+#: templates/corporate/billing/upgrade.html:341
 #: templates/zerver/change_email_address_visibility_modal.html:8
 #: templates/zerver/development/email_log.html:33
 msgid "Close modal"
@@ -639,7 +639,7 @@ msgstr ""
 
 #: templates/corporate/billing/billing.html:472
 #: templates/corporate/billing/billing.html:501
-#: templates/corporate/billing/upgrade.html:357
+#: templates/corporate/billing/upgrade.html:359
 #: templates/zerver/change_email_address_visibility_modal.html:26
 msgid "Cancel"
 msgstr ""
@@ -739,15 +739,15 @@ msgstr ""
 msgid "Upgrade"
 msgstr ""
 
-#: templates/corporate/billing/upgrade.html:284
+#: templates/corporate/billing/upgrade.html:286
 msgid "Convert demo organization before upgrading."
 msgstr ""
 
-#: templates/corporate/billing/upgrade.html:361
+#: templates/corporate/billing/upgrade.html:363
 msgid "Send invoice and start free trial"
 msgstr ""
 
-#: templates/corporate/billing/upgrade.html:363
+#: templates/corporate/billing/upgrade.html:365
 msgid "Send invoice"
 msgstr ""
 
@@ -942,7 +942,6 @@ msgstr ""
 #: templates/corporate/comparison_table_integrated.html:798
 #: templates/corporate/comparison_table_integrated.html:808
 #: templates/corporate/comparison_table_integrated.html:809
-#: templates/corporate/comparison_table_integrated.html:820
 #: templates/corporate/comparison_table_integrated.html:821
 #: templates/corporate/comparison_table_integrated.html:822
 #: templates/corporate/comparison_table_integrated.html:833
@@ -1122,6 +1121,7 @@ msgstr ""
 #: templates/corporate/comparison_table_integrated.html:806
 #: templates/corporate/comparison_table_integrated.html:807
 #: templates/corporate/comparison_table_integrated.html:819
+#: templates/corporate/comparison_table_integrated.html:820
 #: templates/corporate/comparison_table_integrated.html:832
 #: templates/corporate/comparison_table_integrated.html:845
 #: templates/corporate/comparison_table_integrated.html:846
@@ -1752,7 +1752,7 @@ msgstr ""
 
 #: templates/zerver/development/integrations_dev_panel.html:19
 #: templates/zerver/portico-header.html:8
-#: templates/zerver/portico-header.html:12 zerver/models/realms.py:387
+#: templates/zerver/portico-header.html:12 zerver/models/realms.py:377
 msgid "Zulip"
 msgstr ""
 
@@ -3949,33 +3949,33 @@ msgid ""
 "                    "
 msgstr ""
 
-#: zerver/actions/create_realm.py:318
+#: zerver/actions/create_realm.py:320
 msgid "Questions and discussion about using Zulip."
 msgstr ""
 
-#: zerver/actions/create_realm.py:324
+#: zerver/actions/create_realm.py:326
 msgid "Experiment with Zulip here. :test_tube:"
 msgstr ""
 
-#: zerver/actions/create_realm.py:330
+#: zerver/actions/create_realm.py:332
 msgid "For team-wide conversations"
 msgstr ""
 
-#: zerver/actions/create_user.py:89
+#: zerver/actions/create_user.py:82
 msgid "signups"
 msgstr ""
 
-#: zerver/actions/create_user.py:112
+#: zerver/actions/create_user.py:105
 #, python-brace-format
 msgid "{user} joined this organization."
 msgstr ""
 
-#: zerver/actions/create_user.py:305
+#: zerver/actions/create_user.py:296
 #, python-brace-format
 msgid "{user} accepted your invitation to join Zulip!"
 msgstr ""
 
-#: zerver/actions/create_user.py:696
+#: zerver/actions/create_user.py:687
 msgid ""
 "Cannot activate a placeholder account; ask the user to sign up, instead."
 msgstr ""
@@ -4306,41 +4306,41 @@ msgstr ""
 msgid "[View scheduled messages](#scheduled)"
 msgstr ""
 
-#: zerver/actions/streams.py:83
+#: zerver/actions/streams.py:84
 msgid "Channel is already deactivated"
 msgstr ""
 
-#: zerver/actions/streams.py:141
+#: zerver/actions/streams.py:144
 #, python-brace-format
 msgid "Channel {channel_name} has been archived."
 msgstr ""
 
-#: zerver/actions/streams.py:179
+#: zerver/actions/streams.py:182
 msgid "Channel is not currently deactivated"
 msgstr ""
 
-#: zerver/actions/streams.py:182
+#: zerver/actions/streams.py:185
 #, python-brace-format
 msgid "Channel named {channel_name} already exists"
 msgstr ""
 
-#: zerver/actions/streams.py:185
+#: zerver/actions/streams.py:188
 msgid "Channel is private and have no subscribers"
 msgstr ""
 
-#: zerver/actions/streams.py:245
+#: zerver/actions/streams.py:253
 #, python-brace-format
 msgid "Channel {channel_name} un-archived."
 msgstr ""
 
-#: zerver/actions/streams.py:1128
+#: zerver/actions/streams.py:1129
 #, python-brace-format
 msgid ""
 "{user} changed the [access permissions]({help_link}) for this channel from "
 "**{old_policy}** to **{new_policy}**."
 msgstr ""
 
-#: zerver/actions/streams.py:1303
+#: zerver/actions/streams.py:1307
 #, python-brace-format
 msgid ""
 "{user} changed the [posting permissions]({help_link}) for this channel:\n"
@@ -4349,51 +4349,51 @@ msgid ""
 "* **New permissions**: {new_policy}.\n"
 msgstr ""
 
-#: zerver/actions/streams.py:1421
+#: zerver/actions/streams.py:1425
 #, python-brace-format
 msgid "{user_name} renamed channel {old_channel_name} to {new_channel_name}."
 msgstr ""
 
-#: zerver/actions/streams.py:1437 zerver/actions/streams.py:1439
-#: zerver/views/streams.py:817
+#: zerver/actions/streams.py:1441 zerver/actions/streams.py:1443
+#: zerver/views/streams.py:827
 msgid "No description."
 msgstr ""
 
-#: zerver/actions/streams.py:1442
+#: zerver/actions/streams.py:1446
 #, python-brace-format
 msgid "{user} changed the description for this channel."
 msgstr ""
 
-#: zerver/actions/streams.py:1444
+#: zerver/actions/streams.py:1448
 msgid "Old description"
 msgstr ""
 
-#: zerver/actions/streams.py:1448
+#: zerver/actions/streams.py:1452
 msgid "New description"
 msgstr ""
 
-#: zerver/actions/streams.py:1513 zerver/actions/streams.py:1520
+#: zerver/actions/streams.py:1517 zerver/actions/streams.py:1524
 msgid "Forever"
 msgstr ""
 
-#: zerver/actions/streams.py:1514 zerver/actions/streams.py:1519
-#: zerver/actions/streams.py:1523 zerver/actions/streams.py:1524
+#: zerver/actions/streams.py:1518 zerver/actions/streams.py:1523
+#: zerver/actions/streams.py:1527 zerver/actions/streams.py:1528
 #, python-brace-format
 msgid "{number_of_days} days"
 msgstr ""
 
-#: zerver/actions/streams.py:1516 zerver/actions/streams.py:1526
+#: zerver/actions/streams.py:1520 zerver/actions/streams.py:1530
 #, python-brace-format
 msgid ""
 "Messages in this channel will now be automatically deleted {number_of_days} "
 "days after they are sent."
 msgstr ""
 
-#: zerver/actions/streams.py:1521
+#: zerver/actions/streams.py:1525
 msgid "Messages in this channel will now be retained forever."
 msgstr ""
 
-#: zerver/actions/streams.py:1529
+#: zerver/actions/streams.py:1533
 #, python-brace-format
 msgid ""
 "{user} has changed the [message retention period]({help_link}) for this "
@@ -4434,15 +4434,15 @@ msgstr ""
 msgid "Must be an server administrator"
 msgstr ""
 
-#: zerver/decorator.py:686 zerver/lib/streams.py:757 zerver/lib/streams.py:783
-#: zerver/lib/streams.py:785 zerver/lib/streams.py:787
-#: zerver/lib/streams.py:806 zerver/lib/user_groups.py:153
+#: zerver/decorator.py:686 zerver/lib/streams.py:773 zerver/lib/streams.py:799
+#: zerver/lib/streams.py:801 zerver/lib/streams.py:803
+#: zerver/lib/streams.py:822 zerver/lib/user_groups.py:153
 #: zerver/lib/user_groups.py:179 zerver/lib/user_groups.py:343
 #: zerver/lib/user_groups.py:449 zerver/lib/users.py:265
 #: zerver/lib/users.py:294 zerver/lib/users.py:298 zerver/views/invite.py:99
 #: zerver/views/invite.py:220 zerver/views/presence.py:49
-#: zerver/views/realm_emoji.py:35 zerver/views/streams.py:328
-#: zerver/views/streams.py:647
+#: zerver/views/realm_emoji.py:35 zerver/views/streams.py:329
+#: zerver/views/streams.py:653
 msgid "Insufficient permission"
 msgstr ""
 
@@ -4660,7 +4660,7 @@ msgstr ""
 msgid "Draft does not exist"
 msgstr ""
 
-#: zerver/lib/email_mirror.py:218
+#: zerver/lib/email_mirror.py:226
 #, python-brace-format
 msgid ""
 "Error sending message to channel {channel_name} via message notification "
@@ -4668,7 +4668,7 @@ msgid ""
 "{error_message}"
 msgstr ""
 
-#: zerver/lib/email_mirror.py:427
+#: zerver/lib/email_mirror.py:437
 msgid "Email with no subject"
 msgstr ""
 
@@ -4757,7 +4757,7 @@ msgstr ""
 msgid "Emoji name is missing"
 msgstr ""
 
-#: zerver/lib/events.py:1864
+#: zerver/lib/events.py:1854
 msgid "Could not allocate event queue"
 msgstr ""
 
@@ -5409,8 +5409,8 @@ msgstr ""
 msgid "Invalid data type for channel ID"
 msgstr ""
 
-#: zerver/lib/recipient_users.py:35 zerver/lib/streams.py:301
-#: zerver/lib/streams.py:317 zerver/lib/streams.py:945
+#: zerver/lib/recipient_users.py:35 zerver/lib/streams.py:313
+#: zerver/lib/streams.py:329 zerver/lib/streams.py:965
 #: zerver/tornado/views.py:221 zerver/views/events_register.py:72
 #: zerver/views/message_send.py:196 zerver/views/message_send.py:217
 msgid "User not authorized for this query"
@@ -5435,7 +5435,7 @@ msgstr ""
 msgid "Can't decide between '{var_name1}' and '{var_name2}' arguments"
 msgstr ""
 
-#: zerver/lib/request.py:84 zerver/lib/streams.py:351 zerver/views/typing.py:35
+#: zerver/lib/request.py:84 zerver/lib/streams.py:363 zerver/views/typing.py:35
 #, python-brace-format
 msgid "Missing '{var_name}' argument"
 msgstr ""
@@ -5454,57 +5454,57 @@ msgstr ""
 msgid "{service_name} account security"
 msgstr ""
 
-#: zerver/lib/streams.py:258
+#: zerver/lib/streams.py:270
 msgid "Only organization administrators can send to this channel."
 msgstr ""
 
-#: zerver/lib/streams.py:264
+#: zerver/lib/streams.py:276
 msgid ""
 "Only organization administrators and moderators can send to this channel."
 msgstr ""
 
-#: zerver/lib/streams.py:267
+#: zerver/lib/streams.py:279
 msgid "Guests cannot send to this channel."
 msgstr ""
 
-#: zerver/lib/streams.py:272
+#: zerver/lib/streams.py:284
 msgid "New members cannot send to this channel."
 msgstr ""
 
-#: zerver/lib/streams.py:308 zerver/lib/streams.py:343
+#: zerver/lib/streams.py:320 zerver/lib/streams.py:355
 #, python-brace-format
 msgid "Not authorized to send to channel '{channel_name}'"
 msgstr ""
 
-#: zerver/lib/streams.py:361 zerver/lib/streams.py:380
-#: zerver/lib/streams.py:465 zerver/lib/streams.py:531
-#: zerver/views/streams.py:408 zerver/views/user_topics.py:107
+#: zerver/lib/streams.py:373 zerver/lib/streams.py:392
+#: zerver/lib/streams.py:477 zerver/lib/streams.py:543
+#: zerver/views/streams.py:409 zerver/views/user_topics.py:107
 msgid "Invalid channel ID"
 msgstr ""
 
-#: zerver/lib/streams.py:507
+#: zerver/lib/streams.py:519
 msgid "Channel name already in use."
 msgstr ""
 
-#: zerver/lib/streams.py:515 zerver/lib/streams.py:635
+#: zerver/lib/streams.py:527 zerver/lib/streams.py:647
 #, python-brace-format
 msgid "Invalid channel name '{channel_name}'"
 msgstr ""
 
-#: zerver/lib/streams.py:789 zerver/views/streams.py:313
+#: zerver/lib/streams.py:805 zerver/views/streams.py:314
 msgid "A default channel cannot be private."
 msgstr ""
 
-#: zerver/lib/streams.py:793
+#: zerver/lib/streams.py:809
 #, python-brace-format
 msgid "Channel(s) ({channel_names}) do not exist"
 msgstr ""
 
-#: zerver/lib/streams.py:802 zerver/views/streams.py:326
+#: zerver/lib/streams.py:818 zerver/views/streams.py:327
 msgid "Web-public channels are not enabled."
 msgstr ""
 
-#: zerver/lib/streams.py:832
+#: zerver/lib/streams.py:851
 #, python-brace-format
 msgid "Default channel group with id '{group_id}' does not exist."
 msgstr ""
@@ -5532,11 +5532,11 @@ msgstr ""
 msgid "Invalid character in topic, at position {position}!"
 msgstr ""
 
-#: zerver/lib/subscription_info.py:353
+#: zerver/lib/subscription_info.py:358
 msgid "Subscriber data is not available for this channel"
 msgstr ""
 
-#: zerver/lib/subscription_info.py:360
+#: zerver/lib/subscription_info.py:365
 msgid "Unable to retrieve subscribers for private channel"
 msgstr ""
 
@@ -5839,7 +5839,7 @@ msgstr ""
 msgid "Unexpected arguments: {keys}"
 msgstr ""
 
-#: zerver/lib/validator.py:302 zerver/views/realm.py:86
+#: zerver/lib/validator.py:302 zerver/views/realm.py:85
 #, python-brace-format
 msgid "{var_name} is not an allowed_type"
 msgstr ""
@@ -6016,51 +6016,51 @@ msgstr ""
 msgid "\"code\" should be the only variable present in the URL template"
 msgstr ""
 
-#: zerver/models/realms.py:388
+#: zerver/models/realms.py:378
 msgid "sandbox"
 msgstr ""
 
-#: zerver/models/realms.py:389
+#: zerver/models/realms.py:379
 msgid "general"
 msgstr ""
 
-#: zerver/models/realms.py:390
+#: zerver/models/realms.py:380
 msgid "channel events"
 msgstr ""
 
-#: zerver/models/realms.py:406
+#: zerver/models/realms.py:396
 msgid "Zulip updates"
 msgstr ""
 
-#: zerver/models/realms.py:532
+#: zerver/models/realms.py:522
 msgid "Available on Zulip Cloud Standard. Upgrade to access."
 msgstr ""
 
-#: zerver/models/realms.py:533
+#: zerver/models/realms.py:523
 msgid "Available on Zulip Cloud Plus. Upgrade to access."
 msgstr ""
 
-#: zerver/models/realms.py:593
+#: zerver/models/realms.py:583
 msgid "GIPHY integration disabled"
 msgstr ""
 
-#: zerver/models/realms.py:598
+#: zerver/models/realms.py:588
 msgid "Allow GIFs rated Y (Very young audience)"
 msgstr ""
 
-#: zerver/models/realms.py:602
+#: zerver/models/realms.py:592
 msgid "Allow GIFs rated G (General audience)"
 msgstr ""
 
-#: zerver/models/realms.py:606
+#: zerver/models/realms.py:596
 msgid "Allow GIFs rated PG (Parental guidance)"
 msgstr ""
 
-#: zerver/models/realms.py:610
+#: zerver/models/realms.py:600
 msgid "Allow GIFs rated PG-13 (Parental guidance - under 13)"
 msgstr ""
 
-#: zerver/models/realms.py:614
+#: zerver/models/realms.py:604
 msgid "Allow GIFs rated R (Restricted)"
 msgstr ""
 
@@ -6419,26 +6419,26 @@ msgstr ""
 msgid "Read receipts are disabled in this organization."
 msgstr ""
 
-#: zerver/views/realm.py:188
+#: zerver/views/realm.py:187
 #, python-brace-format
 msgid "Invalid language '{language}'"
 msgstr ""
 
-#: zerver/views/realm.py:195
+#: zerver/views/realm.py:194
 msgid "At least one authentication method must be enabled."
 msgstr ""
 
-#: zerver/views/realm.py:201
+#: zerver/views/realm.py:200
 #, python-brace-format
 msgid "Invalid video_chat_provider {video_chat_provider}"
 msgstr ""
 
-#: zerver/views/realm.py:209
+#: zerver/views/realm.py:208
 #, python-brace-format
 msgid "Invalid giphy_rating {giphy_rating}"
 msgstr ""
 
-#: zerver/views/realm.py:462
+#: zerver/views/realm.py:464
 msgid "Must be a demo organization."
 msgstr ""
 
@@ -6528,75 +6528,75 @@ msgstr ""
 msgid "Invalid DSN"
 msgstr ""
 
-#: zerver/views/streams.py:144
+#: zerver/views/streams.py:145
 msgid "Private channels cannot be made default."
 msgstr ""
 
-#: zerver/views/streams.py:178
+#: zerver/views/streams.py:179
 msgid "You must pass \"new_description\" or \"new_group_name\"."
 msgstr ""
 
-#: zerver/views/streams.py:209
+#: zerver/views/streams.py:210
 msgid "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
 msgstr ""
 
-#: zerver/views/streams.py:368
+#: zerver/views/streams.py:369
 msgid "Channel already has that name."
 msgstr ""
 
-#: zerver/views/streams.py:469 zerver/views/user_groups.py:481
+#: zerver/views/streams.py:470 zerver/views/user_groups.py:482
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr ""
 
-#: zerver/views/streams.py:546
+#: zerver/views/streams.py:547
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the channel {channel_name}."
 msgstr ""
 
-#: zerver/views/streams.py:552
+#: zerver/views/streams.py:553
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following channels:"
 msgstr ""
 
-#: zerver/views/streams.py:664
+#: zerver/views/streams.py:674
 #, python-brace-format
 msgid "Unable to access channel ({channel_name})."
 msgstr ""
 
-#: zerver/views/streams.py:677
+#: zerver/views/streams.py:687
 msgid "You can only invite other Zephyr mirroring users to private channels."
 msgstr ""
 
-#: zerver/views/streams.py:789
+#: zerver/views/streams.py:799
 #, python-brace-format
 msgid "{user_name} created the following channels: {new_channels}."
 msgstr ""
 
-#: zerver/views/streams.py:791
+#: zerver/views/streams.py:801
 #, python-brace-format
 msgid "{user_name} created a new channel {new_channels}."
 msgstr ""
 
-#: zerver/views/streams.py:792
+#: zerver/views/streams.py:802
 msgid "new channels"
 msgstr ""
 
-#: zerver/views/streams.py:826
+#: zerver/views/streams.py:836
 #, python-brace-format
 msgid "**{policy}** channel created by {user_name}. **Description:**"
 msgstr ""
 
-#: zerver/views/streams.py:1011
+#: zerver/views/streams.py:1025
 #, python-brace-format
 msgid "{property} is not a boolean"
 msgstr ""
 
-#: zerver/views/streams.py:1014
+#: zerver/views/streams.py:1028
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr ""
 
-#: zerver/views/streams.py:1062
+#: zerver/views/streams.py:1076
 #, python-brace-format
 msgid "Not subscribed to channel ID {channel_id}"
 msgstr ""
@@ -6660,53 +6660,53 @@ msgstr ""
 msgid "You may only upload one file at a time"
 msgstr ""
 
-#: zerver/views/user_groups.py:146
+#: zerver/views/user_groups.py:147
 msgid "No new data supplied"
 msgstr ""
 
-#: zerver/views/user_groups.py:160
+#: zerver/views/user_groups.py:161
 msgid "You can only change name of deactivated user groups"
 msgstr ""
 
-#: zerver/views/user_groups.py:238
+#: zerver/views/user_groups.py:239
 msgid ""
 "Nothing to do. Specify at least one of \"add\", \"delete\", "
 "\"add_subgroups\" or \"delete_subgroups\"."
 msgstr ""
 
-#: zerver/views/user_groups.py:300
+#: zerver/views/user_groups.py:301
 #, python-brace-format
 msgid "{user_full_name} added you to the group {group_name}."
 msgstr ""
 
-#: zerver/views/user_groups.py:305
+#: zerver/views/user_groups.py:306
 #, python-brace-format
 msgid "{user_full_name} removed you from the group {group_name}."
 msgstr ""
 
-#: zerver/views/user_groups.py:353
+#: zerver/views/user_groups.py:354
 #, python-brace-format
 msgid "User {user_id} is already a member of this group"
 msgstr ""
 
-#: zerver/views/user_groups.py:389
+#: zerver/views/user_groups.py:390
 #, python-brace-format
 msgid "There is no member '{user_id}' in this user group"
 msgstr ""
 
-#: zerver/views/user_groups.py:418
+#: zerver/views/user_groups.py:419
 #, python-brace-format
 msgid "User group {group_id} is already a subgroup of this group."
 msgstr ""
 
-#: zerver/views/user_groups.py:429
+#: zerver/views/user_groups.py:430
 #, python-brace-format
 msgid ""
 "User group {user_group_id} is already a subgroup of one of the passed "
 "subgroups."
 msgstr ""
 
-#: zerver/views/user_groups.py:457
+#: zerver/views/user_groups.py:458
 #, python-brace-format
 msgid "User group {group_id} is not a subgroup of this group."
 msgstr ""
@@ -6828,43 +6828,43 @@ msgstr ""
 msgid "Email '{email}' already in use"
 msgstr ""
 
-#: zerver/views/video_calls.py:48
+#: zerver/views/video_calls.py:49
 msgid "Invalid Zoom access token"
 msgstr ""
 
-#: zerver/views/video_calls.py:53
+#: zerver/views/video_calls.py:54
 msgid "Zoom credentials have not been configured"
 msgstr ""
 
-#: zerver/views/video_calls.py:136
+#: zerver/views/video_calls.py:137
 msgid "Invalid Zoom session identifier"
 msgstr ""
 
-#: zerver/views/video_calls.py:148
+#: zerver/views/video_calls.py:149
 msgid "Invalid Zoom credentials"
 msgstr ""
 
-#: zerver/views/video_calls.py:194
+#: zerver/views/video_calls.py:195
 msgid "Failed to create Zoom call"
 msgstr ""
 
-#: zerver/views/video_calls.py:241
+#: zerver/views/video_calls.py:242
 msgid "BigBlueButton is not configured."
 msgstr ""
 
-#: zerver/views/video_calls.py:246
+#: zerver/views/video_calls.py:247
 msgid "Invalid signature."
 msgstr ""
 
-#: zerver/views/video_calls.py:276
+#: zerver/views/video_calls.py:277
 msgid "Error connecting to the BigBlueButton server."
 msgstr ""
 
-#: zerver/views/video_calls.py:280
+#: zerver/views/video_calls.py:281
 msgid "Error authenticating to the BigBlueButton server."
 msgstr ""
 
-#: zerver/views/video_calls.py:283
+#: zerver/views/video_calls.py:284
 msgid "BigBlueButton server returned an unexpected error."
 msgstr ""
 
@@ -6913,7 +6913,7 @@ msgstr ""
 msgid "Events key is missing from payload"
 msgstr ""
 
-#: zerver/webhooks/pivotal/view.py:190
+#: zerver/webhooks/pivotal/view.py:193
 msgid "Unable to handle Pivotal payload"
 msgstr ""
 

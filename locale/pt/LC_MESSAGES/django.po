@@ -20,7 +20,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-11-06 19:37+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>, 2018,2024\n"
+"Last-Translator: André Malagutti, 2024\n"
 "Language-Team: Portuguese (http://app.transifex.com/zulip/zulip/language/pt/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -121,7 +121,7 @@ msgstr ""
 msgid ""
 "Your organization does not have enough Zulip licenses. Invitations were not "
 "sent."
-msgstr ""
+msgstr "Sua organização não possui licenças suficientes do Zulip. Os convites não foram enviados."
 
 #: corporate/lib/registration.py:133
 msgid ""
@@ -816,12 +816,12 @@ msgstr "Ilimitado"
 
 #: templates/corporate/comparison_table_integrated.html:153
 msgid "Files up to 10 MB"
-msgstr ""
+msgstr "Arquivos de até 10 MB"
 
 #: templates/corporate/comparison_table_integrated.html:154
 #: templates/corporate/comparison_table_integrated.html:155
 msgid "Files up to 1 GB"
-msgstr ""
+msgstr "Arquivos de até 1 GB"
 
 #: templates/corporate/comparison_table_integrated.html:211
 #: templates/corporate/comparison_table_integrated.html:212
@@ -1268,7 +1268,7 @@ msgstr "Criar organização"
 #: templates/corporate/self-hosting.html:27
 #: templates/corporate/why-zulip.html:30 templates/zerver/footer.html:44
 msgid "Get a demo"
-msgstr ""
+msgstr "Obtenha uma demonstração"
 
 #: templates/corporate/for/business.html:30
 #: templates/corporate/for/communities.html:41
@@ -3191,7 +3191,7 @@ msgstr "Status do Zulip Cloud"
 
 #: templates/zerver/footer.html:48
 msgid "Moving to Zulip"
-msgstr ""
+msgstr "Mudando para o Zulip"
 
 #: templates/zerver/footer.html:53
 msgid "Installing a Zulip server"
