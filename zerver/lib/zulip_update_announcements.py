@@ -221,6 +221,38 @@ DIRECT MESSAGES to [start a DM]({starting_a_new_direct_message_help_url}).
             max_file_upload_size=settings.MAX_FILE_UPLOAD_SIZE,
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=10,
+        message=(
+            """
+- Most permissions in Zulip can now be granted to any combination of
+  [roles]({roles_and_permissions_help_url}), [groups]({user_groups_help_url}),
+  and individual [users]({users_help_url}). Previously, permissions were
+  configurable only by user role."""
+            + (
+                """
+- Creating new user groups now requires a Zulip Cloud Standard or Zulip Cloud
+  Plus [plan]({cloud_plans_url}).
+"""
+                if settings.CORPORATE_ENABLED
+                else ""
+            )
+            + """
+
+**Web and desktop updates**
+- To provide more information, long topic names are now shown on two lines in
+  the left sidebar.
+- Pasted [message links]({message_links_help_url}) are now automatically
+  converted into nicely formatted links.
+"""
+        ).format(
+            roles_and_permissions_help_url="/help/roles-and-permissions",
+            user_groups_help_url="/help/user-groups",
+            users_help_url="/help/manage-a-user",
+            cloud_plans_url="/plans/",
+            message_links_help_url="/help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message",
+        ),
+    ),
 ]
 
 
