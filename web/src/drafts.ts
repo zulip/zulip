@@ -274,8 +274,8 @@ export function confirm_delete_all_drafts(): void {
 export function rename_stream_recipient(
     old_stream_id: number,
     old_topic: string,
-    new_stream_id: number,
-    new_topic: string,
+    new_stream_id: number | undefined,
+    new_topic: string | undefined,
 ): void {
     for (const [draft_id, draft] of Object.entries(draft_model.get())) {
         if (draft.type !== "stream" || draft.stream_id === undefined) {
