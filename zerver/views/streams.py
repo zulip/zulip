@@ -392,6 +392,15 @@ def update_stream_backend(
         setting_value = request_settings_dict[setting_name]
         new_setting_value = parse_group_setting_value(setting_value.new, setting_name)
 
+        if (
+            not settings.TEST_SUITE
+            and setting_name == "can_remove_subscribers_group"
+            and not isinstance(new_setting_value, int)
+        ):
+            raise JsonableError(
+                _("'can_remove_subscribers_group' cannot be set to anonymous user groups.")
+            )
+
         expected_current_setting_value = None
         if setting_value.old is not None:
             expected_current_setting_value = parse_group_setting_value(
@@ -592,6 +601,11 @@ def add_subscriptions_backend(
 
     setting_groups_dict = {}
     if can_remove_subscribers_group is not None:
+        if not settings.TEST_SUITE and not isinstance(can_remove_subscribers_group, int):
+            raise JsonableError(
+                _("'can_remove_subscribers_group' cannot be set to anonymous user groups.")
+            )
+
         setting_value = parse_group_setting_value(
             can_remove_subscribers_group, "can_remove_subscribers_group"
         )

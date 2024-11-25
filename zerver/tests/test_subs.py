@@ -642,6 +642,25 @@ class TestCreateStreams(ZulipTestCase):
             "'can_remove_subscribers_group' setting cannot be set to 'role:nobody' group.",
         )
 
+        with self.settings(TEST_SUITE=False):
+            result = self.common_subscribe_to_streams(
+                user,
+                subscriptions,
+                {
+                    "can_remove_subscribers_group": orjson.dumps(
+                        {
+                            "direct_members": [user.id],
+                            "direct_subgroups": [moderators_system_group.id],
+                        }
+                    ).decode()
+                },
+                allow_fail=True,
+                subdomain="zulip",
+            )
+        self.assert_json_error(
+            result, "'can_remove_subscribers_group' cannot be set to anonymous user groups."
+        )
+
     def test_acting_user_is_creator(self) -> None:
         """
         If backend calls provide an acting_user while trying to
@@ -2350,6 +2369,25 @@ class StreamAdminTest(ZulipTestCase):
             },
         )
         self.assert_json_error(result, "'old' value does not match the expected value.")
+
+        with self.settings(TEST_SUITE=False):
+            result = self.client_patch(
+                f"/json/streams/{stream.id}",
+                {
+                    "can_remove_subscribers_group": orjson.dumps(
+                        {
+                            "new": {
+                                "direct_members": [hamlet.id],
+                                "direct_subgroups": [moderators_system_group.id],
+                            },
+                            "old": hamletcharacters_group.id,
+                        }
+                    ).decode()
+                },
+            )
+        self.assert_json_error(
+            result, "'can_remove_subscribers_group' cannot be set to anonymous user groups."
+        )
 
         result = self.client_patch(
             f"/json/streams/{stream.id}",
