@@ -2386,14 +2386,21 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
     def test_group_level_setting_for_removing_members(self) -> None:
         othello = self.example_user("othello")
+        aaron = self.example_user("aaron")
+
+        realm = othello.realm
+        nobody_group = NamedUserGroup.objects.get(name=SystemGroups.NOBODY, realm=realm)
         user_group = check_add_user_group(
-            get_realm("zulip"), "support", [othello], acting_user=self.example_user("desdemona")
+            get_realm("zulip"),
+            "support",
+            [othello, aaron],
+            group_settings_map={"can_manage_group": nobody_group},
+            acting_user=self.example_user("desdemona"),
         )
         hamlet = self.example_user("hamlet")
         leadership_group = check_add_user_group(
             get_realm("zulip"), "leadership", [hamlet], acting_user=hamlet
         )
-        aaron = self.example_user("aaron")
 
         def check_removing_members_from_group(
             acting_user: str, error_msg: str | None = None
@@ -2411,8 +2418,6 @@ class UserGroupAPITestCase(UserGroupTestCase):
             else:
                 self.assert_json_error(result, error_msg)
 
-        realm = get_realm("zulip")
-        nobody_group = NamedUserGroup.objects.get(name=SystemGroups.NOBODY, realm=realm)
         do_change_realm_permission_group_setting(
             realm,
             "can_manage_all_groups",
@@ -2420,50 +2425,66 @@ class UserGroupAPITestCase(UserGroupTestCase):
             acting_user=None,
         )
 
-        # Default value of can_add_members_group is "group_creator".
-        bulk_add_members_to_user_groups([user_group], [aaron.id], acting_user=None)
+        # By default can_remove_members_group is set to "Nobody" group.
         check_removing_members_from_group("iago", "Insufficient permission")
-        check_removing_members_from_group("desdemona")
+        check_removing_members_from_group("desdemona", "Insufficient permission")
 
-        # Test setting can_add_members_group to a system group.
+        # Test setting can_remove_members_group to a system group.
         system_group_dict = get_role_based_system_groups_dict(realm)
         owners_group = system_group_dict[SystemGroups.OWNERS]
         do_change_user_group_permission_setting(
-            user_group, "can_manage_group", owners_group, acting_user=None
+            user_group, "can_remove_members_group", owners_group, acting_user=None
         )
 
-        bulk_add_members_to_user_groups([user_group], [aaron.id], acting_user=None)
         check_removing_members_from_group("iago", "Insufficient permission")
         check_removing_members_from_group("desdemona")
+
+        # Add aaron to group to remove them again in further tests.
+        bulk_add_members_to_user_groups([user_group], [aaron.id], acting_user=None)
 
         # Although we can't set this value to everyone via the API,
         # it is a good way here to test whether guest users are allowed
         # to take the action or not.
         everyone_group = system_group_dict[SystemGroups.EVERYONE]
         do_change_user_group_permission_setting(
-            user_group, "can_manage_group", everyone_group, acting_user=None
+            user_group, "can_remove_members_group", everyone_group, acting_user=None
         )
-        bulk_add_members_to_user_groups([user_group], [aaron.id], acting_user=None)
         check_removing_members_from_group("polonius", "Not allowed for guest users")
         check_removing_members_from_group("cordelia")
+        bulk_add_members_to_user_groups([user_group], [aaron.id], acting_user=None)
 
-        # Test setting can_manage_group to an anonymous group with
+        # Test setting can_remove_members_group to an anonymous group with
         # subgroups.
         setting_group = self.create_or_update_anonymous_group_for_setting(
             [self.example_user("cordelia")], [leadership_group, owners_group]
         )
         do_change_user_group_permission_setting(
-            user_group, "can_manage_group", setting_group, acting_user=None
+            user_group, "can_remove_members_group", setting_group, acting_user=None
         )
-        bulk_add_members_to_user_groups([user_group], [aaron.id], acting_user=None)
         check_removing_members_from_group("iago", "Insufficient permission")
         check_removing_members_from_group("hamlet")
-
         bulk_add_members_to_user_groups([user_group], [aaron.id], acting_user=None)
+
         check_removing_members_from_group("cordelia")
-
         bulk_add_members_to_user_groups([user_group], [aaron.id], acting_user=None)
+
         check_removing_members_from_group("desdemona")
+        bulk_add_members_to_user_groups([user_group], [aaron.id], acting_user=None)
+
+        # If user is part of can_manage_group, they need not be part
+        # of can_remove_members_group to remove members.
+        othello_group = self.create_or_update_anonymous_group_for_setting([othello], [])
+        hamlet_group = self.create_or_update_anonymous_group_for_setting([hamlet], [])
+        do_change_user_group_permission_setting(
+            user_group, "can_manage_group", othello_group, acting_user=None
+        )
+        do_change_user_group_permission_setting(
+            user_group, "can_remove_members_group", hamlet_group, acting_user=None
+        )
+        check_removing_members_from_group("othello")
+        bulk_add_members_to_user_groups([user_group], [aaron.id], acting_user=None)
+
+        check_removing_members_from_group("hamlet")
 
     def test_adding_yourself_to_group(self) -> None:
         realm = get_realm("zulip")
@@ -2698,6 +2719,25 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_leaving_a_group("iago", "Insufficient permission")
         check_leaving_a_group("cordelia")
         check_leaving_a_group("shiva")
+
+        # If user is allowed to remove anyone, then they can leave themselves
+        # even when can_leave_group setting does not allow them to do so.
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_leave_group",
+            nobody_group,
+            acting_user=None,
+        )
+        self.assertEqual(user_group.can_leave_group.named_user_group, nobody_group)
+        check_leaving_a_group("iago", "Insufficient permission")
+
+        do_change_user_group_permission_setting(
+            user_group,
+            "can_remove_members_group",
+            admins_group,
+            acting_user=None,
+        )
+        check_leaving_a_group("iago")
 
         # If user is allowed to manage a group, then they can leave
         # even when can_leave_group does not allow them to do so.
