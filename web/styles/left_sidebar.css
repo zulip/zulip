@@ -438,6 +438,13 @@
         align-items: center;
         color: var(--color-text-sidebar-action-heading);
         text-decoration: none;
+        font-size: var(--font-size-sidebar-action-heading);
+        font-weight: var(--font-weight-sidebar-action-heading);
+        font-variant: var(--font-variant-sidebar-action-heading);
+        font-feature-settings: var(
+            --font-feature-settings-sidebar-action-heading
+        );
+        text-transform: var(--text-transform-sidebar-action-heading);
     }
 }
 
