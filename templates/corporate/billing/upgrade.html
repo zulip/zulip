@@ -99,7 +99,7 @@
                     {% if page_params.free_trial_days and not page_params.setup_payment_by_invoice %}
                     <input type="hidden" name="schedule" value="monthly" />
                     {% else %}
-                    <div class="input-box upgrade-page-field no-validation">
+                    <div class="input-box upgrade-page-field">
                         <select name="schedule" id="payment-schedule-select">
                             {% if fixed_price_plan %}
                             <option value="monthly">Pay monthly</option>
@@ -114,7 +114,7 @@
                     {% endif %}
 
                     {% if remote_server_legacy_plan_end_date %}
-                    <div class="input-box upgrade-page-field no-validation">
+                    <div class="input-box upgrade-page-field">
                         <select name="remote_server_plan_start_date" id="remote-server-plan-start-date-select">
                             <option value="billing_cycle_end_date">{{ remote_server_legacy_plan_end_date }}</option>
                             <option value="today">Today</option>
@@ -135,7 +135,7 @@
                     {% endif %}
 
                     {% if remote_server_legacy_plan_end_date %}
-                        <div class="input-box upgrade-page-field no-validation" id="due-today-for-future-update-wrapper">
+                        <div class="input-box upgrade-page-field" id="due-today-for-future-update-wrapper">
                             <label for="due-today-for-future-update" class="inline-block label-title">
                                 Due today
                             </label>
@@ -145,7 +145,7 @@
                         </div>
                     {% endif %}
 
-                    <div class="input-box upgrade-page-field no-validation">
+                    <div class="input-box upgrade-page-field">
                         <label for="due-today" class="inline-block label-title">
                             {% if remote_server_legacy_plan_end_date %}
                             <span id="due-today-remote-server-title">
@@ -240,7 +240,7 @@
                     <div {% if page_params.setup_payment_by_invoice %} id="update-invoice-billing-info" {% elif payment_method %} id="upgrade-payment-info"{% endif %}>
                         {% if page_params.setup_payment_by_invoice %}
                         {% elif payment_method %}
-                        <div class="input-box upgrade-page-field no-validation" id="upgrade-payment-menthod-wrapper">
+                        <div class="input-box upgrade-page-field" id="upgrade-payment-menthod-wrapper">
                             <label for="customer-payment-method-for-upgrade" class="inline-block label-title">Payment method</label>
                             <div id="customer-payment-method-for-upgrade" class="not-editable-realm-field">
                                 {{ payment_method }}
