@@ -21,7 +21,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-11-06 19:37+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Davide Quagliotto, 2024\n"
+"Last-Translator: Andrea, 2020-2024\n"
 "Language-Team: Italian (http://app.transifex.com/zulip/zulip/language/it/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -817,12 +817,12 @@ msgstr "Illimitato"
 
 #: templates/corporate/comparison_table_integrated.html:153
 msgid "Files up to 10 MB"
-msgstr ""
+msgstr "File fino a 10 MB"
 
 #: templates/corporate/comparison_table_integrated.html:154
 #: templates/corporate/comparison_table_integrated.html:155
 msgid "Files up to 1 GB"
-msgstr ""
+msgstr "File fino a 1 GB"
 
 #: templates/corporate/comparison_table_integrated.html:211
 #: templates/corporate/comparison_table_integrated.html:212

@@ -8,6 +8,7 @@
 # Greg Price <gnprice@gmail.com>, 2017
 # Jiří Richter <richtej2@gmail.com>, 2024
 # Jiří Ryszawy <jiri@ryszawy.com>, 2021
+# Matěj Cepl <mcepl@cepl.eu>, 2024
 # fri, 2017
 # fri, 2017-2024
 # Tomáš Hozman, 2021-2022
@@ -17,7 +18,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-11-06 19:37+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Jiří Richter <richtej2@gmail.com>, 2024\n"
+"Last-Translator: fri, 2017-2024\n"
 "Language-Team: Czech (http://app.transifex.com/zulip/zulip/language/cs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1783,7 +1784,7 @@ msgstr "Připojil/a jste se k organizaci na Zulipu <b>%(realm_name)s</b>.\n    "
 msgid ""
 "You will use the following info to log into the Zulip web, <a "
 "href=\"%(apps_page_link)s\">mobile and desktop</a> apps:"
-msgstr ""
+msgstr "Následující informaci použijete pro přihlášení se do webové, <a href=\"%(apps_page_link)s\">mobilní a desktopové aplikace</a> Zulip:"
 
 #: templates/zerver/emails/account_registered.html:34
 #: templates/zerver/emails/account_registered.txt:16
@@ -1870,7 +1871,7 @@ msgstr "Připojil/a jste se k organizaci na Zulipu %(realm_name)s."
 msgid ""
 "You will use the following info to log into the Zulip web, mobile and "
 "desktop apps (%(apps_page_link)s):"
-msgstr ""
+msgstr "Následující informaci použijete pro přihlášení se do webové, mobilní a desktopové aplikace Zulip (%(apps_page_link)s):"
 
 #: templates/zerver/emails/account_registered.txt:29
 #, python-format
@@ -2041,7 +2042,7 @@ msgstr ""
 #: templates/zerver/emails/deactivate.html:15
 #: templates/zerver/emails/deactivate.txt:6
 msgid "The administrators provided the following comment:"
-msgstr "Správci poskytli následující vyjádření:"
+msgstr "Správci poskytli následující vysvětlení:"
 
 #: templates/zerver/emails/deactivate.subject.txt:1
 #, python-format
