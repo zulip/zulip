@@ -1,0 +1,35 @@
+<div id="admin-{{section}}-bots-list" class="bot-settings-section" data-bot-settings-section="{{section}}-bots">
+    {{#if show_botserverrc}}
+    <div id="botserverrc_text_container" class="config-download-text">
+        <span>{{t 'Download config of all active outgoing webhook bots in Zulip Botserver format.' }}</span>
+        <a type="submit" download="{{botserverrc}}" id="download_botserverrc_file" class="btn tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Download botserverrc' }}">
+            <i class="fa fa-download" aria-hidden="true"></i>
+        </a>
+    </div>
+    {{/if}}
+
+    <div class="settings_panel_list_header">
+        <h3>{{section_title}}</h3>
+        <div class="alert-notification" id="{{section}}-bot-field-status"></div>
+        <div class="bot_filters">
+            {{> ../dropdown_widget widget_name=dropdown_widget_name}}
+            <input type="text" class="search filter_text_input" placeholder="{{t 'Filter bots' }}" aria-label="{{t 'Filter bots' }}"/>
+        </div>
+    </div>
+
+    <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">
+        <table class="table table-striped wrapped-table">
+            <thead class="table-sticky-headers">
+                <th class="active" data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}</th>
+                <th class="settings-email-column" data-sort="email">{{t "Email" }}</th>
+                <th class="user_role" data-sort="role">{{t "Role" }}</th>
+                <th data-sort="bot_owner">{{t "Owner" }}</th>
+                <th data-sort="alphabetic" data-sort-prop="bot_type" class="bot_type">{{t "Bot type" }}</th>
+                <th class="actions">{{t "Actions" }}</th>
+            </thead>
+            <tbody id="admin_{{section}}_bots_table"
+              data-empty="{{t 'There are no bots.' }}" data-search-results-empty="{{t 'No bots match your current filter.' }}"></tbody>
+        </table>
+    </div>
+    <div id="admin_page_bots_loading_indicator"></div>
+</div>

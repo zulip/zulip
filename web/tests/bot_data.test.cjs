@@ -236,3 +236,57 @@ test("test_basics", () => {
         assert.equal(bots_owned_by_user[0].email, "bot3@zulip.com");
     })();
 });
+
+test("get_all_bots_ids_for_current_user", () => {
+    bot_data.add({
+        api_key: "testkey123",
+        avatar_url: "",
+        bot_type: 1,
+        default_all_public_streams: true,
+        default_events_register_stream: "register stream test",
+        default_sending_stream: "sending stream test",
+        email: "testbot@zulip.com",
+        full_name: "Test Bot",
+        is_active: true,
+        owner_id: me.user_id,
+        user_id: 101,
+        services: [],
+    });
+
+    bot_data.add({
+        api_key: "anotherkey456",
+        avatar_url: "",
+        bot_type: 1,
+        default_all_public_streams: true,
+        default_events_register_stream: "register stream another",
+        default_sending_stream: "sending stream another",
+        email: "anotherbot@zulip.com",
+        full_name: "Another Bot",
+        is_active: true,
+        owner_id: fred.user_id,
+        user_id: 102,
+        services: [],
+    });
+
+    const my_bot_ids = bot_data.get_all_bots_ids_for_current_user();
+    assert.deepEqual(my_bot_ids, [101]);
+
+    // Ensure bots owned by others are not included
+    bot_data.add({
+        api_key: "anotherkey789",
+        avatar_url: "",
+        bot_type: 1,
+        default_all_public_streams: true,
+        default_events_register_stream: "register stream extra",
+        default_sending_stream: "sending stream extra",
+        email: "extrabot@zulip.com",
+        full_name: "Extra Bot",
+        is_active: true,
+        owner_id: fred.user_id,
+        user_id: 103,
+        services: [],
+    });
+
+    const my_updated_bot_ids = bot_data.get_all_bots_ids_for_current_user();
+    assert.deepEqual(my_updated_bot_ids, [101]);
+});

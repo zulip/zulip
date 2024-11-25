@@ -13,6 +13,7 @@ type ListWidgetMeta<Key, Item = Key> = {
     sorting_function: SortingFunction<Item> | null;
     sorting_functions: Map<string, SortingFunction<Item>>;
     filter_value: string;
+    dropdown_value: number;
     offset: number;
     list: Key[];
     filtered_list: Item[];
@@ -69,6 +70,7 @@ export type ListWidget<Key, Item = Key> = BaseListWidget & {
     render_item: (item: Item) => void;
     clear: () => void;
     set_filter_value: (value: string) => void;
+    set_dropdown_value: (value: number) => void;
     set_reverse_mode: (reverse_mode: boolean) => void;
     set_sorting_function: (sorting_function: string | SortingFunction<Item>) => void;
     set_up_event_handlers: () => void;
@@ -213,11 +215,15 @@ function get_column_count_for_table($table: JQuery): number {
 export function render_empty_list_message_if_needed(
     $container: JQuery,
     filter_value?: string,
+    dropdown_filter?: number,
 ): void {
     let empty_list_message = $container.attr("data-empty");
 
     const empty_search_results_message = $container.attr("data-search-results-empty");
-    if (filter_value && empty_search_results_message) {
+    if (
+        (filter_value && empty_search_results_message) ||
+        (dropdown_filter && empty_search_results_message)
+    ) {
         empty_list_message = empty_search_results_message;
     }
 
@@ -285,6 +291,7 @@ export function create<Key, Item = Key>(
         filtered_list: [],
         reverse_mode: false,
         filter_value: "",
+        dropdown_value: 0,
         $scroll_container: scroll_util.get_scroll_element(opts.$simplebar_container),
         $scroll_listening_element,
     };
@@ -342,7 +349,11 @@ export function create<Key, Item = Key>(
 
             // Stop once the offset reaches the length of the original list.
             if (this.all_rendered()) {
-                render_empty_list_message_if_needed($container, meta.filter_value);
+                render_empty_list_message_if_needed(
+                    $container,
+                    meta.filter_value,
+                    meta.dropdown_value,
+                );
                 if (opts.callback_after_render) {
                     opts.callback_after_render();
                 }
@@ -408,6 +419,10 @@ export function create<Key, Item = Key>(
 
         set_filter_value(filter_value) {
             meta.filter_value = filter_value;
+        },
+
+        set_dropdown_value(filter_value) {
+            meta.dropdown_value = filter_value;
         },
 
         set_reverse_mode(reverse_mode) {

@@ -14,9 +14,13 @@ Zulip API with a specific account on a Zulip server.
 
 {settings_tab|your-bots}
 
-1. Click **Active bots**.
+1. Select **Active**.
 
-1. Find your bot. The bot's API key is under **API KEY**.
+1. Find your bot, Click on a bot's pill to open their **user card**.
+
+1. Click **View profile**.
+
+1. Click on **Manage bot** scroll down to the bottom the bot's API key is under **API key**.
 
 {end_tabs}
 
@@ -58,11 +62,15 @@ To invalidate an existing API key, you have to generate a new key.
 
 {settings_tab|your-bots}
 
-1. Click **Active bots**.
+1. Select **Active**.
 
-1. Find your bot.
+1. Find your bot, Click on a bot's pill to open their **user card**.
 
-1. Under **API KEY**, click the **refresh** (<i class="fa fa-refresh"></i>) icon
+1. Click **View profile**.
+
+1. Click on **Manage bot** scroll down to the bottom.
+
+1. Under **API key**, click the **refresh** (<i class="fa fa-refresh"></i>) icon
    to the right of the bot's API key.
 
 {end_tabs}

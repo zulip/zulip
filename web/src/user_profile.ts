@@ -19,6 +19,7 @@ import render_user_stream_list_item from "../templates/user_stream_list_item.hbs
 
 import * as avatar from "./avatar.ts";
 import * as bot_data from "./bot_data.ts";
+import * as bot_helper from "./bot_helper.ts";
 import * as browser_history from "./browser_history.ts";
 import * as buddy_data from "./buddy_data.ts";
 import * as channel from "./channel.ts";
@@ -664,21 +665,31 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
 
     const owner_id = bot_user.owner_id;
     assert(owner_id !== null);
+    const is_bot_owner_current_user = owner_id === current_user.user_id;
     const owner_full_name = people.get_full_name(owner_id);
     const is_active = people.is_person_active(user_id);
 
     assert(bot.is_bot);
+    const bot_api_key = bot_data.get(bot.user_id)?.api_key;
+    if (!bot_api_key) {
+        return;
+    }
+
     const html_body = render_edit_bot_form({
         user_id,
         is_active,
+        is_bot_owner_current_user,
         email: bot.email,
         full_name: bot.full_name,
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
         bot_avatar_url: bot.avatar_url,
+        bot_type: settings_data.bot_type_id_to_string(bot.bot_type),
+        api_key: bot_api_key,
         owner_full_name,
         current_bot_owner: bot.bot_owner_id,
         is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
+        zuliprc: "zuliprc",
     });
     $container.append($(html_body));
     let avatar_widget: UploadWidget;
@@ -1253,6 +1264,8 @@ export function initialize(): void {
         }
     });
 
+    bot_helper.initialize_bot_click_handlers();
+
     new ClipboardJS(".copy-link-to-user-profile", {
         text(trigger) {
             const user_id = $(trigger).attr("data-user-id");
@@ -1276,4 +1289,6 @@ export function initialize(): void {
             show_check_icon: true,
         });
     });
+
+    bot_helper.initialize_clipboard_handlers();
 }

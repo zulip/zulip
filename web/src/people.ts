@@ -1084,6 +1084,16 @@ export function rewire_get_active_human_count(value: typeof get_active_human_cou
     get_active_human_count = value;
 }
 
+export function get_bot_ids_current_user(): number[] {
+    const bot_ids = [];
+    for (const user of people_by_user_id_dict.values()) {
+        if (user.is_bot && user.bot_owner_id !== null && is_my_user_id(user.bot_owner_id)) {
+            bot_ids.push(user.user_id);
+        }
+    }
+    return bot_ids;
+}
+
 export function get_active_user_ids(): number[] {
     // This includes active users and active bots.
     return [...active_user_dict.keys()];
