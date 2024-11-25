@@ -1892,6 +1892,10 @@ class NormalActionsTest(BaseAction):
                 direct_members=[othello.id], direct_subgroups=[moderators_group.id]
             ),
         )
+        self.assertEqual(
+            events[0]["group"]["can_remove_members_group"],
+            nobody_group.id,
+        )
 
         # Test name update
         backend = NamedUserGroup.objects.get(name="backend")

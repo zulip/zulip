@@ -282,6 +282,7 @@ def get_temp_user_group_id() -> dict[str, object]:
         can_leave_group_id=15,
         can_manage_group_id=11,
         can_mention_group_id=11,
+        can_remove_members_group_id=11,
         realm_for_sharding=get_realm("zulip"),
     )
     return {
@@ -300,6 +301,7 @@ def get_temp_user_group_id_for_deactivation() -> dict[str, object]:
         can_leave_group_id=15,
         can_manage_group_id=11,
         can_mention_group_id=11,
+        can_remove_members_group_id=11,
         realm_for_sharding=get_realm("zulip"),
     )
     return {

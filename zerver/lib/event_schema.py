@@ -1864,6 +1864,7 @@ group_type = DictType(
         ("can_leave_group", group_setting_type),
         ("can_manage_group", group_setting_type),
         ("can_mention_group", group_setting_type),
+        ("can_remove_members_group", group_setting_type),
         ("deactivated", bool),
     ]
 )
@@ -1916,6 +1917,7 @@ user_group_data_type = DictType(
         ("can_leave_group", group_setting_type),
         ("can_manage_group", group_setting_type),
         ("can_mention_group", group_setting_type),
+        ("can_remove_members_group", group_setting_type),
         ("deactivated", bool),
     ],
 )

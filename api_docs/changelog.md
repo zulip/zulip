@@ -20,6 +20,18 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 324**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /user_groups`](/api/get-user-groups): Add `can_remove_members_group`
+  to user group objects.
+* [`POST /user_groups/create`](/api/create-user-group): Added
+  `can_remove_members_group` parameter to support setting the user group which
+  can remove members from the user group.
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): Added
+  `can_remove_members_group` parameter to support changing the user group which
+  can remove members from the specified user group.
+
 **Feature level 323**
 
 * [`POST /register`](/api/register-queue), [`GET

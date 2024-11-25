@@ -848,6 +848,7 @@ exports.fixtures = {
             can_leave_group: 15,
             can_manage_group: 16,
             can_mention_group: 11,
+            can_remove_members_group: 16,
             deactivated: false,
         },
     },
