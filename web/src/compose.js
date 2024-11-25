@@ -299,7 +299,6 @@ export let finish = (scheduling_message = false) => {
         return undefined;
     }
 
-    clear_preview_area();
     clear_invites();
     clear_private_stream_alert();
     compose_banner.clear_message_sent_banners();
