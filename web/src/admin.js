@@ -10,7 +10,7 @@ import {$t, get_language_name, language_list} from "./i18n.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
-import * as settings from "./settings.js";
+import * as settings from "./settings.ts";
 import * as settings_bots from "./settings_bots.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";

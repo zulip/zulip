@@ -13,7 +13,7 @@ import * as narrow_state from "./narrow_state.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
-import * as settings from "./settings.js";
+import * as settings from "./settings.ts";
 import * as settings_account from "./settings_account.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_exports from "./settings_exports.ts";

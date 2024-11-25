@@ -36,7 +36,7 @@ function current_dialog_widget_selector(): string {
  *      2) We attach the DOM for the modal to the body element
  *         to avoid interference from other elements.
  *
- *      3) For settings, we have a click handler in settings.js
+ *      3) For settings, we have a click handler in settings.ts
  *         that will close the dialog via modals.close_active.
  *
  *      4) We assume that since this is a modal, you will

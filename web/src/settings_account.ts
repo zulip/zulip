@@ -751,7 +751,7 @@ export function set_up(): void {
     );
     $("#user_deactivate_account_button").on("click", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
-        // will not show up because of a call to `close_active` in `settings.js`.
+        // will not show up because of a call to `close_active` in `settings.ts`.
         e.preventDefault();
         e.stopPropagation();
 

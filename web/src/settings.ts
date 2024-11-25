@@ -24,34 +24,7 @@ import {current_user, realm} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
 import {user_settings} from "./user_settings.ts";
 
-export let settings_label;
-
-function setup_settings_label() {
-    settings_label = {
-        // settings_notification
-        allow_private_data_export: $t({
-            defaultMessage: "Let administrators export my private data",
-        }),
-        presence_enabled: $t({
-            defaultMessage: "Display my availability to other users",
-        }),
-        presence_enabled_parens_text: $t({defaultMessage: "invisible mode off"}),
-        send_stream_typing_notifications: $t({
-            defaultMessage: "Let recipients see when I'm typing messages in channels",
-        }),
-        send_private_typing_notifications: $t({
-            defaultMessage: "Let recipients see when I'm typing direct messages",
-        }),
-        send_read_receipts: $t({
-            defaultMessage: "Let others see when I've read messages",
-        }),
-
-        ...settings_config.notification_settings_labels,
-        ...settings_config.preferences_settings_labels,
-    };
-}
-
-function get_parsed_date_of_joining() {
+function get_parsed_date_of_joining(): string {
     const user_date_joined = people.get_by_user_id(current_user.user_id).date_joined;
     return timerender.get_localized_date_or_time_for_format(
         parseISO(user_date_joined),
@@ -59,14 +32,14 @@ function get_parsed_date_of_joining() {
     );
 }
 
-function user_can_change_password() {
+function user_can_change_password(): boolean {
     if (settings_data.user_email_not_configured()) {
         return false;
     }
     return realm.realm_email_auth_enabled;
 }
 
-export function update_lock_icon_in_sidebar() {
+export function update_lock_icon_in_sidebar(): void {
     if (current_user.is_owner) {
         $(".org-settings-list .locked").hide();
         return;
@@ -88,8 +61,29 @@ export function update_lock_icon_in_sidebar() {
     }
 }
 
-export function build_page() {
-    setup_settings_label();
+export function build_page(): void {
+    const settings_label = {
+        // settings_notification
+        allow_private_data_export: $t({
+            defaultMessage: "Let administrators export my private data",
+        }),
+        presence_enabled: $t({
+            defaultMessage: "Display my availability to other users",
+        }),
+        presence_enabled_parens_text: $t({defaultMessage: "invisible mode off"}),
+        send_stream_typing_notifications: $t({
+            defaultMessage: "Let recipients see when I'm typing messages in channels",
+        }),
+        send_private_typing_notifications: $t({
+            defaultMessage: "Let recipients see when I'm typing direct messages",
+        }),
+        send_read_receipts: $t({
+            defaultMessage: "Let others see when I've read messages",
+        }),
+
+        ...settings_config.notification_settings_labels,
+        ...settings_config.preferences_settings_labels,
+    };
 
     const rendered_settings_tab = render_settings_tab({
         full_name: people.my_full_name(),
@@ -157,7 +151,7 @@ export function build_page() {
     common.adjust_mac_kbd_tags("#user_enter_sends_label kbd");
 }
 
-export function open_settings_overlay() {
+export function open_settings_overlay(): void {
     overlays.open_overlay({
         name: "settings",
         $overlay: $("#settings_overlay_container"),
@@ -169,7 +163,7 @@ export function open_settings_overlay() {
     });
 }
 
-export function launch(section) {
+export function launch(section: string): void {
     settings_sections.reset_sections();
 
     open_settings_overlay();
@@ -179,7 +173,7 @@ export function launch(section) {
     settings_toggle.goto("settings");
 }
 
-export function initialize() {
+export function initialize(): void {
     const rendered_settings_overlay = render_settings_overlay({
         is_owner: current_user.is_owner,
         is_admin: current_user.is_admin,

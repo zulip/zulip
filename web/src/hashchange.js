@@ -22,7 +22,7 @@ import * as popovers from "./popovers.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
-import * as settings from "./settings.js";
+import * as settings from "./settings.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_toggle from "./settings_toggle.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
