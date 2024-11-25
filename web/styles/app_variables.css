@@ -1106,6 +1106,209 @@
     --background-color-active-dropdown-item: hsl(220deg 12% 4.9% / 5%);
     --background-color-active-typeahead-item: hsl(221.14deg 89.74% 92.35%);
     --color-typeahead-option-label: var(--grey-500);
+
+    /* Actions buttons */
+    --color-inner-shadow-action-button: color-mix(
+        in oklch,
+        #000 10%,
+        transparent
+    );
+    /* Action buttons -- Neutral Variant */
+    --color-text-neutral-primary-action-button: #fff;
+    --color-background-neutral-primary-action-button: #777a88;
+    --color-background-neutral-primary-action-button-hover: #707380;
+    --color-background-neutral-primary-action-button-active: #696b78;
+    --color-text-neutral-quiet-action-button: #393c49;
+    --color-background-neutral-quiet-action-button: color-mix(
+        in oklch,
+        #767988 12%,
+        transparent
+    );
+    --color-background-neutral-quiet-action-button-hover: color-mix(
+        in oklch,
+        #767988 17%,
+        transparent
+    );
+    --color-background-neutral-quiet-action-button-active: color-mix(
+        in oklch,
+        #767988 22%,
+        transparent
+    );
+    --color-text-neutral-borderless-action-button: #535663;
+    --color-background-neutral-borderless-action-button-hover: color-mix(
+        in oklch,
+        #535663 7%,
+        transparent
+    );
+    --color-background-neutral-borderless-action-button-active: color-mix(
+        in oklch,
+        #535663 11%,
+        transparent
+    );
+    /* Action buttons -- Brand Variant */
+    --color-text-brand-primary-action-button: #fff;
+    --color-background-brand-primary-action-button: #805bfe;
+    --color-background-brand-primary-action-button-hover: #7349ec;
+    --color-background-brand-primary-action-button-active: #612fd4;
+    --color-text-brand-quiet-action-button: #4704aa;
+    --color-background-brand-quiet-action-button: color-mix(
+        in oklch,
+        #805bfe 12%,
+        transparent
+    );
+    --color-background-brand-quiet-action-button-hover: color-mix(
+        in oklch,
+        #805bfe 17%,
+        transparent
+    );
+    --color-background-brand-quiet-action-button-active: color-mix(
+        in oklch,
+        #805bfe 22%,
+        transparent
+    );
+    --color-text-brand-borderless-action-button: #5f3cc5;
+    --color-background-brand-borderless-action-button-hover: color-mix(
+        in oklch,
+        #2c0070 5%,
+        transparent
+    );
+    --color-background-brand-borderless-action-button-active: color-mix(
+        in oklch,
+        #2c0070 10%,
+        transparent
+    );
+    /* Action buttons -- Info Variant */
+    --color-text-info-primary-action-button: #fff;
+    --color-background-info-primary-action-button: #3c6bff;
+    --color-background-info-primary-action-button-hover: #2e59eb;
+    --color-background-info-primary-action-button-active: #1e41d3;
+    --color-text-info-quiet-action-button: #1027a6;
+    --color-background-info-quiet-action-button: color-mix(
+        in oklch,
+        #3c6bff 12%,
+        transparent
+    );
+    --color-background-info-quiet-action-button-hover: color-mix(
+        in oklch,
+        #3c6bff 17%,
+        transparent
+    );
+    --color-background-info-quiet-action-button-active: color-mix(
+        in oklch,
+        #3c6bff 22%,
+        transparent
+    );
+    --color-text-info-borderless-action-button: #2347c6;
+    --color-background-info-borderless-action-button-hover: color-mix(
+        in oklch,
+        #06037c 5%,
+        transparent
+    );
+    --color-background-info-borderless-action-button-active: color-mix(
+        in oklch,
+        #06037c 9%,
+        transparent
+    );
+    /* Action buttons -- Success Variant */
+    --color-text-success-primary-action-button: #fff;
+    --color-background-success-primary-action-button: #07833c;
+    --color-background-success-primary-action-button-hover: #087736;
+    --color-background-success-primary-action-button-active: #09672e;
+    --color-text-success-quiet-action-button: #054f22;
+    --color-background-success-quiet-action-button: color-mix(
+        in oklch,
+        #07833c 13%,
+        transparent
+    );
+    --color-background-success-quiet-action-button-hover: color-mix(
+        in oklch,
+        #07833c 18%,
+        transparent
+    );
+    --color-background-success-quiet-action-button-active: color-mix(
+        in oklch,
+        #07833c 23%,
+        transparent
+    );
+    --color-text-success-borderless-action-button: #07833c;
+    --color-background-success-borderless-action-button-hover: color-mix(
+        in oklch,
+        #09672e 8%,
+        transparent
+    );
+    --color-background-success-borderless-action-button-active: color-mix(
+        in oklch,
+        #09672e 12%,
+        transparent
+    );
+    /* Action buttons -- Warning Variant */
+    --color-text-warning-primary-action-button: color-mix(
+        in oklch,
+        #000 88%,
+        transparent
+    );
+    --color-background-warning-primary-action-button: #febe3d;
+    --color-background-warning-primary-action-button-hover: #f8b325;
+    --color-background-warning-primary-action-button-active: #eba002;
+    --color-text-warning-quiet-action-button: #764607;
+    --color-background-warning-quiet-action-button: color-mix(
+        in oklch,
+        #eba002 18%,
+        transparent
+    );
+    --color-background-warning-quiet-action-button-hover: color-mix(
+        in oklch,
+        #eba002 23%,
+        transparent
+    );
+    --color-background-warning-quiet-action-button-active: color-mix(
+        in oklch,
+        #eba002 28%,
+        transparent
+    );
+    --color-text-warning-borderless-action-button: #a96a05;
+    --color-background-warning-borderless-action-button-hover: color-mix(
+        in oklch,
+        #a96a05 10%,
+        transparent
+    );
+    --color-background-warning-borderless-action-button-active: color-mix(
+        in oklch,
+        #a96a05 14%,
+        transparent
+    );
+    /* Action buttons -- Danger Variant */
+    --color-text-danger-primary-action-button: #fff;
+    --color-background-danger-primary-action-button: #e1392e;
+    --color-background-danger-primary-action-button-hover: #d22720;
+    --color-background-danger-primary-action-button-active: #c0070a;
+    --color-text-danger-quiet-action-button: #ac0508;
+    --color-background-danger-quiet-action-button: color-mix(
+        in oklch,
+        #e1392e 13%,
+        transparent
+    );
+    --color-background-danger-quiet-action-button-hover: color-mix(
+        in oklch,
+        #e1392e 18%,
+        transparent
+    );
+    --color-background-danger-quiet-action-button-active: color-mix(
+        in oklch,
+        #e1392e 23%,
+        transparent
+    );
+    --color-text-danger-borderless-action-button: #c0070a;
+    --color-background-danger-borderless-action-button-hover: color-mix(
+        in oklch,
+        #c0070a 9%,
+        transparent
+    );
+    --color-background-danger-borderless-action-button-active: color-mix(
+        in oklch,
+        #c0070a 13%,
+        transparent
+    );
 }
 
 %dark-theme {
@@ -1641,6 +1844,223 @@
         226.35deg 82.53% 55.1% / 38.82%
     );
     --color-typeahead-option-label: var(--grey-400);
+
+    /* Action buttons -- Neutral Variant */
+    --color-text-neutral-primary-action-button: color-mix(
+        in oklch,
+        #fff 85%,
+        transparent
+    );
+    --color-background-neutral-primary-action-button: #535663;
+    --color-background-neutral-primary-action-button-hover: #626573;
+    --color-background-neutral-primary-action-button-active: #535663;
+    --color-text-neutral-quiet-action-button: #bbbdc8;
+    --color-background-neutral-quiet-action-button: color-mix(
+        in oklch,
+        #bbbdc8 12%,
+        transparent
+    );
+    --color-background-neutral-quiet-action-button-hover: color-mix(
+        in oklch,
+        #bbbdc8 17%,
+        transparent
+    );
+    --color-background-neutral-quiet-action-button-active: color-mix(
+        in oklch,
+        #bbbdc8 12%,
+        transparent
+    );
+    --color-text-neutral-borderless-action-button: #aaadba;
+    --color-background-neutral-borderless-action-button-hover: color-mix(
+        in oklch,
+        #9194a3 14%,
+        transparent
+    );
+    --color-background-neutral-borderless-action-button-active: color-mix(
+        in oklch,
+        #9194a3 18%,
+        transparent
+    );
+    /* Action buttons -- Brand Variant */
+    --color-text-brand-primary-action-button: color-mix(
+        in oklch,
+        #fff 85%,
+        transparent
+    );
+    --color-background-brand-primary-action-button: #5417c3;
+    --color-background-brand-primary-action-button-hover: #612fd4;
+    --color-background-brand-primary-action-button-active: #5417c3;
+    --color-text-brand-quiet-action-button: #aba5fd;
+    --color-background-brand-quiet-action-button: color-mix(
+        in oklch,
+        #9e94fd 12%,
+        transparent
+    );
+    --color-background-brand-quiet-action-button-hover: color-mix(
+        in oklch,
+        #9e94fd 17%,
+        transparent
+    );
+    --color-background-brand-quiet-action-button-active: color-mix(
+        in oklch,
+        #9e94fd 12%,
+        transparent
+    );
+    --color-text-brand-borderless-action-button: #9e94fd;
+    --color-background-brand-borderless-action-button-hover: color-mix(
+        in oklch,
+        #8a6fff 14%,
+        transparent
+    );
+    --color-background-brand-borderless-action-button-active: color-mix(
+        in oklch,
+        #8a6fff 18%,
+        transparent
+    );
+    /* Action buttons -- Info Variant */
+    --color-text-info-primary-action-button: color-mix(
+        in oklch,
+        #fff 85%,
+        transparent
+    );
+    --color-background-info-primary-action-button: #1e41d3;
+    --color-background-info-primary-action-button-hover: #2e59eb;
+    --color-background-info-primary-action-button-active: #1e41d3;
+    --color-text-info-quiet-action-button: #97b6fe;
+    --color-background-info-quiet-action-button: color-mix(
+        in oklch,
+        #97b6fe 12%,
+        transparent
+    );
+    --color-background-info-quiet-action-button-hover: color-mix(
+        in oklch,
+        #97b6fe 17%,
+        transparent
+    );
+    --color-background-info-quiet-action-button-active: color-mix(
+        in oklch,
+        #97b6fe 12%,
+        transparent
+    );
+    --color-text-info-borderless-action-button: #84a8fd;
+    --color-background-info-borderless-action-button-hover: color-mix(
+        in oklch,
+        #4d7bfd 12%,
+        transparent
+    );
+    --color-background-info-borderless-action-button-active: color-mix(
+        in oklch,
+        #4d7bfd 17%,
+        transparent
+    );
+    /* Action buttons -- Success Variant */
+    --color-text-success-primary-action-button: color-mix(
+        in oklch,
+        #fff 85%,
+        transparent
+    );
+    --color-background-success-primary-action-button: #09672e;
+    --color-background-success-primary-action-button-hover: #087736;
+    --color-background-success-primary-action-button-active: #09672e;
+    --color-text-success-quiet-action-button: #6bd586;
+    --color-background-success-quiet-action-button: color-mix(
+        in oklch,
+        #41ae61 12%,
+        transparent
+    );
+    --color-background-success-quiet-action-button-hover: color-mix(
+        in oklch,
+        #41ae61 17%,
+        transparent
+    );
+    --color-background-success-quiet-action-button-active: color-mix(
+        in oklch,
+        #41ae61 12%,
+        transparent
+    );
+    --color-text-success-borderless-action-button: #57c273;
+    --color-background-success-borderless-action-button-hover: color-mix(
+        in oklch,
+        #2f9f52 12%,
+        transparent
+    );
+    --color-background-success-borderless-action-button-active: color-mix(
+        in oklch,
+        #2f9f52 17%,
+        transparent
+    );
+    /* Action buttons -- Warning Variant */
+    --color-text-warning-primary-action-button: color-mix(
+        in oklch,
+        #000 90%,
+        transparent
+    );
+    --color-background-warning-primary-action-button: #db920d;
+    --color-background-warning-primary-action-button-hover: #eba002;
+    --color-background-warning-primary-action-button-active: #db920d;
+    --color-text-warning-quiet-action-button: #f8b325;
+    --color-background-warning-quiet-action-button: color-mix(
+        in oklch,
+        #db920d 12%,
+        transparent
+    );
+    --color-background-warning-quiet-action-button-hover: color-mix(
+        in oklch,
+        #db920d 17%,
+        transparent
+    );
+    --color-background-warning-quiet-action-button-active: color-mix(
+        in oklch,
+        #db920d 12%,
+        transparent
+    );
+    --color-text-warning-borderless-action-button: #eba002;
+    --color-background-warning-borderless-action-button-hover: color-mix(
+        in oklch,
+        #c8850d 12%,
+        transparent
+    );
+    --color-background-warning-borderless-action-button-active: color-mix(
+        in oklch,
+        #c8850d 17%,
+        transparent
+    );
+    /* Action buttons -- Danger Variant */
+    --color-text-danger-primary-action-button: color-mix(
+        in oklch,
+        #fff 85%,
+        transparent
+    );
+    --color-background-danger-primary-action-button: #d22720;
+    --color-background-danger-primary-action-button-hover: #e1392e;
+    --color-background-danger-primary-action-button-active: #d22720;
+    --color-text-danger-quiet-action-button: #ff8b7c;
+    --color-background-danger-quiet-action-button: color-mix(
+        in oklch,
+        #fd5f50 12%,
+        transparent
+    );
+    --color-background-danger-quiet-action-button-hover: color-mix(
+        in oklch,
+        #fd5f50 17%,
+        transparent
+    );
+    --color-background-danger-quiet-action-button-active: color-mix(
+        in oklch,
+        #fd5f50 12%,
+        transparent
+    );
+    --color-text-danger-borderless-action-button: #ff8b7c;
+    --color-background-danger-borderless-action-button-hover: color-mix(
+        in oklch,
+        #f34c3e 12%,
+        transparent
+    );
+    --color-background-danger-borderless-action-button-active: color-mix(
+        in oklch,
+        #f34c3e 17%,
+        transparent
+    );
 }
 
 @media screen {
