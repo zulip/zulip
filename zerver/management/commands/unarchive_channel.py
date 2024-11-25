@@ -90,7 +90,11 @@ class Command(ZulipBaseCommand):
             else:
                 new_name = channel_name
 
-        if Stream.objects.filter(realm=realm, name=new_name).exists():
+        if (
+            Stream.objects.filter(realm=realm, name__iexact=new_name)
+            .exclude(id=channel.id)
+            .exists()
+        ):
             raise CommandError(
                 f"Channel with name '{new_name}' already exists; pass a different --new-name"
             )
