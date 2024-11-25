@@ -33,6 +33,75 @@ const isaac = {
     full_name: "Isaac",
 };
 
+const admins = {
+    description: "Administrators",
+    name: "role:administrators",
+    id: 1,
+    members: new Set([1]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+    can_add_members_group: 4,
+    can_join_group: 4,
+    can_manage_group: 4,
+    can_mention_group: 1,
+};
+const moderators = {
+    description: "Moderators",
+    name: "role:moderators",
+    id: 2,
+    members: new Set([2]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([1]),
+    can_add_members_group: 4,
+    can_join_group: 4,
+    can_leave_group: 4,
+    can_manage_group: 4,
+    can_mention_group: 1,
+};
+const members = {
+    description: "Members",
+    name: "role:members",
+    id: 3,
+    members: new Set([3, 4]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([1, 2]),
+    can_add_members_group: 4,
+    can_join_group: 4,
+    can_leave_group: 4,
+    can_manage_group: 4,
+    can_mention_group: 4,
+};
+const nobody = {
+    description: "Nobody",
+    name: "role:nobody",
+    id: 4,
+    members: new Set([]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+    can_add_members_group: 4,
+    can_join_group: 4,
+    can_leave_group: 4,
+    can_manage_group: 4,
+    can_mention_group: 2,
+};
+const students = {
+    description: "Students group",
+    name: "Students",
+    id: 5,
+    members: new Set([1, 2]),
+    is_system_group: false,
+    direct_subgroup_ids: new Set([4, 5]),
+    can_add_members_group: 1,
+    can_join_group: 1,
+    can_leave_group: 1,
+    can_manage_group: {
+        direct_members: [4],
+        direct_subgroups: [],
+    },
+    can_mention_group: 3,
+    creator_id: 4,
+};
+
 const group_permission_settings = mock_esm("../src/group_permission_settings", {});
 
 run_test("user_can_change_email", ({override}) => {
@@ -288,60 +357,6 @@ run_test("user_can_create_multiuse_invite", () => {
 });
 
 run_test("can_manage_user_group", ({override}) => {
-    const admins = {
-        description: "Administrators",
-        name: "role:administrators",
-        id: 1,
-        members: new Set([1]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([]),
-        can_manage_group: 4,
-        can_mention_group: 1,
-    };
-    const moderators = {
-        description: "Moderators",
-        name: "role:moderators",
-        id: 2,
-        members: new Set([2]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([1]),
-        can_manage_group: 4,
-        can_mention_group: 1,
-    };
-    const members = {
-        description: "Members",
-        name: "role:members",
-        id: 3,
-        members: new Set([3, 4]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([1, 2]),
-        can_manage_group: 4,
-        can_mention_group: 4,
-    };
-    const nobody = {
-        description: "Nobody",
-        name: "role:nobody",
-        id: 4,
-        members: new Set([]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([]),
-        can_manage_group: 4,
-        can_mention_group: 2,
-    };
-    const students = {
-        description: "Students group",
-        name: "Students",
-        id: 5,
-        members: new Set([1, 2]),
-        is_system_group: false,
-        direct_subgroup_ids: new Set([4, 5]),
-        can_manage_group: {
-            direct_members: [4],
-            direct_subgroups: [],
-        },
-        can_mention_group: 3,
-        creator_id: 4,
-    };
     user_groups.initialize({
         realm_user_groups: [admins, moderators, members, nobody, students],
     });
@@ -392,362 +407,74 @@ run_test("can_manage_user_group", ({override}) => {
     assert.ok(settings_data.can_manage_user_group(students.id));
 });
 
-run_test("can_join_user_group", ({override}) => {
-    const admins = {
-        description: "Administrators",
-        name: "role:administrators",
-        id: 1,
-        members: new Set([1]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([]),
-        can_add_members_group: 4,
-        can_join_group: 4,
-        can_manage_group: 4,
-        can_mention_group: 1,
-    };
-    const moderators = {
-        description: "Moderators",
-        name: "role:moderators",
-        id: 2,
-        members: new Set([2]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([1]),
-        can_add_members_group: 4,
-        can_join_group: 4,
-        can_manage_group: 4,
-        can_mention_group: 1,
-    };
-    const members = {
-        description: "Members",
-        name: "role:members",
-        id: 3,
-        members: new Set([3, 4]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([1, 2]),
-        can_add_members_group: 4,
-        can_join_group: 4,
-        can_manage_group: 4,
-        can_mention_group: 4,
-    };
-    const nobody = {
-        description: "Nobody",
-        name: "role:nobody",
-        id: 4,
-        members: new Set([]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([]),
-        can_add_members_group: 4,
-        can_join_group: 4,
-        can_manage_group: 4,
-        can_mention_group: 2,
-    };
-    const students = {
-        description: "Students group",
-        name: "Students",
-        id: 5,
-        members: new Set([1, 2]),
-        is_system_group: false,
-        direct_subgroup_ids: new Set([4, 5]),
-        can_add_members_group: 4,
-        can_join_group: 1,
-        can_manage_group: {
-            direct_members: [4],
-            direct_subgroups: [],
-        },
-        can_mention_group: 3,
-        creator_id: 4,
-    };
+function test_user_group_permission_setting(override, setting_name, permission_func) {
     user_groups.initialize({
         realm_user_groups: [admins, moderators, members, nobody, students],
     });
     override(realm, "realm_can_manage_all_groups", nobody.id);
 
     page_params.is_spectator = true;
-    assert.ok(!settings_data.can_join_user_group(students.id));
+    assert.ok(!permission_func(students.id));
 
     page_params.is_spectator = false;
     // admin user
     override(current_user, "user_id", 1);
-    assert.ok(settings_data.can_join_user_group(students.id));
+    assert.ok(permission_func(students.id));
 
     // moderator user
     override(current_user, "user_id", 2);
-    assert.ok(!settings_data.can_join_user_group(students.id));
+    assert.ok(!permission_func(students.id));
 
-    let event = {
+    const event = {
         group_id: students.id,
-        data: {
-            can_join_group: moderators.id,
-        },
+        data: {},
     };
+    event.data[setting_name] = moderators.id;
     user_groups.update(event);
-    assert.ok(settings_data.can_join_user_group(students.id));
+    assert.ok(permission_func(students.id));
 
     override(current_user, "user_id", 1);
-    assert.ok(settings_data.can_join_user_group(students.id));
+    assert.ok(permission_func(students.id));
 
     // Some other user.
     override(current_user, "user_id", 5);
-    assert.ok(!settings_data.can_join_user_group(students.id));
+    assert.ok(!permission_func(students.id));
 
-    event = {
-        group_id: students.id,
-        data: {
-            can_join_group: {
-                direct_members: [5],
-                direct_subgroups: [admins.id],
-            },
-        },
+    event.data[setting_name] = {
+        direct_members: [5],
+        direct_subgroups: [admins.id],
     };
     user_groups.update(event);
-    assert.ok(settings_data.can_join_user_group(students.id));
+    assert.ok(permission_func(students.id));
 
     override(current_user, "user_id", 2);
-    assert.ok(!settings_data.can_join_user_group(students.id));
-
-    // User can join the group if they can add anyone in the group
-    // which depends on can_add_members_group setting.
-    override(current_user, "user_id", 3);
-    assert.ok(!settings_data.can_join_user_group(students.id));
-
-    event = {
-        group_id: students.id,
-        data: {
-            can_add_members_group: {
-                direct_members: [3],
-                direct_subgroups: [],
-            },
-        },
-    };
-    user_groups.update(event);
-    assert.ok(settings_data.can_join_user_group(students.id));
+    assert.ok(!permission_func(students.id));
 
     // User can join the group if they can manage the group which depends
     // on can_manage_group and realm.can_manage_all_groups settings.
     override(current_user, "user_id", 4);
-    assert.ok(settings_data.can_join_user_group(students.id));
+    assert.ok(permission_func(students.id));
 
     override(realm, "realm_can_manage_all_groups", moderators.id);
     override(current_user, "user_id", 2);
-    assert.ok(settings_data.can_join_user_group(students.id));
-});
+    assert.ok(permission_func(students.id));
+}
 
-run_test("can_leave_user_group", ({override}) => {
-    const admins = {
-        description: "Administrators",
-        name: "role:administrators",
-        id: 1,
-        members: new Set([1]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([]),
-        can_join_group: 4,
-        can_leave_group: 4,
-        can_manage_group: 4,
-        can_mention_group: 1,
-    };
-    const moderators = {
-        description: "Moderators",
-        name: "role:moderators",
-        id: 2,
-        members: new Set([2]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([1]),
-        can_join_group: 4,
-        can_leave_group: 4,
-        can_manage_group: 4,
-        can_mention_group: 1,
-    };
-    const members = {
-        description: "Members",
-        name: "role:members",
-        id: 3,
-        members: new Set([3, 4]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([1, 2]),
-        can_join_group: 4,
-        can_leave_group: 4,
-        can_manage_group: 4,
-        can_mention_group: 4,
-    };
-    const nobody = {
-        description: "Nobody",
-        name: "role:nobody",
-        id: 4,
-        members: new Set([]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([]),
-        can_join_group: 4,
-        can_leave_group: 4,
-        can_manage_group: 4,
-        can_mention_group: 2,
-    };
-    const students = {
-        description: "Students group",
-        name: "Students",
-        id: 5,
-        members: new Set([1, 2]),
-        is_system_group: false,
-        direct_subgroup_ids: new Set([4, 5]),
-        can_join_group: 1,
-        can_leave_group: 1,
-        can_manage_group: {
-            direct_members: [4],
-            direct_subgroups: [],
-        },
-        can_mention_group: 3,
-        creator_id: 4,
-    };
-    user_groups.initialize({
-        realm_user_groups: [admins, moderators, members, nobody, students],
-    });
+run_test("can_join_user_group", ({override}) => {
+    test_user_group_permission_setting(
+        override,
+        "can_join_group",
+        settings_data.can_join_user_group,
+    );
+
+    // User can join the group if they have permission to add others
+    // in the group.
     override(realm, "realm_can_manage_all_groups", nobody.id);
-
-    page_params.is_spectator = true;
-    assert.ok(!settings_data.can_leave_user_group(students.id));
-
-    page_params.is_spectator = false;
-    // admin user
-    override(current_user, "user_id", 1);
-    assert.ok(settings_data.can_leave_user_group(students.id));
-
-    // moderator user
-    override(current_user, "user_id", 2);
-    assert.ok(!settings_data.can_leave_user_group(students.id));
-
-    let event = {
+    const event = {
         group_id: students.id,
         data: {
-            can_leave_group: moderators.id,
-        },
-    };
-    user_groups.update(event);
-    assert.ok(settings_data.can_leave_user_group(students.id));
-
-    override(current_user, "user_id", 1);
-    assert.ok(settings_data.can_leave_user_group(students.id));
-
-    // Some other user.
-    override(current_user, "user_id", 5);
-    assert.ok(!settings_data.can_leave_user_group(students.id));
-
-    event = {
-        group_id: students.id,
-        data: {
-            can_leave_group: {
-                direct_members: [5],
-                direct_subgroups: [admins.id],
-            },
-        },
-    };
-    user_groups.update(event);
-    assert.ok(settings_data.can_leave_user_group(students.id));
-
-    override(current_user, "user_id", 2);
-    assert.ok(!settings_data.can_leave_user_group(students.id));
-
-    // User can leave the group if they can manage the group which
-    // depends on can_manage_group and realm.can_manage_all_groups settings.
-    override(current_user, "user_id", 4);
-    assert.ok(settings_data.can_leave_user_group(students.id));
-
-    override(realm, "realm_can_manage_all_groups", moderators.id);
-    override(current_user, "user_id", 2);
-    assert.ok(settings_data.can_leave_user_group(students.id));
-});
-
-run_test("can_add_members_user_group", () => {
-    const admins = {
-        description: "Administrators",
-        name: "role:administrators",
-        id: 1,
-        members: new Set([1]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([]),
-        can_add_members_group: 4,
-        can_manage_group: 4,
-        can_mention_group: 1,
-    };
-    const moderators = {
-        description: "Moderators",
-        name: "role:moderators",
-        id: 2,
-        members: new Set([2]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([1]),
-        can_add_members_group: 4,
-        can_manage_group: 4,
-        can_mention_group: 1,
-    };
-    const members = {
-        description: "Members",
-        name: "role:members",
-        id: 3,
-        members: new Set([3, 4]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([1, 2]),
-        can_add_members_group: 4,
-        can_manage_group: 4,
-        can_mention_group: 4,
-    };
-    const nobody = {
-        description: "Nobody",
-        name: "role:nobody",
-        id: 4,
-        members: new Set([]),
-        is_system_group: true,
-        direct_subgroup_ids: new Set([]),
-        can_add_members_group: 4,
-        can_manage_group: 4,
-        can_mention_group: 2,
-    };
-    const students = {
-        description: "Students group",
-        name: "Students",
-        id: 5,
-        members: new Set([1, 2]),
-        is_system_group: false,
-        direct_subgroup_ids: new Set([4, 5]),
-        can_add_members_group: 1,
-        can_manage_group: {
-            direct_members: [6],
-            direct_subgroups: [],
-        },
-        can_mention_group: 3,
-        creator_id: 4,
-    };
-    user_groups.initialize({
-        realm_user_groups: [admins, moderators, members, nobody, students],
-    });
-    realm.realm_can_manage_all_groups = nobody.id;
-
-    page_params.is_spectator = true;
-    assert.ok(!settings_data.can_add_members_to_user_group(students.id));
-
-    page_params.is_spectator = false;
-    // admin user
-    current_user.user_id = 1;
-    assert.ok(settings_data.can_add_members_to_user_group(students.id));
-
-    // moderator user
-    current_user.user_id = 2;
-    assert.ok(!settings_data.can_add_members_to_user_group(students.id));
-
-    let event = {
-        group_id: students.id,
-        data: {
-            can_add_members_group: moderators.id,
-        },
-    };
-    user_groups.update(event);
-    assert.ok(settings_data.can_add_members_to_user_group(students.id));
-
-    // Some other user.
-    current_user.user_id = 5;
-    assert.ok(!settings_data.can_add_members_to_user_group(students.id));
-
-    event = {
-        group_id: students.id,
-        data: {
+            can_manage_group: nobody.id,
+            can_join_group: nobody.id,
             can_add_members_group: {
                 direct_members: [5],
                 direct_subgroups: [admins.id],
@@ -755,23 +482,31 @@ run_test("can_add_members_user_group", () => {
         },
     };
     user_groups.update(event);
-    assert.ok(settings_data.can_add_members_to_user_group(students.id));
 
-    // Users with permission to manage the group should be able to add
-    // members to the group without adding themselves to
-    // can_add_members_group.
-    current_user.user_id = 4;
-    assert.ok(!settings_data.can_add_members_to_user_group(students.id));
-    event = {
-        group_id: students.id,
-        data: {
-            can_manage_group: {
-                direct_members: [4],
-            },
-        },
-    };
-    user_groups.update(event);
-    assert.ok(settings_data.can_add_members_to_user_group(students.id));
+    override(current_user, "user_id", 2);
+    assert.ok(!settings_data.can_join_user_group(students.id));
+
+    override(current_user, "user_id", 5);
+    assert.ok(settings_data.can_join_user_group(students.id));
+
+    override(current_user, "user_id", 1);
+    assert.ok(settings_data.can_join_user_group(students.id));
+});
+
+run_test("can_leave_user_group", ({override}) => {
+    test_user_group_permission_setting(
+        override,
+        "can_leave_group",
+        settings_data.can_leave_user_group,
+    );
+});
+
+run_test("can_add_members_user_group", ({override}) => {
+    test_user_group_permission_setting(
+        override,
+        "can_add_members_group",
+        settings_data.can_add_members_to_user_group,
+    );
 });
 
 run_test("type_id_to_string", () => {
