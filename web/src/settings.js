@@ -52,7 +52,7 @@ function setup_settings_label() {
 }
 
 function get_parsed_date_of_joining() {
-    const user_date_joined = people.get_by_user_id(current_user.user_id, false).date_joined;
+    const user_date_joined = people.get_by_user_id(current_user.user_id).date_joined;
     return timerender.get_localized_date_or_time_for_format(
         parseISO(user_date_joined),
         "dayofyear_year",
