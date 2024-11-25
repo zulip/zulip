@@ -538,6 +538,13 @@ $user_status_emoji_width: 24px;
         text-decoration: none;
         align-items: center;
         color: var(--color-text-sidebar-action-heading);
+        font-size: var(--font-size-sidebar-action-heading);
+        font-weight: var(--font-weight-sidebar-action-heading);
+        font-variant: var(--font-variant-sidebar-action-heading);
+        font-feature-settings: var(
+            --font-feature-settings-sidebar-action-heading
+        );
+        text-transform: var(--text-transform-sidebar-action-heading);
     }
 }
 
@@ -555,12 +562,13 @@ $user_status_emoji_width: 24px;
     padding-left: 0;
 
     .invite-user-link {
-        grid-template-columns:
-            var(--right-sidebar-header-icon-toggle-width)
-            minmax(0, 1fr);
+        padding-left: var(--right-sidebar-heading-left-spacing);
+        grid-template-columns: auto minmax(0, 1fr);
 
         .zulip-icon-user-plus {
             justify-self: center;
+            /* Some space between the icon and text */
+            margin-right: 5px;
         }
     }
 }
