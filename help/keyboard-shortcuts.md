@@ -164,8 +164,9 @@ in the Zulip app to add more to your repertoire as needed.
 
 ## Message actions
 
-* **Edit last message**: <kbd class="arrow-key">←</kbd> — Open the last
-  editable message in the current view (if any).
+* **Edit your last message**: <kbd class="arrow-key">←</kbd> — Scroll to the
+  most recent message you are allowed to edit in the current view, and open it
+  for editing. If there are no messages you can edit, nothing happens.
 
 ### For a selected message (outlined in blue)
 
