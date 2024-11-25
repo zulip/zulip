@@ -110,7 +110,7 @@ import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_preferences from "./settings_preferences.ts";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults.ts";
 import * as settings_sections from "./settings_sections.ts";
-import * as settings_toggle from "./settings_toggle.js";
+import * as settings_toggle from "./settings_toggle.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spoilers from "./spoilers.ts";
 import * as starred_messages from "./starred_messages.ts";
