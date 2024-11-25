@@ -718,8 +718,7 @@ h4.user_group_setting_subsection_title {
 }
 
 .org-permissions-form,
-.group-permissions,
-.stream-permissions {
+.group-permissions {
     .group_setting_disabled {
         cursor: not-allowed;
         /* This ensures that we do not see the not allowed cursor in the
@@ -1144,8 +1143,7 @@ div.settings-radio-input-parent {
     }
 }
 
-.group-permissions .pill-container,
-.stream-permissions .pill-container {
+.group-permissions .pill-container {
     /* 319px + 2 * (2px padding) + 2 * (1px border) = 325px, which is the total
     width of dropdown widget buttons */
     min-width: 319px;
@@ -1159,10 +1157,6 @@ div.settings-radio-input-parent {
             content: attr(data-placeholder);
         }
     }
-}
-
-.stream-permissions .pill-container {
-    margin-bottom: 10px;
 }
 
 .group-permissions .dropdown_widget_with_label_wrapper {

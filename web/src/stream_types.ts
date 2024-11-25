@@ -1,7 +1,5 @@
 import {z} from "zod";
 
-import {group_setting_value_schema} from "./types.ts";
-
 export const enum StreamPostPolicy {
     EVERYONE = 1,
     ADMINS = 2,
@@ -30,7 +28,7 @@ export const stream_schema = z.object({
         RESTRICT_NEW_MEMBERS: StreamPostPolicy.RESTRICT_NEW_MEMBERS,
         MODERATORS: StreamPostPolicy.MODERATORS,
     }),
-    can_remove_subscribers_group: group_setting_value_schema,
+    can_remove_subscribers_group: z.number(),
 });
 
 export const stream_specific_notification_settings_schema = z.object({
