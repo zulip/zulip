@@ -1760,6 +1760,38 @@ def update_user_group_members(client: Client, user_group_id: int) -> None:
     validate_against_openapi_schema(result, "/user_groups/{group_id}/members", "post", "200")
 
 
+@openapi_test_function("/avatar/{user_id}:get")
+def get_user_avatar_by_id(client: Client) -> None:
+    user_id = 12
+    # {code_example|start}
+    result = client.call_endpoint(
+        url=f"/avatar/{user_id}",
+        method="GET",
+    )
+    avatar_url = result["Location"]
+
+    # {code_example|end}
+    assert_success_response(result)
+    avatar_url  # noqa: B018, F841, RUF100
+    validate_against_openapi_schema(result, "/avatar/{email}", "get", "200")
+
+
+@openapi_test_function("/avatar/{email}:get")
+def get_user_avatar_by_email(client: Client) -> None:
+    email = "iago@zulip.com"
+    # {code_example|start}
+    result = client.call_endpoint(
+        url=f"/avatar/{email}",
+        method="GET",
+    )
+    avatar_url = result["Location"]
+
+    # {code_example|end}
+    assert_success_response(result)
+    avatar_url  # noqa: B018, F841, RUF100
+    validate_against_openapi_schema(result, "/avatar/{email}", "get", "200")
+
+
 def test_invalid_api_key(client_with_invalid_key: Client) -> None:
     result = client_with_invalid_key.get_subscriptions()
     assert_error_response(result, code="UNAUTHORIZED")
@@ -1937,7 +1969,11 @@ def test_invitations(client: Client) -> None:
 
 # These are functions for python examples in the documentation
 # page that doesn't fit in with how our tooling works currently.
-EXEMPTED_PYTHON_EXAMPLES: set[str] = set()
+EXEMPTED_PYTHON_EXAMPLES: set[str] = {
+    # (No /api/v1/ or /json prefix).
+    "get_user_avatar_by_id",
+    "get_user_avatar_by_email",
+}
 
 
 def test_the_api(client: Client, nonadmin_client: Client, owner_client: Client) -> None:
