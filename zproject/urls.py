@@ -784,7 +784,7 @@ urls += [
 # easily support the mobile apps fetching uploaded files without
 # having to rewrite URLs, and is implemented using the
 # 'override_api_url_scheme' flag passed to rest_dispatch
-urls += [
+non_v1_api_or_json_media_endpoints = [
     path(
         "user_uploads/temporary/<token>/<filename>",
         serve_file_unauthed_from_token,
@@ -838,6 +838,8 @@ urls += [
         name="local_avatar_unauthed",
     ),
 ]
+
+urls += non_v1_api_or_json_media_endpoints
 
 # This URL serves as a way to receive CSP violation reports from the users.
 # We use this endpoint to just log these reports.
