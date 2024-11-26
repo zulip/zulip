@@ -1,4 +1,7 @@
+from typing_extensions import override
+
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.lib.webhooks.common import parse_multipart_string
 
 
 class JotformHookTests(WebhookTestCase):
@@ -7,15 +10,25 @@ class JotformHookTests(WebhookTestCase):
     WEBHOOK_DIR_NAME = "jotform"
 
     def test_response(self) -> None:
-        expected_title = "Form"
+        expected_title = "Tutor Appointment Form"
         expected_message = """
-* **Name**: Gaurav Pandey
-* **Address**: Lampgarden-street wolfsquare Bengaluru Karnataka 165578
-* **Signature**: uploads/gauravguitarrocks/202944822449057/4791133489169827307/4791133489169827307_signature_4.png""".strip()
+* **Student's Name**: Niloth P
+* **Type of Tutoring**: Online Tutoring
+* **Subject for Tutoring**: Math
+* **Grade**: 12""".strip()
 
         self.check_webhook(
             "response",
             expected_title,
             expected_message,
-            content_type="application/x-www-form-urlencoded",
+            content_type="multipart/form-data",
         )
+
+    def test_bad_payload(self) -> None:
+        with self.assertRaisesRegex(AssertionError, "Unable to handle Jotform payload"):
+            self.check_webhook("response")
+
+    @override
+    def get_payload(self, fixture_name: str) -> dict[str, str]:
+        body = self.webhook_fixture_data("jotform", fixture_name, file_type="multipart")
+        return parse_multipart_string(body)
