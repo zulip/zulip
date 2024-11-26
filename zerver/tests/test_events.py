@@ -3435,7 +3435,9 @@ class NormalActionsTest(BaseAction):
     def test_deactivate_stream_neversubscribed(self) -> None:
         for i, include_streams in enumerate([True, False]):
             stream = self.make_stream(f"stream{i}")
-            with self.verify_action(include_streams=include_streams) as events:
+            with self.verify_action(
+                include_streams=include_streams, archived_channels=True
+            ) as events:
                 do_deactivate_stream(stream, acting_user=None)
             check_stream_delete("events[0]", events[0])
 
