@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import * as gear_menu from "./gear_menu.js";
+import * as gear_menu from "./gear_menu.ts";
 import * as navbar_help_menu from "./navbar_help_menu.ts";
 import * as personal_menu_popover from "./personal_menu_popover.ts";
 import * as popover_menus from "./popover_menus.ts";
