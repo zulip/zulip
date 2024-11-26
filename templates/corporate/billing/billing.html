@@ -42,8 +42,8 @@
         <div class="white-box">
             <div id="billing-page-details">
                 <div class="input-box billing-page-field">
-                    <label for="org-current-plan">Your plan</label>
-                    <div id="org-current-plan" class="not-editable-realm-field">
+                    <label>Your plan</label>
+                    <div class="not-editable-realm-field">
                         {% if free_trial or downgrade_at_end_of_free_trial %}
                         <a href="{{ billing_base_url }}/plans/">
                             {{ plan_name }} <i>(free trial)</i>
@@ -73,7 +73,7 @@
                   {%if downgrade_at_end_of_cycle %}data-downgrade-eoc="true"{% endif %}
                   {%if switch_to_monthly_at_end_of_cycle %}data-switch-to-monthly-eoc="true"{% endif %}
                   {%if switch_to_annual_at_end_of_cycle %}data-switch-to-annual-eoc="true"{% endif %}>
-                    <label for="org-billing-frequency">Billing frequency</label>
+                    <label >Billing frequency</label>
                     {% if downgrade_at_end_of_free_trial or downgrade_at_end_of_cycle or complimentary_access_plan or fixed_price_plan or (free_trial and not charge_automatically) %}
                     <div class="not-editable-realm-field">
                         {{ billing_frequency }}
@@ -109,7 +109,7 @@
                 {% if complimentary_access_plan or fixed_price_plan %}
                 {% elif automanage_licenses %}
                 <div class="input-box billing-page-field">
-                    <label for="automatic-license-count">
+                    <label>
                         Number of licenses
                         {% if is_self_hosted_billing %}
                         <a href="/help/self-hosted-billing#how-does-automatic-license-management-work" target="_blank" rel="noopener noreferrer">
@@ -122,7 +122,7 @@
                         {% endif %}
 
                     </label>
-                    <div id="automatic-license-count" class="not-editable-realm-field">
+                    <div class="not-editable-realm-field">
                         {{ licenses }}
                         <br />
                         Licenses are managed
@@ -200,15 +200,15 @@
                 </form>
                 <div id="toggle-license-management-error" class="alert alert-danger"></div>
                 <div class="input-box billing-page-field">
-                    <label for="billing-contact">Billing contact</label>
-                    <div id="billing-contact" class="not-editable-realm-field">
+                    <label>Billing contact</label>
+                    <div class="not-editable-realm-field">
                         <a href="mailto:{{ stripe_email }}">{{ stripe_email }}</a>
                     </div>
                 </div>
                 <div id="cardchange-error" class="alert alert-danger"></div>
                 <div class="input-box billing-page-field">
-                    <label for="customer-payment-method">Payment method</label>
-                    <div id="customer-payment-method" class="not-editable-realm-field">
+                    <label>Payment method</label>
+                    <div class="not-editable-realm-field">
                         {{ payment_method }}
                     </div>
                     {% if charge_automatically %}
@@ -279,7 +279,7 @@
                             {% if free_trial and not charge_automatically %}
                             {% else %}
                             <div class="input-box billing-page-field">
-                                <label for="expected-charge">Expected next charge</label>
+                                <label>Expected next charge</label>
                                 {% if not fixed_price_plan %}
                                 <div class="not-editable-realm-field">
                                     ${{ pre_discount_renewal_cents }} (${{ price_per_license }} x {{ licenses_at_next_renewal }} {{ 'user' if licenses_at_next_renewal == 1 else 'users' }} x
