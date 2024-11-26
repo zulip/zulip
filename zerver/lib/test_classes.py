@@ -532,6 +532,9 @@ Output:
                 encoded = urlencode(info, doseq=True)
             else:
                 content_type = MULTIPART_CONTENT
+        elif content_type.startswith("multipart/form-data"):
+            # To support overriding webhooks' default content_type (application/json)
+            content_type = MULTIPART_CONTENT
         return django_client.post(
             url,
             encoded,
