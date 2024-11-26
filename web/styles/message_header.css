@@ -161,7 +161,8 @@
         }
 
         &.sticky_header {
-            box-shadow: var(--unread-marker-left) -1px 0 0 var(--color-background);
+            box-shadow: var(--unread-marker-left) -1px 0 0
+                var(--color-background);
 
             .recipient_row_date {
                 display: block;

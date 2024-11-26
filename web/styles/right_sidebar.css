@@ -292,10 +292,9 @@ $user_status_emoji_width: 24px;
 }
 
 .user_sidebar_entry.with_avatar {
-    grid-template: "row-content" var(--line-height-sidebar-row-with-avatars) "row-content" auto / minmax(
-            0,
-            1fr
-        );
+    grid-template:
+        "row-content" var(--line-height-sidebar-row-with-avatars)
+        "row-content" auto / minmax(0, 1fr);
 
     .selectable_sidebar_block {
         margin: 4px;
@@ -554,10 +553,9 @@ $user_status_emoji_width: 24px;
     padding-left: 0;
 
     .invite-user-link {
-        grid-template-columns: var(--right-sidebar-header-icon-toggle-width) minmax(
-                0,
-                1fr
-            );
+        grid-template-columns:
+            var(--right-sidebar-header-icon-toggle-width)
+            minmax(0, 1fr);
 
         .zulip-icon-user-plus {
             justify-self: center;

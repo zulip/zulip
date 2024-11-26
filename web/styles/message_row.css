@@ -341,7 +341,10 @@
                of the avatar. We also need to account for the
                padding atop .message_content. */
             margin-top: calc(
-                (var(--message-box-markdown-aligned-vertical-space) * 0.5 * -1) -
+                (
+                        var(--message-box-markdown-aligned-vertical-space) *
+                            0.5 * -1
+                    ) -
                     var(--message-box-markdown-aligned-vertical-space)
             );
             grid-area: message;

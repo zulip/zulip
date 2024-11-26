@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 322  # Last bumped for adding users to groups using invitati
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (303, 1)  # bumped 2024-11-26 for flat ESLint config
+PROVISION_VERSION = (304, 0)  # bumped 2024-11-26 to upgrade JavaScript dependencies
