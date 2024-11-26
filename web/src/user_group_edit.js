@@ -679,7 +679,7 @@ export function change_state(section, left_side_tab, right_side_tab) {
 
         if (left_side_tab === undefined) {
             left_side_tab = "all-groups";
-            if (user_groups.is_direct_member_of(current_user.user_id, group_id)) {
+            if (user_groups.is_user_in_group(group_id, current_user.user_id)) {
                 left_side_tab = "your-groups";
             }
         }
@@ -889,10 +889,7 @@ export function setup_page(callback) {
             name: "user-groups-overlay",
             get_item: ListWidget.default_get_item,
             modifier_html(item) {
-                item.is_member = user_groups.is_direct_member_of(
-                    people.my_current_user_id(),
-                    item.id,
-                );
+                item.is_member = user_groups.is_user_in_group(item.id, people.my_current_user_id());
                 item.can_join = settings_data.can_join_user_group(item.id);
                 item.can_leave = settings_data.can_leave_user_group(item.id);
                 return render_browse_user_groups_list_item(item);

@@ -12,6 +12,19 @@ const {set_realm} = zrequire("state_data");
 const realm = {};
 set_realm(realm);
 
+const get_test_subgroup = (id) => ({
+    name: `Subgroup id: ${id} `,
+    id,
+    members: new Set([4]),
+    is_system_group: false,
+    direct_subgroup_ids: new Set([]),
+    can_join_group: 1,
+    can_leave_group: 1,
+    can_manage_group: 1,
+    can_mention_group: 1,
+    deactivated: false,
+});
+
 run_test("user_groups", () => {
     const students = {
         description: "Students group",
@@ -32,9 +45,15 @@ run_test("user_groups", () => {
     };
 
     const params = {};
-    params.realm_user_groups = [students];
+    params.realm_user_groups = [
+        students,
+        get_test_subgroup(4),
+        get_test_subgroup(5),
+        get_test_subgroup(6),
+    ];
     const user_id_not_in_any_group = 0;
     const user_id_part_of_a_group = 2;
+    const user_id_associated_via_subgroup = 4;
 
     user_groups.initialize(params);
     assert.deepEqual(user_groups.get_user_group_from_id(students.id), students);
@@ -122,12 +141,12 @@ run_test("user_groups", () => {
     user_groups.add(all);
     user_groups.add(deactivated_group);
     const user_groups_array = user_groups.get_realm_user_groups();
-    assert.equal(user_groups_array.length, 2);
+    assert.equal(user_groups_array.length, 5);
     assert.equal(user_groups_array[1].name, "Everyone");
     assert.equal(user_groups_array[0].name, "new admins");
 
     const all_user_groups_array = user_groups.get_realm_user_groups(true);
-    assert.equal(all_user_groups_array.length, 3);
+    assert.equal(all_user_groups_array.length, 6);
     assert.equal(all_user_groups_array[2].name, "Deactivated test group");
     assert.equal(all_user_groups_array[1].name, "Everyone");
     assert.equal(all_user_groups_array[0].name, "new admins");
@@ -135,6 +154,12 @@ run_test("user_groups", () => {
     const groups_of_users = user_groups.get_user_groups_of_user(user_id_part_of_a_group);
     assert.equal(groups_of_users.length, 1);
     assert.equal(groups_of_users[0].name, "Everyone");
+
+    const groups_of_users_via_subgroup = user_groups.get_user_groups_of_user(
+        user_id_associated_via_subgroup,
+    );
+    assert.deepEqual(groups_of_users_via_subgroup.map((group) => group.id).sort(), [2, 4, 5, 6]);
+    assert.equal(groups_of_users_via_subgroup.length, 4);
 
     const groups_of_users_nomatch = user_groups.get_user_groups_of_user(user_id_not_in_any_group);
     assert.equal(groups_of_users_nomatch.length, 0);
