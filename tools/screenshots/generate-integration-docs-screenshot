@@ -50,7 +50,7 @@ from zerver.lib.integrations import (
 from zerver.lib.storage import static_path
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.webhooks.common import get_fixture_http_headers
+from zerver.lib.webhooks.common import get_fixture_http_headers, parse_multipart_string
 from zerver.models import Message, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.users import get_user_by_delivery_email
@@ -94,8 +94,9 @@ def create_integration_stream(integration: Integration, bot: UserProfile) -> Non
     bulk_add_subscriptions(realm, [stream], [bot, bot.bot_owner], acting_user=bot)
 
 
-def get_fixture_info(fixture_path: str) -> tuple[Any, bool, str]:
+def get_fixture_info(fixture_path: str) -> tuple[Any, bool, bool, str]:
     json_fixture = fixture_path.endswith(".json")
+    multipart_fixture = fixture_path.endswith(".multipart")
     _, fixture_name = split_fixture_path(fixture_path)
 
     if fixture_name:
@@ -105,10 +106,12 @@ def get_fixture_info(fixture_path: str) -> tuple[Any, bool, str]:
         else:
             with open(fixture_path) as f:
                 data = f.read().strip()
+            if multipart_fixture:
+                data = parse_multipart_string(data)
     else:
         data = ""
 
-    return data, json_fixture, fixture_name
+    return data, json_fixture, multipart_fixture, fixture_name
 
 
 def get_integration(integration_name: str) -> Integration:
@@ -142,7 +145,7 @@ def send_bot_mock_message(
 ) -> None:
     # Delete all messages, so new message is the only one it's message group
     Message.objects.filter(realm_id=bot.realm_id, sender=bot).delete()
-    data, _, _ = get_fixture_info(fixture_path)
+    data, _, _, _ = get_fixture_info(fixture_path)
 
     assert bot.bot_owner is not None
     url = f"{bot.bot_owner.realm.url}"
@@ -169,7 +172,7 @@ def send_bot_payload_message(
 ) -> bool:
     # Delete all messages, so new message is the only one it's message group
     Message.objects.filter(realm_id=bot.realm_id, sender=bot).delete()
-    data, json_fixture, fixture_name = get_fixture_info(fixture_path)
+    data, json_fixture, multipart_fixture, fixture_name = get_fixture_info(fixture_path)
 
     headers = get_requests_headers(integration.name, fixture_name)
     if config.custom_headers:
@@ -186,7 +189,10 @@ def send_bot_payload_message(
     params.update(config.extra_params)
 
     extra_args = {}
-    if not json_fixture and data:
+    if multipart_fixture:
+        extra_args = {"data": data}
+
+    elif not json_fixture and data:
         # We overwrite any params in fixture with our params. stream name, for
         # example, may be defined in the fixture.
         assert isinstance(data, str)
