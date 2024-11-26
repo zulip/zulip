@@ -21721,6 +21721,93 @@ paths:
                         "result": "success",
                         "url": "/calls/bigbluebutton/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22",
                       }
+  /avatar/{user_id}:
+    get:
+      operationId: get-user-avatar
+      summary: Get a user's avatar
+      tags: ["users"]
+      description: |
+        Fetch the avatar for a single user in the organization, identified by their
+        user ID. This endpoint responds with an HTTP redirect to the avatar's URL,
+        the client can retrieve the actual avatar by following the redirect.
+
+        The avatar URL or file may originate from one of the following sources:
+
+        - **User-uploaded** file, if the user has uploaded their own avatar.
+        - **Gravatar** URL, used as the default option.
+        - **Static files**, for system bots.
+
+        **File size**: Default (`100x100` px).
+
+        For all types of avatars, one can use the "medium" (`500x500` px) variant
+        of the endpoint.
+
+        Alternatively, for user-uploaded and static avatars you can modify the
+        default-sized avatar URL to end with `-medium.png` by adding the `-medium`
+        string right after the file hash and before the file extension.
+
+        Example:
+
+            # User uploaded avatar
+            http://example.zulipchat.com/user_avatars/2/s641fe6b0cdcaf29f1ad583f63
+            88kl72bf8ab64dd8-medium.png
+
+            # Static avatar
+            http://example.zulipchat.com/static/images/static_avatars/emailgateway.
+            2f97461a9420-medium.png
+
+        And for Gravatar URLs, one can add query parameters to the URL following
+        the [Gravatar docs](https://docs.gravatar.com/api/avatars/images/).
+
+        **File types**: Avatar files are served in `.png` format.
+
+        Gravatar URLs can also support an optional `.jpg` extension. Refer to the
+        [Gravatar documentation](https://docs.gravatar.com/api/avatars/images/) for
+        details on customizing Gravatar URLs.
+
+        **Changes**: New in Zulip 10.0 (feature level 318).
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - ""
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessRedirect"
+
+  /avatar/{email}:
+    get:
+      operationId: get-user-avatar-by-email
+      summary: Get a user's avatar by email
+      tags: ["users"]
+      description: |
+        Fetch the avatar for a single user in the organization, identified by their
+        email. This endpoint responds with an HTTP redirect to the avatar's URL,
+        the client can retrieve the actual avatar by following the redirect.
+
+        **File size**: Default (`100x100` px).
+
+        **File types**: Avatar files are served in `.png` format.
+
+        For more details such as fetching medium avatar size, types of avatar URL
+        , and customizing Gravatar URL, you can read the description in the
+        [**Get a user's avatar**](/api/get-user-avatar) documentation
+
+        Fetching by user ID is generally recommended when possible,
+        as a user might [change their email address](/help/change-your-email-address)
+        or change their [email address visibility](/help/configure-email-visibility),
+        either of which could change the client's ability to look them up by that
+        email address.
+
+        **Changes**: New in Zulip 10.0 (feature level 318).
+      parameters:
+        - $ref: "#/components/parameters/UserEmail"
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessRedirect"
 
 components:
   #######################

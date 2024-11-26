@@ -1014,6 +1014,8 @@ class APIDocsSidebarTest(ZulipTestCase):
         exempted_docs = {
             # (No /api/v1/ or /json prefix).
             "get-file-temporary-url",
+            "get-user-avatar",
+            "get-user-avatar-by-email"
             # This one is not used by any clients and is likely to get
             # deprecated.
             "update-subscriptions",
