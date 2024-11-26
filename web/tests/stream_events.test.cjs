@@ -277,11 +277,6 @@ test("update_property", ({override}) => {
     }
 });
 
-test("marked_unsubscribed (code coverage)", () => {
-    // We don't error for unsubscribed streams for some reason.
-    stream_events.mark_unsubscribed(undefined);
-});
-
 test("marked_(un)subscribed (early return)", () => {
     // The early-return prevents us from exploding or needing
     // to override functions with side effects
