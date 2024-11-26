@@ -755,7 +755,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "insping": [ScreenshotConfig("website_state_available.json")],
     "intercom": [ScreenshotConfig("conversation_admin_replied.json")],
     "jira": [ScreenshotConfig("created_v1.json")],
-    "jotform": [ScreenshotConfig("response.json")],
+    "jotform": [ScreenshotConfig("response.multipart")],
     "json": [ScreenshotConfig("json_github_push__1_commit.json")],
     "librato": [ScreenshotConfig("three_conditions_alert.json", payload_as_query_param=True)],
     "lidarr": [ScreenshotConfig("lidarr_album_grabbed.json")],
