@@ -247,11 +247,8 @@ export function mark_subscribed(
     user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
 }
 
-export function mark_unsubscribed(sub: StreamSubscription | undefined): void {
-    if (sub === undefined) {
-        // We don't know about this stream
-        return;
-    } else if (sub.subscribed) {
+export function mark_unsubscribed(sub: StreamSubscription): void {
+    if (sub.subscribed) {
         stream_data.unsubscribe_myself(sub);
         if (overlays.streams_open()) {
             stream_settings_ui.update_settings_for_unsubscribed(sub);
