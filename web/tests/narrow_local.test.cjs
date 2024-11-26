@@ -64,6 +64,7 @@ function test_with(fixture) {
         },
         filter: {
             equals: () => false,
+            includes_history: () => false,
         },
     });
 
