@@ -7829,6 +7829,8 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             )
 
         customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
+        assert customer.remote_realm is not None
+        self.assertEqual(customer.remote_realm.plan_type, RemoteRealm.PLAN_TYPE_BASIC)
         current_plan = CustomerPlan.objects.get(customer=customer, status=CustomerPlan.ACTIVE)
         self.assertEqual(current_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BASIC)
         self.assertIsNone(current_plan.fixed_price)
@@ -7900,6 +7902,9 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         self.assertEqual(new_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
         self.assertIsNotNone(new_plan.fixed_price)
         self.assertIsNone(new_plan.price_per_license)
+
+        customer.refresh_from_db()
+        self.assertEqual(customer.remote_realm.plan_type, RemoteRealm.PLAN_TYPE_BUSINESS)
 
         self.logout()
         self.login("hamlet")
@@ -9692,6 +9697,8 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             )
 
         customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
+        assert customer.remote_server is not None
+        self.assertEqual(customer.remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_BASIC)
         current_plan = CustomerPlan.objects.get(customer=customer, status=CustomerPlan.ACTIVE)
         self.assertEqual(current_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BASIC)
         self.assertIsNone(current_plan.fixed_price)
@@ -9753,6 +9760,9 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         self.assertEqual(new_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
         self.assertIsNotNone(new_plan.fixed_price)
         self.assertIsNone(new_plan.price_per_license)
+
+        customer.refresh_from_db()
+        self.assertEqual(customer.remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_BUSINESS)
 
         self.logout()
         self.login("hamlet")
