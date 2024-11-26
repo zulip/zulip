@@ -14,10 +14,12 @@ async function check_compose_form_empty(page: Page): Promise<void> {
 
 async function close_compose_box(page: Page): Promise<void> {
     const recipient_dropdown_visible = (await page.$(".dropdown-list-container")) !== null;
+    const recipient_typeahead_visible = (await page.$(".tippy-box")) !== null;
 
-    if (recipient_dropdown_visible) {
+    if (recipient_dropdown_visible || recipient_typeahead_visible) {
         await page.keyboard.press("Escape");
         await page.waitForSelector(".dropdown-list-container", {hidden: true});
+        await page.waitForSelector(".tippy-box", {hidden: true});
     }
     await page.keyboard.press("Escape");
     await page.waitForSelector("#compose-textarea", {hidden: true});
@@ -47,6 +49,7 @@ async function test_send_messages(page: Page): Promise<void> {
 async function test_stream_compose_keyboard_shortcut(page: Page): Promise<void> {
     await page.keyboard.press("KeyC");
     await page.waitForSelector("#stream_message_recipient_topic", {visible: true});
+    await page.waitForSelector(".tippy-box", {visible: true});
     await check_compose_form_empty(page);
     await close_compose_box(page);
 }
@@ -55,6 +58,7 @@ async function test_private_message_compose_shortcut(page: Page): Promise<void> 
     await page.keyboard.press("KeyX");
     await page.waitForSelector("#private_message_recipient", {visible: true});
     await common.pm_recipient.expect(page, "");
+    await page.waitForSelector(".tippy-box", {visible: true});
     await close_compose_box(page);
 }
 

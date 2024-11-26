@@ -151,6 +151,8 @@ export function get_or_set_completing_for_tests(val?: string): string | null {
     }
     return completing;
 }
+export let private_message_typeahead: Typeahead<UserGroupPillData | user_pill.UserPillData>;
+let ignore_typeahead_keyup = false;
 
 export function update_emoji_data(initial_emojis: EmojiDict[]): void {
     emoji_collection = [];
@@ -600,6 +602,9 @@ export function filter_and_sort_mentions(
 }
 
 export function get_pm_people(query: string): (UserGroupPillData | UserPillData)[] {
+    if (query === "" && compose_state.private_message_recipient().length > 0) {
+        return [];
+    }
     const opts = {
         want_broadcast: false,
         filter_pills: true,
@@ -1433,6 +1438,18 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
     );
 }
 
+export function toggle_ignore_typeahead_keyup(bool: boolean): void {
+    ignore_typeahead_keyup = bool;
+}
+
+function ignore_keyup(): boolean {
+    // Prevents a case where typeahead item gets selected on switching
+    // focus over from stream dropdown widget on a keydown.
+    const should_ignore_keyup = ignore_typeahead_keyup;
+    toggle_ignore_typeahead_keyup(false);
+    return should_ignore_keyup;
+}
+
 export function initialize({
     on_enter_send,
 }: {
@@ -1483,9 +1500,10 @@ export function initialize({
         $element: $("#private_message_recipient"),
         type: "contenteditable",
     };
-    new Typeahead(private_message_typeahead_input, {
+    private_message_typeahead = new Typeahead(private_message_typeahead_input, {
         source: get_pm_people,
         items: max_num_items,
+        helpOnEmptyStrings: true,
         dropup: true,
         highlighter_html(item: UserGroupPillData | UserPillData) {
             return typeahead_helper.render_person_or_user_group(item);
@@ -1524,6 +1542,7 @@ export function initialize({
             }
         },
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
+        ignore_keyup,
     });
 
     initialize_compose_typeahead($("textarea#compose-textarea"));
