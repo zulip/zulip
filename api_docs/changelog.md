@@ -54,6 +54,12 @@ format used by the Zulip server that they are interacting with.
   Added `allow_empty_topic_name` boolean parameter to decide whether the
   topic names in the fetched message history objects can be empty strings.
 
+* [`POST /register`](/api/register-queue): For clients that don't support
+  the `empty_topic_name` [client capability](/api/register-queue#parameter-client_capabilities),
+  the `topic` field in the `unread_msgs` object will have the value
+  of `realm_empty_topic_display_name` field replacing the empty string
+  for channel messages.
+
 **Feature level 333**
 
 * [Message formatting](/api/message-formatting): System groups can now

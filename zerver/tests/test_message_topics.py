@@ -6,6 +6,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.streams import do_change_stream_permission
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
+from zerver.lib.events import ClientCapabilities, do_events_register
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_topics import set_topic_visibility_policy, topic_has_visibility_policy
 from zerver.models import Message, UserMessage, UserTopic
@@ -785,3 +786,39 @@ class EmptyTopicNameTest(ZulipTestCase):
         data = self.assert_json_success(result)
         self.assertEqual(data["message_history"][0]["topic"], "")
         self.assertEqual(data["message_history"][1]["prev_topic"], "")
+
+    def test_initial_state_data(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        self.login_user(hamlet)
+
+        self.send_stream_message(hamlet, "Denmark", topic_name="")
+        self.send_stream_message(hamlet, "Verona", topic_name=Message.EMPTY_TOPIC_FALLBACK_NAME)
+
+        with mock.patch("zerver.lib.events.request_event_queue", return_value=1):
+            state_data = do_events_register(
+                iago,
+                iago.realm,
+                get_client("website"),
+                client_capabilities=ClientCapabilities(
+                    empty_topic_name=True, notification_settings_null=False
+                ),
+            )
+        self.assertEqual(state_data["unread_msgs"]["streams"][0]["topic"], "")
+        self.assertEqual(state_data["unread_msgs"]["streams"][1]["topic"], "")
+
+        with mock.patch("zerver.lib.events.request_event_queue", return_value=1):
+            state_data = do_events_register(
+                iago,
+                iago.realm,
+                get_client("website"),
+                client_capabilities=ClientCapabilities(
+                    empty_topic_name=False, notification_settings_null=False
+                ),
+            )
+        self.assertEqual(
+            state_data["unread_msgs"]["streams"][0]["topic"], Message.EMPTY_TOPIC_FALLBACK_NAME
+        )
+        self.assertEqual(
+            state_data["unread_msgs"]["streams"][1]["topic"], Message.EMPTY_TOPIC_FALLBACK_NAME
+        )

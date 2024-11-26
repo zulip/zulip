@@ -528,7 +528,7 @@ class TestCreateStreams(ZulipTestCase):
 
         def get_unread_stream_data(user: UserProfile) -> list[UnreadStreamInfo]:
             raw_unread_data = get_raw_unread_data(user)
-            aggregated_data = aggregate_unread_data(raw_unread_data)
+            aggregated_data = aggregate_unread_data(raw_unread_data, allow_empty_topic_name=True)
             return aggregated_data["streams"]
 
         stream_id = Stream.objects.get(name="brand new stream").id
@@ -5806,7 +5806,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         def get_unread_stream_data() -> list[UnreadStreamInfo]:
             raw_unread_data = get_raw_unread_data(user)
-            aggregated_data = aggregate_unread_data(raw_unread_data)
+            aggregated_data = aggregate_unread_data(raw_unread_data, allow_empty_topic_name=True)
             return aggregated_data["streams"]
 
         result = get_unread_stream_data()
