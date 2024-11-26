@@ -845,7 +845,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
             user_profile=reader,
             realm=reader.realm,
         )
-        post_process_state(reader, result, False)
+        post_process_state(reader, result, False, True)
         self.assert_length(result["unread_msgs"]["streams"], 1)
         self.assertEqual(result["unread_msgs"]["streams"][0]["topic"], "case DOES not MATTER")
         self.assert_length(result["unread_msgs"]["streams"][0]["unread_message_ids"], 2)
