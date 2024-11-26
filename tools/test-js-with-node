@@ -93,7 +93,7 @@ EXEMPT_FILES = make_set(
         "web/src/debug.ts",
         "web/src/demo_organizations_ui.ts",
         "web/src/deprecated_feature_notice.ts",
-        "web/src/desktop_integration.js",
+        "web/src/desktop_integration.ts",
         "web/src/desktop_notifications.ts",
         "web/src/dialog_widget.ts",
         "web/src/drafts.ts",
