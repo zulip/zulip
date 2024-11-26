@@ -28,9 +28,10 @@ const compose_state = zrequire("compose_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const server_events_dispatch = zrequire("server_events_dispatch");
-const {set_realm} = zrequire("state_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const sub_store = zrequire("sub_store");
+const user_groups = zrequire("user_groups");
 
 const realm = {};
 set_realm(realm);
@@ -44,6 +45,16 @@ const me = {
 };
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
+set_current_user(me);
+const everyone_group = {
+    name: "Everyone",
+    id: 2,
+    members: new Set([2, 3]),
+    is_system_group: false,
+    direct_subgroup_ids: new Set([]),
+};
+
+user_groups.add(everyone_group);
 
 const dispatch = server_events_dispatch.dispatch_normal_event;
 
@@ -203,12 +214,14 @@ test("stream delete (normal)", ({override}) => {
         stream_id: event.stream_ids[0],
         name: "devel",
         is_archived: false,
+        can_remove_subscribers_group: everyone_group.id,
     };
 
     const test_sub = {
         stream_id: event.stream_ids[1],
         name: "test",
         is_archived: false,
+        can_remove_subscribers_group: everyone_group.id,
     };
 
     stream_data.add_sub(test_sub);
@@ -225,23 +238,16 @@ test("stream delete (normal)", ({override}) => {
         bookend_updates += 1;
     });
 
-    const removed_stream_ids = [];
-
-    override(stream_settings_ui, "remove_stream", (stream_id) => {
-        removed_stream_ids.push(stream_id);
-    });
-
     let removed_sidebar_rows = 0;
     override(stream_list, "remove_sidebar_row", () => {
         removed_sidebar_rows += 1;
     });
+    override(stream_settings_ui, "update_settings_for_archived", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
     override(message_live_update, "rerender_messages_view", noop);
     override(message_view_header, "maybe_rerender_title_area_for_stream", noop);
 
     dispatch(event);
-
-    assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
 
     // We should possibly be able to make a single call to
     // update_trailing_bookend, but we currently do it for each stream.
@@ -257,12 +263,14 @@ test("stream delete (special streams)", ({override}) => {
         stream_id: event.stream_ids[0],
         name: "devel",
         is_archived: false,
+        can_remove_subscribers_group: everyone_group.id,
     };
 
     const test_sub = {
         stream_id: event.stream_ids[1],
         name: "test",
         is_archived: false,
+        can_remove_subscribers_group: everyone_group.id,
     };
 
     stream_data.add_sub(devel_sub);
@@ -276,8 +284,8 @@ test("stream delete (special streams)", ({override}) => {
     override(realm, "realm_signup_announcements_stream_id", event.stream_ids[1]);
     override(realm, "realm_zulip_update_announcements_stream_id", event.stream_ids[0]);
 
-    override(stream_settings_ui, "remove_stream", noop);
     override(settings_org, "sync_realm_settings", noop);
+    override(stream_settings_ui, "update_settings_for_archived", noop);
     override(settings_streams, "update_default_streams_table", noop);
     override(message_lists.current, "update_trailing_bookend", noop);
     override(stream_list, "remove_sidebar_row", noop);
@@ -301,12 +309,14 @@ test("stream delete (stream is selected in compose)", ({override}) => {
         stream_id: event.stream_ids[0],
         name: "devel",
         is_archived: false,
+        can_remove_subscribers_group: everyone_group.id,
     };
 
     const test_sub = {
         stream_id: event.stream_ids[1],
         name: "test",
         is_archived: false,
+        can_remove_subscribers_group: everyone_group.id,
     };
 
     stream_data.add_sub(devel_sub);
@@ -324,16 +334,11 @@ test("stream delete (stream is selected in compose)", ({override}) => {
         bookend_updates += 1;
     });
 
-    const removed_stream_ids = [];
-
-    override(stream_settings_ui, "remove_stream", (stream_id) => {
-        removed_stream_ids.push(stream_id);
-    });
-
     let removed_sidebar_rows = 0;
     override(stream_list, "remove_sidebar_row", () => {
         removed_sidebar_rows += 1;
     });
+    override(stream_settings_ui, "update_settings_for_archived", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
     override(message_live_update, "rerender_messages_view", noop);
     override(message_view_header, "maybe_rerender_title_area_for_stream", noop);
@@ -341,7 +346,6 @@ test("stream delete (stream is selected in compose)", ({override}) => {
     dispatch(event);
 
     assert.equal(compose_state.stream_name(), "");
-    assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
 
     // We should possibly be able to make a single call to
     // update_trailing_bookend, but we currently do it for each stream.
