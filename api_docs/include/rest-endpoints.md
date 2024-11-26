@@ -121,6 +121,10 @@
 * [Regenerate your API key](/api/regenerate-api-key)
 * [Get a bot's API key](/api/get-bot-api-key)
 * [Regenerate a bot's API key](/api/regenerate-bot-api-key)
+* [Get a user's avatar](/api/get-user-avatar)
+* [Get a user's medium avatar](/api/get-user-medium-avatar)
+* [Get a user's avatar by email](/api/get-user-avatar-by-email)
+* [Get a user's medium avatar by email](/api/get-user-medium-avatar-by-email)
 
 #### Invitations
 
