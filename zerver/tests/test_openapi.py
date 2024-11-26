@@ -208,12 +208,21 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         #### For current endpoint documentation priorities see
         #### https://chat.zulip.org/#narrow/channel/412-api-documentation/topic/Undocumented.20endpoint.20priorities/with/2397881
         #### TODO: These endpoints are a priority to document:
-        # These are a priority to document but don't match our normal URL schemes
-        # and thus may be complicated to document with our current tooling.
+        #### non_v1_api_or_json_media_endpoints - These are a priority to document but
+        # don't match our normal URL schemes and thus may be complicated to document
+        # with our current tooling.
         # (No /api/v1/ or /json prefix).
-        "/avatar/{email_or_id}",
-        ## This one isn't really representable
+        "/thumbnail",
+        "/user_avatars/{path}",
+        "/avatar/{user_id}",
+        "/avatar/{email}",
+        "/avatar/{user_id}/medium",
+        "/avatar/{email}/medium",
+        ## These aren't really representable
         # "/user_uploads/{realm_id_str}/{filename}",
+        "/user_uploads/temporary/{token}/{filename}",
+        "/user_uploads/download/{realm_id_str}/{filename}",
+        "/user_uploads/thumbnail/{realm_id_str}/{filename}/{thumbnail_format}",
         #### These realm administration settings are valuable to document:
         # Default stream groups are an unfinished feature and therefore
         # shouldn't be added to the documentation until that's completed.
@@ -535,6 +544,14 @@ so maybe we shouldn't include it in pending_endpoints.
         from zproject import tornado_urls as tornado_urlconf
         from zproject import urls as urlconf
 
+        # The OpenAPI entry for this path documents the /api/v1 endpoint
+        # at the same path, so the media endpoint isn't representable.
+        media_endpoints = [
+            p
+            for p in urlconf.non_v1_api_or_json_media_endpoints
+            if str(p.pattern) != "user_uploads/<realm_id_str>/<path:filename>"
+        ]
+
         # We loop through all the API patterns, looking in particular
         # for those using the rest_dispatch or remote_server_dispatch decorator;
         # we then parse its mapping of (HTTP_METHOD -> FUNCTION).
@@ -543,6 +560,7 @@ so maybe we shouldn't include it in pending_endpoints.
             + urlconf.v1_api_mobile_patterns
             + zilencer_urlconf.v1_api_bouncer_patterns
             + tornado_urlconf.api_and_json_patterns
+            + media_endpoints
         ):
             methods_endpoints: dict[str, Any] = {}
             if p.callback not in [rest_dispatch, remote_server_dispatch]:
