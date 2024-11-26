@@ -1,5 +1,8 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
+import type * as tippy from "tippy.js";
 import WinChan from "winchan";
+import {z} from "zod";
 
 import render_navbar_gear_menu_popover from "../templates/popovers/navbar/navbar_gear_menu_popover.hbs";
 
@@ -84,7 +87,7 @@ The click handler uses "[data-overlay-trigger]" as
 the selector and then calls browser_history.go_to_location.
 */
 
-function render(instance) {
+function render(instance: tippy.Instance): void {
     const rendered_gear_menu = render_navbar_gear_menu_popover(
         popover_menus_data.get_gear_menu_content_context(),
     );
@@ -92,7 +95,7 @@ function render(instance) {
     $("#gear-menu").addClass("active-navbar-menu");
 }
 
-export function initialize() {
+export function initialize(): void {
     popover_menus.register_popover_menu("#gear-menu", {
         theme: "popover-menu",
         placement: "bottom",
@@ -123,13 +126,32 @@ export function initialize() {
                             principal,
                         },
                     },
-                    (err, r) => {
-                        if (err) {
+                    (err, raw_response) => {
+                        if (err !== null) {
                             blueslip.warn(err);
                             return;
                         }
+
+                        // https://github.com/davidben/webathena/blob/0be20d9b1d62c19b4f94f77e621bd8721e504446/app/scripts-src/request_ticket.js
+                        const response_schema = z.discriminatedUnion("status", [
+                            z.object({
+                                status: z.literal("OK"),
+                                session: z.unknown(),
+                            }),
+                            z.object({
+                                status: z.literal("ERROR"),
+                                code: z.string(),
+                                message: z.string(),
+                            }),
+                            z.object({
+                                status: z.literal("DENIED"),
+                                code: z.string(),
+                                message: z.string(),
+                            }),
+                        ]);
+                        const r = response_schema.parse(raw_response);
                         if (r.status !== "OK") {
-                            blueslip.warn(r);
+                            blueslip.warn(`Webathena: ${r.status}: ${r.message}`);
                             return;
                         }
 
@@ -158,7 +180,7 @@ export function initialize() {
             });
 
             $popper.on("change", "input[name='theme-select']", (e) => {
-                const theme_code = Number.parseInt($(e.currentTarget).attr("data-theme-code"), 10);
+                const theme_code = Number.parseInt($(e.currentTarget).attr("data-theme-code")!, 10);
                 requestAnimationFrame(() => {
                     theme.set_theme_for_spectator(theme_code);
                 });
@@ -168,12 +190,12 @@ export function initialize() {
         onHidden(instance) {
             $("#gear-menu").removeClass("active-navbar-menu");
             instance.destroy();
-            popover_menus.popover_instances.gear_menu = undefined;
+            popover_menus.popover_instances.gear_menu = null;
         },
     });
 }
 
-export function toggle() {
+export function toggle(): void {
     if (popover_menus.is_gear_menu_popover_displayed()) {
         popovers.hide_all();
         return;
@@ -188,8 +210,10 @@ export function toggle() {
     $("#gear-menu").trigger("click");
 }
 
-export function rerender() {
+export function rerender(): void {
     if (popover_menus.is_gear_menu_popover_displayed()) {
-        render(popover_menus.get_gear_menu_instance());
+        const instance = popover_menus.get_gear_menu_instance();
+        assert(instance !== null);
+        render(instance);
     }
 }
