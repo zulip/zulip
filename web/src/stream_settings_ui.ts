@@ -7,6 +7,7 @@ import render_stream_info_banner from "../templates/modal_banner/stream_info_ban
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
 import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
+import render_stream_settings_cannot_subscribe_tooltip from "../templates/stream_settings/stream_settings_cannot_subscribe_tooltip.hbs";
 import render_stream_settings_overlay from "../templates/stream_settings/stream_settings_overlay.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -342,6 +343,41 @@ export function update_settings_for_subscribed(slim_sub: StreamSubscription): vo
 
     // Update whether there's any streams shown or not.
     update_empty_left_panel_message();
+}
+
+export function update_settings_for_archived(
+    slim_sub: StreamSubscription,
+    could_unsubscribe_others: boolean,
+): void {
+    if (!overlays.streams_open()) {
+        return;
+    }
+
+    const sub = stream_settings_data.get_sub_for_settings(slim_sub);
+    update_left_panel_row(sub);
+
+    const active_data = stream_settings_components.get_active_data();
+    if (active_data.id === sub.stream_id) {
+        const rendered_tooltip = render_stream_settings_cannot_subscribe_tooltip(sub);
+        $("#tooltilp-container-cannot-unsubscribe").html(rendered_tooltip);
+        const $archive_button = $(".button.small.rounded.button-danger.deactivate");
+
+        if ($archive_button.length > 0) {
+            $archive_button.remove();
+        }
+
+        if (could_unsubscribe_others) {
+            stream_edit_subscribers.rerender_subscribers_list(sub);
+        }
+        stream_settings_components.set_right_panel_title(sub);
+        stream_ui_updates.update_toggler_for_sub(sub);
+        stream_ui_updates.update_settings_button_for_sub(sub);
+        stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
+        stream_ui_updates.update_stream_privacy_icon_in_settings(sub);
+        stream_ui_updates.update_add_subscriptions_elements(sub);
+        stream_ui_updates.update_regular_sub_settings(sub);
+        stream_ui_updates.update_permissions_banner(sub);
+    }
 }
 
 export function show_active_stream_in_left_panel(): void {
