@@ -152,6 +152,8 @@ export function get_or_set_completing_for_tests(val?: string): string | null {
     }
     return completing;
 }
+export let private_message_typeahead: Typeahead<UserGroupPillData | user_pill.UserPillData>;
+const repeat_key_map = new Map<string, boolean>();
 
 export function update_emoji_data(initial_emojis: EmojiDict[]): void {
     emoji_collection = [];
@@ -601,6 +603,9 @@ export function filter_and_sort_mentions(
 }
 
 export function get_pm_people(query: string): (UserGroupPillData | UserPillData)[] {
+    if (query === "" && compose_state.private_message_recipient_ids().length > 0) {
+        return [];
+    }
     const opts = {
         want_broadcast: false,
         filter_pills: true,
@@ -1492,6 +1497,36 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
     );
 }
 
+// We track if keydown events are repeated and currently being held down.
+// Ideally, we should use event.repeat in bootstrap_typeahead.
+export let track_repeated_keyboard_event = (): void => {
+    document.addEventListener(
+        "keydown",
+        (event) => {
+            if (["Enter", "Tab"].includes(event.key)) {
+                repeat_key_map.set(event.key, repeat_key_map.has(event.key));
+            }
+        },
+        {capture: true},
+    );
+
+    document.addEventListener(
+        "keyup",
+        (event) => {
+            if (["Enter", "Tab"].includes(event.key)) {
+                repeat_key_map.delete(event.key);
+            }
+        },
+        {capture: true},
+    );
+};
+
+export function rewire_track_repeated_keyboard_event(
+    value: typeof track_repeated_keyboard_event,
+): void {
+    track_repeated_keyboard_event = value;
+}
+
 export function initialize({
     on_enter_send,
 }: {
@@ -1504,6 +1539,8 @@ export function initialize({
         handle_keydown(e, on_enter_send);
     });
     $("form#send_message_form").on("keyup", handle_keyup);
+
+    track_repeated_keyboard_event();
 
     const stream_message_typeahead_input: TypeaheadInputElement = {
         $element: $("input#stream_message_recipient_topic"),
@@ -1553,9 +1590,10 @@ export function initialize({
         $element: $("#private_message_recipient"),
         type: "contenteditable",
     };
-    new Typeahead(private_message_typeahead_input, {
+    private_message_typeahead = new Typeahead(private_message_typeahead_input, {
         source: get_pm_people,
         items: max_num_items,
+        helpOnEmptyStrings: true,
         dropup: true,
         highlighter_html(item: UserGroupPillData | UserPillData) {
             return typeahead_helper.render_person_or_user_group(item);
@@ -1594,6 +1632,7 @@ export function initialize({
             }
         },
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
+        repeat_key_map,
     });
 
     initialize_compose_typeahead($("textarea#compose-textarea"));
