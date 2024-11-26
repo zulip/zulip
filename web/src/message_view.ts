@@ -57,6 +57,7 @@ import type {NarrowTerm} from "./state_data.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
+import * as sub_store from "./sub_store.ts";
 import * as submessage from "./submessage.ts";
 import * as topic_generator from "./topic_generator.ts";
 import * as typing_events from "./typing_events.ts";
@@ -948,9 +949,37 @@ function load_local_messages(msg_data: MessageListData, superset_data: MessageLi
 
     const in_msgs = superset_data.all_messages();
     msg_data.add_messages(in_msgs);
-    msg_data.fetch_status.copy_status(superset_data.fetch_status);
+    if (msg_data.visibly_empty()) {
+        return false;
+    }
 
-    return !msg_data.visibly_empty();
+    // We cannot rely on fetch status of data for which
+    // `zerver.lib.narrow.ok_to_include_history` is not `True` when
+    // populating narrow for which it is `True` since older
+    // messages might be filtered due to them not having `UserMessage`
+    // entries. See `zerver.lib.narrow.fetch_messages`.
+    let ok_to_copy_status = true;
+    if (!superset_data.filter.includes_history() && msg_data.filter.includes_history()) {
+        ok_to_copy_status = false;
+    }
+
+    if (!ok_to_copy_status && msg_data.filter.has_operator("channel")) {
+        // We can still rely on fetch status if the superset_data
+        // has the first message of the channel.
+        const channel_id_str = msg_data.filter.operands("channel")[0];
+        assert(channel_id_str !== undefined);
+        const channel_id = Number.parseInt(channel_id_str, 10);
+        const oldest_possible_msg_id = sub_store.get(channel_id)?.first_message_id;
+        if (oldest_possible_msg_id && superset_data.get(oldest_possible_msg_id)) {
+            ok_to_copy_status = true;
+        }
+    }
+
+    if (ok_to_copy_status) {
+        msg_data.fetch_status.copy_status(superset_data.fetch_status);
+    }
+
+    return true;
 }
 
 export function maybe_add_local_messages(opts: {
