@@ -36,6 +36,7 @@ from zerver.openapi.openapi import (
     get_openapi_summary,
     get_parameters_description,
     get_responses_description,
+    is_avatar_endpoint,
     openapi_spec,
 )
 
@@ -215,6 +216,11 @@ def curl_method_arguments(
     else:
         url = f"{api_url}/v1{example_endpoint}"
 
+    if is_avatar_endpoint(endpoint, method):
+        # Avatar endpoints redirect to the requested avatar URL, so we just need
+        # to show the details in the response header.
+        return ["-si", url]
+
     # We also include the -sS verbosity arguments here.
     method = method.upper()
     valid_methods = ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"]
@@ -353,6 +359,8 @@ def generate_curl_example(
         auth_email = "ZULIP_ORG_ID" if is_zilencer_endpoint else DEFAULT_AUTH_EMAIL
         auth_api_key = "ZULIP_ORG_KEY" if is_zilencer_endpoint else DEFAULT_AUTH_API_KEY
         lines.append("    -u " + shlex.quote(f"{auth_email}:{auth_api_key}"))
+    if is_avatar_endpoint(endpoint, method):
+        lines.append("    | grep -i ^location:")
 
     for parameter in parameters:
         if parameter.kind == "path":

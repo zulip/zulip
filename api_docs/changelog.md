@@ -1725,6 +1725,13 @@ No changes; feature level used for Zulip 10.0 release.
   data (such as an API key) for that incoming webhook integration, but this
   functionality has not been implemented for any existing integrations.
 
+* [`GET /avatar/{user_id}`](/api/get-user-avatar),
+  [`GET /avatar/{email}`](/api/get-user-avatar-by-email),
+  [`GET /avatar/{user_id}/medium`](/api/get-user-medium-avatar),
+  [`GET /avatar/{email}/medium`](/api/get-user-medium-avatar-by-email): Replaced
+  the `GET /avatar/{email_or_id}` endpoint with two distinct endpoints for
+  retrieving avatars, one by email and one by user ID.
+
 **Feature level 317**
 
 * [`POST /user_groups/create`](/api/create-user-group):

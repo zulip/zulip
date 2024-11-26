@@ -214,10 +214,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # (No /api/v1/ or /json prefix).
         "/thumbnail",
         "/user_avatars/{path}",
-        "/avatar/{user_id}",
-        "/avatar/{email}",
-        "/avatar/{user_id}/medium",
-        "/avatar/{email}/medium",
         ## These aren't really representable
         # "/user_uploads/{realm_id_str}/{filename}",
         "/user_uploads/temporary/{token}/{filename}",
@@ -915,6 +911,48 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
+    def test_generate_and_render_curl_example_for_user_id_avatar_endpoints(self) -> None:
+        generated_curl_example = self.curl_example("/avatar/{user_id}", "GET")
+        expected_curl_example = [
+            "```curl",
+            "curl -si http://localhost:9991/avatar/12 \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    | grep -i ^location:",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+        generated_curl_example = self.curl_example("/avatar/{user_id}/medium", "GET")
+        expected_curl_example = [
+            "```curl",
+            "curl -si http://localhost:9991/avatar/12/medium \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    | grep -i ^location:",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    def test_generate_and_render_curl_example_for_email_avatar_endpoints(self) -> None:
+        generated_curl_example = self.curl_example("/avatar/{email}", "GET")
+        expected_curl_example = [
+            "```curl",
+            "curl -si http://localhost:9991/avatar/iago@zulip.com \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    | grep -i ^location:",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+        generated_curl_example = self.curl_example("/avatar/{email}/medium", "GET")
+        expected_curl_example = [
+            "```curl",
+            "curl -si http://localhost:9991/avatar/iago@zulip.com/medium \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    | grep -i ^location:",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
 
 class OpenAPIAttributesTest(ZulipTestCase):
     def test_attributes(self) -> None:
@@ -925,7 +963,16 @@ class OpenAPIAttributesTest(ZulipTestCase):
         * All example events in `/get-events` match an event schema.
         * That no opaque object exists.
         """
-        EXCLUDE = ["/real-time"]
+        EXCLUDE = [
+            "/real-time",
+            # The avatar endpoints doesn't return a JSON body, instead it
+            # redirects to the requested avatar URL. So their schema don't
+            # have attributes like `examples` and `type`.
+            "/avatar/{user_id}",
+            "/avatar/{email}",
+            "/avatar/{user_id}/medium",
+            "/avatar/{email}/medium",
+        ]
         VALID_TAGS = [
             "users",
             "server_and_organizations",

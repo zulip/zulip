@@ -349,6 +349,12 @@ def get_openapi_paths() -> set[str]:
     return set(openapi_spec.openapi()["paths"].keys())
 
 
+# We should generalize this to check if the endpoint returns HTTP redirect
+# once we have other redirect endpoints.
+def is_avatar_endpoint(path: str, method: str) -> bool:
+    return path.startswith("/avatar/") and method.upper() == "GET"
+
+
 NO_EXAMPLE = object()
 
 
