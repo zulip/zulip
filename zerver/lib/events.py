@@ -1840,7 +1840,12 @@ def do_events_register(
             include_deactivated_groups=include_deactivated_groups,
         )
 
-        post_process_state(user_profile, ret, notification_settings_null=False)
+        post_process_state(
+            user_profile,
+            ret,
+            notification_settings_null=False,
+            allow_empty_topic_name=empty_topic_name,
+        )
         return ret
 
     # Fill up the UserMessage rows if a soft-deactivated user has returned
@@ -1909,7 +1914,9 @@ def do_events_register(
         include_deactivated_groups=include_deactivated_groups,
     )
 
-    post_process_state(user_profile, ret, notification_settings_null)
+    post_process_state(
+        user_profile, ret, notification_settings_null, allow_empty_topic_name=empty_topic_name
+    )
 
     if len(events) > 0:
         ret["last_event_id"] = events[-1]["id"]
@@ -1919,7 +1926,10 @@ def do_events_register(
 
 
 def post_process_state(
-    user_profile: UserProfile | None, ret: dict[str, Any], notification_settings_null: bool
+    user_profile: UserProfile | None,
+    ret: dict[str, Any],
+    notification_settings_null: bool,
+    allow_empty_topic_name: bool,
 ) -> None:
     """
     NOTE:
@@ -1933,7 +1943,7 @@ def post_process_state(
     for client.
     """
     if "raw_unread_msgs" in ret:
-        ret["unread_msgs"] = aggregate_unread_data(ret["raw_unread_msgs"])
+        ret["unread_msgs"] = aggregate_unread_data(ret["raw_unread_msgs"], allow_empty_topic_name)
         del ret["raw_unread_msgs"]
 
     """
