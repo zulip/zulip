@@ -376,6 +376,7 @@ export function update_stream_privacy_icon_in_settings(sub: StreamSubscription):
                 invite_only: sub.invite_only,
                 color: sub.color,
                 is_web_public: sub.is_web_public,
+                is_archived: sub.is_archived,
             }),
         ),
     );
@@ -456,6 +457,10 @@ export function update_add_subscriptions_elements(sub: SettingsSubscription): vo
             tooltip_message = $t({
                 defaultMessage:
                     "You do not have permission to add other users to channels in this organization.",
+            });
+        } else if (sub.is_archived) {
+            tooltip_message = $t({
+                defaultMessage: "Can't add subscribers to an archived channel.",
             });
         } else {
             tooltip_message = $t({
