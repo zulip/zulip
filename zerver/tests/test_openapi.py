@@ -208,7 +208,10 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # These are a priority to document but don't match our normal URL schemes
         # and thus may be complicated to document with our current tooling.
         # (No /api/v1/ or /json prefix).
-        "/avatar/{email_or_id}",
+        "/avatar/{user_id}",
+        "/avatar/{email}",
+        "/avatar/{user_id}/medium",
+        "/avatar/{email}/medium",
         ## This one is in zulip.yaml, but not the actual docs.
         # "/api/v1/user_uploads/{realm_id_str}/{filename}",
         ## And this one isn't, and isn't really representable
