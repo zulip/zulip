@@ -859,7 +859,8 @@ def ok_to_include_history(
         # that's a property on the UserMessage table.  There cannot be
         # historical messages in these cases anyway.
         for term in narrow:
-            if term.operator == "is" and term.operand not in {"resolved", "followed"}:
+            # NOTE: Needs to be in sync with `Filter.is_personal_filter`.
+            if term.operator == "is" and term.operand != "resolved":
                 include_history = False
 
     return include_history

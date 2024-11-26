@@ -1487,7 +1487,8 @@ export class Filter {
         //
         // Such filters should not advertise "channels:public" as it
         // will never add additional results.
-        return this.has_operand("is", "mentioned") || this.has_operand("is", "starred");
+        // NOTE: Needs to be in sync with `zerver.lib.narrow.ok_to_include_history`.
+        return this.has_operator("is") && !this.has_operand("is", "resolved");
     }
 
     can_apply_locally(is_local_echo = false): boolean {
