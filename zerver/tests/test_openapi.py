@@ -206,13 +206,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     checked_endpoints: set[str] = set()
     pending_endpoints = {
         #### TODO: These endpoints are a priority to document:
-        # These are a priority to document but don't match our normal URL schemes
-        # and thus may be complicated to document with our current tooling.
-        # (No /api/v1/ or /json prefix).
-        "/avatar/{user_id}",
-        "/avatar/{email}",
-        "/avatar/{user_id}/medium",
-        "/avatar/{email}/medium",
         ## This one isn't really representable
         # "/user_uploads/{realm_id_str}/{filename}",
         #### These realm administration settings are valuable to document:
@@ -286,6 +279,16 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     # consistency tests.  We aim to keep this list empty.
     buggy_documentation_endpoints: set[str] = set()
 
+    # These are documented but don't match our normal URL schemes
+    # and thus may be complicated to test with our current tooling.
+    # (No /api/v1/ or /json prefix).
+    documented_non_api_v1_or_json_url = {
+        "/avatar/{user_id}",
+        "/avatar/{email}",
+        "/avatar/{user_id}/medium",
+        "/avatar/{email}/medium",
+    }
+
     def ensure_no_documentation_if_intentionally_undocumented(
         self, url_pattern: str, method: str, msg: str | None = None
     ) -> None:
@@ -310,6 +313,7 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
         openapi_paths = set(get_openapi_paths())
         undocumented_paths = openapi_paths - self.checked_endpoints
         undocumented_paths -= self.buggy_documentation_endpoints
+        undocumented_paths -= self.documented_non_api_v1_or_json_url
         undocumented_paths -= self.pending_endpoints
         try:
             self.assert_length(undocumented_paths, 0)
@@ -924,7 +928,16 @@ class OpenAPIAttributesTest(ZulipTestCase):
         * All example events in `/get-events` match an event schema.
         * That no opaque object exists.
         """
-        EXCLUDE = ["/real-time"]
+        EXCLUDE = [
+            "/real-time",
+            # The avatar endpoints doesn't return a JSON body, instead it
+            # redirects to the requested avatar URL. So its schema doesn't
+            # have attributes like `examples` and `type`.
+            "/avatar/{user_id}",
+            "/avatar/{email}",
+            "/avatar/{user_id}/medium",
+            "/avatar/{email}/medium",
+        ]
         VALID_TAGS = [
             "users",
             "server_and_organizations",
