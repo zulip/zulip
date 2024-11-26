@@ -329,15 +329,6 @@ export function handle_member_edit_event(group_id, user_ids) {
 
         $row.replaceWith($new_row);
     }
-
-    if (
-        !is_editing_group(group_id) &&
-        user_ids.includes(people.my_current_user_id()) &&
-        user_groups.is_user_in_group(group_id, people.my_current_user_id())
-    ) {
-        const $group_row = row_for_group_id(group.id);
-        open_group_edit_panel_for_row($group_row);
-    }
 }
 
 export function update_group_details(group) {
@@ -740,6 +731,17 @@ export function add_or_remove_from_group(group, group_row) {
     function success_callback() {
         if (group_row.length) {
             hide_membership_toggle_spinner(group_row);
+            // This should only be triggered when a user is on another group
+            // edit panel and they join a group via the left panel plus button.
+            // In that case, the edit panel of the newly joined group should
+            // open. `is_user_in_group` with direct_members_only set to true acts
+            // as a proxy to check if it's an `add_members` event.
+            if (
+                !is_editing_group(group.id) &&
+                user_groups.is_user_in_group(group.id, user_id, true)
+            ) {
+                open_group_edit_panel_for_row(group_row);
+            }
         }
     }
 
@@ -756,15 +758,15 @@ export function add_or_remove_from_group(group, group_row) {
         user_group_edit_members.edit_user_group_membership({
             group,
             removed: [user_id],
-            success_callback,
-            error_callback,
+            success: success_callback,
+            error: error_callback,
         });
     } else {
         user_group_edit_members.edit_user_group_membership({
             group,
             added: [user_id],
-            success_callback,
-            error_callback,
+            success: success_callback,
+            error: error_callback,
         });
     }
 }
