@@ -1,4 +1,6 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
@@ -9,7 +11,7 @@ import * as message_store from "./message_store.ts";
 import * as message_view from "./message_view.ts";
 import * as stream_data from "./stream_data.ts";
 
-export function initialize() {
+export function initialize(): void {
     if (electron_bridge === undefined) {
         return;
     }
@@ -33,18 +35,21 @@ export function initialize() {
     electron_bridge.set_send_notification_reply_message_supported?.(true);
     electron_bridge.on_event("send_notification_reply_message", (message_id, reply) => {
         const message = message_store.get(message_id);
+        assert(message !== undefined);
         const data = {
             type: message.type,
             content: reply,
-            topic: message.topic,
+            ...(message.type === "private"
+                ? {
+                      to: message.reply_to,
+                  }
+                : {
+                      to: stream_data.get_stream_name_from_id(message.stream_id),
+                      topic: message.topic,
+                  }),
         };
-        if (message.type === "private") {
-            data.to = message.reply_to;
-        } else {
-            data.to = stream_data.get_stream_name_from_id(message.stream_id);
-        }
 
-        function success() {
+        const success = (): void => {
             if (message.type === "stream") {
                 message_view.narrow_by_topic(message_id, {trigger: "desktop_notification_reply"});
             } else {
@@ -52,15 +57,16 @@ export function initialize() {
                     trigger: "desktop_notification_reply",
                 });
             }
-        }
+        };
 
-        function error(error) {
+        const error = (error: JQuery.jqXHR): void => {
+            assert(electron_bridge !== undefined);
             electron_bridge.send_event("send_notification_reply_message_failed", {
                 data,
                 message_id,
                 error,
             });
-        }
+        };
 
         channel.post({
             url: "/json/messages",
@@ -77,14 +83,20 @@ export function initialize() {
 
         channel.get({
             url,
-            success(data) {
+            success(raw_data) {
+                const data = z
+                    .object({result: z.literal("success"), billing_access_url: z.string()})
+                    .parse(raw_data);
                 window.open(data.billing_access_url, "_blank", "noopener,noreferrer");
             },
             error(xhr) {
-                if (xhr.responseJSON?.msg) {
+                const parsed = z
+                    .object({result: z.literal("error"), msg: z.string()})
+                    .safeParse(xhr.responseJSON);
+                if (parsed.success) {
                     feedback_widget.show({
                         populate($container) {
-                            $container.text(xhr.responseJSON.msg);
+                            $container.text(parsed.data.msg);
                         },
                         title_text: $t({defaultMessage: "Error"}),
                     });

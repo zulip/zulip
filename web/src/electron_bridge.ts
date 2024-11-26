@@ -23,7 +23,7 @@ export type ElectronBridge = {
     ) => void) &
         ((
             eventName: "send_notification_reply_message",
-            listener: (message_id: unknown, reply: unknown) => void,
+            listener: (message_id: number, reply: string) => void,
         ) => void);
     new_notification?: (
         title: string,
