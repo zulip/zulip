@@ -209,7 +209,10 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # These are a priority to document but don't match our normal URL schemes
         # and thus may be complicated to document with our current tooling.
         # (No /api/v1/ or /json prefix).
-        "/avatar/{email_or_id}",
+        "/avatar/{user_id}",
+        "/avatar/{email}",
+        "/avatar/{user_id}/medium",
+        "/avatar/{email}/medium",
         ## This one isn't really representable
         # "/user_uploads/{realm_id_str}/{filename}",
         #### These realm administration settings are valuable to document:
