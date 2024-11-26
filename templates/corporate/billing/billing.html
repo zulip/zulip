@@ -42,7 +42,7 @@
         <div class="white-box">
             <div id="billing-page-details">
                 <div class="input-box billing-page-field">
-                    <label for="org-current-plan" class="inline-block label-title">Your plan</label>
+                    <label for="org-current-plan">Your plan</label>
                     <div id="org-current-plan" class="not-editable-realm-field">
                         {% if free_trial or downgrade_at_end_of_free_trial %}
                         <a href="{{ billing_base_url }}/plans/">
@@ -109,7 +109,7 @@
                 {% if complimentary_access_plan or fixed_price_plan %}
                 {% elif automanage_licenses %}
                 <div class="input-box billing-page-field">
-                    <label for="automatic-license-count" class="inline-block label-title">
+                    <label for="automatic-license-count">
                         Number of licenses
                         {% if is_self_hosted_billing %}
                         <a href="/help/self-hosted-billing#how-does-automatic-license-management-work" target="_blank" rel="noopener noreferrer">
@@ -135,7 +135,7 @@
                 {% else %}
                 {% if not (free_trial or downgrade_at_end_of_free_trial) %}
                 <div class="input-box billing-page-field input-box-number">
-                    <label for="current-manual-license-count" class="inline-block label-title">
+                    <label for="current-manual-license-count">
                         Number of licenses for current billing period
                         {% if is_self_hosted_billing %}
                         <a href="/help/self-hosted-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">
@@ -169,7 +169,7 @@
                 {% endif %}
                 {% if not (downgrade_at_end_of_cycle or downgrade_at_end_of_free_trial) %}
                 <div class="input-box billing-page-field input-box-number">
-                    <label for="next-manual-license-count" class="inline-block label-title">
+                    <label for="next-manual-license-count">
                         Number of licenses for next billing period
                         {% if is_self_hosted_billing %}
                         <a href="/help/self-hosted-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">
@@ -200,14 +200,14 @@
                 </form>
                 <div id="toggle-license-management-error" class="alert alert-danger"></div>
                 <div class="input-box billing-page-field">
-                    <label for="billing-contact" class="inline-block label-title">Billing contact</label>
+                    <label for="billing-contact">Billing contact</label>
                     <div id="billing-contact" class="not-editable-realm-field">
                         <a href="mailto:{{ stripe_email }}">{{ stripe_email }}</a>
                     </div>
                 </div>
                 <div id="cardchange-error" class="alert alert-danger"></div>
                 <div class="input-box billing-page-field">
-                    <label for="customer-payment-method" class="inline-block label-title">Payment method</label>
+                    <label for="customer-payment-method">Payment method</label>
                     <div id="customer-payment-method" class="not-editable-realm-field">
                         {{ payment_method }}
                     </div>
@@ -317,7 +317,7 @@
                     </div>
                 </div>
                 <div class="input-box billing-page-field">
-                    <label class="inline-block label-title">Invoices</label>
+                    <label>Invoices</label>
                     <div class="not-editable-realm-field">
                         <a href="{{ billing_base_url }}/invoices/">
                             View past invoices
