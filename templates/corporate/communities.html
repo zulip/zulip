@@ -34,25 +34,6 @@
                     </header>
                 </div>
 
-                <div class="integration-categories-dropdown">
-                    <div class="integration-toggle-categories-dropdown">
-                        <h3 class="dropdown-category-label">{% trans %}Filter by category{% endtrans %}</h3>
-                        <i class="fa fa-angle-down" aria-hidden="true"></i>
-                    </div>
-                    <div class="dropdown-list">
-                        <a href="#all">
-                            <h4 class="realm-category selected" data-category="all">All</h4>
-                        </a>
-                        {% for org_type in org_types.keys() %}
-                        <a href="#{{ org_type }}">
-                            <h4 class="realm-category" data-category="{{ org_type }}">
-                                {{ org_types[org_type]["name"] }}
-                            </h4>
-                        </a>
-                        {% endfor %}
-                    </div>
-                </div>
-
                 <div class="catalog">
                     <div class="integration-categories-sidebar">
                         <h3>{% trans %}Categories{% endtrans %}</h3>

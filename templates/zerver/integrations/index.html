@@ -42,35 +42,6 @@
                     </div>
                 </div>
 
-                <div class="integration-categories-dropdown">
-                    <div class="integration-toggle-categories-dropdown">
-                        <h3 class="dropdown-category-label">{% trans %}Filter by category{% endtrans %}</h3>
-                        <i class="fa fa-angle-down" aria-hidden="true"></i>
-                    </div>
-                    <div class="dropdown-list">
-                        <a href="/integrations/">
-                            <h4 class="integration-category selected" data-category="all">All</h4>
-                        </a>
-                        {% for category in categories_dict.keys() %}
-                        <a href="/integrations/{{ category }}">
-                            <h4 class="integration-category" data-category="{{ category }}">
-                                {{ categories_dict[category] }}
-                            </h4>
-                        </a>
-                        {% endfor %}
-                        <h4 class="heading">{% trans %}Custom integrations{% endtrans %}</h4>
-                        <a href="/api/incoming-webhooks-overview">
-                            <h4>{% trans %}Incoming webhooks{% endtrans %}</h4>
-                        </a>
-                        <a href="/api/writing-bots">
-                            <h4>{% trans %}Interactive bots{% endtrans %}</h4>
-                        </a>
-                        <a href="/api/rest">
-                            <h4>{% trans %}REST API{% endtrans %}</h4>
-                        </a>
-                    </div>
-                </div>
-
                 <div class="catalog">
                     <div class="integration-categories-sidebar">
                         <h3>{% trans %}Categories{% endtrans %}</h3>

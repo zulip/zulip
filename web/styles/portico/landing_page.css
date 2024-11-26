@@ -2104,10 +2104,6 @@ button {
     .portico-landing.hello .integrations .integration-icons .integration-logo {
         width: 60px;
     }
-
-    .portico-landing.integrations .integration-categories-dropdown {
-        width: 323px;
-    }
 }
 
 #download-from-microsoft-store,

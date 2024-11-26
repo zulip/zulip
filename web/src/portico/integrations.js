@@ -3,7 +3,6 @@ import _ from "lodash";
 
 import * as blueslip from "../blueslip.ts";
 import * as common from "../common.ts";
-import {$t} from "../i18n.ts";
 
 import * as google_analytics from "./google-analytics.ts";
 import {path_parts} from "./landing-page.ts";
@@ -86,13 +85,6 @@ function update_categories() {
 
     $(".integration-category").removeClass("selected");
     $(`[data-category="${CSS.escape(state.category)}"]`).addClass("selected");
-
-    const $dropdown_label = $(".integration-categories-dropdown .dropdown-category-label");
-    if (state.category === INITIAL_STATE.category) {
-        $dropdown_label.text($t({defaultMessage: "Filter by category"}));
-    } else {
-        $dropdown_label.text(CATEGORIES.get(state.category));
-    }
 
     $(".integration-lozenges").animate({opacity: 1}, {duration: 400});
 
@@ -183,7 +175,6 @@ function hide_catalog_show_integration() {
     }
 
     function hide_catalog(doc) {
-        $(".integration-categories-dropdown").css("display", "none");
         $(".integrations .catalog").addClass("hide");
         $(".extra, .integration-main-text, #integration-search").css("display", "none");
 
@@ -211,7 +202,6 @@ function hide_integration_show_catalog() {
     function show_catalog() {
         $("html, body").animate({scrollTop: 0}, {duration: 200});
 
-        $(".integration-categories-dropdown").css("display", "");
         $(".integrations .catalog").removeClass("hide");
         $(".extra, .integration-main-text, #integration-search").css("display", "block");
         adjust_font_sizing();
@@ -303,24 +293,12 @@ function dispatch(action, payload) {
     }
 }
 
-function toggle_categories_dropdown() {
-    const $dropdown_list = $(".integration-categories-dropdown .dropdown-list");
-    $dropdown_list.slideToggle(250);
-}
-
 function integration_events() {
     $('#integration-search input[type="text"]').on("keypress", (e) => {
         if (e.key === "Enter" && e.target.value !== "") {
             $(".integration-lozenges .integration-lozenge:visible")[0]?.closest("a").click();
         }
     });
-
-    $(".integration-categories-dropdown .integration-toggle-categories-dropdown").on(
-        "click",
-        () => {
-            toggle_categories_dropdown();
-        },
-    );
 
     $(".integration-instruction-block").on("click", "a .integration-category", (e) => {
         e.preventDefault();
@@ -332,7 +310,6 @@ function integration_events() {
         e.preventDefault();
         const category = $(e.target).attr("data-category");
         dispatch("CHANGE_CATEGORY", {category});
-        toggle_categories_dropdown();
     });
 
     $(".integrations a .integration-lozenge").on("click", (e) => {
