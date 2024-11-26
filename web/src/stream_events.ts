@@ -182,15 +182,10 @@ function show_first_stream_created_modal(stream: StreamSubscription): void {
 // It's likely we should be passing in the full sub object from the caller/backend,
 // but for now we just pass in the subscribers and color (things likely to be different).
 export function mark_subscribed(
-    sub: StreamSubscription | undefined,
+    sub: StreamSubscription,
     subscribers: number[],
     color: string | undefined,
 ): void {
-    if (sub === undefined) {
-        blueslip.error("Undefined sub passed to mark_subscribed");
-        return;
-    }
-
     if (sub.subscribed) {
         return;
     }

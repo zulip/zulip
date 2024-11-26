@@ -289,13 +289,6 @@ test("marked_(un)subscribed (early return)", () => {
     stream_events.mark_unsubscribed({subscribed: false});
 });
 
-test("marked_subscribed (error)", () => {
-    // Test undefined error
-    blueslip.expect("error", "Undefined sub passed to mark_subscribed");
-    stream_events.mark_subscribed(undefined, [], "yellow");
-    blueslip.reset();
-});
-
 test("marked_subscribed (normal)", ({override}) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
