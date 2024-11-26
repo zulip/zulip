@@ -224,6 +224,7 @@ function initialize_tooltip_for_membership_button(group_id) {
     settings_components.initialize_disable_button_hint_popover($tooltip_wrapper, tooltip_message);
 }
 
+// Group membership button only adds or removes direct membership.
 function update_group_membership_button(group_id) {
     const $group_settings_button = group_membership_button(group_id);
 
@@ -231,8 +232,12 @@ function update_group_membership_button(group_id) {
         return;
     }
 
-    const is_member = user_groups.is_user_in_group(group_id, people.my_current_user_id());
-    if (is_member) {
+    const is_direct_member = user_groups.is_user_in_group(
+        group_id,
+        people.my_current_user_id(),
+        true,
+    );
+    if (is_direct_member) {
         $group_settings_button.text($t({defaultMessage: "Leave group"}));
     } else {
         $group_settings_button.text($t({defaultMessage: "Join group"}));
@@ -242,9 +247,9 @@ function update_group_membership_button(group_id) {
     const can_leave_group = settings_data.can_leave_user_group(group_id);
 
     let can_update_membership = true;
-    if (!is_member && !can_join_group) {
+    if (!is_direct_member && !can_join_group) {
         can_update_membership = false;
-    } else if (is_member && !can_leave_group) {
+    } else if (is_direct_member && !can_leave_group) {
         can_update_membership = false;
     }
 
@@ -351,7 +356,7 @@ export function show_settings_for(group) {
         ),
         creator: stream_data.maybe_get_creator_details(group.creator_id),
         is_creator: group.creator_id === current_user.user_id,
-        is_member: user_groups.is_direct_member_of(people.my_current_user_id(), group.id),
+        is_direct_member: user_groups.is_direct_member_of(people.my_current_user_id(), group.id),
     });
 
     scroll_util.get_content_element($("#user_group_settings")).html(html);
