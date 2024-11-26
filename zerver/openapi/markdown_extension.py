@@ -37,6 +37,7 @@ from zerver.openapi.openapi import (
     get_openapi_summary,
     get_parameters_description,
     get_responses_description,
+    is_redirect_endpoint,
     openapi_spec,
 )
 
@@ -208,7 +209,7 @@ def render_javascript_code_example(
 
 
 def get_endpoint_base_url(endpoint: str, method: str, api_url: str) -> str:
-    if check_non_api_v1_or_json_pattern(endpoint, method):  # nocoverage
+    if check_non_api_v1_or_json_pattern(endpoint, method):
         return api_url.removesuffix("/api")
     return f"{api_url}/v1"
 
@@ -217,6 +218,11 @@ def curl_method_arguments(
     method: str, api_url: str, *, endpoint: str, example_endpoint: str
 ) -> list[str]:
     url = get_endpoint_base_url(endpoint, method, api_url) + example_endpoint
+
+    if is_redirect_endpoint(endpoint, method):
+        # Redirect responses have no body, so we just need to show the
+        # details in the response headers.
+        return ["-si", url]
 
     # We also include the -sS verbosity arguments here.
     method = method.upper()
@@ -356,6 +362,8 @@ def generate_curl_example(
         auth_email = "ZULIP_ORG_ID" if is_zilencer_endpoint else DEFAULT_AUTH_EMAIL
         auth_api_key = "ZULIP_ORG_KEY" if is_zilencer_endpoint else DEFAULT_AUTH_API_KEY
         lines.append("    -u " + shlex.quote(f"{auth_email}:{auth_api_key}"))
+    if is_redirect_endpoint(endpoint, method):
+        lines.append("    | grep -i '^location:'")
 
     for parameter in parameters:
         if parameter.kind == "path":
