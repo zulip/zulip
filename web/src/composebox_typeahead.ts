@@ -596,6 +596,9 @@ export function filter_and_sort_mentions(
 }
 
 export function get_pm_people(query: string): (UserGroupPillData | UserPillData)[] {
+    if (query === "" && $("#private_message_recipient").siblings().length > 0) {
+        return [];
+    }
     const opts = {
         want_broadcast: false,
         filter_pills: true,

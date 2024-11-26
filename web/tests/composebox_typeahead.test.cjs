@@ -1010,6 +1010,9 @@ test("initialize", ({override, override_rewire, mock_template}) => {
             }
             case $("#private_message_recipient"): {
                 pill_items = [];
+                const siblings = [];
+
+                $("#private_message_recipient").siblings = () => siblings;
 
                 // This should match the users added at the beginning of this test file.
                 let actual_value = options.source("");
