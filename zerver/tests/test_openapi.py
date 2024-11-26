@@ -17,6 +17,7 @@ from zerver.lib.utils import assert_is_not_none
 from zerver.openapi.markdown_extension import generate_curl_example, render_curl_example
 from zerver.openapi.openapi import (
     OPENAPI_SPEC_PATH,
+    ZULIP_API_REDIRECT_RESPONSE_STATUS_CODES,
     OpenAPISpec,
     Parameter,
     SchemaError,
@@ -214,10 +215,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # (No /api/v1/ or /json prefix).
         "/thumbnail",
         "/user_avatars/{path}",
-        "/avatar/{user_id}",
-        "/avatar/{email}",
-        "/avatar/{user_id}/medium",
-        "/avatar/{email}/medium",
         ## These aren't really representable
         # "/user_uploads/{realm_id_str}/{filename}",
         "/user_uploads/temporary/{token}/{filename}",
@@ -907,6 +904,48 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
+    def test_generate_and_render_curl_example_for_user_id_avatar_endpoints(self) -> None:
+        generated_curl_example = self.curl_example("/avatar/{user_id}", "GET")
+        expected_curl_example = [
+            "```curl",
+            "curl -si http://localhost:9991/avatar/12 \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    | grep -i '^location:'",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+        generated_curl_example = self.curl_example("/avatar/{user_id}/medium", "GET")
+        expected_curl_example = [
+            "```curl",
+            "curl -si http://localhost:9991/avatar/12/medium \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    | grep -i '^location:'",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    def test_generate_and_render_curl_example_for_email_avatar_endpoints(self) -> None:
+        generated_curl_example = self.curl_example("/avatar/{email}", "GET")
+        expected_curl_example = [
+            "```curl",
+            "curl -si http://localhost:9991/avatar/iago@zulip.com \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    | grep -i '^location:'",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+        generated_curl_example = self.curl_example("/avatar/{email}/medium", "GET")
+        expected_curl_example = [
+            "```curl",
+            "curl -si http://localhost:9991/avatar/iago@zulip.com/medium \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    | grep -i '^location:'",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
 
 class OpenAPIAttributesTest(ZulipTestCase):
     def test_attributes(self) -> None:
@@ -944,6 +983,10 @@ class OpenAPIAttributesTest(ZulipTestCase):
                 tag = operation["tags"][0]
                 assert tag in VALID_TAGS
                 for status_code, response in operation["responses"].items():
+                    if status_code in ZULIP_API_REDIRECT_RESPONSE_STATUS_CODES:
+                        # Redirect responses have no body to validate.
+                        assert "Location" in response["headers"]
+                        continue
                     schema = response["content"]["application/json"]["schema"]
                     # Validate the documented examples for each event type
                     # in api/get-events for the documented event schemas.

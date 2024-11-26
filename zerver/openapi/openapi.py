@@ -286,7 +286,7 @@ def generate_openapi_fixture(endpoint: str, method: str) -> list[str]:
     fixture = []
     responses = openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"]
     for status_code in sorted(responses):
-        if status_code in ZULIP_API_REDIRECT_RESPONSE_STATUS_CODES:  # nocoverage
+        if status_code in ZULIP_API_REDIRECT_RESPONSE_STATUS_CODES:
             # Redirect responses have no body, so we describe the
             # response and its headers instead of showing a JSON example.
             fixture.extend(responses[status_code]["description"].strip().splitlines())
@@ -442,7 +442,7 @@ def get_openapi_parameters(
 
 
 def get_openapi_return_values(endpoint: str, method: str) -> dict[str, Any]:
-    if is_redirect_endpoint(endpoint, method):  # nocoverage
+    if is_redirect_endpoint(endpoint, method):
         # Redirect responses have no JSON body.
         return {}
     operation = openapi_spec.openapi()["paths"][endpoint][method.lower()]
