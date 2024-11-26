@@ -1280,6 +1280,12 @@ def apply_event(
                             id=stream["stream_id"]
                         ).first_message_id
 
+                for stream in state["never_subscribed"]:
+                    if stream["stream_id"] in deleted_stream_ids:
+                        stream["is_archived"] = True
+                        stream["first_message_id"] = Stream.objects.get(
+                            id=stream["stream_id"]
+                        ).first_message_id
             else:
                 state["subscriptions"] = [
                     stream
@@ -1293,11 +1299,11 @@ def apply_event(
                     if stream["stream_id"] not in deleted_stream_ids
                 ]
 
-            state["never_subscribed"] = [
-                stream
-                for stream in state["never_subscribed"]
-                if stream["stream_id"] not in deleted_stream_ids
-            ]
+                state["never_subscribed"] = [
+                    stream
+                    for stream in state["never_subscribed"]
+                    if stream["stream_id"] not in deleted_stream_ids
+                ]
 
         if event["op"] == "update":
             # For legacy reasons, we call stream data 'subscriptions' in
