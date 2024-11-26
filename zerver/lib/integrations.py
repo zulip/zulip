@@ -636,6 +636,8 @@ INTEGRATIONS: dict[str, Integration] = {
     "rss": Integration(
         "rss", "rss", ["communication"], display_name="RSS", doc="zerver/integrations/rss.md"
     ),
+    "slack2": Integration(
+        "slack2", "slack2", ["communication"], display_name="Slack",logo="images/integrations/logos/slack.svg", doc="zerver/integrations/slack2.md"),
     "svn": Integration("svn", "svn", ["version-control"], doc="zerver/integrations/svn.md"),
     "trac": Integration("trac", "trac", ["project-management"], doc="zerver/integrations/trac.md"),
     "twitter": Integration(
