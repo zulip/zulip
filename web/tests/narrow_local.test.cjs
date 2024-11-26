@@ -47,7 +47,7 @@ function test_with(fixture) {
     all_messages_data.rewire_all_messages_data({
         fetch_status: {
             has_found_newest: () => fixture.has_found_newest,
-            has_found_oldest: () => fixture.has_found_newest,
+            has_found_oldest: () => fixture.has_found_oldest,
         },
         visibly_empty: () => fixture.visibly_empty,
         all_messages() {
@@ -64,6 +64,7 @@ function test_with(fixture) {
         },
         filter: {
             equals: () => false,
+            includes_history: () => false,
         },
     });
 

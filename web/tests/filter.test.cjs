@@ -292,7 +292,7 @@ test("basics", () => {
     assert.ok(filter.supports_collapsing_recipients());
     assert.ok(!filter.has_operator("search"));
     assert.ok(filter.can_apply_locally());
-    assert.ok(!filter.is_personal_filter());
+    assert.ok(filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
     assert.ok(!filter.can_show_next_unread_topic_conversation_button());
     assert.ok(filter.can_show_next_unread_dm_conversation_button());
