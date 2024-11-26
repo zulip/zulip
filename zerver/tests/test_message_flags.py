@@ -1224,7 +1224,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
 
         def get_unread_data() -> UnreadMessagesResult:
             raw_unread_data = get_raw_unread_data(user_profile)
-            aggregated_data = aggregate_unread_data(raw_unread_data)
+            aggregated_data = aggregate_unread_data(raw_unread_data, allow_empty_topic_name=True)
             return aggregated_data
 
         with mock.patch("zerver.lib.message.MAX_UNREAD_MESSAGES", 5):
