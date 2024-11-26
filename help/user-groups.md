@@ -1,5 +1,7 @@
 # User groups
 
+{!cloud-paid-plans-only.md!}
+
 {!user-groups-intro.md!}
 
 {!user-groups-applications.md!}
