@@ -367,7 +367,7 @@ export function update_stream_privacy_icon_in_settings(sub: StreamSubscription):
 
     const $stream_settings = stream_settings_containers.get_edit_container(sub);
 
-    $stream_settings.find(".general_settings .large-icon").replaceWith(
+    $stream_settings.find(".stream_section[data-stream-section='general'] .large-icon").replaceWith(
         $(
             render_stream_privacy_icon({
                 invite_only: sub.invite_only,
