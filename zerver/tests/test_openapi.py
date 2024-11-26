@@ -902,7 +902,16 @@ class OpenAPIAttributesTest(ZulipTestCase):
         * All example events in `/get-events` match an event schema.
         * That no opaque object exists.
         """
-        EXCLUDE = ["/real-time"]
+        EXCLUDE = [
+            "/real-time",
+            # The avatar endpoints doesn't return a JSON body, instead it
+            # redirects to the requested avatar URL. So its schema doesn't
+            # have attributes like `examples` and `type`.
+            "/avatar/{user_id}",
+            "/avatar/{email}",
+            "/avatar/{user_id}/medium",
+            "/avatar/{email}/medium",
+        ]
         VALID_TAGS = [
             "users",
             "server_and_organizations",
@@ -1024,6 +1033,10 @@ class APIDocsSidebarTest(ZulipTestCase):
         exempted_docs = {
             # (No /api/v1/ or /json prefix).
             "get-file-temporary-url",
+            "get-user-avatar",
+            "get-user-avatar-by-email",
+            "get-user-medium-avatar",
+            "get-user-medium-avatar-by-email",
             # This one is not used by any clients and is likely to get
             # deprecated.
             "update-subscriptions",
