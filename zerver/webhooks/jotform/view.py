@@ -19,13 +19,13 @@ def api_jotform_webhook(
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     topic_name = payload["formTitle"].tame(check_string)
-    submission_id = payload["submissionID"].tame(check_string)
     fields = payload["pretty"].tame(check_string).split(", ")
 
-    form_response = f"A new submission (ID {submission_id}) was received:\n"
+    form_response = ""
     for field in fields:
-        form_response += f"* {field}\n"
-
+        label, value = field.split(":", 1)
+        separator = " " if label.endswith("?") else ": "
+        form_response += f"* **{label}**{separator}{value}\n"
     message = form_response.strip()
 
     check_send_webhook_message(request, user_profile, topic_name, message)

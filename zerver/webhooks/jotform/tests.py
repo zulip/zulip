@@ -9,11 +9,9 @@ class JotformHookTests(WebhookTestCase):
     def test_response(self) -> None:
         expected_title = "Form"
         expected_message = """
-A new submission (ID 4791133489169827307) was received:
-* Name:Gaurav Pandey
-* Address:Lampgarden-street wolfsquare Bengaluru Karnataka 165578
-* Signature:uploads/gauravguitarrocks/202944822449057/4791133489169827307/4791133489169827307_signature_4.png
-""".strip()
+* **Name**: Gaurav Pandey
+* **Address**: Lampgarden-street wolfsquare Bengaluru Karnataka 165578
+* **Signature**: uploads/gauravguitarrocks/202944822449057/4791133489169827307/4791133489169827307_signature_4.png""".strip()
 
         self.check_webhook(
             "response",
