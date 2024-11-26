@@ -1,5 +1,7 @@
 # Create user groups
 
+{!cloud-paid-plans-only.md!}
+
 {!user-groups-intro.md!}
 
 Many organizations find it helpful to create groups for:
