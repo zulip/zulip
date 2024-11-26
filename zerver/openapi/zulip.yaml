@@ -15105,6 +15105,16 @@ paths:
                                   type: string
                                   description: |
                                     The topic under which the messages were sent.
+
+                                    Note that the `""` topic may have been rewritten by the server to
+                                    the value of `realm_empty_topic_display_name` field in the
+                                    [`POST /register`](/api/register-queue) response depending on the
+                                    value of the `empty_topic_name` [client capability][client-capabilities].
+
+                                    **Changes**: The `empty_topic_name` client capability is new in
+                                    Zulip 10.0 (feature level 333).
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                 stream_id:
                                   type: integer
                                   description: |
