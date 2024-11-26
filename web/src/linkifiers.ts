@@ -1,4 +1,4 @@
-import url_template_lib from "url-template";
+import * as url_template_lib from "url-template";
 
 import * as blueslip from "./blueslip.ts";
 
@@ -83,7 +83,7 @@ function python_to_js_linkifier(
             throw error;
         }
     }
-    const url_template = url_template_lib.parse(url);
+    const url_template = url_template_lib.parseTemplate(url);
     return [final_regex, url_template, group_number_to_name];
 }
 

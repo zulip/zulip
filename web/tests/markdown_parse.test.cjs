@@ -117,7 +117,7 @@ function get_realm_emoji_url(emoji_name) {
 const regex = /#foo(\d+)(?!\w)/g;
 const linkifier_map = new Map();
 linkifier_map.set(regex, {
-    url_template: url_template_lib.parse("http://foo.com/{id}"),
+    url_template: url_template_lib.parseTemplate("http://foo.com/{id}"),
     group_number_to_name: {1: "id"},
 });
 

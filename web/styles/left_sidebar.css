@@ -958,10 +958,8 @@ li.top_left_scheduled_messages {
 #views-label-container {
     margin-right: var(--left-sidebar-right-margin);
     grid-template-columns:
-        0 var(--left-sidebar-header-icon-toggle-width) 0 minmax(0, 0.5fr) 0 minmax(
-            0,
-            1fr
-        )
+        0 var(--left-sidebar-header-icon-toggle-width) 0 minmax(0, 0.5fr)
+        0 minmax(0, 1fr)
         var(--left-sidebar-vdots-width) 0;
     grid-template-rows: 28px;
     cursor: pointer;
@@ -1461,10 +1459,8 @@ li.topic-list-item {
         var(--left-sidebar-toggle-width-offset) [action-heading-start] var(
             --left-sidebar-icon-column-width
         )
-        var(--left-sidebar-icon-content-gap) minmax(0, 1fr) [action-heading-end] 0 minmax(
-            0,
-            max-content
-        )
+        var(--left-sidebar-icon-content-gap) minmax(0, 1fr)
+        [action-heading-end] 0 minmax(0, max-content)
         var(--left-sidebar-vdots-width) 0;
     grid-template-rows: [action-heading-start] auto [action-heading-end];
 

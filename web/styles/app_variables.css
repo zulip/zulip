@@ -293,7 +293,8 @@
         (
                 var(--line-height-sidebar-row-prominent) -
                     var(--line-height-sidebar-topic-inner)
-            ) / 2
+            ) /
+            2
     );
 
     /* Right sidebar */
@@ -342,8 +343,10 @@
                             var(--base-maximum-block-height-em),
                             var(--length-line-fitted-block)
                         )
-                    ) - var(--length-line-oversize-block)
-            ) / 2
+                    ) -
+                    var(--length-line-oversize-block)
+            ) /
+            2
     );
 
     /* Legacy values */
