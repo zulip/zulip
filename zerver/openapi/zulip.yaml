@@ -21616,6 +21616,47 @@ paths:
                         "result": "success",
                         "url": "/calls/bigbluebutton/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22",
                       }
+  /avatar/{user_id}:
+    get:
+      operationId: get-user-avatar
+      summary: Get a user's avatar
+      tags: ["users"]
+      description: |
+        Fetch the avatar URL for a single user in the organization, identified by their
+        user ID.
+
+        The avatar URL or file may originate from one of the following sources:
+
+        - **User-uploaded** file, if the user has uploaded their own avatar.
+        - **Gravatar** URL, used as the default option.
+        - **Static files**, for system bots.
+
+        **File size**: Default (`100x100` px).
+
+        For the medium version (`500x500` px), you can use the
+        [medium avatar endpoint](/api/get-users-medium-avatar) or modify the default-
+        sized avatar URL to end with `-medium.png`. Additionally, for Gravatar URLs,
+        you can request custom dimensions beyond `100x100` px or `500x500` px. This
+        can be done by appending the `s=` or `size=` parameter with a single pixel
+        dimension. For more information, see the
+        [Gravatar documentation](https://docs.gravatar.com/api/avatars/images/).
+
+        **File types**: Avatar files are served in `PNG` format.
+
+        Gravatar URLs can also support an optional `.jpg` extension. Refer to the
+        [Gravatar documentation](https://docs.gravatar.com/api/avatars/images/) for
+        details on customizing Gravatar URLs.
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - ""
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessRedirect"
 
 components:
   #######################
