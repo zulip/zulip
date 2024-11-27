@@ -162,7 +162,7 @@ function hide_catalog_show_integration() {
                     $("<h3>")
                         .addClass("integration-category")
                         .attr("data-category", link)
-                        .text(category),
+                        .text(category.trim()),
                 );
             $("#integration-instructions-group .categories").append($category_el);
         }
