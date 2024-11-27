@@ -1168,6 +1168,25 @@ button#register_auth_button_gitlab {
     }
 }
 
+#billing-page-details {
+    .billing-section-title {
+        display: block;
+        margin: 2px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: hsl(0deg 0% 27%);
+        line-height: 20px;
+        text-align: left;
+    }
+
+    .billing-section-content {
+        font-weight: normal;
+        margin: 2px;
+        text-align: left;
+        overflow-wrap: break-word;
+    }
+}
+
 .static.org-url + #subdomain_section {
     margin-top: 0 !important;
 
