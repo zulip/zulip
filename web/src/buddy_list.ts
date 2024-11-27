@@ -12,7 +12,7 @@ import render_presence_rows from "../templates/presence_rows.hbs";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
 import type {BuddyUserInfo} from "./buddy_data.ts";
-import {media_breakpoints_num} from "./css_variables.js";
+import {media_breakpoints_num} from "./css_variables.ts";
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";

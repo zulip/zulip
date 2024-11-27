@@ -12,7 +12,7 @@ import * as buddy_data from "./buddy_data.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_reply from "./compose_reply.ts";
 import * as compose_state from "./compose_state.ts";
-import {media_breakpoints_num} from "./css_variables.js";
+import {media_breakpoints_num} from "./css_variables.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.js";
