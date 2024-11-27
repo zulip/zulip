@@ -316,6 +316,7 @@ export class BuddyList extends BuddyListConf {
         $("#buddy-list-other-users-container .view-all-users-link").remove();
         if (!buddy_data.get_is_searching_users()) {
             this.render_view_user_list_links();
+            this.display_or_hide_sections();
         }
 
         // `populate` always rerenders all user rows, so we need new load handlers.
@@ -426,11 +427,6 @@ export class BuddyList extends BuddyListConf {
 
     render_section_headers(): void {
         const {hide_headers, all_participant_ids} = this.render_data;
-        // We only show the participants list if it has members, so even if we're not
-        // changing filters and only updating user counts for the current filter, that
-        // can affect if we show/hide this section.
-        const hide_participants_list = hide_headers || all_participant_ids.size === 0;
-        $("#buddy-list-participants-container").toggleClass("no-display", hide_participants_list);
 
         // If we're not changing filters, this just means some users were added or
         // removed but otherwise everything is the same, so we don't need to do a full
@@ -443,20 +439,6 @@ export class BuddyList extends BuddyListConf {
 
         const {current_sub, total_human_subscribers_count, other_users_count} = this.render_data;
         $(".buddy-list-subsection-header").empty();
-
-        // If we're in the mode of hiding headers, that means we're only showing the "others"
-        // section, so hide the other two sections.
-        $("#buddy-list-users-matching-view-container").toggleClass("no-display", hide_headers);
-
-        // This is the case where every subscriber is in the participants list. In this case, we
-        // hide the "in this channel" section.
-        if (
-            !hide_participants_list &&
-            total_human_subscribers_count === this.participant_user_ids.length
-        ) {
-            $("#buddy-list-users-matching-view-container").toggleClass("no-display", true);
-        }
-
         $(".buddy-list-subsection-header").toggleClass("no-display", hide_headers);
         if (hide_headers) {
             return;
@@ -626,6 +608,25 @@ export class BuddyList extends BuddyListConf {
 
         this.render_count += more_user_ids.length;
         this.update_padding();
+    }
+
+    display_or_hide_sections(): void {
+        const {all_participant_ids, hide_headers, total_human_subscribers_count} = this.render_data;
+
+        // If we're in the mode of hiding headers, that means we're only showing the "others"
+        // section, so hide the other two sections.
+        $("#buddy-list-users-matching-view-container").toggleClass("no-display", hide_headers);
+        const hide_participants_list = hide_headers || all_participant_ids.size === 0;
+        $("#buddy-list-participants-container").toggleClass("no-display", hide_participants_list);
+
+        // This is the case where every subscriber is in the participants list. In this case, we
+        // hide the "in this channel" section.
+        if (
+            !hide_participants_list &&
+            total_human_subscribers_count === this.participant_user_ids.length
+        ) {
+            $("#buddy-list-users-matching-view-container").toggleClass("no-display", true);
+        }
     }
 
     render_view_user_list_links(): void {
