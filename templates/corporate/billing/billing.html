@@ -42,8 +42,8 @@
         <div class="white-box">
             <div id="billing-page-details">
                 <div class="input-box billing-page-field">
-                    <label>Your plan</label>
-                    <div class="not-editable-realm-field">
+                    <h2 class="billing-section-title">Your plan</h2>
+                    <div class="billing-section-content">
                         {% if free_trial or downgrade_at_end_of_free_trial %}
                         <a href="{{ billing_base_url }}/plans/">
                             {{ plan_name }} <i>(free trial)</i>
@@ -73,13 +73,13 @@
                   {%if downgrade_at_end_of_cycle %}data-downgrade-eoc="true"{% endif %}
                   {%if switch_to_monthly_at_end_of_cycle %}data-switch-to-monthly-eoc="true"{% endif %}
                   {%if switch_to_annual_at_end_of_cycle %}data-switch-to-annual-eoc="true"{% endif %}>
-                    <label >Billing frequency</label>
+                    <h2 class="billing-section-title">Billing frequency</h2>
                     {% if downgrade_at_end_of_free_trial or downgrade_at_end_of_cycle or complimentary_access_plan or fixed_price_plan or (free_trial and not charge_automatically) %}
-                    <div class="not-editable-realm-field">
+                    <div class="billing-section-content">
                         {{ billing_frequency }}
                     </div>
                     {% elif switch_to_annual_at_end_of_cycle %}
-                    <select name="schedule" id="org-billing-frequency-annual" class="billing-frequency-select">
+                    <select name="schedule" id="org-billing-frequency-annual" class="billing-frequency-select billing-section-content">
                         <option value="Monthly">Monthly</option>
                         <option value="Annual" selected>Annual</option>
                     </select>
@@ -87,7 +87,7 @@
                         Your plan will switch to annual billing on {{ renewal_date }}.
                     </div>
                     {%elif switch_to_monthly_at_end_of_cycle %}
-                    <select name="schedule" id="org-billing-frequency-monthly" class="billing-frequency-select">
+                    <select name="schedule" id="org-billing-frequency-monthly" class="billing-frequency-select billing-section-content">
                         <option value="Monthly" selected>Monthly</option>
                         <option value="Annual">Annual</option>
                     </select>
@@ -95,7 +95,7 @@
                         Your plan will switch to monthly billing on {{ renewal_date }}.
                     </div>
                     {% else %}
-                    <select name="schedule" id="org-billing-frequency-default" class="billing-frequency-select">
+                    <select name="schedule" id="org-billing-frequency-default" class="billing-frequency-select billing-section-content">
                         <option value="Monthly" {% if billing_frequency == "Monthly" %}selected{% endif %}>Monthly</option>
                         <option value="Annual" {% if billing_frequency == "Annual" %}selected{% endif %}>Annual</option>
                     </select>
@@ -109,7 +109,7 @@
                 {% if complimentary_access_plan or fixed_price_plan %}
                 {% elif automanage_licenses %}
                 <div class="input-box billing-page-field">
-                    <label>
+                    <h2 class="billing-section-title">
                         Number of licenses
                         {% if is_self_hosted_billing %}
                         <a href="/help/self-hosted-billing#how-does-automatic-license-management-work" target="_blank" rel="noopener noreferrer">
@@ -121,8 +121,8 @@
                         </a>
                         {% endif %}
 
-                    </label>
-                    <div class="not-editable-realm-field">
+                    </h2>
+                    <div class="billing-section-content">
                         {{ licenses }}
                         <br />
                         Licenses are managed
@@ -135,7 +135,7 @@
                 {% else %}
                 {% if not (free_trial or downgrade_at_end_of_free_trial) %}
                 <div class="input-box billing-page-field input-box-number">
-                    <label for="current-manual-license-count">
+                    <h2 class="billing-section-title">
                         Number of licenses for current billing period
                         {% if is_self_hosted_billing %}
                         <a href="/help/self-hosted-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">
@@ -146,10 +146,10 @@
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                         </a>
                         {% endif %}
-                    </label>
+                    </h2>
                     <div class="number-input-with-label">
                         <form id="current-license-change-form">
-                            <input type="number" name="licenses" autocomplete="off" id="current-manual-license-count" class="short-width-number-input" data-original-value="{{ licenses }}" value="{{ licenses }}" {%if not exempt_from_license_number_check %}min="{{ seat_count }}"{% endif %} required/>
+                            <input type="number" name="licenses" autocomplete="off" id="current-manual-license-count" class="short-width-number-input billing-section-content" data-original-value="{{ licenses }}" value="{{ licenses }}" {%if not exempt_from_license_number_check %}min="{{ seat_count }}"{% endif %} required/>
                         </form>
                         <span class="licence-count-in-use">licenses ({{ seat_count }} in use)</span>
                         <button id="current-manual-license-count-update-button" class="license-count-update-button hide">
@@ -169,7 +169,7 @@
                 {% endif %}
                 {% if not (downgrade_at_end_of_cycle or downgrade_at_end_of_free_trial) %}
                 <div class="input-box billing-page-field input-box-number">
-                    <label for="next-manual-license-count">
+                    <h2 class="billing-section-title">
                         Number of licenses for next billing period
                         {% if is_self_hosted_billing %}
                         <a href="/help/self-hosted-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">
@@ -180,10 +180,10 @@
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                         </a>
                         {% endif %}
-                    </label>
+                    </h2>
                     <div class="number-input-with-label">
                         <form id="next-license-change-form">
-                            <input type="number" name="licenses_at_next_renewal" autocomplete="off" id="next-manual-license-count" class="short-width-number-input" data-original-value="{{ licenses_at_next_renewal }}" value="{{ licenses_at_next_renewal }}" {%if not exempt_from_license_number_check %}min="{{ seat_count }}"{% endif %} required/>
+                            <input type="number" name="licenses_at_next_renewal" autocomplete="off" id="next-manual-license-count" class="short-width-number-input billing-section-content" data-original-value="{{ licenses_at_next_renewal }}" value="{{ licenses_at_next_renewal }}" {%if not exempt_from_license_number_check %}min="{{ seat_count }}"{% endif %} required/>
                         </form>
                         <span class="licence-count-in-use">licenses ({{ seat_count }} in use)</span>
                         <button id="next-manual-license-count-update-button" class="license-count-update-button hide">
@@ -200,15 +200,15 @@
                 </form>
                 <div id="toggle-license-management-error" class="alert alert-danger"></div>
                 <div class="input-box billing-page-field">
-                    <label>Billing contact</label>
-                    <div class="not-editable-realm-field">
+                    <h2 class="billing-section-title">Billing contact</h2>
+                    <div class="billing-section-content">
                         <a href="mailto:{{ stripe_email }}">{{ stripe_email }}</a>
                     </div>
                 </div>
                 <div id="cardchange-error" class="alert alert-danger"></div>
                 <div class="input-box billing-page-field">
-                    <label>Payment method</label>
-                    <div class="not-editable-realm-field">
+                    <h2 class="billing-section-title">Payment method</h2>
+                    <div class="billing-section-content">
                         {{ payment_method }}
                     </div>
                     {% if charge_automatically %}
@@ -279,9 +279,9 @@
                             {% if free_trial and not charge_automatically %}
                             {% else %}
                             <div class="input-box billing-page-field">
-                                <label>Expected next charge</label>
+                                <h2 class="billing-section-title">Expected next charge</h2>
                                 {% if not fixed_price_plan %}
-                                <div class="not-editable-realm-field">
+                                <div class="billing-section-content">
                                     ${{ pre_discount_renewal_cents }} (${{ price_per_license }} x {{ licenses_at_next_renewal }} {{ 'user' if licenses_at_next_renewal == 1 else 'users' }} x
                                     {% if switch_to_annual_at_end_of_cycle %}
                                         12 months
@@ -317,8 +317,8 @@
                     </div>
                 </div>
                 <div class="input-box billing-page-field">
-                    <label>Invoices</label>
-                    <div class="not-editable-realm-field">
+                    <h2 class="billing-section-title">Invoices</h2>
+                    <div class="billing-section-content">
                         <a href="{{ billing_base_url }}/invoices/">
                             View past invoices
                         </a>
