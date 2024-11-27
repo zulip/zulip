@@ -476,7 +476,7 @@ export async function build_move_topic_to_stream_popover(
         if (message !== undefined) {
             // We already have the message_id here which means that modal is opened using
             // message popover.
-            propagate_mode = $("#move_topic_modal select.message_edit_topic_propagate").val();
+            propagate_mode = params.propagate_mode;
             const toast_params =
                 propagate_mode === "change_one"
                     ? {
