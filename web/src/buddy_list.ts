@@ -335,7 +335,8 @@ export class BuddyList extends BuddyListConf {
     update_empty_list_placeholders(): void {
         const {total_human_subscribers_count, other_users_count} = this.render_data;
         const has_inactive_users_matching_view =
-            total_human_subscribers_count > this.users_matching_view_ids.length;
+            total_human_subscribers_count >
+            this.users_matching_view_ids.length + this.participant_user_ids.length;
         const has_inactive_other_users = other_users_count > this.other_user_ids.length;
 
         let matching_view_empty_list_message;
