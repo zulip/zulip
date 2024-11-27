@@ -12991,31 +12991,7 @@ paths:
             description: |
               You may pass the `client_gravatar` or `include_custom_profile_fields` query parameter as follows:
       parameters:
-        - name: email
-          in: path
-          description: |
-            The email address of the user to fetch. Two forms are supported:
-
-            - The real email address of the user (`delivery_email`). The lookup will
-              succeed if and only if the user exists and their email address visibility
-              setting permits the client to see the email address.
-
-            - The dummy Zulip API email address of the form `user{user_id}@{realm_host}`. This
-              is identical to simply [getting user by ID](/api/get-user). If the server or
-              realm change domains, the dummy email address used has to be adjustment to
-              match the new realm domain. This is legacy behavior for
-              backwards-compatibility, and will be removed in a future release.
-
-            **Changes**: Starting with Zulip 10.0 (feature level 302), lookups by real email
-            address match the semantics of the target's email visibility setting and dummy
-            email addresses work for all users, independently of their email visibility
-            setting.
-
-            Previously, lookups were done only using the Zulip API email addresses.
-          schema:
-            type: string
-          example: iago@zulip.com
-          required: true
+        - $ref: "#/components/parameters/UserEmail"
         - $ref: "#/components/parameters/ClientGravatar"
         - $ref: "#/components/parameters/IncludeCustomProfileFields"
       responses:
@@ -25777,3 +25753,29 @@ components:
         type: boolean
       example: false
       required: false
+    UserEmail:
+      name: email
+      in: path
+      description: |
+        The email address of the user to fetch. Two forms are supported:
+
+        - The real email address of the user (`delivery_email`). The lookup will
+          succeed if and only if the user exists and their email address visibility
+          setting permits the client to see the email address.
+
+        - The dummy Zulip API email address of the form `user{user_id}@{realm_host}`. This
+          is identical to simply [getting user by ID](/api/get-user). If the server or
+          realm change domains, the dummy email address used has to be adjustment to
+          match the new realm domain. This is legacy behavior for
+          backwards-compatibility, and will be removed in a future release.
+
+        **Changes**: Starting with Zulip 10.0 (feature level 302), lookups by real email
+        address match the semantics of the target's email visibility setting and dummy
+        email addresses work for all users, independently of their email visibility
+        setting.
+
+        Previously, lookups were done only using the Zulip API email addresses.
+      schema:
+        type: string
+      example: iago@zulip.com
+      required: true
