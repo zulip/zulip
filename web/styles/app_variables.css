@@ -302,6 +302,7 @@
        space created by the padding-left on .right-sidebar,
        which separates the right sidebar from the message area. */
     --right-sidebar-padding-left: 2px;
+    --right-sidebar-heading-left-spacing: 5px;
     --right-sidebar-avatar-width: 2em;
     --right-sidebar-avatar-height: var(--right-sidebar-avatar-width);
 
