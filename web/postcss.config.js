@@ -6,7 +6,7 @@ import postcssPrefixWrap from "postcss-prefixwrap";
 import postcssPresetEnv from "postcss-preset-env";
 import postcssSimpleVars from "postcss-simple-vars";
 
-import {media_breakpoints} from "./src/css_variables.js";
+import {media_breakpoints} from "./src/css_variables.ts";
 
 const config = ({file}) => ({
     plugins: [

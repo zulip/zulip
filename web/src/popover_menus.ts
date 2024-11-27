@@ -6,7 +6,7 @@ import $ from "jquery";
 import * as tippy from "tippy.js";
 
 import * as blueslip from "./blueslip.ts";
-import {media_breakpoints_num} from "./css_variables.js";
+import {media_breakpoints_num} from "./css_variables.ts";
 import * as modals from "./modals.ts";
 import * as overlays from "./overlays.ts";
 import * as popovers from "./popovers.ts";

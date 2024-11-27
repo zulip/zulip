@@ -5,7 +5,7 @@ import render_buddy_list_popover from "../templates/popovers/buddy_list_popover.
 import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import {buddy_list} from "./buddy_list.ts";
-import {media_breakpoints_num} from "./css_variables.js";
+import {media_breakpoints_num} from "./css_variables.ts";
 import {reorder_left_sidebar_navigation_list} from "./left_sidebar_navigation_area.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_lists from "./message_lists.ts";
