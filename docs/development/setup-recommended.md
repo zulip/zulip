@@ -120,9 +120,13 @@ installation method described here. We require version 0.67.6+ of WSL 2.
    depends on your specific hardware and brand, but here are [some
    basic instructions.][windows-bios-virtualization]
 
-1. [Install WSL 2](https://docs.microsoft.com/en-us/windows/wsl/setup/environment).
-
-   (**Note**: Ensure that the WSL distribution you use is a fresh instance. This means either installing a new distribution or deleting any previously used distribution to avoid conflicts.)
+1. [Install WSL
+   2](https://docs.microsoft.com/en-us/windows/wsl/setup/environment),
+   which includes installing an Ubuntu WSL distribution. Using an
+   existing distribution will probably work, but [a fresh
+   distribution](#rebuilding-the-development-environment) is
+   recommended if you previously installed other software in your WSL
+   environment that might conflict with the Zulip environment.
 
 1. It is required to enable `systemd` for WSL 2 to manage the database, cache and other services.
    To configure it, please follow [these instructions](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#systemd-support).
