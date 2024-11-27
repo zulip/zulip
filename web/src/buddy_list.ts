@@ -551,14 +551,14 @@ export class BuddyList extends BuddyListConf {
         const pm_ids_set = narrow_state.pm_ids_set();
 
         for (const item of items) {
-            if (buddy_data.user_matches_narrow(item.user_id, pm_ids_set, current_sub?.stream_id)) {
-                if (this.render_data.all_participant_ids.has(item.user_id)) {
-                    participants.push(item);
-                    this.participant_user_ids.push(item.user_id);
-                } else {
-                    subscribed_users.push(item);
-                    this.users_matching_view_ids.push(item.user_id);
-                }
+            if (this.render_data.all_participant_ids.has(item.user_id)) {
+                participants.push(item);
+                this.participant_user_ids.push(item.user_id);
+            } else if (
+                buddy_data.user_matches_narrow(item.user_id, pm_ids_set, current_sub?.stream_id)
+            ) {
+                subscribed_users.push(item);
+                this.users_matching_view_ids.push(item.user_id);
             } else {
                 other_users.push(item);
                 this.other_user_ids.push(item.user_id);
