@@ -20,7 +20,7 @@ Handlebars.registerHelper({
     eq(a, b) {
         return a === b;
     },
-    and(...args) {
+    and(...args: unknown[]) {
         args.pop(); // Handlebars options
         if (args.length === 0) {
             return true;
@@ -33,7 +33,7 @@ Handlebars.registerHelper({
         }
         return last;
     },
-    or(...args) {
+    or(...args: unknown[]) {
         args.pop(); // Handlebars options
         if (args.length === 0) {
             return false;
@@ -51,7 +51,9 @@ Handlebars.registerHelper({
     },
 });
 
-Handlebars.registerHelper("t", function (message) {
+type Context = Record<string, unknown>;
+
+Handlebars.registerHelper("t", function (this: Context, message: string) {
     // Marks a string for translation.
     // Example usage 1:
     //     {{t "some English text"}}
@@ -68,10 +70,19 @@ Handlebars.registerHelper("t", function (message) {
         .map((s) => s.trim())
         .join(" ");
     const descriptor = {id: message, defaultMessage: message};
-    return intl.formatMessage(descriptor, this);
+    return intl.formatMessage(
+        descriptor,
+        Object.fromEntries(
+            Object.entries(this).flatMap(([key, value]) =>
+                typeof value === "string" || typeof value === "number" || value instanceof Date
+                    ? [[key, value]]
+                    : [],
+            ),
+        ),
+    );
 });
 
-Handlebars.registerHelper("tr", function (options) {
+Handlebars.registerHelper("tr", function (this: Context, options: Handlebars.HelperOptions) {
     // Marks a block for translation.
     // Example usage 1:
     //     {{#tr}}
@@ -92,19 +103,29 @@ Handlebars.registerHelper("tr", function (options) {
         .map((s) => s.trim())
         .join(" ");
     const descriptor = {id: message, defaultMessage: message};
+    const partials: Partial<Record<string, (context: Context, options: unknown) => string>> =
+        "partials" in options.fn &&
+        typeof options.fn.partials === "object" &&
+        options.fn.partials !== null
+            ? options.fn.partials
+            : {};
     const result = intl.formatMessage(descriptor, {
         ...default_html_elements,
         ...Object.fromEntries(
-            Object.entries(options.fn.partials ?? {}).map(([name, value]) => [
+            Object.entries(partials).map(([name, value]) => [
                 name,
-                (s) => value(this, {data: {"partial-block": () => s.join("")}}),
+                (content_html: string[]) =>
+                    value!(this, {data: {"partial-block": () => content_html.join("")}}),
             ]),
         ),
         ...Object.fromEntries(
-            Object.entries(this).map(([key, value]) => [
-                key,
-                Handlebars.Utils.escapeExpression(value),
-            ]),
+            Object.entries(this).flatMap(([key, value]): [string, string | number | Date][] =>
+                typeof value === "string"
+                    ? [[key, Handlebars.Utils.escapeExpression(value)]]
+                    : typeof value === "number" || value instanceof Date
+                      ? [[key, value]]
+                      : [],
+            ),
         ),
     });
     return new Handlebars.SafeString(result);
@@ -112,13 +133,14 @@ Handlebars.registerHelper("tr", function (options) {
 
 Handlebars.registerHelper(
     "rendered_markdown",
-    (content) => new Handlebars.SafeString(postprocess_content(content)),
+    (content: string) => new Handlebars.SafeString(postprocess_content(content)),
 );
 
-Handlebars.registerHelper("numberFormat", (number) => number.toLocaleString());
+Handlebars.registerHelper("numberFormat", (number: number) => number.toLocaleString());
 
-Handlebars.registerHelper("tooltip_hotkey_hints", (...hotkeys) => {
-    hotkeys.pop(); // Handlebars options
+Handlebars.registerHelper("tooltip_hotkey_hints", (...args) => {
+    args.pop(); // Handlebars options
+    const hotkeys: string[] = args;
     let hotkey_hints = "";
     common.adjust_mac_hotkey_hints(hotkeys);
     for (const hotkey of hotkeys) {
@@ -128,8 +150,9 @@ Handlebars.registerHelper("tooltip_hotkey_hints", (...hotkeys) => {
     return new Handlebars.SafeString(result);
 });
 
-Handlebars.registerHelper("popover_hotkey_hints", (...hotkeys) => {
-    hotkeys.pop(); // Handlebars options
+Handlebars.registerHelper("popover_hotkey_hints", (...args) => {
+    args.pop(); // Handlebars options
+    const hotkeys: string[] = args;
     let hotkey_hints = "";
     common.adjust_mac_hotkey_hints(hotkeys);
     const shift_hotkey_exists = common.adjust_shift_hotkey(hotkeys);
@@ -138,7 +161,7 @@ Handlebars.registerHelper("popover_hotkey_hints", (...hotkeys) => {
     }
     if (shift_hotkey_exists) {
         return new Handlebars.SafeString(
-            `<span class="popover-menu-hotkey-hints popover-contains-shift-hotkey" data-hotkey-hints="${hotkeys}">${hotkey_hints}</span>`,
+            `<span class="popover-menu-hotkey-hints popover-contains-shift-hotkey" data-hotkey-hints="${hotkeys.join(",")}">${hotkey_hints}</span>`,
         );
     }
     return new Handlebars.SafeString(

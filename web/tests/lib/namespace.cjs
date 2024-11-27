@@ -209,7 +209,7 @@ exports.zrequire = function (short_fn) {
         short_fn,
         "templates",
         `
-            There is no need to zrequire templates.js.
+            There is no need to zrequire templates.ts.
 
             The test runner automatically registers the
             Handlebars extensions.
