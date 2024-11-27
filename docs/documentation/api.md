@@ -238,6 +238,10 @@ Additional content that you'd like to appear in the responses part of
 the page can be added using the custom `x-response-description` field
 in the OpenAPI definition.
 
+If your API endpoint doesn't return any response body--such as when it
+redirects the client-- you can use the `x-no-response-body` field in its
+response schema to not show the JSON body response example.
+
 ## Step by step guide
 
 This section offers a step-by-step process for adding documentation

@@ -24838,6 +24838,16 @@ components:
               This user-generated HTML content should be rendered
               using the same CSS and client-side security protections
               as are used for message content.
+    RedirectResponse:
+      description: |
+        The response will be a simple redirect to a specific URL, so there
+        will be no response body. Refer to the provided Python or curl example
+        above for how best to handle the response from this endpoint.
+      properties:
+        result: {}
+        msg: {}
+        ignored_parameters_unsupported: {}
+      x-no-response-body: true
     JsonResponseBase:
       type: object
       properties:
@@ -25580,6 +25590,12 @@ components:
           schema:
             allOf:
               - $ref: "#/components/schemas/IgnoredParametersSuccess"
+    SuccessRedirect:
+      description: Success.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RedirectResponse"
 
   ################
   # Shared request bodies
