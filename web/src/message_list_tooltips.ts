@@ -157,7 +157,7 @@ export function initialize(): void {
     });
 
     // message reaction tooltip showing who reacted.
-    let observer: MutationObserver;
+    let observer: MutationObserver | undefined;
     message_list_tooltip(".message_reaction", {
         delay: INTERACTIVE_HOVER_DELAY,
         placement: "bottom",
