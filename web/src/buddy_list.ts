@@ -316,8 +316,8 @@ export class BuddyList extends BuddyListConf {
         $("#buddy-list-other-users-container .view-all-users-link").remove();
         if (!buddy_data.get_is_searching_users()) {
             this.render_view_user_list_links();
-            this.display_or_hide_sections();
         }
+        this.display_or_hide_sections();
 
         // `populate` always rerenders all user rows, so we need new load handlers.
         // This logic only does something is a user has enabled the setting to
