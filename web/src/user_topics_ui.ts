@@ -16,13 +16,13 @@ import * as unread_ui from "./unread_ui.ts";
 import * as user_topics from "./user_topics.ts";
 import type {ServerUserTopic} from "./user_topics.ts";
 
-function should_add_topic_update_delay(visibility_policy: number): boolean | undefined {
+function should_add_topic_update_delay(visibility_policy: number): boolean {
     // If topic visibility related popovers are active, add a delay to all methods that
     // hide the topic on mute. This allows the switching animations to complete before the
     // popover is force closed due to the reference element being removed from view.
     const is_topic_muted = visibility_policy === user_topics.all_visibility_policies.MUTED;
     const is_relevant_popover_open =
-        popover_menus.is_topic_menu_popover_displayed() ??
+        popover_menus.is_topic_menu_popover_displayed() ||
         popover_menus.is_visibility_policy_popover_displayed();
 
     // Don't add delay if the user is in inbox view or topics narrow, since
