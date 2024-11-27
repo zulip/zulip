@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import render_confirm_delete_user from "../templates/confirm_dialog/confirm_delete_user.hbs";
+import render_confirm_join_group_direct_member from "../templates/confirm_dialog/confirm_join_group_direct_member.hbs";
 import render_group_info_banner from "../templates/modal_banner/user_group_info_banner.hbs";
 import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.hbs";
 import render_cannot_deactivate_group_banner from "../templates/user_group_settings/cannot_deactivate_group_banner.hbs";
@@ -1139,8 +1140,35 @@ export function initialize() {
 
         const user_group_id = get_user_group_id(e.target);
         const user_group = user_groups.get_user_group_from_id(user_group_id);
-        const $group_row = row_for_group_id(user_group_id);
-        add_or_remove_from_group(user_group, $group_row);
+        const is_member = user_groups.is_user_in_group(user_group_id, people.my_current_user_id());
+        const is_direct_member = user_groups.is_direct_member_of(
+            people.my_current_user_id(),
+            user_group_id,
+        );
+
+        if (is_member && !is_direct_member) {
+            const associated_subgroups = user_groups.get_associated_subgroups(
+                user_group,
+                people.my_current_user_id(),
+            );
+            const associated_subgroup_names =
+                user_groups.group_list_to_comma_seperated_name(associated_subgroups);
+
+            confirm_dialog.launch({
+                html_heading: $t_html({defaultMessage: "Join group?"}),
+                html_body: render_confirm_join_group_direct_member({
+                    associated_subgroup_names,
+                }),
+                id: "confirm_join_group_direct_member",
+                on_click() {
+                    const $group_row = row_for_group_id(user_group_id);
+                    add_or_remove_from_group(user_group, $group_row);
+                },
+            });
+        } else {
+            const $group_row = row_for_group_id(user_group_id);
+            add_or_remove_from_group(user_group, $group_row);
+        }
     });
 
     $("#groups_overlay_container").on(
