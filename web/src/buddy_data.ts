@@ -450,10 +450,9 @@ function get_filtered_user_id_list(
         }
     }
 
-    const user_ids = filter_user_ids(user_filter_text, base_user_id_list);
     // Make sure all the participants are in the list, even if they're inactive.
-    const user_ids_set = new Set([...user_ids, ...conversation_participants]);
-    return [...user_ids_set];
+    const user_ids_set = new Set([...base_user_id_list, ...conversation_participants]);
+    return filter_user_ids(user_filter_text, [...user_ids_set]);
 }
 
 export function get_conversation_participants(): Set<number> {
