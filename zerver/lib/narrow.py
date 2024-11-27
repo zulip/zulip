@@ -374,7 +374,9 @@ class NarrowBuilder:
             conditions = exclude_muting_conditions(
                 self.user_profile, [NarrowParameter(operator="in", operand="home")]
             )
-            return query.where(maybe_negate(and_(*conditions)))
+            if conditions:
+                return query.where(maybe_negate(and_(*conditions)))
+            return query  # nocoverage
         elif operand == "all":
             return query
 
