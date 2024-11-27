@@ -460,7 +460,7 @@ $user_status_emoji_width: 24px;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     margin-bottom: 10px;
-    margin-left: 5px;
+    margin-left: var(--right-sidebar-heading-left-spacing);
     /* The scrollbar doesn't extend this high, but we want the three-dot
        menus to line up. */
     margin-right: var(--width-simplebar-scroll-hover);
