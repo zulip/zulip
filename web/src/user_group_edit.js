@@ -6,6 +6,7 @@ import render_group_info_banner from "../templates/modal_banner/user_group_info_
 import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.hbs";
 import render_cannot_deactivate_group_banner from "../templates/user_group_settings/cannot_deactivate_group_banner.hbs";
 import render_change_user_group_info_modal from "../templates/user_group_settings/change_user_group_info_modal.hbs";
+import render_user_group_membership_status from "../templates/user_group_settings/user_group_membership_status.hbs";
 import render_user_group_settings from "../templates/user_group_settings/user_group_settings.hbs";
 import render_user_group_settings_overlay from "../templates/user_group_settings/user_group_settings_overlay.hbs";
 
@@ -350,6 +351,7 @@ function update_settings_for_group_overlay(group_id, user_ids) {
     if (is_editing_group(group_id)) {
         if (user_ids.includes(people.my_current_user_id())) {
             update_group_management_ui();
+            update_membership_status_text(group);
         } else {
             user_group_edit_members.update_member_list_widget(group);
         }
@@ -378,6 +380,42 @@ function update_toggler_for_group_setting() {
     toggler.goto(select_tab);
 }
 
+function get_membership_status_context(group) {
+    const current_user_id = people.my_current_user_id();
+    const is_direct_member = user_groups.is_direct_member_of(current_user_id, group.id);
+
+    let is_member;
+    let associated_subgroup_names_html;
+    if (is_direct_member) {
+        is_member = true;
+    } else {
+        is_member = user_groups.is_user_in_group(group.id, current_user_id);
+        if (is_member) {
+            const associated_subgroup_names = user_groups
+                .get_associated_subgroups(group, current_user_id)
+                .map((subgroup) => subgroup.name);
+            associated_subgroup_names_html = util.format_array_as_list_with_highlighted_elements(
+                associated_subgroup_names,
+                "long",
+                "unit",
+            );
+        }
+    }
+
+    return {
+        is_direct_member,
+        is_member,
+        associated_subgroup_names_html,
+    };
+}
+
+function update_membership_status_text(group) {
+    const args = get_membership_status_context(group);
+    const rendered_membership_status = render_user_group_membership_status(args);
+    const $edit_container = get_edit_container(group);
+    $edit_container.find(".membership-status").html(rendered_membership_status);
+}
+
 export function show_settings_for(group) {
     const html = render_user_group_settings({
         group,
@@ -388,7 +426,7 @@ export function show_settings_for(group) {
         ),
         creator: stream_data.maybe_get_creator_details(group.creator_id),
         is_creator: group.creator_id === current_user.user_id,
-        is_direct_member: user_groups.is_direct_member_of(people.my_current_user_id(), group.id),
+        ...get_membership_status_context(group),
     });
 
     scroll_util.get_content_element($("#user_group_settings")).html(html);

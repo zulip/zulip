@@ -1,3 +1,4 @@
+import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
 
 import * as blueslip from "./blueslip.ts";
@@ -435,6 +436,31 @@ export function format_array_as_list(
 
     // Return the formatted string.
     return list_formatter.format(array);
+}
+
+export function format_array_as_list_with_highlighted_elements(
+    array: string[],
+    style: Intl.ListFormatStyle,
+    type: Intl.ListFormatType,
+): string {
+    // If Intl.ListFormat is not supported
+    if (Intl.ListFormat === undefined) {
+        return array.map((item) => `<b>${Handlebars.Utils.escapeExpression(item)}</b>`).join(", ");
+    }
+
+    // Use Intl.ListFormat to format the array as a Internationalized list.
+    const list_formatter = new Intl.ListFormat(user_settings.default_language, {style, type});
+
+    const formatted_parts = list_formatter.formatToParts(array);
+    return formatted_parts
+        .map((part) => {
+            if (part.type === "element") {
+                // Only highlight the values passed in array and not commas, etc.
+                return `<b>${Handlebars.Utils.escapeExpression(part.value)}</b>`;
+            }
+            return part.value;
+        })
+        .join("");
 }
 
 // Returns the remaining time in milliseconds from the start_time and duration.
