@@ -49,7 +49,7 @@ EXEMPT_FILES = make_set(
         "web/src/add_group_members_pill.ts",
         "web/src/add_stream_options_popover.ts",
         "web/src/add_subscribers_pill.ts",
-        "web/src/admin.js",
+        "web/src/admin.ts",
         "web/src/alert_popup.ts",
         "web/src/alert_words_ui.ts",
         "web/src/assets.d.ts",

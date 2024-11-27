@@ -1,7 +1,7 @@
 import $ from "jquery";
 
 import * as about_zulip from "./about_zulip.ts";
-import * as admin from "./admin.js";
+import * as admin from "./admin.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as drafts_overlay_ui from "./drafts_overlay_ui.js";

@@ -351,7 +351,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     waiting_period_threshold = models.PositiveIntegerField(default=0)
 
     DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS = (
-        600  # if changed, also change in admin.js, setting_org.js
+        600  # if changed, also change in admin.ts, settings_org.ts
     )
     MESSAGE_TIME_LIMIT_SETTING_SPECIAL_VALUES_MAP = {
         "unlimited": None,
@@ -362,7 +362,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     allow_message_editing = models.BooleanField(default=True)
     DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS = (
-        600  # if changed, also change in admin.js, setting_org.js
+        600  # if changed, also change in admin.ts, settings_org.ts
     )
     message_content_edit_limit_seconds = models.PositiveIntegerField(
         default=DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS, null=True
