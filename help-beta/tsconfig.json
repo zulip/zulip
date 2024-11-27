@@ -10,6 +10,9 @@
         "noUnusedParameters": true,
         "strict": true,
 
+        /* Modules */
+        "module": "preserve",
+
         /* Emit */
         "noEmit": true,
 
