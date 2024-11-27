@@ -490,6 +490,23 @@ const call_center = user_group_item({
     deactivated: false,
 });
 
+const support = user_group_item({
+    name: "support",
+    id: 4,
+    creator_id: null,
+    date_created: 1596710000,
+    description: "Support team",
+    members: new Set([]),
+    is_system_group: false,
+    direct_subgroup_ids: new Set([]),
+    can_add_members_group: 2,
+    can_join_group: 2,
+    can_leave_group: 2,
+    can_manage_group: 2,
+    can_mention_group: 2,
+    deactivated: false,
+});
+
 const make_emoji = (emoji_dict) => ({
     emoji_name: emoji_dict.name,
     emoji_code: emoji_dict.emoji_code,
@@ -536,6 +553,7 @@ function test(label, f) {
         user_groups.add(hamletcharacters);
         user_groups.add(backend);
         user_groups.add(call_center);
+        user_groups.add(support);
 
         muted_users.set_muted_users([]);
 
