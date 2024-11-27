@@ -429,8 +429,8 @@ export class BuddyList extends BuddyListConf {
         // We only show the participants list if it has members, so even if we're not
         // changing filters and only updating user counts for the current filter, that
         // can affect if we show/hide this section.
-        const show_participants_list = !hide_headers && all_participant_ids.size;
-        $("#buddy-list-participants-container").toggleClass("no-display", !show_participants_list);
+        const hide_participants_list = hide_headers || all_participant_ids.size === 0;
+        $("#buddy-list-participants-container").toggleClass("no-display", hide_participants_list);
 
         // If we're not changing filters, this just means some users were added or
         // removed but otherwise everything is the same, so we don't need to do a full
@@ -451,7 +451,7 @@ export class BuddyList extends BuddyListConf {
         // This is the case where every subscriber is in the participants list. In this case, we
         // hide the "in this channel" section.
         if (
-            show_participants_list &&
+            !hide_participants_list &&
             total_human_subscribers_count === this.participant_user_ids.length
         ) {
             $("#buddy-list-users-matching-view-container").toggleClass("no-display", true);
