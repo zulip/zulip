@@ -35,7 +35,7 @@ import * as message_scroll_state from "./message_scroll_state.ts";
 import * as message_view from "./message_view.ts";
 import * as modals from "./modals.ts";
 import * as narrow_state from "./narrow_state.ts";
-import * as navbar_menus from "./navbar_menus.js";
+import * as navbar_menus from "./navbar_menus.ts";
 import * as navigate from "./navigate.js";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
