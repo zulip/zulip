@@ -2,7 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_admin_user_list from "../templates/settings/admin_user_list.hbs";
+import render_settings_user_list_row from "../templates/settings/settings_user_list_row.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
@@ -409,7 +409,7 @@ function bots_create_table(): void {
     bot_list_widget = ListWidget.create($bots_table, bot_user_ids, {
         name: "admin_bot_list",
         get_item: bot_info,
-        modifier_html: render_admin_user_list,
+        modifier_html: render_settings_user_list_row,
         html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id.toString())}']`),
         filter: {
             $element: $bots_table.closest(".settings-section").find(".search"),
@@ -442,7 +442,7 @@ function active_create_table(active_users: number[]): void {
         name: "users_table_list",
         get_item: people.get_by_user_id,
         modifier_html(item) {
-            return render_admin_user_list({
+            return render_settings_user_list_row({
                 ...human_info(item),
                 display_last_active_column: true,
             });
@@ -479,7 +479,7 @@ function deactivated_create_table(deactivated_users: number[]): void {
             name: "deactivated_users_table_list",
             get_item: people.get_by_user_id,
             modifier_html(item) {
-                return render_admin_user_list({
+                return render_settings_user_list_row({
                     ...human_info(item),
                     display_last_active_column: false,
                 });
