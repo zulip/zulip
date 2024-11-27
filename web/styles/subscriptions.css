@@ -600,6 +600,12 @@ h4.user_group_setting_subsection_title {
             fill: hsl(240deg 41% 50%);
         }
 
+        &.not-direct-member {
+            svg {
+                cursor: default;
+            }
+        }
+
         &.disabled {
             &:not(.checked) svg {
                 fill: hsl(0deg 0% 87%);

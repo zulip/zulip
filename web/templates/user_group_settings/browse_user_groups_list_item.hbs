@@ -1,10 +1,18 @@
 <div class="group-row" data-group-id="{{id}}" data-group-name="{{name}}">
     {{#if is_member}}
-        <div class="check checked join_leave_button tippy-zulip-tooltip {{#unless can_leave}}disabled{{/unless}}" data-tooltip-template-id="{{#if can_leave}}leave-{{name}}-group-tooltip-template{{else}}cannot-leave-{{name}}-group-tooltip-template{{/if}}">
+        <div class="check checked join_leave_button tippy-zulip-tooltip {{#unless can_leave}}disabled{{/unless}} {{#unless is_direct_member}}not-direct-member{{/unless}}" data-tooltip-template-id="{{#if can_leave}}{{#if is_direct_member}}leave-{{name}}-group-tooltip-template{{else}}cannot-leave-{{name}}-because-of-subgroup-tooltip-template{{/if}}{{else}}cannot-leave-{{name}}-group-tooltip-template{{/if}}">
             <template id="leave-{{name}}-group-tooltip-template">
                 <span>
                     {{#tr}}
                         Leave group {name}
+                    {{/tr}}
+                </span>
+            </template>
+
+            <template id="cannot-leave-{{name}}-because-of-subgroup-tooltip-template">
+                <span>
+                    {{#tr}}
+                        You are a member of this group because you are a member of a subgroup (<b>{associated_subgroup_names}</b>).
                     {{/tr}}
                 </span>
             </template>
