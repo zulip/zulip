@@ -363,10 +363,18 @@ run_test("format_array_as_list", () => {
         util.format_array_as_list(array, "long", "conjunction"),
         "apple, banana, and orange",
     );
+    assert.equal(
+        util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
+        "<b>apple</b>, <b>banana</b>, and <b>orange</b>",
+    );
 
     // when Intl.ListFormat does not exist
     global.Intl.ListFormat = undefined;
     assert.equal(util.format_array_as_list(array, "long", "conjunction"), "apple, banana, orange");
+    assert.equal(
+        util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
+        "<b>apple</b>, <b>banana</b>, <b>orange</b>",
+    );
 });
 
 run_test("get_remaining_time", () => {
