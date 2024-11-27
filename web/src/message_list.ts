@@ -31,6 +31,40 @@ export type SelectIdOpts = {
     from_rendering?: boolean;
 };
 
+export type MessageSelectedEventOpts = {
+    then_scroll: boolean;
+    target_scroll_offset: number | undefined;
+    use_closest: boolean;
+    empty_ok: boolean;
+    mark_read: boolean;
+    force_rerender: boolean;
+    from_scroll?: boolean;
+    from_rendering?: boolean;
+    id: number;
+    msg_list: MessageList;
+    previously_selected_id: number;
+};
+
+export type MessageSelectedEvent<TDelegateTarget, TData, TCurrentTarget, TTarget> =
+    JQuery.EventBase<TDelegateTarget, TData, TCurrentTarget, TTarget> & {
+        type: "message_selected.zulip";
+    } & MessageSelectedEventOpts;
+
+declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace JQuery {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+        interface TypeToTriggeredEventMap<TDelegateTarget, TData, TCurrentTarget, TTarget> {
+            ["message_selected.zulip"]: MessageSelectedEvent<
+                TDelegateTarget,
+                TData,
+                TCurrentTarget,
+                TTarget
+            >;
+        }
+    }
+}
+
 // A MessageList is the main interface for a message feed that is
 // rendered in the DOM. Code outside the message feed rendering
 // internals will directly call this module in order to manipulate
@@ -313,7 +347,7 @@ export class MessageList {
                 throw new TypeError("Bad message id " + id);
             }
         }
-        const opts = {
+        const opts: MessageSelectedEventOpts = {
             then_scroll: false,
             target_scroll_offset: undefined,
             use_closest: false,
