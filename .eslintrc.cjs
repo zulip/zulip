@@ -18,7 +18,6 @@ module.exports = {
         "prettier",
     ],
     parserOptions: {
-        requireConfigFile: false,
         warnOnUnsupportedTypeScriptVersion: false,
     },
     plugins: ["formatjs", "no-jquery"],
