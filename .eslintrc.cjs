@@ -248,7 +248,7 @@ module.exports = {
             },
         },
         {
-            files: ["web/shared/**", "web/src/**", "web/third/**"],
+            files: ["web/shared/**", "web/src/**"],
             env: {
                 browser: true,
                 node: false,
