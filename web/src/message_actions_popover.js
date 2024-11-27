@@ -17,7 +17,7 @@ import * as popover_menus_data from "./popover_menus_data.ts";
 import * as popovers from "./popovers.ts";
 import * as read_receipts from "./read_receipts.ts";
 import * as rows from "./rows.ts";
-import * as stream_popover from "./stream_popover.js";
+import * as stream_popover from "./stream_popover.ts";
 import {parse_html} from "./ui_util.ts";
 import * as unread_ops from "./unread_ops.ts";
 
