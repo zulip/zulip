@@ -76,7 +76,7 @@ import * as narrow_state from "./narrow_state.ts";
 import * as narrow_title from "./narrow_title.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
 import * as navbar_help_menu from "./navbar_help_menu.ts";
-import * as navigate from "./navigate.js";
+import * as navigate from "./navigate.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
