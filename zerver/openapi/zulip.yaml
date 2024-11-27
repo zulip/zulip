@@ -22510,6 +22510,78 @@ paths:
         "200":
           $ref: "#/components/responses/SuccessRedirect"
 
+  /avatar/{user_id}/medium:
+    get:
+      operationId: get-user-medium-avatar
+      summary: Get a user's medium avatar
+      tags: ["users"]
+      x-non-api-v1-path: true
+      description: |
+        Fetch the medium-sized avatar for a single user in the organization,
+        identified by their email. This endpoint responds with an HTTP redirect
+        to the avatar's URL, the client can retrieve the actual avatar by
+        following the redirect.
+
+        **File size**: `500x500` px (medium).
+
+        **File types**: Avatar files are served in `.png` format.
+
+        For more details such as fetching default avatar size, types of avatar URL
+        , and customizing Gravatar URL, you can read the description in the
+        [**Get a user's avatar**](/api/get-user-avatar) documentation
+
+        **Changes**: New in Zulip 10.0 (feature level 318).
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - ""
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessRedirect"
+
+  /avatar/{email}/medium:
+    get:
+      operationId: get-user-medium-avatar-by-email
+      summary: Get a user's medium avatar by email
+      tags: ["users"]
+      x-non-api-v1-path: true
+      description: |
+        Fetch the medium-sized avatar for a single user in the organization,
+        identified by their email. This endpoint responds with an HTTP redirect
+        to the avatar's URL, the client can retrieve the actual avatar by
+        following the redirect.
+
+        **File size**: `500x500` px (medium).
+
+        **File types**: Avatar files are served in `.png` format.
+
+        For more details such as fetching default avatar size, types of avatar URL
+        , and customizing Gravatar URL, you can read the description in the
+        [**Get a user's avatar**](/api/get-user-avatar) documentation
+
+        Fetching by user ID is generally recommended when possible,
+        as a user might [change their email address](/help/change-your-email-address)
+        or change their [email address visibility](/help/configure-email-visibility),
+        either of which could change the client's ability to look them up by that
+        email address.
+
+        **Changes**: New in Zulip 10.0 (feature level 318).
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - ""
+      parameters:
+        - $ref: "#/components/parameters/UserEmail"
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessRedirect"
+
 components:
   #######################
   # Security definitions
