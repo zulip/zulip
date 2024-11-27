@@ -1792,6 +1792,38 @@ def get_user_avatar_by_email(client: Client) -> None:
     validate_against_openapi_schema(result, "/avatar/{email}", "get", "200")
 
 
+@openapi_test_function("/avatar/{user_id}/medium:get")
+def get_medium_user_avatar_by_id(client: Client) -> None:
+    user_id = 12
+    # {code_example|start}
+    result = client.call_endpoint(
+        url=f"/avatar/{user_id}/medium",
+        method="GET",
+    )
+    avatar_url = result["Location"]
+
+    # {code_example|end}
+    assert_success_response(result)
+    avatar_url  # noqa: B018, F841, RUF100
+    validate_against_openapi_schema(result, "/avatar/{user_id}/email", "get", "200")
+
+
+@openapi_test_function("/avatar/{email}/medium:get")
+def get_medium_user_avatar_by_email(client: Client) -> None:
+    email = "iago@zulip.com"
+    # {code_example|start}
+    result = client.call_endpoint(
+        url=f"/avatar/{email}/medium",
+        method="GET",
+    )
+    avatar_url = result["Location"]
+
+    # {code_example|end}
+    assert_success_response(result)
+    avatar_url  # noqa: B018, F841, RUF100
+    validate_against_openapi_schema(result, "/avatar/{email}/medium", "get", "200")
+
+
 def test_invalid_api_key(client_with_invalid_key: Client) -> None:
     result = client_with_invalid_key.get_subscriptions()
     assert_error_response(result, code="UNAUTHORIZED")
@@ -1973,6 +2005,8 @@ EXEMPTED_PYTHON_EXAMPLES: set[str] = {
     # (No /api/v1/ or /json prefix).
     "get_user_avatar_by_id",
     "get_user_avatar_by_email",
+    "get_medium_user_avatar_by_id",
+    "get_medium_user_avatar_by_email",
 }
 
 
