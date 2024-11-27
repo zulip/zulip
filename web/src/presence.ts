@@ -96,9 +96,6 @@ export function status_from_raw(raw: RawPresence): PresenceStatus {
     const idle_timestamp = raw.idle_timestamp;
 
     let last_active: number | undefined;
-    if (active_timestamp !== undefined || idle_timestamp !== undefined) {
-        last_active = Math.max(active_timestamp ?? 0, idle_timestamp ?? 0);
-    }
 
     /*
         If the server sends us `active_timestamp`, this
@@ -110,6 +107,7 @@ export function status_from_raw(raw: RawPresence): PresenceStatus {
         timestamp for idle).
     */
     if (age(active_timestamp) < offline_threshold_secs) {
+        last_active = active_timestamp;
         return {
             status: "active",
             last_active,
@@ -117,11 +115,14 @@ export function status_from_raw(raw: RawPresence): PresenceStatus {
     }
 
     if (age(idle_timestamp) < offline_threshold_secs) {
+        last_active = idle_timestamp;
         return {
             status: "idle",
             last_active,
         };
     }
+    
+    last_active = active_timestamp;
 
     return {
         status: "offline",
