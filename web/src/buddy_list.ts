@@ -281,13 +281,10 @@ export class BuddyList extends BuddyListConf {
         // in already-sorted order.
         this.all_user_ids = opts.all_user_ids;
 
-        $("#buddy-list-users-matching-view-container .view-all-subscribers-link").remove();
-        $("#buddy-list-other-users-container .view-all-users-link").remove();
         if (buddy_data.get_is_searching_users()) {
             // Show all sections when searching users
             this.set_section_collapse(".buddy-list-section-container", false);
         } else {
-            this.render_view_user_list_links();
             this.set_section_collapse(
                 "#buddy-list-participants-container",
                 this.participants_is_collapsed,
@@ -313,6 +310,13 @@ export class BuddyList extends BuddyListConf {
 
         this.update_empty_list_placeholders();
         this.fill_screen_with_content();
+
+        // This must happen after `fill_screen_with_content`
+        $("#buddy-list-users-matching-view-container .view-all-subscribers-link").remove();
+        $("#buddy-list-other-users-container .view-all-users-link").remove();
+        if (!buddy_data.get_is_searching_users()) {
+            this.render_view_user_list_links();
+        }
 
         // `populate` always rerenders all user rows, so we need new load handlers.
         // This logic only does something is a user has enabled the setting to
