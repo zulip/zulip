@@ -6,7 +6,7 @@ import * as personal_menu_popover from "./personal_menu_popover.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
 
-export function is_navbar_menus_displayed() {
+export function is_navbar_menus_displayed(): boolean {
     return (
         popover_menus.is_personal_menu_popover_displayed() ||
         popover_menus.is_gear_menu_popover_displayed() ||
@@ -14,17 +14,17 @@ export function is_navbar_menus_displayed() {
     );
 }
 
-export function any_focused() {
+export function any_focused(): boolean {
     return $(".navbar-item:visible").is(":focus");
 }
 
-export function blur_focused() {
+export function blur_focused(): void {
     if (any_focused()) {
         $(".navbar-item:visible").filter(":focus").trigger("blur");
     }
 }
 
-export function handle_keyboard_events(event_name) {
+export function handle_keyboard_events(event_name: string): boolean {
     const allowed_events = new Set(["gear_menu", "left_arrow", "right_arrow"]);
     if (!allowed_events.has(event_name)) {
         return false;
@@ -44,7 +44,7 @@ export function handle_keyboard_events(event_name) {
     return change_active_navbar_menu(target_menu);
 }
 
-function change_active_navbar_menu(target_menu) {
+function change_active_navbar_menu(target_menu: string): boolean {
     popovers.hide_all();
     blur_focused();
     switch (target_menu) {
@@ -66,7 +66,10 @@ function change_active_navbar_menu(target_menu) {
     }
 }
 
-function get_target_navbar_menu(event_name, $current_navbar_menu) {
+function get_target_navbar_menu(
+    event_name: string,
+    $current_navbar_menu: JQuery,
+): string | undefined {
     const $visible_navbar_menus = $(".navbar-item:visible");
     const index = $visible_navbar_menus.index($current_navbar_menu);
     let $target_navbar_menu;
