@@ -217,7 +217,7 @@ export function can_join_user_group(group_id: number): boolean {
         return true;
     }
 
-    return can_manage_user_group(group_id);
+    return can_add_members_to_user_group(group_id);
 }
 
 export function can_leave_user_group(group_id: number): boolean {
