@@ -400,6 +400,7 @@ run_test("can_join_user_group", ({override}) => {
         members: new Set([1]),
         is_system_group: true,
         direct_subgroup_ids: new Set([]),
+        can_add_members_group: 4,
         can_join_group: 4,
         can_manage_group: 4,
         can_mention_group: 1,
@@ -411,6 +412,7 @@ run_test("can_join_user_group", ({override}) => {
         members: new Set([2]),
         is_system_group: true,
         direct_subgroup_ids: new Set([1]),
+        can_add_members_group: 4,
         can_join_group: 4,
         can_manage_group: 4,
         can_mention_group: 1,
@@ -422,6 +424,7 @@ run_test("can_join_user_group", ({override}) => {
         members: new Set([3, 4]),
         is_system_group: true,
         direct_subgroup_ids: new Set([1, 2]),
+        can_add_members_group: 4,
         can_join_group: 4,
         can_manage_group: 4,
         can_mention_group: 4,
@@ -433,6 +436,7 @@ run_test("can_join_user_group", ({override}) => {
         members: new Set([]),
         is_system_group: true,
         direct_subgroup_ids: new Set([]),
+        can_add_members_group: 4,
         can_join_group: 4,
         can_manage_group: 4,
         can_mention_group: 2,
@@ -444,6 +448,7 @@ run_test("can_join_user_group", ({override}) => {
         members: new Set([1, 2]),
         is_system_group: false,
         direct_subgroup_ids: new Set([4, 5]),
+        can_add_members_group: 4,
         can_join_group: 1,
         can_manage_group: {
             direct_members: [4],
@@ -500,8 +505,25 @@ run_test("can_join_user_group", ({override}) => {
     override(current_user, "user_id", 2);
     assert.ok(!settings_data.can_join_user_group(students.id));
 
-    // User can join the group if they can add anyone in the group which
-    // depends on can_manage_group and realm.can_manage_all_groups settings.
+    // User can join the group if they can add anyone in the group
+    // which depends on can_add_members_group setting.
+    override(current_user, "user_id", 3);
+    assert.ok(!settings_data.can_join_user_group(students.id));
+
+    event = {
+        group_id: students.id,
+        data: {
+            can_add_members_group: {
+                direct_members: [3],
+                direct_subgroups: [],
+            },
+        },
+    };
+    user_groups.update(event);
+    assert.ok(settings_data.can_join_user_group(students.id));
+
+    // User can join the group if they can manage the group which depends
+    // on can_manage_group and realm.can_manage_all_groups settings.
     override(current_user, "user_id", 4);
     assert.ok(settings_data.can_join_user_group(students.id));
 
