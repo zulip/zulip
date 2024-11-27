@@ -1473,7 +1473,7 @@ function show_message_moved_toast(toast_params: ToastParams): void {
 export function move_topic_containing_message_to_stream(
     message_id: number,
     new_stream_id: number | undefined,
-    new_topic_name: string,
+    new_topic_name: string | undefined,
     send_notification_to_new_thread: boolean,
     send_notification_to_old_thread: boolean,
     propagate_mode: string,
