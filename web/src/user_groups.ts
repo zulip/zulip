@@ -418,6 +418,25 @@ export function is_user_in_group(
     return false;
 }
 
+export function get_associated_subgroups(user_group: UserGroup, user_id: number): UserGroup[] {
+    const subgroup_ids = get_recursive_subgroups(user_group)!;
+    if (subgroup_ids === undefined) {
+        return [];
+    }
+
+    const subgroups = [];
+    for (const group_id of subgroup_ids) {
+        if (is_direct_member_of(user_id, group_id)) {
+            subgroups.push(user_group_by_id_dict.get(group_id)!);
+        }
+    }
+    return subgroups;
+}
+
+export function group_list_to_comma_seperated_name(user_groups: UserGroup[]): string {
+    return user_groups.map((user_group) => user_group.name).join(", ");
+}
+
 export function is_user_in_setting_group(
     setting_group: GroupSettingValue,
     user_id: number,

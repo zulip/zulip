@@ -324,6 +324,16 @@ export function handle_member_edit_event(group_id, user_ids) {
         item.is_member = user_groups.is_user_in_group(group_id, people.my_current_user_id());
         item.can_join = settings_data.can_join_user_group(item.id);
         item.can_leave = settings_data.can_leave_user_group(item.id);
+        item.is_direct_member = user_groups.is_direct_member_of(
+            people.my_current_user_id(),
+            item.id,
+        );
+        const associated_subgroups = user_groups.get_associated_subgroups(
+            item,
+            people.my_current_user_id(),
+        );
+        item.associated_subgroup_names =
+            user_groups.group_list_to_comma_seperated_name(associated_subgroups);
         const html = render_browse_user_groups_list_item(item);
         const $new_row = $(html);
 
@@ -890,6 +900,16 @@ export function setup_page(callback) {
             get_item: ListWidget.default_get_item,
             modifier_html(item) {
                 item.is_member = user_groups.is_user_in_group(item.id, people.my_current_user_id());
+                item.is_direct_member = user_groups.is_direct_member_of(
+                    people.my_current_user_id(),
+                    item.id,
+                );
+                const associated_subgroups = user_groups.get_associated_subgroups(
+                    item,
+                    people.my_current_user_id(),
+                );
+                item.associated_subgroup_names =
+                    user_groups.group_list_to_comma_seperated_name(associated_subgroups);
                 item.can_join = settings_data.can_join_user_group(item.id);
                 item.can_leave = settings_data.can_leave_user_group(item.id);
                 return render_browse_user_groups_list_item(item);
@@ -1109,7 +1129,10 @@ export function initialize() {
     });
 
     $("#groups_overlay_container").on("click", ".join_leave_button", (e) => {
-        if ($(e.currentTarget).hasClass("disabled")) {
+        if (
+            $(e.currentTarget).hasClass("disabled") ||
+            $(e.currentTarget).hasClass("not-direct-member")
+        ) {
             // We return early if user is not allowed to join or leave a group.
             return;
         }

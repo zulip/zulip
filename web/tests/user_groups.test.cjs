@@ -326,6 +326,60 @@ run_test("get_recursive_group_members", () => {
     assert.deepEqual([...user_groups.get_recursive_group_members(test)].sort(), [3, 4, 5]);
 });
 
+run_test("get_associated_subgroups", () => {
+    const admins = {
+        name: "Admins",
+        description: "foo",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([4]),
+    };
+    const all = {
+        name: "Everyone",
+        id: 2,
+        members: new Set([2, 3]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([1, 3]),
+    };
+    const test = {
+        name: "Test",
+        id: 3,
+        members: new Set([1, 4, 5]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([2]),
+    };
+    const foo = {
+        name: "Foo",
+        id: 4,
+        members: new Set([6, 7]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([]),
+    };
+
+    const admins_group = user_groups.add(admins);
+    const all_group = user_groups.add(all);
+    user_groups.add(test);
+    user_groups.add(foo);
+
+    // This test setup has a state that won't appear in real data: Groups 2 and 3
+    // each contain the other. We test this corner case because it is a simple way
+    // to verify whether our algorithm correctly avoids visiting groups multiple times
+    // when determining recursive subgroups.
+    // A test case that can occur in practice and would be problematic without this
+    // optimization is a tree where each layer connects to every node in the next layer.
+    let associated_subgroups = user_groups.get_associated_subgroups(admins_group, 6);
+    assert.deepEqual(associated_subgroups.length, 1);
+    assert.equal(associated_subgroups[0].id, 4);
+
+    associated_subgroups = user_groups.get_associated_subgroups(all_group, 1);
+    assert.deepEqual(associated_subgroups.length, 2);
+    assert.deepEqual(associated_subgroups.map((group) => group.id).sort(), [1, 3]);
+
+    associated_subgroups = user_groups.get_associated_subgroups(admins, 2);
+    assert.deepEqual(associated_subgroups.length, 0);
+});
+
 run_test("is_user_in_group", () => {
     const admins = {
         name: "Admins",
