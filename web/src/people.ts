@@ -14,7 +14,7 @@ import {page_params} from "./page_params.ts";
 import * as reload_state from "./reload_state.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import type {StateData, profile_datum_schema, user_schema} from "./state_data.ts";
+import type {CurrentUser, StateData, profile_datum_schema, user_schema} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
 import {is_user_in_setting_group} from "./user_groups.ts";
@@ -817,7 +817,7 @@ export function gravatar_url_for_email(email: string): string {
     return "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
 }
 
-export function small_avatar_url_for_person(person: User): string {
+export function small_avatar_url_for_person(person: User | CurrentUser): string {
     if (person.avatar_url) {
         return person.avatar_url;
     }

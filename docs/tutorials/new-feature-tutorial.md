@@ -540,10 +540,10 @@ If you're adding a non-checkbox field, you'll need to specify the type
 of the field via the `data-setting-widget-type` attribute in the HTML
 template.
 
-Then add the new form control in `web/src/admin.js`.
+Then add the new form control in `web/src/admin.ts`.
 
 ```diff
- // web/src/admin.js
+ // web/src/admin.ts
 
  export function build_page() {
      const options = {

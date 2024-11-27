@@ -13,6 +13,7 @@ import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
 import * as settings from "./settings.ts";
 import * as settings_bots from "./settings_bots.ts";
 import * as settings_components from "./settings_components.ts";
+import type {AllNotifications} from "./settings_config.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_invites from "./settings_invites.ts";
@@ -22,6 +23,7 @@ import * as settings_sections from "./settings_sections.ts";
 import * as settings_toggle from "./settings_toggle.ts";
 import * as settings_users from "./settings_users.ts";
 import {current_user, realm} from "./state_data.ts";
+import {the} from "./util.ts";
 
 const admin_settings_label = {
     // Organization profile
@@ -73,7 +75,7 @@ const admin_settings_label = {
     }),
 };
 
-function insert_tip_box() {
+function insert_tip_box(): void {
     if (current_user.is_admin) {
         return;
     }
@@ -90,7 +92,11 @@ function insert_tip_box() {
         .prepend($(tip_box_html));
 }
 
-function get_realm_level_notification_settings(options) {
+function get_realm_level_notification_settings(): {
+    general_settings: AllNotifications["general_settings"];
+    notification_settings: AllNotifications["settings"];
+    disabled_notification_settings: AllNotifications["disabled_notification_settings"];
+} {
     const all_notifications_settings = settings_config.all_notifications(
         realm_user_settings_defaults,
     );
@@ -100,13 +106,27 @@ function get_realm_level_notification_settings(options) {
     // realm-level defaults for these setting.
     all_notifications_settings.settings.other_email_settings = ["enable_digest_emails"];
 
-    options.general_settings = all_notifications_settings.general_settings;
-    options.notification_settings = all_notifications_settings.settings;
-    options.disabled_notification_settings =
-        all_notifications_settings.disabled_notification_settings;
+    return {
+        general_settings: all_notifications_settings.general_settings,
+        notification_settings: all_notifications_settings.settings,
+        disabled_notification_settings: all_notifications_settings.disabled_notification_settings,
+    };
 }
 
-export function build_page() {
+export function build_page(): void {
+    let realm_night_logo_url = realm.realm_night_logo_url;
+    if (realm.realm_logo_source !== "D" && realm.realm_night_logo_source === "D") {
+        // If no dark theme logo is specified but a light theme one is,
+        // use the light theme one.  See also similar code in realm_logo.js.
+        realm_night_logo_url = realm.realm_logo_url;
+    }
+
+    let giphy_help_link = "/help/animated-gifs-from-giphy";
+    if (realm.giphy_api_key === "") {
+        giphy_help_link =
+            "https://zulip.readthedocs.io/en/latest/production/giphy-gif-integration.html";
+    }
+
     const options = {
         custom_profile_field_types: realm.custom_profile_field_types,
         full_name: current_user.full_name,
@@ -157,7 +177,7 @@ export function build_page() {
         realm_logo_source: realm.realm_logo_source,
         realm_logo_url: realm.realm_logo_url,
         realm_night_logo_source: realm.realm_night_logo_source,
-        realm_night_logo_url: realm.realm_night_logo_url,
+        realm_night_logo_url,
         realm_mandatory_topics: realm.realm_mandatory_topics,
         realm_send_welcome_emails: realm.realm_send_welcome_emails,
         realm_message_content_allowed_in_email_notifications:
@@ -230,21 +250,9 @@ export function build_page() {
         active_user_list_dropdown_widget_name: settings_users.active_user_list_dropdown_widget_name,
         deactivated_user_list_dropdown_widget_name:
             settings_users.deactivated_user_list_dropdown_widget_name,
+        giphy_help_link,
+        ...get_realm_level_notification_settings(),
     };
-
-    if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
-        // If no dark theme logo is specified but a light theme one is,
-        // use the light theme one.  See also similar code in realm_logo.js.
-        options.realm_night_logo_url = options.realm_logo_url;
-    }
-
-    options.giphy_help_link = "/help/animated-gifs-from-giphy";
-    if (options.giphy_api_key_empty) {
-        options.giphy_help_link =
-            "https://zulip.readthedocs.io/en/latest/production/giphy-gif-integration.html";
-    }
-
-    get_realm_level_notification_settings(options);
 
     const rendered_admin_tab = render_admin_tab(options);
     $("#settings_content .organization-box").html(rendered_admin_tab);
@@ -261,7 +269,7 @@ export function build_page() {
 
     $("#id_realm_bot_creation_policy").val(realm.realm_bot_creation_policy);
 
-    $("#id_realm_digest_weekday").val(options.realm_digest_weekday);
+    $("#id_realm_digest_weekday").val(realm.realm_digest_weekday);
 
     const is_plan_plus = realm.realm_plan_type === 10;
     const is_plan_self_hosted = realm.realm_plan_type === 1;
@@ -273,11 +281,11 @@ export function build_page() {
             }),
         };
 
-        tippy.default($("#realm_can_access_all_users_group_widget_container")[0], opts);
+        tippy.default(the($("#realm_can_access_all_users_group_widget_container")), opts);
     }
 }
 
-export function launch(section, user_settings_tab) {
+export function launch(section: string, user_settings_tab: string): void {
     settings_sections.reset_sections();
 
     settings.open_settings_overlay();

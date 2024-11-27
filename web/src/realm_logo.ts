@@ -80,7 +80,7 @@ export function render(): void {
         // If no dark theme logo is uploaded but a light theme one
         // is, use the light theme one; this handles the common case
         // of transparent background logos that look good on both
-        // dark and light themes.  See also similar code in admin.js.
+        // dark and light themes.  See also similar code in admin.ts.
 
         $("#realm-night-logo-upload-widget .image-block").attr("src", realm.realm_logo_url);
     } else {
