@@ -5,12 +5,12 @@ import * as message_view from "./message_view.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as unread_ops from "./unread_ops.ts";
 
-function go_to_row(msg_id) {
+function go_to_row(msg_id: number): void {
     assert(message_lists.current !== undefined);
     message_lists.current.select_id(msg_id, {then_scroll: true, from_scroll: true});
 }
 
-export function up() {
+export function up(): void {
     assert(message_lists.current !== undefined);
     message_viewport.set_last_movement_direction(-1);
     const msg_id = message_lists.current.prev();
@@ -20,7 +20,7 @@ export function up() {
     go_to_row(msg_id);
 }
 
-export function down(with_centering = false) {
+export function down(with_centering = false): void {
     assert(message_lists.current !== undefined);
     message_viewport.set_last_movement_direction(1);
 
@@ -46,15 +46,15 @@ export function down(with_centering = false) {
     go_to_row(msg_id);
 }
 
-export function to_home() {
+export function to_home(): void {
     message_view.fast_track_current_msg_list_to_anchor("oldest");
 }
 
-export function to_end() {
+export function to_end(): void {
     message_view.fast_track_current_msg_list_to_anchor("newest");
 }
 
-function amount_to_paginate() {
+function amount_to_paginate(): number {
     // Some day we might have separate versions of this function
     // for Page Up vs. Page Down, but for now it's the same
     // strategy in either direction.
@@ -82,7 +82,7 @@ function amount_to_paginate() {
     return delta;
 }
 
-export function page_up_the_right_amount() {
+export function page_up_the_right_amount(): void {
     // This function's job is to scroll up the right amount,
     // after the user hits Page Up.  We do this ourselves
     // because we can't rely on the browser to account for certain
@@ -94,13 +94,13 @@ export function page_up_the_right_amount() {
     message_viewport.scrollTop(message_viewport.scrollTop() - delta);
 }
 
-export function page_down_the_right_amount() {
+export function page_down_the_right_amount(): void {
     // see also: page_up_the_right_amount
     const delta = amount_to_paginate();
     message_viewport.scrollTop(message_viewport.scrollTop() + delta);
 }
 
-export function page_up() {
+export function page_up(): void {
     assert(message_lists.current !== undefined);
     if (message_viewport.at_rendered_top() && !message_lists.current.visibly_empty()) {
         if (message_lists.current.view.is_fetched_start_rendered()) {
@@ -119,7 +119,7 @@ export function page_up() {
     }
 }
 
-export function page_down() {
+export function page_down(): void {
     assert(message_lists.current !== undefined);
     if (message_viewport.at_rendered_bottom() && !message_lists.current.visibly_empty()) {
         if (message_lists.current.view.is_fetched_end_rendered()) {

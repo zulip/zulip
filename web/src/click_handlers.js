@@ -21,7 +21,7 @@ import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import * as message_view from "./message_view.ts";
 import * as narrow_state from "./narrow_state.ts";
-import * as navigate from "./navigate.js";
+import * as navigate from "./navigate.ts";
 import {page_params} from "./page_params.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
