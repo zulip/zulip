@@ -546,6 +546,10 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
 
     function add_group_recipients(items: UserGroupPillData[]): void {
         for (const item of items) {
+            const is_empty_group = user_groups.is_empty_group(item.id);
+            if (is_empty_group) {
+                continue;
+            }
             recipients.push(item);
         }
     }
