@@ -298,7 +298,6 @@
     );
 
     /* Right sidebar */
-    --right-sidebar-padding-right: 8px;
     /* Vlad's design adds 2px of extra padding beyond the
        space created by the padding-left on .right-sidebar,
        which separates the right sidebar from the message area. */

@@ -8,7 +8,6 @@ $user_status_emoji_width: 24px;
 }
 
 .right-sidebar-items {
-    padding-right: var(--right-sidebar-padding-right);
     padding-left: var(--right-sidebar-padding-left);
 }
 
