@@ -9,7 +9,7 @@ import "jquery-validation";
 // Import app JS
 import "../setup.ts";
 import "../reload.ts";
-import "../templates.js";
+import "../templates.ts";
 import "../zulip_test.ts";
 
 // Import styles

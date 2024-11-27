@@ -83,7 +83,7 @@ handlebars.hook_require();
 
 const noop = function () {};
 
-require("../../src/templates.js"); // register Zulip extensions
+require("../../src/templates.ts"); // register Zulip extensions
 
 async function run_one_module(file) {
     zjquery.clear_initialize_function();

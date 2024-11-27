@@ -22,12 +22,12 @@ page_params.translation_data = {
 
 // Re-register Zulip extensions so extensions registered previously with
 // mocked i18n.ts do not interfere with following tests.
-require("../src/templates.js");
+require("../src/templates.ts");
 
 // All of our other tests stub out i18n activity;
 // here we do a quick sanity check on the engine itself.
 // `i18n.ts` initializes FormatJS and is imported by
-// `templates.js`.
+// `templates.ts`.
 unmock_module("../src/i18n");
 const {$t, $t_html, get_language_name, get_language_list_columns, initialize} = zrequire("i18n");
 
@@ -102,7 +102,7 @@ run_test("{{#tr}} to tag for translation", ({mock_template}) => {
 
     // We're actually testing `notification_settings.hbs` here which
     // is imported as a partial in the file below. We want to test
-    // the partial handling logic in `templates.js`, that's why we
+    // the partial handling logic in `templates.ts`, that's why we
     // test the file below instead of directly testing
     // `notification_settings.hbs`.
     mock_template("settings/user_notification_settings.hbs", true, (data, html) => {

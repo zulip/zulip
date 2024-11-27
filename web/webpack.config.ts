@@ -167,7 +167,7 @@ const config = (
                         ignoreHelpers: true,
                         // Tell webpack not to explicitly require these.
                         knownHelpers: [
-                            // The ones below are defined in web/src/templates.js
+                            // The ones below are defined in web/src/templates.ts
                             "eq",
                             "and",
                             "or",
