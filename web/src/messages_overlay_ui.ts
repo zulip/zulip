@@ -9,7 +9,7 @@ export type Context = {
     row_item_selector: string;
     box_item_selector: string;
     id_attribute_name: string;
-    get_items_ids: () => number[];
+    get_items_ids: () => string[];
     on_enter: () => void;
     on_delete: () => void;
 };
@@ -180,8 +180,6 @@ function scroll_to_element($element: JQuery, context: Context): void {
     }
 }
 
-function get_element_by_id(id: number | string, context: Context): JQuery {
-    return $(
-        `.overlay-message-row[${CSS.escape(context.id_attribute_name)}='${CSS.escape(id.toString())}']`,
-    );
+function get_element_by_id(id: string, context: Context): JQuery {
+    return $(`.overlay-message-row[${CSS.escape(context.id_attribute_name)}='${CSS.escape(id)}']`);
 }
