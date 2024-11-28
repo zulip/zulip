@@ -162,7 +162,6 @@ export function launch() {
             narrow_drafts_header,
             narrow_drafts,
             other_drafts,
-            draft_lifetime: drafts.DRAFT_LIFETIME,
         });
         const $drafts_table = $("#drafts_table");
         $drafts_table.append($(rendered));

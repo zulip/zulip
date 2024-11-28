@@ -265,38 +265,6 @@ test("initialize", ({override_rewire}) => {
     drafts_overlay_ui.initialize();
 });
 
-test("remove_old_drafts", ({override_rewire}) => {
-    const draft_3 = {
-        topic: "topic",
-        type: "stream",
-        content: "Test stream message",
-        updatedAt: Date.now(),
-        is_sending_saving: false,
-        drafts_version: 1,
-    };
-    const draft_4 = {
-        private_message_recipient: "aaron@zulip.com",
-        reply_to: "aaron@zulip.com",
-        type: "private",
-        content: "Test direct message",
-        updatedAt: new Date().setDate(-30),
-        is_sending_saving: false,
-        drafts_version: 1,
-    };
-    const draft_model = drafts.draft_model;
-    const ls = localstorage();
-    const data = {id3: draft_3, id4: draft_4};
-    ls.set("drafts", data);
-    assert.deepEqual(draft_model.get(), data);
-
-    const $unread_count = $("<unread-count-stub>");
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
-    override_rewire(drafts, "update_compose_draft_count", noop);
-
-    drafts.remove_old_drafts();
-    assert.deepEqual(draft_model.get(), {id3: draft_3});
-});
-
 test("update_draft", ({override, override_rewire}) => {
     compose_state.set_message_type(undefined);
     let draft_id = drafts.update_draft();
