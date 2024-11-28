@@ -63,6 +63,7 @@ from zerver.lib.streams import (
     do_get_streams,
     filter_stream_authorization,
     get_group_setting_value_dict_for_streams,
+    get_stream_permission_default_group,
     get_stream_permission_policy_name,
     list_to_streams,
     stream_to_dict,
@@ -85,7 +86,7 @@ from zerver.lib.user_groups import (
 )
 from zerver.lib.users import bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import NamedUserGroup, Realm, Stream, UserProfile
+from zerver.models import Realm, Stream, UserProfile
 from zerver.models.users import get_system_bot
 
 
@@ -591,32 +592,27 @@ def add_subscriptions_backend(
         principals = []
 
     setting_groups_dict = {}
-    if can_remove_subscribers_group is not None:
-        setting_value = parse_group_setting_value(
-            can_remove_subscribers_group, "can_remove_subscribers_group"
-        )
-        permission_configuration = Stream.stream_permission_group_settings[
-            "can_remove_subscribers_group"
-        ]
-        can_remove_subscribers_group_value = access_user_group_for_setting(
-            setting_value,
-            user_profile,
-            setting_name="can_remove_subscribers_group",
-            permission_configuration=permission_configuration,
-        )
-        setting_groups_dict[can_remove_subscribers_group_value.id] = setting_value
-    else:
-        can_remove_subscribers_group_default_name = Stream.stream_permission_group_settings[
-            "can_remove_subscribers_group"
-        ].default_group_name
-        can_remove_subscribers_group_value = NamedUserGroup.objects.get(
-            name=can_remove_subscribers_group_default_name,
-            realm=user_profile.realm,
-            is_system_group=True,
-        )
-        setting_groups_dict[can_remove_subscribers_group_value.id] = (
-            can_remove_subscribers_group_value.id
-        )
+    group_settings_map = {}
+    request_settings_dict = locals()
+    for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
+        assert setting_name in request_settings_dict
+        if request_settings_dict[setting_name] is not None:
+            setting_request_value = request_settings_dict[setting_name]
+            setting_value = parse_group_setting_value(setting_request_value, setting_name)
+            group_settings_map[setting_name] = access_user_group_for_setting(
+                setting_value,
+                user_profile,
+                setting_name=setting_name,
+                permission_configuration=permission_configuration,
+            )
+            setting_groups_dict[group_settings_map[setting_name].id] = setting_value
+        else:
+            group_settings_map[setting_name] = get_stream_permission_default_group(
+                setting_name, realm
+            )
+            setting_groups_dict[group_settings_map[setting_name].id] = group_settings_map[
+                setting_name
+            ].id
 
     for stream_obj in streams_raw:
         # 'color' field is optional
@@ -638,7 +634,9 @@ def add_subscriptions_backend(
         stream_dict_copy["message_retention_days"] = parse_message_retention_days(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
-        stream_dict_copy["can_remove_subscribers_group"] = can_remove_subscribers_group_value
+        stream_dict_copy["can_remove_subscribers_group"] = group_settings_map[
+            "can_remove_subscribers_group"
+        ]
 
         stream_dicts.append(stream_dict_copy)
 
