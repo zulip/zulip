@@ -66,15 +66,15 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
     row_item_selector: "message-edit-message-row",
     box_item_selector: "message-edit-message-info-box",
     id_attribute_name: "data-message-edit-history-id",
-    get_items_ids(): number[] {
-        const edited_messages_ids: number[] = [];
+    get_items_ids() {
+        const edited_messages_ids: string[] = [];
         const $message_history_list: JQuery = $(
             "#message-history-overlay .message-edit-history-list",
         );
         for (const message of $message_history_list.children()) {
             const data_message_edit_history_id = $(message).attr("data-message-edit-history-id");
             assert(data_message_edit_history_id !== undefined);
-            edited_messages_ids.push(Number(data_message_edit_history_id));
+            edited_messages_ids.push(data_message_edit_history_id);
         }
         return edited_messages_ids;
     },
