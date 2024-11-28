@@ -77,6 +77,7 @@ export type CustomProfileFieldData = {
 };
 
 let user_streams_list_widget: ListWidgetType<StreamSubscription> | undefined;
+let user_groups_list_widget: ListWidgetType<UserGroup> | undefined;
 let user_profile_subscribe_widget: DropdownWidget | undefined;
 let toggler: components.Toggle;
 let bot_owner_dropdown_widget: DropdownWidget | undefined;
@@ -119,6 +120,15 @@ export function update_user_profile_streams_list_for_users(user_ids: number[]): 
         const user_streams = stream_data.get_streams_for_user(user_id).subscribed;
         user_streams.sort(compare_by_name);
         user_streams_list_widget.replace_list_data(user_streams);
+    }
+}
+
+export function update_user_profile_groups_list_for_users(user_ids: number[]): void {
+    const user_id = get_user_id_if_user_profile_modal_open();
+    if (user_id && user_ids.includes(user_id) && user_groups_list_widget !== undefined) {
+        const user_groups_list = user_groups.get_user_groups_of_user(user_id);
+        user_groups_list.sort(compare_by_name);
+        user_groups_list_widget.replace_list_data(user_groups_list);
     }
 }
 
@@ -332,7 +342,7 @@ function render_user_group_list(groups: UserGroup[], user: User): void {
     groups.sort(compare_by_name);
     const $container = $("#user-profile-modal .user-group-list");
     $container.empty();
-    ListWidget.create($container, groups, {
+    user_groups_list_widget = ListWidget.create($container, groups, {
         name: `user-${user.user_id}-group-list`,
         get_item: ListWidget.default_get_item,
         callback_after_render() {
