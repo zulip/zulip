@@ -55,6 +55,7 @@ from zerver.lib.push_notifications import (
     get_message_payload_gcm,
     hex_to_b64,
 )
+from zerver.lib.streams import get_default_group_setting_values
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.lib.timestamp import TimeZoneNotUTCError, ceiling_to_day, floor_to_day
@@ -164,7 +165,7 @@ class AnalyticsTestCase(ZulipTestCase):
             "name": f"stream name {self.name_counter}",
             "realm": self.default_realm,
             "date_created": self.TIME_LAST_HOUR,
-            "can_remove_subscribers_group": self.administrators_user_group,
+            **get_default_group_setting_values(self.default_realm),
         }
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)

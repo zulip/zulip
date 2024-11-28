@@ -60,6 +60,7 @@ from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
 from zerver.lib.streams import (
     create_stream_if_needed,
+    get_default_group_setting_values,
     get_default_value_for_history_public_to_subscribers,
 )
 from zerver.lib.subscription_info import gather_subscriptions
@@ -103,7 +104,6 @@ from zerver.models import (
     UserProfile,
     UserStatus,
 )
-from zerver.models.groups import SystemGroups
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
 from zerver.models.streams import get_realm_stream, get_stream
 from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
@@ -1377,9 +1377,6 @@ Output:
         history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
             realm, invite_only, history_public_to_subscribers
         )
-        administrators_user_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
-        )
 
         try:
             stream = Stream.objects.create(
@@ -1388,7 +1385,7 @@ Output:
                 invite_only=invite_only,
                 is_web_public=is_web_public,
                 history_public_to_subscribers=history_public_to_subscribers,
-                can_remove_subscribers_group=administrators_user_group,
+                **get_default_group_setting_values(realm),
             )
         except IntegrityError:  # nocoverage -- this is for bugs in the tests
             raise Exception(
