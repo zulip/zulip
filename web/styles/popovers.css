@@ -588,6 +588,10 @@ ul.popover-group-menu-member-list {
             margin-bottom: 8px;
         }
 
+        .user-profile-group-list-alert {
+            margin-bottom: 8px;
+        }
+
         .stream-privacy {
             display: inline-block;
         }
@@ -641,7 +645,8 @@ ul.popover-group-menu-member-list {
         margin-bottom: 5px;
         -webkit-overflow-scrolling: touch;
 
-        .remove-subscription-button {
+        .remove-subscription-button,
+        .remove-member-button {
             padding-top: 2px;
             padding-bottom: 2px;
         }
@@ -674,7 +679,8 @@ ul.popover-group-menu-member-list {
                         padding-right: 10px;
                     }
 
-                    &.remove_subscription {
+                    &.remove_subscription,
+                    &.remove_member {
                         text-align: right;
                     }
                 }
