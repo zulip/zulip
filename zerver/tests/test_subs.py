@@ -132,6 +132,14 @@ if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
+def fix_expected_fields_for_stream_group_settings(expected_fields: set[str]) -> set[str]:
+    for setting_name in Stream.stream_permission_group_settings:
+        expected_fields -= {setting_name + "_id"}
+        expected_fields |= {setting_name}
+
+    return expected_fields
+
+
 class TestMiscStuff(ZulipTestCase):
     def test_test_helper(self) -> None:
         cordelia = self.example_user("cordelia")
@@ -241,8 +249,8 @@ class TestMiscStuff(ZulipTestCase):
         in `APIStreamDict` and `APISubscriptionDict`, respectively.
         """
         expected_fields = set(Stream.API_FIELDS) | {"stream_id", "is_archived"}
-        expected_fields -= {"id", "can_remove_subscribers_group_id", "deactivated"}
-        expected_fields |= {"can_remove_subscribers_group"}
+        expected_fields -= {"id", "deactivated"}
+        expected_fields = fix_expected_fields_for_stream_group_settings(expected_fields)
 
         stream_dict_fields = set(APIStreamDict.__annotations__.keys())
         computed_fields = {"is_announcement_only", "is_default", "stream_weekly_traffic"}
@@ -6056,8 +6064,8 @@ class GetSubscribersTest(ZulipTestCase):
         }
 
         expected_fields = set(Stream.API_FIELDS) | set(Subscription.API_FIELDS) | other_fields
-        expected_fields -= {"id", "can_remove_subscribers_group_id", "deactivated"}
-        expected_fields |= {"can_remove_subscribers_group"}
+        expected_fields -= {"id", "deactivated"}
+        expected_fields = fix_expected_fields_for_stream_group_settings(expected_fields)
 
         for lst in [sub_data.subscriptions, sub_data.unsubscribed]:
             for sub in lst:
@@ -6072,8 +6080,8 @@ class GetSubscribersTest(ZulipTestCase):
         }
 
         expected_fields = set(Stream.API_FIELDS) | other_fields
-        expected_fields -= {"id", "can_remove_subscribers_group_id", "deactivated"}
-        expected_fields |= {"can_remove_subscribers_group"}
+        expected_fields -= {"id", "deactivated"}
+        expected_fields = fix_expected_fields_for_stream_group_settings(expected_fields)
 
         for never_sub in sub_data.never_subscribed:
             self.assertEqual(set(never_sub), expected_fields)
