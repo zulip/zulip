@@ -266,43 +266,6 @@ function render(next_state) {
     }
 }
 
-function dispatch(action, payload) {
-    switch (action) {
-        case "CHANGE_CATEGORY":
-            render({...state, category: payload.category});
-            update_path();
-            break;
-
-        case "SHOW_INTEGRATION":
-            render({...state, integration: payload.integration});
-            update_path();
-            break;
-
-        case "HIDE_INTEGRATION":
-            render({...state, integration: null});
-            update_path();
-            break;
-
-        case "SHOW_CATEGORY":
-            render({...state, integration: null, category: payload.category});
-            update_path();
-            break;
-
-        case "UPDATE_QUERY":
-            render({...state, query: payload.query});
-            break;
-
-        case "LOAD_PATH":
-            render(get_state_from_path());
-            google_analytics.config({page_path: window.location.pathname});
-            break;
-
-        default:
-            blueslip.error("Invalid action dispatched on /integrations.");
-            break;
-    }
-}
-
 function toggle_categories_dropdown() {
     const $dropdown_list = $(".integration-categories-dropdown .dropdown-list");
     $dropdown_list.slideToggle(250);
@@ -325,13 +288,15 @@ function integration_events() {
     $(".integration-instruction-block").on("click", "a .integration-category", (e) => {
         e.preventDefault();
         const category = $(e.target).attr("data-category");
-        dispatch("SHOW_CATEGORY", {category});
+        render({...state, integration: null, category});
+        update_path();
     });
 
     $(".integrations a .integration-category").on("click", (e) => {
         e.preventDefault();
         const category = $(e.target).attr("data-category");
-        dispatch("CHANGE_CATEGORY", {category});
+        render({...state, category});
+        update_path();
         toggle_categories_dropdown();
     });
 
@@ -339,19 +304,21 @@ function integration_events() {
         if (!$(e.target).closest(".integration-lozenge").hasClass("integration-create-your-own")) {
             e.preventDefault();
             const integration = $(e.target).closest(".integration-lozenge").attr("data-name");
-            dispatch("SHOW_INTEGRATION", {integration});
+            render({...state, integration});
+            update_path();
         }
     });
 
     $("a#integration-list-link span, a#integration-list-link i").on("click", (e) => {
         e.preventDefault();
-        dispatch("HIDE_INTEGRATION");
+        render({...state, integration: null});
+        update_path();
     });
 
     // combine selector use for both focusing the integrations searchbar and adding
     // the input event.
     $(".integrations .searchbar input[type='text']").on("input", (e) => {
-        dispatch("UPDATE_QUERY", {query: e.target.value.toLowerCase()});
+        render({...state, query: e.target.value.toLowerCase()});
     });
 
     $(window).on("scroll", () => {
@@ -368,7 +335,8 @@ function integration_events() {
 
     $(window).on("popstate", () => {
         if (window.location.pathname.startsWith("/integrations/")) {
-            dispatch("LOAD_PATH");
+            render(get_state_from_path());
+            google_analytics.config({page_path: window.location.pathname});
         } else {
             window.location = window.location.href;
         }
@@ -379,7 +347,8 @@ function integration_events() {
 $(() => {
     integration_events();
     load_data();
-    dispatch("LOAD_PATH");
+    render(get_state_from_path());
+    google_analytics.config({page_path: window.location.pathname});
     $(".integrations .searchbar input[type='text']").trigger("focus");
     adjust_font_sizing();
 });
