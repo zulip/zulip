@@ -127,7 +127,7 @@ IGNORED_PHRASES = [
     # Emoji name placeholder
     r"leafy green vegetable",
     # Subdomain placeholder
-    r"your-organization-url",
+    r"your-organization",
     # Used in invite modal
     r"or",
     # Units
