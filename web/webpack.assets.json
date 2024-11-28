@@ -86,7 +86,7 @@
     ],
     "integrations": [
         "./src/bundles/portico.ts",
-        "./src/portico/integrations.js",
+        "./src/portico/integrations.ts",
         "./styles/portico/landing_page.css",
         "./styles/portico/integrations.css"
     ],
