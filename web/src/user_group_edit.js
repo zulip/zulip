@@ -279,10 +279,7 @@ export function handle_subgroup_edit_event(group_id) {
     }
 }
 
-export function handle_member_edit_event(group_id, user_ids) {
-    if (!overlays.groups_open()) {
-        return;
-    }
+function update_settings_for_group_overlay(group_id, user_ids) {
     const group = user_groups.get_user_group_from_id(group_id);
 
     // update members list if currently rendered.
@@ -344,6 +341,12 @@ export function handle_member_edit_event(group_id, user_ids) {
         }
 
         $row.replaceWith($new_row);
+    }
+}
+
+export function handle_member_edit_event(group_id, user_ids) {
+    if (overlays.groups_open()) {
+        update_settings_for_group_overlay(group_id, user_ids);
     }
 }
 
