@@ -73,7 +73,7 @@ export function modals_handle_events(event_key: string, context: Context): void 
     }
 }
 
-export function set_initial_element(element_id: string, context: Context): void {
+export function set_initial_element(element_id: string | undefined, context: Context): void {
     if (element_id) {
         const current_element = util.the(get_element_by_id(element_id, context));
         const focus_element = current_element.children[0];

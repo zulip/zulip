@@ -139,9 +139,6 @@ export function launch(): void {
     $messages_list.append($(rendered_list));
 
     const first_element_id = keyboard_handling_context.get_items_ids()[0];
-    if (first_element_id === undefined) {
-        return;
-    }
     messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
 }
 
