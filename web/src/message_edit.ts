@@ -632,7 +632,7 @@ function start_edit_maintaining_scroll($row: JQuery, content: string): void {
 function start_edit_with_content(
     $row: JQuery,
     content: string,
-    edit_box_open_callback: () => void,
+    edit_box_open_callback?: () => void,
 ): void {
     start_edit_maintaining_scroll($row, content);
     if (edit_box_open_callback) {
@@ -642,7 +642,7 @@ function start_edit_with_content(
     upload.setup_upload(upload.edit_config(row_id));
 }
 
-export function start($row: JQuery, edit_box_open_callback: () => void): void {
+export function start($row: JQuery, edit_box_open_callback?: () => void): void {
     assert(message_lists.current !== undefined);
     const message = message_lists.current.get(rows.id($row));
     if (message === undefined) {

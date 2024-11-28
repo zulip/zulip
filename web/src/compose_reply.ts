@@ -192,7 +192,7 @@ export function rewire_selection_within_message_id(
     selection_within_message_id = value;
 }
 
-function get_quote_target(opts: {message_id?: number; quote_content?: string}): {
+function get_quote_target(opts: {message_id?: number; quote_content?: string | undefined}): {
     message_id: number;
     message: Message;
     quote_content: string | undefined;
@@ -229,7 +229,7 @@ function get_quote_target(opts: {message_id?: number; quote_content?: string}): 
 
 export function quote_and_reply(opts: {
     message_id: number;
-    quote_content?: string;
+    quote_content?: string | undefined;
     keep_composebox_empty?: boolean;
     reply_type?: "personal";
     trigger?: string;
