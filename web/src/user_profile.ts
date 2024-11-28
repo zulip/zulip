@@ -61,7 +61,7 @@ import type {UserGroup} from "./user_groups.ts";
 import * as user_pill from "./user_pill.ts";
 import * as util from "./util.ts";
 
-type CustomProfileFieldData = {
+export type CustomProfileFieldData = {
     id: number;
     name: string;
     is_user_field: boolean;

@@ -59,7 +59,7 @@ import * as stream_popover from "./stream_popover.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
 import * as topic_list from "./topic_list.ts";
 import * as unread_ops from "./unread_ops.ts";
-import * as user_card_popover from "./user_card_popover.js";
+import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_topics_ui from "./user_topics_ui.ts";
