@@ -46,6 +46,11 @@ html {
     }
 }
 
+.left-text {
+    text-align: left;
+    margin-top: 0;
+}
+
 #new-realm-creation {
     .get-started {
         font-size: 2rem;
@@ -1210,6 +1215,9 @@ button#register_auth_button_gitlab {
     #realm_redirect_description {
         top: 15px;
         position: relative;
+        text-align: left;
+        font-weight: 600;
+        margin-bottom: -5px;
     }
 
     #enter-realm-button {

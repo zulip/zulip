@@ -4698,7 +4698,7 @@ class NameRestrictionsTest(ZulipTestCase):
 class RealmRedirectTest(ZulipTestCase):
     def test_realm_redirect_without_next_param(self) -> None:
         result = self.client_get("/accounts/go/")
-        self.assert_in_success_response(["Enter your organization's Zulip URL"], result)
+        self.assert_in_success_response(["Organization URL"], result)
 
         result = self.client_post("/accounts/go/", {"subdomain": "zephyr"})
         self.assertEqual(result.status_code, 302)
@@ -4710,7 +4710,7 @@ class RealmRedirectTest(ZulipTestCase):
     def test_realm_redirect_with_next_param(self) -> None:
         result = self.client_get("/accounts/go/", {"next": "billing"})
         self.assert_in_success_response(
-            ["Enter your organization's Zulip URL", 'action="/accounts/go/?next=billing"'], result
+            ["Organization URL", 'action="/accounts/go/?next=billing"'], result
         )
 
         result = self.client_post("/accounts/go/?next=billing", {"subdomain": "lear"})
