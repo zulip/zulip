@@ -496,7 +496,10 @@ export class MessageList {
     }
 
     remove_and_rerender(message_ids: number[]): void {
-        this.data.remove(message_ids);
+        const should_rerender = this.data.remove(message_ids);
+        if (!should_rerender) {
+            return;
+        }
         this.rerender();
         // Rebuild message list if we're deleting messages from the current list,
         // since we might need to remove a participant user.
