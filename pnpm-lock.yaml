@@ -253,9 +253,6 @@ importers:
       style-loader:
         specifier: ^4.0.0
         version: 4.0.0(webpack@5.96.1)
-      stylelint-high-performance-animation:
-        specifier: ^1.10.0
-        version: 1.10.0(stylelint@16.10.0(typescript@5.7.2))
       text-field-edit:
         specifier: ^4.0.0
         version: 4.1.1
@@ -473,6 +470,9 @@ importers:
       stylelint-config-standard:
         specifier: ^36.0.0
         version: 36.0.1(stylelint@16.10.0(typescript@5.7.2))
+      stylelint-high-performance-animation:
+        specifier: ^1.10.0
+        version: 1.10.0(stylelint@16.10.0(typescript@5.7.2))
       svgo:
         specifier: ^3.0.0
         version: 3.3.2
