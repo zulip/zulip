@@ -6,4 +6,13 @@
             <a class="group_list_item_link" href="{{group_edit_url}}">{{name}}</a>
         {{/if}}
     </td>
+    {{#if can_remove_members }}
+    <td class="remove_member">
+        <div class="group_list_remove">
+            <button type="button" name="remove" class="remove-member-button button small rounded button-danger" {{#unless is_direct_member}}disabled="disabled"{{/unless}} >
+                {{t 'Remove' }}
+            </button>
+        </div>
+    </td>
+    {{/if}}
 </tr>
