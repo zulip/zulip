@@ -56,7 +56,7 @@
         </li>
         {{/if}}
         <li role="none" class="link-item popover-menu-list-item">
-            <a role="menuitem" class="sidebar-popover-copy-link-to-topic popover-menu-link" data-clipboard-text="{{ url }}" tabindex="0">
+            <a role="menuitem" class="sidebar-popover-copy-link-to-topic popover-menu-link" data-clipboard-text="{{ url }}" data-name="{{ topic_name }}" data-stream-name="{{ stream_name }}" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-link-alt" aria-hidden="true"></i>
                 <span class="popover-menu-label">{{t "Copy link to topic" }}</span>
             </a>

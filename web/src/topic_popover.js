@@ -1,4 +1,3 @@
-import ClipboardJS from "clipboard";
 import $ from "jquery";
 
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
@@ -27,6 +26,7 @@ export function initialize() {
                 ui_util.show_left_sidebar_menu_icon(instance.reference);
                 popover_menus.on_show_prep(instance);
                 let stream_id;
+                let stream_name;
                 let topic_name;
                 let url;
 
@@ -42,11 +42,13 @@ export function initialize() {
                     const $stream_li = $elt.closest(".narrow-filter").expectOne();
                     topic_name = $elt.closest("li").expectOne().attr("data-topic-name");
                     url = $elt.closest("li").find(".sidebar-topic-name").expectOne().prop("href");
+                    stream_name = $elt.closest("li").expectOne().attr("data-stream-name");
                     stream_id = stream_popover.elem_to_stream_id($stream_li);
                 }
 
                 instance.context = popover_menus_data.get_topic_popover_content_context({
                     stream_id,
+                    stream_name,
                     topic_name,
                     url,
                 });
@@ -158,12 +160,28 @@ export function initialize() {
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
 
-                new ClipboardJS($popper.find(".sidebar-popover-copy-link-to-topic")[0]).on(
-                    "success",
-                    () => {
-                        popover_menus.hide_current_popover_if_visible(instance);
-                    },
-                );
+                $popper.find(".sidebar-popover-copy-link-to-topic").on("click", (e) => {
+                    const $linkElement = $(e.currentTarget);
+                    const plainText = $linkElement.data("clipboard-text");
+                    const streamName = $linkElement.data("stream-name");
+                    const topic = $linkElement.data("name");
+                    const htmlText = `<a href="${plainText}">#${streamName} > ${topic}</a>`;
+
+                    navigator.clipboard
+                        .write([
+                            new ClipboardItem({
+                                "text/plain": new Blob([plainText], {type: "text/plain"}),
+                                "text/html": new Blob([htmlText], {type: "text/html"}),
+                            }),
+                        ])
+                        .then(() => {
+                            // Hide the popover and show a success message
+                            popover_menus.hide_current_popover_if_visible(instance);
+                        });
+
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
             },
             onHidden(instance) {
                 instance.destroy();
