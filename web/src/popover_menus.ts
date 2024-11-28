@@ -78,7 +78,7 @@ export function popover_items_handle_keyboard(key: string, $items?: JQuery): voi
     $items.eq(index).trigger("focus");
 }
 
-export function focus_first_popover_item($items: JQuery, index = 0): void {
+export function focus_first_popover_item($items: JQuery | undefined, index = 0): void {
     if (!$items) {
         return;
     }

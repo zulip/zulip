@@ -266,7 +266,7 @@ EXEMPT_FILES = make_set(
         "web/src/unread_ui.ts",
         "web/src/upload.ts",
         "web/src/upload_widget.ts",
-        "web/src/user_card_popover.js",
+        "web/src/user_card_popover.ts",
         "web/src/user_deactivation_ui.ts",
         "web/src/user_events.js",
         "web/src/user_group_components.ts",

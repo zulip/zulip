@@ -3,10 +3,7 @@ import * as tippy from "tippy.js";
 
 import {$t} from "./i18n.ts";
 
-function show_copied_tooltip(
-    copy_button: HTMLElement,
-    on_hide_callback?: () => void,
-): tippy.Instance {
+function show_copied_tooltip(copy_button: Element, on_hide_callback?: () => void): tippy.Instance {
     // Display a tooltip to notify the user the message or code was copied.
     const instance = tippy.default(copy_button, {
         placement: "top",
@@ -25,18 +22,18 @@ function show_copied_tooltip(
     return instance;
 }
 
-function show_check_icon(copy_button: HTMLElement): void {
+function show_check_icon(copy_button: Element): void {
     $(copy_button).addClass("copy-button-success");
     $(copy_button).find(".zulip-icon").removeClass("zulip-icon-copy").addClass("zulip-icon-check");
 }
 
-function remove_check_icon(copy_button: HTMLElement): void {
+function remove_check_icon(copy_button: Element): void {
     $(copy_button).removeClass("copy-button-success");
     $(copy_button).find(".zulip-icon").addClass("zulip-icon-copy").removeClass("zulip-icon-check");
 }
 
 export function show_copied_confirmation(
-    copy_button: HTMLElement,
+    copy_button: Element,
     opts?: {
         show_check_icon?: boolean;
         timeout_in_ms?: number;

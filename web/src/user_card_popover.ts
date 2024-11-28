@@ -28,6 +28,7 @@ import * as message_view from "./message_view.ts";
 import * as muted_users from "./muted_users.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
+import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {hide_all} from "./popovers.ts";
@@ -39,15 +40,17 @@ import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 import * as ui_util from "./ui_util.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
+import type {CustomProfileFieldData} from "./user_profile.ts";
 import * as user_profile from "./user_profile.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
 import * as user_status_ui from "./user_status_ui.ts";
+import {the} from "./util.ts";
 
-let current_user_sidebar_user_id;
+let current_user_sidebar_user_id: number | undefined;
 
-export function confirm_mute_user(user_id) {
-    function on_click() {
+export function confirm_mute_user(user_id: number): void {
+    function on_click(): void {
         muted_users.mute_user(user_id);
     }
 
@@ -64,32 +67,30 @@ export function confirm_mute_user(user_id) {
 }
 
 class PopoverMenu {
+    instance: tippy.Instance | undefined;
+
     constructor() {
-        this.instance = null;
+        this.instance = undefined;
     }
 
-    is_open() {
+    is_open(): boolean {
         return Boolean(this.instance);
     }
 
-    hide() {
-        if (this.is_open()) {
+    hide(): void {
+        if (this.instance) {
             this.instance.destroy();
             this.instance = undefined;
         }
     }
 
-    handle_keyboard(key) {
-        if (!this.is_open()) {
+    handle_keyboard(key: string): void {
+        if (!this.instance) {
             blueslip.error("Trying to get the items when popover is closed.");
             return;
         }
 
-        const $popover = $(this.instance?.popper);
-        if (!$popover) {
-            blueslip.error("Cannot find popover data.");
-            return;
-        }
+        const $popover = $(this.instance.popper);
 
         const $items = $("[tabindex='0']", $popover).filter(":visible");
 
@@ -101,14 +102,10 @@ export const user_sidebar = new PopoverMenu();
 export const message_user_card = new PopoverMenu();
 export const user_card = new PopoverMenu();
 
-function popover_items_handle_keyboard_with_overrides(key, $items) {
+function popover_items_handle_keyboard_with_overrides(key: string, $items: JQuery): void {
     /* Variant of popover_items_handle_keyboard for focusing on the
        user card popover menu options first, instead of other tabbable
        buttons and links which can be distracting. */
-
-    if (!$items) {
-        return;
-    }
 
     const index = $items.index($items.filter(":focus"));
 
@@ -124,7 +121,9 @@ function popover_items_handle_keyboard_with_overrides(key, $items) {
     popover_menus.popover_items_handle_keyboard(key, $items);
 }
 
-function get_popover_classname(popover) {
+function get_popover_classname(
+    popover: "user_sidebar" | "message_user_card" | "user_card",
+): string {
     const popovers = {
         user_sidebar: "user-sidebar-popover-root",
         message_user_card: "message-user-card-popover-root",
@@ -145,32 +144,30 @@ const user_card_popovers = {
     user_card,
 };
 
-export function any_active() {
+export function any_active(): boolean {
     return Object.values(user_card_popovers).some((instance) => instance.is_open());
 }
 
-export function hide_all_instances() {
-    for (const key in user_card_popovers) {
-        if (user_card_popovers[key].hide) {
-            user_card_popovers[key].hide();
-        }
+export function hide_all_instances(): void {
+    for (const popover of Object.values(user_card_popovers)) {
+        popover.hide();
     }
 }
 
-export function hide_all_user_card_popovers() {
+export function hide_all_user_card_popovers(): void {
     hide_all_instances();
 }
 
-export function clear_for_testing() {
+export function clear_for_testing(): void {
     message_user_card.instance = undefined;
     user_card.instance = undefined;
 }
 
-function elem_to_user_id($elem) {
-    return Number.parseInt($elem.attr("data-user-id"), 10);
+function elem_to_user_id($elem: JQuery): number {
+    return Number.parseInt($elem.attr("data-user-id")!, 10);
 }
 
-function clipboard_enable(arg) {
+function clipboard_enable(arg: HTMLElement | string): ClipboardJS {
     // arg is a selector or element
     // We extract this function for testing purpose.
     return new ClipboardJS(arg);
@@ -178,7 +175,7 @@ function clipboard_enable(arg) {
 
 // Functions related to user card popover.
 
-export function toggle_user_card_popover(element, user) {
+export function toggle_user_card_popover(element: HTMLElement, user: User): void {
     show_user_card_popover(
         user,
         $(element),
@@ -190,7 +187,7 @@ export function toggle_user_card_popover(element, user) {
     );
 }
 
-function toggle_user_card_popover_for_bot_owner(element, user) {
+function toggle_user_card_popover_for_bot_owner(element: HTMLElement, user: User): void {
     show_user_card_popover(
         user,
         $(element),
@@ -203,12 +200,49 @@ function toggle_user_card_popover_for_bot_owner(element, user) {
     );
 }
 
+type UserCardPopoverData = {
+    invisible_mode: boolean;
+    can_send_private_message: boolean;
+    display_profile_fields: CustomProfileFieldData[];
+    has_message_context: boolean;
+    is_active: boolean;
+    is_bot: boolean;
+    is_me: boolean;
+    is_sender_popover: boolean;
+    pm_with_url: string;
+    user_circle_class: string;
+    private_message_class: string;
+    sent_by_url: string;
+    user_email: string | null;
+    user_full_name: string;
+    user_id: number;
+    user_last_seen_time_status: string;
+    user_time: string | undefined;
+    user_type: string | undefined;
+    status_content_available: boolean;
+    status_text: string | undefined;
+    status_emoji_info: user_status.UserStatusEmojiInfo | undefined;
+    show_placeholder_for_status_text: false | user_status.UserStatusEmojiInfo | undefined;
+    user_mention_syntax: string;
+    date_joined: string | undefined;
+    spectator_view: boolean;
+    should_add_guest_user_indicator: boolean;
+    user_avatar: string;
+    user_is_guest: boolean;
+    show_manage_section: boolean;
+    can_mute: boolean;
+    can_unmute: boolean;
+    can_manage_user: boolean;
+    is_system_bot?: boolean;
+    bot_owner?: User;
+};
+
 function get_user_card_popover_data(
-    user,
-    has_message_context,
-    is_sender_popover,
-    private_msg_class,
-) {
+    user: User,
+    has_message_context: boolean,
+    is_sender_popover: boolean,
+    private_msg_class: string,
+): UserCardPopoverData {
     const is_me = people.is_my_user_id(user.user_id);
 
     let invisible_mode = false;
@@ -249,7 +283,7 @@ function get_user_card_popover_data(
     const can_send_private_message =
         user_can_send_direct_message(user_id_string) && is_active && !is_me;
 
-    const args = {
+    const args: UserCardPopoverData = {
         invisible_mode,
         can_send_private_message,
         display_profile_fields,
@@ -268,7 +302,7 @@ function get_user_card_popover_data(
         user_last_seen_time_status: buddy_data.user_last_seen_time_status(user.user_id),
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
-        status_content_available: Boolean(status_text || status_emoji_info),
+        status_content_available: Boolean(status_text ?? status_emoji_info),
         status_text,
         status_emoji_info,
         show_placeholder_for_status_text: !status_text && status_emoji_info,
@@ -289,7 +323,7 @@ function get_user_card_popover_data(
         if (is_system_bot) {
             args.is_system_bot = is_system_bot;
         } else if (bot_owner_id) {
-            const bot_owner = people.get_bot_owner_user(user);
+            const bot_owner = people.get_user_by_id_assert_valid(bot_owner_id);
             args.bot_owner = bot_owner;
         }
     }
@@ -298,16 +332,16 @@ function get_user_card_popover_data(
 }
 
 function show_user_card_popover(
-    user,
-    $popover_element,
-    is_sender_popover,
-    has_message_context,
-    private_msg_class,
-    template_class,
-    popover_placement,
-    show_as_overlay,
-    on_mount,
-) {
+    user: User,
+    $popover_element: JQuery,
+    is_sender_popover: boolean,
+    has_message_context: boolean,
+    private_msg_class: string,
+    template_class: "user_sidebar" | "message_user_card" | "user_card",
+    popover_placement: tippy.Placement,
+    show_as_overlay = false,
+    on_mount?: (instance: tippy.Instance) => void,
+): void {
     let popover_html;
     let args;
     if (user.is_inaccessible_user) {
@@ -330,7 +364,7 @@ function show_user_card_popover(
     }
 
     popover_menus.toggle_popover_menu(
-        $popover_element[0],
+        the($popover_element),
         {
             theme: "popover-menu",
             placement: popover_placement,
@@ -369,7 +403,7 @@ function show_user_card_popover(
     );
 }
 
-function init_email_clipboard() {
+function init_email_clipboard(): void {
     /*
         This shows (and enables) the copy-text icon for folks
         who have names that would overflow past the right
@@ -399,7 +433,7 @@ function init_email_clipboard() {
     });
 }
 
-function init_email_tooltip(user) {
+function init_email_tooltip(user: User): void {
     /*
         This displays the email tooltip for folks
         who have names that would overflow past the right
@@ -416,13 +450,13 @@ function init_email_tooltip(user) {
     });
 }
 
-function load_medium_avatar(user, $elt) {
+function load_medium_avatar(user: User, $elt: JQuery): void {
     const user_avatar_url = people.medium_avatar_url_for_person(user);
     const sender_avatar_medium = new Image();
 
     sender_avatar_medium.src = user_avatar_url;
     $(sender_avatar_medium).on("load", function () {
-        $elt.attr("src", $(this).attr("src"));
+        $elt.attr("src", $(this).attr("src")!);
     });
 }
 
@@ -433,12 +467,12 @@ function load_medium_avatar(user, $elt) {
 // sender_id is the user id of the sender for the message we are
 // showing the popover from.
 function toggle_user_card_popover_for_message(
-    element,
-    user,
-    sender_id,
-    has_message_context,
-    on_mount,
-) {
+    element: HTMLElement,
+    user: User,
+    sender_id: number,
+    has_message_context: boolean,
+    on_mount?: (instance: tippy.Instance) => void,
+): void {
     const $elt = $(element);
 
     const is_sender_popover = sender_id === user.user_id;
@@ -455,10 +489,13 @@ function toggle_user_card_popover_for_message(
     );
 }
 
-export function unsaved_message_user_mention_event_handler(e) {
+export function unsaved_message_user_mention_event_handler(
+    this: HTMLElement,
+    e: JQuery.ClickEvent,
+): void {
     e.stopPropagation();
 
-    const id_string = $(e.currentTarget).attr("data-user-id");
+    const id_string = $(this).attr("data-user-id")!;
     // Do not open popover for @all mention
     if (id_string === "*") {
         return;
@@ -467,12 +504,12 @@ export function unsaved_message_user_mention_event_handler(e) {
     const user_id = Number.parseInt(id_string, 10);
     const user = people.get_by_user_id(user_id);
 
-    toggle_user_card_popover_for_message($(e.target), user, current_user.user_id, false);
+    toggle_user_card_popover_for_message(this, user, current_user.user_id, false);
 }
 
 // This function serves as the entry point for toggling
 // the user card popover via keyboard shortcut.
-export function toggle_sender_info() {
+export function toggle_sender_info(): void {
     if (message_user_card.is_open()) {
         // We need to call the hide method here because
         // the event wasn't triggered by the mouse.
@@ -491,32 +528,33 @@ export function toggle_sender_info() {
 
     assert(message_lists.current !== undefined);
     const message = message_lists.current.get(rows.id($message));
+    assert(message !== undefined);
     const user = people.get_by_user_id(message.sender_id);
-    toggle_user_card_popover_for_message($sender[0], user, message.sender_id, true, () => {
+    toggle_user_card_popover_for_message(the($sender), user, message.sender_id, true, () => {
         if (!page_params.is_spectator) {
             focus_user_card_popover_item();
         }
     });
 }
 
-function focus_user_card_popover_item() {
+function focus_user_card_popover_item(): void {
     // For now I recommend only calling this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
     const $items = get_user_card_popover_for_message_items();
     popover_menus.focus_first_popover_item($items);
 }
 
-function get_user_card_popover_for_message_items() {
+function get_user_card_popover_for_message_items(): JQuery | undefined {
     if (!message_user_card.is_open()) {
         blueslip.error("Trying to get menu items when message user card popover is closed.");
         return undefined;
     }
 
-    const $popover = $(message_user_card.instance.popper);
-    if (!$popover) {
+    if (message_user_card.instance === undefined) {
         blueslip.error("Cannot find popover data for message user card menu.");
         return undefined;
     }
+    const $popover = $(message_user_card.instance.popper);
 
     // Return only the popover menu options that are visible, and not the
     // copy buttons or the link items in the custom profile fields.
@@ -525,7 +563,7 @@ function get_user_card_popover_for_message_items() {
 
 // Functions related to the user card popover in the user sidebar.
 
-function toggle_sidebar_user_card_popover($target) {
+function toggle_sidebar_user_card_popover($target: JQuery): void {
     const user_id = elem_to_user_id($target);
     const user = people.get_by_user_id(user_id);
 
@@ -558,17 +596,22 @@ function toggle_sidebar_user_card_popover($target) {
     current_user_sidebar_user_id = user.user_id;
 }
 
-function register_click_handlers() {
-    $("#main_div").on("click", ".sender_name, .inline_profile_picture", function (e) {
-        const $row = $(this).closest(".message_row");
-        e.stopPropagation();
-        assert(message_lists.current !== undefined);
-        const message = message_lists.current.get(rows.id($row));
-        const user = people.get_by_user_id(message.sender_id);
-        toggle_user_card_popover_for_message(this, user, message.sender_id, true);
-    });
+function register_click_handlers(): void {
+    $("#main_div").on(
+        "click",
+        ".sender_name, .inline_profile_picture",
+        function (this: HTMLElement, e) {
+            const $row = $(this).closest(".message_row");
+            e.stopPropagation();
+            assert(message_lists.current !== undefined);
+            const message = message_lists.current.get(rows.id($row));
+            assert(message !== undefined);
+            const user = people.get_by_user_id(message.sender_id);
+            toggle_user_card_popover_for_message(this, user, message.sender_id, true);
+        },
+    );
 
-    $("#main_div").on("click", ".user-mention", function (e) {
+    $("#main_div").on("click", ".user-mention", function (this: HTMLElement, e) {
         const id_string = $(this).attr("data-user-id");
         // We fallback to email to handle legacy Markdown that was rendered
         // before we cut over to using data-user-id
@@ -580,12 +623,13 @@ function register_click_handlers() {
         e.stopPropagation();
         assert(message_lists.current !== undefined);
         const message = message_lists.current.get(rows.id($row));
+        assert(message !== undefined);
         let user;
         if (id_string) {
             const user_id = Number.parseInt(id_string, 10);
             user = people.get_by_user_id(user_id);
         } else {
-            user = people.get_by_email(email);
+            user = email === undefined ? undefined : people.get_by_email(email);
             if (user === undefined) {
                 // There can be a case when user is undefined if
                 // the user is an inaccessible user as we do not
@@ -603,8 +647,8 @@ function register_click_handlers() {
     // that run before this one and call stopPropagation.
     $("body").on("click", ".messagebox .user-mention", unsaved_message_user_mention_event_handler);
 
-    $("body").on("click", ".user-card-popover-actions .narrow_to_private_messages", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+    $("body").on("click", ".user-card-popover-actions .narrow_to_private_messages", function (e) {
+        const user_id = elem_to_user_id($(this).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
         message_view.show(
             [
@@ -623,8 +667,8 @@ function register_click_handlers() {
         e.preventDefault();
     });
 
-    $("body").on("click", ".user-card-popover-actions .narrow_to_messages_sent", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+    $("body").on("click", ".user-card-popover-actions .narrow_to_messages_sent", function (e) {
+        const user_id = elem_to_user_id($(this).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
         message_view.show(
             [
@@ -645,9 +689,7 @@ function register_click_handlers() {
 
     $("body").on("click", ".user-card-popover-actions .user-card-clear-status-button", (e) => {
         e.preventDefault();
-        const me = elem_to_user_id($(e.target).parents("ul"));
         user_status.server_update_status({
-            user_id: me,
             status_text: "",
             emoji_name: "",
             emoji_code: "",
@@ -657,12 +699,12 @@ function register_click_handlers() {
         });
     });
 
-    $("body").on("click", ".sidebar-popover-reactivate-user", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+    $("body").on("click", ".sidebar-popover-reactivate-user", function (e) {
+        const user_id = elem_to_user_id($(this).parents("ul"));
         hide_all();
         e.stopPropagation();
         e.preventDefault();
-        function handle_confirm() {
+        function handle_confirm(): void {
             const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
             channel.post({
                 url,
@@ -678,8 +720,8 @@ function register_click_handlers() {
         user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
     });
 
-    $("body").on("click", ".user-card-popover-actions .view_full_user_profile", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+    $("body").on("click", ".user-card-popover-actions .view_full_user_profile", function (e) {
+        const user_id = elem_to_user_id($(this).parents("ul"));
         const current_hash = window.location.hash;
         // If any overlay is already open, we want the user profile to behave
         // as a modal rather than an overlay.
@@ -692,7 +734,7 @@ function register_click_handlers() {
         e.stopPropagation();
         e.preventDefault();
     });
-    $("body").on("click", ".user-card-popover-root .mention_user", (e) => {
+    $("body").on("click", ".user-card-popover-root .mention_user", function (e) {
         if (!compose_state.composing()) {
             compose_actions.start({
                 message_type: "stream",
@@ -700,7 +742,7 @@ function register_click_handlers() {
                 keep_composebox_empty: true,
             });
         }
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(this).parents("ul"));
         const name = people.get_by_user_id(user_id).full_name;
         const mention = people.get_mention_syntax(name, user_id);
         compose_ui.insert_syntax_and_focus(mention);
@@ -710,14 +752,14 @@ function register_click_handlers() {
         e.preventDefault();
     });
 
-    $("body").on("click", ".message-user-card-popover-root .mention_user", (e) => {
+    $("body").on("click", ".message-user-card-popover-root .mention_user", function (e) {
         if (!compose_state.composing()) {
             compose_reply.respond_to_message({
                 trigger: "user sidebar popover",
                 keep_composebox_empty: true,
             });
         }
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(this).parents("ul"));
         const name = people.get_by_user_id(user_id).full_name;
         const is_active = people.is_active_user_for_popover(user_id);
         const mention = people.get_mention_syntax(name, user_id, !is_active);
@@ -727,18 +769,22 @@ function register_click_handlers() {
         e.preventDefault();
     });
 
-    $("body").on("click", ".view_user_profile, .person_picker .pill[data-user-id]", (e) => {
-        const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
-        const user = people.get_by_user_id(user_id);
-        if ($(e.target).closest(".user-card-popover-bot-owner-field").length > 0) {
-            hide_all_user_card_popovers();
-            toggle_user_card_popover_for_bot_owner(e.target, user);
-        } else {
-            toggle_user_card_popover(e.target, user);
-        }
-        e.stopPropagation();
-        e.preventDefault();
-    });
+    $("body").on(
+        "click",
+        ".view_user_profile, .person_picker .pill[data-user-id]",
+        function (this: HTMLElement, e) {
+            const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id")!, 10);
+            const user = people.get_by_user_id(user_id);
+            if ($(this).closest(".user-card-popover-bot-owner-field").length > 0) {
+                hide_all_user_card_popovers();
+                toggle_user_card_popover_for_bot_owner(this, user);
+            } else {
+                toggle_user_card_popover(this, user);
+            }
+            e.stopPropagation();
+            e.preventDefault();
+        },
+    );
 
     /* These click handlers are implemented as just deep links to the
      * relevant part of the Zulip UI, so we don't want preventDefault,
@@ -758,7 +804,7 @@ function register_click_handlers() {
         e.preventDefault();
     });
 
-    function open_user_status_modal(e) {
+    function open_user_status_modal(e: JQuery.ClickEvent): void {
         hide_all();
 
         user_status_ui.open_user_status_modal();
@@ -790,24 +836,24 @@ function register_click_handlers() {
         toggle_sidebar_user_card_popover($target);
     });
 
-    $("body").on("click", ".sidebar-popover-mute-user", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+    $("body").on("click", ".sidebar-popover-mute-user", function (e) {
+        const user_id = elem_to_user_id($(this).parents("ul"));
         hide_all_user_card_popovers();
         e.stopPropagation();
         e.preventDefault();
         confirm_mute_user(user_id);
     });
 
-    $("body").on("click", ".sidebar-popover-unmute-user", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+    $("body").on("click", ".sidebar-popover-unmute-user", function (e) {
+        const user_id = elem_to_user_id($(this).parents("ul"));
         hide_all_user_card_popovers();
         muted_users.unmute_user(user_id);
         e.stopPropagation();
         e.preventDefault();
     });
 
-    $("body").on("click", ".respond_personal_button, .compose_private_message", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+    $("body").on("click", ".respond_personal_button, .compose_private_message", function (e) {
+        const user_id = elem_to_user_id($(this).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
         compose_actions.start({
             message_type: "private",
@@ -828,9 +874,9 @@ function register_click_handlers() {
         e.preventDefault();
     });
 
-    $("body").on("click", ".sidebar-popover-manage-user", (e) => {
+    $("body").on("click", ".sidebar-popover-manage-user", function () {
         hide_all();
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(this).parents("ul"));
         const user = people.get_by_user_id(user_id);
         user_profile.show_user_profile(user, "manage-profile-tab");
     });
@@ -842,8 +888,8 @@ function register_click_handlers() {
     });
 
     new ClipboardJS(".copy-custom-profile-field-link", {
-        text(trigger) {
-            return $(trigger).parent().find(".custom-profile-field-link").attr("href");
+        text(trigger): string {
+            return $(trigger).parent().find(".custom-profile-field-link").attr("href")!;
         },
     }).on("success", (e) => {
         show_copied_confirmation(e.trigger, {
@@ -852,7 +898,7 @@ function register_click_handlers() {
     });
 }
 
-export function initialize() {
+export function initialize(): void {
     register_click_handlers();
     clipboard_enable(".copy_mention_syntax");
 }

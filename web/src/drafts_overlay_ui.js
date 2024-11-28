@@ -12,7 +12,7 @@ import * as messages_overlay_ui from "./messages_overlay_ui.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
-import * as user_card_popover from "./user_card_popover.js";
+import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 
 function restore_draft(draft_id) {
@@ -193,9 +193,11 @@ export function launch() {
             restore_draft(draft_id);
         });
 
-        $("#drafts_table .restore-overlay-message").on("click", ".user-mention", (e) => {
-            user_card_popover.unsaved_message_user_mention_event_handler(e);
-        });
+        $("#drafts_table .restore-overlay-message").on(
+            "click",
+            ".user-mention",
+            user_card_popover.unsaved_message_user_mention_event_handler,
+        );
 
         $("#drafts_table .restore-overlay-message").on("click", ".user-group-mention", (e) => {
             user_group_popover.toggle_user_group_info_popover(e.currentTarget, undefined);
