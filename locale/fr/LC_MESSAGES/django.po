@@ -4983,7 +4983,7 @@ msgstr "Divers"
 
 #: zerver/lib/integrations.py:57
 msgid "Monitoring"
-msgstr "Suivi "
+msgstr "Suivi"
 
 #: zerver/lib/integrations.py:58
 msgid "Project management"
