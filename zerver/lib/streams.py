@@ -41,7 +41,6 @@ from zerver.models import (
     UserGroupMembership,
     UserProfile,
 )
-from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.streams import (
     bulk_get_streams,
@@ -140,6 +139,25 @@ def send_stream_creation_event(
     send_event_on_commit(realm, event, user_ids)
 
 
+def get_stream_permission_default_group(setting_name: str, realm: Realm) -> UserGroup:
+    setting_default_name = Stream.stream_permission_group_settings[setting_name].default_group_name
+    return NamedUserGroup.objects.get(
+        name=setting_default_name,
+        realm=realm,
+        is_system_group=True,
+    )
+
+
+def get_default_group_setting_values(realm: Realm) -> dict[str, UserGroup]:
+    group_setting_values = {}
+    for setting_name in Stream.stream_permission_group_settings:
+        group_setting_values[setting_name] = get_stream_permission_default_group(
+            setting_name, realm
+        )
+
+    return group_setting_values
+
+
 @transaction.atomic(savepoint=False)
 def create_stream_if_needed(
     realm: Realm,
@@ -159,14 +177,21 @@ def create_stream_if_needed(
         realm, invite_only, history_public_to_subscribers
     )
 
-    if can_remove_subscribers_group is None:
-        can_remove_subscribers_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, is_system_group=True, realm=realm
-        )
+    group_setting_values = {}
+    request_settings_dict = locals()
+    for setting_name in Stream.stream_permission_group_settings:
+        if setting_name not in request_settings_dict:  # nocoverage
+            continue
+
+        if request_settings_dict[setting_name] is None:
+            group_setting_values[setting_name] = get_stream_permission_default_group(
+                setting_name, realm
+            )
+        else:
+            group_setting_values[setting_name] = request_settings_dict[setting_name]
 
     stream_name = stream_name.strip()
 
-    assert can_remove_subscribers_group is not None
     (stream, created) = Stream.objects.get_or_create(
         realm=realm,
         name__iexact=stream_name,
@@ -180,7 +205,7 @@ def create_stream_if_needed(
             history_public_to_subscribers=history_public_to_subscribers,
             is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
             message_retention_days=message_retention_days,
-            can_remove_subscribers_group=can_remove_subscribers_group,
+            **group_setting_values,
         ),
     )
 

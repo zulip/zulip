@@ -46,7 +46,11 @@ from zerver.lib.partial import partial
 from zerver.lib.push_notifications import sends_notifications_directly
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
-from zerver.lib.streams import render_stream_description, update_stream_active_status_for_realm
+from zerver.lib.streams import (
+    get_stream_permission_default_group,
+    render_stream_description,
+    update_stream_active_status_for_realm,
+)
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError, maybe_thumbnail
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload import ensure_avatar_image, sanitize_name, upload_backend, upload_emoji_image
@@ -243,13 +247,11 @@ def fix_upload_links(data: TableData, message_table: TableName) -> None:
                     )
 
 
-def fix_streams_can_remove_subscribers_group_column(data: TableData, realm: Realm) -> None:
+def fix_stream_permission_group_settings(data: TableData, realm: Realm) -> None:
     table = get_db_table(Stream)
-    admins_group = NamedUserGroup.objects.get(
-        name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
-    )
     for stream in data[table]:
-        stream["can_remove_subscribers_group"] = admins_group
+        for setting_name in Stream.stream_permission_group_settings:
+            stream[setting_name] = get_stream_permission_default_group(setting_name, realm)
 
 
 def create_subscription_events(data: TableData, realm_id: int) -> None:
@@ -1289,13 +1291,12 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
         if role_system_groups_dict is not None:
             # Because the system user groups are missing, we manually set up
-            # the defaults for can_remove_subscribers_group for all the
+            # the defaults for stream permission settings for all the
             # streams.
-            fix_streams_can_remove_subscribers_group_column(data, realm)
+            fix_stream_permission_group_settings(data, realm)
         else:
-            re_map_foreign_keys(
-                data, "zerver_stream", "can_remove_subscribers_group", related_table="usergroup"
-            )
+            for setting_name in Stream.stream_permission_group_settings:
+                re_map_foreign_keys(data, "zerver_stream", setting_name, related_table="usergroup")
         # Handle rendering of stream descriptions for import from non-Zulip
         for stream in data["zerver_stream"]:
             stream["rendered_description"] = render_stream_description(stream["description"], realm)

@@ -6,7 +6,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.create_user import create_user_profile, get_display_email_address
 from zerver.lib.initial_password import initial_password
-from zerver.lib.streams import render_stream_description
+from zerver.lib.streams import get_default_group_setting_values, render_stream_description
 from zerver.models import (
     NamedUserGroup,
     Realm,
@@ -200,9 +200,6 @@ def bulk_create_streams(realm: Realm, stream_dict: dict[str, dict[str, Any]]) ->
     existing_streams = {
         name.lower() for name in Stream.objects.filter(realm=realm).values_list("name", flat=True)
     }
-    administrators_user_group = NamedUserGroup.objects.get(
-        name=SystemGroups.ADMINISTRATORS, is_system_group=True, realm=realm
-    )
     streams_to_create: list[Stream] = []
     for name, options in stream_dict.items():
         if "history_public_to_subscribers" not in options:
@@ -223,8 +220,8 @@ def bulk_create_streams(realm: Realm, stream_dict: dict[str, dict[str, Any]]) ->
                     history_public_to_subscribers=options["history_public_to_subscribers"],
                     is_web_public=options.get("is_web_public", False),
                     is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
-                    can_remove_subscribers_group=administrators_user_group,
                     creator=options.get("creator", None),
+                    **get_default_group_setting_values(realm),
                 ),
             )
     # Sort streams by name before creating them so that we can have a
