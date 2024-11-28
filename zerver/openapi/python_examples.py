@@ -1935,6 +1935,11 @@ def test_invitations(client: Client) -> None:
     resend_email_invitation(client)
 
 
+# These are functions for python examples in the documentation
+# page that doesn't fit in with how our tooling works currently.
+EXEMPTED_PYTHON_EXAMPLES: set[str] = set()
+
+
 def test_the_api(client: Client, nonadmin_client: Client, owner_client: Client) -> None:
     get_user_agent(client)
     test_users(client, owner_client)
@@ -1946,7 +1951,7 @@ def test_the_api(client: Client, nonadmin_client: Client, owner_client: Client) 
     test_invitations(client)
 
     sys.stdout.flush()
-    if REGISTERED_TEST_FUNCTIONS != CALLED_TEST_FUNCTIONS:
+    if (REGISTERED_TEST_FUNCTIONS - CALLED_TEST_FUNCTIONS) != EXEMPTED_PYTHON_EXAMPLES:
         print("Error!  Some @openapi_test_function tests were never called:")
-        print("  ", REGISTERED_TEST_FUNCTIONS - CALLED_TEST_FUNCTIONS)
+        print("  ", REGISTERED_TEST_FUNCTIONS - CALLED_TEST_FUNCTIONS - EXEMPTED_PYTHON_EXAMPLES)
         sys.exit(1)
