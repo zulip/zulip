@@ -443,10 +443,12 @@ export function revive_current_focus(): boolean {
 }
 
 export function show_loading_indicator(): void {
+    $("#recent-view-content-table").hide();
     loading.make_indicator($("#recent_view_loading_messages_indicator"));
 }
 
 export function hide_loading_indicator(): void {
+    $("#recent-view-content-table").show();
     $("#recent_view_bottom_whitespace").hide();
     loading.destroy_indicator($("#recent_view_loading_messages_indicator"));
 }
