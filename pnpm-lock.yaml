@@ -72,7 +72,7 @@ importers:
         version: 4.0.1(@uppy/core@4.2.3)
       '@uppy/tus':
         specifier: ^4.1.0
-        version: 4.1.4(@uppy/core@4.2.3)
+        version: 4.1.3(@uppy/core@4.2.3)
       '@zxcvbn-ts/core':
         specifier: ^3.0.1
         version: 3.0.4
@@ -2687,8 +2687,8 @@ packages:
   '@uppy/store-default@4.1.1':
     resolution: {integrity: sha512-VP02Q44Cziw8mLH6v2txToqF2SwsNr+jSxpkvcC7/EaZhG26XnseTd3Ydv2wYxv7YALQY2xhF2/LCXZzzx4fYQ==}
 
-  '@uppy/tus@4.1.4':
-    resolution: {integrity: sha512-QnJI66ws6xJEt/qnThgy9Lmg18JxEm3nmTKw8KxF4MTVQG5SmTMWb+qC22uOTiBU82bsdwORQWtd7huCVOcs3Q==}
+  '@uppy/tus@4.1.3':
+    resolution: {integrity: sha512-oX6Krds1iygLsTbYnvkP7pnGZa2UeiHq0RRxm40IDtVcfeHnNS3lD84VDTYfwxdWzdvfezCHnWBkgNXC+mjWNw==}
     peerDependencies:
       '@uppy/core': ^4.2.3
 
@@ -11646,7 +11646,7 @@ snapshots:
 
   '@uppy/store-default@4.1.1': {}
 
-  '@uppy/tus@4.1.4(@uppy/core@4.2.3)':
+  '@uppy/tus@4.1.3(@uppy/core@4.2.3)':
     dependencies:
       '@uppy/companion-client': 4.1.1(@uppy/core@4.2.3)
       '@uppy/core': 4.2.3

@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 323  # Last bumped for "GET /streams `is_recently_active`"
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (304, 0)  # bumped 2024-11-26 to upgrade JavaScript dependencies
+PROVISION_VERSION = (305, 0)  # bumped 2024-11-27 to downgrade @uppy/tus
