@@ -589,7 +589,6 @@ class UserGroupAPITestCase(UserGroupTestCase):
             is_system_group=False
         ).delete()
 
-        permission_configuration = NamedUserGroup.GROUP_PERMISSION_SETTINGS[setting_name]
         leadership_group = check_add_user_group(
             hamlet.realm, "leadership", [hamlet], acting_user=hamlet
         )
@@ -698,14 +697,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         params[setting_name] = orjson.dumps(owners_group.id).decode()
         result = self.client_post("/json/user_groups/create", info=params)
 
-        if not permission_configuration.allow_owners_group:
-            self.assert_json_error(
-                result, f"'{setting_name}' setting cannot be set to 'role:owners' group."
-            )
-        else:
-            self.assert_json_success(result)
-            frontend_group = NamedUserGroup.objects.get(name="frontend-team", realm=hamlet.realm)
-            self.assertEqual(getattr(frontend_group, setting_name), owners_group.usergroup_ptr)
+        self.assert_json_success(result)
+        frontend_group = NamedUserGroup.objects.get(name="frontend-team", realm=hamlet.realm)
+        self.assertEqual(getattr(frontend_group, setting_name), owners_group.usergroup_ptr)
 
         params = {
             "name": "frontend",
@@ -877,7 +871,6 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
     def do_test_update_user_group_permission_settings(self, setting_name: str) -> None:
         hamlet = self.example_user("hamlet")
-        permission_configuration = NamedUserGroup.GROUP_PERMISSION_SETTINGS[setting_name]
 
         support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
         marketing_group = NamedUserGroup.objects.get(name="marketing", realm=hamlet.realm)
@@ -978,14 +971,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         params[setting_name] = orjson.dumps({"new": owners_group.id}).decode()
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
-        if not permission_configuration.allow_owners_group:
-            self.assert_json_error(
-                result, f"'{setting_name}' setting cannot be set to 'role:owners' group."
-            )
-        else:
-            self.assert_json_success(result)
-            support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
-            self.assertEqual(getattr(support_group, setting_name).id, owners_group.id)
+        self.assert_json_success(result)
+        support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
+        self.assertEqual(getattr(support_group, setting_name).id, owners_group.id)
 
         internet_group = NamedUserGroup.objects.get(
             name="role:internet", realm=hamlet.realm, is_system_group=True

@@ -547,7 +547,6 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
             can_administer_channel_group: {
                 require_system_group: true,
                 allow_internet_group: false,
-                allow_owners_group: true,
                 allow_nobody_group: true,
                 allow_everyone_group: false,
                 default_group_name: "stream_creator_or_nobody",
@@ -557,7 +556,6 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
             can_remove_subscribers_group: {
                 require_system_group: true,
                 allow_internet_group: false,
-                allow_owners_group: false,
                 allow_nobody_group: false,
                 allow_everyone_group: true,
                 default_group_name: "role:administrators",
@@ -569,7 +567,6 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
             create_multiuse_invite_group: {
                 require_system_group: true,
                 allow_internet_group: false,
-                allow_owners_group: false,
                 allow_nobody_group: true,
                 allow_everyone_group: false,
                 default_group_name: "role:administrators",
@@ -579,7 +576,6 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
             can_access_all_users_group: {
                 require_system_group: true,
                 allow_internet_group: false,
-                allow_owners_group: false,
                 allow_nobody_group: false,
                 allow_everyone_group: true,
                 default_group_name: "role:everyone",
@@ -595,6 +591,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
         {name: "translated: Admins, moderators and full members", unique_id: 7},
         {name: "translated: Admins and moderators", unique_id: 4},
         {name: "translated: Admins", unique_id: 3},
+        {name: "translated: Owners", unique_id: 2},
     ];
 
     user_groups.initialize({

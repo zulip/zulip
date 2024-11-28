@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 326**
+
+* [`POST /register`](/api/register-queue): Removed `allow_owners_group`
+  field from configuration data object of permission settings passed in
+  `server_supported_permission_settings`.
+
 **Feature level 325**
 
 * [`GET /users/me/subscriptions`](/api/get-subscriptions),

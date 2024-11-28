@@ -145,7 +145,6 @@ class Stream(models.Model):
         "can_administer_channel_group": GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=True,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name="stream_creator_or_nobody",
@@ -154,7 +153,6 @@ class Stream(models.Model):
         "can_remove_subscribers_group": GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=False,
             allow_nobody_group=False,
             allow_everyone_group=True,
             default_group_name=SystemGroups.ADMINISTRATORS,

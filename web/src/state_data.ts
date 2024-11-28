@@ -16,7 +16,6 @@ const NOT_TYPED_YET = z.unknown();
 const group_permission_setting_schema = z.object({
     require_system_group: z.boolean(),
     allow_internet_group: z.boolean(),
-    allow_owners_group: z.boolean(),
     allow_nobody_group: z.boolean(),
     allow_everyone_group: z.boolean(),
     default_group_name: z.string(),

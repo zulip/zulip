@@ -369,16 +369,6 @@ def check_setting_configuration_for_system_groups(
         )
 
     if (
-        not permission_configuration.allow_owners_group
-        and setting_group.name == SystemGroups.OWNERS
-    ):
-        raise JsonableError(
-            _("'{setting_name}' setting cannot be set to 'role:owners' group.").format(
-                setting_name=setting_name
-            )
-        )
-
-    if (
         not permission_configuration.allow_nobody_group
         and setting_group.name == SystemGroups.NOBODY
     ):

@@ -678,7 +678,6 @@ run_test("set_up_group_setting_typeahead", ({mock_template, override, override_r
         return {
             require_system_group: false,
             allow_internet_group: false,
-            allow_owners_group: false,
             allow_nobody_group: true,
             allow_everyone_group: false,
             allowed_system_groups: ["role:moderators", "role:nobody", "role:fullmembers"],

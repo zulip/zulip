@@ -105,7 +105,6 @@ class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # djang
         "can_add_members_group": GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=True,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name="group_creator",
@@ -115,7 +114,6 @@ class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # djang
         "can_join_group": GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=True,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.NOBODY,
@@ -125,7 +123,6 @@ class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # djang
         "can_leave_group": GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=True,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
@@ -135,7 +132,6 @@ class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # djang
         "can_manage_group": GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=True,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name="group_creator",
@@ -145,7 +141,6 @@ class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # djang
         "can_mention_group": GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
@@ -155,7 +150,6 @@ class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # djang
         "can_remove_members_group": GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=True,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.NOBODY,

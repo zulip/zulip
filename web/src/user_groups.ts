@@ -472,19 +472,10 @@ export function check_system_user_group_allowed_for_setting(
     group_setting_config: GroupPermissionSetting,
     for_new_settings_ui: boolean,
 ): boolean {
-    const {
-        allow_internet_group,
-        allow_owners_group,
-        allow_nobody_group,
-        allow_everyone_group,
-        allowed_system_groups,
-    } = group_setting_config;
+    const {allow_internet_group, allow_nobody_group, allow_everyone_group, allowed_system_groups} =
+        group_setting_config;
 
     if (!allow_internet_group && group_name === "role:internet") {
-        return false;
-    }
-
-    if (!allow_owners_group && group_name === "role:owners") {
         return false;
     }
 

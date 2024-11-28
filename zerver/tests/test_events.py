@@ -3856,12 +3856,6 @@ class RealmPropertyActionTest(BaseAction):
                 continue
 
             if (
-                not setting_permission_configuration.allow_owners_group
-                and user_group.name == SystemGroups.OWNERS
-            ):
-                continue
-
-            if (
                 not setting_permission_configuration.allow_nobody_group
                 and user_group.name == SystemGroups.NOBODY
             ):

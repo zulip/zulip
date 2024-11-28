@@ -23898,6 +23898,9 @@ components:
         Configuration for a group permission setting specifying the groups
         to which the setting can be set to and the default values for the
         setting.
+
+        **Changes**: Removed `allow_owners_group` field in Zulip 10.0 (feature level 326),
+        as we now support anonymous user groups.
       additionalProperties: false
       type: object
       properties:
@@ -23909,10 +23912,6 @@ components:
           type: boolean
           description: |
             Whether the setting can be set to `role:internet` system group.
-        allow_owners_group:
-          type: boolean
-          description: |
-            Whether the setting can be set to `role:owners` system group.
         allow_nobody_group:
           type: boolean
           description: |
