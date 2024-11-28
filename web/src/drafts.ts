@@ -61,7 +61,7 @@ const draft_schema = z.intersection(
     ]),
 );
 
-type LocalStorageDraft = z.infer<typeof draft_schema>;
+export type LocalStorageDraft = z.infer<typeof draft_schema>;
 
 // The id is added to the draft in format_drafts in drafts_overlay_ui.
 // We should probably just include it in the draft object itself always?
@@ -568,7 +568,7 @@ export function remove_old_drafts(): void {
     }
 }
 
-type FormattedDraft =
+export type FormattedDraft =
     | {
           is_stream: true;
           draft_id: string;

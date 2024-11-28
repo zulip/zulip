@@ -38,7 +38,7 @@ import * as copy_and_paste from "./copy_and_paste.ts";
 import * as desktop_integration from "./desktop_integration.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
 import * as drafts from "./drafts.ts";
-import * as drafts_overlay_ui from "./drafts_overlay_ui.js";
+import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
 import * as echo from "./echo.ts";
 import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";

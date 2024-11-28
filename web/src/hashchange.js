@@ -4,7 +4,7 @@ import * as about_zulip from "./about_zulip.ts";
 import * as admin from "./admin.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
-import * as drafts_overlay_ui from "./drafts_overlay_ui.js";
+import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
 import * as hash_parser from "./hash_parser.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t_html} from "./i18n.ts";
