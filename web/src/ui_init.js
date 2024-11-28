@@ -133,7 +133,7 @@ import * as thumbnail from "./thumbnail.ts";
 import * as timerender from "./timerender.ts";
 import * as tippyjs from "./tippyjs.ts";
 import * as topic_list from "./topic_list.ts";
-import * as topic_popover from "./topic_popover.js";
+import * as topic_popover from "./topic_popover.ts";
 import * as transmit from "./transmit.js";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as typing from "./typing.ts";

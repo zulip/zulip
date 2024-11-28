@@ -342,7 +342,7 @@ export async function build_move_topic_to_stream_popover(
     current_stream_id: number,
     topic_name: string,
     only_topic_edit: boolean,
-    message: Message | undefined,
+    message?: Message,
 ): Promise<void> {
     const current_stream_name = sub_store.get(current_stream_id)!.name;
     const args: {

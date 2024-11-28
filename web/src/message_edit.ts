@@ -785,7 +785,7 @@ export function toggle_resolve_topic(
     message_id: number,
     old_topic_name: string,
     report_errors_in_global_banner: boolean,
-    $row: JQuery,
+    $row?: JQuery,
 ): void {
     let new_topic_name;
     const topic_is_resolved = resolved_topic.is_resolved(old_topic_name);
@@ -826,7 +826,7 @@ function do_toggle_resolve_topic(
     new_topic_name: string,
     topic_is_resolved: boolean,
     report_errors_in_global_banner: boolean,
-    $row: JQuery,
+    $row?: JQuery,
 ): void {
     if ($row) {
         show_toggle_resolve_topic_spinner($row);

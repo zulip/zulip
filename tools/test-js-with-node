@@ -255,7 +255,7 @@ EXEMPT_FILES = make_set(
         "web/src/tippyjs.ts",
         "web/src/todo_widget.ts",
         "web/src/topic_list.ts",
-        "web/src/topic_popover.js",
+        "web/src/topic_popover.ts",
         "web/src/typing.ts",
         "web/src/typing_events.ts",
         "web/src/ui_init.js",
