@@ -57,8 +57,8 @@
 1. Select the **General** tab on the right.
 
 1. Under **Group permissions**, configure **Who can administer this group**, **Who
-   can mention this group**, **Who can add members to this group**, **Who can join
-   this group**, and **Who can leave this group**.
+   can mention this group**, **Who can add members to this group**, **Who can remove
+   members from this group**, **Who can join this group**, and **Who can leave this group**.
 
 {!save-changes.md!}
 
