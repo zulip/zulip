@@ -513,18 +513,6 @@ export function update_messages(events) {
                 drafts.rename_stream_recipient(old_stream_id, orig_topic, new_stream_id, new_topic);
             }
 
-            // Remove the stream_topic_entry for the old topics;
-            // must be called before we call set message topic.
-            const num_messages = event_messages.length;
-            if (num_messages > 0) {
-                stream_topic_history.remove_messages({
-                    stream_id: old_stream_id,
-                    topic_name: orig_topic,
-                    num_messages,
-                    max_removed_msg_id: event_messages[num_messages - 1].id,
-                });
-            }
-
             for (const moved_message of event_messages) {
                 if (realm.realm_allow_edit_history) {
                     /* Simulate the format of server-generated edit
@@ -573,6 +561,20 @@ export function update_messages(events) {
                     stream_id: moved_message.stream_id,
                     topic_name: moved_message.topic,
                     message_id: moved_message.id,
+                });
+            }
+
+            // Remove the stream_topic_entry for the old topics;
+            // must be called after we call set message topic since
+            // it calls `get_messages_in_topic` which thinks that
+            // `topic` and `stream` of the messages are correctly set.
+            const num_messages = event_messages.length;
+            if (num_messages > 0) {
+                stream_topic_history.remove_messages({
+                    stream_id: old_stream_id,
+                    topic_name: orig_topic,
+                    num_messages,
+                    max_removed_msg_id: event_messages[num_messages - 1].id,
                 });
             }
 
