@@ -27,7 +27,7 @@ import * as hashchange from "./hashchange.js";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as lightbox from "./lightbox.ts";
 import * as list_util from "./list_util.ts";
-import * as message_actions_popover from "./message_actions_popover.js";
+import * as message_actions_popover from "./message_actions_popover.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_edit_history from "./message_edit_history.ts";
 import * as message_lists from "./message_lists.ts";

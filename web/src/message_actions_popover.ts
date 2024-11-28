@@ -4,13 +4,13 @@ import assert from "minimalistic-assert";
 
 import render_message_actions_popover from "../templates/popovers/message_actions_popover.hbs";
 
-import * as blueslip from "./blueslip.ts";
 import * as compose_reply from "./compose_reply.ts";
 import * as condense from "./condense.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
+import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";
@@ -20,27 +20,22 @@ import * as rows from "./rows.ts";
 import * as stream_popover from "./stream_popover.ts";
 import {parse_html} from "./ui_util.ts";
 import * as unread_ops from "./unread_ops.ts";
+import {the} from "./util.ts";
 
 let message_actions_popover_keyboard_toggle = false;
 
-function get_action_menu_menu_items() {
-    const $current_actions_popover_elem = $("[data-tippy-root] #message-actions-menu-dropdown");
-    if (!$current_actions_popover_elem) {
-        blueslip.error("Trying to get menu items when action popover is closed.");
-        return undefined;
-    }
-
-    return $current_actions_popover_elem.find("li:not(.divider):visible a");
+function get_action_menu_menu_items(): JQuery {
+    return $("[data-tippy-root] #message-actions-menu-dropdown li:not(.divider):visible a");
 }
 
-function focus_first_action_popover_item() {
+function focus_first_action_popover_item(): void {
     // For now I recommend only calling this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
     const $items = get_action_menu_menu_items();
     popover_menus.focus_first_popover_item($items);
 }
 
-export function toggle_message_actions_menu(message) {
+export function toggle_message_actions_menu(message: Message): boolean {
     if (popover_menus.is_message_actions_popover_displayed()) {
         popovers.hide_all();
         return true;
@@ -69,7 +64,7 @@ export function toggle_message_actions_menu(message) {
     return true;
 }
 
-export function initialize() {
+export function initialize(): void {
     popover_menus.register_popover_menu(".actions_hover .message-actions-menu-button", {
         theme: "popover-menu",
         placement: "bottom",
@@ -96,7 +91,7 @@ export function initialize() {
         onMount(instance) {
             const $row = $(instance.reference).closest(".message_row");
             const message_id = rows.id($row);
-            let quote_content;
+            let quote_content: string | undefined;
             if (compose_reply.selection_within_message_id() === message_id) {
                 // If the user has selected text within this message, quote only that.
                 // We track the selection right now, before the popover option for Quote
@@ -139,7 +134,8 @@ export function initialize() {
                 assert(message_lists.current !== undefined);
                 message_lists.current.select_id(message_id);
                 const message = message_lists.current.get(message_id);
-                stream_popover.build_move_topic_to_stream_popover(
+                assert(message?.type === "stream");
+                void stream_popover.build_move_topic_to_stream_popover(
                     message.stream_id,
                     message.topic,
                     false,
@@ -178,9 +174,11 @@ export function initialize() {
                 assert(message_lists.current !== undefined);
                 const $row = message_lists.current.get_row(message_id);
                 const message = message_lists.current.get(rows.id($row));
+                assert(message !== undefined);
                 const message_container = message_lists.current.view.message_containers.get(
                     message.id,
                 );
+                assert(message_container !== undefined);
                 if ($row && !message_container.is_hidden) {
                     message_lists.current.view.hide_revealed_message(message_id);
                 }
@@ -211,14 +209,15 @@ export function initialize() {
                 // emoji_picker which we don't want to hide after actions popover is hidden.
                 e.stopPropagation();
                 e.preventDefault();
+                assert(instance.reference.parentElement !== null);
                 emoji_picker.toggle_emoji_popover(instance.reference.parentElement, message_id, {
                     placement: "bottom",
                 });
                 popover_menus.hide_current_popover_if_visible(instance);
             });
 
-            new ClipboardJS($popper.find(".copy_link")[0]).on("success", () => {
-                show_copied_confirmation($(instance.reference).closest(".message_controls")[0]);
+            new ClipboardJS(the($popper.find(".copy_link"))).on("success", () => {
+                show_copied_confirmation(the($(instance.reference).closest(".message_controls")));
                 setTimeout(() => {
                     // The Clipboard library works by focusing to a hidden textarea.
                     // We unfocus this so keyboard shortcuts, etc., will work again.
@@ -231,7 +230,7 @@ export function initialize() {
             const $row = $(instance.reference).closest(".message_row");
             $row.removeClass("has_actions_popover");
             instance.destroy();
-            popover_menus.popover_instances.message_actions = undefined;
+            popover_menus.popover_instances.message_actions = null;
             message_actions_popover_keyboard_toggle = false;
         },
     });
