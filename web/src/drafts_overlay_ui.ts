@@ -1,10 +1,12 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import render_draft_table_body from "../templates/draft_table_body.hbs";
 
 import * as browser_history from "./browser_history.ts";
 import * as compose_actions from "./compose_actions.ts";
+import type {FormattedDraft, LocalStorageDraft} from "./drafts.ts";
 import * as drafts from "./drafts.ts";
 import {$t} from "./i18n.ts";
 import * as message_view from "./message_view.ts";
@@ -15,7 +17,7 @@ import * as rendered_markdown from "./rendered_markdown.ts";
 import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 
-function restore_draft(draft_id) {
+function restore_draft(draft_id: string): void {
     const draft = drafts.draft_model.getDraft(draft_id);
     if (!draft) {
         return;
@@ -24,7 +26,7 @@ function restore_draft(draft_id) {
     const compose_args = {...drafts.restore_message(draft), draft_id};
 
     if (compose_args.type === "stream") {
-        if (draft.stream_id !== undefined && draft.topic !== "") {
+        if (compose_args.stream_id !== undefined && compose_args.topic !== "") {
             message_view.show(
                 [
                     {
@@ -51,9 +53,9 @@ function restore_draft(draft_id) {
     });
 }
 
-function remove_draft($draft_row) {
+function remove_draft($draft_row: JQuery): void {
     // Deletes the draft and removes it from the list
-    const draft_id = $draft_row.attr("data-draft-id");
+    const draft_id = $draft_row.attr("data-draft-id")!;
 
     drafts.draft_model.deleteDraft(draft_id);
 
@@ -68,7 +70,10 @@ function remove_draft($draft_row) {
     );
 }
 
-function update_rendered_drafts(has_drafts_from_conversation, has_other_drafts) {
+function update_rendered_drafts(
+    has_drafts_from_conversation: boolean,
+    has_other_drafts: boolean,
+): void {
     if (has_drafts_from_conversation) {
         $("#drafts-from-conversation").show();
     } else {
@@ -82,7 +87,7 @@ function update_rendered_drafts(has_drafts_from_conversation, has_other_drafts) 
     }
 }
 
-const keyboard_handling_context = {
+const keyboard_handling_context: messages_overlay_ui.Context = {
     get_items_ids() {
         const draft_arrow = drafts.draft_model.get();
         return Object.getOwnPropertyNames(draft_arrow);
@@ -96,6 +101,7 @@ const keyboard_handling_context = {
             restore_draft(focused_draft_id);
         } else {
             const first_draft = draft_id_arrow.at(-1);
+            assert(first_draft !== undefined);
             restore_draft(first_draft);
         }
     },
@@ -116,17 +122,13 @@ const keyboard_handling_context = {
     id_attribute_name: "data-draft-id",
 };
 
-export function handle_keyboard_events(event_key) {
+export function handle_keyboard_events(event_key: string): void {
     messages_overlay_ui.modals_handle_events(event_key, keyboard_handling_context);
 }
 
-export function launch() {
-    function format_drafts(data) {
-        for (const [id, draft] of Object.entries(data)) {
-            draft.id = id;
-        }
-
-        const unsorted_raw_drafts = Object.values(data);
+export function launch(): void {
+    function format_drafts(data: Record<string, LocalStorageDraft>): FormattedDraft[] {
+        const unsorted_raw_drafts = Object.entries(data).map(([id, draft]) => ({...draft, id}));
 
         const sorted_raw_drafts = unsorted_raw_drafts.sort(
             (draft_a, draft_b) => draft_b.updatedAt - draft_a.updatedAt,
@@ -134,12 +136,12 @@ export function launch() {
 
         const sorted_formatted_drafts = sorted_raw_drafts
             .map((draft_row) => drafts.format_draft(draft_row))
-            .filter(Boolean);
+            .filter((formatted_draft) => formatted_draft !== undefined);
 
         return sorted_formatted_drafts;
     }
 
-    function get_header_for_narrow_drafts() {
+    function get_header_for_narrow_drafts(): string {
         const {stream_name, topic, private_recipients} = drafts.current_recipient_data();
         if (private_recipients) {
             return $t(
@@ -153,7 +155,7 @@ export function launch() {
         return $t({defaultMessage: "Drafts from {recipient}"}, {recipient});
     }
 
-    function render_widgets(narrow_drafts, other_drafts) {
+    function render_widgets(narrow_drafts: FormattedDraft[], other_drafts: FormattedDraft[]): void {
         $("#drafts_table").empty();
 
         const narrow_drafts_header = get_header_for_narrow_drafts();
@@ -180,16 +182,16 @@ export function launch() {
         update_bulk_delete_ui();
     }
 
-    function setup_event_handlers() {
+    function setup_event_handlers(): void {
         $("#drafts_table .restore-overlay-message").on("click", function (e) {
-            if (document.getSelection().type === "Range") {
+            if (document.getSelection()?.type === "Range") {
                 return;
             }
 
             e.stopPropagation();
 
             const $draft_row = $(this).closest(".overlay-message-row");
-            const draft_id = $draft_row.attr("data-draft-id");
+            const draft_id = $draft_row.attr("data-draft-id")!;
             restore_draft(draft_id);
         });
 
@@ -199,10 +201,14 @@ export function launch() {
             user_card_popover.unsaved_message_user_mention_event_handler,
         );
 
-        $("#drafts_table .restore-overlay-message").on("click", ".user-group-mention", (e) => {
-            user_group_popover.toggle_user_group_info_popover(e.currentTarget, undefined);
-            e.stopPropagation();
-        });
+        $("#drafts_table .restore-overlay-message").on(
+            "click",
+            ".user-group-mention",
+            function (this: HTMLElement, e) {
+                user_group_popover.toggle_user_group_info_popover(this, undefined);
+                e.stopPropagation();
+            },
+        );
 
         $("#drafts_table .overlay_message_controls .delete-overlay-message").on(
             "click",
@@ -264,7 +270,7 @@ export function launch() {
     setup_event_handlers();
 }
 
-export function update_bulk_delete_ui() {
+export function update_bulk_delete_ui(): void {
     const $unchecked_checkboxes = $(".draft-selection-checkbox").filter(function () {
         return !is_checkbox_icon_checked($(this));
     });
@@ -293,7 +299,7 @@ export function update_bulk_delete_ui() {
     }
 }
 
-export function open_overlay() {
+export function open_overlay(): void {
     drafts.sync_count();
     overlays.open_overlay({
         name: "drafts",
@@ -305,12 +311,12 @@ export function open_overlay() {
     });
 }
 
-export function is_checkbox_icon_checked($checkbox) {
+export function is_checkbox_icon_checked($checkbox: JQuery): boolean {
     return $checkbox.hasClass("fa-check-square");
 }
 
-export function toggle_checkbox_icon_state($checkbox, checked) {
-    $checkbox.parent().attr("aria-checked", checked);
+export function toggle_checkbox_icon_state($checkbox: JQuery, checked: boolean): void {
+    $checkbox.parent().attr("aria-checked", checked.toString());
     if (checked) {
         $checkbox.removeClass("fa-square-o").addClass("fa-check-square");
     } else {
@@ -318,8 +324,8 @@ export function toggle_checkbox_icon_state($checkbox, checked) {
     }
 }
 
-export function initialize() {
-    $("body").on("focus", "#drafts_table .overlay-message-info-box", (e) => {
-        messages_overlay_ui.activate_element(e.target, keyboard_handling_context);
+export function initialize(): void {
+    $("body").on("focus", "#drafts_table .overlay-message-info-box", function (this: HTMLElement) {
+        messages_overlay_ui.activate_element(this, keyboard_handling_context);
     });
 }

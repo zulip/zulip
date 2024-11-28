@@ -16,7 +16,7 @@ import * as compose_textarea from "./compose_textarea.ts";
 import * as condense from "./condense.ts";
 import * as copy_and_paste from "./copy_and_paste.ts";
 import * as deprecated_feature_notice from "./deprecated_feature_notice.ts";
-import * as drafts_overlay_ui from "./drafts_overlay_ui.js";
+import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
 import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as feedback_widget from "./feedback_widget.ts";
