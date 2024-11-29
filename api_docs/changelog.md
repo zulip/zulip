@@ -43,6 +43,7 @@ format used by the Zulip server that they are interacting with.
     * `orig_subject` and `subject` fields in the `update_message` event type
     * `topic_name` field in the `user_topic` event type
     * `topic` field in the `typing` event type
+    * `topic` field in the `update_message_flags` event type when removing `read` flag
 
 * [`GET /messages`](/api/get-messages),
   [`GET /messages/{message_id}`](/api/get-message): Added `allow_empty_topic_name`
