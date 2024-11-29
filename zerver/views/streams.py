@@ -81,6 +81,7 @@ from zerver.lib.user_groups import (
     GroupSettingChangeRequest,
     access_user_group_for_setting,
     get_group_setting_value_for_api,
+    get_role_based_system_groups_dict,
     parse_group_setting_value,
     validate_group_setting_value_change,
 )
@@ -594,6 +595,9 @@ def add_subscriptions_backend(
     setting_groups_dict = {}
     group_settings_map = {}
     request_settings_dict = locals()
+    # We don't want to calculate this value if no default values are
+    # needed.
+    system_groups_name_dict = None
     for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
         assert setting_name in request_settings_dict
         if request_settings_dict[setting_name] is not None:
@@ -607,8 +611,10 @@ def add_subscriptions_backend(
             )
             setting_groups_dict[group_settings_map[setting_name].id] = setting_value
         else:
+            if system_groups_name_dict is None:
+                system_groups_name_dict = get_role_based_system_groups_dict(realm)
             group_settings_map[setting_name] = get_stream_permission_default_group(
-                setting_name, realm
+                setting_name, system_groups_name_dict
             )
             setting_groups_dict[group_settings_map[setting_name].id] = group_settings_map[
                 setting_name

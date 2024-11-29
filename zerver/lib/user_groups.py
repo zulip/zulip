@@ -868,12 +868,11 @@ def bulk_create_system_user_groups(groups: list[dict[str, str]], realm: Realm) -
 
 
 @transaction.atomic(savepoint=False)
-def create_system_user_groups_for_realm(realm: Realm) -> dict[int, NamedUserGroup]:
+def create_system_user_groups_for_realm(realm: Realm) -> dict[str, NamedUserGroup]:
     """Any changes to this function likely require a migration to adjust
     existing realms.  See e.g. migration 0382_create_role_based_system_groups.py,
     which is a copy of this function from when we introduced system groups.
     """
-    role_system_groups_dict: dict[int, NamedUserGroup] = {}
 
     system_groups_info_list: list[dict[str, str]] = []
 
@@ -906,9 +905,6 @@ def create_system_user_groups_for_realm(realm: Realm) -> dict[int, NamedUserGrou
     bulk_create_system_user_groups(system_groups_info_list, realm)
 
     system_groups_name_dict: dict[str, NamedUserGroup] = get_role_based_system_groups_dict(realm)
-    for role in NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP:
-        group_name = NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[role]["name"]
-        role_system_groups_dict[role] = system_groups_name_dict[group_name]
 
     # Order of this list here is important to create correct GroupGroupMembership objects
     # Note that because we do not create user memberships here, no audit log entries for
@@ -982,7 +978,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> dict[int, NamedUserGrou
     GroupGroupMembership.objects.bulk_create(subgroup_objects)
     RealmAuditLog.objects.bulk_create(realmauditlog_objects)
 
-    return role_system_groups_dict
+    return system_groups_name_dict
 
 
 def get_system_user_group_for_user(user_profile: UserProfile) -> NamedUserGroup:

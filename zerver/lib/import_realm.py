@@ -247,11 +247,15 @@ def fix_upload_links(data: TableData, message_table: TableName) -> None:
                     )
 
 
-def fix_stream_permission_group_settings(data: TableData, realm: Realm) -> None:
+def fix_stream_permission_group_settings(
+    data: TableData, system_groups_name_dict: dict[str, NamedUserGroup]
+) -> None:
     table = get_db_table(Stream)
     for stream in data[table]:
         for setting_name in Stream.stream_permission_group_settings:
-            stream[setting_name] = get_stream_permission_default_group(setting_name, realm)
+            stream[setting_name] = get_stream_permission_default_group(
+                setting_name, system_groups_name_dict
+            )
 
 
 def create_subscription_events(data: TableData, realm_id: int) -> None:
@@ -1269,9 +1273,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
         # We expect Zulip server exports to contain these system groups,
         # this logic here is needed to handle the imports from other services.
-        role_system_groups_dict: dict[int, NamedUserGroup] | None = None
+        system_groups_name_dict: dict[str, NamedUserGroup] | None = None
         if "zerver_usergroup" not in data:
-            role_system_groups_dict = create_system_user_groups_for_realm(realm)
+            system_groups_name_dict = create_system_user_groups_for_realm(realm)
 
         # Email tokens will automatically be randomly generated when the
         # Stream objects are created by Django.
@@ -1289,11 +1293,11 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
             creator_id = stream.pop("creator_id", None)
             stream_id_to_creator_id[stream["id"]] = creator_id
 
-        if role_system_groups_dict is not None:
+        if system_groups_name_dict is not None:
             # Because the system user groups are missing, we manually set up
             # the defaults for stream permission settings for all the
             # streams.
-            fix_stream_permission_group_settings(data, realm)
+            fix_stream_permission_group_settings(data, system_groups_name_dict)
         else:
             for setting_name in Stream.stream_permission_group_settings:
                 re_map_foreign_keys(data, "zerver_stream", setting_name, related_table="usergroup")
@@ -1540,8 +1544,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # We expect Zulip server exports to contain UserGroupMembership objects
     # for system groups, this logic here is needed to handle the imports from
     # other services.
-    if role_system_groups_dict is not None:
-        add_users_to_system_user_groups(realm, user_profiles, role_system_groups_dict)
+    if system_groups_name_dict is not None:
+        add_users_to_system_user_groups(realm, user_profiles, system_groups_name_dict)
 
     if "zerver_botstoragedata" in data:
         re_map_foreign_keys(
@@ -2078,13 +2082,18 @@ def import_analytics_data(realm: Realm, import_dir: Path, crossrealm_user_ids: s
 def add_users_to_system_user_groups(
     realm: Realm,
     user_profiles: list[UserProfile],
-    role_system_groups_dict: dict[int, NamedUserGroup],
+    system_groups_name_dict: dict[str, NamedUserGroup],
 ) -> None:
     full_members_system_group = NamedUserGroup.objects.get(
         name=SystemGroups.FULL_MEMBERS,
         realm=realm,
         is_system_group=True,
     )
+
+    role_system_groups_dict: dict[int, NamedUserGroup] = dict()
+    for role in NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP:
+        group_name = NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[role]["name"]
+        role_system_groups_dict[role] = system_groups_name_dict[group_name]
 
     usergroup_memberships = []
     for user_profile in user_profiles:

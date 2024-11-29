@@ -25,6 +25,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import AnonymousSettingGroupDict, APIStreamDict
 from zerver.lib.user_groups import (
     get_group_setting_value_for_api,
+    get_role_based_system_groups_dict,
     user_has_permission_for_group_setting,
 )
 from zerver.models import (
@@ -139,20 +140,19 @@ def send_stream_creation_event(
     send_event_on_commit(realm, event, user_ids)
 
 
-def get_stream_permission_default_group(setting_name: str, realm: Realm) -> UserGroup:
+def get_stream_permission_default_group(
+    setting_name: str, system_groups_name_dict: dict[str, NamedUserGroup]
+) -> UserGroup:
     setting_default_name = Stream.stream_permission_group_settings[setting_name].default_group_name
-    return NamedUserGroup.objects.get(
-        name=setting_default_name,
-        realm=realm,
-        is_system_group=True,
-    )
+    return system_groups_name_dict[setting_default_name]
 
 
 def get_default_group_setting_values(realm: Realm) -> dict[str, UserGroup]:
     group_setting_values = {}
+    system_groups_name_dict = get_role_based_system_groups_dict(realm)
     for setting_name in Stream.stream_permission_group_settings:
         group_setting_values[setting_name] = get_stream_permission_default_group(
-            setting_name, realm
+            setting_name, system_groups_name_dict
         )
 
     return group_setting_values
@@ -179,13 +179,18 @@ def create_stream_if_needed(
 
     group_setting_values = {}
     request_settings_dict = locals()
+    # We don't want to calculate this value if no default values are
+    # needed.
+    system_groups_name_dict = None
     for setting_name in Stream.stream_permission_group_settings:
         if setting_name not in request_settings_dict:  # nocoverage
             continue
 
         if request_settings_dict[setting_name] is None:
+            if system_groups_name_dict is None:
+                system_groups_name_dict = get_role_based_system_groups_dict(realm)
             group_setting_values[setting_name] = get_stream_permission_default_group(
-                setting_name, realm
+                setting_name, system_groups_name_dict
             )
         else:
             group_setting_values[setting_name] = request_settings_dict[setting_name]
