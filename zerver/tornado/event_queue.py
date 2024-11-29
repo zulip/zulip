@@ -1663,6 +1663,25 @@ def process_stream_typing_notification_event(
                 client.add_event(empty_topic_name_fallback_event)
 
 
+def process_mark_message_unread_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    empty_topic_name_fallback_event = copy.deepcopy(dict(event))
+    for message_id, message_detail in empty_topic_name_fallback_event["message_details"].items():
+        if message_detail["type"] == "stream" and message_detail.get("topic") == "":
+            empty_topic_name_fallback_event["message_details"][message_id]["topic"] = (
+                Message.EMPTY_TOPIC_FALLBACK_NAME
+            )
+
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if not client.accepts_event(event):
+                continue
+
+            if client.empty_topic_name:
+                client.add_event(event)
+            else:
+                client.add_event(empty_topic_name_fallback_event)
+
+
 def process_notification(notice: Mapping[str, Any]) -> None:
     event: Mapping[str, Any] = notice["event"]
     users: list[int] | list[Mapping[str, Any]] = notice["users"]
@@ -1695,6 +1714,12 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         process_user_topic_event(event, cast(list[int], users))
     elif event["type"] == "typing" and event["message_type"] == "stream":
         process_stream_typing_notification_event(event, cast(list[int], users))
+    elif (
+        event["type"] == "update_message_flags"
+        and event["op"] == "remove"
+        and event["flag"] == "read"
+    ):
+        process_mark_message_unread_event(event, cast(list[int], users))
     elif event["type"] == "cleanup_queue":
         # cleanup_event_queue may generate this event to forward cleanup
         # requests to the right shard.
