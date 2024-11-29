@@ -589,7 +589,9 @@ def fetch_initial_state_data(
             or state["can_create_web_public_streams"]
         )
         state["can_subscribe_other_users"] = settings_user.can_subscribe_other_users()
-        state["can_invite_others_to_realm"] = settings_user.can_invite_users_by_email(realm)
+        state["can_invite_others_to_realm"] = (
+            realm.can_invite_users_group_id in settings_user_recursive_group_ids
+        )
         state["is_admin"] = settings_user.is_realm_admin
         state["is_owner"] = settings_user.is_realm_owner
         state["is_moderator"] = settings_user.is_moderator
