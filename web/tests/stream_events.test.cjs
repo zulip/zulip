@@ -278,10 +278,11 @@ test("update_property", ({override}) => {
     // Test stream can_remove_subscribers_group change event
     {
         const stub = make_stub();
-        override(stream_settings_ui, "update_can_remove_subscribers_group", stub.f);
+        override(stream_settings_ui, "update_stream_permission_group_setting", stub.f);
         stream_events.update_property(stream_id, "can_remove_subscribers_group", 3);
         assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("sub", "val");
+        const args = stub.get_args("setting_name", "sub", "val");
+        assert.equal(args.setting_name, "can_remove_subscribers_group");
         assert.equal(args.sub.stream_id, stream_id);
         assert.equal(args.val, 3);
     }

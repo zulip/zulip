@@ -30,6 +30,7 @@ import type {CustomProfileField, GroupSettingValue} from "./state_data.ts";
 import {current_user, realm, realm_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_containers from "./stream_settings_containers.ts";
+import type {StreamPermissionGroupSetting} from "./stream_types.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import {stream_subscription_schema} from "./sub_store.ts";
 import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
@@ -1681,15 +1682,13 @@ export function create_realm_group_setting_widget({
     });
 }
 
-type stream_setting_name = "can_remove_subscribers_group";
-
 export function create_stream_group_setting_widget({
     $pill_container,
     setting_name,
     sub,
 }: {
     $pill_container: JQuery;
-    setting_name: stream_setting_name;
+    setting_name: StreamPermissionGroupSetting;
     sub?: StreamSubscription;
 }): GroupSettingPillContainer {
     const pill_widget = group_setting_pill.create_pills($pill_container, setting_name, "stream");

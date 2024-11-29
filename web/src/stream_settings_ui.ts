@@ -41,7 +41,7 @@ import * as stream_list from "./stream_list.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
-import type {StreamPostPolicy} from "./stream_types.ts";
+import type {StreamPermissionGroupSetting, StreamPostPolicy} from "./stream_types.ts";
 import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
@@ -213,12 +213,13 @@ export function update_message_retention_setting(
     stream_ui_updates.update_setting_element(sub, "message_retention_days");
 }
 
-export function update_can_remove_subscribers_group(
+export function update_stream_permission_group_setting(
+    setting_name: StreamPermissionGroupSetting,
     sub: StreamSubscription,
     new_value: GroupSettingValue,
 ): void {
-    stream_data.update_can_remove_subscribers_group(sub, new_value);
-    stream_ui_updates.update_setting_element(sub, "can_remove_subscribers_group");
+    stream_data.update_stream_permission_group_setting(setting_name, sub, new_value);
+    stream_ui_updates.update_setting_element(sub, setting_name);
     stream_edit_subscribers.rerender_subscribers_list(sub);
 }
 
