@@ -146,7 +146,11 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             stream_settings_ui.update_message_retention_setting(sub, value);
         },
         can_remove_subscribers_group(value) {
-            stream_settings_ui.update_can_remove_subscribers_group(sub, value);
+            stream_settings_ui.update_stream_permission_group_setting(
+                "can_remove_subscribers_group",
+                sub,
+                value,
+            );
         },
         is_recently_active(value) {
             update_stream_setting(sub, value, "is_recently_active");

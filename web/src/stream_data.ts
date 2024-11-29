@@ -11,7 +11,7 @@ import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import type {GroupSettingValue, StateData} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
-import type {StreamPostPolicy} from "./stream_types.ts";
+import type {StreamPermissionGroupSetting, StreamPostPolicy} from "./stream_types.ts";
 import * as sub_store from "./sub_store.ts";
 import type {
     ApiStreamSubscription,
@@ -424,11 +424,12 @@ export function update_message_retention_setting(
     sub.message_retention_days = message_retention_days;
 }
 
-export function update_can_remove_subscribers_group(
+export function update_stream_permission_group_setting(
+    setting_name: StreamPermissionGroupSetting,
     sub: StreamSubscription,
-    can_remove_subscribers_group: GroupSettingValue,
+    group_setting: GroupSettingValue,
 ): void {
-    sub.can_remove_subscribers_group = can_remove_subscribers_group;
+    sub[setting_name] = group_setting;
 }
 
 export function receives_notifications(

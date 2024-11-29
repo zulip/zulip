@@ -9,6 +9,9 @@ export const enum StreamPostPolicy {
     MODERATORS = 4,
 }
 
+export const stream_permission_group_settings_schema = z.enum(["can_remove_subscribers_group"]);
+export type StreamPermissionGroupSetting = z.infer<typeof stream_permission_group_settings_schema>;
+
 // These types are taken from the `zerver/lib/types.py`.
 export const stream_schema = z.object({
     creator_id: z.number().nullable(),

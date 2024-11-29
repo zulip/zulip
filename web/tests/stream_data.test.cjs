@@ -538,7 +538,11 @@ test("stream_settings", ({override}) => {
     });
     stream_data.update_stream_post_policy(sub, 1);
     stream_data.update_message_retention_setting(sub, -1);
-    stream_data.update_can_remove_subscribers_group(sub, moderators_group.id);
+    stream_data.update_stream_permission_group_setting(
+        "can_remove_subscribers_group",
+        sub,
+        moderators_group.id,
+    );
     assert.equal(sub.invite_only, false);
     assert.equal(sub.history_public_to_subscribers, false);
     assert.equal(sub.stream_post_policy, settings_config.stream_post_policy_values.everyone.code);
