@@ -3129,6 +3129,17 @@ paths:
                                           Present only if `type` is `"stream"`.
 
                                           Name of the topic where the message was sent.
+
+                                          For clients that don't support the `empty_topic_name` [client capability][client-capabilities],
+                                          if the actual topic name is empty string, this field's value will instead
+                                          be the value of `realm_empty_topic_display_name` found in the
+                                          [`POST /register`](/api/register-queue) response.
+
+                                          **Changes**: Before 10.0 (feature level 334), `empty_topic_name`
+                                          client capability didn't exist and empty string as the topic name for
+                                          channel messages wasn't allowed.
+
+                                          [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                       unmuted_stream_msg:
                                         type: boolean
                                         deprecated: true

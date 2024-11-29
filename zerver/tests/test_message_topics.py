@@ -377,7 +377,14 @@ class EmptyTopicNameTest(ZulipTestCase):
             apply_markdown=True,
             client_type_name="website",
             empty_topic_name=True,
-            event_types=["message", "update_message", "delete_message", "user_topic", "typing"],
+            event_types=[
+                "message",
+                "update_message",
+                "delete_message",
+                "user_topic",
+                "typing",
+                "update_message_flags",
+            ],
             last_connection_time=time.time(),
             queue_timeout=600,
             realm_id=hamlet.realm.id,
@@ -425,10 +432,10 @@ class EmptyTopicNameTest(ZulipTestCase):
         self.assertEqual(events[5]["topic"], "")
 
         # reset
-        self.send_stream_message(
+        message_id = self.send_stream_message(
             iago, "Denmark", topic_name="", skip_capture_on_commit_callbacks=True
         )
-        self.send_stream_message(
+        message_id_2 = self.send_stream_message(
             iago,
             "Verona",
             topic_name=Message.EMPTY_TOPIC_FALLBACK_NAME,
@@ -473,6 +480,25 @@ class EmptyTopicNameTest(ZulipTestCase):
         self.assertEqual(events[8]["topic"], "")
         self.assertEqual(events[9]["topic"], "")
 
+        # Prep to mark it as read before marking it as unread.
+        params = {
+            "messages": orjson.dumps([message_id, message_id_2]).decode(),
+            "op": "add",
+            "flag": "read",
+        }
+        self.client_post("/json/messages/flags", params)
+
+        with self.captureOnCommitCallbacks(execute=True):
+            params = {
+                "messages": orjson.dumps([message_id, message_id_2]).decode(),
+                "op": "remove",
+                "flag": "read",
+            }
+            self.client_post("/json/messages/flags", params)
+        events = client.event_queue.contents()
+        self.assertEqual(events[10]["message_details"][str(message_id)]["topic"], "")
+        self.assertEqual(events[10]["message_details"][str(message_id_2)]["topic"], "")
+
     def test_client_not_supports_empty_topic_name(self) -> None:
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
@@ -481,7 +507,14 @@ class EmptyTopicNameTest(ZulipTestCase):
             apply_markdown=True,
             client_type_name="zulip-mobile",
             empty_topic_name=False,
-            event_types=["message", "update_message", "delete_message", "user_topic", "typing"],
+            event_types=[
+                "message",
+                "update_message",
+                "delete_message",
+                "user_topic",
+                "typing",
+                "update_message_flags",
+            ],
             last_connection_time=time.time(),
             queue_timeout=600,
             realm_id=hamlet.realm.id,
@@ -529,10 +562,10 @@ class EmptyTopicNameTest(ZulipTestCase):
         self.assertEqual(events[5]["topic"], Message.EMPTY_TOPIC_FALLBACK_NAME)
 
         # reset
-        self.send_stream_message(
+        message_id = self.send_stream_message(
             iago, "Denmark", topic_name="", skip_capture_on_commit_callbacks=True
         )
-        self.send_stream_message(
+        message_id_2 = self.send_stream_message(
             iago,
             "Verona",
             topic_name=Message.EMPTY_TOPIC_FALLBACK_NAME,
@@ -576,6 +609,31 @@ class EmptyTopicNameTest(ZulipTestCase):
         events = client.event_queue.contents()
         self.assertEqual(events[8]["topic"], Message.EMPTY_TOPIC_FALLBACK_NAME)
         self.assertEqual(events[9]["topic"], Message.EMPTY_TOPIC_FALLBACK_NAME)
+
+        # Prep to mark it as read before marking it as unread.
+        params = {
+            "messages": orjson.dumps([message_id, message_id_2]).decode(),
+            "op": "add",
+            "flag": "read",
+        }
+        self.client_post("/json/messages/flags", params)
+
+        with self.captureOnCommitCallbacks(execute=True):
+            params = {
+                "messages": orjson.dumps([message_id, message_id_2]).decode(),
+                "op": "remove",
+                "flag": "read",
+            }
+            self.client_post("/json/messages/flags", params)
+        events = client.event_queue.contents()
+        self.assertEqual(
+            events[10]["message_details"][str(message_id)]["topic"],
+            Message.EMPTY_TOPIC_FALLBACK_NAME,
+        )
+        self.assertEqual(
+            events[10]["message_details"][str(message_id_2)]["topic"],
+            Message.EMPTY_TOPIC_FALLBACK_NAME,
+        )
 
     def test_fetch_messages(self) -> None:
         hamlet = self.example_user("hamlet")
