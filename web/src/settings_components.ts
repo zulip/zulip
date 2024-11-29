@@ -30,7 +30,10 @@ import type {CustomProfileField, GroupSettingValue} from "./state_data.ts";
 import {current_user, realm, realm_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_containers from "./stream_settings_containers.ts";
-import type {StreamPermissionGroupSetting} from "./stream_types.ts";
+import {
+    type StreamPermissionGroupSetting,
+    stream_permission_group_settings_schema,
+} from "./stream_types.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import {stream_subscription_schema} from "./sub_store.ts";
 import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
@@ -1104,8 +1107,7 @@ export function populate_data_for_stream_settings_request(
                     continue;
                 }
 
-                const stream_group_settings = new Set(["can_remove_subscribers_group"]);
-                if (stream_group_settings.has(property_name)) {
+                if (stream_permission_group_settings_schema.safeParse(property_name).success) {
                     const old_value = get_stream_settings_property_value(
                         stream_settings_property_schema.parse(property_name),
                         sub,
@@ -1386,7 +1388,7 @@ function should_disable_save_button_for_group_settings(settings: string[]): bool
                 setting_name_without_prefix,
                 "realm",
             );
-        } else if (setting_name === "can_remove_subscribers_group") {
+        } else if (stream_permission_group_settings_schema.safeParse(setting_name).success) {
             group_setting_config = group_permission_settings.get_group_permission_setting_config(
                 setting_name,
                 "stream",

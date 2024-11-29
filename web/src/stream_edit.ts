@@ -38,6 +38,7 @@ import * as stream_settings_containers from "./stream_settings_containers.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
 import type {SettingsSubscription} from "./stream_settings_data.ts";
 import {
+    stream_permission_group_settings_schema,
     stream_properties_schema,
     stream_specific_notification_settings_schema,
 } from "./stream_types.ts";
@@ -233,11 +234,13 @@ export function stream_settings(sub: StreamSubscription): StreamSetting[] {
 }
 
 function setup_group_setting_widgets(sub: StreamSubscription): void {
-    settings_components.create_stream_group_setting_widget({
-        $pill_container: $("#id_can_remove_subscribers_group"),
-        setting_name: "can_remove_subscribers_group",
-        sub,
-    });
+    for (const setting_name of Object.keys(realm.server_supported_permission_settings.stream)) {
+        settings_components.create_stream_group_setting_widget({
+            $pill_container: $("#id_" + setting_name),
+            setting_name: stream_permission_group_settings_schema.parse(setting_name),
+            sub,
+        });
+    }
 }
 
 export function show_settings_for(node: HTMLElement): void {
