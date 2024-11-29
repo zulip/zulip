@@ -420,7 +420,7 @@ export async function build_move_topic_to_stream_popover(
         current_stream_id: z.string(),
         new_topic_name: z.string().optional(),
         old_topic_name: z.string(),
-        propagate_mode: z.enum(["change_one", "change_later", "change_all"]),
+        propagate_mode: z.enum(["change_one", "change_later", "change_all"]).optional(),
         send_notification_to_new_thread: z.literal("on").optional(),
         send_notification_to_old_thread: z.literal("on").optional(),
     });
@@ -489,6 +489,7 @@ export async function build_move_topic_to_stream_popover(
         if (message !== undefined) {
             // We already have the message_id here which means that modal is opened using
             // message popover.
+            assert(params.propagate_mode !== undefined);
             propagate_mode = params.propagate_mode;
             const toast_params =
                 propagate_mode === "change_one"
