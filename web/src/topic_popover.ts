@@ -63,7 +63,12 @@ export function initialize(): void {
             },
             onMount(instance) {
                 const $popper = $(instance.popper);
-                const {stream_id, topic_name} = get_conversation(instance);
+                const {stream_id, topic_name, url} = get_conversation(instance);
+                const is_topic_empty = popover_menus_data.get_topic_popover_content_context({
+                    stream_id,
+                    topic_name,
+                    url,
+                }).is_topic_empty;
 
                 if (!stream_id) {
                     popover_menus.hide_current_popover_if_visible(instance);
@@ -113,6 +118,10 @@ export function initialize(): void {
                         error_cb,
                     );
                 });
+
+                if (is_topic_empty) {
+                    return;
+                }
 
                 $popper.one("click", ".sidebar-popover-unstar-all-in-topic", () => {
                     starred_messages_ui.confirm_unstar_all_messages_in_topic(stream_id, topic_name);
