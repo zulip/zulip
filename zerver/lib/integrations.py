@@ -607,7 +607,12 @@ INTEGRATIONS: dict[str, Integration] = {
     "rss": Integration(
         "rss", ["communication"], display_name="RSS", doc="zerver/integrations/rss.md"
     ),
-    "svn": Integration("svn", ["version-control"], doc="zerver/integrations/svn.md"),
+    "svn": Integration(
+        "svn",
+        ["version-control"],
+        display_name="Subversion",
+        doc="zerver/integrations/svn.md",
+    ),
     "trac": Integration("trac", ["project-management"], doc="zerver/integrations/trac.md"),
     "twitter": Integration(
         "twitter",
