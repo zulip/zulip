@@ -306,12 +306,25 @@ function format_user_group_list_item_html(group: UserGroup, user: User): string 
     const is_direct_member = group.members.has(user.user_id);
     const is_me = user.user_id === current_user.user_id;
     const can_leave_user_group = is_me && settings_data.can_leave_user_group(group.id);
+    const subgroups_name = [];
+    if (!is_direct_member) {
+        const subgroups = user_groups.get_direct_subgroups_of_group(group).sort(compare_by_name);
+        subgroups_name.push(
+            ...subgroups
+                .filter((subgroup) =>
+                    user_groups.is_user_in_group(subgroup.id, user.user_id, false),
+                )
+                .map((subgroup) => subgroup.name),
+        );
+    }
     return render_user_group_list_item({
         group_id: group.id,
         name: group.name,
         group_edit_url: hash_util.group_edit_url(group, "general"),
         is_guest: current_user.is_guest,
         is_direct_member,
+        subgroups_name: subgroups_name.join(", "),
+        is_me,
         can_remove_members: settings_data.can_manage_user_group(group.id) || can_leave_user_group,
     });
 }

@@ -9,9 +9,11 @@
     {{#if can_remove_members }}
     <td class="remove_member">
         <div class="group_list_remove">
-            <button type="button" name="remove" class="remove-member-button button small rounded button-danger" {{#unless is_direct_member}}disabled="disabled"{{/unless}} >
-                {{t 'Remove' }}
-            </button>
+            <span {{#unless is_direct_member}}class="tippy-zulip-tooltip" data-tippy-content="{{#if is_me}}{{t 'You are a member of {name} because you are a member of a subgroup ({subgroups_name}).'}} {{else}}{{t 'This user is a member of {name} because they are a member of a subgroup ({subgroups_name}).'}}{{/if}}"{{/unless}}>
+                <button type="button" name="remove" class="remove-member-button button small rounded button-danger" {{#unless is_direct_member}}disabled="disabled"{{/unless}} >
+                    {{t 'Remove' }}
+                </button>
+            </span>
         </div>
     </td>
     {{/if}}
