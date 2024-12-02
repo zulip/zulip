@@ -1,19 +1,23 @@
 import assert from "node:assert/strict";
-import "css.escape";
+import * as fs from "node:fs";
 import path from "node:path";
 import timersPromises from "node:timers/promises";
 import * as url from "node:url";
 
+import "css.escape";
 import ErrorStackParser from "error-stack-parser";
 import type {Browser, ConsoleMessage, ConsoleMessageLocation, ElementHandle, Page} from "puppeteer";
 import puppeteer from "puppeteer";
 import StackFrame from "stackframe";
 import StackTraceGPS from "stacktrace-gps";
-
-import {test_credentials} from "../../../var/puppeteer/test_credentials.js";
+import {z} from "zod";
 
 const root_dir = url.fileURLToPath(new URL("../../..", import.meta.url));
 const puppeteer_dir = path.join(root_dir, "var/puppeteer");
+
+export const test_credentials = z
+    .object({default_user: z.object({username: z.string(), password: z.string()})})
+    .parse(JSON.parse(fs.readFileSync(path.join(puppeteer_dir, "test_credentials.json"), "utf8")));
 
 type Message = Record<string, string | boolean> & {
     recipient?: string;
