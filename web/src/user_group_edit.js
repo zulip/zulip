@@ -344,6 +344,38 @@ export function handle_subgroup_edit_event(group_id, direct_subgroup_ids) {
     }
 }
 
+function update_status_text_on_member_update(updated_group) {
+    const active_group_id = get_active_data().id;
+    if (active_group_id === undefined) {
+        return;
+    }
+
+    if (updated_group.id === active_group_id) {
+        update_membership_status_text(updated_group);
+        return;
+    }
+
+    // We might need to update the text if the updated groups is
+    // one of the subgroups of the group opened in right panel.
+    const current_user_id = people.my_current_user_id();
+    if (user_groups.is_direct_member_of(current_user_id, active_group_id)) {
+        // Since user is already a direct member of the group opened
+        // in right panel, the text shown will remain the same.
+        return;
+    }
+
+    const is_updated_group_subgroup = user_groups.is_subgroup_of_target_group(
+        active_group_id,
+        updated_group.id,
+    );
+    if (!is_updated_group_subgroup) {
+        return;
+    }
+
+    const active_group = user_groups.get_user_group_from_id(active_group_id);
+    update_membership_status_text(active_group);
+}
+
 function update_settings_for_group_overlay(group_id, user_ids) {
     const group = user_groups.get_user_group_from_id(group_id);
 
@@ -351,7 +383,6 @@ function update_settings_for_group_overlay(group_id, user_ids) {
     if (is_editing_group(group_id)) {
         if (user_ids.includes(people.my_current_user_id())) {
             update_group_management_ui();
-            update_membership_status_text(group);
         } else {
             user_group_edit_members.update_member_list_widget(group);
         }
@@ -360,6 +391,12 @@ function update_settings_for_group_overlay(group_id, user_ids) {
     if (user_ids.includes(people.my_current_user_id())) {
         update_your_groups_list_if_needed(group_id);
         update_display_checkmark_on_group_edit(group);
+
+        // Membership status text can be updated even when user was
+        // added to a group which is not opened in the right panel as
+        // membership can be impacted if the updated group is a
+        // subgroup of the group opened in right panel.
+        update_status_text_on_member_update(group);
     }
 }
 

@@ -706,3 +706,47 @@ run_test("get_potential_subgroups", () => {
     assert.deepEqual(get_potential_subgroup_ids(students.id), [admins.id, teachers.id, science.id]);
     assert.deepEqual(get_potential_subgroup_ids(science.id), [students.id]);
 });
+
+run_test("is_subgroup_of_target_group", () => {
+    const admins = {
+        name: "Administrators",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([]),
+    };
+    const moderators = {
+        name: "Moderators",
+        id: 2,
+        members: new Set([2]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([1]),
+    };
+    const all = {
+        name: "Everyone",
+        id: 3,
+        members: new Set([3, 4]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([2, 4]),
+    };
+    const students = {
+        name: "Students",
+        id: 4,
+        members: new Set([5]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([]),
+    };
+
+    user_groups.initialize({
+        realm_user_groups: [admins, moderators, all, students],
+    });
+
+    assert.ok(user_groups.is_subgroup_of_target_group(moderators.id, admins.id));
+    assert.ok(!user_groups.is_subgroup_of_target_group(admins.id, moderators.id));
+
+    assert.ok(user_groups.is_subgroup_of_target_group(all.id, admins.id));
+    assert.ok(user_groups.is_subgroup_of_target_group(all.id, moderators.id));
+    assert.ok(user_groups.is_subgroup_of_target_group(all.id, students.id));
+
+    assert.ok(!user_groups.is_subgroup_of_target_group(students.id, all.id));
+});
