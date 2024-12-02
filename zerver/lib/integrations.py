@@ -556,7 +556,6 @@ INTEGRATIONS: dict[str, Integration] = {
     "jenkins": Integration(
         "jenkins",
         ["continuous-integration"],
-        secondary_line_text="(or Hudson)",
         doc="zerver/integrations/jenkins.md",
     ),
     "jira-plugin": Integration(
