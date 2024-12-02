@@ -59,7 +59,7 @@ from zerver.lib.subscription_info import (
 from zerver.lib.thumbnail import THUMBNAIL_OUTPUT_FORMATS
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
-from zerver.lib.topic import TOPIC_NAME
+from zerver.lib.topic import TOPIC_NAME, maybe_rename_general_chat_to_empty_topic
 from zerver.lib.user_groups import (
     get_group_setting_value_for_api,
     get_recursive_membership_groups,
@@ -1712,9 +1712,10 @@ def apply_event(
         if event["visibility_policy"] == UserTopic.VisibilityPolicy.INHERIT:
             user_topics_state = state["user_topics"]
             for i in range(len(user_topics_state)):
+                topic_name = maybe_rename_general_chat_to_empty_topic(event["topic_name"])
                 if (
                     user_topics_state[i]["stream_id"] == event["stream_id"]
-                    and user_topics_state[i]["topic_name"] == event["topic_name"]
+                    and user_topics_state[i]["topic_name"] == topic_name
                 ):
                     del user_topics_state[i]
                     break
@@ -1988,3 +1989,8 @@ def post_process_state(
             handle_stream_notifications_compatibility(
                 user_profile, stream_dict, notification_settings_null
             )
+
+    if not allow_empty_topic_name and "user_topics" in ret:
+        for user_topic in ret["user_topics"]:
+            if user_topic["topic_name"] == "":
+                user_topic["topic_name"] = Message.EMPTY_TOPIC_FALLBACK_NAME
