@@ -795,6 +795,19 @@ class EmptyTopicNameTest(ZulipTestCase):
         self.send_stream_message(hamlet, "Denmark", topic_name="")
         self.send_stream_message(hamlet, "Verona", topic_name=Message.EMPTY_TOPIC_FALLBACK_NAME)
 
+        do_set_user_topic_visibility_policy(
+            iago,
+            get_stream("Denmark", iago.realm),
+            "",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        do_set_user_topic_visibility_policy(
+            iago,
+            get_stream("Verona", iago.realm),
+            Message.EMPTY_TOPIC_FALLBACK_NAME,
+            visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
+        )
+
         with mock.patch("zerver.lib.events.request_event_queue", return_value=1):
             state_data = do_events_register(
                 iago,
@@ -806,6 +819,8 @@ class EmptyTopicNameTest(ZulipTestCase):
             )
         self.assertEqual(state_data["unread_msgs"]["streams"][0]["topic"], "")
         self.assertEqual(state_data["unread_msgs"]["streams"][1]["topic"], "")
+        self.assertEqual(state_data["user_topics"][0]["topic_name"], "")
+        self.assertEqual(state_data["user_topics"][1]["topic_name"], "")
 
         with mock.patch("zerver.lib.events.request_event_queue", return_value=1):
             state_data = do_events_register(
@@ -821,4 +836,10 @@ class EmptyTopicNameTest(ZulipTestCase):
         )
         self.assertEqual(
             state_data["unread_msgs"]["streams"][1]["topic"], Message.EMPTY_TOPIC_FALLBACK_NAME
+        )
+        self.assertEqual(
+            state_data["user_topics"][0]["topic_name"], Message.EMPTY_TOPIC_FALLBACK_NAME
+        )
+        self.assertEqual(
+            state_data["user_topics"][1]["topic_name"], Message.EMPTY_TOPIC_FALLBACK_NAME
         )
