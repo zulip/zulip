@@ -56,8 +56,9 @@ format used by the Zulip server that they are interacting with.
 
 * [`POST /register`](/api/register-queue): For clients that don't support
   the `empty_topic_name` [client capability](/api/register-queue#parameter-client_capabilities),
-  the `topic` field in the `unread_msgs` object will have the value
-  of `realm_empty_topic_display_name` field replacing the empty string
+  the `topic` field in the `unread_msgs` object and `topic_name` field
+  in the `user_topics` objects will have the value of
+  `realm_empty_topic_display_name` field replacing the empty string
   for channel messages.
 
 **Feature level 333**
