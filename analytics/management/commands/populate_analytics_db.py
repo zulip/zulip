@@ -23,7 +23,7 @@ from zerver.lib.create_user import create_user
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
-from zerver.lib.streams import get_default_group_setting_values
+from zerver.lib.streams import get_default_values_for_stream_permission_group_settings
 from zerver.lib.timestamp import floor_to_day
 from zerver.lib.upload import upload_message_attachment_from_request
 from zerver.models import Client, Realm, RealmAuditLog, Recipient, Stream, Subscription, UserProfile
@@ -110,7 +110,7 @@ class Command(ZulipBaseCommand):
             name="all",
             realm=realm,
             date_created=installation_time,
-            **get_default_group_setting_values(realm),
+            **get_default_values_for_stream_permission_group_settings(realm),
         )
         recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         stream.recipient = recipient

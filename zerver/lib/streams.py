@@ -147,7 +147,7 @@ def get_stream_permission_default_group(
     return system_groups_name_dict[setting_default_name]
 
 
-def get_default_group_setting_values(realm: Realm) -> dict[str, UserGroup]:
+def get_default_values_for_stream_permission_group_settings(realm: Realm) -> dict[str, UserGroup]:
     group_setting_values = {}
     system_groups_name_dict = get_role_based_system_groups_dict(realm)
     for setting_name in Stream.stream_permission_group_settings:
