@@ -274,7 +274,11 @@ export default [
     {
         files: ["web/shared/**", "web/src/**"],
         settings: {
-            "import/resolver": "webpack",
+            "import/resolver": {
+                webpack: {
+                    config: {},
+                },
+            },
         },
         rules: {
             "no-console": "error",
