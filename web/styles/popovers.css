@@ -602,6 +602,12 @@ ul.popover-group-menu-member-list {
             align-items: baseline;
             padding-top: 2px;
         }
+
+        .dropdown_widget_value {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     }
 
     .stream-list-top-section {
