@@ -60,8 +60,8 @@ from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
 from zerver.lib.streams import (
     create_stream_if_needed,
-    get_default_group_setting_values,
     get_default_value_for_history_public_to_subscribers,
+    get_default_values_for_stream_permission_group_settings,
 )
 from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.test_console_output import (
@@ -1385,7 +1385,7 @@ Output:
                 invite_only=invite_only,
                 is_web_public=is_web_public,
                 history_public_to_subscribers=history_public_to_subscribers,
-                **get_default_group_setting_values(realm),
+                **get_default_values_for_stream_permission_group_settings(realm),
             )
         except IntegrityError:  # nocoverage -- this is for bugs in the tests
             raise Exception(
