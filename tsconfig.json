@@ -46,8 +46,5 @@
         "static/webpack-bundles",
         "var",
         "zulip-py3-venv",
-
-        // Even though allowJs defaults to false, typescript-eslint forces it to true.
-        "**/*.js",
     ],
 }
