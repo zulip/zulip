@@ -193,7 +193,7 @@ export default [
                 JQuery: "readonly",
             },
             parserOptions: {
-                project: true,
+                projectService: true,
                 tsConfigRootDir: import.meta.dirname,
             },
         },
