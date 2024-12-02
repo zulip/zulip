@@ -2,8 +2,8 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 
 const user_topics = zrequire("user_topics");
@@ -35,6 +35,10 @@ function assert_msg_ids(messages, msg_ids) {
         messages.map((message) => message.id),
     );
 }
+
+mock_esm("../src/people.ts", {
+    maybe_get_user_by_id: noop,
+});
 
 run_test("basics", () => {
     const mld = new MessageListData({

@@ -25,6 +25,7 @@ mock_esm("../src/people", {
     sender_is_guest: () => false,
     should_add_guest_user_indicator: () => false,
     small_avatar_url: () => "fake/small/avatar/url",
+    maybe_get_user_by_id: noop,
 });
 
 const {Filter} = zrequire("../src/filter");
