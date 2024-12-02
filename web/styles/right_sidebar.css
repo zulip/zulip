@@ -531,19 +531,26 @@ $user_status_emoji_width: 24px;
         color: var(--color-text-sidebar-action-heading-hover);
     }
 
-    .buddy-list-user-link-text,
-    .invite-user-link {
+    .right-sidebar-wrappable-text-container {
         display: grid;
-        grid-template-rows: var(--line-height-sidebar-row-prominent);
-        text-decoration: none;
+        grid-template-rows: minmax(
+            var(--line-height-sidebar-row-prominent),
+            auto
+        );
         align-items: center;
         color: var(--color-text-sidebar-action-heading);
-        font-size: var(--font-size-sidebar-action-heading);
-        font-weight: var(--font-weight-sidebar-action-heading);
-        font-variant: var(--font-variant-sidebar-action-heading);
-        font-feature-settings: var(
-            --font-feature-settings-sidebar-action-heading
-        );
+
+        .right-sidebar-wrappable-text-inner {
+            margin: var(--spacing-top-bottom-sidebar-topic-inner) 0;
+            line-height: 1;
+            text-decoration: none;
+            font-size: var(--font-size-sidebar-action-heading);
+            font-weight: var(--font-weight-sidebar-action-heading);
+            font-variant: var(--font-variant-sidebar-action-heading);
+            font-feature-settings: var(
+                --font-feature-settings-sidebar-action-heading
+            );
+        }
         text-transform: var(--text-transform-sidebar-action-heading);
     }
 }
