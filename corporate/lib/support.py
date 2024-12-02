@@ -21,6 +21,7 @@ from corporate.models import (
     Customer,
     CustomerPlan,
     CustomerPlanOffer,
+    LicenseLedger,
     ZulipSponsorshipRequest,
     get_current_plan_by_customer,
 )
@@ -42,7 +43,7 @@ from zilencer.models import (
     has_stale_audit_log,
 )
 
-USER_DATA_STALE_WARNING = "Recent audit log data missing: No information for used licenses"
+USER_DATA_STALE_WARNING = "Recent audit log missing: No data for used licenses."
 
 
 class SponsorshipRequestDict(TypedDict):
@@ -86,7 +87,7 @@ class PlanData:
     has_fixed_price: bool = False
     is_current_plan_billable: bool = False
     stripe_customer_url: str | None = None
-    warning: str | None = None
+    warning: str = ""
     annual_recurring_revenue: int | None = None
     estimated_next_plan_revenue: int | None = None
 
@@ -260,26 +261,46 @@ def get_plan_data_for_support_view(
         current_plan=plan,
     )
 
-    if plan is not None:
-        new_plan, last_ledger_entry = billing_session.make_end_of_cycle_updates_if_needed(
-            plan, timezone_now()
+    if plan_data.current_plan is not None:
+        last_ledger_entry = (
+            LicenseLedger.objects.filter(
+                plan=plan_data.current_plan, event_time__lte=timezone_now()
+            )
+            .order_by("-id")
+            .first()
         )
-        if last_ledger_entry is not None:
-            if new_plan is not None:
-                plan_data.current_plan = new_plan  # nocoverage
+
+        if last_ledger_entry is None:  # nocoverage
+            # This shouldn't be possible because at least one
+            # license ledger entry should exist when a plan's
+            # status is less than CustomerPlan.LIVE_STATUS_THRESHOLD.
+            # But since we have a warning feature in the support
+            # view for plan data, we use that instead of raising
+            # an assertion error so that support staff can debug
+            # if this does ever occur.
+            plan_data.warning += "License ledger missing: No data for total licenses and revenue. "
+            plan_data.licenses = None
+            plan_data.annual_recurring_revenue = 0
+        else:
             plan_data.licenses = last_ledger_entry.licenses
-        assert plan_data.current_plan is not None  # for mypy
+            plan_data.annual_recurring_revenue = (
+                billing_session.get_annual_recurring_revenue_for_support_data(
+                    plan_data.current_plan, last_ledger_entry
+                )
+            )
 
         # If we already have user count data, we use that
         # instead of querying the database again to get
         # the number of currently used licenses.
         if stale_user_data:
-            plan_data.warning = USER_DATA_STALE_WARNING
+            plan_data.warning += USER_DATA_STALE_WARNING
+            plan_data.licenses_used = None
         elif user_count is None:
             try:
                 plan_data.licenses_used = billing_session.current_count_for_billed_licenses()
             except MissingDataError:  # nocoverage
-                plan_data.warning = USER_DATA_STALE_WARNING
+                plan_data.warning += USER_DATA_STALE_WARNING
+                plan_data.licenses_used = None
         else:  # nocoverage
             assert user_count is not None
             plan_data.licenses_used = user_count
@@ -302,14 +323,6 @@ def get_plan_data_for_support_view(
         plan_data.is_current_plan_billable = billing_session.check_plan_tier_is_billable(
             plan_tier=plan_data.current_plan.tier
         )
-        if last_ledger_entry is not None:
-            plan_data.annual_recurring_revenue = (
-                billing_session.get_annual_recurring_revenue_for_support_data(
-                    plan_data.current_plan, last_ledger_entry
-                )
-            )
-        else:
-            plan_data.annual_recurring_revenue = 0  # nocoverage
 
     # Check for a non-active/scheduled CustomerPlan or CustomerPlanOffer
     if customer is not None:
