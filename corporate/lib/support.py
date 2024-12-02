@@ -7,7 +7,6 @@ from django.utils.timezone import now as timezone_now
 
 from corporate.lib.stripe import (
     BillingSession,
-    PushNotificationsEnabledStatus,
     RealmBillingSession,
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
@@ -25,6 +24,7 @@ from corporate.models import (
     ZulipSponsorshipRequest,
     get_current_plan_by_customer,
 )
+from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Realm
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_org_type_display_name
@@ -92,9 +92,16 @@ class PlanData:
 
 
 @dataclass
+class PushNotificationsStatus:
+    can_push: bool
+    expected_end: datetime | None
+    message: str
+
+
+@dataclass
 class MobilePushData:
     total_mobile_users: int
-    push_notification_status: PushNotificationsEnabledStatus
+    push_notification_status: PushNotificationsStatus
     uncategorized_mobile_users: int | None = None
     mobile_pushes_forwarded: int | None = None
     last_mobile_push_sent: str = ""
@@ -350,8 +357,15 @@ def get_mobile_push_data(remote_entity: RemoteZulipServer | RemoteRealm) -> Mobi
             ).strftime("%Y-%m-%d")
         else:
             push_forwarded_interval_start = "None"
-        push_notification_status = get_push_status_for_remote_request(
+        push_status = get_push_status_for_remote_request(
             remote_server=remote_entity, remote_realm=None
+        )
+        push_notification_status = PushNotificationsStatus(
+            can_push=push_status.can_push,
+            expected_end=timestamp_to_datetime(push_status.expected_end_timestamp)
+            if push_status.expected_end_timestamp
+            else None,
+            message=push_status.message,
         )
         return MobilePushData(
             total_mobile_users=total_users,
@@ -386,8 +400,13 @@ def get_mobile_push_data(remote_entity: RemoteZulipServer | RemoteRealm) -> Mobi
             ).strftime("%Y-%m-%d")
         else:
             push_forwarded_interval_start = "None"
-        push_notification_status = get_push_status_for_remote_request(
-            remote_entity.server, remote_entity
+        push_status = get_push_status_for_remote_request(remote_entity.server, remote_entity)
+        push_notification_status = PushNotificationsStatus(
+            can_push=push_status.can_push,
+            expected_end=timestamp_to_datetime(push_status.expected_end_timestamp)
+            if push_status.expected_end_timestamp
+            else None,
+            message=push_status.message,
         )
         return MobilePushData(
             total_mobile_users=mobile_users,
