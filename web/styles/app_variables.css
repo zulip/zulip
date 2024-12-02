@@ -1141,7 +1141,9 @@
     --color-background-hover-narrow-filter: hsl(0deg 0% 97% / 8%);
     /* We mix an opaque version with the background for
        replicating the color on .sidebar-topic-check, which
-       will mask a portion of the topic-grouping bracket. */
+       will mask a portion of the topic-grouping bracket.
+       The same is necessary for buddy-list heading hovers
+       in the right sidebar. */
     --color-background-opaque-hover-narrow-filter: color-mix(
         in srgb,
         hsl(0deg 0% 97%) 8%,
@@ -1219,9 +1221,9 @@
     --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 5%);
     --color-background-tab-picker-tab-option-active: hsl(0deg 0% 100% / 3%);
     --color-background-alert-word: hsl(22deg 70% 35%);
-    /* TODO: We can probably use this value for --color-background-hover-narrow-filter, but
-       that requires some followup checking.  */
-    --color-buddy-list-highlighted-user: hsl(0deg 0% 18%);
+    --color-buddy-list-highlighted-user: var(
+        --color-background-opaque-hover-narrow-filter
+    );
     --color-buddy-list-avatar-loading: hsl(0deg 0% 100% / 10%);
     --color-border-sidebar: hsl(0deg 0% 0% / 20%);
     --color-text-sidebar-base: hsl(0deg 0% 100%);
