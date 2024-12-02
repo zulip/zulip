@@ -317,6 +317,21 @@ export function get_recursive_subgroups(target_user_group: UserGroup): Set<numbe
     return subgroup_ids;
 }
 
+export function is_subgroup_of_target_group(target_group_id: number, subgroup_id: number): boolean {
+    const target_user_group = get_user_group_from_id(target_group_id);
+    const direct_subgroup_ids = new Set(target_user_group.direct_subgroup_ids);
+    if (direct_subgroup_ids.has(subgroup_id)) {
+        return true;
+    }
+
+    const recursive_subgroup_ids = get_recursive_subgroups(target_user_group);
+    if (recursive_subgroup_ids === undefined) {
+        return false;
+    }
+
+    return recursive_subgroup_ids.has(subgroup_id);
+}
+
 export function get_recursive_group_members(target_user_group: UserGroup): Set<number> {
     const members = new Set(target_user_group.members);
     const subgroup_ids = get_recursive_subgroups(target_user_group);
