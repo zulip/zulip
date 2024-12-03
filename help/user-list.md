@@ -13,8 +13,10 @@ but everyone is included when you [search](#filter-users).
 [Deactivated users](/help/deactivate-or-reactivate-a-user) and
 [bots](/help/bots-overview) are not listed.
 
-To avoid distraction, you can [hide](#show-or-hide-the-user-list) the user list
-any time.
+You can choose to have each user's name appear with their
+[avatar](/help/change-your-profile-picture), or select a one of the more compact
+user list styles. To avoid distraction, you can
+[hide](#show-or-hide-the-user-list) the user list any time.
 
 ## Filter users
 
