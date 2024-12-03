@@ -4855,6 +4855,19 @@ paths:
 
                                         **Changes**: Before Zulip 6.0 (feature level 138), no limit was
                                         represented using the special value `0`.
+                                    moderation_request_channel_id:
+                                      type: integer
+                                      description: |
+                                        The ID of the private channel to which messages flagged for moderation
+                                        requests by users are sent. Moderators can use this channel to review and
+                                        act on reported content.
+
+                                        Will be `-1` if moderation requests are disabled.
+
+                                        Since these automated messages are sent by the server, this field is
+                                        primarily relevant to clients containing UI for changing it.
+
+                                        **Changes**: New in Zulip 10.0 (feature level 328).
                                     move_messages_within_stream_limit_seconds:
                                       type: integer
                                       nullable: true
@@ -17624,6 +17637,19 @@ paths:
                           **Changes**: New in Zulip 5.0 (feature level 74). Previously,
                           this was hardcoded to 90 seconds, and clients should use that as a fallback
                           value when interacting with servers where this field is not present.
+                      realm_moderation_request_channel_id:
+                        type: integer
+                        description: |
+                          The ID of the private channel to which messages flagged for moderation
+                          requests by users are sent. Moderators can use this channel to review and
+                          act on reported content.
+
+                          Will be `-1` if moderation requests are disabled.
+
+                          Since these automated messages are sent by the server, this field is
+                          primarily relevant to clients containing UI for changing it.
+
+                          **Changes**: New in Zulip 10.0 (feature level 328).
                       realm_new_stream_announcements_stream_id:
                         type: integer
                         description: |

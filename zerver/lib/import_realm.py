@@ -1203,6 +1203,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         update_model_ids(PresenceSequence, data, "presencesequence")
 
     # Now we prepare to import the Realm table
+    re_map_foreign_keys(data, "zerver_realm", "moderation_request_channel", related_table="stream")
     re_map_foreign_keys(
         data, "zerver_realm", "new_stream_announcements_stream", related_table="stream"
     )
