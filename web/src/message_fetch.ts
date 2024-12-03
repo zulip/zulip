@@ -121,7 +121,7 @@ export function fetch_more_if_required_for_current_msg_list(
     looking_for_old_msgs: boolean,
 ): void {
     assert(message_lists.current !== undefined);
-    if (has_found_oldest && has_found_newest) {
+    if (has_found_oldest && has_found_newest && message_lists.current.visibly_empty()) {
         // Even after loading more messages, we have
         // no messages to display in this narrow.
         narrow_banner.show_empty_narrow_message();
