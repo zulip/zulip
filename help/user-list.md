@@ -35,6 +35,28 @@ any time.
 
 {end_tabs}
 
+## Configure user list style
+
+{start_tabs}
+
+{tab|via-right-sidebar}
+
+1. If the user list is hidden, click the **user list** (<i class="zulip-icon
+   zulip-icon-triple-users"></i> ) icon in the upper right to show it.
+
+1. Click the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>)
+   to the right of the **Filter users** box.
+
+1. Toggle your preferred option for **User list style**.
+
+{tab|via-personal-settings}
+
+{settings_tab|preferences}
+
+1. Under **Information**, toggle your preferred option for **User list style**.
+
+{end_tabs}
+
 ## Show or hide the user list
 
 {start_tabs}
