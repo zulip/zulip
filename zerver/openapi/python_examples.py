@@ -1143,6 +1143,58 @@ def remove_attachment(client: Client, attachment_id: int) -> None:
     validate_against_openapi_schema(result, "/attachments/{attachment_id}", "delete", "200")
 
 
+@openapi_test_function("/pinned_views:get")
+def get_pinned_views(client: Client) -> None:
+    # {code_example|start}
+    # Get all pinned views for the user
+    result = client.call_endpoint(
+        url="pinned_views",
+        method="GET",
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/pinned_views", "get", "200")
+
+
+@openapi_test_function("/pinned_views:post")
+def add_pinned_view(client: Client) -> None:
+    # {code_example|start}
+    # Add a pinned view
+    request = {
+        "view_id": "recent",
+        "location": 2,  # LeftSidebarViewLocationEnum.EXPANDED
+    }
+    result = client.call_endpoint(
+        url="pinned_views",
+        method="POST",
+        request=request,
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/pinned_views", "post", "200")
+
+
+@openapi_test_function("/pinned_views/{view_id}:patch")
+def update_pinned_view_location(client: Client) -> None:
+    # First get a pinned view ID to update
+    result = client.call_endpoint(url="pinned_views", method="GET")
+    view_id = result["pinned_views"][0]["view_id"]
+
+    # {code_example|start}
+    # Update a pinned view's location
+    request = {
+        "location": 1,  # LeftSidebarViewLocationEnum.MENU
+    }
+    result = client.call_endpoint(
+        url=f"pinned_views/{view_id}",
+        method="PATCH",
+        request=request,
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/pinned_views/{view_id}", "patch", "200")
+
+
 @openapi_test_function("/saved_snippets:post")
 def create_saved_snippet(client: Client) -> None:
     # {code_example|start}
@@ -1817,6 +1869,9 @@ def test_users(client: Client, owner_client: Client) -> None:
     create_saved_snippet(client)
     get_saved_snippets(client)
     delete_saved_snippet(client)
+    add_pinned_view(client)
+    get_pinned_views(client)
+    update_pinned_view_location(client)
     remove_alert_words(client)
     add_apns_token(client)
     remove_apns_token(client)

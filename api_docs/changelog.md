@@ -20,6 +20,18 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 324**
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  An event with `type: "pinned_views"` is sent to the current user when a
+  pinned view is created or updated.
+* [`GET /pinned_views`](/api/get-pinned-views): Added a new endpoint for
+  fetching all pinned views of the user.
+* [`POST /pinned_views`](/api/add-pinned-view): Added a new endpoint for
+  creating a new pinned view.
+* [`PATCH /pinned_views/{view_id}`](/api/update-pinned-view-location): Added
+  a new endpoint for updating the location of a pinned view.
+
 **Feature level 323**
 
 * [`POST /register`](/api/register-queue), [`GET
