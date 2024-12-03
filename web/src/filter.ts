@@ -115,7 +115,7 @@ function zephyr_topic_name_match(message: Message & {type: "stream"}, operand: s
     return related_regexp.test(message.topic);
 }
 
-function message_in_home(message: Message): boolean {
+function message_is_not_muted(message: Message): boolean {
     // The home view contains messages not sent to muted channels,
     // with additional logic for unmuted topics, mentions, and
     // single-channel windows.
@@ -178,6 +178,8 @@ function message_matches_search_term(message: Message, operator: string, operand
                         message.type === "stream" &&
                         user_topics.is_topic_followed(message.stream_id, message.topic)
                     );
+                case "muted":
+                    return !message_is_not_muted(message);
                 default:
                     return false; // is:whatever returns false
             }
@@ -185,7 +187,7 @@ function message_matches_search_term(message: Message, operator: string, operand
         case "in":
             switch (operand) {
                 case "home":
-                    return message_in_home(message);
+                    return message_is_not_muted(message);
                 case "all":
                     return true;
                 default:
@@ -557,6 +559,7 @@ export class Filter {
                     "unread",
                     "resolved",
                     "followed",
+                    "muted",
                 ].includes(term.operand);
             case "in":
                 return ["home", "all"].includes(term.operand);
@@ -653,6 +656,7 @@ export class Filter {
             "is-unread",
             "is-resolved",
             "is-followed",
+            "is-muted",
             "has-link",
             "has-image",
             "has-attachment",
@@ -1038,7 +1042,12 @@ export class Filter {
 
     is_in_home(): boolean {
         // Combined feed view
-        return this._terms.length === 1 && this.has_operand("in", "home");
+        return (
+            // The `-is:muted` term is an alias for `in:home`. The `in:home` term will
+            // be removed in the future.
+            this._terms.length === 1 &&
+            (this.has_operand("in", "home") || this.has_negated_operand("is", "muted"))
+        );
     }
 
     is_keyword_search(): boolean {
@@ -1073,6 +1082,8 @@ export class Filter {
             "not-is-resolved",
             "is-followed",
             "not-is-followed",
+            "is-muted",
+            "not-is-muted",
             "in-home",
             "in-all",
             "channels-public",
@@ -1144,6 +1155,10 @@ export class Filter {
         }
 
         if (_.isEqual(term_types, ["in-home"])) {
+            return true;
+        }
+
+        if (_.isEqual(term_types, ["not-is-muted"])) {
             return true;
         }
 
@@ -1489,6 +1504,10 @@ export class Filter {
         // will never add additional results.
         // NOTE: Needs to be in sync with `zerver.lib.narrow.ok_to_include_history`.
         return this.has_operator("is") && !this.has_operand("is", "resolved");
+    }
+
+    can_show_muted_topics(): boolean {
+        return this.has_operand("is", "muted");
     }
 
     can_apply_locally(is_local_echo = false): boolean {

@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 324**
+
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
+  [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /register`](/api/register-queue):
+  Added a new [search/narrow filter](/api/construct-narrow),
+  `is:muted`, matching messages in topics and channels that the user
+  has [muted](/help/mute-a-topic).
+
 **Feature level 323**
 
 * [`POST /register`](/api/register-queue), [`GET

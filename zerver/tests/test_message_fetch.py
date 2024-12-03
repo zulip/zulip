@@ -8,7 +8,7 @@ import orjson
 from django.db import connection
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
-from sqlalchemy.sql import ClauseElement, Select, and_, column, select, table
+from sqlalchemy.sql import ClauseElement, Select, column, select, table
 from sqlalchemy.types import Integer
 from typing_extensions import override
 
@@ -36,7 +36,6 @@ from zerver.lib.narrow import (
     BadNarrowOperatorError,
     NarrowBuilder,
     NarrowParameter,
-    exclude_muting_conditions,
     find_first_unread_anchor,
     is_spectator_compatible,
     ok_to_include_history,
@@ -92,16 +91,19 @@ def get_sqlalchemy_query_params(query: ClauseElement) -> dict[str, object]:
     return comp.params
 
 
-def get_recipient_id_for_channel_name(realm: Realm, channel_name: str) -> int | None:
-    channel = get_stream(channel_name, realm)
-    return channel.recipient.id if channel.recipient is not None else None
-
-
 def mute_channel(realm: Realm, user_profile: UserProfile, channel_name: str) -> None:
     channel = get_stream(channel_name, realm)
     recipient = channel.recipient
     subscription = Subscription.objects.get(recipient=recipient, user_profile=user_profile)
     subscription.is_muted = True
+    subscription.save()
+
+
+def unmute_channel(realm: Realm, user_profile: UserProfile, channel_name: str) -> None:
+    channel = get_stream(channel_name, realm)
+    recipient = channel.recipient
+    subscription = Subscription.objects.get(recipient=recipient, user_profile=user_profile)
+    subscription.is_muted = False
     subscription.save()
 
 
@@ -587,6 +589,16 @@ class NarrowBuilderTest(ZulipTestCase):
         mute_channel(self.realm, self.user_profile, "Verona")
         term = NarrowParameter(operator="in", operand="home", negated=True)
         self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
+
+    def test_add_term_using_is_muted_operator(self) -> None:
+        mute_channel(self.realm, self.user_profile, "Verona")
+        term = NarrowParameter(operator="is", operand="muted")
+        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
+
+    def test_add_term_using_is_muted_operator_negated(self) -> None:
+        mute_channel(self.realm, self.user_profile, "Verona")
+        term = NarrowParameter(operator="is", operand="muted", negated=True)
+        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
 
     def test_add_term_using_in_operator_and_all_operand(self) -> None:
         mute_channel(self.realm, self.user_profile, "Verona")
@@ -4423,7 +4435,7 @@ class GetOldMessagesTest(ZulipTestCase):
         channel = get_stream("Scotland", realm)
         assert channel.recipient is not None
         recipient_id = channel.recipient.id
-        cond = f"AND NOT (recipient_id = {recipient_id} AND upper(subject) = upper('golf'))"
+        cond = f"AND NOT (recipient_id = {recipient_id} AND upper(subject) = upper('golf')"
         self.assertIn(cond, queries[0].sql)
 
         # Next, verify the use_first_unread_anchor setting invokes
@@ -4433,98 +4445,99 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertIn(f"AND zerver_message.id = {LARGER_THAN_MAX_MESSAGE_ID}", queries[0].sql)
 
     def test_exclude_muting_conditions(self) -> None:
-        realm = get_realm("zulip")
-        self.make_stream("web stuff")
-        user_profile = self.example_user("hamlet")
+        is_muted_narrow = orjson.dumps([dict(operator="is", operand="muted")]).decode()
+        not_is_muted_narrow = orjson.dumps(
+            [dict(operator="is", operand="muted", negated=True)]
+        ).decode()
 
-        self.make_stream("irrelevant_channel")
+        self.login("iago")
 
-        # Test the do-nothing case first.
-        muted_topics = [
-            ["irrelevant_channel", "irrelevant_topic"],
-        ]
-        set_topic_visibility_policy(user_profile, muted_topics, UserTopic.VisibilityPolicy.MUTED)
+        self.make_stream("my_channel")
+        self.subscribe(self.example_user("iago"), "my_channel")
+        self.subscribe(self.example_user("hamlet"), "my_channel")
 
-        # If nothing relevant is muted, then exclude_muting_conditions()
-        # should return an empty list.
-        narrow: list[NarrowParameter] = [
-            NarrowParameter(operator="channel", operand="Scotland"),
-        ]
-        muting_conditions = exclude_muting_conditions(user_profile, narrow)
-        self.assertEqual(muting_conditions, [])
-
-        # Also test that passing channel ID works
-        channel_id = get_stream("Scotland", realm).id
-        narrow = [
-            NarrowParameter(operator="channel", operand=channel_id),
-        ]
-        muting_conditions = exclude_muting_conditions(user_profile, narrow)
-        self.assertEqual(muting_conditions, [])
-
-        # Ok, now set up our muted topics to include a topic relevant to our narrow.
-        muted_topics = [
-            ["Scotland", "golf"],
-            ["web stuff", "css"],
-        ]
-        set_topic_visibility_policy(user_profile, muted_topics, UserTopic.VisibilityPolicy.MUTED)
-
-        # And verify that our query will exclude them.
-        narrow = [
-            NarrowParameter(operator="channel", operand="Scotland"),
-        ]
-
-        muting_conditions = exclude_muting_conditions(user_profile, narrow)
-        query = select(column("id", Integer).label("message_id")).select_from(
-            table("zerver_message")
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"), "my_channel", content="Hey", topic_name="golf"
         )
-        query = query.where(*muting_conditions)
-        expected_query = """\
-SELECT id AS message_id \n\
-FROM zerver_message \n\
-WHERE NOT (recipient_id = %(recipient_id_1)s AND upper(subject) = upper(%(param_1)s))\
-"""
 
-        self.assertEqual(get_sqlalchemy_sql(query), expected_query)
-        params = get_sqlalchemy_query_params(query)
+        def check_message_muted(can_view_message: bool) -> None:
+            result_muted = self.client_get(
+                "/json/messages",
+                dict(narrow=is_muted_narrow, anchor=msg_id, num_before=0, num_after=0),
+            )
+            messages = self.assert_json_success(result_muted)["messages"]
+            self.assert_length(messages, 0 if can_view_message else 1)
 
-        self.assertEqual(
-            params["recipient_id_1"], get_recipient_id_for_channel_name(realm, "Scotland")
+            result_not_muted = self.client_get(
+                "/json/messages",
+                dict(narrow=not_is_muted_narrow, anchor=msg_id, num_before=0, num_after=0),
+            )
+
+            messages = self.assert_json_success(result_not_muted)["messages"]
+            self.assert_length(messages, 1 if can_view_message else 0)
+
+        # Muting the topic
+        set_topic_visibility_policy(
+            self.example_user("iago"), [["my_channel", "golf"]], UserTopic.VisibilityPolicy.MUTED
         )
-        self.assertEqual(params["param_1"], "golf")
 
-        mute_channel(realm, user_profile, "Verona")
+        check_message_muted(can_view_message=False)
 
-        # Using a bogus channel name should be similar to using no narrow at
-        # all, and we'll exclude all mutes.
-        narrow = [
-            NarrowParameter(operator="channel", operand="bogus-channel-name"),
-        ]
+        # muting the channel
+        mute_channel(self.example_user("iago").realm, self.example_user("iago"), "my_channel")
 
-        muting_conditions = exclude_muting_conditions(user_profile, narrow)
-        query = select(column("id", Integer)).select_from(table("zerver_message"))
-        query = query.where(and_(*muting_conditions))
-
-        expected_query = """\
-SELECT id \n\
-FROM zerver_message \n\
-WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1])) \
-AND NOT \
-(recipient_id = %(recipient_id_2)s AND upper(subject) = upper(%(param_1)s) OR \
-recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
-"""
-        self.assertEqual(get_sqlalchemy_sql(query), expected_query)
-        params = get_sqlalchemy_query_params(query)
-        self.assertEqual(
-            params["recipient_id_1"], [get_recipient_id_for_channel_name(realm, "Verona")]
+        # Setting topic visibility to default
+        set_topic_visibility_policy(
+            self.example_user("iago"), [["my_channel", "golf"]], UserTopic.VisibilityPolicy.INHERIT
         )
-        self.assertEqual(
-            params["recipient_id_2"], get_recipient_id_for_channel_name(realm, "Scotland")
+
+        # Messages should be muted since channel is muted
+        check_message_muted(can_view_message=False)
+
+        # setting topic to followed
+        set_topic_visibility_policy(
+            self.example_user("iago"), [["my_channel", "golf"]], UserTopic.VisibilityPolicy.FOLLOWED
         )
-        self.assertEqual(params["param_1"], "golf")
-        self.assertEqual(
-            params["recipient_id_3"], get_recipient_id_for_channel_name(realm, "web stuff")
+
+        # Messages should not be muted even though channel is muted
+        check_message_muted(can_view_message=True)
+
+        is_muted_narrow = orjson.dumps(
+            [dict(operator="is", operand="muted"), dict(operator="channel", operand="my_channel")]
+        ).decode()
+        not_is_muted_narrow = orjson.dumps(
+            [
+                dict(operator="is", operand="muted", negated=True),
+                dict(operator="channel", operand="my_channel"),
+            ]
+        ).decode()
+
+        # Checking if the messages are muted when the channel is muted
+        # and topic is followed in a channel narrow.
+        check_message_muted(can_view_message=True)
+
+        # Setting topic visibility to default
+        set_topic_visibility_policy(
+            self.example_user("iago"), [["my_channel", "golf"]], UserTopic.VisibilityPolicy.INHERIT
         )
-        self.assertEqual(params["param_2"], "css")
+
+        # Checking if the messages are muted when the channel is muted
+        # in a channel narrow.
+        check_message_muted(can_view_message=False)
+
+        # Unmuting the channel
+        unmute_channel(self.example_user("iago").realm, self.example_user("iago"), "my_channel")
+
+        check_message_muted(can_view_message=True)
+
+        # muting the topic
+        set_topic_visibility_policy(
+            self.example_user("iago"), [["my_channel", "golf"]], UserTopic.VisibilityPolicy.MUTED
+        )
+
+        # Checking if the messages are muted when the topic is muted
+        # in a channel narrow.
+        check_message_muted(can_view_message=False)
 
     def test_get_messages_queries(self) -> None:
         query_ids = self.get_query_ids()

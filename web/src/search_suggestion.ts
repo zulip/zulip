@@ -710,6 +710,15 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
                 {operator: "dm-including"},
             ],
         },
+        {
+            search_string: "is:muted",
+            description_html: "muted messages",
+            is_people: false,
+            incompatible_patterns: [
+                {operator: "is", operand: "muted"},
+                {operator: "in", operand: "home"},
+            ],
+        },
     ];
     const special_filtered_suggestions = get_special_filter_suggestions(last, terms, suggestions);
     // Suggest "is:dm" to anyone with "is:private" in their muscle memory
