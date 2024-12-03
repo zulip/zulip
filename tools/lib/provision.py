@@ -235,6 +235,7 @@ def install_system_deps() -> None:
 def install_apt_deps(deps_to_install: list[str]) -> None:
     # setup-apt-repo does an `apt-get update` if the sources.list files changed.
     run_as_root(["./scripts/lib/setup-apt-repo"])
+    run_as_root(["./scripts/lib/setup-apt-repo", "--list", "pgroonga"])
 
     # But we still need to do our own to make sure we have up-to-date
     # data before installing new packages, as the system might not have
