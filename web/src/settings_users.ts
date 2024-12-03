@@ -259,13 +259,16 @@ function populate_users(): void {
     if (!presence_data_fetched) {
         fetch_presence_user_setting({
             render_table() {
+                const active_user_ids = people.get_realm_active_human_user_ids();
+                const deactivated_user_ids = people.get_non_active_human_ids();
                 presence_data_fetched = true;
                 active_section.create_table(active_user_ids);
                 deactivated_section.create_table(deactivated_user_ids);
-                create_role_filter_dropdown($("#admin-user-list"), active_section);
+                create_role_filter_dropdown($("#admin-user-list"), active_section, active_user_ids);
                 create_role_filter_dropdown(
                     $("#admin-deactivated-users-list"),
                     deactivated_section,
+                    deactivated_user_ids,
                 );
             },
         });
