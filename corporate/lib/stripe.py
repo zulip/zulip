@@ -310,13 +310,12 @@ def next_invoice_date(plan: CustomerPlan) -> datetime | None:
     if plan.status == CustomerPlan.ENDED:
         return None
     assert plan.next_invoice_date is not None  # for mypy
-    months_per_period = 1
-    periods = 1
-    dt = plan.billing_cycle_anchor
-    while dt <= plan.next_invoice_date:
-        dt = add_months(plan.billing_cycle_anchor, months_per_period * periods)
-        periods += 1
-    return dt
+    months = 1
+    candidate_invoice_date = plan.billing_cycle_anchor
+    while candidate_invoice_date <= plan.next_invoice_date:
+        candidate_invoice_date = add_months(plan.billing_cycle_anchor, months)
+        months += 1
+    return candidate_invoice_date
 
 
 def get_amount_to_credit_for_plan_tier_change(
