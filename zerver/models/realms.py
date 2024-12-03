@@ -666,7 +666,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.ADMINISTRATORS,
-            id_field_name="create_multiuse_invite_group_id",
         ),
         can_access_all_users_group=GroupPermissionSetting(
             require_system_group=True,
@@ -674,7 +673,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=False,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
-            id_field_name="can_access_all_users_group_id",
             allowed_system_groups=[SystemGroups.EVERYONE, SystemGroups.MEMBERS],
         ),
         can_add_custom_emoji_group=GroupPermissionSetting(
@@ -683,7 +681,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=False,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
-            id_field_name="can_add_custom_emoji_group_id",
         ),
         can_create_groups=GroupPermissionSetting(
             require_system_group=False,
@@ -691,7 +688,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=False,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
-            id_field_name="can_create_groups_id",
         ),
         can_create_public_channel_group=GroupPermissionSetting(
             require_system_group=False,
@@ -699,7 +695,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=False,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
-            id_field_name="can_create_public_channel_group_id",
         ),
         can_create_private_channel_group=GroupPermissionSetting(
             require_system_group=False,
@@ -707,7 +702,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=False,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
-            id_field_name="can_create_private_channel_group_id",
         ),
         can_create_web_public_channel_group=GroupPermissionSetting(
             require_system_group=True,
@@ -715,7 +709,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.OWNERS,
-            id_field_name="can_create_web_public_channel_group_id",
             allowed_system_groups=[
                 SystemGroups.MODERATORS,
                 SystemGroups.ADMINISTRATORS,
@@ -729,7 +722,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=False,
             allow_everyone_group=False,
             default_group_name=SystemGroups.ADMINISTRATORS,
-            id_field_name="can_delete_any_message_group_id",
         ),
         can_delete_own_message_group=GroupPermissionSetting(
             require_system_group=False,
@@ -737,7 +729,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=False,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
-            id_field_name="can_delete_own_message_group_id",
         ),
         can_invite_users_group=GroupPermissionSetting(
             require_system_group=False,
@@ -745,7 +736,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
-            id_field_name="can_invite_users_group_id",
         ),
         can_manage_all_groups=GroupPermissionSetting(
             require_system_group=False,
@@ -753,7 +743,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=False,
             allow_everyone_group=False,
             default_group_name=SystemGroups.OWNERS,
-            id_field_name="can_manage_all_groups_id",
         ),
         can_move_messages_between_channels_group=GroupPermissionSetting(
             require_system_group=False,
@@ -761,7 +750,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
-            id_field_name="can_move_messages_between_channels_group_id",
         ),
         can_move_messages_between_topics_group=GroupPermissionSetting(
             require_system_group=False,
@@ -769,7 +757,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
-            id_field_name="can_move_messages_between_topics_group_id",
         ),
         direct_message_initiator_group=GroupPermissionSetting(
             require_system_group=False,
@@ -777,7 +764,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
-            id_field_name="direct_message_initiator_group_id",
         ),
         direct_message_permission_group=GroupPermissionSetting(
             require_system_group=False,
@@ -785,7 +771,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
-            id_field_name="direct_message_permission_group_id",
         ),
     )
 

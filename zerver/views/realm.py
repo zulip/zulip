@@ -344,8 +344,8 @@ def update_realm(
         if k in realm.property_types:
             req_vars[k] = v
 
-        for setting_name, permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
-            if k in [permission_configuration.id_field_name, setting_name]:
+        for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
+            if k == setting_name:
                 req_group_setting_vars[k] = v
 
     for k, v in req_vars.items():

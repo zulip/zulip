@@ -25,6 +25,9 @@ format used by the Zulip server that they are interacting with.
 * [`POST /register`](/api/register-queue): Removed `allow_owners_group`
   field from configuration data object of permission settings passed in
   `server_supported_permission_settings`.
+* [`POST /register`](/api/register-queue): Removed `id_field_name`
+  field from configuration data object of permission settings passed
+  in `server_supported_permission_settings`.
 
 **Feature level 325**
 

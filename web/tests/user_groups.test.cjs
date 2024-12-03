@@ -550,7 +550,6 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
                 allow_nobody_group: true,
                 allow_everyone_group: false,
                 default_group_name: "stream_creator_or_nobody",
-                id_field_name: "can_administer_channel_group_id",
                 allowed_system_groups: [],
             },
             can_remove_subscribers_group: {
@@ -559,7 +558,6 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
                 allow_nobody_group: false,
                 allow_everyone_group: true,
                 default_group_name: "role:administrators",
-                id_field_name: "can_remove_subscribers_group_id",
                 allowed_system_groups: [],
             },
         },
@@ -570,7 +568,6 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
                 allow_nobody_group: true,
                 allow_everyone_group: false,
                 default_group_name: "role:administrators",
-                id_field_name: "create_multiuse_invite_group_id",
                 allowed_system_groups: [],
             },
             can_access_all_users_group: {
@@ -579,7 +576,6 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
                 allow_nobody_group: false,
                 allow_everyone_group: true,
                 default_group_name: "role:everyone",
-                id_field_name: "can_access_all_users_group_id",
                 allowed_system_groups: ["role:everyone", "role:members"],
             },
         },

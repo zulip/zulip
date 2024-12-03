@@ -32,8 +32,8 @@ def create_internal_realm() -> None:
 
     # For now a dummy value of -1 is given to groups fields which
     # is changed later before the transaction is committed.
-    for permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.values():
-        setattr(realm, permission_configuration.id_field_name, -1)
+    for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
+        setattr(realm, setting_name + "_id", -1)
     realm.save()
 
     RealmAuditLog.objects.create(

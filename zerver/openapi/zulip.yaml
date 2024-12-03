@@ -23899,8 +23899,13 @@ components:
         to which the setting can be set to and the default values for the
         setting.
 
-        **Changes**: Removed `allow_owners_group` field in Zulip 10.0 (feature level 326),
-        as we now support anonymous user groups.
+        **Changes**: Removed `allow_owners_group` field in Zulip 10.0 (feature level 326), as we now
+        support anonymous user groups. Previously, the `role:owners` system group was
+        not offered when `allow_owners_group` was false.
+
+        Removed unnecessary `id_field_name` field in Zulip 10.0 (feature level 326). Previously,
+        this always had the value of `"{setting_name}_id"`; it was an internal implementation
+        detail of the server not intended to be included in the API.
       additionalProperties: false
       type: object
       properties:
@@ -23927,10 +23932,6 @@ components:
           type: string
           description: |
             Name of the default group for the setting.
-        id_field_name:
-          type: string
-          description: |
-            Name for the field used to pass the group ID for the setting.
         default_for_system_groups:
           type: string
           nullable: true
