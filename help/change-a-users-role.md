@@ -1,28 +1,83 @@
-# Change a user's role
+# User roles
 
-{!admin-only.md!}
+{!user-roles-intro.md!}
 
-Users join as [owners, administrators, moderators, members
-](/help/roles-and-permissions), or [guests](/help/guest-users),
-depending on how they were invited.
+You can also manage permissions with [custom user groups](/help/user-groups).
 
-An organization owner can change the role of any user.  An
-organization administrator can change the role of most users, but
-cannot create or demote an organization owner.
+## Roles
 
-You can revoke your own owner or administrative privileges if
-there is at least one other owner in the organization (consider
-promoting a new owner or [deactivating the
-organization](/help/deactivate-your-organization) instead).
+* **Organization owner**: Can manage users, public channels, organization
+  settings, and billing. Organization owners can do anything that an
+  organization administrator can do.
+
+* **Organization administrator**: Can manage users, public channels, and
+  organization settings. Cannot make someone an owner, or change an existing
+  owner's role.
+
+* **Moderator**: Can do anything that members can do, plus additional
+  permissions [configured](/help/roles-and-permissions#manage-permissions) by
+  your organization.
+
+* **Member**: This is the default role for most users. Members have access to
+  all public channels. You can [configure different
+  permissions](/help/restrict-permissions-of-new-members) for **new members**
+  and **full members**, which is especially useful for [moderating open
+  organizations](/help/moderating-open-organizations). New members automatically
+  become full members after a configurable waiting period.
+
+* **Guest**: Can view and send messages in channels they have been added to.
+  Guests cannot see other channels, unless they have been specifically added to
+  the channel. See [guest users documentation](/help/guest-users) for additional
+  details and configuration options.
+
+* **Billing administrator**: The user who upgrades the organization to
+  a paid plan is, in addition to their normal role, a billing
+  administrator.  Billing administrators can manage billing for the organization.
+  For example, someone from your billing department can be a **billing
+  administrator**, but not an **administrator** for the organization.
+
+## View users by role
+
+{!view-users-by-role.md!}
 
 ## Change a user's role
 
-{!change-a-users-role.md!}
+{!admin-only.md!}
+
+An organization owner can change the role of any user. You can make yourself no
+longer an owner only if there is at least one other owner for your organization.
+An organization administrator cannot make someone an owner, or change an
+existing owner's role.
+
+{start_tabs}
+
+{tab|via-user-profile}
+
+{!manage-this-user.md!}
+
+1. Under **User role**, select a [role](#roles).
+
+1. Click **Save changes**. The new permissions will take effect immediately.
+
+{!manage-user-tab-tip.md!}
+
+{tab|via-organization-settings}
+
+{settings_tab|users}
+
+1. Find the user you would like to manage. Click the **pencil**
+   (<i class="fa fa-pencil"></i>) to the right of their name.
+
+1. Under **User role**, select a [role](#roles).
+
+1. Click **Save changes**. The new permissions will take effect immediately.
+
+{end_tabs}
 
 ## Related articles
 
-* [Roles and permissions](/help/roles-and-permissions)
-* [Change a user's name](/help/change-a-users-name)
-* [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
-* [Manage a user](/help/manage-a-user)
 * [Guest users](/help/guest-users)
+* [User groups](/help/user-groups)
+* [Roles and permissions](/help/roles-and-permissions#manage-permissions)
+* [Manage a user](/help/manage-a-user)
+* [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
