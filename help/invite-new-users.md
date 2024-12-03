@@ -23,10 +23,9 @@ When you invite users, you can:
 * Configure which [groups](/help/user-groups) they will be added to.
 
 Organization administrators can
-[configure](/help/restrict-account-creation#change-who-can-send-invitations)
-which [roles](/help/roles-and-permissions) have permission to invite users to
-the organization. You will only see an **Invite users** menu option if you have
-permission to invite users.
+[configure](/help/restrict-account-creation#change-who-can-send-invitations) who
+is allowed to invite users to the organization. You will only see an **Invite
+users** menu option if you have permission to invite users.
 
 ## Send email invitations
 
