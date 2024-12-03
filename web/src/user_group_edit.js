@@ -329,16 +329,37 @@ export function handle_subgroup_edit_event(group_id, direct_subgroup_ids) {
     }
     const group = user_groups.get_user_group_from_id(group_id);
 
-    // update members list if currently rendered.
-    if (is_editing_group(group_id)) {
-        user_group_edit_members.update_member_list_widget(group);
-    }
+    const active_group_id = get_active_data().id;
+    const current_user_id = people.my_current_user_id();
 
-    const subgroups_containing_current_user = direct_subgroup_ids.filter((group_id) =>
-        user_groups.is_user_in_group(group_id, people.my_current_user_id()),
+    const current_user_in_any_subgroup = user_groups.is_user_in_any_group(
+        direct_subgroup_ids,
+        current_user_id,
     );
 
-    if (subgroups_containing_current_user.length > 0) {
+    // update members list if currently rendered.
+    if (group_id === active_group_id) {
+        user_group_edit_members.update_member_list_widget(group);
+
+        if (
+            !user_groups.is_direct_member_of(current_user_id, group_id) &&
+            current_user_in_any_subgroup
+        ) {
+            update_membership_status_text(group);
+        }
+    } else if (
+        active_group_id !== undefined &&
+        !user_groups.is_direct_member_of(current_user_id, active_group_id) &&
+        user_groups.is_subgroup_of_target_group(active_group_id, group_id)
+    ) {
+        // Membership status text could still need an update
+        // if updated group is one of the subgroup of the group
+        // currently opened in right panel.
+        const active_group = user_groups.get_user_group_from_id(active_group_id);
+        update_membership_status_text(active_group);
+    }
+
+    if (current_user_in_any_subgroup) {
         update_your_groups_list_if_needed(group_id);
         update_display_checkmark_on_group_edit(group);
     }

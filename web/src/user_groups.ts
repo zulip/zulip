@@ -434,6 +434,19 @@ export function is_user_in_group(
     return false;
 }
 
+export function is_user_in_any_group(
+    user_group_ids: number[],
+    user_id: number,
+    direct_member_only = false,
+): boolean {
+    for (const group_id of user_group_ids) {
+        if (is_user_in_group(group_id, user_id, direct_member_only)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 export function get_associated_subgroups(user_group: UserGroup, user_id: number): UserGroup[] {
     const subgroup_ids = get_recursive_subgroups(user_group)!;
     if (subgroup_ids === undefined) {
