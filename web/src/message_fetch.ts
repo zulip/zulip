@@ -17,6 +17,7 @@ import type {MessageListData} from "./message_list_data.ts";
 import * as message_lists from "./message_lists.ts";
 import {raw_message_schema} from "./message_store.ts";
 import * as message_util from "./message_util.ts";
+import * as message_viewport from "./message_viewport.ts";
 import * as narrow_banner from "./narrow_banner.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -176,7 +177,7 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
         // the messages we requested, and all of them are in muted
         // topics, but there are older messages for this stream that
         // we need to ask the server for.
-        message_lists.current.visibly_empty()
+        (message_lists.current.visibly_empty() || !message_viewport.can_scroll())
     ) {
         const looking_for_new_msgs = opts.num_after > 0;
         const looking_for_old_msgs = opts.num_before > 0;

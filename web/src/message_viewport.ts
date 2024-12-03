@@ -542,6 +542,11 @@ export function maybe_scroll_to_selected(): void {
     }
 }
 
+export function can_scroll(): boolean {
+    const full_height = util.the($scroll_container).scrollHeight;
+    return full_height > window.innerHeight;
+}
+
 export function initialize(): void {
     // This handler must be placed before all resize handlers in our application
     $(window).on("resize", () => {
