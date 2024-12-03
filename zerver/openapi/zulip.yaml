@@ -4770,6 +4770,21 @@ paths:
 
                                         **Changes**: Before Zulip 6.0 (feature level 138), no limit was
                                         represented using the special value `0`.
+                                    moderation_request_channel_id:
+                                      type: integer
+                                      description: |
+                                        The ID of the private channel to which messages flagged by users for
+                                        moderation are sent. Moderators can use this channel to review and
+                                        act on reported content.
+
+                                        Will be `-1` if moderation requests are disabled.
+
+                                        Clients should check whether moderation requests are disabled to
+                                        determine whether to present a "report message" feature in their UI
+                                        within a given organization.
+
+                                        **Changes**: New in Zulip 10.0 (feature level 331). Previously,
+                                        no "report message" features existed in Zulip.
                                     move_messages_within_stream_limit_seconds:
                                       type: integer
                                       nullable: true
@@ -17569,6 +17584,21 @@ paths:
                           **Changes**: New in Zulip 5.0 (feature level 74). Previously,
                           this was hardcoded to 90 seconds, and clients should use that as a fallback
                           value when interacting with servers where this field is not present.
+                      realm_moderation_request_channel_id:
+                        type: integer
+                        description: |
+                          The ID of the private channel to which messages flagged by users for
+                          moderation are sent. Moderators can use this channel to review and
+                          act on reported content.
+
+                          Will be `-1` if moderation requests are disabled.
+
+                          Clients should check whether moderation requests are disabled to
+                          determine whether to present a "report message" feature in their UI
+                          within a given organization.
+
+                          **Changes**: New in Zulip 10.0 (feature level 331). Previously,
+                          no "report message" feature existed in Zulip.
                       realm_new_stream_announcements_stream_id:
                         type: integer
                         description: |

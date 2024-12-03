@@ -79,6 +79,7 @@ from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_set_push_notifications_enabled_end_timestamp,
     do_set_realm_authentication_methods,
+    do_set_realm_moderation_request_channel,
     do_set_realm_new_stream_announcements_stream,
     do_set_realm_property,
     do_set_realm_signup_announcements_stream,
@@ -2418,6 +2419,22 @@ class NormalActionsTest(BaseAction):
                     acting_user=None,
                 )
             check_realm_update("events[0]", events[0], "zulip_update_announcements_stream_id")
+
+    def test_change_realm_moderation_request_channel(self) -> None:
+        channel = self.make_stream("private_stream", invite_only=True)
+
+        for moderation_request_channel, moderation_request_channel_id in (
+            (channel, channel.id),
+            (None, -1),
+        ):
+            with self.verify_action() as events:
+                do_set_realm_moderation_request_channel(
+                    self.user_profile.realm,
+                    moderation_request_channel,
+                    moderation_request_channel_id,
+                    acting_user=None,
+                )
+            check_realm_update("events[0]", events[0], "moderation_request_channel_id")
 
     def test_change_is_admin(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
