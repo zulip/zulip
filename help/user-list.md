@@ -3,8 +3,8 @@
 In the Zulip web and desktop app, the right sidebar shows a list of users in
 your organization. The user list has up to three section:
 
-- **In this conversation**: Recent participants in the conversation you're viewing.
-- **In this channel** or **Others in this channel**: Subscribers to the channel you're viewing.
+- **This conversation**: Recent participants in the conversation you're viewing.
+- **This channel**: Subscribers to the channel you're viewing.
 - **Others**: Everyone else.
 
 In organizations with up to 600 users, everyone is shown. In larger
