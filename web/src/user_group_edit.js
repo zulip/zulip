@@ -331,8 +331,7 @@ function update_settings_for_group_overlay(group_id, user_ids) {
             item,
             people.my_current_user_id(),
         );
-        item.associated_subgroup_names =
-            user_groups.group_list_to_comma_seperated_name(associated_subgroups);
+        item.associated_subgroup_names = user_groups.format_group_list(associated_subgroups);
         const html = render_browse_user_groups_list_item(item);
         const $new_row = $(html);
 
@@ -915,7 +914,7 @@ export function setup_page(callback) {
                     people.my_current_user_id(),
                 );
                 item.associated_subgroup_names =
-                    user_groups.group_list_to_comma_seperated_name(associated_subgroups);
+                    user_groups.format_group_list(associated_subgroups);
                 item.can_join = settings_data.can_join_user_group(item.id);
                 item.can_leave = settings_data.can_leave_user_group(item.id);
                 return render_browse_user_groups_list_item(item);
@@ -1156,8 +1155,7 @@ export function initialize() {
                 user_group,
                 people.my_current_user_id(),
             );
-            const associated_subgroup_names =
-                user_groups.group_list_to_comma_seperated_name(associated_subgroups);
+            const associated_subgroup_names = user_groups.format_group_list(associated_subgroups);
 
             confirm_dialog.launch({
                 html_heading: $t_html({defaultMessage: "Join group?"}),
