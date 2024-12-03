@@ -202,6 +202,11 @@ export class MessageList {
         const bottom_messages = info.bottom_messages;
         const interior_messages = info.interior_messages;
 
+        if (top_messages.length + interior_messages.length + bottom_messages.length === 0) {
+            // This add messages call had no effect on the message list.
+            return undefined;
+        }
+
         // Currently we only need data back from rendering to
         // tell us whether users needs to scroll, which only
         // applies for `append_to_view`, but this may change over
