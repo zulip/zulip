@@ -44,18 +44,29 @@ type MessageFetchOptions = {
     anchor: string | number;
     num_before: number;
     num_after: number;
-    cont: (data: MessageFetchResponse, args: MessageFetchOptions) => void;
+    cont?: (data: MessageFetchResponse, args: MessageFetchOptions) => void;
     fetch_again?: boolean;
     msg_list_data: MessageListData;
     msg_list?: MessageList | undefined;
     validate_filter_topic_post_fetch?: boolean | undefined;
 };
 
+type MessageFetchAPIParams = {
+    anchor: number | string;
+    num_before: number;
+    num_after: number;
+    client_gravatar: boolean;
+    narrow?: string;
+};
+
 let first_messages_fetch = true;
 export let initial_narrow_pointer: number | undefined;
 export let initial_narrow_offset: number | undefined;
 
-const consts = {
+export const consts = {
+    // Percentage of times we verify that the cached data
+    // is correct based on server data when narrowing.
+    cached_data_verification_sampling_percent: 5,
     // Because most views are centered on the first unread message,
     // the user has a higher probability of wanting to scroll down
     // than, so extra fetched history after the cursor is more likely
@@ -65,6 +76,10 @@ const consts = {
     // for a larger number of messages after the cursor is cheap.
     narrow_before: 60,
     narrow_after: 150,
+
+    // Number of messages that a message list restored from cached
+    // message list data should have to maintain sufficient context.
+    narrow_min_num_message_for_context: 100,
 
     // Batch sizes when at the top/bottom of a narrowed view.
     narrowed_view_backward_batch_size: 100,
@@ -103,6 +118,36 @@ export function load_messages_around_anchor(
     });
 }
 
+export function fetch_more_if_required_for_current_msg_list(
+    has_found_oldest: boolean,
+    has_found_newest: boolean,
+    looking_for_new_msgs: boolean,
+    looking_for_old_msgs: boolean,
+): void {
+    assert(message_lists.current !== undefined);
+    if (message_lists.current.is_combined_feed_view) {
+        return;
+    }
+
+    if (has_found_oldest && has_found_newest) {
+        // Even after loading more messages, we have
+        // no messages to display in this narrow.
+        narrow_banner.show_empty_narrow_message();
+        compose_closed_ui.update_buttons_for_private();
+        compose_recipient.check_posting_policy_for_compose_box();
+    }
+
+    if (looking_for_old_msgs && !has_found_oldest) {
+        maybe_load_older_messages({
+            msg_list: message_lists.current,
+            msg_list_data: message_lists.current.data,
+        });
+    }
+    if (looking_for_new_msgs && !has_found_newest) {
+        maybe_load_newer_messages({msg_list: message_lists.current});
+    }
+}
+
 function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): void {
     const raw_messages = data.messages;
 
@@ -136,29 +181,22 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
     if (
         message_lists.current !== undefined &&
         opts.msg_list === message_lists.current &&
-        !opts.msg_list.is_combined_feed_view &&
-        opts.msg_list.visibly_empty()
-    ) {
         // The view appears to be empty. However, because in stream
         // narrows, we fetch messages including those that might be
         // hidden by topic muting, it's possible that we received all
         // the messages we requested, and all of them are in muted
         // topics, but there are older messages for this stream that
         // we need to ask the server for.
-        if (has_found_oldest && has_found_newest) {
-            // Even after loading more messages, we have
-            // no messages to display in this narrow.
-            narrow_banner.show_empty_narrow_message();
-            compose_closed_ui.update_buttons_for_private();
-            compose_recipient.check_posting_policy_for_compose_box();
-        }
-
-        if (opts.num_before > 0 && !has_found_oldest) {
-            maybe_load_older_messages({msg_list: opts.msg_list, msg_list_data: opts.msg_list.data});
-        }
-        if (opts.num_after > 0 && !has_found_newest) {
-            maybe_load_newer_messages({msg_list: opts.msg_list});
-        }
+        message_lists.current.visibly_empty()
+    ) {
+        const looking_for_new_msgs = opts.num_after > 0;
+        const looking_for_old_msgs = opts.num_before > 0;
+        fetch_more_if_required_for_current_msg_list(
+            has_found_oldest,
+            has_found_newest,
+            looking_for_new_msgs,
+            looking_for_old_msgs,
+        );
     }
 
     if (opts.cont !== undefined) {
@@ -282,7 +320,7 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
     return JSON.stringify(narrow_terms);
 }
 
-export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
+function get_parameters_for_message_fetch_api(opts: MessageFetchOptions): MessageFetchAPIParams {
     if (typeof opts.anchor === "number") {
         // Messages that have been locally echoed messages have
         // floating point temporary IDs, which is intended to be a.
@@ -290,13 +328,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         // the nearest integer before sending a request to the server.
         opts.anchor = opts.anchor.toFixed(0);
     }
-    const data: {
-        anchor: number | string;
-        num_before: number;
-        num_after: number;
-        client_gravatar: boolean;
-        narrow?: string;
-    } = {
+    const data: MessageFetchAPIParams = {
         anchor: opts.anchor,
         num_before: opts.num_before,
         num_after: opts.num_after,
@@ -308,16 +340,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         blueslip.error("Message list data is undefined!");
     }
 
-    // This block is a hack; structurally, we want to set
-    //   data.narrow = opts.msg_list.data.filter.public_terms()
-    //
-    // But support for the all_messages_data sharing of data with
-    // the combined feed view and the (hacky) page_params.narrow feature
-    // requires a somewhat ugly bundle of conditionals.
-    let narrow_data: NarrowTerm[] = [];
-    if (!msg_list_data.filter.is_in_home()) {
-        narrow_data = msg_list_data.filter.public_terms();
-    }
+    let narrow_data = msg_list_data.filter.public_terms();
     if (page_params.narrow !== undefined) {
         narrow_data = [...narrow_data, ...page_params.narrow];
     }
@@ -331,20 +354,19 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         // will return an error if appropriate.
         narrow_data = [...narrow_data, ...web_public_narrow];
     }
-    // We don't pass a narrow for the non-spectator, combined feed view; this
-    // is required to display messages if their muted status changes without
-    // a new network request, and so we need the server to send the message
-    // history from muted streams and topics even though the combined feed
-    // view's "in:home" narrow term will filter those.
     if (narrow_data.length > 0) {
         const narrow_param_string = JSON.stringify(narrow_data);
         data.narrow = handle_operators_supporting_id_based_api(narrow_param_string);
     }
+    return data;
+}
 
+export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
+    const data = get_parameters_for_message_fetch_api(opts);
     let update_loading_indicator =
         message_lists.current !== undefined && opts.msg_list === message_lists.current;
     if (opts.num_before > 0) {
-        msg_list_data.fetch_status.start_older_batch({
+        opts.msg_list_data.fetch_status.start_older_batch({
             update_loading_indicator,
         });
     }
@@ -352,7 +374,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
     if (opts.num_after > 0) {
         // We hide the bottom loading indicator when we're fetching both top and bottom messages.
         update_loading_indicator = update_loading_indicator && opts.num_before === 0;
-        msg_list_data.fetch_status.start_newer_batch({
+        opts.msg_list_data.fetch_status.start_newer_batch({
             update_loading_indicator,
         });
     }
@@ -628,6 +650,121 @@ export function maybe_load_newer_messages(opts: {msg_list: MessageList}): void {
         msg_list,
         msg_list_data: opts.msg_list.data,
         cont: load_more,
+    });
+}
+
+export function verify_cached_data(data: MessageListData): void {
+    type EventDetails = {
+        type: string;
+        message?: {
+            id: number;
+        };
+        // ...many more properties.
+    };
+    let events_since_restoring_cached_data: EventDetails[] = [];
+    // Since we are in tight race with events modifying data on
+    // server, we start by capturing any events that the client
+    // will receive to include in error logs for debugging.
+    $(document).on("server_event.zulip", (e) => {
+        events_since_restoring_cached_data = [
+            // @ts-expect-error: Fix by adding `events` as type to TriggeredEvent.
+            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+            ...(e.events as EventDetails[]),
+            ...events_since_restoring_cached_data,
+        ];
+    });
+
+    // Extract the data we want to verify to avoid it being
+    // changed by the time we received data from the server.
+    const messages = [...data.all_messages()];
+    // For empty narrows, we don't have a `local_id` to select,
+    // so we always end up contacting server for the latest data.
+    // Hence, we never reach here to verify data in that case.
+    assert(messages.length !== 0);
+    const has_found_newest = data.fetch_status.has_found_newest();
+    const has_found_oldest = data.fetch_status.has_found_oldest();
+    const history_limited = data.fetch_status.history_limited();
+    const first_message = messages[0];
+    assert(first_message !== undefined);
+    let anchor = first_message.id;
+    // If we have the oldest message, we can verify that the fetch
+    // status for that is correct by anchoring our request to first
+    // message. Since `num_before` is `0`, this is our only way of
+    // knowing if our fetch request has found the oldest data.
+    if (has_found_oldest) {
+        anchor = 0;
+    }
+    let num_after = messages.length;
+    // We need to fetch more than the number of messages in the data,
+    // to verify if the fetched data has has_found_newest.
+    if (has_found_newest) {
+        num_after += 1;
+    }
+    const opts: MessageFetchOptions = {
+        anchor,
+        num_before: 0,
+        num_after,
+        msg_list_data: data,
+    };
+    const fetch_request_params = get_parameters_for_message_fetch_api(opts);
+    void channel.get({
+        url: "/json/messages",
+        data: fetch_request_params,
+        success(raw_data) {
+            const data = response_schema.parse(raw_data);
+
+            // Verify that cached data with response from server.
+            try {
+                if (has_found_newest) {
+                    assert(data.found_newest);
+                }
+
+                const cached_msg_ids = new Set(messages.map((msg) => msg.id));
+                const server_msg_ids = new Set(data.messages.map((msg) => msg.id));
+                const msgs_not_found = server_msg_ids.difference(cached_msg_ids);
+                msgs_not_found.union(cached_msg_ids.difference(server_msg_ids));
+                if (msgs_not_found.size > 0) {
+                    // Check if the missing messages were recently added.
+                    for (const event of events_since_restoring_cached_data) {
+                        if (
+                            event.type === "message" &&
+                            event.message !== undefined &&
+                            msgs_not_found.has(event.message.id)
+                        ) {
+                            continue;
+                        } else {
+                            assert(msgs_not_found.size === 0);
+                        }
+                    }
+                }
+                assert(msgs_not_found.size === 0);
+                $(document).off("server_event.zulip");
+            } catch (error) {
+                setTimeout(() => {
+                    blueslip.error(
+                        "Mismatching cached and server data.",
+                        {
+                            fetch_request_params,
+                            server_data: {
+                                ...data,
+                                messages: "Removed for sentry logs",
+                                msg_ids: JSON.stringify(data.messages.map((msg) => msg.id)),
+                            },
+                            cached_data: {
+                                has_found_newest,
+                                has_found_oldest,
+                                history_limited,
+                                msg_ids: JSON.stringify(messages.map((msg) => msg.id)),
+                            },
+                            events: JSON.stringify(events_since_restoring_cached_data),
+                        },
+                        error,
+                    );
+                    $(document).off("server_event.zulip");
+                    // Allow 10s for us receive any more relevant events.
+                }, 10000);
+            }
+        },
     });
 }
 

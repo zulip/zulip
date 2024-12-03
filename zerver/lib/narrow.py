@@ -374,7 +374,9 @@ class NarrowBuilder:
             conditions = exclude_muting_conditions(
                 self.user_profile, [NarrowParameter(operator="in", operand="home")]
             )
-            return query.where(maybe_negate(and_(*conditions)))
+            if conditions:
+                return query.where(maybe_negate(and_(*conditions)))
+            return query  # nocoverage
         elif operand == "all":
             return query
 
@@ -818,6 +820,8 @@ def ok_to_include_history(
     user_profile: UserProfile | None,
     is_web_public_query: bool,
 ) -> bool:
+    # NOTE: `load_local_messages` needs to be in sync with logic here.
+    #
     # There are occasions where we need to find Message rows that
     # have no corresponding UserMessage row, because the user is
     # reading a public channel that might include messages that
@@ -859,6 +863,7 @@ def ok_to_include_history(
         # that's a property on the UserMessage table.  There cannot be
         # historical messages in these cases anyway.
         for term in narrow:
+            # NOTE: Needs to be in sync with `Filter.is_personal_filter`.
             if term.operator == "is" and term.operand not in {"resolved", "followed"}:
                 include_history = False
 
@@ -1353,6 +1358,8 @@ def fetch_messages(
     num_after: int,
     client_requested_message_ids: list[int] | None = None,
 ) -> FetchedMessages:
+    # NOTE: `load_local_messages` needs to be updated when modifying
+    # `need_user_message` logic here.
     include_history = ok_to_include_history(narrow, user_profile, is_web_public_query)
     if include_history:
         # The initial query in this case doesn't use `zerver_usermessage`,
