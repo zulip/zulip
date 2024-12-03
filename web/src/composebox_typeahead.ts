@@ -411,7 +411,7 @@ export function tokenize_compose_str(s: string): string {
     // after the first character.
     let i = s.length;
 
-    let min_i = s.length - 25;
+    let min_i = s.length - 40;
     if (min_i < 0) {
         min_i = 0;
     }
