@@ -411,7 +411,9 @@ export function tokenize_compose_str(s: string): string {
     // after the first character.
     let i = s.length;
 
-    let min_i = s.length - 25;
+    // We limit how far back to scan to limit potential weird behavior
+    // in very long messages, and simplify performance analysis.
+    let min_i = s.length - 40;
     if (min_i < 0) {
         min_i = 0;
     }

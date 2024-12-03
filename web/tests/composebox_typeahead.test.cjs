@@ -1922,7 +1922,8 @@ test("tokenizing", () => {
     assert.equal(ct.tokenize_compose_str("foo ~~~why = why_not\n~~~"), "~~~");
 
     // The following cases are kinda judgment calls...
-    assert.equal(ct.tokenize_compose_str("foo @toomanycharactersisridiculoustocomplete"), "");
+    // max scanning limit is 40 characters until chars like @, # , / are found
+    assert.equal(ct.tokenize_compose_str("foo @toomanycharactersistooridiculoustocomplete"), "");
     assert.equal(ct.tokenize_compose_str("foo #bar@foo"), "#bar@foo");
 });
 
