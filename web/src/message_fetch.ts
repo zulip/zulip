@@ -118,10 +118,6 @@ export function fetch_more_if_required_for_current_msg_list(
     looking_for_old_msgs: boolean,
 ): void {
     assert(message_lists.current !== undefined);
-    if (message_lists.current.is_combined_feed_view) {
-        return;
-    }
-
     if (has_found_oldest && has_found_newest) {
         // Even after loading more messages, we have
         // no messages to display in this narrow.
