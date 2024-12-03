@@ -421,6 +421,15 @@ test("marked", ({override}) => {
             expected: "<p>This is not a #**Denmark&gt;** stream_topic link</p>",
         },
         {
+            input: "Look at #**Denmark>message_link@100**",
+            expected:
+                '<p>Look at <a class="message-link" href="/#narrow/channel/1-Denmark/topic/message_link/near/100">#Denmark &gt; message_link @ 💬</a></p>',
+        },
+        {
+            input: "Look at #**Unknown>message_link@100**",
+            expected: "<p>Look at #**Unknown&gt;message_link@100**</p>",
+        },
+        {
             input: "mmm...:burrito:s",
             expected:
                 '<p>mmm...<img alt=":burrito:" class="emoji" src="/static/generated/emoji/images/emoji/burrito.png" title="burrito">s</p>',
