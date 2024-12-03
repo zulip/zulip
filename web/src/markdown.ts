@@ -647,6 +647,33 @@ function handleStreamTopic({
     )}" href="/${_.escape(href)}">${_.escape(text)}</a>`;
 }
 
+function handleStreamTopicMessage({
+    stream_name,
+    topic,
+    message_id,
+    get_stream_by_name,
+    stream_topic_hash,
+}: {
+    stream_name: string;
+    topic: string;
+    message_id: number;
+    get_stream_by_name: (stream_name: string) =>
+        | {
+              stream_id: number;
+              name: string;
+          }
+        | undefined;
+    stream_topic_hash: (stream_id: number, topic: string) => string;
+}): string | undefined {
+    const stream = get_stream_by_name(stream_name);
+    if (stream === undefined || !topic) {
+        return undefined;
+    }
+    const href = stream_topic_hash(stream.stream_id, topic) + "/near/" + message_id;
+    const text = `#${stream.name} > ${topic} @ 💬`;
+    return `<a class="message-link" href="/${_.escape(href)}">${_.escape(text)}</a>`;
+}
+
 function handleTex(tex: string, fullmatch: string): string {
     try {
         return katex.renderToString(tex);
@@ -755,6 +782,20 @@ export function parse({
         });
     }
 
+    function streamTopicMessageHandler(
+        stream_name: string,
+        topic: string,
+        message_id: number,
+    ): string | undefined {
+        return handleStreamTopicMessage({
+            stream_name,
+            topic,
+            message_id,
+            get_stream_by_name: helper_config.get_stream_by_name,
+            stream_topic_hash: helper_config.stream_topic_hash,
+        });
+    }
+
     function emojiHandler(emoji_name: string): string {
         return handleEmoji({
             emoji_name,
@@ -782,6 +823,7 @@ export function parse({
         unicodeEmojiHandler,
         streamHandler,
         streamTopicHandler,
+        streamTopicMessageHandler,
         texHandler: handleTex,
         timestampHandler: handleTimestamp,
         gfm: true,

@@ -545,6 +545,7 @@ inline.zulip = merge({}, inline.breaks, {
   unicodeemoji: possible_emoji_regex,
   usermention: /^@(_?)(?:\*\*([^\*]+)\*\*)/, // Match potentially multi-word string between @** **
   groupmention: /^@(_?)(?:\*([^\*]+)\*)/, // Match multi-word string between @* *
+  stream_topic_message: /^#\*\*([^\*>]+)>([^\*]+)@(\d+)\*\*/,
   stream_topic: /^#\*\*([^\*>]+)>([^\*]+)\*\*/,
   stream: /^#\*\*([^\*]+)\*\*/,
   tex: /^(\$\$([^\n_$](\\\$|[^\n$])*)\$\$(?!\$))\B/,
@@ -754,6 +755,13 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
+    // stream_topic_message (Zulip)
+    if (cap = this.rules.stream_topic_message.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.stream_topic_message(unescape(cap[1]), unescape(cap[2]), unescape(cap[3]), cap[0]);
+      continue;
+    }
+
     // stream_topic (Zulip)
     if (cap = this.rules.stream_topic.exec(src)) {
       src = src.substring(cap[0].length);
@@ -944,6 +952,18 @@ InlineLexer.prototype.stream_topic = function (streamName, topic, orig) {
     return orig;
 
   var handled = this.options.streamTopicHandler(streamName, topic);
+  if (handled !== undefined) {
+    return handled;
+  }
+  return orig;
+};
+
+InlineLexer.prototype.stream_topic_message = function (streamName, topic, message_id, orig) {
+  orig = escape(orig);
+  if (typeof this.options.streamTopicMessageHandler !== 'function')
+    return orig;
+
+  var handled = this.options.streamTopicMessageHandler(streamName, topic, message_id);
   if (handled !== undefined) {
     return handled;
   }
