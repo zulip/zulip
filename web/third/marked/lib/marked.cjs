@@ -940,7 +940,7 @@ InlineLexer.prototype.stream = function (streamName, orig) {
 
 InlineLexer.prototype.stream_topic = function (streamName, topic, orig) {
   orig = escape(orig);
-  if (typeof this.options.streamHandler !== 'function')
+  if (typeof this.options.streamTopicHandler !== 'function')
     return orig;
 
   var handled = this.options.streamTopicHandler(streamName, topic);
