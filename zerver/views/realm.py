@@ -17,6 +17,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_deactivate_realm,
     do_reactivate_realm,
+    do_set_realm_abuse_report_channel,
     do_set_realm_authentication_methods,
     do_set_realm_new_stream_announcements_stream,
     do_set_realm_property,
@@ -123,6 +124,7 @@ def update_realm(
     authentication_methods: Json[dict[str, Any]] | None = None,
     # Note: push_notifications_enabled and push_notifications_enabled_end_timestamp
     # are not offered here as it is maintained by the server, not via the API.
+    abuse_report_channel_id: Json[int] | None = None,
     new_stream_announcements_stream_id: Json[int] | None = None,
     signup_announcements_stream_id: Json[int] | None = None,
     zulip_update_announcements_stream_id: Json[int] | None = None,
@@ -402,9 +404,27 @@ def update_realm(
         do_set_realm_authentication_methods(realm, authentication_methods, acting_user=user_profile)
         data["authentication_methods"] = authentication_methods
 
-    # Realm.new_stream_announcements_stream, Realm.signup_announcements_stream,
-    # and Realm.zulip_update_announcements_stream are not boolean, str or integer field,
-    # and thus doesn't fit into the do_set_realm_property framework.
+    # Realm.abuse_report_channel, Realm.new_stream_announcements_stream,
+    # Realm.signup_announcements_stream, and Realm.zulip_update_announcements_stream
+    # are not boolean, str or integer field, and thus doesn't fit into the
+    # do_set_realm_property framework.
+    if abuse_report_channel_id is not None and (
+        realm.abuse_report_channel is None
+        or realm.abuse_report_channel.id != abuse_report_channel_id
+    ):
+        new_abuse_report_channel_id = None
+        if abuse_report_channel_id >= 0:
+            (new_abuse_report_channel_id, sub) = access_stream_by_id(
+                user_profile, abuse_report_channel_id, allow_realm_admin=True
+            )
+        do_set_realm_abuse_report_channel(
+            realm,
+            new_abuse_report_channel_id,
+            abuse_report_channel_id,
+            acting_user=user_profile,
+        )
+        data["abuse_report_channel_id"] = abuse_report_channel_id
+
     if new_stream_announcements_stream_id is not None and (
         realm.new_stream_announcements_stream is None
         or (realm.new_stream_announcements_stream.id != new_stream_announcements_stream_id)

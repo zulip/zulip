@@ -375,6 +375,7 @@ def do_set_realm_authentication_methods(
 def do_set_realm_stream(
     realm: Realm,
     field: Literal[
+        "abuse_report_channel",
         "new_stream_announcements_stream",
         "signup_announcements_stream",
         "zulip_update_announcements_stream",
@@ -386,7 +387,11 @@ def do_set_realm_stream(
 ) -> None:
     # We could calculate more of these variables from `field`, but
     # it's probably more readable to not do so.
-    if field == "new_stream_announcements_stream":
+    if field == "abuse_report_channel":
+        old_value = realm.abuse_report_channel_id
+        realm.abuse_report_channel = stream
+        property = "abuse_report_channel_id"
+    elif field == "new_stream_announcements_stream":
         old_value = realm.new_stream_announcements_stream_id
         realm.new_stream_announcements_stream = stream
         property = "new_stream_announcements_stream_id"
@@ -424,6 +429,12 @@ def do_set_realm_stream(
             value=stream_id,
         )
         send_event_on_commit(realm, event, active_user_ids(realm.id))
+
+
+def do_set_realm_abuse_report_channel(
+    realm: Realm, stream: Stream | None, stream_id: int, *, acting_user: UserProfile | None
+) -> None:
+    do_set_realm_stream(realm, "abuse_report_channel", stream, stream_id, acting_user=acting_user)
 
 
 def do_set_realm_new_stream_announcements_stream(

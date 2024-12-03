@@ -34,6 +34,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_deactivate_realm,
     do_reactivate_realm,
+    do_set_realm_abuse_report_channel,
     do_set_realm_authentication_methods,
     do_set_realm_new_stream_announcements_stream,
     do_set_realm_property,
@@ -644,6 +645,30 @@ class TestRealmAuditLog(ZulipTestCase):
                     RealmAuditLog.OLD_VALUE: old_value,
                     RealmAuditLog.NEW_VALUE: stream.id,
                     "property": "zulip_update_announcements_stream",
+                },
+            ).count(),
+            1,
+        )
+
+    def test_set_realm_abuse_report_channel(self) -> None:
+        now = timezone_now()
+        realm = get_realm("zulip")
+        user = self.example_user("hamlet")
+        old_value = realm.abuse_report_channel
+        stream_name = "test"
+        stream = self.make_stream(stream_name, realm)
+
+        do_set_realm_abuse_report_channel(realm, stream, stream.id, acting_user=user)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: old_value,
+                    RealmAuditLog.NEW_VALUE: stream.id,
+                    "property": "abuse_report_channel",
                 },
             ).count(),
             1,

@@ -420,6 +420,12 @@ def fetch_initial_state_data(
             else server_default_jitsi_server_url
         )
 
+        abuse_report_channel = realm.get_abuse_report_channel()
+        if abuse_report_channel:
+            state["realm_abuse_report_channel_id"] = abuse_report_channel.id
+        else:
+            state["realm_abuse_report_channel_id"] = -1
+
         new_stream_announcements_stream = realm.get_new_stream_announcements_stream()
         if new_stream_announcements_stream:
             state["realm_new_stream_announcements_stream_id"] = new_stream_announcements_stream.id

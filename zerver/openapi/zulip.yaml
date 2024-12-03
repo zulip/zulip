@@ -4421,6 +4421,18 @@ paths:
                                     irrespective of which of these settings were changed. Now, a separate event
                                     is sent for each changed setting.
                                   properties:
+                                    abuse_report_channel_id:
+                                      type: integer
+                                      description: |
+                                        The ID of the channel to which messages reported by users
+                                        will be forwarded to.
+
+                                        Will be `-1` if abuse reporting is disabled.
+
+                                        Since these automated messages are sent by the server, this field is
+                                        primarily relevant to clients containing UI for changing it.
+
+                                        **Changes**: New in Zulip 10.0 (feature level 327).
                                     allow_edit_history:
                                       type: boolean
                                       description: |
@@ -17624,6 +17636,18 @@ paths:
                           **Changes**: New in Zulip 5.0 (feature level 74). Previously,
                           this was hardcoded to 90 seconds, and clients should use that as a fallback
                           value when interacting with servers where this field is not present.
+                      realm_abuse_report_channel_id:
+                        type: integer
+                        description: |
+                          The ID of the channel to which messages reported by users
+                          will be forwarded to.
+
+                          Will be `-1` if abuse reporting is disabled.
+
+                          Since these automated messages are sent by the server, this field is
+                          primarily relevant to clients containing UI for changing it.
+
+                          **Changes**: New in Zulip 10.0 (feature level 327).
                       realm_new_stream_announcements_stream_id:
                         type: integer
                         description: |

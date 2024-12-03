@@ -213,6 +213,7 @@ class HomeTest(ZulipTestCase):
         "realm_want_advertise_in_communities_directory",
         "realm_wildcard_mention_policy",
         "realm_zulip_update_announcements_stream_id",
+        "realm_abuse_report_channel_id",
         "recent_private_conversations",
         "saved_snippets",
         "scheduled_messages",
@@ -824,6 +825,18 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(
             page_params["state_data"]["realm_zulip_update_announcements_stream_id"],
+            get_stream("Denmark", realm).id,
+        )
+
+    def test_abuse_report_channel(self) -> None:
+        realm = get_realm("zulip")
+        realm.abuse_report_channel = get_stream("Denmark", realm)
+        realm.save()
+        self.login("hamlet")
+        result = self._get_home_page()
+        page_params = self._get_page_params(result)
+        self.assertEqual(
+            page_params["state_data"]["realm_abuse_report_channel_id"],
             get_stream("Denmark", realm).id,
         )
 
