@@ -11,6 +11,7 @@ import type {GroupPermissionSetting, GroupSettingValue, StateData} from "./state
 import {current_user, raw_user_group_schema, realm} from "./state_data.ts";
 import type {UserOrMention} from "./typeahead_helper.ts";
 import type {UserGroupUpdateEvent} from "./types.ts";
+import * as util from "./util.ts";
 
 type UserGroupRaw = z.infer<typeof raw_user_group_schema>;
 
@@ -433,8 +434,12 @@ export function get_associated_subgroups(user_group: UserGroup, user_id: number)
     return subgroups;
 }
 
-export function group_list_to_comma_seperated_name(user_groups: UserGroup[]): string {
-    return user_groups.map((user_group) => user_group.name).join(", ");
+export function format_group_list(user_groups: UserGroup[]): string {
+    return util.format_array_as_list(
+        user_groups.map((user_group) => user_group.name),
+        "short",
+        "conjunction",
+    );
 }
 
 export function is_user_in_setting_group(
