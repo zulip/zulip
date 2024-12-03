@@ -944,6 +944,7 @@ def check_realm_update(
     value = event["value"]
 
     if prop in [
+        "moderation_request_channel_id",
         "new_stream_announcements_stream_id",
         "signup_announcements_stream_id",
         "zulip_update_announcements_stream_id",
