@@ -645,11 +645,11 @@ test("sort_recipients pm counts", () => {
 
     // get some line coverage
     assert.equal(
-        th.compare_people_for_relevance(b_user_1_item, b_user_3_item, compare, linux_sub.stream_id),
+        th.compare_people_for_streams(b_user_1_item, b_user_3_item, compare, linux_sub.stream_id),
         1,
     );
     assert.equal(
-        th.compare_people_for_relevance(b_user_3_item, b_user_1_item, compare, linux_sub.stream_id),
+        th.compare_people_for_streams(b_user_3_item, b_user_1_item, compare, linux_sub.stream_id),
         -1,
     );
 });
@@ -835,9 +835,9 @@ test("test compare directly for stream message type", () => {
     const all_obj = ct.broadcast_mentions()[0];
     const all_obj_item = broadcast_item(all_obj);
 
-    assert.equal(th.compare_people_for_relevance(all_obj_item, all_obj_item), 0);
-    assert.equal(th.compare_people_for_relevance(all_obj_item, zman_item), -1);
-    assert.equal(th.compare_people_for_relevance(zman_item, all_obj_item), 1);
+    assert.equal(th.compare_people_for_streams(all_obj_item, all_obj_item, 1, ""), 0);
+    assert.equal(th.compare_people_for_streams(all_obj_item, zman_item, 1, ""), -1);
+    assert.equal(th.compare_people_for_streams(zman_item, all_obj_item, 1, ""), 1);
 });
 
 test("test compare directly for direct message", () => {
@@ -845,9 +845,9 @@ test("test compare directly for direct message", () => {
     const all_obj = ct.broadcast_mentions()[0];
     const all_obj_item = broadcast_item(all_obj);
 
-    assert.equal(th.compare_people_for_relevance(all_obj_item, all_obj_item), 0);
-    assert.equal(th.compare_people_for_relevance(all_obj_item, zman_item), 1);
-    assert.equal(th.compare_people_for_relevance(zman_item, all_obj_item), -1);
+    assert.equal(th.compare_people_for_pms(all_obj_item, all_obj_item), 0);
+    assert.equal(th.compare_people_for_pms(all_obj_item, zman_item), 1);
+    assert.equal(th.compare_people_for_pms(zman_item, all_obj_item), -1);
 });
 
 test("highlight_with_escaping", () => {
@@ -1045,8 +1045,8 @@ test("compare_language", () => {
 
 // TODO: This is incomplete for testing this function, and
 // should be filled out more. This case was added for codecov.
-test("compare_by_pms", () => {
-    assert.equal(th.compare_by_pms(a_user, a_user), 0);
+test("compare_users_for_pms", () => {
+    assert.equal(th.compare_users_for_pms(a_user, a_user), 0);
 });
 
 test("sort_group_setting_options", ({override_rewire}) => {

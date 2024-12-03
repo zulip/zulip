@@ -222,93 +222,191 @@ export function sorter<T>(query: string, objs: T[], get_item: (x: T) => string):
     return [...results.matches, ...results.rest];
 }
 
-export function compare_by_pms(user_a: User, user_b: User): number {
-    const count_a = people.get_recipient_count(user_a);
-    const count_b = people.get_recipient_count(user_b);
+export function compare_users_for_streams(
+    user_a: User,
+    user_b: User,
+    stream_id: number,
+    topic: string,
+): number {
+    // Typeahead sorting priority order for stream conversations:
 
-    if (count_a > count_b) {
+    // 1. Subscribers over non-subscribers.
+    const a_is_sub = stream_data.is_user_subscribed(stream_id, user_a.user_id);
+    const b_is_sub = stream_data.is_user_subscribed(stream_id, user_b.user_id);
+    if (a_is_sub && !b_is_sub) {
         return -1;
-    } else if (count_a < count_b) {
+    } else if (!a_is_sub && b_is_sub) {
         return 1;
     }
 
+    // 2. Users who have sent messages to the current topic over those who haven't sent to the current topic.
+    // 3. Users who have sent messages to the stream over those who haven't sent to the stream.
+    const result = recent_senders.compare_by_recency(user_a, user_b, stream_id, topic);
+    if (result !== 0) {
+        return result;
+    }
+
+    // 4. Users have PMed with over users haven't PMed with.
     const a_is_partner = pm_conversations.is_partner(user_a.user_id);
     const b_is_partner = pm_conversations.is_partner(user_b.user_id);
+    if (a_is_partner && !b_is_partner) {
+        return -1;
+    } else if (!a_is_partner && b_is_partner) {
+        return 1;
+    }
+    return 0;
+}
 
-    // This code will never run except in the rare case that one has no
-    // recent DM message history with a user, but does have some older
-    // message history that's outside the "recent messages only"
-    // data set powering people.get_recipient_count.
+export function compare_users_for_pms(user_a: User, user_b: User): number {
+    // Typeahead sorting priority order for PM conversations:
+
+    // 1. Users who have PMed with each other over those who haven't.
+    const a_is_partner = pm_conversations.is_partner(user_a.user_id);
+    const b_is_partner = pm_conversations.is_partner(user_b.user_id);
     if (a_is_partner && !b_is_partner) {
         return -1;
     } else if (!a_is_partner && b_is_partner) {
         return 1;
     }
 
+    // 2. Recipients with higher counts.
+    const count_a = people.get_recipient_count(user_a);
+    const count_b = people.get_recipient_count(user_b);
+    if (count_a > count_b) {
+        return -1;
+    } else if (count_a < count_b) {
+        return 1;
+    }
+
+    // 3. Normal users over bots.
     if (!user_a.is_bot && user_b.is_bot) {
         return -1;
     } else if (user_a.is_bot && !user_b.is_bot) {
         return 1;
     }
 
-    // We use alpha sort as a tiebreaker, which might be helpful for
-    // new users.
+    // 4. Users with shorter names over those with longer names.
     if (user_a.full_name < user_b.full_name) {
         return -1;
-    } else if (user_a === user_b) {
-        return 0;
+    } else if (user_a.full_name > user_b.full_name) {
+        return 1;
     }
-    return 1;
+    return 0;
 }
 
-export function compare_people_for_relevance(
+export function compare_people_for_streams(
     person_a: UserOrMentionPillData | UserPillData,
     person_b: UserOrMentionPillData | UserPillData,
-    compare_by_current_conversation?: (user_a: User, user_b: User) => number,
+    stream_id: number,
+    topic: string,
+): number {
+    if (person_a.type === "user") {
+        if (person_b.type === "user") {
+            // If both are users
+            return compare_users_for_streams(person_a.user, person_b.user, stream_id, topic);
+        }
+        // a is user, b is wildcard
+        const a_is_sub = stream_data.is_user_subscribed(stream_id, person_a.user.user_id);
+        const a_is_sender_to_current_topic =
+            recent_senders.max_id_for_stream_topic_sender({
+                stream_id,
+                topic,
+                sender_id: person_a.user.user_id,
+            }) > 0;
+        // The max_id_for_stream_topic_sender() will be > 0 if the user have sent atleast one message to the topic
+        const a_is_sender_to_current_stream =
+            recent_senders.max_id_for_stream_sender({
+                stream_id,
+                sender_id: person_a.user.user_id,
+            }) > 0;
+        const a_is_partner = pm_conversations.is_partner(person_a.user.user_id);
+
+        // Wildcard gets higher priority over (In Stream conversations):
+        // The non-subscribers who have neither participated in the topic nor stream
+        // and also with whom the current user hasn't PMed.
+        const properties_to_satisfy = [
+            a_is_sub,
+            a_is_sender_to_current_topic,
+            a_is_sender_to_current_stream,
+            a_is_partner,
+        ];
+        return compare_user_wildcard(properties_to_satisfy);
+    }
+    if (person_b.type === "user") {
+        // a is wildcard, b is user
+        const b_is_sub = stream_data.is_user_subscribed(stream_id, person_b.user.user_id);
+        const b_is_sender_to_current_topic =
+            recent_senders.max_id_for_stream_topic_sender({
+                stream_id,
+                topic,
+                sender_id: person_b.user.user_id,
+            }) > 0;
+        const b_is_sender_to_current_stream =
+            recent_senders.max_id_for_stream_sender({
+                stream_id,
+                sender_id: person_b.user.user_id,
+            }) > 0;
+        const b_is_partner = pm_conversations.is_partner(person_b.user.user_id);
+
+        const properties_to_satisfy = [
+            b_is_sub,
+            b_is_sender_to_current_topic,
+            b_is_sender_to_current_stream,
+            b_is_partner,
+        ];
+
+        return -compare_user_wildcard(properties_to_satisfy);
+    }
+
+    // Both a and b are wildcards
+    return person_a.user.idx - person_b.user.idx;
+}
+
+export function compare_people_for_pms(
+    person_a: UserOrMentionPillData | UserPillData,
+    person_b: UserOrMentionPillData | UserPillData,
+): number {
+    if (person_a.type === "user") {
+        if (person_b.type === "user") {
+            // Both a and b are users
+            return compare_users_for_pms(person_a.user, person_b.user);
+        }
+        // a: user, b: wildcard
+
+        // Wildcard gets higher priority over (In PM conversations):
+        // Users who have not PMed with the current user.
+        const a_is_partner = pm_conversations.is_partner(person_a.user.user_id);
+        return compare_user_wildcard([a_is_partner]);
+    }
+    if (person_b.type === "user") {
+        // a: wildcard, b: user
+        const b_is_partner = pm_conversations.is_partner(person_b.user.user_id);
+        return -compare_user_wildcard([b_is_partner]);
+    }
+    // Both a and b are wildcards
+    return person_a.user.idx - person_b.user.idx;
+}
+
+export function compare_user_wildcard(
+    properties_to_satisfy: boolean[],
     current_stream_id?: number,
 ): number {
-    // give preference to "all", "everyone" or "stream"
-    if (compose_state.get_message_type() !== "private") {
-        if (person_a.type === "broadcast") {
-            if (person_b.type === "broadcast") {
-                return person_a.user.idx - person_b.user.idx;
-            }
-            return -1;
-        } else if (person_b.type === "broadcast") {
-            return 1;
-        }
-    } else {
-        if (person_a.type === "broadcast") {
-            if (person_b.type === "broadcast") {
-                return person_a.user.idx - person_b.user.idx;
-            }
-            return 1;
-        } else if (person_b.type === "broadcast") {
-            return -1;
-        }
+    // Assumption for convenience: Assuming that the user is user_a and wildcard is b.
+    // If the other way around is true, just change the sign (multiplying with -1)
+
+    // If compose state is private or viewing a PM conversation, put wildcards at the bottom
+    const message_type = compose_state.get_message_type();
+    if (message_type === "private" || current_stream_id === undefined) {
+        return -1;
     }
 
-    // Now handle actual people users.
-    // give preference to subscribed users first
-    if (current_stream_id !== undefined) {
-        const a_is_sub = stream_data.is_user_subscribed(current_stream_id, person_a.user.user_id);
-        const b_is_sub = stream_data.is_user_subscribed(current_stream_id, person_b.user.user_id);
-
-        if (a_is_sub && !b_is_sub) {
-            return -1;
-        } else if (!a_is_sub && b_is_sub) {
-            return 1;
-        }
+    const atleast_one_satisifies = properties_to_satisfy.some(Boolean);
+    if (atleast_one_satisifies) {
+        return -1;
     }
 
-    if (compare_by_current_conversation !== undefined) {
-        const preference = compare_by_current_conversation(person_a.user, person_b.user);
-        if (preference !== 0) {
-            return preference;
-        }
-    }
-
-    return compare_by_pms(person_a.user, person_b.user);
+    // If any rule didn't get satisfy for a user, put wildcard at the top.
+    return 1;
 }
 
 export function sort_people_for_relevance<UserType extends UserOrMentionPillData | UserPillData>(
@@ -319,24 +417,17 @@ export function sort_people_for_relevance<UserType extends UserOrMentionPillData
     // If sorting for recipientbox typeahead and not viewing a stream / topic, then current_stream = ""
     const current_stream =
         current_stream_id !== undefined ? stream_data.get_sub_by_id(current_stream_id) : undefined;
+
     if (current_stream === undefined) {
-        objs.sort((person_a, person_b) => compare_people_for_relevance(person_a, person_b));
+        // Viewing PM conversations
+        objs.sort((person_a, person_b) => compare_people_for_pms(person_a, person_b));
     } else {
         assert(current_stream_id !== undefined);
         assert(current_topic !== undefined);
+
+        // Viewing Stream messages
         objs.sort((person_a, person_b) =>
-            compare_people_for_relevance(
-                person_a,
-                person_b,
-                (user_a, user_b) =>
-                    recent_senders.compare_by_recency(
-                        user_a,
-                        user_b,
-                        current_stream_id,
-                        current_topic,
-                    ),
-                current_stream_id,
-            ),
+            compare_people_for_streams(person_a, person_b, current_stream_id, current_topic),
         );
     }
 
