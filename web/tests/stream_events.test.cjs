@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const example_settings = require("./lib/example_settings.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -52,8 +53,9 @@ const stream_create = zrequire("stream_create");
 const stream_data = zrequire("stream_data");
 const stream_events = zrequire("stream_events");
 
+const realm = {};
 set_current_user({});
-set_realm({});
+set_realm(realm);
 
 const george = {
     email: "george@zulip.com",
@@ -106,7 +108,11 @@ function test(label, f) {
 test("update_property", ({override}) => {
     override(compose_recipient, "possibly_update_stream_name_in_compose", noop);
     override(compose_recipient, "on_compose_select_recipient_update", noop);
-
+    override(
+        realm,
+        "server_supported_permission_settings",
+        example_settings.server_supported_permission_settings,
+    );
     const sub = {...frontend};
     stream_data.add_sub(sub);
 

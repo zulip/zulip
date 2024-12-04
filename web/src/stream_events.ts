@@ -20,6 +20,7 @@ import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as settings_notifications from "./settings_notifications.ts";
+import {realm} from "./state_data.ts";
 import * as stream_color_events from "./stream_color_events.ts";
 import * as stream_create from "./stream_create.ts";
 import * as stream_data from "./stream_data.ts";
@@ -27,8 +28,10 @@ import * as stream_list from "./stream_list.ts";
 import * as stream_muting from "./stream_muting.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
+import {stream_permission_group_settings_schema} from "./stream_types.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import {group_setting_value_schema} from "./types.ts";
 import * as unread_ui from "./unread_ui.ts";
 import * as user_profile from "./user_profile.ts";
 
@@ -78,6 +81,15 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             property,
             value,
         });
+        return;
+    }
+
+    if (Object.keys(realm.server_supported_permission_settings.stream).includes(property)) {
+        stream_settings_ui.update_stream_permission_group_setting(
+            stream_permission_group_settings_schema.parse(property),
+            sub,
+            group_setting_value_schema.parse(value),
+        );
         return;
     }
 
@@ -145,23 +157,9 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         message_retention_days(value) {
             stream_settings_ui.update_message_retention_setting(sub, value);
         },
-        can_remove_subscribers_group(value) {
-            stream_settings_ui.update_stream_permission_group_setting(
-                "can_remove_subscribers_group",
-                sub,
-                value,
-            );
-        },
         is_recently_active(value) {
             update_stream_setting(sub, value, "is_recently_active");
             stream_list.update_streams_sidebar();
-        },
-        can_administer_channel_group(value) {
-            stream_settings_ui.update_stream_permission_group_setting(
-                "can_administer_channel_group",
-                sub,
-                value,
-            );
         },
     };
 
