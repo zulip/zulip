@@ -132,7 +132,7 @@ function clear_box(): void {
     compose_state.set_recipient_edited_manually(false);
     compose_state.set_is_content_unedited_restored_draft(false);
     clear_textarea();
-    compose_validate.check_overflow_text();
+    compose_validate.check_overflow_text($("#send_message_form"));
     drafts.set_compose_draft_id(undefined);
     $("textarea#compose-textarea").toggleClass("invalid", false);
     compose_ui.autosize_textarea($("textarea#compose-textarea"));
@@ -377,7 +377,7 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
         $(".compose_control_button_container:has(.add-poll)").addClass("disabled-on-hover");
         // If we were provided with message content, we might need to
         // display that it's too long.
-        compose_validate.check_overflow_text();
+        compose_validate.check_overflow_text($("#send_message_form"));
     }
     // This has to happen after we insert the content, so that the next "input" event
     // is from user input.

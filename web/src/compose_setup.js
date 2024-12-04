@@ -70,7 +70,7 @@ export function initialize() {
 
     $("textarea#compose-textarea").on("input propertychange", () => {
         compose_validate.warn_if_topic_resolved(false);
-        const compose_text_length = compose_validate.check_overflow_text();
+        const compose_text_length = compose_validate.check_overflow_text($("#send_message_form"));
         if (compose_text_length !== 0 && $("textarea#compose-textarea").hasClass("invalid")) {
             $("textarea#compose-textarea").toggleClass("invalid", false);
         }

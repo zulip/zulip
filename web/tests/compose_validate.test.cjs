@@ -188,6 +188,7 @@ test_ui("validate", ({mock_template, override}) => {
         pm_recipient_error_rendered = true;
         return "<banner-stub>";
     });
+    $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     assert.ok(!compose_validate.validate());
     assert.ok(pm_recipient_error_rendered);
 
@@ -229,6 +230,7 @@ test_ui("validate", ({mock_template, override}) => {
     initialize_pm_pill();
     add_content_to_compose_box();
     compose_state.private_message_recipient("welcome-bot@example.com");
+    $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     assert.ok(compose_validate.validate());
 
     let zephyr_error_rendered = false;
@@ -263,6 +265,7 @@ test_ui("validate", ({mock_template, override}) => {
         zephyr_checked = true;
         return true;
     };
+    $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     assert.ok(!compose_validate.validate());
     assert.ok(zephyr_checked);
     assert.ok(zephyr_error_rendered);
@@ -280,6 +283,7 @@ test_ui("validate", ({mock_template, override}) => {
         empty_stream_error_rendered = true;
         return "<banner-stub>";
     });
+    $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     assert.ok(!compose_validate.validate());
     assert.ok(empty_stream_error_rendered);
 
@@ -433,6 +437,7 @@ test_ui("validate_stream_message", ({override, override_rewire, mock_template}) 
     stream_data.add_sub(special_sub);
 
     compose_state.set_stream_id(special_sub.stream_id);
+    $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     assert.ok(compose_validate.validate());
     assert.ok(!$("#compose-all-everyone").visible());
 
@@ -496,6 +501,7 @@ test_ui("test_validate_stream_message_post_policy_admin_only", ({mock_template, 
         banner_rendered = true;
         return "<banner-stub>";
     });
+    $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     assert.ok(!compose_validate.validate());
     assert.ok(banner_rendered);
 
@@ -541,6 +547,7 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", ({mock_templ
         banner_rendered = true;
         return "<banner-stub>";
     });
+    $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     assert.ok(!compose_validate.validate());
     assert.ok(banner_rendered);
     // Reset error message.
@@ -579,6 +586,10 @@ test_ui(
             banner_rendered = true;
             return "<banner-stub>";
         });
+        $("#send_message_form").set_find_results(
+            ".message-textarea",
+            $("textarea#compose-textarea"),
+        );
         assert.ok(!compose_validate.validate());
         assert.ok(banner_rendered);
     },
@@ -587,8 +598,12 @@ test_ui(
 test_ui("test_check_overflow_text", ({mock_template, override}) => {
     override(realm, "max_message_length", 10000);
 
-    const $textarea = $("textarea#compose-textarea");
-    const $indicator = $("#compose-limit-indicator");
+    const $elem = $("#send_message_form");
+    const $textarea = $(".message-textarea");
+    const $indicator = $(".message-limit-indicator");
+    stub_message_row($textarea);
+    $elem.set_find_results(".message-textarea", $textarea);
+    $elem.set_find_results(".message-limit-indicator", $indicator);
 
     // Indicator should show red colored text
     let limit_indicator_html;
@@ -596,7 +611,7 @@ test_ui("test_check_overflow_text", ({mock_template, override}) => {
         limit_indicator_html = html;
     });
     $textarea.val("a".repeat(10000 + 1));
-    compose_validate.check_overflow_text();
+    compose_validate.check_overflow_text($elem);
     assert.ok($indicator.hasClass("over_limit"));
     assert.equal(limit_indicator_html, "-1\n");
     assert.ok($textarea.hasClass("over_limit"));
@@ -604,7 +619,7 @@ test_ui("test_check_overflow_text", ({mock_template, override}) => {
 
     // Indicator should show orange colored text
     $textarea.val("a".repeat(9100));
-    compose_validate.check_overflow_text();
+    compose_validate.check_overflow_text($elem);
     assert.ok(!$indicator.hasClass("over_limit"));
     assert.equal(limit_indicator_html, "900\n");
     assert.ok(!$textarea.hasClass("over_limit"));
@@ -612,7 +627,7 @@ test_ui("test_check_overflow_text", ({mock_template, override}) => {
 
     // Indicator must be empty
     $textarea.val("a".repeat(9100 - 1));
-    compose_validate.check_overflow_text();
+    compose_validate.check_overflow_text($elem);
     assert.ok(!$indicator.hasClass("over_limit"));
     assert.equal($indicator.text(), "");
     assert.ok(!$textarea.hasClass("over_limit"));

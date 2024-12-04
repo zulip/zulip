@@ -362,7 +362,7 @@ function handle_keydown(
                 if (should_enter_send(e)) {
                     e.preventDefault();
                     if (
-                        compose_validate.validate_message_length() &&
+                        compose_validate.validate_message_length($("#send_message_form")) &&
                         !$(".message-send-controls").hasClass("disabled-message-send-controls")
                     ) {
                         on_enter_send();

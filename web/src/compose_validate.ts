@@ -717,15 +717,16 @@ function validate_private_message(): boolean {
     return true;
 }
 
-export function check_overflow_text(): number {
+export function check_overflow_text($container: JQuery): number {
     // This function is called when typing every character in the
     // compose box, so it's important that it not doing anything
     // expensive.
-    const $textarea = $("textarea#compose-textarea");
-    const text = compose_state.message_content();
+    const $textarea = $container.find<HTMLTextAreaElement>(".message-textarea");
+    // Match the behavior of compose_state.message_content of trimming trailing whitespace
+    const text = $textarea.val()!.trimEnd();
     const max_length = realm.max_message_length;
     const remaining_characters = max_length - text.length;
-    const $indicator = $("#compose-limit-indicator");
+    const $indicator = $container.find(".message-limit-indicator");
 
     if (text.length > max_length) {
         $indicator.addClass("over_limit");
@@ -755,9 +756,11 @@ export function check_overflow_text(): number {
     return text.length;
 }
 
-export function validate_message_length(): boolean {
-    const $textarea = $("textarea#compose-textarea");
-    if (compose_state.message_content().length > realm.max_message_length) {
+export function validate_message_length($container: JQuery): boolean {
+    const $textarea = $container.find<HTMLTextAreaElement>(".message-textarea");
+    // Match the behavior of compose_state.message_content of trimming trailing whitespace
+    const text = $textarea.val()!.trimEnd();
+    if (text.length > realm.max_message_length) {
         $textarea.addClass("flash");
         setTimeout(() => $textarea.removeClass("flash"), 1500);
         return false;
@@ -783,7 +786,7 @@ export function validate(scheduling_message: boolean): boolean {
         );
         return false;
     }
-    if (!validate_message_length()) {
+    if (!validate_message_length($("#send_message_form"))) {
         return false;
     }
 
