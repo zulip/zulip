@@ -54,6 +54,17 @@ function set_message_too_long_for_compose(status: boolean): void {
     update_send_button_status();
 }
 
+function set_message_too_long_for_edit(status: boolean, $container: JQuery): void {
+    message_too_long = status;
+    const $message_edit_save_container = $container.find(".message_edit_save_container");
+    const save_is_disabled =
+        message_too_long ||
+        $message_edit_save_container.hasClass("message-edit-time-limit-expired");
+
+    $container.find(".message_edit_save").prop("disabled", save_is_disabled);
+    $message_edit_save_container.toggleClass("disabled-message-edit-save", save_is_disabled);
+}
+
 export function set_recipient_disallowed(status: boolean): void {
     recipient_disallowed = status;
     update_send_button_status();
@@ -78,6 +89,25 @@ export function get_disabled_send_tooltip(): string {
     return "";
 }
 
+export function get_disabled_save_tooltip($container: JQuery): string {
+    const $button_wrapper = $container.find(".message_edit_save_container");
+    if ($button_wrapper.hasClass("message-edit-time-limit-expired")) {
+        return $t({
+            defaultMessage: "You can no longer save changes to this message.",
+        });
+    }
+    if (message_too_long) {
+        return $t(
+            {
+                defaultMessage: `Message length shouldn't be greater than {max_length} characters.`,
+            },
+            {
+                max_length: realm.max_message_length,
+            },
+        );
+    }
+    return "";
+}
 export function needs_subscribe_warning(user_id: number, stream_id: number): boolean {
     // This returns true if all of these conditions are met:
     //  * the user is valid
@@ -727,6 +757,7 @@ export function check_overflow_text($container: JQuery): number {
     const max_length = realm.max_message_length;
     const remaining_characters = max_length - text.length;
     const $indicator = $container.find(".message-limit-indicator");
+    const is_edit_container = $textarea.closest(".message_row").length > 0;
 
     if (text.length > max_length) {
         $indicator.addClass("over_limit");
@@ -736,7 +767,11 @@ export function check_overflow_text($container: JQuery): number {
                 remaining_characters,
             }),
         );
-        set_message_too_long_for_compose(true);
+        if (is_edit_container) {
+            set_message_too_long_for_edit(true, $container);
+        } else {
+            set_message_too_long_for_compose(true);
+        }
     } else if (remaining_characters <= 900) {
         $indicator.removeClass("over_limit");
         $textarea.removeClass("over_limit");
@@ -745,12 +780,20 @@ export function check_overflow_text($container: JQuery): number {
                 remaining_characters,
             }),
         );
-        set_message_too_long_for_compose(false);
+        if (is_edit_container) {
+            set_message_too_long_for_edit(false, $container);
+        } else {
+            set_message_too_long_for_compose(false);
+        }
     } else {
         $indicator.text("");
         $textarea.removeClass("over_limit");
 
-        set_message_too_long_for_compose(false);
+        if (is_edit_container) {
+            set_message_too_long_for_edit(false, $container);
+        } else {
+            set_message_too_long_for_compose(false);
+        }
     }
 
     return text.length;

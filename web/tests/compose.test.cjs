@@ -140,6 +140,15 @@ const everyone = {
 
 user_groups.initialize({realm_user_groups: [nobody, everyone]});
 
+function stub_message_row($textarea) {
+    const $stub = $.create("message_row_stub");
+    $textarea.closest = (selector) => {
+        assert.equal(selector, ".message_row");
+        $stub.length = 0;
+        return $stub;
+    };
+}
+
 function test_ui(label, f) {
     // TODO: initialize data more aggressively.
     run_test(label, f);
@@ -181,6 +190,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     const $elem = $("#send_message_form");
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
+    stub_message_row($textarea);
     $elem.set_find_results(".message-textarea", $textarea);
     $elem.set_find_results(".message-limit-indicator", $indicator);
 
@@ -248,6 +258,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
     const $elem = $("#send_message_form");
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
+    stub_message_row($textarea);
     $elem.set_find_results(".message-textarea", $textarea);
     $elem.set_find_results(".message-limit-indicator", $indicator);
 

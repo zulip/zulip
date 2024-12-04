@@ -6,6 +6,7 @@ import render_message_edit_notice_tooltip from "../templates/message_edit_notice
 import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 
+import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
@@ -275,6 +276,19 @@ export function initialize(): void {
             }
             const time = new Date(message.timestamp * 1000);
             instance.setContent(timerender.get_full_datetime_clarification(time));
+            return undefined;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    message_list_tooltip(".disabled-message-edit-save", {
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const $row = $elem.closest(".message_row");
+            assert($row !== undefined);
+            instance.setContent(compose_validate.get_disabled_save_tooltip($row));
             return undefined;
         },
         onHidden(instance) {

@@ -404,6 +404,7 @@ function handle_message_edit_enter(
             // Prevent default to avoid new-line on pressing
             // Enter inside the textarea in this case
             e.preventDefault();
+            compose_validate.validate_message_length($row);
             return;
         }
         save_message_row_edit($row);
@@ -538,6 +539,10 @@ function edit_message($row: JQuery, raw_content: string): void {
         }
     });
 
+    $form.on("input propertychange", () => {
+        compose_validate.check_overflow_text($row);
+    });
+
     $form
         .find(".message-edit-feature-group .video_link")
         .toggle(compose_call.compute_show_video_chat_button());
@@ -595,7 +600,8 @@ function edit_message($row: JQuery, raw_content: string): void {
                 // the half-finished edit around so that they can copy-paste it, but we don't want
                 // people to think "Save" will save the half-finished edit.
                 $message_edit_save.prop("disabled", true);
-                $message_edit_save_container.addClass("tippy-zulip-tooltip");
+                $message_edit_save_container.addClass("message-edit-time-limit-expired");
+                $message_edit_save_container.addClass("disabled-message-edit-save");
                 $message_edit_countdown_timer.addClass("expired");
                 $message_edit_countdown_timer.text($t({defaultMessage: "Time's up!"}));
             } else {
@@ -614,6 +620,7 @@ function edit_message($row: JQuery, raw_content: string): void {
         if (contents) {
             $message_edit_content.val(contents);
         }
+        compose_validate.check_overflow_text($row);
     }
 }
 

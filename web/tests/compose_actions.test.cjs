@@ -126,6 +126,15 @@ function test(label, f) {
     });
 }
 
+function stub_message_row($textarea) {
+    const $stub = $.create("message_row_stub");
+    $textarea.closest = (selector) => {
+        assert.equal(selector, ".message_row");
+        $stub.length = 0;
+        return $stub;
+    };
+}
+
 test("initial_state", () => {
     assert.equal(compose_state.composing(), false);
     assert.equal(compose_state.get_message_type(), undefined);
@@ -143,6 +152,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     const $elem = $("#send_message_form");
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
+    stub_message_row($textarea);
     $elem.set_find_results(".message-textarea", $textarea);
     $elem.set_find_results(".message-limit-indicator", $indicator);
 
@@ -290,6 +300,7 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
     const $elem = $("#send_message_form");
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
+    stub_message_row($textarea);
     $elem.set_find_results(".message-textarea", $textarea);
     $elem.set_find_results(".message-limit-indicator", $indicator);
 
@@ -351,6 +362,7 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     const $elem = $("#send_message_form");
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
+    stub_message_row($textarea);
     $elem.set_find_results(".message-textarea", $textarea);
     $elem.set_find_results(".message-limit-indicator", $indicator);
 
@@ -411,6 +423,7 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
     const $elem = $("#send_message_form");
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
+    stub_message_row($textarea);
     $elem.set_find_results(".message-textarea", $textarea);
     $elem.set_find_results(".message-limit-indicator", $indicator);
 

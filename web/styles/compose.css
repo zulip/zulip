@@ -327,21 +327,24 @@
         border-color: var(--color-message-content-container-border-focus);
     }
 
-    &:has(.new_message_textarea.over_limit),
-    &:has(.new_message_textarea.over_limit:focus) {
-        box-shadow: 0 0 0 1pt
-            var(--color-message-content-container-border-over-limit);
-    }
-
-    &:has(.new_message_textarea.over_limit.flash) {
-        animation: message-limit-flash 0.5s ease-in-out 3;
-    }
-
     &:has(.new_message_textarea.invalid),
     &:has(.new_message_textarea.invalid:focus) {
         border-color: hsl(3deg 57% 33%);
         box-shadow: 0 0 2px hsl(3deg 57% 33%);
     }
+}
+
+#message-content-container:has(.new_message_textarea.over_limit),
+#message-content-container:has(.new_message_textarea.over_limit:focus),
+.edit-content-container:has(.message_edit_content.over_limit),
+.edit-content-container:has(.message_edit_content.over_limit:focus) {
+    box-shadow: 0 0 0 1pt
+        var(--color-message-content-container-border-over-limit);
+}
+
+#message-content-container:has(.new_message_textarea.over_limit.flash),
+.edit-content-container:has(.message_edit_content.over_limit.flash) {
+    animation: message-limit-flash 0.5s ease-in-out 3;
 }
 
 #message-content-container .composebox-buttons {
