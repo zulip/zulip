@@ -17,9 +17,7 @@
 
 ## Subscribe a user to a channel
 
-Organization administrators can configure which
-[roles](/help/roles-and-permissions) have access to [subscribe
-other users to a channel][configure-invites].
+{!depends-on-permissions.md!}
 
 {start_tabs}
 
@@ -92,5 +90,3 @@ channel](/help/unsubscribe-from-a-channel).
 * [Add or remove users from a channel](/help/add-or-remove-users-from-a-channel)
 * [Unsubscribe from a channel](/help/unsubscribe-from-a-channel)
 * [View channel subscribers](/help/view-channel-subscribers)
-
-[configure-invites]: /help/configure-who-can-invite-to-channels
