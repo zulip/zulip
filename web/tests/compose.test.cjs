@@ -178,6 +178,12 @@ test_ui("send_message_success", ({override, override_rewire}) => {
         reify_message_id_checked = true;
     });
 
+    const $elem = $("#send_message_form");
+    const $textarea = $("textarea#compose-textarea");
+    const $indicator = $("#compose-limit-indicator");
+    $elem.set_find_results(".message-textarea", $textarea);
+    $elem.set_find_results(".message-limit-indicator", $indicator);
+
     override(
         onboarding_steps,
         "ONE_TIME_NOTICES_TO_DISPLAY",
@@ -239,6 +245,11 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
     mock_banners();
     MockDate.set(new Date(fake_now * 1000));
     override_rewire(drafts, "sync_count", noop);
+    const $elem = $("#send_message_form");
+    const $textarea = $("textarea#compose-textarea");
+    const $indicator = $("#compose-limit-indicator");
+    $elem.set_find_results(".message-textarea", $textarea);
+    $elem.set_find_results(".message-limit-indicator", $indicator);
 
     // This is the common setup stuff for all of the four tests.
     let stub_state;
@@ -422,6 +433,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     override_rewire(compose, "send_message", () => {
         send_message_called = true;
     });
+    $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     compose.enter_with_preview_open();
     assert.ok(!$("#compose .undo_markdown_preview").visible());
     assert.ok(!$("#compose .preview_message_area").visible());
@@ -448,6 +460,7 @@ test_ui("finish", ({override, override_rewire}) => {
 
     override_rewire(compose_banner, "clear_message_sent_banners", noop);
     override(document, "to_$", () => $("document-stub"));
+    $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     let show_button_spinner_called = false;
     override(loading, "show_button_spinner", ($spinner) => {
         assert.equal($spinner.selector, ".compose-submit-button .loader");

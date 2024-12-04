@@ -140,6 +140,12 @@ test("start", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_actions, "complete_starting_tasks", noop);
     override_rewire(compose_actions, "blur_compose_inputs", noop);
     override_rewire(compose_actions, "clear_textarea", noop);
+    const $elem = $("#send_message_form");
+    const $textarea = $("textarea#compose-textarea");
+    const $indicator = $("#compose-limit-indicator");
+    $elem.set_find_results(".message-textarea", $textarea);
+    $elem.set_find_results(".message-limit-indicator", $indicator);
+
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
     mock_template("inline_decorated_stream_name.hbs", false, noop);
@@ -281,6 +287,12 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
     mock_banners();
     override_rewire(compose_actions, "complete_starting_tasks", noop);
     override_rewire(compose_actions, "clear_textarea", noop);
+    const $elem = $("#send_message_form");
+    const $textarea = $("textarea#compose-textarea");
+    const $indicator = $("#compose-limit-indicator");
+    $elem.set_find_results(".message-textarea", $textarea);
+    $elem.set_find_results(".message-limit-indicator", $indicator);
+
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
     override_private_message_recipient({override});
@@ -336,6 +348,12 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_actions, "complete_starting_tasks", noop);
     override_rewire(compose_actions, "clear_textarea", noop);
+    const $elem = $("#send_message_form");
+    const $textarea = $("textarea#compose-textarea");
+    const $indicator = $("#compose-limit-indicator");
+    $elem.set_find_results(".message-textarea", $textarea);
+    $elem.set_find_results(".message-limit-indicator", $indicator);
+
     override_private_message_recipient({override});
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
     mock_template("inline_decorated_stream_name.hbs", false, noop);
@@ -390,6 +408,12 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
 test("quote_and_reply", ({disallow, override, override_rewire}) => {
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_reply, "selection_within_message_id", () => undefined);
+    const $elem = $("#send_message_form");
+    const $textarea = $("textarea#compose-textarea");
+    const $indicator = $("#compose-limit-indicator");
+    $elem.set_find_results(".message-textarea", $textarea);
+    $elem.set_find_results(".message-limit-indicator", $indicator);
+
     override(realm, "realm_direct_message_permission_group", nobody.id);
     override(realm, "realm_direct_message_initiator_group", everyone.id);
 
