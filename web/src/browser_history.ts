@@ -168,6 +168,11 @@ export const state_data_schema = z.object({
 
 type StateData = z.infer<typeof state_data_schema>;
 
+export function current_scroll_offset(): number | undefined {
+    const current_state = state_data_schema.nullable().parse(window.history.state);
+    return current_state?.narrow_offset;
+}
+
 export function update_current_history_state_data(new_data: StateData): void {
     const current_state = state_data_schema.nullable().parse(window.history.state);
     const current_state_data = {
