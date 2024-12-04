@@ -678,3 +678,10 @@ RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 60
 # For realm imports during registration, maximum size of file
 # that can be uploaded.
 MAX_WEB_DATA_IMPORT_SIZE_MB = 1024
+
+# Minimum and maximum permitted number of days before full data
+# deletion when deactivating an organization. A nonzero minimum helps
+# protect against a compromised administrator account being used to
+# delete an active organization.
+MIN_DEACTIVATED_REALM_DELETION_DAYS: int | None = 14
+MAX_DEACTIVATED_REALM_DELETION_DAYS: int | None = None
