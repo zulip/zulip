@@ -4536,73 +4536,10 @@ class SubscribeActionTest(BaseAction):
             do_change_stream_message_retention_days(stream, self.example_user("hamlet"), -1)
         check_stream_update("events[0]", events[0])
 
-        moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS,
-            is_system_group=True,
-            realm=self.user_profile.realm,
-        )
-        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
-            do_change_stream_group_based_setting(
-                stream,
-                "can_remove_subscribers_group",
-                moderators_group,
-                acting_user=iago,
+        for setting_name in Stream.stream_permission_group_settings:
+            self.do_test_subscribe_events_for_stream_permission_group_setting(
+                setting_name, stream, iago, include_subscribers
             )
-        check_stream_update("events[0]", events[0])
-        self.assertEqual(events[0]["value"], moderators_group.id)
-
-        setting_group = self.create_or_update_anonymous_group_for_setting(
-            [self.user_profile],
-            [moderators_group],
-        )
-        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
-            do_change_stream_group_based_setting(
-                stream,
-                "can_remove_subscribers_group",
-                setting_group,
-                acting_user=iago,
-            )
-        check_stream_update("events[0]", events[0])
-        self.assertEqual(
-            events[0]["value"],
-            AnonymousSettingGroupDict(
-                direct_members=[self.user_profile.id], direct_subgroups=[moderators_group.id]
-            ),
-        )
-
-        moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS,
-            is_system_group=True,
-            realm=self.user_profile.realm,
-        )
-        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
-            do_change_stream_group_based_setting(
-                stream,
-                "can_administer_channel_group",
-                moderators_group,
-                acting_user=iago,
-            )
-        check_stream_update("events[0]", events[0])
-        self.assertEqual(events[0]["value"], moderators_group.id)
-
-        setting_group = self.create_or_update_anonymous_group_for_setting(
-            [self.user_profile],
-            [moderators_group],
-        )
-        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
-            do_change_stream_group_based_setting(
-                stream,
-                "can_administer_channel_group",
-                setting_group,
-                acting_user=iago,
-            )
-        check_stream_update("events[0]", events[0])
-        self.assertEqual(
-            events[0]["value"],
-            AnonymousSettingGroupDict(
-                direct_members=[self.user_profile.id], direct_subgroups=[moderators_group.id]
-            ),
-        )
 
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it
         stream = self.make_stream("private", self.user_profile.realm, invite_only=True)
@@ -4714,6 +4651,43 @@ class SubscribeActionTest(BaseAction):
                 user_profile.realm, [self.user_profile], [stream], acting_user=None
             )
         check_subscription_remove("events[0]", events[0])
+
+    def do_test_subscribe_events_for_stream_permission_group_setting(
+        self, setting_name: str, stream: Stream, acting_user: UserProfile, include_subscribers: bool
+    ) -> None:
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS,
+            is_system_group=True,
+            realm=self.user_profile.realm,
+        )
+        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
+            do_change_stream_group_based_setting(
+                stream,
+                setting_name,
+                moderators_group,
+                acting_user=acting_user,
+            )
+        check_stream_update("events[0]", events[0])
+        self.assertEqual(events[0]["value"], moderators_group.id)
+
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [self.user_profile],
+            [moderators_group],
+        )
+        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
+            do_change_stream_group_based_setting(
+                stream,
+                setting_name,
+                setting_group,
+                acting_user=acting_user,
+            )
+        check_stream_update("events[0]", events[0])
+        self.assertEqual(
+            events[0]["value"],
+            AnonymousSettingGroupDict(
+                direct_members=[self.user_profile.id], direct_subgroups=[moderators_group.id]
+            ),
+        )
 
     def test_user_access_events_on_changing_subscriptions(self) -> None:
         self.set_up_db_for_testing_user_access()
