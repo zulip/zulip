@@ -221,6 +221,12 @@ export class MessageListData {
             if (message.type !== "stream") {
                 return true;
             }
+
+            // TODO: Widen this if check to include other narrows as well.
+            if (this.filter.is_in_home()) {
+                return user_topics.is_topic_visible_in_home(message.stream_id, message.topic);
+            }
+
             return (
                 !user_topics.is_topic_muted(message.stream_id, message.topic) || message.mentioned
             );
