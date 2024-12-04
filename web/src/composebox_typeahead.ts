@@ -1664,6 +1664,7 @@ export function initialize({
             return [...people_candidates, ...topics];
         },
         items: max_num_items,
+        dropup: true,
         item_html(item: string | UserPillData): string {
             if (typeof item === "string") {
                 const is_empty_string_topic = item === "";
