@@ -723,6 +723,20 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(stream.can_remove_subscribers_group.id, owners_group.id)
 
         subscriptions = [{"name": "new_stream6", "description": "Sixth new stream"}]
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", is_system_group=True, realm=realm
+        )
+        result = self.common_subscribe_to_streams(
+            user,
+            subscriptions,
+            {"can_remove_subscribers_group": orjson.dumps(nobody_group.id).decode()},
+            allow_fail=True,
+            subdomain="zulip",
+        )
+        stream = get_stream("new_stream6", realm)
+        self.assertEqual(stream.can_remove_subscribers_group.id, nobody_group.id)
+
+        subscriptions = [{"name": "new_stream7", "description": "Seventh new stream"}]
         internet_group = NamedUserGroup.objects.get(
             name="role:internet", is_system_group=True, realm=realm
         )
@@ -736,21 +750,6 @@ class TestCreateStreams(ZulipTestCase):
         self.assert_json_error(
             result,
             "'can_remove_subscribers_group' setting cannot be set to 'role:internet' group.",
-        )
-
-        nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=realm
-        )
-        result = self.common_subscribe_to_streams(
-            user,
-            subscriptions,
-            {"can_remove_subscribers_group": orjson.dumps(nobody_group.id).decode()},
-            allow_fail=True,
-            subdomain="zulip",
-        )
-        self.assert_json_error(
-            result,
-            "'can_remove_subscribers_group' setting cannot be set to 'role:nobody' group.",
         )
 
     def test_acting_user_is_creator(self) -> None:
@@ -2670,6 +2669,17 @@ class StreamAdminTest(ZulipTestCase):
         stream = get_stream("stream_name1", realm)
         self.assertEqual(stream.can_remove_subscribers_group.id, owners_group.id)
 
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", is_system_group=True, realm=realm
+        )
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"can_remove_subscribers_group": orjson.dumps({"new": nobody_group.id}).decode()},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", realm)
+        self.assertEqual(stream.can_remove_subscribers_group.id, nobody_group.id)
+
         internet_group = NamedUserGroup.objects.get(
             name="role:internet", is_system_group=True, realm=realm
         )
@@ -2680,18 +2690,6 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_error(
             result,
             "'can_remove_subscribers_group' setting cannot be set to 'role:internet' group.",
-        )
-
-        nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=realm
-        )
-        result = self.client_patch(
-            f"/json/streams/{stream.id}",
-            {"can_remove_subscribers_group": orjson.dumps({"new": nobody_group.id}).decode()},
-        )
-        self.assert_json_error(
-            result,
-            "'can_remove_subscribers_group' setting cannot be set to 'role:nobody' group.",
         )
 
         # For private streams, even admins must be subscribed to the stream to change
