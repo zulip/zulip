@@ -5,7 +5,9 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from zerver.decorator import human_users_only, zulip_login_required
+from zerver.lib import redis_utils
 from zerver.lib.exceptions import (
+    ErrorCode,
     JsonableError,
     MissingRemoteRealmError,
     OrganizationOwnerRequiredError,
@@ -21,15 +23,18 @@ from zerver.lib.push_notifications import (
     uses_notification_bouncer,
 )
 from zerver.lib.remote_server import (
+    SELF_HOSTING_REGISTRATION_TAKEOVER_CHALLENGE_TOKEN_REDIS_KEY,
     UserDataForRemoteBilling,
     get_realms_info_for_push_bouncer,
     send_server_data_to_push_bouncer,
     send_to_push_bouncer,
 )
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import ApnsAppId, typed_endpoint
+from zerver.lib.typed_endpoint import ApnsAppId, typed_endpoint, typed_endpoint_without_parameters
 from zerver.models import PushDeviceToken, UserProfile
 from zerver.views.errors import config_error
+
+redis_client = redis_utils.get_redis_client()
 
 
 def validate_token(token_str: str, kind: int) -> None:
@@ -231,3 +236,22 @@ def self_hosting_auth_not_configured(request: HttpRequest) -> HttpResponse:
         go_back_to_url="/",
         go_back_to_url_name="the app",
     )
+
+
+class VerificationSecretNotPreparedError(JsonableError):
+    code = ErrorCode.REMOTE_SERVER_VERIFICATION_SECRET_NOT_PREPARED
+
+    def __init__(self) -> None:
+        super().__init__(_("Verification secret not prepared"))
+
+
+@typed_endpoint_without_parameters
+def self_hosting_registration_takeover_challenge_verify(request: HttpRequest) -> HttpResponse:
+    verification_secret_bytes = redis_client.get(
+        SELF_HOSTING_REGISTRATION_TAKEOVER_CHALLENGE_TOKEN_REDIS_KEY
+    )
+    if verification_secret_bytes is None:
+        raise VerificationSecretNotPreparedError
+    verification_secret = verification_secret_bytes.decode()
+
+    return json_success(request, data={"verification_secret": verification_secret})
