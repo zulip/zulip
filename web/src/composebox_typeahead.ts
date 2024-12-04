@@ -8,6 +8,7 @@ import {MAX_ITEMS, Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -676,6 +677,51 @@ function filter_persons<T>(
     }
 
     return filterer(person_items, broadcast_items);
+}
+
+export function get_person_suggestion_for_topic_typeahead(query: string): UserPillData[] {
+    query = typeahead.clean_query_lowercase(query);
+
+    const filterer = (person_items: UserPillData[]): UserPillData[] => {
+        const should_remove_diacritics = people.should_remove_diacritics_for_query(
+            query.toLowerCase(),
+        );
+
+        return person_items.filter((item) =>
+            typeahead_helper.query_matches_person_name(query, item, should_remove_diacritics, true),
+        );
+    };
+
+    const filtered_message_persons = filter_persons(
+        people.get_active_message_people(),
+        false,
+        false,
+        filterer,
+    );
+
+    let filtered_persons: UserPillData[];
+
+    if (filtered_message_persons.length >= 3) {
+        filtered_persons = filtered_message_persons;
+    } else {
+        filtered_persons = filter_persons(people.get_realm_users(), false, false, filterer);
+    }
+
+    const sorted_recipients = typeahead_helper.sort_recipients({
+        users: filtered_persons,
+        query,
+        current_stream_id: compose_state.stream_id(),
+        current_topic: compose_state.topic(),
+        max_num_items: 3,
+    });
+
+    filtered_persons = [];
+    for (const recipient of sorted_recipients) {
+        if (recipient.type === "user") {
+            filtered_persons.push(recipient);
+        }
+    }
+    return filtered_persons;
 }
 
 export function get_person_suggestions(
@@ -1609,37 +1655,80 @@ export function initialize({
         type: "input",
     };
     new Typeahead(stream_message_typeahead_input, {
-        source(): string[] {
-            return topics_seen_for(compose_state.stream_id());
+        source(query: string): (UserPillData | string)[] {
+            let people_candidates: UserPillData[] = [];
+            if (query && query.length > 3) {
+                people_candidates = get_person_suggestion_for_topic_typeahead(query);
+            }
+            const topics = topics_seen_for(compose_state.stream_id());
+            return [...people_candidates, ...topics];
         },
         items: max_num_items,
-        item_html(item: string): string {
-            const is_empty_string_topic = item === "";
-            const topic_display_name = util.get_final_topic_display_name(item);
-            return typeahead_helper.render_typeahead_item({
-                primary: topic_display_name,
-                is_empty_string_topic,
-            });
+        item_html(item: string | UserPillData): string {
+            if (typeof item === "string") {
+                const is_empty_string_topic = item === "";
+                const topic_display_name = util.get_final_topic_display_name(item);
+                return typeahead_helper.render_typeahead_item({
+                    primary: topic_display_name,
+                    is_empty_string_topic,
+                });
+            }
+            return typeahead_helper.render_person_or_user_group(item);
         },
-        matcher(item: string, query: string): boolean {
-            const matcher = get_topic_matcher(query);
-            return matcher(item);
+        matcher(item: UserPillData | string, query: string): boolean {
+            if (typeof item === "string") {
+                const matcher = get_topic_matcher(query);
+                return matcher(item);
+            }
+            return true;
         },
-        sorter(items: string[], query: string): string[] {
-            const sorted = typeahead_helper.sorter(query, items, (x) =>
+        sorter(items: (UserPillData | string)[], query: string): (UserPillData | string)[] {
+            const topic_items: string[] = [];
+            const people_items: UserPillData[] = [];
+            for (const item of items) {
+                if (typeof item === "string") {
+                    topic_items.push(item);
+                } else {
+                    people_items.push(item);
+                }
+            }
+            const sorted = typeahead_helper.sorter(query, topic_items, (x) =>
                 util.get_final_topic_display_name(x),
             );
+            let show_new_topic_suggestion = false;
             if (sorted.length > 0 && !sorted.includes(query)) {
+                show_new_topic_suggestion = true;
                 sorted.unshift(query);
             }
-            return sorted;
+
+            // Show 2 topic items above user suggestion if there is a new
+            // topic suggestion.
+            return [
+                ...sorted.slice(0, show_new_topic_suggestion ? 2 : 1),
+                ...people_items,
+                ...sorted.slice(show_new_topic_suggestion ? 2 : 1),
+            ];
         },
-        updater(item: string, _query: string): string {
-            $("textarea#compose-textarea").trigger("focus");
-            $nextFocus = undefined;
-            return item;
+        updater(item: UserPillData | string, _query: string): string | undefined {
+            if (typeof item === "string") {
+                $("textarea#compose-textarea").trigger("focus");
+                $nextFocus = undefined;
+                return item;
+            }
+            compose_state.set_message_type("private");
+            compose_recipient.update_compose_for_message_type({
+                message_type: "private",
+                trigger: "typeahead",
+                private_message_recipient_ids: [],
+            });
+
+            set_recipient_from_typeahead(item);
+            return undefined;
         },
-        option_label(matching_items: string[], item: string): string | false {
+        option_label(
+            matching_items: (UserPillData | string)[],
+            item: UserPillData | string,
+        ): string | false {
             if (!matching_items.includes(item)) {
                 return `<em>${$t({defaultMessage: "New"})}</em>`;
             }
