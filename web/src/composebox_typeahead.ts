@@ -1456,6 +1456,34 @@ function get_footer_html(): string | false {
     return `<em>${_.escape(tip_text)}</em>`;
 }
 
+function set_recipient_from_typeahead(item: UserGroupPillData | UserPillData): void {
+    if (item.type === "user_group") {
+        const user_group = user_groups.get_user_group_from_id(item.id);
+        const group_members = user_groups.get_recursive_group_members(user_group);
+        for (const user_id of group_members) {
+            const user = people.get_by_user_id(user_id);
+            // filter out inactive users, inserted users and current user
+            // from pill insertion
+            const inserted_users = user_pill.get_user_ids(compose_pm_pill.widget);
+            const current_user = people.is_my_user_id(user.user_id);
+            if (
+                people.is_person_active(user_id) &&
+                !inserted_users.includes(user.user_id) &&
+                !current_user
+            ) {
+                compose_pm_pill.set_from_typeahead(user);
+            }
+        }
+        // clear input pill in the event no pills were added
+        const pill_widget = compose_pm_pill.widget;
+        if (pill_widget.clear_text !== undefined) {
+            pill_widget.clear_text();
+        }
+    } else {
+        compose_pm_pill.set_from_typeahead(item.user);
+    }
+}
+
 export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElement>): void {
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element,
@@ -1599,31 +1627,7 @@ export function initialize({
             return items;
         },
         updater(item: UserGroupPillData | UserPillData): undefined {
-            if (item.type === "user_group") {
-                const user_group = user_groups.get_user_group_from_id(item.id);
-                const group_members = user_groups.get_recursive_group_members(user_group);
-                for (const user_id of group_members) {
-                    const user = people.get_by_user_id(user_id);
-                    // filter out inactive users, inserted users and current user
-                    // from pill insertion
-                    const inserted_users = user_pill.get_user_ids(compose_pm_pill.widget);
-                    const current_user = people.is_my_user_id(user.user_id);
-                    if (
-                        people.is_person_active(user_id) &&
-                        !inserted_users.includes(user.user_id) &&
-                        !current_user
-                    ) {
-                        compose_pm_pill.set_from_typeahead(user);
-                    }
-                }
-                // clear input pill in the event no pills were added
-                const pill_widget = compose_pm_pill.widget;
-                if (pill_widget.clear_text !== undefined) {
-                    pill_widget.clear_text();
-                }
-            } else {
-                compose_pm_pill.set_from_typeahead(item.user);
-            }
+            set_recipient_from_typeahead(item);
         },
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
     });
