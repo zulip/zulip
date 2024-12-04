@@ -392,7 +392,9 @@ class JsonErrorHandler(MiddlewareMixin):
                 # just return the response without logging further.
                 return response
         elif RequestNotes.get_notes(request).error_format == "JSON" and not settings.TEST_SUITE:
-            response = json_response(res_type="error", msg=_("Internal server error"), status=500)
+            response = json_response(
+                res_type="error", msg=_("Internal server error"), status=500, exception=exception
+            )
         else:
             return None
 
