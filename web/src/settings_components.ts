@@ -922,25 +922,17 @@ export function check_group_property_changed(elem: HTMLElement, group: UserGroup
     const property_name = extract_property_name($elem) as keyof UserGroup;
     const current_val = get_group_property_value(property_name, group);
     let proposed_val;
-    switch (property_name) {
-        case "can_add_members_group":
-        case "can_join_group":
-        case "can_leave_group":
-        case "can_manage_group":
-        case "can_mention_group":
-        case "can_remove_members_group": {
-            const pill_widget = get_group_setting_widget(property_name);
-            assert(pill_widget !== null);
-            proposed_val = get_group_setting_widget_value(pill_widget);
-            break;
-        }
-        default:
-            if (current_val !== undefined) {
-                proposed_val = get_input_element_value(elem, typeof current_val);
-            } else {
-                blueslip.error("Element refers to unknown property", {property_name});
-            }
+
+    if (Object.keys(realm.server_supported_permission_settings.group).includes(property_name)) {
+        const pill_widget = get_group_setting_widget(property_name);
+        assert(pill_widget !== null);
+        proposed_val = get_group_setting_widget_value(pill_widget);
+    } else if (current_val !== undefined) {
+        proposed_val = get_input_element_value(elem, typeof current_val);
+    } else {
+        blueslip.error("Element refers to unknown property", {property_name});
     }
+
     return !_.isEqual(current_val, proposed_val);
 }
 
