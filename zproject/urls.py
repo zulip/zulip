@@ -218,7 +218,8 @@ from zerver.views.user_settings import (
 from zerver.views.user_topics import update_muted_topic, update_user_topic
 from zerver.views.users import (
     add_bot_backend,
-    avatar,
+    avatar_by_email,
+    avatar_by_id,
     avatar_medium,
     create_user_backend,
     deactivate_bot_backend,
@@ -680,11 +681,22 @@ urls += [
     # Avatars have the same constraint because their URLs are included
     # in API data structures used by both the mobile and web clients.
     rest_path(
-        "avatar/<email_or_id>",
-        GET=(avatar, {"override_api_url_scheme", "allow_anonymous_user_web"}),
+        "avatar/<int:user_id>",
+        GET=(avatar_by_id, {"override_api_url_scheme", "allow_anonymous_user_web"}),
     ),
     rest_path(
-        "avatar/<email_or_id>/medium",
+        "avatar/<email>",
+        GET=(avatar_by_email, {"override_api_url_scheme", "allow_anonymous_user_web"}),
+    ),
+    rest_path(
+        "avatar/<int:user_id>/medium",
+        GET=(
+            avatar_medium,
+            {"override_api_url_scheme", "allow_anonymous_user_web"},
+        ),
+    ),
+    rest_path(
+        "avatar/<email>/medium",
         GET=(
             avatar_medium,
             {"override_api_url_scheme", "allow_anonymous_user_web"},

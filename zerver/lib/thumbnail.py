@@ -179,6 +179,10 @@ def resize_avatar(image_data: bytes, size: int = DEFAULT_AVATAR_SIZE) -> bytes:
         ).write_to_buffer(".png")
 
 
+def resize_realm_icon(image_data: bytes) -> bytes:
+    return resize_avatar(image_data)
+
+
 def resize_logo(image_data: bytes) -> bytes:
     # This will only scale the image down, and will resize it to
     # preserve aspect ratio and be contained within 8*AVATAR by AVATAR

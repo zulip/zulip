@@ -10,7 +10,7 @@ import type {
 } from "intl-messageformat";
 import _ from "lodash";
 
-import {page_params} from "./base_page_params";
+import {page_params} from "./base_page_params.ts";
 
 const cache = createIntlCache();
 export const intl = createIntl(

@@ -1,5 +1,7 @@
 ## Guides
 * [Getting started with Zulip](/help/getting-started-with-zulip)
+* [Choosing a team chat app](https://blog.zulip.com/2024/11/04/choosing-a-team-chat-app/)
+* [Why Zulip](https://zulip.com/why-zulip/)
 * [Trying out Zulip](/help/trying-out-zulip)
 * [Zulip Cloud or self-hosting?](/help/zulip-cloud-or-self-hosting)
 * [Moving to Zulip](/help/moving-to-zulip)
@@ -23,11 +25,11 @@
 ## Setting up your organization
 * [Migrating from other chat tools](/help/migrating-from-other-chat-tools)
 * [Create your organization profile](/help/create-your-organization-profile)
+* [Create user groups](/help/create-user-groups)
 * [Customize organization settings](/help/customize-organization-settings)
 * [Create channels](/help/create-channels)
 * [Customize settings for new users](/help/customize-settings-for-new-users)
 * [Invite users to join](/help/invite-users-to-join)
-* [Create user groups](/help/create-user-groups)
 * [Set up integrations](/help/set-up-integrations)
 
 ## Account basics
@@ -168,7 +170,6 @@
 # Zulip administration
 
 ## Organization basics
-* [Review your organization's settings](/help/review-your-organization-settings)
 * [Organization type](/help/organization-type)
 * [Communities directory](/help/communities-directory)
 * [Import from Mattermost](/help/import-from-mattermost)

@@ -283,6 +283,8 @@ class CustomerPlanOffer(AbstractCustomerPlan):
     audit purpose with status=PROCESSED.
     """
 
+    TIER_CLOUD_STANDARD = 1
+    TIER_CLOUD_PLUS = 2
     TIER_SELF_HOSTED_BASIC = 103
     TIER_SELF_HOSTED_BUSINESS = 104
     tier = models.SmallIntegerField()
@@ -308,16 +310,16 @@ class CustomerPlanOffer(AbstractCustomerPlan):
         }[self.status]
 
     @staticmethod
-    def name_from_tier(tier: int) -> str:  # nocoverage
+    def name_from_tier(tier: int) -> str:
         return {
+            CustomerPlanOffer.TIER_CLOUD_STANDARD: "Zulip Cloud Standard",
+            CustomerPlanOffer.TIER_CLOUD_PLUS: "Zulip Cloud Plus",
             CustomerPlanOffer.TIER_SELF_HOSTED_BASIC: "Zulip Basic",
             CustomerPlanOffer.TIER_SELF_HOSTED_BUSINESS: "Zulip Business",
         }[tier]
 
     @property
-    def name(self) -> str:  # nocoverage
-        # TODO: This is used in `check_customer_not_on_paid_plan` as
-        # 'next_plan.name'. Related to sponsorship, add coverage.
+    def name(self) -> str:
         return self.name_from_tier(self.tier)
 
 

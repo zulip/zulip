@@ -1,27 +1,23 @@
 import $ from "jquery";
-import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_selected_stream_title from "../templates/stream_settings/selected_stream_title.hbs";
 
-import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
-import * as dropdown_widget from "./dropdown_widget";
-import type {DropdownWidget} from "./dropdown_widget";
-import * as hash_util from "./hash_util";
-import {$t, $t_html} from "./i18n";
-import * as loading from "./loading";
-import * as overlays from "./overlays";
-import * as peer_data from "./peer_data";
-import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
-import {current_user} from "./state_data";
-import * as stream_ui_updates from "./stream_ui_updates";
-import type {StreamSubscription} from "./sub_store";
-import * as ui_report from "./ui_report";
-import * as user_groups from "./user_groups";
+import * as channel from "./channel.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import * as hash_util from "./hash_util.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as loading from "./loading.ts";
+import * as overlays from "./overlays.ts";
+import * as peer_data from "./peer_data.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import {current_user} from "./state_data.ts";
+import * as stream_ui_updates from "./stream_ui_updates.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as ui_report from "./ui_report.ts";
 
 export function set_right_panel_title(sub: StreamSubscription): void {
     let title_icon_color = "#333333";
@@ -108,33 +104,6 @@ export function get_active_data(): {
     };
 }
 
-export let new_stream_can_remove_subscribers_group_widget: DropdownWidget | null = null;
-
-export function dropdown_setup(): void {
-    new_stream_can_remove_subscribers_group_widget = new dropdown_widget.DropdownWidget({
-        widget_name: "new_stream_can_remove_subscribers_group",
-        get_options: () =>
-            user_groups.get_realm_user_groups_for_dropdown_list_widget(
-                "can_remove_subscribers_group",
-                "stream",
-            ),
-        item_click_callback(event, dropdown) {
-            dropdown.hide();
-            event.preventDefault();
-            event.stopPropagation();
-            assert(new_stream_can_remove_subscribers_group_widget !== null);
-            new_stream_can_remove_subscribers_group_widget.render();
-        },
-        $events_container: $("#subscription_overlay"),
-        on_mount_callback(dropdown) {
-            $(dropdown.popper).css("min-width", "300px");
-            $(dropdown.popper).find(".simplebar-content").css("width", "max-content");
-        },
-        default_id: user_groups.get_user_group_from_name("role:administrators")!.id,
-        unique_id_type: dropdown_widget.DataTypes.NUMBER,
-    });
-}
-
 /* For the given stream_row, remove the tick and replace by a spinner. */
 function display_subscribe_toggle_spinner($stream_row: JQuery): void {
     /* Prevent sending multiple requests by removing the button class. */
@@ -166,8 +135,8 @@ function hide_subscribe_toggle_spinner($stream_row: JQuery): void {
 
 export function ajaxSubscribe(
     stream: string,
-    color: string,
-    $stream_row: JQuery | undefined,
+    color: string | undefined = undefined,
+    $stream_row: JQuery | undefined = undefined,
 ): void {
     // Subscribe yourself to a single stream.
     let true_stream_name;
@@ -280,7 +249,10 @@ export function unsubscribe_from_private_stream(sub: StreamSubscription): void {
     });
 }
 
-export function sub_or_unsub(sub: StreamSubscription, $stream_row: JQuery): void {
+export function sub_or_unsub(
+    sub: StreamSubscription,
+    $stream_row: JQuery | undefined = undefined,
+): void {
     if (sub.subscribed) {
         // TODO: This next line should allow guests to access web-public streams.
         if (sub.invite_only || current_user.is_guest) {

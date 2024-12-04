@@ -1,13 +1,13 @@
 import assert from "minimalistic-assert";
 
-import * as blueslip from "./blueslip";
-import {FetchStatus} from "./fetch_status";
-import type {Filter} from "./filter";
-import type {Message} from "./message_store";
-import * as muted_users from "./muted_users";
-import {current_user} from "./state_data";
-import * as user_topics from "./user_topics";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import {FetchStatus} from "./fetch_status.ts";
+import type {Filter} from "./filter.ts";
+import type {Message} from "./message_store.ts";
+import * as muted_users from "./muted_users.ts";
+import {current_user} from "./state_data.ts";
+import * as user_topics from "./user_topics.ts";
+import * as util from "./util.ts";
 
 export class MessageListData {
     // The Filter object defines which messages match the narrow,
@@ -384,15 +384,22 @@ export class MessageListData {
         return viewable_messages;
     }
 
-    remove(message_ids: number[]): void {
+    remove(message_ids: number[]): boolean {
         const msg_ids_to_remove = new Set(message_ids);
+        let found_any_msgs_to_remove = false;
         for (const id of msg_ids_to_remove) {
-            this._hash.delete(id);
-            this._local_only.delete(id);
+            const found_in_hash = this._hash.delete(id);
+            const found_in_local_only = this._local_only.delete(id);
+
+            if (!found_any_msgs_to_remove && (found_in_hash || found_in_local_only)) {
+                found_any_msgs_to_remove = true;
+            }
         }
 
         this._items = this._items.filter((msg) => !msg_ids_to_remove.has(msg.id));
         this._all_items = this._all_items.filter((msg) => !msg_ids_to_remove.has(msg.id));
+
+        return found_any_msgs_to_remove;
     }
 
     // Returns messages from the given message list in the specified range, inclusive

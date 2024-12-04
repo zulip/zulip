@@ -36,6 +36,11 @@ class zulip::app_frontend_once {
   }
 
   # Daily
+  zulip::cron { 'update-channel-recently-active-status':
+    hour   => '1',
+    minute => '40',
+    manage => 'update_channel_recently_active_status',
+  }
   zulip::cron { 'soft-deactivate-users':
     hour   => '5',
     minute => '0',

@@ -1,11 +1,11 @@
 import _ from "lodash";
 import {z} from "zod";
 
-import * as blueslip from "./blueslip";
-import * as people from "./people";
-import {topic_link_schema} from "./types";
-import type {UserStatusEmojiInfo} from "./user_status";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as people from "./people.ts";
+import {topic_link_schema} from "./types.ts";
+import type {UserStatusEmojiInfo} from "./user_status.ts";
+import * as util from "./util.ts";
 
 const stored_messages = new Map<number, Message>();
 

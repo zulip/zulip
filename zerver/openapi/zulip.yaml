@@ -703,6 +703,7 @@ paths:
                                         "stream_post_policy": 1,
                                         "history_public_to_subscribers": true,
                                         "first_message_id": null,
+                                        "is_recently_active": true,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
                                         "color": "#76ce90",
@@ -1348,6 +1349,7 @@ paths:
                                         "stream_post_policy": 1,
                                         "history_public_to_subscribers": false,
                                         "first_message_id": null,
+                                        "is_recently_active": true,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
                                         "can_remove_subscribers_group": 2,
@@ -1407,6 +1409,7 @@ paths:
                                         "stream_post_policy": 1,
                                         "history_public_to_subscribers": false,
                                         "first_message_id": null,
+                                        "is_recently_active": true,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
                                         "can_remove_subscribers_group": 2,
@@ -1459,7 +1462,33 @@ paths:
                                 value:
                                   description: |
                                     The new value of the changed property.
+
+                                    **Changes**: Starting with Zulip 10.0 (feature level 320), this
+                                    field can be an object for `can_remove_subscribers_group` property,
+                                    which is a [group-setting value][setting-values], when the setting
+                                    is set to a combination of users and groups.
+
+                                    [setting-values]: /api/group-setting-values
                                   oneOf:
+                                    - type: object
+                                      additionalProperties: false
+                                      properties:
+                                        direct_members:
+                                          description: |
+                                            The list of IDs of individual users in the collection of users with this permission.
+                                          type: array
+                                          items:
+                                            type: integer
+                                        direct_subgroups:
+                                          description: |
+                                            The list of IDs of the groups in the collection of users with this permission.
+                                          type: array
+                                          items:
+                                            type: integer
+                                      description: |
+                                        If an object, it will be a [group-setting value][setting-values] with these fields:
+
+                                        [setting-values]: /api/group-setting-values
                                     - type: integer
                                     - type: boolean
                                     - type: string
@@ -2007,6 +2036,7 @@ paths:
                                               "stream_post_policy": 1,
                                               "history_public_to_subscribers": true,
                                               "first_message_id": 1,
+                                              "is_recently_active": true,
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
                                               "can_remove_subscribers_group": 2,
@@ -2022,6 +2052,7 @@ paths:
                                               "invite_only": false,
                                               "is_web_public": false,
                                               "stream_post_policy": 1,
+                                              "is_recently_active": true,
                                               "history_public_to_subscribers": true,
                                               "first_message_id": 4,
                                               "message_retention_days": null,
@@ -2041,6 +2072,7 @@ paths:
                                               "stream_post_policy": 1,
                                               "history_public_to_subscribers": true,
                                               "first_message_id": 6,
+                                              "is_recently_active": true,
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
                                               "can_remove_subscribers_group": 2,
@@ -2089,6 +2121,7 @@ paths:
                                         "stream_post_policy": 1,
                                         "history_public_to_subscribers": true,
                                         "first_message_id": 1,
+                                        "is_recently_active": true,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
                                         "can_remove_subscribers_group": 2,
@@ -3187,6 +3220,7 @@ paths:
                                       "can_leave_group": 15,
                                       "can_manage_group": 16,
                                       "can_mention_group": 11,
+                                      "can_remove_members_group": 16,
                                     },
                                   "id": 0,
                                 }
@@ -3317,6 +3351,20 @@ paths:
                                             [setting-values]: /api/group-setting-values
                                             [system-groups]: /api/group-setting-values#system-groups
                                             [mentions]: /help/mention-a-user-or-group
+                                    can_remove_members_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value][setting-values] defining the set of users who
+                                            have permission to remove members from this group. Only present if this
+                                            user group permission setting changed.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 324). Previously, this
+                                            permission was controlled by the `can_manage_group` setting.
+
+                                            Will be one of the following:
+
+                                            [setting-values]: /api/group-setting-values
                                     deactivated:
                                       type: boolean
                                       description: |
@@ -4505,6 +4553,21 @@ paths:
                                             setting controlled this permission; `true` corresponded to `Everyone`, and
                                             `false` to `Admins`.
                                         - $ref: "#/components/schemas/GroupSettingValue"
+                                    can_invite_users_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to send email invitations for inviting other users
+                                            to the organization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 321). Previously, this
+                                            permission was controlled by the enum `invite_to_realm_policy`. Values
+                                            were 1=Members, 2=Admins, 3=Full members, 4=Moderators, 6=Nobody.
+
+                                            Before Zulip 4.0 (feature level 50), the `invite_by_admins_only` boolean
+                                            setting controlled this permission; `true` corresponded to `Admins`, and
+                                            `false` to `Members`.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_move_messages_between_channels_group:
                                       allOf:
                                         - description: |
@@ -4712,14 +4775,6 @@ paths:
                                       type: boolean
                                       description: |
                                         Whether an invitation is required to join this organization.
-                                    invite_to_realm_policy:
-                                      type: integer
-                                      description: |
-                                        The [policy](/api/roles-and-permissions#permission-levels)
-                                        for which users can invite other users to join the organization.
-
-                                        **Changes**: New in Zulip 4.0 (feature level 50) replacing the
-                                        previous `invite_by_admins_only` boolean.
                                     invite_to_stream_policy:
                                       type: integer
                                       description: |
@@ -10364,7 +10419,9 @@ paths:
                 message_retention_days:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 can_remove_subscribers_group:
-                  $ref: "#/components/schemas/CanRemoveSubscribersGroupId"
+                  $ref: "#/components/schemas/CanRemoveSubscribersGroup"
+                can_administer_channel_group:
+                  $ref: "#/components/schemas/CanAdministerChannelGroup"
               required:
                 - subscriptions
             encoding:
@@ -10387,6 +10444,8 @@ paths:
               stream_post_policy:
                 contentType: application/json
               can_remove_subscribers_group:
+                contentType: application/json
+              can_administer_channel_group:
                 contentType: application/json
       responses:
         "200":
@@ -13459,6 +13518,19 @@ paths:
                   items:
                     type: integer
                   example: [1, 10]
+                group_ids:
+                  description: |
+                    A list containing the [IDs of the user groups](/api/get-user-groups) that
+                    the newly created user will be automatically added to if the invitation
+                    is accepted. If the list is empty, then the new user will not be
+                    added to any user groups. The acting user must have permission to add users
+                    to the groups listed in this request.
+
+                    **Changes**: New in Zulip 10.0 (feature level 322).
+                  type: array
+                  items:
+                    type: integer
+                  example: []
                 include_realm_default_subscriptions:
                   description: |
                     Boolean indicating whether the newly created user should be subscribed
@@ -13498,6 +13570,8 @@ paths:
               invite_expires_in_minutes:
                 contentType: application/json
               stream_ids:
+                contentType: application/json
+              group_ids:
                 contentType: application/json
       responses:
         "200":
@@ -13637,6 +13711,20 @@ paths:
                     type: integer
                   default: []
                   example: [1, 10]
+                group_ids:
+                  description: |
+                    A list containing the [IDs of the user groups](/api/get-user-groups) that
+                    the newly created user will be automatically added to if the invitation
+                    is accepted. If the list is empty, then the new user will not be
+                    added to any user groups. The acting user must have permission to add users
+                    to the groups listed in this request.
+
+                    **Changes**: New in Zulip 10.0 (feature level 322).
+                  type: array
+                  items:
+                    type: integer
+                  default: []
+                  example: []
                 include_realm_default_subscriptions:
                   description: |
                     Boolean indicating whether the newly created user should be subscribed
@@ -13661,6 +13749,8 @@ paths:
               invite_expires_in_minutes:
                 contentType: application/json
               stream_ids:
+                contentType: application/json
+              group_ids:
                 contentType: application/json
       responses:
         "200":
@@ -14714,8 +14804,8 @@ paths:
                                 such filtering.
 
                                 **Changes**: New in Zulip 8.0 (feature level 207).
-                            config:
-                              $ref: "#/components/schemas/BotConfiguration"
+                            config_options:
+                              $ref: "#/components/schemas/WebhookConfigOption"
                       recent_private_conversations:
                         description: |
                           Present if `recent_private_conversations` is present in `fetch_event_types`.
@@ -14817,8 +14907,10 @@ paths:
                                 history_public_to_subscribers: {}
                                 first_message_id:
                                   nullable: true
+                                is_recently_active: {}
                                 is_announcement_only: {}
                                 can_remove_subscribers_group: {}
+                                can_administer_channel_group: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -16336,6 +16428,23 @@ paths:
                               setting controlled this permission; `true` corresponded to `Everyone`, and
                               `false` to `Admins`.
                           - $ref: "#/components/schemas/GroupSettingValue"
+                      realm_can_invite_users_group:
+                        allOf:
+                          - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to send email invitations for inviting other users
+                              to the organization.
+
+                              **Changes**: New in Zulip 10.0 (feature level 321). Previously, this
+                              permission was controlled by the enum `invite_to_realm_policy`. Values
+                              were 1=Members, 2=Admins, 3=Full members, 4=Moderators, 6=Nobody.
+
+                              Before Zulip 4.0 (feature level 50), the `invite_by_admins_only` boolean
+                              setting controlled this permission; `true` corresponded to `Admins`, and
+                              `false` to `Members`.
+                          - $ref: "#/components/schemas/GroupSettingValue"
                       realm_can_move_messages_between_channels_group:
                         allOf:
                           - description: |
@@ -16608,26 +16717,6 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether an invitation is required to join this organization.
-                      realm_invite_to_realm_policy:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          [Policy][permission-level] for [who can invite new
-                          users](/help/restrict-account-creation#change-who-can-send-invitations)
-                          to join the organization:
-
-                          - 1 = Members only
-                          - 2 = Administrators only
-                          - 3 = [Full members][calc-full-member] only
-                          - 4 = Moderators only
-                          - 6 = Nobody
-
-                          **Changes**: New in Zulip 4.0 (feature level 50) replacing the
-                          previous `realm_invite_by_admins_only` boolean.
-
-                          [permission-level]: /api/roles-and-permissions#permission-levels
-                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_create_multiuse_invite_group:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
@@ -19649,8 +19738,10 @@ paths:
                                 history_public_to_subscribers: {}
                                 first_message_id:
                                   nullable: true
+                                is_recently_active: {}
                                 is_announcement_only: {}
                                 can_remove_subscribers_group: {}
+                                can_administer_channel_group: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -19693,6 +19784,7 @@ paths:
                                 - is_announcement_only
                                 - can_remove_subscribers_group
                                 - stream_weekly_traffic
+                                - is_recently_active
                     example:
                       {
                         "msg": "",
@@ -19705,6 +19797,7 @@ paths:
                               "date_created": 1691057093,
                               "description": "A private channel",
                               "first_message_id": 18,
+                              "is_recently_active": true,
                               "history_public_to_subscribers": false,
                               "invite_only": true,
                               "is_announcement_only": false,
@@ -19724,6 +19817,7 @@ paths:
                               "date_created": 1691057093,
                               "description": "A default public channel",
                               "first_message_id": 21,
+                              "is_recently_active": true,
                               "history_public_to_subscribers": true,
                               "invite_only": false,
                               "is_announcement_only": false,
@@ -19790,6 +19884,7 @@ paths:
                           {
                             "description": "A Scandinavian country",
                             "first_message_id": 1,
+                            "is_recently_active": true,
                             "history_public_to_subscribers": true,
                             "date_created": 1691057093,
                             "creator_id": null,
@@ -19958,7 +20053,86 @@ paths:
                 message_retention_days:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 can_remove_subscribers_group:
-                  $ref: "#/components/schemas/CanRemoveSubscribersGroupId"
+                  description: |
+                    The set of users who have permission to unsubscribe others from this
+                    channel expressed as an [update to a group-setting value][update-group-setting].
+
+                    Administrators can always unsubscribe others from a channel.
+
+                    Note that a user who is a member of the specified user group must
+                    also [have access](/help/channel-permissions) to the channel in
+                    order to unsubscribe others.
+
+                    **Changes**: Prior to Zulip 10.0 (feature level 320), this value was
+                    always the integer ID of a system group.
+
+                    Before Zulip 8.0 (feature level 197), the `can_remove_subscribers_group`
+                    setting was named `can_remove_subscribers_group_id`.
+
+                    New in Zulip 7.0 (feature level 161).
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    new:
+                      allOf:
+                        - description: |
+                            The new [group-setting value](/api/group-setting-values) for who would
+                            have the permission to remove subscribers from the channel.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                    old:
+                      allOf:
+                        - description: |
+                            The expected current [group-setting value](/api/group-setting-values)
+                            for who has the permission to remove subscribers from the channel.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                  required:
+                    - new
+                  example:
+                    {
+                      "new": {"direct_members": [10], "direct_subgroups": [11]},
+                      "old": 15,
+                    }
+                can_administer_channel_group:
+                  description: |
+                    The set of users who have permission to administer this channel
+                    expressed as an [update to a group-setting value][update-group-setting].
+
+                    Note that a user who is a member of the specified user group must
+                    also [have access](/help/channel-permissions) to the channel in
+                    order to administer the channel.
+
+                    Realm admins are allowed to administer a channel they have access to
+                    regardless of whether they are present in this group.
+
+                    Users in this group can edit channel name and description without
+                    subscribing to the channel, but they need to be subscribed to edit
+                    channel permissions and add users.
+
+                    **Changes**: New in Zulip 10.0 (feature level 325). Prior to this
+                    change, the permission to administer channels was limited to realm
+                    administrators.
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    new:
+                      allOf:
+                        - description: |
+                            The new [group-setting value](/api/group-setting-values) for who would
+                            have the permission to administer this channel.
+                        - $ref: "#/components/schemas/CanAdministerChannelGroup"
+                    old:
+                      allOf:
+                        - description: |
+                            The expected current [group-setting value](/api/group-setting-values)
+                            for who has the permission to administer this channel.
+                        - $ref: "#/components/schemas/CanAdministerChannelGroup"
+                  required:
+                    - new
+                  example:
+                    {
+                      "new": {"direct_members": [10], "direct_subgroups": [11]},
+                      "old": 15,
+                    }
             encoding:
               is_private:
                 contentType: application/json
@@ -19973,6 +20147,8 @@ paths:
               stream_post_policy:
                 contentType: application/json
               can_remove_subscribers_group:
+                contentType: application/json
+              can_administer_channel_group:
                 contentType: application/json
       responses:
         "200":
@@ -20436,6 +20612,19 @@ paths:
                         [mentions]: /help/mention-a-user-or-group
                     - $ref: "#/components/schemas/GroupSettingValue"
                   example: 11
+                can_remove_members_group:
+                  allOf:
+                    - description: |
+                        A [group-setting value][setting-values] defining the set of users who
+                        have permission to remove members from this user group.
+
+                        **Changes**: New in Zulip 10.0 (feature level 324). Previously, this
+                        permission was controlled by the `can_manage_group` setting.
+
+                        [setting-values]: /api/group-setting-values
+                        [system-groups]: /api/group-setting-values#system-groups
+                    - $ref: "#/components/schemas/GroupSettingValue"
+                  example: 11
               required:
                 - name
                 - description
@@ -20455,9 +20644,34 @@ paths:
                 contentType: application/json
               can_mention_group:
                 contentType: application/json
+              can_remove_members_group:
+                contentType: application/json
       responses:
         "200":
-          $ref: "#/components/responses/SimpleSuccess"
+          description: |
+            A success response containing the unique ID of the user group.
+            This field provides a straightforward way to reference the
+            newly created user group.
+
+            **Changes**: New in Zulip 10.0 (feature level 317).
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - required:
+                      - group_id
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      group_id:
+                        type: integer
+                        description: |
+                          The unique ID of the created user group.
+                    example: {"msg": "", "result": "success", "group_id": 123}
+
         "400":
           description: Bad request.
           content:
@@ -20784,6 +20998,38 @@ paths:
                       "new": {"direct_members": [10], "direct_subgroups": [11]},
                       "old": 11,
                     }
+                can_remove_members_group:
+                  description: |
+                    The set of users who have permission to remove members from this user group
+                    expressed as an [update to a group-setting value][update-group-setting].
+
+                    **Changes**: New in Zulip 10.0 (feature level 324). Previously, this
+                    permission was controlled by the `can_manage_group` setting.
+
+                    [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+                    [system-groups]: /api/group-setting-values#system-groups
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    new:
+                      allOf:
+                        - description: |
+                            The new [group-setting value](/api/group-setting-values) for the set of users
+                            who would have the permission to remove members from the group.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                    old:
+                      allOf:
+                        - description: |
+                            The expected current [group-setting value](/api/group-setting-values) for
+                            the set of users who have the permission to remove members from the group.
+                        - $ref: "#/components/schemas/GroupSettingValue"
+                  required:
+                    - new
+                  example:
+                    {
+                      "new": {"direct_members": [10], "direct_subgroups": [11]},
+                      "old": 11,
+                    }
             encoding:
               can_add_members_group:
                 contentType: application/json
@@ -20794,6 +21040,8 @@ paths:
               can_manage_group:
                 contentType: application/json
               can_mention_group:
+                contentType: application/json
+              can_remove_members_group:
                 contentType: application/json
       responses:
         "200":
@@ -21009,6 +21257,19 @@ paths:
                                     [setting-values]: /api/group-setting-values
                                     [system-groups]: /api/group-setting-values#system-groups
                                     [mentions]: /help/mention-a-user-or-group
+                            can_remove_members_group:
+                              allOf:
+                                - $ref: "#/components/schemas/GroupSettingValue"
+                                - description: |
+                                    A [group-setting value][setting-values] defining the set of users who
+                                    have permission to remove members from this user group.
+
+                                    **Changes**: New in Zulip 10.0 (feature level 324). Previously, this
+                                    permission was controlled by the `can_manage_group` setting.
+
+                                    Will be one of the following:
+
+                                    [setting-values]: /api/group-setting-values
                             deactivated:
                               type: boolean
                               description: |
@@ -21039,6 +21300,7 @@ paths:
                               "can_leave_group": 15,
                               "can_manage_group": 16,
                               "can_mention_group": 11,
+                              "can_remove_members_group": 16,
                             },
                             {
                               "description": "Administrators of this organization, including owners",
@@ -21054,6 +21316,7 @@ paths:
                               "can_leave_group": 15,
                               "can_manage_group": 17,
                               "can_mention_group": 12,
+                              "can_remove_members_group": 16,
                             },
                             {
                               "description": "Characters of Hamlet",
@@ -21069,6 +21332,7 @@ paths:
                               "can_leave_group": 15,
                               "can_manage_group": 20,
                               "can_mention_group": 13,
+                              "can_remove_members_group": 16,
                             },
                           ],
                       }
@@ -21597,8 +21861,10 @@ components:
             history_public_to_subscribers: {}
             first_message_id:
               nullable: true
+            is_recently_active: {}
             is_announcement_only: {}
             can_remove_subscribers_group: {}
+            can_administer_channel_group: {}
             stream_weekly_traffic:
               type: integer
               nullable: true
@@ -21628,6 +21894,7 @@ components:
             - message_retention_days
             - history_public_to_subscribers
             - first_message_id
+            - is_recently_active
             - is_announcement_only
             - can_remove_subscribers_group
             - stream_weekly_traffic
@@ -21652,8 +21919,10 @@ components:
             history_public_to_subscribers: {}
             first_message_id:
               nullable: true
+            is_recently_active: {}
             is_announcement_only: {}
             can_remove_subscribers_group: {}
+            can_administer_channel_group: {}
           required:
             - stream_id
             - name
@@ -21668,6 +21937,7 @@ components:
             - message_retention_days
             - history_public_to_subscribers
             - first_message_id
+            - is_recently_active
             - is_announcement_only
             - can_remove_subscribers_group
     BasicChannelBase:
@@ -21787,6 +22057,16 @@ components:
             Is `null` for channels with no message history.
 
             **Changes**: New in Zulip 2.1.0.
+        is_recently_active:
+          type: boolean
+          description: |
+            Whether the channel has recent message activity. Clients should use this to implement
+            [sorting inactive channels to the bottom](/help/manage-inactive-channels)
+            if `demote_inactive_streams` is enabled.
+
+            **Changes**: New in Zulip 10.0 (feature level 323). Previously, clients implemented the
+            demote_inactive_streams from local message history, resulting in a choppy loading
+            experience.
         is_announcement_only:
           type: boolean
           deprecated: true
@@ -21796,16 +22076,9 @@ components:
             **Changes**: Deprecated in Zulip 3.0 (feature level 1). Clients
             should use `stream_post_policy` instead.
         can_remove_subscribers_group:
-          type: integer
-          description: |
-            ID of the user group whose members are allowed to unsubscribe others
-            from the channel.
-
-            **Changes**: Before Zulip 8.0 (feature level 197),
-            the `can_remove_subscribers_group` setting
-            was named `can_remove_subscribers_group_id`.
-
-            New in Zulip 6.0 (feature level 142).
+          $ref: "#/components/schemas/CanRemoveSubscribersGroup"
+        can_administer_channel_group:
+          $ref: "#/components/schemas/CanAdministerChannelGroup"
     BasicBot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -21967,6 +22240,36 @@ components:
         description: |
           `{config_key}`: Description/value of the configuration data key.
         type: string
+    WebhookConfigOption:
+      type: array
+      description: |
+        An array of configuration options where each option is an
+        object containing a unique identifier, a human-readable name,
+        and a validation function name hinting how to verify the
+        correct input format.
+
+        This is an unstable API expected to be used only by the Zulip web
+        apps. Please discuss in chat.zulip.org before using it.
+
+        **Changes**: New in Zulip 10.0 (feature level 318).
+      items:
+        type: object
+        additionalProperties: false
+        properties:
+          key:
+            type: string
+            description: |
+              A key for the configuration option to use in generated URLs.
+          label:
+            type: string
+            description: |
+              A human-readable label of the configuration option.
+          validator:
+            type: string
+            description: |
+              The name of the validator function for the configuration
+              option. Currently generated values are `check_bool` and
+              `check_str`.
     CustomProfileField:
       type: object
       additionalProperties: false
@@ -22413,6 +22716,19 @@ components:
                 [setting-values]: /api/group-setting-values
                 [system-groups]: /api/group-setting-values#system-groups
                 [mentions]: /help/mention-a-user-or-group
+        can_remove_members_group:
+          allOf:
+            - $ref: "#/components/schemas/GroupSettingValue"
+            - description: |
+                A [group-setting value][setting-values] defining the set of users who
+                have permission to remove members from this user group.
+
+                **Changes**: New in Zulip 10.0 (feature level 324). Previously, this
+                permission was controlled by the `can_manage_group` setting.
+
+                Will be one of the following:
+
+                [setting-values]: /api/group-setting-values
         deactivated:
           type: boolean
           description: |
@@ -22772,6 +23088,15 @@ components:
             has older history that can be accessed.
 
             Is `null` for channels with no message history.
+        is_recently_active:
+          type: boolean
+          description: |
+            Whether the channel has recent message activity. Clients should use this to implement
+            [sorting inactive channels to the bottom](/help/manage-inactive-channels).
+
+            **Changes**: New in Zulip 10.0 (feature level 323). Previously, clients implemented the
+            demote_inactive_streams from local message history, resulting in a choppy loading
+            experience.
         stream_weekly_traffic:
           type: integer
           nullable: true
@@ -22782,16 +23107,9 @@ components:
             If `null`, the channel was recently created and there is
             insufficient data to estimate the average traffic.
         can_remove_subscribers_group:
-          type: integer
-          description: |
-            ID of the user group whose members are allowed to unsubscribe others
-            from the channel.
-
-            **Changes**: Before Zulip 8.0 (feature level 197),
-            the `can_remove_subscribers_group` setting
-            was named `can_remove_subscribers_group_id`.
-
-            New in Zulip 6.0 (feature level 142).
+          $ref: "#/components/schemas/CanRemoveSubscribersGroup"
+        can_administer_channel_group:
+          $ref: "#/components/schemas/CanAdministerChannelGroup"
         is_archived:
           type: boolean
           description: |
@@ -23580,6 +23898,14 @@ components:
         Configuration for a group permission setting specifying the groups
         to which the setting can be set to and the default values for the
         setting.
+
+        **Changes**: Removed `allow_owners_group` field in Zulip 10.0 (feature level 326), as we now
+        support anonymous user groups. Previously, the `role:owners` system group was
+        not offered when `allow_owners_group` was false.
+
+        Removed unnecessary `id_field_name` field in Zulip 10.0 (feature level 326). Previously,
+        this always had the value of `"{setting_name}_id"`; it was an internal implementation
+        detail of the server not intended to be included in the API.
       additionalProperties: false
       type: object
       properties:
@@ -23591,10 +23917,6 @@ components:
           type: boolean
           description: |
             Whether the setting can be set to `role:internet` system group.
-        allow_owners_group:
-          type: boolean
-          description: |
-            Whether the setting can be set to `role:owners` system group.
         allow_nobody_group:
           type: boolean
           description: |
@@ -23610,10 +23932,6 @@ components:
           type: string
           description: |
             Name of the default group for the setting.
-        id_field_name:
-          type: string
-          description: |
-            Name for the field used to pass the group ID for the setting.
         default_for_system_groups:
           type: string
           nullable: true
@@ -24462,25 +24780,51 @@ components:
         - type: string
         - type: integer
       example: "20"
-    CanRemoveSubscribersGroupId:
-      description: |
-        ID of the [user group](/api/get-user-groups) whose members are
-        allowed to unsubscribe others from the channel. Note that a user
-        who is a member of the specified user group must also [have
-        access](/help/channel-permissions) to the channel in order to
-        unsubscribe others.
+    CanRemoveSubscribersGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to remove subscribers from this channel.
 
-        This setting can currently only be set to user groups that are
-        system groups, except for the system groups named
-        `"role:internet"` and `"role:owners"`.
+            Administrators can always unsubscribe others from a channel.
 
-        **Changes**: Before Zulip 8.0 (feature level 197),
-        the `can_remove_subscribers_group` setting
-        was named `can_remove_subscribers_group_id`.
+            Note that a user who is a member of the specified user group must
+            also [have access](/help/channel-permissions) to the channel in
+            order to unsubscribe others.
 
-        New in Zulip 7.0 (feature level 161).
-      type: integer
-      example: 20
+            **Changes**: Prior to Zulip 10.0 (feature level 320), this value was
+            always the integer ID of a system group.
+
+            Before Zulip 8.0 (feature level 197), the `can_remove_subscribers_group`
+            setting was named `can_remove_subscribers_group_id`.
+
+            New in Zulip 6.0 (feature level 142).
+
+            [setting-values]: /api/group-setting-values
+    CanAdministerChannelGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to administer this channel.
+
+            Note that a user who is a member of the specified user group must
+            also [have access](/help/channel-permissions) to the channel in
+            order to administer the channel.
+
+            Realm admins are allowed to administer a channel they have access to
+            regardless of whether they are present in this group.
+
+            Users in this group can edit channel name and description without
+            subscribing to the channel, but they need to be subscribed to edit
+            channel permissions and add users.
+
+            **Changes**: New in Zulip 10.0 (feature level 325). Prior to this
+            change, the permission to administer channels was limited to realm
+            administrators.
+
+            [setting-values]: /api/group-setting-values
     LinkifierPattern:
       description: |
         The [Python regular
@@ -24591,7 +24935,7 @@ components:
         The ID of the target user group.
       schema:
         type: integer
-      example: 35
+      example: 38
       required: true
     QueueId:
       name: queue_id

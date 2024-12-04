@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
 
-import * as common from "./lib/common";
+import * as common from "./lib/common.ts";
 
 async function submit_announcements_stream_settings(page: Page): Promise<void> {
     await page.waitForSelector('#org-notifications .save-button[data-status="unsaved"]', {

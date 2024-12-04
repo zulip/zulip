@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
 
-import * as common from "./lib/common";
+import * as common from "./lib/common.ts";
 
 async function user_row_selector(page: Page, name: string): Promise<string> {
     const user_id = await common.get_user_id_from_name(page, name);
@@ -96,11 +96,19 @@ async function create_stream(page: Page): Promise<void> {
     await common.wait_for_micromodal_to_open(page);
     await page.click(".dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
+
+    // We redirect to the channel message view.
+    await page.waitForSelector("#subscription_overlay", {hidden: true});
+    await page.waitForSelector(
+        `xpath///*[${common.has_class_x("message-header-navbar-title")} and text()="Puppeteer"]`,
+    );
+
     await page.waitForSelector(".message-header-stream-settings-button");
     await page.click(".message-header-stream-settings-button");
     await page.waitForSelector(".stream_section");
     await page.waitForSelector(
-        `xpath///*[${common.has_class_x("stream-name")} and text()="Puppeteer"]`,
+        `xpath///*[${common.has_class_x("stream-name-title")} and text()="Puppeteer"]`,
+        {visible: true},
     );
     const stream_name = await common.get_text_from_selector(
         page,

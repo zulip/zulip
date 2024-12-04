@@ -6,6 +6,10 @@
     border: 1px solid;
 }
 
+.user_sidebar_entry.with_avatar .user_circle {
+    outline: 1px solid var(--color-background);
+}
+
 .user_circle_green {
     background-color: var(--color-user-circle-active);
     border-color: var(--color-user-circle-active);

@@ -1,9 +1,9 @@
 import $ from "jquery";
 import {z} from "zod";
 
-import * as loading from "../loading";
+import * as loading from "../loading.ts";
 
-import * as helpers from "./helpers";
+import * as helpers from "./helpers.ts";
 
 const billing_base_url = $("#data").attr("data-billing-base-url")!;
 

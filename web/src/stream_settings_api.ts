@@ -1,20 +1,19 @@
 import assert from "minimalistic-assert";
 
-import * as channel from "./channel";
-import * as settings_ui from "./settings_ui";
-import type {StreamProperties, StreamSubscription} from "./sub_store";
-import * as sub_store from "./sub_store";
+import * as channel from "./channel.ts";
+import * as settings_ui from "./settings_ui.ts";
+import type {StreamProperties, StreamSubscription} from "./sub_store.ts";
+import * as sub_store from "./sub_store.ts";
 
-export function bulk_set_stream_property(
-    sub_data: {
-        [Property in keyof StreamProperties]: {
-            stream_id: number;
-            property: Property;
-            value: StreamProperties[Property];
-        };
-    }[keyof StreamProperties][],
-    $status_element?: JQuery,
-): void {
+export type SubData = {
+    [Property in keyof StreamProperties]: {
+        stream_id: number;
+        property: Property;
+        value: StreamProperties[Property];
+    };
+}[keyof StreamProperties][];
+
+export function bulk_set_stream_property(sub_data: SubData, $status_element?: JQuery): void {
     const url = "/json/users/me/subscriptions/properties";
     const data = {subscription_data: JSON.stringify(sub_data)};
     if (!$status_element) {

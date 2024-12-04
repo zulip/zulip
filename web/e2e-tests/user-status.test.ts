@@ -1,6 +1,6 @@
 import type {Page} from "puppeteer";
 
-import * as common from "./lib/common";
+import * as common from "./lib/common.ts";
 
 async function open_set_user_status_modal(page: Page): Promise<void> {
     // We are clicking on the menu icon with the help of `waitForFunction` because the list

@@ -3,30 +3,30 @@
 
 import assert from "minimalistic-assert";
 
-import * as resolved_topic from "../shared/src/resolved_topic";
+import * as resolved_topic from "../shared/src/resolved_topic.ts";
 
-import * as buddy_data from "./buddy_data";
-import * as gear_menu_util from "./gear_menu_util";
-import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
-import * as message_edit from "./message_edit";
-import * as message_lists from "./message_lists";
-import * as muted_users from "./muted_users";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import * as settings_config from "./settings_config";
-import type {ColorSchemeValues} from "./settings_config";
-import * as settings_data from "./settings_data";
-import * as starred_messages from "./starred_messages";
-import {current_user, realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import {num_unread_for_topic} from "./unread";
-import {user_settings} from "./user_settings";
-import * as user_status from "./user_status";
-import type {UserStatusEmojiInfo} from "./user_status";
-import * as user_topics from "./user_topics";
-import type {AllVisibilityPolicies} from "./user_topics";
+import * as buddy_data from "./buddy_data.ts";
+import * as gear_menu_util from "./gear_menu_util.ts";
+import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
+import * as message_edit from "./message_edit.ts";
+import * as message_lists from "./message_lists.ts";
+import * as muted_users from "./muted_users.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import * as settings_config from "./settings_config.ts";
+import type {ColorSchemeValues} from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import * as starred_messages from "./starred_messages.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import {num_unread_for_topic} from "./unread.ts";
+import {user_settings} from "./user_settings.ts";
+import * as user_status from "./user_status.ts";
+import type {UserStatusEmojiInfo} from "./user_status.ts";
+import * as user_topics from "./user_topics.ts";
+import type {AllVisibilityPolicies} from "./user_topics.ts";
 
 type ActionPopoverContext = {
     message_id: number;

@@ -69,7 +69,7 @@ class LinkifierDict(TypedDict):
     id: int
 
 
-class UnspecifiedValue:
+class Unset:
     """In most API endpoints, we use a default value of `None"` to encode
     parameters that the client did not pass, which is nicely Pythonic.
 
@@ -82,6 +82,9 @@ class UnspecifiedValue:
     TODO: Can this be merged with the _NotSpecified class, which is
     currently an internal implementation detail of the typed_endpoint?
     """
+
+
+UNSET = Unset()
 
 
 class EditHistoryEvent(TypedDict, total=False):
@@ -135,18 +138,26 @@ class UserTopicDict(TypedDict, total=False):
     visibility_policy: int
 
 
+@dataclass
+class AnonymousSettingGroupDict:
+    direct_members: list[int]
+    direct_subgroups: list[int]
+
+
 # This next batch of types is for Stream/Subscription objects.
 class RawStreamDict(TypedDict):
     """Dictionary containing fields fetched from the Stream model that
     are needed to encode the stream for the API.
     """
 
+    can_administer_channel_group_id: int
     can_remove_subscribers_group_id: int
     creator_id: int | None
     date_created: datetime
     deactivated: bool
     description: str
     first_message_id: int | None
+    is_recently_active: bool
     history_public_to_subscribers: bool
     id: int
     invite_only: bool
@@ -182,7 +193,8 @@ class SubscriptionStreamDict(TypedDict):
     """
 
     audible_notifications: bool | None
-    can_remove_subscribers_group: int
+    can_administer_channel_group: int | AnonymousSettingGroupDict
+    can_remove_subscribers_group: int | AnonymousSettingGroupDict
     color: str
     creator_id: int | None
     date_created: int
@@ -190,6 +202,7 @@ class SubscriptionStreamDict(TypedDict):
     desktop_notifications: bool | None
     email_notifications: bool | None
     first_message_id: int | None
+    is_recently_active: bool
     history_public_to_subscribers: bool
     in_home_view: bool
     invite_only: bool
@@ -211,11 +224,13 @@ class SubscriptionStreamDict(TypedDict):
 
 class NeverSubscribedStreamDict(TypedDict):
     is_archived: bool
-    can_remove_subscribers_group: int
+    can_administer_channel_group: int | AnonymousSettingGroupDict
+    can_remove_subscribers_group: int | AnonymousSettingGroupDict
     creator_id: int | None
     date_created: int
     description: str
     first_message_id: int | None
+    is_recently_active: bool
     history_public_to_subscribers: bool
     invite_only: bool
     is_announcement_only: bool
@@ -236,11 +251,13 @@ class DefaultStreamDict(TypedDict):
     """
 
     is_archived: bool
-    can_remove_subscribers_group: int
+    can_administer_channel_group: int | AnonymousSettingGroupDict
+    can_remove_subscribers_group: int | AnonymousSettingGroupDict
     creator_id: int | None
     date_created: int
     description: str
     first_message_id: int | None
+    is_recently_active: bool
     history_public_to_subscribers: bool
     invite_only: bool
     is_web_public: bool
@@ -294,11 +311,9 @@ class RealmPlaygroundDict(TypedDict):
 class GroupPermissionSetting:
     require_system_group: bool
     allow_internet_group: bool
-    allow_owners_group: bool
     allow_nobody_group: bool
     allow_everyone_group: bool
     default_group_name: str
-    id_field_name: str
     default_for_system_groups: str | None = None
     allowed_system_groups: list[str] = field(default_factory=list)
 

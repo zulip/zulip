@@ -87,15 +87,17 @@ def stripe_event_handler_decorator(
 def get_billing_session_for_stripe_webhook(
     customer: Customer, user_id: str | None
 ) -> RealmBillingSession | RemoteRealmBillingSession | RemoteServerBillingSession:
-    if customer.remote_realm is not None:  # nocoverage
+    if customer.remote_realm is not None:
         return RemoteRealmBillingSession(customer.remote_realm)
-    elif customer.remote_server is not None:  # nocoverage
+    elif customer.remote_server is not None:
         return RemoteServerBillingSession(customer.remote_server)
     else:
-        assert user_id is not None
         assert customer.realm is not None
-        user = get_active_user_profile_by_id_in_realm(int(user_id), customer.realm)
-        return RealmBillingSession(user)
+        if user_id:
+            user = get_active_user_profile_by_id_in_realm(int(user_id), customer.realm)
+            return RealmBillingSession(user)
+        else:
+            return RealmBillingSession(user=None, realm=customer.realm)  # nocoverage
 
 
 @stripe_event_handler_decorator

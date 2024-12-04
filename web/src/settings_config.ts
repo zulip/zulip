@@ -1,17 +1,17 @@
-import Handlebars from "handlebars/runtime";
+import Handlebars from "handlebars/runtime.js";
 
-import {page_params} from "./base_page_params";
-import {$t, $t_html} from "./i18n";
-import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
-import {realm} from "./state_data";
-import {StreamPostPolicy} from "./stream_types";
-import type {StreamSpecificNotificationSettings} from "./sub_store";
+import {page_params} from "./base_page_params.ts";
+import {$t, $t_html} from "./i18n.ts";
+import type {RealmDefaultSettings} from "./realm_user_settings_defaults.ts";
+import {realm} from "./state_data.ts";
+import {StreamPostPolicy} from "./stream_types.ts";
+import type {StreamSpecificNotificationSettings} from "./sub_store.ts";
 import type {
     FollowedTopicNotificationSettings,
     PmNotificationSettings,
     StreamNotificationSettings,
     UserSettings,
-} from "./user_settings";
+} from "./user_settings.ts";
 
 /*
     This file contains translations between the integer values used in
@@ -68,7 +68,20 @@ export const web_channel_default_view_values = {
     },
 };
 
-export const user_list_style_values = {
+export const user_list_style_values: {
+    compact: {
+        code: number;
+        description: string;
+    };
+    with_status: {
+        code: number;
+        description: string;
+    };
+    with_avatar?: {
+        code: number;
+        description: string;
+    };
+} = {
     compact: {
         code: 1,
         description: $t({defaultMessage: "Compact"}),
@@ -77,12 +90,14 @@ export const user_list_style_values = {
         code: 2,
         description: $t({defaultMessage: "Show status text"}),
     },
-    // The `with_avatar` design in still in discussion.
-    // with_avatar: {
-    //     code: 3,
-    //     description: $t({defaultMessage: "Show status text and avatar"}),
-    // },
 };
+
+if (page_params.development_environment) {
+    user_list_style_values.with_avatar = {
+        code: 3,
+        description: $t({defaultMessage: "Show avatar"}),
+    };
+}
 
 export const web_animate_image_previews_values = {
     always: {
@@ -130,12 +145,13 @@ export const web_home_view_values = {
 };
 
 type ColorScheme = "automatic" | "dark" | "light";
-export type ColorSchemeValues = {
-    [key in ColorScheme]: {
+export type ColorSchemeValues = Record<
+    ColorScheme,
+    {
         code: number;
         description: string;
-    };
-};
+    }
+>;
 
 export const color_scheme_values = {
     automatic: {
@@ -245,34 +261,6 @@ export const common_policy_values = {
     },
     by_members: {
         order: 4,
-        code: 1,
-        description: $t({defaultMessage: "Admins, moderators and members"}),
-    },
-};
-
-export const email_invite_to_realm_policy_values = {
-    nobody: {
-        order: 1,
-        code: 6,
-        description: $t({defaultMessage: "Nobody"}),
-    },
-    by_admins_only: {
-        order: 2,
-        code: 2,
-        description: $t({defaultMessage: "Admins"}),
-    },
-    by_moderators_only: {
-        order: 3,
-        code: 4,
-        description: $t({defaultMessage: "Admins and moderators"}),
-    },
-    by_full_members: {
-        order: 4,
-        code: 3,
-        description: $t({defaultMessage: "Admins, moderators and full members"}),
-    },
-    by_members: {
-        order: 5,
         code: 1,
         description: $t({defaultMessage: "Admins, moderators and members"}),
     },
@@ -631,15 +619,18 @@ export const general_notifications_table_labels = {
         "email",
         "all_mentions",
     ],
-    stream: {
-        is_muted: $t({defaultMessage: "Mute channel"}),
-        desktop_notifications: $t({defaultMessage: "Visual desktop notifications"}),
-        audible_notifications: $t({defaultMessage: "Audible desktop notifications"}),
-        push_notifications: $t({defaultMessage: "Mobile notifications"}),
-        email_notifications: $t({defaultMessage: "Email notifications"}),
-        pin_to_top: $t({defaultMessage: "Pin channel to top of left sidebar"}),
-        wildcard_mentions_notify: $t({defaultMessage: "Notifications for @all/@everyone mentions"}),
-    },
+    stream: [
+        ["is_muted", $t({defaultMessage: "Mute channel"})],
+        ["desktop_notifications", $t({defaultMessage: "Visual desktop notifications"})],
+        ["audible_notifications", $t({defaultMessage: "Audible desktop notifications"})],
+        ["push_notifications", $t({defaultMessage: "Mobile notifications"})],
+        ["email_notifications", $t({defaultMessage: "Email notifications"})],
+        ["pin_to_top", $t({defaultMessage: "Pin channel to top of left sidebar"})],
+        [
+            "wildcard_mentions_notify",
+            $t({defaultMessage: "Notifications for @all/@everyone mentions"}),
+        ],
+    ] as const,
 };
 
 export const stream_specific_notification_settings: (keyof StreamSpecificNotificationSettings)[] = [
@@ -815,7 +806,11 @@ export function get_notifications_table_row_data(
 }
 
 export type AllNotifications = {
-    general_settings: {label: string; notification_settings: NotificationSettingCheckbox[]}[];
+    general_settings: {
+        label: string;
+        notification_settings: NotificationSettingCheckbox[];
+        help_link?: string;
+    }[];
     settings: {
         desktop_notification_settings: string[];
         mobile_notification_settings: string[];
@@ -851,6 +846,7 @@ export const all_notifications = (settings_object: Settings): AllNotifications =
                 followed_topic_notification_settings,
                 settings_object,
             ),
+            help_link: "/help/follow-a-topic",
         },
     ],
     settings: {

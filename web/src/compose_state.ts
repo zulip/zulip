@@ -1,9 +1,9 @@
 import $ from "jquery";
 
-import * as compose_pm_pill from "./compose_pm_pill";
-import {$t} from "./i18n";
-import * as people from "./people";
-import * as sub_store from "./sub_store";
+import * as compose_pm_pill from "./compose_pm_pill.ts";
+import {$t} from "./i18n.ts";
+import * as people from "./people.ts";
+import * as sub_store from "./sub_store.ts";
 
 let message_type: "stream" | "private" | undefined;
 let recipient_edited_manually = false;
@@ -106,12 +106,16 @@ export function stream_id(): number | undefined {
     return undefined;
 }
 
-export function stream_name(): string {
+export let stream_name = (): string => {
     const stream_id = selected_recipient_id;
     if (typeof stream_id === "number") {
         return sub_store.maybe_get_stream_name(stream_id) ?? "";
     }
     return "";
+};
+
+export function rewire_stream_name(value: typeof stream_name): void {
+    stream_name = value;
 }
 
 export function set_stream_id(stream_id: number | ""): void {

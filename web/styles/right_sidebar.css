@@ -26,13 +26,10 @@ $user_status_emoji_width: 24px;
     overflow: auto;
 }
 
-.buddy-list-section-toggle.fa-caret-right {
-    width: 7px;
-    transition: rotate 140ms linear;
-    /* The triangle icon has asymmetrical padding on it, so
-       when it rotates down it would be too high without
-       this padding. */
-    padding-left: 2px;
+.buddy-list-section-toggle.zulip-icon-heading-triangle-right {
+    transition:
+        opacity 140ms linear,
+        rotate 140ms linear;
 
     &.rotate-icon-down {
         rotate: 90deg;
@@ -43,15 +40,18 @@ $user_status_emoji_width: 24px;
     }
 }
 
+.buddy-list-section-toggle {
+    grid-area: arrow;
+    justify-self: center;
+    color: var(--color-text-sidebar-heading);
+    opacity: var(--opacity-sidebar-heading-icon);
+}
+
 .buddy-list-section-container {
     margin-bottom: 10px;
 
     &.no-display {
         display: none;
-    }
-
-    .buddy-list-user-link {
-        margin-left: 15px;
     }
 }
 
@@ -143,6 +143,10 @@ $user_status_emoji_width: 24px;
         &.highlighted_user {
             background-color: var(--color-buddy-list-highlighted-user);
             box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+
+            .user_circle {
+                outline: 1px solid var(--color-buddy-list-highlighted-user);
+            }
         }
     }
 
@@ -161,6 +165,27 @@ $user_status_emoji_width: 24px;
         }
     }
 
+    .user_sidebar_entry.with_avatar .user_circle {
+        display: inline-block;
+        position: absolute;
+        width: 0.5em;
+        height: 0.5em;
+        top: 1.7em;
+        left: 1.7em;
+
+        &.user_circle_idle {
+            background: linear-gradient(
+                to bottom,
+                var(--color-background) 50%,
+                var(--color-user-circle-idle) 50%
+            );
+        }
+
+        &.user_circle_empty {
+            display: none;
+        }
+    }
+
     .empty-list-message {
         font-style: italic;
         color: var(--color-text-empty-list-message);
@@ -168,7 +193,10 @@ $user_status_emoji_width: 24px;
         font-size: 14px;
         /* Override .empty-list-message !important styling */
         padding: 0 !important;
-        margin-left: 5px;
+        margin-left: calc(
+            var(--right-sidebar-toggle-width-offset) +
+                var(--right-sidebar-left-spacing)
+        );
         text-align: left;
 
         &:hover {
@@ -196,22 +224,44 @@ $user_status_emoji_width: 24px;
 }
 
 .buddy-list-subsection-header {
-    display: flex;
+    display: grid;
     align-items: center;
+    grid-template:
+        "arrow row-content scroll-buffer" var(
+            --line-height-sidebar-row-prominent
+        )
+        / var(--right-sidebar-header-icon-toggle-width) minmax(0, 1fr);
     cursor: pointer;
     background-color: var(--color-background);
-    line-height: 1;
     position: sticky;
     top: 0;
     z-index: 1;
     color: var(--color-text-default);
+    border-radius: 4px;
+    margin-right: var(--width-simplebar-scroll-hover);
+
+    &:hover {
+        background-color: var(--color-buddy-list-highlighted-user);
+        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+
+        .buddy-list-section-toggle,
+        .buddy-list-heading {
+            opacity: var(--opacity-sidebar-heading-hover);
+        }
+    }
 }
 
 .buddy-list-heading {
     user-select: none;
-    font-weight: 600;
     margin: 0;
     padding: 5px 5px 5px 0;
+    color: var(--color-text-sidebar-heading);
+    font-size: inherit;
+    font-weight: var(--font-weight-sidebar-heading);
+    letter-spacing: var(--letter-spacing-sidebar-heading);
+    opacity: var(--opacity-sidebar-heading);
+    transition: opacity 140ms linear;
+    grid-area: row-content;
 }
 
 .buddy-list-subsection-header.no-display {
@@ -241,6 +291,28 @@ $user_status_emoji_width: 24px;
     align-items: baseline;
 }
 
+.user_sidebar_entry.with_avatar {
+    grid-template:
+        "row-content" var(--line-height-sidebar-row-with-avatars)
+        "row-content" auto / minmax(0, 1fr);
+
+    .selectable_sidebar_block {
+        margin: 4px;
+    }
+
+    .avatar-preload-background {
+        background-color: var(--color-buddy-list-avatar-loading);
+    }
+
+    .unread_count:not(.hide) {
+        margin-right: 2px;
+    }
+
+    &.with_status .unread_count {
+        align-self: baseline;
+    }
+}
+
 .user-presence-link {
     grid-area: row-content;
 
@@ -249,6 +321,23 @@ $user_status_emoji_width: 24px;
         color: var(--color-text-sidebar-row);
         text-decoration: none;
     }
+}
+
+.information-settings .profile-with-avatar,
+.user_sidebar_entry.with_avatar .selectable_sidebar_block {
+    line-height: var(--line-height-sidebar-row-with-avatars);
+    display: grid;
+    grid-template:
+        "avatar row-content markers-and-controls" var(
+            --right-sidebar-avatar-width
+        )
+        / auto minmax(0, 1fr) minmax(0, auto);
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.information-settings .profile-with-avatar {
+    margin: 5px 0;
 }
 
 .my_user_status {
@@ -300,6 +389,14 @@ $user_status_emoji_width: 24px;
         "row-content ." auto / minmax(0, 1fr) 26px;
     align-content: baseline;
     margin-right: var(--width-simplebar-scroll-hover);
+    margin-left: var(--right-sidebar-toggle-width-offset);
+    /* When both the left circle and three dot menu are present, we want
+       the space to the left of the circle to be more similar to the space
+       to the right of the three dot menu. */
+    &:not(.with_avatar) {
+        padding-left: 2px;
+        margin-left: calc(var(--right-sidebar-toggle-width-offset) - 2px);
+    }
 
     .user-name-and-status-emoji {
         display: flex;
@@ -363,74 +460,133 @@ $user_status_emoji_width: 24px;
     grid-template-rows: var(--line-height-sidebar-row-prominent);
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    margin-right: var(--width-simplebar-scroll-hover);
+    margin-bottom: 10px;
+    margin-left: 5px;
 
     #userlist-header-search {
         display: grid;
         grid-template-rows: var(--line-height-sidebar-row-prominent);
-        grid-template-columns: minmax(0, 1fr) 20px;
+        grid-template-columns: minmax(0, 1fr) 30px;
         align-items: center;
-    }
 
-    #userlist-title {
-        margin: 0;
-    }
+        & .user-list-filter {
+            grid-area: 1 / 1 / 2 / 3;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            /* Prevent text from colliding with #clear_search_button */
+            padding-right: 28px;
+            height: var(--line-height-sidebar-row-prominent);
+            box-sizing: border-box;
+        }
 
-    #user_filter_icon {
-        opacity: 0.5;
-        justify-self: center;
+        #clear_search_people_button {
+            grid-area: 1 / 2 / 2 / 3;
+            padding: 0;
+            background: none;
+            color: var(--color-text-clear-search-button);
+            display: grid;
 
-        &:hover {
-            opacity: 1;
-            cursor: pointer;
+            &:hover {
+                color: var(--color-text-clear-search-button-hover);
+            }
+
+            &:focus,
+            &:focus-visible,
+            &:active {
+                box-shadow: none;
+                outline: none;
+            }
+
+            .zulip-icon-close {
+                align-self: center;
+            }
         }
     }
 
-    /* hovering over the userlist-header creates the same highlight effect as hovering over the user_filter_icon */
-    &:hover > #user_filter_icon {
-        opacity: 1;
-        cursor: pointer;
-    }
-
     #buddy-list-menu-icon {
+        color: var(--color-vdots-visible);
         justify-content: center;
         display: grid;
+        width: 25px;
+        margin-left: 5px;
+
+        &:hover {
+            color: var(--color-vdots-hover);
+        }
     }
 }
 
-.right-sidebar-shortcuts {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+.buddy-list-user-link,
+.invite-user-shortcut {
+    margin-right: var(--width-simplebar-scroll-hover);
+    padding-left: var(--right-sidebar-left-spacing);
+    border-radius: 4px;
+
+    &:hover {
+        background: var(--color-background-sidebar-action-heading-hover);
+        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+        color: var(--color-text-sidebar-action-heading-hover);
+    }
+
+    .buddy-list-user-link-text,
+    .invite-user-link {
+        display: grid;
+        grid-template-rows: var(--line-height-sidebar-row-prominent);
+        text-decoration: none;
+        align-items: center;
+        color: var(--color-text-sidebar-action-heading);
+    }
+}
+
+.buddy-list-user-link {
+    margin-left: var(--right-sidebar-toggle-width-offset);
+}
+
+.invite-user-shortcut {
     /* The margin top is calculated from a legacy 25px height,
        from a 20px line of text and 5px of margin top. We calculate
        a scaling margin-top by subtracting the em-unit line height
        from the legacy value. */
     margin-top: calc(25px - (var(--legacy-body-line-height-unitless) * 1em));
+    margin-bottom: var(--sidebar-bottom-spacing);
+    padding-left: 0;
+
+    .invite-user-link {
+        grid-template-columns:
+            var(--right-sidebar-header-icon-toggle-width)
+            minmax(0, 1fr);
+
+        .zulip-icon-user-plus {
+            justify-self: center;
+        }
+    }
 }
 
-#user_search_section {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 28px;
-    grid-template-rows: var(--line-height-sidebar-row-prominent);
-    white-space: nowrap;
-    margin-bottom: 10px;
-
-    & .user-list-filter {
-        grid-area: 1 / 1 / 2 / 3;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        /* Prevent text from colliding with .clear_search_button */
-        padding-right: 28px;
-        /* Push back against inherited styles; let CSS Grid be in
-           charge of the height. */
-        height: auto;
+#buddy-list-actions-menu-popover {
+    .display-style-selector + .invite-user-link-item {
+        border-top: 1px solid var(--color-border-sidebar-subheader);
     }
 
-    .clear_search_button {
-        grid-area: 1 / 2 / 2 / 3;
-        position: static;
-        padding: 0;
+    /* No hover effect on the label */
+    .display-style-selector-header:hover {
+        background: inherit;
+        cursor: default;
+    }
+
+    .popover-menu-link:not(.display-style-selector-header) {
+        display: grid;
+        grid-template: "left-icon row-content" auto / 18px 1fr;
+        align-items: center;
+
+        .popover-menu-icon,
+        .user_list_style_choice {
+            grid-area: left-icon;
+            justify-self: baseline;
+        }
+
+        .popover-menu-label {
+            grid-area: row-content;
+        }
     }
 }

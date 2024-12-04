@@ -9,7 +9,6 @@ from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 
 from confirmation import settings as confirmation_settings
-from zerver.actions.message_send import internal_send_stream_message
 from zerver.actions.realm_settings import (
     do_add_deactivated_redirect,
     do_change_realm_plan_type,
@@ -19,7 +18,8 @@ from zerver.lib.bulk_create import create_users
 from zerver.lib.push_notifications import sends_notifications_directly
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
-from zerver.lib.streams import ensure_stream, get_signups_stream
+from zerver.lib.sessions import delete_realm_user_sessions
+from zerver.lib.streams import ensure_stream
 from zerver.lib.user_groups import (
     create_system_user_groups_for_realm,
     get_role_based_system_groups_dict,
@@ -32,19 +32,12 @@ from zerver.models import (
     RealmAuditLog,
     RealmAuthenticationMethod,
     RealmUserDefault,
-    Stream,
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import (
-    CommonPolicyEnum,
-    InviteToRealmPolicyEnum,
-    get_org_type_display_name,
-    get_realm,
-)
-from zerver.models.users import get_system_bot
+from zerver.models.realms import CommonPolicyEnum
 from zproject.backends import all_default_backend_names
 
 
@@ -69,7 +62,7 @@ def do_change_realm_subdomain(
     # deleting, clear that state.
     realm.demo_organization_scheduled_deletion_date = None
     realm.string_id = new_subdomain
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         realm.save(update_fields=["string_id", "demo_organization_scheduled_deletion_date"])
         RealmAuditLog.objects.create(
             realm=realm,
@@ -102,6 +95,9 @@ def do_change_realm_subdomain(
         )
         do_add_deactivated_redirect(placeholder_realm, realm.url)
 
+    # Sessions can't be deleted inside a transaction.
+    delete_realm_user_sessions(realm)
+
 
 def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
     """This function implements overrides for the default configuration
@@ -119,8 +115,6 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
         Realm.ORG_TYPES["education_nonprofit"]["id"],
         Realm.ORG_TYPES["education"]["id"],
     ):
-        # Limit user creation to administrators.
-        realm.invite_to_realm_policy = InviteToRealmPolicyEnum.ADMINS_ONLY
         # Don't allow members (students) to manage user groups or
         # stream subscriptions.
         realm.invite_to_stream_policy = CommonPolicyEnum.MODERATORS_ONLY
@@ -240,7 +234,7 @@ def do_create_realm(
     # is required to do so correctly.
     kwargs["push_notifications_enabled"] = sends_notifications_directly()
 
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         realm = Realm(string_id=string_id, name=name, **kwargs)
         if is_demo_organization:
             realm.demo_organization_scheduled_deletion_date = realm.date_created + timedelta(
@@ -251,8 +245,8 @@ def do_create_realm(
 
         # For now a dummy value of -1 is given to groups fields which
         # is changed later before the transaction is committed.
-        for permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.values():
-            setattr(realm, permission_configuration.id_field_name, -1)
+        for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
+            setattr(realm, setting_name + "_id", -1)
 
         realm.save()
 
@@ -293,6 +287,10 @@ def do_create_realm(
             "can_create_groups": {
                 Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.MODERATORS,
                 Realm.ORG_TYPES["education"]["id"]: SystemGroups.MODERATORS,
+            },
+            "can_invite_users_group": {
+                Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.ADMINISTRATORS,
+                Realm.ORG_TYPES["education"]["id"]: SystemGroups.ADMINISTRATORS,
             },
             "can_move_messages_between_channels_group": {
                 Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.MODERATORS,
@@ -369,32 +367,12 @@ def do_create_realm(
         prereg_realm.created_realm = realm
         prereg_realm.save(update_fields=["status", "created_realm"])
 
-    # Send a notification to the admin realm when a new organization registers.
     if settings.CORPORATE_ENABLED:
-        from corporate.lib.support import get_realm_support_url
+        # Send a notification to the admin realm when a new organization registers.
+        from corporate.lib.stripe import RealmBillingSession
 
-        admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
-        sender = get_system_bot(settings.NOTIFICATION_BOT, admin_realm.id)
-
-        support_url = get_realm_support_url(realm)
-        organization_type = get_org_type_display_name(realm.org_type)
-
-        message = f"[{realm.name}]({support_url}) ([{realm.display_subdomain}]({realm.url})). Organization type: {organization_type}"
-        topic_name = "new organizations"
-
-        try:
-            signups_stream = get_signups_stream(admin_realm)
-
-            internal_send_stream_message(
-                sender,
-                signups_stream,
-                topic_name,
-                message,
-            )
-        except Stream.DoesNotExist:  # nocoverage
-            # If the signups stream hasn't been created in the admin
-            # realm, don't auto-create it to send to it; just do nothing.
-            pass
+        billing_session = RealmBillingSession(user=None, realm=realm)
+        billing_session.send_realm_created_internal_admin_message()
 
     setup_realm_internal_bots(realm)
     return realm

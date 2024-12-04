@@ -3,11 +3,11 @@ import _ from "lodash";
 
 import render_dialog_widget from "../templates/dialog_widget.hbs";
 
-import type {AjaxRequestHandler} from "./channel";
-import {$t_html} from "./i18n";
-import * as loading from "./loading";
-import * as modals from "./modals";
-import * as ui_report from "./ui_report";
+import type {AjaxRequestHandler} from "./channel.ts";
+import {$t_html} from "./i18n.ts";
+import * as loading from "./loading.ts";
+import * as modals from "./modals.ts";
+import * as ui_report from "./ui_report.ts";
 
 // Since only one dialog widget can be active at a time
 // and we don't support reopening already closed dialog widgets,
@@ -36,7 +36,7 @@ function current_dialog_widget_selector(): string {
  *      2) We attach the DOM for the modal to the body element
  *         to avoid interference from other elements.
  *
- *      3) For settings, we have a click handler in settings.js
+ *      3) For settings, we have a click handler in settings.ts
  *         that will close the dialog via modals.close_active.
  *
  *      4) We assume that since this is a modal, you will
@@ -88,31 +88,21 @@ type RequestOpts = {
 };
 
 export function hide_dialog_spinner(): void {
-    $(".dialog_submit_button span").show();
     const dialog_widget_selector = current_dialog_widget_selector();
-    $(`${dialog_widget_selector} .modal__btn`).prop("disabled", false);
-
     const $spinner = $(`${dialog_widget_selector} .modal__spinner`);
-    loading.destroy_indicator($spinner);
+    $(`${dialog_widget_selector} .modal__button`).prop("disabled", false);
+
+    loading.hide_spinner($(".dialog_submit_button"), $spinner);
 }
 
 export function show_dialog_spinner(): void {
     const dialog_widget_selector = current_dialog_widget_selector();
     // Disable both the buttons.
-    $(`${dialog_widget_selector} .modal__btn`).prop("disabled", true);
+    $(`${dialog_widget_selector} .modal__button`).prop("disabled", true);
 
     const $spinner = $(`${dialog_widget_selector} .modal__spinner`);
-    const dialog_submit_button_span_width = $(".dialog_submit_button span").width();
-    const dialog_submit_button_span_height = $(".dialog_submit_button span").height();
 
-    // Hide the submit button after computing its height, since submit
-    // buttons with long text might affect the size of the button.
-    $(".dialog_submit_button span").hide();
-
-    loading.make_indicator($spinner, {
-        width: dialog_submit_button_span_width,
-        height: dialog_submit_button_span_height,
-    });
+    loading.show_spinner($(".dialog_submit_button"), $spinner);
 }
 
 // Supports a callback to be called once the modal finishes closing.

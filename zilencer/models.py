@@ -523,7 +523,7 @@ def get_remote_customer_user_count(
 
 
 def get_remote_server_guest_and_non_guest_count(
-    server_id: int, event_time: datetime = timezone_now()
+    server_id: int, event_time: datetime | None = None
 ) -> RemoteCustomerUserCount:
     # For each realm hosted on the server, find the latest audit log
     # entry indicating the number of active users in that realm.
@@ -531,7 +531,7 @@ def get_remote_server_guest_and_non_guest_count(
         RemoteRealmAuditLog.objects.filter(
             server_id=server_id,
             event_type__in=RemoteRealmAuditLog.SYNCED_BILLING_EVENTS,
-            event_time__lte=event_time,
+            event_time__lte=timezone_now() if event_time is None else event_time,
         )
         # Important: extra_data is empty for some pre-2020 audit logs
         # prior to the introduction of realm_user_count_by_role
@@ -553,13 +553,13 @@ def get_remote_server_guest_and_non_guest_count(
 
 
 def get_remote_realm_guest_and_non_guest_count(
-    remote_realm: RemoteRealm, event_time: datetime = timezone_now()
+    remote_realm: RemoteRealm, event_time: datetime | None = None
 ) -> RemoteCustomerUserCount:
     latest_audit_log = (
         RemoteRealmAuditLog.objects.filter(
             remote_realm=remote_realm,
             event_type__in=RemoteRealmAuditLog.SYNCED_BILLING_EVENTS,
-            event_time__lte=event_time,
+            event_time__lte=timezone_now() if event_time is None else event_time,
         )
         # Important: extra_data is empty for some pre-2020 audit logs
         # prior to the introduction of realm_user_count_by_role

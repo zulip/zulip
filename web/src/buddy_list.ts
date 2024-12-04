@@ -9,25 +9,25 @@ import render_empty_list_widget_for_list from "../templates/empty_list_widget_fo
 import render_presence_row from "../templates/presence_row.hbs";
 import render_presence_rows from "../templates/presence_rows.hbs";
 
-import * as blueslip from "./blueslip";
-import * as buddy_data from "./buddy_data";
-import type {BuddyUserInfo} from "./buddy_data";
-import {media_breakpoints_num} from "./css_variables";
-import type {Filter} from "./filter";
-import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
-import * as message_viewport from "./message_viewport";
-import * as narrow_state from "./narrow_state";
-import * as padded_widget from "./padded_widget";
-import * as peer_data from "./peer_data";
-import * as people from "./people";
-import * as scroll_util from "./scroll_util";
-import {current_user} from "./state_data";
-import * as stream_data from "./stream_data";
-import type {StreamSubscription} from "./sub_store";
-import {INTERACTIVE_HOVER_DELAY} from "./tippyjs";
-import {user_settings} from "./user_settings";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as buddy_data from "./buddy_data.ts";
+import type {BuddyUserInfo} from "./buddy_data.ts";
+import {media_breakpoints_num} from "./css_variables.ts";
+import type {Filter} from "./filter.ts";
+import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as padded_widget from "./padded_widget.ts";
+import * as peer_data from "./peer_data.ts";
+import * as people from "./people.ts";
+import * as scroll_util from "./scroll_util.ts";
+import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import {INTERACTIVE_HOVER_DELAY} from "./tippyjs.ts";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 function get_formatted_sub_count(sub_count: number): string {
     if (sub_count < 1000) {
@@ -77,7 +77,6 @@ type BuddyListRenderData = {
     pm_ids_set: Set<number>;
     total_human_subscribers_count: number;
     other_users_count: number;
-    total_human_users: number;
     hide_headers: boolean;
     all_participant_ids: Set<number>;
 };
@@ -87,8 +86,7 @@ function get_render_data(): BuddyListRenderData {
     const pm_ids_set = narrow_state.pm_ids_set();
 
     const total_human_subscribers_count = get_total_human_subscriber_count(current_sub, pm_ids_set);
-    const total_human_users = people.get_active_human_count();
-    const other_users_count = total_human_users - total_human_subscribers_count;
+    const other_users_count = people.get_active_human_count() - total_human_subscribers_count;
     const hide_headers = should_hide_headers(current_sub, pm_ids_set);
     const all_participant_ids = buddy_data.get_conversation_participants();
 
@@ -97,7 +95,6 @@ function get_render_data(): BuddyListRenderData {
         pm_ids_set,
         total_human_subscribers_count,
         other_users_count,
-        total_human_users,
         hide_headers,
         all_participant_ids,
     };
@@ -247,9 +244,8 @@ export class BuddyList extends BuddyListConf {
                                 );
                             }
                         } else {
-                            const total_human_users = people.get_active_human_count();
                             const other_users_count =
-                                total_human_users - total_human_subscribers_count;
+                                people.get_active_human_count() - total_human_subscribers_count;
                             tooltip_text = $t(
                                 {
                                     defaultMessage:
@@ -285,13 +281,10 @@ export class BuddyList extends BuddyListConf {
         // in already-sorted order.
         this.all_user_ids = opts.all_user_ids;
 
-        $("#buddy-list-users-matching-view-container .view-all-subscribers-link").remove();
-        $("#buddy-list-other-users-container .view-all-users-link").remove();
         if (buddy_data.get_is_searching_users()) {
             // Show all sections when searching users
             this.set_section_collapse(".buddy-list-section-container", false);
         } else {
-            this.render_view_user_list_links();
             this.set_section_collapse(
                 "#buddy-list-participants-container",
                 this.participants_is_collapsed,
@@ -317,12 +310,33 @@ export class BuddyList extends BuddyListConf {
 
         this.update_empty_list_placeholders();
         this.fill_screen_with_content();
+
+        // This must happen after `fill_screen_with_content`
+        $("#buddy-list-users-matching-view-container .view-all-subscribers-link").remove();
+        $("#buddy-list-other-users-container .view-all-users-link").remove();
+        if (!buddy_data.get_is_searching_users()) {
+            this.render_view_user_list_links();
+        }
+        this.display_or_hide_sections();
+
+        // `populate` always rerenders all user rows, so we need new load handlers.
+        // This logic only does something is a user has enabled the setting to
+        // view avatars in the buddy list, and otherwise the jQuery selector will
+        // always be the empty set.
+        $("#user-list .user-profile-picture img")
+            .off("load")
+            .on("load", function (this: HTMLElement) {
+                $(this)
+                    .closest(".user-profile-picture")
+                    .toggleClass("avatar-preload-background", false);
+            });
     }
 
     update_empty_list_placeholders(): void {
         const {total_human_subscribers_count, other_users_count} = this.render_data;
         const has_inactive_users_matching_view =
-            total_human_subscribers_count > this.users_matching_view_ids.length;
+            total_human_subscribers_count >
+            this.users_matching_view_ids.length + this.participant_user_ids.length;
         const has_inactive_other_users = other_users_count > this.other_user_ids.length;
 
         let matching_view_empty_list_message;
@@ -414,11 +428,6 @@ export class BuddyList extends BuddyListConf {
 
     render_section_headers(): void {
         const {hide_headers, all_participant_ids} = this.render_data;
-        // We only show the participants list if it has members, so even if we're not
-        // changing filters and only updating user counts for the current filter, that
-        // can affect if we show/hide this section.
-        const show_participants_list = !hide_headers && all_participant_ids.size;
-        $("#buddy-list-participants-container").toggleClass("no-display", !show_participants_list);
 
         // If we're not changing filters, this just means some users were added or
         // removed but otherwise everything is the same, so we don't need to do a full
@@ -429,50 +438,18 @@ export class BuddyList extends BuddyListConf {
         }
         this.current_filter = narrow_state.filter();
 
-        const {current_sub, total_human_subscribers_count, other_users_count, total_human_users} =
-            this.render_data;
+        const {current_sub, total_human_subscribers_count, other_users_count} = this.render_data;
         $(".buddy-list-subsection-header").empty();
-
-        // If we're in the mode of hiding headers, that means we're only showing the "other users"
-        // section, so hide the other two sections.
-        $("#buddy-list-users-matching-view-container").toggleClass("no-display", hide_headers);
-
-        // This is the case where every subscriber is in the participants list. In this case, we
-        // hide the "others in this channel" section.
-        if (
-            show_participants_list &&
-            total_human_subscribers_count === this.participant_user_ids.length
-        ) {
-            $("#buddy-list-users-matching-view-container").toggleClass("no-display", true);
-        }
-
-        // Usually we show the user counts in the headers, but if we're hiding
-        // those headers then we show the total user count in the main title.
-        const default_userlist_title = $t({defaultMessage: "USERS"});
+        $(".buddy-list-subsection-header").toggleClass("no-display", hide_headers);
         if (hide_headers) {
-            const formatted_count = get_formatted_sub_count(total_human_users);
-            const userlist_title = `${default_userlist_title} (${formatted_count})`;
-            $("#userlist-title").text(userlist_title);
             return;
-        }
-        $("#userlist-title").text(default_userlist_title);
-
-        let header_text;
-        if (current_sub) {
-            if (all_participant_ids.size) {
-                header_text = $t({defaultMessage: "Others in this channel"});
-            } else {
-                header_text = $t({defaultMessage: "In this channel"});
-            }
-        } else {
-            header_text = $t({defaultMessage: "In this conversation"});
         }
 
         $("#buddy-list-participants-container .buddy-list-subsection-header").append(
             $(
                 render_section_header({
                     id: "buddy-list-participants-section-heading",
-                    header_text: $t({defaultMessage: "In this conversation"}),
+                    header_text: $t({defaultMessage: "THIS CONVERSATION"}),
                     user_count: get_formatted_sub_count(all_participant_ids.size),
                     is_collapsed: this.participants_is_collapsed,
                 }),
@@ -483,7 +460,9 @@ export class BuddyList extends BuddyListConf {
             $(
                 render_section_header({
                     id: "buddy-list-users-matching-view-section-heading",
-                    header_text,
+                    header_text: current_sub
+                        ? $t({defaultMessage: "THIS CHANNEL"})
+                        : $t({defaultMessage: "THIS CONVERSATION"}),
                     user_count: get_formatted_sub_count(
                         total_human_subscribers_count - all_participant_ids.size,
                     ),
@@ -496,7 +475,7 @@ export class BuddyList extends BuddyListConf {
             $(
                 render_section_header({
                     id: "buddy-list-other-users-section-heading",
-                    header_text: $t({defaultMessage: "Others"}),
+                    header_text: $t({defaultMessage: "OTHERS"}),
                     user_count: get_formatted_sub_count(other_users_count),
                     is_collapsed: this.other_users_is_collapsed,
                 }),
@@ -572,14 +551,14 @@ export class BuddyList extends BuddyListConf {
         const pm_ids_set = narrow_state.pm_ids_set();
 
         for (const item of items) {
-            if (buddy_data.user_matches_narrow(item.user_id, pm_ids_set, current_sub?.stream_id)) {
-                if (this.render_data.all_participant_ids.has(item.user_id)) {
-                    participants.push(item);
-                    this.participant_user_ids.push(item.user_id);
-                } else {
-                    subscribed_users.push(item);
-                    this.users_matching_view_ids.push(item.user_id);
-                }
+            if (this.render_data.all_participant_ids.has(item.user_id)) {
+                participants.push(item);
+                this.participant_user_ids.push(item.user_id);
+            } else if (
+                buddy_data.user_matches_narrow(item.user_id, pm_ids_set, current_sub?.stream_id)
+            ) {
+                subscribed_users.push(item);
+                this.users_matching_view_ids.push(item.user_id);
             } else {
                 other_users.push(item);
                 this.other_user_ids.push(item.user_id);
@@ -630,6 +609,25 @@ export class BuddyList extends BuddyListConf {
 
         this.render_count += more_user_ids.length;
         this.update_padding();
+    }
+
+    display_or_hide_sections(): void {
+        const {all_participant_ids, hide_headers, total_human_subscribers_count} = this.render_data;
+
+        // If we're in the mode of hiding headers, that means we're only showing the "others"
+        // section, so hide the other two sections.
+        $("#buddy-list-users-matching-view-container").toggleClass("no-display", hide_headers);
+        const hide_participants_list = hide_headers || all_participant_ids.size === 0;
+        $("#buddy-list-participants-container").toggleClass("no-display", hide_participants_list);
+
+        // This is the case where every subscriber is in the participants list. In this case, we
+        // hide the "in this channel" section.
+        if (
+            !hide_participants_list &&
+            total_human_subscribers_count === this.participant_user_ids.length
+        ) {
+            $("#buddy-list-users-matching-view-container").toggleClass("no-display", true);
+        }
     }
 
     render_view_user_list_links(): void {

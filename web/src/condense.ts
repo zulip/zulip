@@ -3,12 +3,12 @@ import assert from "minimalistic-assert";
 
 import render_message_length_toggle from "../templates/message_length_toggle.hbs";
 
-import * as message_flags from "./message_flags";
-import * as message_lists from "./message_lists";
-import type {Message} from "./message_store";
-import * as message_viewport from "./message_viewport";
-import * as rows from "./rows";
-import * as util from "./util";
+import * as message_flags from "./message_flags.ts";
+import * as message_lists from "./message_lists.ts";
+import type {Message} from "./message_store.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as rows from "./rows.ts";
+import * as util from "./util.ts";
 
 /*
 This library implements two related, similar concepts:

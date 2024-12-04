@@ -5,7 +5,7 @@
                 <h1 class="modal__title dialog_heading">
                     {{{ heading_text }}}
                     {{#if link}}
-                    {{> help_link_widget }}
+                    {{> help_link_widget . }}
                     {{/if}}
                 </h1>
                 <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
@@ -16,11 +16,11 @@
             </main>
             <footer class="modal__footer">
                 {{#unless single_footer_button}}
-                <button class="modal__btn dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{{ html_exit_button }}}</button>
+                <button class="modal__button dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{{ html_exit_button }}}</button>
                 {{/unless}}
                 <div class="dialog_submit_button_container">
-                    <button class="modal__btn dialog_submit_button"{{#if single_footer_button}} aria-label="{{t 'Close this dialog window' }}" data-micromodal-close{{/if}}>
-                        <span>{{{ html_submit_button }}}</span>
+                    <button class="modal__button dialog_submit_button"{{#if single_footer_button}} aria-label="{{t 'Close this dialog window' }}" data-micromodal-close{{/if}}>
+                        <span class="submit-button-text">{{{ html_submit_button }}}</span>
                         <div class="modal__spinner"></div>
                     </button>
                 </div>

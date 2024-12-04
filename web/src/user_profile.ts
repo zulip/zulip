@@ -17,51 +17,52 @@ import render_user_group_list_item from "../templates/user_group_list_item.hbs";
 import render_user_profile_modal from "../templates/user_profile_modal.hbs";
 import render_user_stream_list_item from "../templates/user_stream_list_item.hbs";
 
-import * as avatar from "./avatar";
-import * as bot_data from "./bot_data";
-import * as browser_history from "./browser_history";
-import * as buddy_data from "./buddy_data";
-import * as channel from "./channel";
-import * as components from "./components";
-import {show_copied_confirmation} from "./copied_tooltip";
-import {csrf_token} from "./csrf";
-import * as custom_profile_fields_ui from "./custom_profile_fields_ui";
-import * as dialog_widget from "./dialog_widget";
-import * as dropdown_widget from "./dropdown_widget";
-import type {DropdownWidget, DropdownWidgetOptions} from "./dropdown_widget";
-import {get_current_hash_category} from "./hash_parser";
-import * as hash_util from "./hash_util";
-import {$t, $t_html} from "./i18n";
-import type {InputPillContainer} from "./input_pill";
-import * as integration_url_modal from "./integration_url_modal";
-import * as ListWidget from "./list_widget";
-import type {ListWidget as ListWidgetType} from "./list_widget";
-import * as loading from "./loading";
-import * as modals from "./modals";
-import * as peer_data from "./peer_data";
-import * as people from "./people";
-import type {User} from "./people";
-import * as settings_components from "./settings_components";
-import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
-import * as settings_profile_fields from "./settings_profile_fields";
-import type {CustomProfileField, CustomProfileFieldTypes} from "./state_data";
-import {current_user, realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import type {StreamSubscription} from "./sub_store";
-import * as subscriber_api from "./subscriber_api";
-import * as timerender from "./timerender";
-import type {HTMLSelectOneElement} from "./types";
-import * as ui_report from "./ui_report";
-import type {UploadWidget} from "./upload_widget";
-import * as user_deactivation_ui from "./user_deactivation_ui";
-import * as user_groups from "./user_groups";
-import type {UserGroup} from "./user_groups";
-import * as user_pill from "./user_pill";
-import * as util from "./util";
+import * as avatar from "./avatar.ts";
+import * as bot_data from "./bot_data.ts";
+import * as browser_history from "./browser_history.ts";
+import * as buddy_data from "./buddy_data.ts";
+import * as channel from "./channel.ts";
+import * as components from "./components.ts";
+import {show_copied_confirmation} from "./copied_tooltip.ts";
+import {csrf_token} from "./csrf.ts";
+import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
+import type {DropdownWidget, DropdownWidgetOptions} from "./dropdown_widget.ts";
+import {get_current_hash_category} from "./hash_parser.ts";
+import * as hash_util from "./hash_util.ts";
+import {$t, $t_html} from "./i18n.ts";
+import type {InputPillContainer} from "./input_pill.ts";
+import * as integration_url_modal from "./integration_url_modal.ts";
+import * as ListWidget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
+import * as loading from "./loading.ts";
+import * as modals from "./modals.ts";
+import * as peer_data from "./peer_data.ts";
+import * as people from "./people.ts";
+import type {User} from "./people.ts";
+import * as settings_components from "./settings_components.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import * as settings_profile_fields from "./settings_profile_fields.ts";
+import type {CustomProfileField, CustomProfileFieldTypes} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as subscriber_api from "./subscriber_api.ts";
+import * as timerender from "./timerender.ts";
+import type {HTMLSelectOneElement} from "./types.ts";
+import * as ui_report from "./ui_report.ts";
+import type {UploadWidget} from "./upload_widget.ts";
+import * as user_deactivation_ui from "./user_deactivation_ui.ts";
+import * as user_group_edit_members from "./user_group_edit_members.ts";
+import * as user_groups from "./user_groups.ts";
+import type {UserGroup} from "./user_groups.ts";
+import * as user_pill from "./user_pill.ts";
+import * as util from "./util.ts";
 
-type CustomProfileFieldData = {
+export type CustomProfileFieldData = {
     id: number;
     name: string;
     is_user_field: boolean;
@@ -77,6 +78,7 @@ type CustomProfileFieldData = {
 };
 
 let user_streams_list_widget: ListWidgetType<StreamSubscription> | undefined;
+let user_groups_list_widget: ListWidgetType<UserGroup> | undefined;
 let user_profile_subscribe_widget: DropdownWidget | undefined;
 let toggler: components.Toggle;
 let bot_owner_dropdown_widget: DropdownWidget | undefined;
@@ -88,21 +90,14 @@ const EMBEDDED_BOT_TYPE = "4";
 
 export function show_button_spinner($button: JQuery): void {
     const $spinner = $button.find(".modal__spinner");
-    const dialog_submit_button_span_width = $button.find("span").width();
-    const dialog_submit_button_span_height = $button.find("span").height();
     $button.prop("disabled", true);
-    $button.find("span").hide();
-    loading.make_indicator($spinner, {
-        width: dialog_submit_button_span_width,
-        height: dialog_submit_button_span_height,
-    });
+    loading.show_spinner($button, $spinner);
 }
 
 export function hide_button_spinner($button: JQuery): void {
     const $spinner = $button.find(".modal__spinner");
     $button.prop("disabled", false);
-    $button.find("span").show();
-    loading.destroy_indicator($spinner);
+    loading.hide_spinner($button, $spinner);
 }
 
 function compare_by_name(
@@ -126,6 +121,15 @@ export function update_user_profile_streams_list_for_users(user_ids: number[]): 
         const user_streams = stream_data.get_streams_for_user(user_id).subscribed;
         user_streams.sort(compare_by_name);
         user_streams_list_widget.replace_list_data(user_streams);
+    }
+}
+
+export function update_user_profile_groups_list_for_users(user_ids: number[]): void {
+    const user_id = get_user_id_if_user_profile_modal_open();
+    if (user_id && user_ids.includes(user_id) && user_groups_list_widget !== undefined) {
+        const user_groups_list = user_groups.get_user_groups_of_user(user_id);
+        user_groups_list.sort(compare_by_name);
+        user_groups_list_widget.replace_list_data(user_groups_list);
     }
 }
 
@@ -235,7 +239,7 @@ function change_state_of_subscribe_button(
 
 function reset_subscribe_widget(): void {
     $("#user-profile-modal .add-subscription-button").prop("disabled", true);
-    settings_components.initialize_disable_btn_hint_popover(
+    settings_components.initialize_disable_button_hint_popover(
         $("#user-profile-modal .add-subscription-button-wrapper"),
         $t({defaultMessage: "Select a channel to subscribe"}),
         {},
@@ -298,12 +302,30 @@ function format_user_stream_list_item_html(stream: StreamSubscription, user: Use
     });
 }
 
-function format_user_group_list_item_html(group: UserGroup): string {
+function format_user_group_list_item_html(group: UserGroup, user: User): string {
+    const is_direct_member = group.members.has(user.user_id);
+    const is_me = user.user_id === current_user.user_id;
+    const can_leave_user_group = is_me && settings_data.can_leave_user_group(group.id);
+    const subgroups_name = [];
+    if (!is_direct_member) {
+        const subgroups = user_groups.get_direct_subgroups_of_group(group).sort(compare_by_name);
+        subgroups_name.push(
+            ...subgroups
+                .filter((subgroup) =>
+                    user_groups.is_user_in_group(subgroup.id, user.user_id, false),
+                )
+                .map((subgroup) => subgroup.name),
+        );
+    }
     return render_user_group_list_item({
         group_id: group.id,
         name: group.name,
         group_edit_url: hash_util.group_edit_url(group, "general"),
         is_guest: current_user.is_guest,
+        is_direct_member,
+        subgroups_name: subgroups_name.join(", "),
+        is_me,
+        can_remove_members: settings_data.can_manage_user_group(group.id) || can_leave_user_group,
     });
 }
 
@@ -339,14 +361,14 @@ function render_user_group_list(groups: UserGroup[], user: User): void {
     groups.sort(compare_by_name);
     const $container = $("#user-profile-modal .user-group-list");
     $container.empty();
-    ListWidget.create($container, groups, {
+    user_groups_list_widget = ListWidget.create($container, groups, {
         name: `user-${user.user_id}-group-list`,
         get_item: ListWidget.default_get_item,
         callback_after_render() {
             $container.parent().removeClass("empty-list");
         },
         modifier_html(item) {
-            return format_user_group_list_item_html(item);
+            return format_user_group_list_item_html(item, user);
         },
         $simplebar_container: $("#user-profile-modal .modal__body"),
     });
@@ -587,7 +609,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
             {label: $t({defaultMessage: "Channels"}), key: "user-profile-streams-tab"},
             {label: $t({defaultMessage: "User groups"}), key: "user-profile-groups-tab"},
         ],
-        callback(_name: string, key: string) {
+        callback(_name: string | undefined, key: string) {
             $(".tabcontent").hide();
             $(`#${CSS.escape(key)}`).show();
             $("#user-profile-modal .modal__footer").hide();
@@ -754,10 +776,10 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             formData.append("file-" + i, file);
         }
 
-        const $submit_btn = $("#user-profile-modal .dialog_submit_button");
-        const $cancel_btn = $("#user-profile-modal .dialog_exit_button");
-        show_button_spinner($submit_btn);
-        $cancel_btn.prop("disabled", true);
+        const $submit_button = $("#user-profile-modal .dialog_submit_button");
+        const $cancel_button = $("#user-profile-modal .dialog_exit_button");
+        show_button_spinner($submit_button);
+        $cancel_button.prop("disabled", true);
 
         void channel.patch({
             url,
@@ -766,7 +788,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             contentType: false,
             success() {
                 avatar_widget.clear();
-                hide_button_spinner($submit_btn);
+                hide_button_spinner($submit_button);
                 original_values = get_current_values($("#bot-edit-form"));
                 toggle_submit_button($("#bot-edit-form"));
                 ui_report.success(
@@ -774,7 +796,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                     $("#user-profile-modal .save-success"),
                     1200,
                 );
-                $cancel_btn.prop("disabled", false);
+                $cancel_button.prop("disabled", false);
             },
             error(xhr) {
                 ui_report.error(
@@ -786,8 +808,8 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                 $("#bot-edit-form")
                     .closest(".simplebar-content-wrapper")
                     .animate({scrollTop: 0}, "fast");
-                hide_button_spinner($submit_btn);
-                $cancel_btn.prop("disabled", false);
+                hide_button_spinner($submit_button);
+                $cancel_button.prop("disabled", false);
             },
         });
     });
@@ -967,11 +989,11 @@ function get_current_values(
 
 function toggle_submit_button($edit_form: JQuery): void {
     const current_values = get_current_values($edit_form);
-    const $submit_btn = $("#user-profile-modal .dialog_submit_button");
+    const $submit_button = $("#user-profile-modal .dialog_submit_button");
     if (!_.isEqual(original_values, current_values)) {
-        $submit_btn.prop("disabled", false);
+        $submit_button.prop("disabled", false);
     } else {
-        $submit_btn.prop("disabled", true);
+        $submit_button.prop("disabled", true);
     }
 }
 
@@ -1068,16 +1090,16 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
             profile_data: JSON.stringify(profile_data),
         };
 
-        const $submit_btn = $("#user-profile-modal .dialog_submit_button");
-        const $cancel_btn = $("#user-profile-modal .dialog_exit_button");
-        show_button_spinner($submit_btn);
-        $cancel_btn.prop("disabled", true);
+        const $submit_button = $("#user-profile-modal .dialog_submit_button");
+        const $cancel_button = $("#user-profile-modal .dialog_exit_button");
+        show_button_spinner($submit_button);
+        $cancel_button.prop("disabled", true);
 
         void channel.patch({
             url,
             data,
             success() {
-                hide_button_spinner($submit_btn);
+                hide_button_spinner($submit_button);
                 original_values = get_current_values($("#edit-user-form"));
                 toggle_submit_button($("#edit-user-form"));
                 ui_report.success(
@@ -1085,7 +1107,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
                     $("#user-profile-modal .save-success"),
                     1200,
                 );
-                $cancel_btn.prop("disabled", false);
+                $cancel_button.prop("disabled", false);
             },
             error(xhr) {
                 ui_report.error(
@@ -1097,8 +1119,8 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
                 $("#edit-user-form")
                     .closest(".simplebar-content-wrapper")
                     .animate({scrollTop: 0}, "fast");
-                hide_button_spinner($submit_btn);
-                $cancel_btn.prop("disabled", false);
+                hide_button_spinner($submit_button);
+                $cancel_button.prop("disabled", false);
             },
         });
     });
@@ -1210,6 +1232,43 @@ export function initialize(): void {
             return;
         }
         handle_remove_stream_subscription(target_user_id, sub, removal_success, removal_failure);
+    });
+
+    $("body").on("click", "#user-profile-modal .remove-member-button", (e) => {
+        e.preventDefault();
+        const $group_row = $(e.currentTarget).closest("[data-group-id]");
+        const group_id = Number.parseInt($group_row.attr("data-group-id")!, 10);
+        const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);
+        const target_user_group = user_groups.get_user_group_from_id(group_id);
+        const $alert_box = $("#user-profile-groups-tab .user-profile-group-list-alert");
+
+        function removal_success(): void {
+            ui_report.success($t_html({defaultMessage: "Removed successfully!"}), $alert_box, 1200);
+        }
+
+        function removal_failure(): void {
+            let error_message;
+            if (people.is_my_user_id(target_user_id)) {
+                error_message = $t(
+                    {defaultMessage: "Error leaving group {group_name}"},
+                    {group_name: target_user_group.name},
+                );
+            } else {
+                error_message = $t(
+                    {defaultMessage: "Error removing user from group {group_name}"},
+                    {group_name: target_user_group.name},
+                );
+            }
+
+            ui_report.client_error(error_message, $alert_box, 1200);
+        }
+
+        user_group_edit_members.edit_user_group_membership({
+            group: target_user_group,
+            removed: [target_user_id],
+            success: removal_success,
+            error: removal_failure,
+        });
     });
 
     $("body").on("click", "#user-profile-modal #clear_stream_search", (e) => {

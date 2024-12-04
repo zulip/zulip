@@ -2,19 +2,19 @@ import type {z} from "zod";
 
 import render_topic_muted from "../templates/topic_muted.hbs";
 
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as compose_banner from "./compose_banner";
-import * as feedback_widget from "./feedback_widget";
-import {FoldDict} from "./fold_dict";
-import {$t} from "./i18n";
-import * as loading from "./loading";
-import * as settings_ui from "./settings_ui";
-import type {StateData, user_topic_schema} from "./state_data";
-import * as sub_store from "./sub_store";
-import * as timerender from "./timerender";
-import * as ui_report from "./ui_report";
-import {get_time_from_date_muted} from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as compose_banner from "./compose_banner.ts";
+import * as feedback_widget from "./feedback_widget.ts";
+import {FoldDict} from "./fold_dict.ts";
+import {$t} from "./i18n.ts";
+import * as loading from "./loading.ts";
+import * as settings_ui from "./settings_ui.ts";
+import type {StateData, user_topic_schema} from "./state_data.ts";
+import * as sub_store from "./sub_store.ts";
+import * as timerender from "./timerender.ts";
+import * as ui_report from "./ui_report.ts";
+import {get_time_from_date_muted} from "./util.ts";
 
 export type ServerUserTopic = z.infer<typeof user_topic_schema>;
 
@@ -116,7 +116,7 @@ export function get_user_topics_for_visibility_policy(visibility_policy: number)
     return topics;
 }
 
-export function set_user_topic_visibility_policy(
+export let set_user_topic_visibility_policy = (
     stream_id: number,
     topic: string,
     visibility_policy: number,
@@ -125,7 +125,7 @@ export function set_user_topic_visibility_policy(
     $status_element?: JQuery,
     success_cb?: () => void,
     error_cb?: () => void,
-): void {
+): void => {
     const data = {
         stream_id,
         topic,
@@ -203,6 +203,12 @@ export function set_user_topic_visibility_policy(
             }
         },
     });
+};
+
+export function rewire_set_user_topic_visibility_policy(
+    value: typeof set_user_topic_visibility_policy,
+): void {
+    set_user_topic_visibility_policy = value;
 }
 
 export function set_visibility_policy_for_element($elt: JQuery, visibility_policy: number): void {

@@ -2,32 +2,32 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import * as fenced_code from "../shared/src/fenced_code";
+import * as fenced_code from "../shared/src/fenced_code.ts";
 
-import * as channel from "./channel";
-import * as compose_actions from "./compose_actions";
-import * as compose_state from "./compose_state";
-import * as compose_ui from "./compose_ui";
-import * as copy_and_paste from "./copy_and_paste";
-import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
-import * as inbox_ui from "./inbox_ui";
-import * as inbox_util from "./inbox_util";
-import * as message_lists from "./message_lists";
-import type {Message} from "./message_store";
-import * as narrow_state from "./narrow_state";
-import * as people from "./people";
-import * as recent_view_ui from "./recent_view_ui";
-import * as recent_view_util from "./recent_view_util";
-import * as stream_data from "./stream_data";
-import * as unread_ops from "./unread_ops";
+import * as channel from "./channel.ts";
+import * as compose_actions from "./compose_actions.ts";
+import * as compose_state from "./compose_state.ts";
+import * as compose_ui from "./compose_ui.ts";
+import * as copy_and_paste from "./copy_and_paste.ts";
+import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
+import * as inbox_ui from "./inbox_ui.ts";
+import * as inbox_util from "./inbox_util.ts";
+import * as message_lists from "./message_lists.ts";
+import type {Message} from "./message_store.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as people from "./people.ts";
+import * as recent_view_ui from "./recent_view_ui.ts";
+import * as recent_view_util from "./recent_view_util.ts";
+import * as stream_data from "./stream_data.ts";
+import * as unread_ops from "./unread_ops.ts";
 
-export function respond_to_message(opts: {
+export let respond_to_message = (opts: {
     keep_composebox_empty?: boolean;
     message_id?: number;
     reply_type?: "personal";
     trigger?: string;
-}): void {
+}): void => {
     let message;
     let msg_type: "private" | "stream";
     if (recent_view_util.is_visible()) {
@@ -147,6 +147,10 @@ export function respond_to_message(opts: {
         is_reply: true,
         keep_composebox_empty: opts.keep_composebox_empty,
     });
+};
+
+export function rewire_respond_to_message(value: typeof respond_to_message): void {
+    respond_to_message = value;
 }
 
 export function reply_with_mention(opts: {
@@ -166,7 +170,9 @@ export function reply_with_mention(opts: {
     compose_ui.insert_syntax_and_focus(mention);
 }
 
-export function selection_within_message_id(selection = window.getSelection()): number | undefined {
+export let selection_within_message_id = (
+    selection = window.getSelection(),
+): number | undefined => {
     // Returns the message_id if the selection is entirely within a message,
     // otherwise returns undefined.
     assert(selection !== null);
@@ -178,9 +184,15 @@ export function selection_within_message_id(selection = window.getSelection()): 
         return start_id;
     }
     return undefined;
+};
+
+export function rewire_selection_within_message_id(
+    value: typeof selection_within_message_id,
+): void {
+    selection_within_message_id = value;
 }
 
-function get_quote_target(opts: {message_id?: number; quote_content?: string}): {
+function get_quote_target(opts: {message_id?: number; quote_content?: string | undefined}): {
     message_id: number;
     message: Message;
     quote_content: string | undefined;
@@ -217,7 +229,7 @@ function get_quote_target(opts: {message_id?: number; quote_content?: string}): 
 
 export function quote_and_reply(opts: {
     message_id: number;
-    quote_content?: string;
+    quote_content?: string | undefined;
     keep_composebox_empty?: boolean;
     reply_type?: "personal";
     trigger?: string;

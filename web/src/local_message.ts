@@ -1,6 +1,6 @@
-import {all_messages_data} from "./all_messages_data";
-import * as blueslip from "./blueslip";
-import type {StateData} from "./state_data";
+import {all_messages_data} from "./all_messages_data.ts";
+import * as blueslip from "./blueslip.ts";
+import type {StateData} from "./state_data.ts";
 
 let max_message_id: number;
 

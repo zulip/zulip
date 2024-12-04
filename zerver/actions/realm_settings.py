@@ -21,10 +21,10 @@ from zerver.lib.send_email import FromAddress, send_email, send_email_to_admins
 from zerver.lib.sessions import delete_realm_user_sessions
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
+from zerver.lib.types import AnonymousSettingGroupDict
 from zerver.lib.upload import delete_message_attachments
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import (
-    AnonymousSettingGroupDict,
     get_group_setting_value_for_api,
     get_group_setting_value_for_audit_log_data,
 )
@@ -516,7 +516,7 @@ def do_deactivate_realm(
     if settings.BILLING_ENABLED:
         from corporate.lib.stripe import RealmBillingSession
 
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         realm.deactivated = True
         realm.save(update_fields=["deactivated"])
 
@@ -575,7 +575,7 @@ def do_reactivate_realm(realm: Realm) -> None:
         return
 
     realm.deactivated = False
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         realm.save(update_fields=["deactivated"])
 
         event_time = timezone_now()

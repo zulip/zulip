@@ -601,9 +601,10 @@ input[type="checkbox"] {
     margin-top: 4px;
 }
 
-#add-custom-profile-field-btn {
-    float: right;
-    margin-top: 4px;
+#add-custom-profile-field-button {
+    margin-top: auto;
+    margin-bottom: 12px;
+    padding: 4px 14px;
 }
 
 #user-notification-settings {
@@ -712,23 +713,17 @@ input[type="checkbox"] {
 }
 
 .add_default_streams_button_container {
-    float: right;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: auto;
+    margin-bottom: 12px;
+    gap: 6px;
 
     #show-add-default-streams-modal {
-        /* We want this button to have the same height as the filter
-           button on its right. We're overriding the default vertical
-           button padding and setting it to 0. Having the
-           height fixed will mean that the vertical whitespace will
-           adjust itself for different font-sizes without changing the
-           height.
-           */
         padding-top: 0;
         padding-bottom: 0;
-        height: 30px;
 
         min-width: 0;
-        margin-top: 12px;
-        margin-right: 6px;
     }
 }
 
@@ -898,7 +893,7 @@ input[type="checkbox"] {
             background-color: transparent;
         }
 
-        .btn {
+        .bootstrap-btn {
             padding: 4px;
         }
 
@@ -1217,20 +1212,31 @@ $option_title_width: 180px;
 .user_list_style_values {
     max-width: calc($right_sidebar_width + $option_title_width);
 
+    .preferences-radio-choice-label {
+        justify-content: space-between;
+        margin-right: 6px;
+
+        .right {
+            margin-left: unset;
+        }
+    }
+
     .preview {
-        background-color: inherit !important;
         /* Match the 170px width of the right sidebar region for the name/status,
            doing something reasonable if the window shrinks. */
         width: calc(100% - $option_title_width);
-        text-align: left;
         white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden visible;
-        position: relative;
 
         .user-name-and-status-text {
             display: flex;
             flex-direction: column;
+        }
+
+        .user-name-and-status-emoji {
+            .user-name {
+                max-width: 100%;
+                overflow: hidden;
+            }
         }
 
         .status-text {
@@ -1634,6 +1640,8 @@ $option_title_width: 180px;
 
 .settings-field-label {
     margin-bottom: var(--margin-bottom-field-description);
+    /* Avoid having the clickable area extend to the full width of the containing element */
+    width: fit-content;
 }
 
 .settings-profile-user-field-hint {
@@ -1982,6 +1990,10 @@ $option_title_width: 180px;
 
 .settings_panel_list_header {
     position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
 
     & h3 {
         display: inline-block;
@@ -1989,15 +2001,35 @@ $option_title_width: 180px;
 
     .user_filters {
         display: flex;
-        float: right;
         flex-wrap: wrap;
+        margin-top: auto;
+        margin-bottom: 12px;
+        gap: 6px;
 
         & .dropdown-widget-button {
             height: 30px;
             max-width: 160px;
-            margin-right: 12px;
-            margin-top: 12px;
         }
+
+        & input.search {
+            /* Margins need to be only handled by the container holding the
+            filters to keep them aligned in .settings_panel_list_header */
+            margin: 0;
+        }
+    }
+
+    .add_default_streams_button_container {
+        & input.search {
+            /* Margins need to be only handled by the container holding the
+            filters to keep them aligned in .settings_panel_list_header */
+            margin: 0;
+        }
+    }
+
+    .alert-notification {
+        margin-top: auto;
+        margin-bottom: 12px;
+        margin-right: auto;
     }
 
     & input.search {
@@ -2010,7 +2042,8 @@ $option_title_width: 180px;
         float: right;
         font-size: 1em;
         max-width: 160px;
-        margin-top: 12px;
+        margin-top: auto;
+        margin-bottom: 12px;
     }
 }
 

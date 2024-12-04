@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import * as util from "./util";
+import * as util from "./util.ts";
 
 export type Context = {
     items_container_selector: string;
@@ -9,7 +9,7 @@ export type Context = {
     row_item_selector: string;
     box_item_selector: string;
     id_attribute_name: string;
-    get_items_ids: () => number[];
+    get_items_ids: () => string[];
     on_enter: () => void;
     on_delete: () => void;
 };
@@ -73,7 +73,7 @@ export function modals_handle_events(event_key: string, context: Context): void 
     }
 }
 
-export function set_initial_element(element_id: string, context: Context): void {
+export function set_initial_element(element_id: string | undefined, context: Context): void {
     if (element_id) {
         const current_element = util.the(get_element_by_id(element_id, context));
         const focus_element = current_element.children[0];
@@ -180,8 +180,6 @@ function scroll_to_element($element: JQuery, context: Context): void {
     }
 }
 
-function get_element_by_id(id: number | string, context: Context): JQuery {
-    return $(
-        `.overlay-message-row[${CSS.escape(context.id_attribute_name)}='${CSS.escape(id.toString())}']`,
-    );
+function get_element_by_id(id: string, context: Context): JQuery {
+    return $(`.overlay-message-row[${CSS.escape(context.id_attribute_name)}='${CSS.escape(id)}']`);
 }

@@ -45,17 +45,32 @@ from zerver.lib.data_types import (
     make_checker,
 )
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_LINKS, TOPIC_NAME
+from zerver.lib.types import AnonymousSettingGroupDict
 from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
+
+group_setting_type = UnionType(
+    [
+        int,
+        DictType(
+            required_keys=[
+                ("direct_members", ListType(int)),
+                ("direct_subgroups", ListType(int)),
+            ]
+        ),
+    ]
+)
 
 # These fields are used for "stream" events, and are included in the
 # larger "subscription" events that also contain personal settings.
 default_stream_fields = [
     ("is_archived", bool),
-    ("can_remove_subscribers_group", int),
+    ("can_administer_channel_group", group_setting_type),
+    ("can_remove_subscribers_group", group_setting_type),
     ("creator_id", OptionalType(int)),
     ("date_created", int),
     ("description", str),
     ("first_message_id", OptionalType(int)),
+    ("is_recently_active", bool),
     ("history_public_to_subscribers", bool),
     ("invite_only", bool),
     ("is_announcement_only", bool),
@@ -103,6 +118,12 @@ optional_value_type = UnionType(
         bool,
         int,
         str,
+        DictType(
+            required_keys=[
+                ("direct_members", ListType(int)),
+                ("direct_subgroups", ListType(int)),
+            ]
+        ),
         Equals(None),
     ]
 )
@@ -1046,18 +1067,6 @@ night_logo_data = DictType(
     ]
 )
 
-group_setting_type = UnionType(
-    [
-        int,
-        DictType(
-            required_keys=[
-                ("direct_members", ListType(int)),
-                ("direct_subgroups", ListType(int)),
-            ]
-        ),
-    ]
-)
-
 group_setting_update_data_type = DictType(
     required_keys=[],
     optional_keys=[
@@ -1070,6 +1079,7 @@ group_setting_update_data_type = DictType(
         ("can_create_web_public_channel_group", group_setting_type),
         ("can_delete_any_message_group", group_setting_type),
         ("can_delete_own_message_group", group_setting_type),
+        ("can_invite_users_group", group_setting_type),
         ("can_manage_all_groups", group_setting_type),
         ("can_move_messages_between_channels_group", group_setting_type),
         ("can_move_messages_between_topics_group", group_setting_type),
@@ -1440,12 +1450,15 @@ def check_stream_update(
     elif prop == "stream_post_policy":
         assert extra_keys == set()
         assert value in Stream.STREAM_POST_POLICY_TYPES
-    elif prop == "can_remove_subscribers_group":
+    elif prop in Stream.stream_permission_group_settings:
         assert extra_keys == set()
-        assert isinstance(value, int)
+        assert isinstance(value, int | AnonymousSettingGroupDict)
     elif prop == "first_message_id":
         assert extra_keys == set()
         assert isinstance(value, int)
+    elif prop == "is_recently_active":
+        assert extra_keys == set()
+        assert isinstance(value, bool)
     else:
         raise AssertionError(f"Unknown property: {prop}")
 
@@ -1852,6 +1865,7 @@ group_type = DictType(
         ("can_leave_group", group_setting_type),
         ("can_manage_group", group_setting_type),
         ("can_mention_group", group_setting_type),
+        ("can_remove_members_group", group_setting_type),
         ("deactivated", bool),
     ]
 )
@@ -1904,6 +1918,7 @@ user_group_data_type = DictType(
         ("can_leave_group", group_setting_type),
         ("can_manage_group", group_setting_type),
         ("can_mention_group", group_setting_type),
+        ("can_remove_members_group", group_setting_type),
         ("deactivated", bool),
     ],
 )

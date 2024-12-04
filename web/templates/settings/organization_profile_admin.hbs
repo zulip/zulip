@@ -18,7 +18,7 @@
                       value="{{ realm_name }}" maxlength="40" />
                 </div>
                 <div class="input-group admin-realm">
-                    <label for="realm_org_type" class="settings-field-label">{{t "Organization type" }}
+                    <label for="id_realm_org_type" class="settings-field-label">{{t "Organization type" }}
                         {{> ../help_link_widget link="/help/organization-type" }}
                     </label>
                     <select name="realm_org_type" class="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_org_type" data-setting-widget-type="number">
@@ -33,7 +33,7 @@
                   label=admin_settings_label.realm_want_advertise_in_communities_directory
                   help_link="/help/communities-directory"}}
                 <div class="input-group admin-realm">
-                    <label for="realm_description" class="settings-field-label">{{t "Organization description" }}</label>
+                    <label for="id_realm_description" class="settings-field-label">{{t "Organization description" }}</label>
                     <textarea id="id_realm_description" name="realm_description" class="admin-realm-description setting-widget prop-element settings_textarea"
                       maxlength="1000" data-setting-widget-type="string">{{ realm_description }}</textarea>
                 </div>
@@ -58,7 +58,7 @@
             <h3>{{t "Organization logo" }}
                 {{> ../help_link_widget link="/help/create-your-organization-profile#add-a-wide-logo" }}
             </h3>
-            {{> upgrade_tip_widget }}
+            {{> upgrade_tip_widget . }}
         </div>
 
         <p>{{t "A wide image (200×25 pixels) for the upper left corner of the app." }}</p>
@@ -89,7 +89,7 @@
         <div class="deactivate-realm-section">
             <div class="input-group">
                 <div id="deactivate_realm_button_container" class="inline-block {{#unless is_owner}}disabled_setting_tooltip{{/unless}}">
-                    <button class="button rounded btn-danger deactivate_realm_button">
+                    <button class="button rounded button-danger deactivate_realm_button">
                         {{t 'Deactivate organization' }}
                     </button>
                 </div>

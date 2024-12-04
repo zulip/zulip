@@ -233,6 +233,10 @@
     --left-sidebar-toggle-width-offset: var(
         --left-sidebar-header-icon-toggle-width
     );
+    --right-sidebar-header-icon-toggle-width: 20px;
+    --right-sidebar-toggle-width-offset: calc(
+        var(--right-sidebar-header-icon-toggle-width) - 4px
+    );
     /* This represents the space in the sidebar reserved for symbols like
        the #; labels like the stream name go to the right of this. */
     --left-sidebar-icon-column-width: 16px;
@@ -269,6 +273,10 @@
     --left-sidebar-bottom-scrolling-buffer: calc(
         (var(--legacy-body-line-height-unitless) * 1em) + 0.3571em
     );
+    --right-sidebar-left-spacing: 5px;
+    /* Used in both left and right sidebar at the bottom, to allow
+       the user to scroll past the bottom-most elements a little bit. */
+    --sidebar-bottom-spacing: 1.4286em; /* 20px / 14px  em */
 
     /* We base sidebar row heights on their line heights.
        Prominent rows include things like headers (e.g., VIEWS)
@@ -276,6 +284,18 @@
        the smaller line-height. */
     --line-height-sidebar-row-prominent: 1.7142em; /* 24px / 14px em */
     --line-height-sidebar-row: 1.5714em; /* 22px / 14px em */
+    --line-height-sidebar-row-with-avatars: 1.3571em; /* 19px / 14px em */
+    --line-height-sidebar-topic-inner: 1.2em;
+    /* This spacing value is to compensate for the
+       additional space of the prominent row-height
+       from within the inner topic value. */
+    --spacing-top-bottom-sidebar-topic-inner: calc(
+        (
+                var(--line-height-sidebar-row-prominent) -
+                    var(--line-height-sidebar-topic-inner)
+            ) /
+            2
+    );
 
     /* Right sidebar */
     --right-sidebar-padding-right: 8px;
@@ -283,6 +303,8 @@
        space created by the padding-left on .right-sidebar,
        which separates the right sidebar from the message area. */
     --right-sidebar-padding-left: 2px;
+    --right-sidebar-avatar-width: 2em;
+    --right-sidebar-avatar-height: var(--right-sidebar-avatar-width);
 
     /* Tippy popover related values */
     --navbar-popover-menu-min-width: 230px;
@@ -321,8 +343,10 @@
                             var(--base-maximum-block-height-em),
                             var(--length-line-fitted-block)
                         )
-                    ) - var(--length-line-oversize-block)
-            ) / 2
+                    ) -
+                    var(--length-line-oversize-block)
+            ) /
+            2
     );
 
     /* Legacy values */
@@ -611,16 +635,30 @@
     --color-background-active-popover-menu: hsl(220deg 12% 5% / 7%);
     --color-border-popover-menu: hsl(0deg 0% 0% / 40%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
-    --color-background-unread-counter: hsl(105deg 2% 50%);
+    --color-background-unread-counter-prominent: hsl(240deg 10% 50% / 70%);
+    --color-background-unread-counter-normal: hsl(240deg 10% 50% / 25%);
+    --color-background-unread-counter-quiet: transparent;
+    --color-unread-counter-prominent: hsl(0deg 0% 100%);
+    --color-unread-counter-normal: hsl(0deg 0% 0% / 90%);
+    --color-unread-counter-quiet: hsl(240deg 15% 50%);
+    /* Legacy unread-counter color value. */
+    --color-background-unread-counter: var(
+        --color-background-unread-counter-prominent
+    );
+    --color-unread-counter-muted: hsl(240deg 10% 50% / 35%);
     --color-border-add-subscription-button-focus: hsl(0deg 0% 20%);
-    /* There's no alpha channel here, but this keeps
-       the variable names in line. */
-    --color-background-unread-counter-no-alpha: var(
-        --color-background-unread-counter
+    /* When unreads are hovered on the condensed
+       views, they should not have an alpha.
+       The first color corresponds to
+       --color-background-unread-counter-prominent.
+       The second color aligns with light mode's
+       --color-background. */
+    --color-background-unread-counter-no-alpha: color-mix(
+        in srgb,
+        hsl(240deg 10% 50%) 70%,
+        hsl(0deg 0% 94%)
     );
-    --color-background-unread-counter-dot: var(
-        --color-background-unread-counter
-    );
+    --color-background-unread-counter-dot: hsl(240deg 30% 40%);
     --color-border-unread-counter: var(--color-background-unread-counter);
     --color-border-unread-counter-popover-menu: inherit;
     --color-background-tab-picker-container: hsl(0deg 0% 0% / 7%);
@@ -633,6 +671,7 @@
     --color-buddy-list-highlighted-user: var(
         --color-background-hover-narrow-filter
     );
+    --color-buddy-list-avatar-loading: hsl(0deg 0% 0% / 10%);
     --color-border-sidebar: hsl(0deg 0% 87%);
     --color-text-sidebar-base: hsl(0deg 0% 0%);
     --color-border-sidebar-subheader: hsl(0deg 0% 0% / 15%);
@@ -671,6 +710,20 @@
     --color-compose-send-control-button-focus-shadow: var(
         --color-compose-send-button-focus-shadow
     );
+    --color-compose-recipient-box-text-color: inherit;
+    --color-compose-recipient-box-background-color: hsl(0deg 0% 100%);
+    /* Because of how the background color is assigned on
+       recipient-row elements, we need here to mix down the
+       border color from the compose text area,
+       --color-message-content-container-border,
+       with the compose box's background color,
+       --color-compose-box-background. */
+    --color-compose-recipient-box-border-color: color-mix(
+        in srgb,
+        hsl(0deg 0% 0%) 10%,
+        hsl(232deg 20% 92%)
+    );
+    --color-compose-recipient-box-has-focus: hsl(0deg 0% 57%);
     --color-compose-collapsed-reply-button-area-background: hsl(0deg 0% 100%);
     --color-compose-collapsed-reply-button-area-background-interactive: var(
         --color-compose-collapsed-reply-button-area-background
@@ -809,6 +862,9 @@
     --color-left-sidebar-navigation-icon: hsl(240deg 30% 40%);
     --color-left-sidebar-heads-up-icon: hsl(240deg 30% 40%);
     --color-left-sidebar-heads-up-icon-hover: hsl(240deg 100% 15%);
+    --color-left-sidebar-dm-partners-icon: var(
+        --color-left-sidebar-navigation-icon
+    );
     --background-color-left-sidebar-heads-up-icon-hover: hsl(
         240deg 100% 50% / 7%
     );
@@ -821,28 +877,32 @@
     /* hsl(229deg 9% 36%) corresponds to --grey-600.
        We use the hsl() equivalent directly since postcss-color-mix-function
        cannot dynamically resolve var() arguments. */
-    --color-copy-btn: color-mix(in oklch, hsl(229deg 9% 36%) 70%, transparent);
-    --color-copy-btn-hover: var(--grey-600);
+    --color-copy-button: color-mix(
+        in oklch,
+        hsl(229deg 9% 36%) 70%,
+        transparent
+    );
+    --color-copy-button-hover: var(--grey-600);
     /* --grey-600, opacity 0.07 */
-    --color-copy-btn-square-bg-hover: color-mix(
+    --color-copy-button-square-bg-hover: color-mix(
         in oklch,
         hsla(229deg 9% 36%) 7%,
         transparent
     );
     /* --grey-600, opacity 0.7 */
-    --color-copy-btn-active: color-mix(
+    --color-copy-button-active: color-mix(
         in oklch,
         hsla(229deg 9% 36%) 70%,
         transparent
     );
-    --color-copy-btn-square-active: var(--grey-600);
+    --color-copy-button-square-active: var(--grey-600);
     /* --grey-600, opacity 0.11 */
-    --color-copy-btn-square-bg-active: color-mix(
+    --color-copy-button-square-bg-active: color-mix(
         in oklch,
         hsl(229deg 9% 36%) 11%,
         transparent
     );
-    --color-copy-btn-success: var(--green-500);
+    --color-copy-button-success: var(--green-500);
 
     /* Reaction container colors */
     --color-message-reaction-border: hsl(0deg 0% 0% / 10%);
@@ -931,8 +991,8 @@
             hsl(0deg 0% 0% / 5%) 100%
         ),
         hsl(0deg 0% 100%);
-    --color-background-btn-inbox-selected: hsl(0deg 0% 0% / 5%);
-    --color-background-btn-inbox-focus: hsl(0deg 0% 80%);
+    --color-background-button-inbox-selected: hsl(0deg 0% 0% / 5%);
+    --color-background-button-inbox-focus: hsl(0deg 0% 80%);
     --color-icons-inbox: hsl(0deg 0% 0%);
     --color-background-icon-close-hover: hsl(0deg 0% 0% / 5%);
 
@@ -1046,6 +1106,209 @@
     --background-color-active-dropdown-item: hsl(220deg 12% 4.9% / 5%);
     --background-color-active-typeahead-item: hsl(221.14deg 89.74% 92.35%);
     --color-typeahead-option-label: var(--grey-500);
+
+    /* Actions buttons */
+    --color-inner-shadow-action-button: color-mix(
+        in oklch,
+        #000 10%,
+        transparent
+    );
+    /* Action buttons -- Neutral Variant */
+    --color-text-neutral-primary-action-button: #fff;
+    --color-background-neutral-primary-action-button: #777a88;
+    --color-background-neutral-primary-action-button-hover: #707380;
+    --color-background-neutral-primary-action-button-active: #696b78;
+    --color-text-neutral-quiet-action-button: #393c49;
+    --color-background-neutral-quiet-action-button: color-mix(
+        in oklch,
+        #767988 12%,
+        transparent
+    );
+    --color-background-neutral-quiet-action-button-hover: color-mix(
+        in oklch,
+        #767988 17%,
+        transparent
+    );
+    --color-background-neutral-quiet-action-button-active: color-mix(
+        in oklch,
+        #767988 22%,
+        transparent
+    );
+    --color-text-neutral-borderless-action-button: #535663;
+    --color-background-neutral-borderless-action-button-hover: color-mix(
+        in oklch,
+        #535663 7%,
+        transparent
+    );
+    --color-background-neutral-borderless-action-button-active: color-mix(
+        in oklch,
+        #535663 11%,
+        transparent
+    );
+    /* Action buttons -- Brand Variant */
+    --color-text-brand-primary-action-button: #fff;
+    --color-background-brand-primary-action-button: #805bfe;
+    --color-background-brand-primary-action-button-hover: #7349ec;
+    --color-background-brand-primary-action-button-active: #612fd4;
+    --color-text-brand-quiet-action-button: #4704aa;
+    --color-background-brand-quiet-action-button: color-mix(
+        in oklch,
+        #805bfe 12%,
+        transparent
+    );
+    --color-background-brand-quiet-action-button-hover: color-mix(
+        in oklch,
+        #805bfe 17%,
+        transparent
+    );
+    --color-background-brand-quiet-action-button-active: color-mix(
+        in oklch,
+        #805bfe 22%,
+        transparent
+    );
+    --color-text-brand-borderless-action-button: #5f3cc5;
+    --color-background-brand-borderless-action-button-hover: color-mix(
+        in oklch,
+        #2c0070 5%,
+        transparent
+    );
+    --color-background-brand-borderless-action-button-active: color-mix(
+        in oklch,
+        #2c0070 10%,
+        transparent
+    );
+    /* Action buttons -- Info Variant */
+    --color-text-info-primary-action-button: #fff;
+    --color-background-info-primary-action-button: #3c6bff;
+    --color-background-info-primary-action-button-hover: #2e59eb;
+    --color-background-info-primary-action-button-active: #1e41d3;
+    --color-text-info-quiet-action-button: #1027a6;
+    --color-background-info-quiet-action-button: color-mix(
+        in oklch,
+        #3c6bff 12%,
+        transparent
+    );
+    --color-background-info-quiet-action-button-hover: color-mix(
+        in oklch,
+        #3c6bff 17%,
+        transparent
+    );
+    --color-background-info-quiet-action-button-active: color-mix(
+        in oklch,
+        #3c6bff 22%,
+        transparent
+    );
+    --color-text-info-borderless-action-button: #2347c6;
+    --color-background-info-borderless-action-button-hover: color-mix(
+        in oklch,
+        #06037c 5%,
+        transparent
+    );
+    --color-background-info-borderless-action-button-active: color-mix(
+        in oklch,
+        #06037c 9%,
+        transparent
+    );
+    /* Action buttons -- Success Variant */
+    --color-text-success-primary-action-button: #fff;
+    --color-background-success-primary-action-button: #07833c;
+    --color-background-success-primary-action-button-hover: #087736;
+    --color-background-success-primary-action-button-active: #09672e;
+    --color-text-success-quiet-action-button: #054f22;
+    --color-background-success-quiet-action-button: color-mix(
+        in oklch,
+        #07833c 13%,
+        transparent
+    );
+    --color-background-success-quiet-action-button-hover: color-mix(
+        in oklch,
+        #07833c 18%,
+        transparent
+    );
+    --color-background-success-quiet-action-button-active: color-mix(
+        in oklch,
+        #07833c 23%,
+        transparent
+    );
+    --color-text-success-borderless-action-button: #07833c;
+    --color-background-success-borderless-action-button-hover: color-mix(
+        in oklch,
+        #09672e 8%,
+        transparent
+    );
+    --color-background-success-borderless-action-button-active: color-mix(
+        in oklch,
+        #09672e 12%,
+        transparent
+    );
+    /* Action buttons -- Warning Variant */
+    --color-text-warning-primary-action-button: color-mix(
+        in oklch,
+        #000 88%,
+        transparent
+    );
+    --color-background-warning-primary-action-button: #febe3d;
+    --color-background-warning-primary-action-button-hover: #f8b325;
+    --color-background-warning-primary-action-button-active: #eba002;
+    --color-text-warning-quiet-action-button: #764607;
+    --color-background-warning-quiet-action-button: color-mix(
+        in oklch,
+        #eba002 18%,
+        transparent
+    );
+    --color-background-warning-quiet-action-button-hover: color-mix(
+        in oklch,
+        #eba002 23%,
+        transparent
+    );
+    --color-background-warning-quiet-action-button-active: color-mix(
+        in oklch,
+        #eba002 28%,
+        transparent
+    );
+    --color-text-warning-borderless-action-button: #a96a05;
+    --color-background-warning-borderless-action-button-hover: color-mix(
+        in oklch,
+        #a96a05 10%,
+        transparent
+    );
+    --color-background-warning-borderless-action-button-active: color-mix(
+        in oklch,
+        #a96a05 14%,
+        transparent
+    );
+    /* Action buttons -- Danger Variant */
+    --color-text-danger-primary-action-button: #fff;
+    --color-background-danger-primary-action-button: #e1392e;
+    --color-background-danger-primary-action-button-hover: #d22720;
+    --color-background-danger-primary-action-button-active: #c0070a;
+    --color-text-danger-quiet-action-button: #ac0508;
+    --color-background-danger-quiet-action-button: color-mix(
+        in oklch,
+        #e1392e 13%,
+        transparent
+    );
+    --color-background-danger-quiet-action-button-hover: color-mix(
+        in oklch,
+        #e1392e 18%,
+        transparent
+    );
+    --color-background-danger-quiet-action-button-active: color-mix(
+        in oklch,
+        #e1392e 23%,
+        transparent
+    );
+    --color-text-danger-borderless-action-button: #c0070a;
+    --color-background-danger-borderless-action-button-hover: color-mix(
+        in oklch,
+        #c0070a 9%,
+        transparent
+    );
+    --color-background-danger-borderless-action-button-active: color-mix(
+        in oklch,
+        #c0070a 13%,
+        transparent
+    );
 }
 
 %dark-theme {
@@ -1081,7 +1344,9 @@
     --color-background-hover-narrow-filter: hsl(0deg 0% 97% / 8%);
     /* We mix an opaque version with the background for
        replicating the color on .sidebar-topic-check, which
-       will mask a portion of the topic-grouping bracket. */
+       will mask a portion of the topic-grouping bracket.
+       The same is necessary for buddy-list heading hovers
+       in the right sidebar. */
     --color-background-opaque-hover-narrow-filter: color-mix(
         in srgb,
         hsl(0deg 0% 97%) 8%,
@@ -1125,7 +1390,6 @@
     --color-background-active-popover-menu: hsl(220deg 12% 95% / 7%);
     --color-border-popover-menu: hsl(0deg 0% 0%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 100% / 20%);
-    --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
     /* When unreads are hovered on the condensed
        views, they should not have an alpha.
 
@@ -1135,10 +1399,21 @@
        an rgb() value by PostCSS Preset Env. */
     --color-background-unread-counter-no-alpha: color-mix(
         in srgb,
-        hsl(105deg 2% 50%) 50%,
+        hsl(240deg 10% 50%) 35%,
         hsl(0deg 0% 11%)
     );
-    --color-background-unread-counter-dot: hsl(105deg 2% 50% / 90%);
+    --color-background-unread-counter-dot: hsl(240deg 35% 68%);
+    --color-background-unread-counter-prominent: hsl(240deg 18.37% 34.42%);
+    --color-background-unread-counter-normal: hsl(240deg 10% 50% / 35%);
+    --color-background-unread-counter-quiet: transparent;
+    --color-unread-counter-prominent: hsl(0deg 0% 100%);
+    --color-unread-counter-normal: hsl(0deg 0% 100% / 85%);
+    --color-unread-counter-quiet: hsl(240deg 15% 65%);
+    /* Legacy unread-counter color value. */
+    --color-background-unread-counter: var(
+        --color-background-unread-counter-prominent
+    );
+    --color-unread-counter-muted: hsl(240deg 10% 50% / 35%);
     --color-border-unread-counter: hsl(105deg 2% 50%);
     --color-border-unread-counter-popover-menu: var(
         --color-border-unread-counter
@@ -1150,8 +1425,9 @@
     --color-background-tab-picker-tab-option-active: hsl(0deg 0% 100% / 3%);
     --color-background-alert-word: hsl(22deg 70% 35%);
     --color-buddy-list-highlighted-user: var(
-        --color-background-hover-narrow-filter
+        --color-background-opaque-hover-narrow-filter
     );
+    --color-buddy-list-avatar-loading: hsl(0deg 0% 100% / 10%);
     --color-border-sidebar: hsl(0deg 0% 0% / 20%);
     --color-text-sidebar-base: hsl(0deg 0% 100%);
     --color-border-sidebar-subheader: hsl(0deg 0% 100% / 15%);
@@ -1192,6 +1468,10 @@
     --color-compose-send-control-button-focus-shadow: var(
         --color-compose-send-button-focus-shadow
     );
+    --color-compose-recipient-box-text-color: inherit;
+    --color-compose-recipient-box-background-color: hsl(0deg 0% 0% / 20%);
+    --color-compose-recipient-box-border-color: hsl(0deg 0% 0% / 80%);
+    --color-compose-recipient-box-has-focus: hsl(0deg 0% 100% / 27%);
     --color-compose-collapsed-reply-button-area-background: hsl(
         0deg 0% 0% / 20%
     );
@@ -1232,6 +1512,7 @@
     --color-message-formatting-controls-container: hsl(0deg 0% 0% / 8%);
     --color-message-content-container-border: hsl(0deg 0% 0% / 80%);
     --color-message-content-container-border-focus: hsl(0deg 0% 100% / 27%);
+    --color-message-content-container-border-over-limit: hsl(0deg 76% 65%);
     --color-compose-control-button-background-hover: hsl(0deg 0% 100% / 5%);
     --color-compose-focus-ring: hsl(0deg 0% 67%);
 
@@ -1337,6 +1618,9 @@
     --color-left-sidebar-navigation-icon: hsl(240deg 35% 68%);
     --color-left-sidebar-heads-up-icon: hsl(240deg 35% 68%);
     --color-left-sidebar-heads-up-icon-hover: hsl(240deg 100% 90%);
+    --color-left-sidebar-dm-partners-icon: var(
+        --color-left-sidebar-navigation-icon
+    );
     --background-color-left-sidebar-heads-up-icon-hover: hsl(
         240deg 100% 75% / 20%
     );
@@ -1350,28 +1634,32 @@
     /* hsl(229deg 10% 70%) corresponds to --grey-400.
        We use the hsl() equivalent directly since postcss-color-mix-function
        cannot dynamically resolve var() arguments. */
-    --color-copy-btn: color-mix(in oklch, hsl(229deg 10% 70%) 70%, transparent);
-    --color-copy-btn-hover: var(--grey-300);
+    --color-copy-button: color-mix(
+        in oklch,
+        hsl(229deg 10% 70%) 70%,
+        transparent
+    );
+    --color-copy-button-hover: var(--grey-300);
     /* --grey-400, opacity 0.14 */
-    --color-copy-btn-square-bg-hover: color-mix(
+    --color-copy-button-square-bg-hover: color-mix(
         in oklch,
         hsl(230deg 9% 60%) 14%,
         transparent
     );
     /* --grey-300, opacity 0.7 */
-    --color-copy-btn-active: color-mix(
+    --color-copy-button-active: color-mix(
         in oklch,
         hsl(229deg 10% 70%) 70%,
         transparent
     );
-    --color-copy-btn-square-active: var(--grey-300);
+    --color-copy-button-square-active: var(--grey-300);
     /* --grey-400, opacity 0.18 */
-    --color-copy-btn-square-bg-active: color-mix(
+    --color-copy-button-square-bg-active: color-mix(
         in oklch,
         hsl(229deg 9% 60%) 18%,
         transparent
     );
-    --color-copy-btn-success: var(--green-300);
+    --color-copy-button-success: var(--green-300);
 
     /* Reaction container colors */
     --color-message-reaction-border: hsl(0deg 0% 100% / 15%);
@@ -1456,8 +1744,8 @@
             hsl(0deg 0% 100% / 5%) 100%
         ),
         hsl(0deg 0% 14.12%);
-    --color-background-btn-inbox-selected: hsl(0deg 0% 100% / 5%);
-    --color-background-btn-inbox-focus: hsl(0deg 0% 20%);
+    --color-background-button-inbox-selected: hsl(0deg 0% 100% / 5%);
+    --color-background-button-inbox-focus: hsl(0deg 0% 20%);
     --color-icons-inbox: hsl(0deg 0% 100%);
     --color-background-icon-close-hover: hsl(0deg 0% 100% / 5%);
 
@@ -1557,6 +1845,223 @@
         226.35deg 82.53% 55.1% / 38.82%
     );
     --color-typeahead-option-label: var(--grey-400);
+
+    /* Action buttons -- Neutral Variant */
+    --color-text-neutral-primary-action-button: color-mix(
+        in oklch,
+        #fff 85%,
+        transparent
+    );
+    --color-background-neutral-primary-action-button: #535663;
+    --color-background-neutral-primary-action-button-hover: #626573;
+    --color-background-neutral-primary-action-button-active: #535663;
+    --color-text-neutral-quiet-action-button: #bbbdc8;
+    --color-background-neutral-quiet-action-button: color-mix(
+        in oklch,
+        #bbbdc8 12%,
+        transparent
+    );
+    --color-background-neutral-quiet-action-button-hover: color-mix(
+        in oklch,
+        #bbbdc8 17%,
+        transparent
+    );
+    --color-background-neutral-quiet-action-button-active: color-mix(
+        in oklch,
+        #bbbdc8 12%,
+        transparent
+    );
+    --color-text-neutral-borderless-action-button: #aaadba;
+    --color-background-neutral-borderless-action-button-hover: color-mix(
+        in oklch,
+        #9194a3 14%,
+        transparent
+    );
+    --color-background-neutral-borderless-action-button-active: color-mix(
+        in oklch,
+        #9194a3 18%,
+        transparent
+    );
+    /* Action buttons -- Brand Variant */
+    --color-text-brand-primary-action-button: color-mix(
+        in oklch,
+        #fff 85%,
+        transparent
+    );
+    --color-background-brand-primary-action-button: #5417c3;
+    --color-background-brand-primary-action-button-hover: #612fd4;
+    --color-background-brand-primary-action-button-active: #5417c3;
+    --color-text-brand-quiet-action-button: #aba5fd;
+    --color-background-brand-quiet-action-button: color-mix(
+        in oklch,
+        #9e94fd 12%,
+        transparent
+    );
+    --color-background-brand-quiet-action-button-hover: color-mix(
+        in oklch,
+        #9e94fd 17%,
+        transparent
+    );
+    --color-background-brand-quiet-action-button-active: color-mix(
+        in oklch,
+        #9e94fd 12%,
+        transparent
+    );
+    --color-text-brand-borderless-action-button: #9e94fd;
+    --color-background-brand-borderless-action-button-hover: color-mix(
+        in oklch,
+        #8a6fff 14%,
+        transparent
+    );
+    --color-background-brand-borderless-action-button-active: color-mix(
+        in oklch,
+        #8a6fff 18%,
+        transparent
+    );
+    /* Action buttons -- Info Variant */
+    --color-text-info-primary-action-button: color-mix(
+        in oklch,
+        #fff 85%,
+        transparent
+    );
+    --color-background-info-primary-action-button: #1e41d3;
+    --color-background-info-primary-action-button-hover: #2e59eb;
+    --color-background-info-primary-action-button-active: #1e41d3;
+    --color-text-info-quiet-action-button: #97b6fe;
+    --color-background-info-quiet-action-button: color-mix(
+        in oklch,
+        #97b6fe 12%,
+        transparent
+    );
+    --color-background-info-quiet-action-button-hover: color-mix(
+        in oklch,
+        #97b6fe 17%,
+        transparent
+    );
+    --color-background-info-quiet-action-button-active: color-mix(
+        in oklch,
+        #97b6fe 12%,
+        transparent
+    );
+    --color-text-info-borderless-action-button: #84a8fd;
+    --color-background-info-borderless-action-button-hover: color-mix(
+        in oklch,
+        #4d7bfd 12%,
+        transparent
+    );
+    --color-background-info-borderless-action-button-active: color-mix(
+        in oklch,
+        #4d7bfd 17%,
+        transparent
+    );
+    /* Action buttons -- Success Variant */
+    --color-text-success-primary-action-button: color-mix(
+        in oklch,
+        #fff 85%,
+        transparent
+    );
+    --color-background-success-primary-action-button: #09672e;
+    --color-background-success-primary-action-button-hover: #087736;
+    --color-background-success-primary-action-button-active: #09672e;
+    --color-text-success-quiet-action-button: #6bd586;
+    --color-background-success-quiet-action-button: color-mix(
+        in oklch,
+        #41ae61 12%,
+        transparent
+    );
+    --color-background-success-quiet-action-button-hover: color-mix(
+        in oklch,
+        #41ae61 17%,
+        transparent
+    );
+    --color-background-success-quiet-action-button-active: color-mix(
+        in oklch,
+        #41ae61 12%,
+        transparent
+    );
+    --color-text-success-borderless-action-button: #57c273;
+    --color-background-success-borderless-action-button-hover: color-mix(
+        in oklch,
+        #2f9f52 12%,
+        transparent
+    );
+    --color-background-success-borderless-action-button-active: color-mix(
+        in oklch,
+        #2f9f52 17%,
+        transparent
+    );
+    /* Action buttons -- Warning Variant */
+    --color-text-warning-primary-action-button: color-mix(
+        in oklch,
+        #000 90%,
+        transparent
+    );
+    --color-background-warning-primary-action-button: #db920d;
+    --color-background-warning-primary-action-button-hover: #eba002;
+    --color-background-warning-primary-action-button-active: #db920d;
+    --color-text-warning-quiet-action-button: #f8b325;
+    --color-background-warning-quiet-action-button: color-mix(
+        in oklch,
+        #db920d 12%,
+        transparent
+    );
+    --color-background-warning-quiet-action-button-hover: color-mix(
+        in oklch,
+        #db920d 17%,
+        transparent
+    );
+    --color-background-warning-quiet-action-button-active: color-mix(
+        in oklch,
+        #db920d 12%,
+        transparent
+    );
+    --color-text-warning-borderless-action-button: #eba002;
+    --color-background-warning-borderless-action-button-hover: color-mix(
+        in oklch,
+        #c8850d 12%,
+        transparent
+    );
+    --color-background-warning-borderless-action-button-active: color-mix(
+        in oklch,
+        #c8850d 17%,
+        transparent
+    );
+    /* Action buttons -- Danger Variant */
+    --color-text-danger-primary-action-button: color-mix(
+        in oklch,
+        #fff 85%,
+        transparent
+    );
+    --color-background-danger-primary-action-button: #d22720;
+    --color-background-danger-primary-action-button-hover: #e1392e;
+    --color-background-danger-primary-action-button-active: #d22720;
+    --color-text-danger-quiet-action-button: #ff8b7c;
+    --color-background-danger-quiet-action-button: color-mix(
+        in oklch,
+        #fd5f50 12%,
+        transparent
+    );
+    --color-background-danger-quiet-action-button-hover: color-mix(
+        in oklch,
+        #fd5f50 17%,
+        transparent
+    );
+    --color-background-danger-quiet-action-button-active: color-mix(
+        in oklch,
+        #fd5f50 12%,
+        transparent
+    );
+    --color-text-danger-borderless-action-button: #ff8b7c;
+    --color-background-danger-borderless-action-button-hover: color-mix(
+        in oklch,
+        #f34c3e 12%,
+        transparent
+    );
+    --color-background-danger-borderless-action-button-active: color-mix(
+        in oklch,
+        #f34c3e 17%,
+        transparent
+    );
 }
 
 @media screen {

@@ -1,10 +1,10 @@
-<div id="recent_view_filter_buttons" class="btn-group" role="group">
+<div id="recent_view_filter_buttons" role="group">
     <div id="recent_filters_group">
-        {{> recent_view_filters}}
+        {{> recent_view_filters .}}
     </div>
     <div class="search_group" role="group">
         <input type="text" id="recent_view_search" class="filter_text_input" value="{{ search_val }}" autocomplete="off" placeholder="{{t 'Filter topics (t)' }}" />
-        <button type="button" class="btn clear_search_button" id="recent_view_search_clear">
+        <button type="button" class="bootstrap-btn clear_search_button" id="recent_view_search_clear">
             <i class="fa fa-remove" aria-hidden="true"></i>
         </button>
     </div>

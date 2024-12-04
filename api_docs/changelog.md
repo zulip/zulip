@@ -20,6 +20,101 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 326**
+
+* [`POST /register`](/api/register-queue): Removed `allow_owners_group`
+  field from configuration data object of permission settings passed in
+  `server_supported_permission_settings`.
+* [`POST /register`](/api/register-queue): Removed `id_field_name`
+  field from configuration data object of permission settings passed
+  in `server_supported_permission_settings`.
+
+**Feature level 325**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `can_administer_channel_group`
+  which is a [group-setting value](/api/group-setting-values) describing the
+  set of users with permissions to administer the channel in addition to realm
+  admins.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added `can_administer_channel_group`
+  which is a [group-setting value](/api/group-setting-values) describing the
+  set of users with permissions to administer the channel in addition to realm
+  admins.
+
+**Feature level 324**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /user_groups`](/api/get-user-groups): Add `can_remove_members_group`
+  to user group objects.
+* [`POST /user_groups/create`](/api/create-user-group): Added
+  `can_remove_members_group` parameter to support setting the user group which
+  can remove members from the user group.
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): Added
+  `can_remove_members_group` parameter to support changing the user group which
+  can remove members from the specified user group.
+
+**Feature level 323**
+
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events), [`GET /streams`](/api/get-streams),
+  [`GET /streams/{stream_id}`](/api/get-stream-by-id): Added a new
+  field `is_recently_active` to stream objects as a new deterministic
+  source of truth for `demote_inactive_streams` activity decisions.
+
+**Feature level 322**
+
+* [`POST /invites`](/api/send-invites), [`POST
+  /invites/multiuse`](/api/create-invite-link): Added a new parameter
+  `group_ids` which allows users to be added to user groups through
+  invitations.
+
+**Feature level 321**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_invite_users_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to send email invitations for inviting other users to the
+  organization.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `invite_to_realm_policy` property, as the permission to send email invitations
+  for inviting other users to the organization is now controlled by
+  `can_invite_users_group` setting.
+
+**Feature level 320**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): `can_remove_subscribers_group`
+  field can now either be an ID of a named user group with the permission,
+  or an object describing the set of users and groups with the permission.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): The
+  `can_remove_subscribers_group` parameter can now either be an ID of a
+  named user group or an object describing a set of users and groups.
+
+**Feature level 319**
+
+* [Markdown message
+  formatting](/api/message-formatting#links-to-channels-topics-and-messages): Added
+  new `message-link` format for special direct links to messages.
+
+**Feature level 318**
+
+* [`POST /register`](/api/register-queue): Updated
+  `realm_incoming_webhook_bots` with a new `config_options` key,
+  defining which options should be offered when creating URLs for this
+  integration.
+
+**Feature level 317**
+
+* [`POST /user_groups/create`](/api/create-user-group):
+  Added `group_id` to the success response of the user group creation
+  endpoint, enabling clients to easily access the unique identifier
+  of the newly created user group.
+
 **Feature level 316**
 
 * `PATCH /realm`, [`GET /events`](/api/get-events),

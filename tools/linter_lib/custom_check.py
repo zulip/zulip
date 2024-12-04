@@ -207,7 +207,7 @@ js_rules = RuleList(
             "exclude_pattern": r"(const |\S)style ?=",
             "description": "Avoid using the `style=` attribute; we prefer styling in CSS files",
             "exclude": {
-                "web/tests/copy_and_paste.test.js",
+                "web/tests/copy_and_paste.test.cjs",
             },
             "good_lines": ["#my-style {color: blue;}", "const style =", 'some_style = "test"'],
             "bad_lines": ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"'],
@@ -462,8 +462,23 @@ python_rules = RuleList(
             "description": 'A mock function is missing a leading "assert_"',
         },
         {
-            "pattern": "@transaction.atomic\\(\\)",
-            "description": "Use @transaction.atomic as function decorator for consistency.",
+            "pattern": r"transaction\.atomic$|transaction\.atomic\(\)|savepoint=True",
+            "description": "Use 'durable=True' or 'savepoint=False' argument explicitly to avoid the possibility of creating savepoints.",
+            "exclude": {"confirmation/migrations/", "zerver/migrations/", "zilencer/migrations/"},
+            "exclude_line": {
+                (
+                    "zerver/actions/create_user.py",
+                    "with suppress(IntegrityError), transaction.atomic(savepoint=True):",
+                ),
+                (
+                    "zerver/lib/test_classes.py",
+                    "with transaction.atomic(savepoint=True):",
+                ),
+                (
+                    "zerver/tests/test_subs.py",
+                    "with transaction.atomic(savepoint=True), self.assertRaises(JsonableError):",
+                ),
+            },
         },
         *whitespace_rules,
         *shebang_rules,

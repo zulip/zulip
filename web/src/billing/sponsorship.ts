@@ -2,9 +2,9 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import {the} from "../util";
+import {the} from "../util.ts";
 
-import * as helpers from "./helpers";
+import * as helpers from "./helpers.ts";
 
 const is_remotely_hosted = $("#sponsorship-form").attr("data-is-remotely-hosted") === "True";
 

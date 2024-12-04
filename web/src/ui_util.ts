@@ -1,8 +1,8 @@
 import $ from "jquery";
 
-import * as blueslip from "./blueslip";
-import * as hash_parser from "./hash_parser";
-import * as keydown_util from "./keydown_util";
+import * as blueslip from "./blueslip.ts";
+import * as hash_parser from "./hash_parser.ts";
+import * as keydown_util from "./keydown_util.ts";
 
 // Add functions to this that have no non-trivial
 // dependencies other than jQuery.
@@ -72,10 +72,15 @@ export function is_user_said_paragraph($element: JQuery): boolean {
     return remaining_text.trim() === ":";
 }
 
-export function get_collapsible_status_array($elements: JQuery): boolean[] {
-    return [...$elements].map(
+export let get_collapsible_status_array = ($elements: JQuery): boolean[] =>
+    [...$elements].map(
         (element) => $(element).is("blockquote") || is_user_said_paragraph($(element)),
     );
+
+export function rewire_get_collapsible_status_array(
+    value: typeof get_collapsible_status_array,
+): void {
+    get_collapsible_status_array = value;
 }
 
 export function potentially_collapse_quotes($element: JQuery): boolean {
@@ -197,7 +202,7 @@ export function listener_for_preferred_color_scheme_change(callback: () => void)
 }
 
 // Keep the menu icon over which the popover is based off visible.
-export function show_left_sidebar_menu_icon(element: HTMLElement): void {
+export function show_left_sidebar_menu_icon(element: Element): void {
     $(element).closest(".sidebar-menu-icon").addClass("left_sidebar_menu_icon_visible");
 }
 

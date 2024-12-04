@@ -11,33 +11,38 @@ import render_invite_user_modal from "../templates/invite_user_modal.hbs";
 import render_invite_tips_banner from "../templates/modal_banner/invite_tips_banner.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
-import * as channel from "./channel";
-import * as common from "./common";
-import * as components from "./components";
-import * as compose_banner from "./compose_banner";
-import {show_copied_confirmation} from "./copied_tooltip";
-import {csrf_token} from "./csrf";
-import * as dialog_widget from "./dialog_widget";
-import * as email_pill from "./email_pill";
-import {$t, $t_html} from "./i18n";
-import * as input_pill from "./input_pill";
-import * as invite_stream_picker_pill from "./invite_stream_picker_pill";
-import {page_params} from "./page_params";
-import * as peer_data from "./peer_data";
-import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
-import {current_user, realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as stream_pill from "./stream_pill";
-import * as timerender from "./timerender";
-import type {HTMLSelectOneElement} from "./types";
-import * as ui_report from "./ui_report";
-import * as util from "./util";
+import * as channel from "./channel.ts";
+import * as common from "./common.ts";
+import * as components from "./components.ts";
+import * as compose_banner from "./compose_banner.ts";
+import {show_copied_confirmation} from "./copied_tooltip.ts";
+import {csrf_token} from "./csrf.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import * as email_pill from "./email_pill.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as input_pill from "./input_pill.ts";
+import * as invite_stream_picker_pill from "./invite_stream_picker_pill.ts";
+import * as invite_user_group_picker_pill from "./invite_user_group_picker_pill.ts";
+import {page_params} from "./page_params.ts";
+import * as peer_data from "./peer_data.ts";
+import * as settings_components from "./settings_components.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_pill from "./stream_pill.ts";
+import * as timerender from "./timerender.ts";
+import type {HTMLSelectOneElement} from "./types.ts";
+import * as ui_report from "./ui_report.ts";
+import * as user_group_pill from "./user_group_pill.ts";
+import * as util from "./util.ts";
 
 let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
 let pills: email_pill.EmailPillWidget;
 let stream_pill_widget: stream_pill.StreamPillWidget;
+let user_group_pill_widget: user_group_pill.UserGroupPillWidget;
+let guest_invite_stream_ids: number[] = [];
 
 function reset_error_messages(): void {
     $("#dialog_error").hide().text("").removeClass(common.status_classes);
@@ -85,6 +90,10 @@ function get_common_invitation_data(): {
     } else {
         stream_ids = stream_pill.get_stream_ids(stream_pill_widget);
     }
+    let group_ids: number[] = [];
+    if (user_group_pill_widget !== undefined) {
+        group_ids = user_group_pill.get_group_ids(user_group_pill_widget);
+    }
 
     assert(csrf_token !== undefined);
     const data = {
@@ -93,6 +102,7 @@ function get_common_invitation_data(): {
         notify_referrer_on_join,
         stream_ids: JSON.stringify(stream_ids),
         invite_expires_in_minutes: JSON.stringify(expires_in),
+        group_ids: JSON.stringify(group_ids),
         invitee_emails: pills
             .items()
             .map((pill) => email_pill.get_email_from_item(pill))
@@ -254,56 +264,33 @@ function generate_multiuse_invite(): void {
     });
 }
 
-function valid_to(time_valid: number): string {
-    if (!time_valid) {
+function valid_to(): string {
+    const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
+    const time_input_value = $expires_in.val()!;
+
+    if (time_input_value === "null") {
         return $t({defaultMessage: "Never expires"});
     }
 
+    let time_in_minutes: number;
+    if (time_input_value === "custom") {
+        if (!util.validate_custom_time_input(custom_expiration_time_input)) {
+            return $t({defaultMessage: "Invalid custom time"});
+        }
+        time_in_minutes = util.get_custom_time_in_minutes(
+            custom_expiration_time_unit,
+            custom_expiration_time_input,
+        );
+    } else {
+        time_in_minutes = Number.parseFloat(time_input_value);
+    }
+
     // The below is a duplicate of timerender.get_full_datetime, with a different base string.
-    const valid_to = add(new Date(), {minutes: time_valid});
+    const valid_to = add(new Date(), {minutes: time_in_minutes});
     const date = timerender.get_localized_date_or_time_for_format(valid_to, "dayofyear_year");
     const time = timerender.get_localized_date_or_time_for_format(valid_to, "time");
 
     return $t({defaultMessage: "Expires on {date} at {time}"}, {date, time});
-}
-
-function set_custom_expires_on_text(): void {
-    if (util.validate_custom_time_input(custom_expiration_time_input)) {
-        $("#custom_expires_on").text(
-            valid_to(
-                util.get_custom_time_in_minutes(
-                    custom_expiration_time_unit,
-                    custom_expiration_time_input,
-                ),
-            ),
-        );
-    } else {
-        $("#custom_expires_on").text($t({defaultMessage: "Invalid custom time"}));
-    }
-}
-
-function set_expires_on_text(): void {
-    const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
-    if ($expires_in.val() === "custom") {
-        $("#expires_on").hide();
-        set_custom_expires_on_text();
-    } else {
-        $("#expires_on").show();
-        $("#expires_on").text(valid_to(Number.parseFloat($expires_in.val()!)));
-    }
-}
-
-function set_custom_time_inputs_visibility(): void {
-    const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
-    if ($expires_in.val() === "custom") {
-        $("#custom-expiration-time-input").val(custom_expiration_time_input);
-        $<HTMLSelectOneElement>("select:not([multiple])#custom-expiration-time-unit").val(
-            custom_expiration_time_unit,
-        );
-        $("#custom-invite-expiration-time").show();
-    } else {
-        $("#custom-invite-expiration-time").hide();
-    }
 }
 
 function set_streams_to_join_list_visibility(): void {
@@ -318,7 +305,7 @@ function set_streams_to_join_list_visibility(): void {
     }
 }
 
-function update_guest_visible_users_count(): void {
+function update_guest_visible_users_count_and_stream_ids(): void {
     const invite_as = Number.parseInt(
         $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
         10,
@@ -327,6 +314,9 @@ function update_guest_visible_users_count(): void {
     assert(!Number.isNaN(invite_as));
 
     const guest_role_selected = invite_as === settings_config.user_role_values.guest.code;
+    if (guest_role_selected) {
+        guest_invite_stream_ids = stream_pill.get_stream_ids(stream_pill_widget);
+    }
     if (!guest_role_selected || settings_data.guests_can_access_all_other_users()) {
         $("#guest_visible_users_container").hide();
         return;
@@ -355,13 +345,44 @@ function generate_invite_tips_data(): Record<string, boolean> {
     };
 }
 
+function update_stream_list(): void {
+    const invite_as = Number.parseInt(
+        $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
+        10,
+    );
+
+    assert(!Number.isNaN(invite_as));
+
+    const guest_role_selected = invite_as === settings_config.user_role_values.guest.code;
+    stream_pill_widget.clear();
+
+    if (guest_role_selected) {
+        $("#invite_select_default_streams").prop("checked", false);
+        $(".add_streams_container").show();
+        for (const stream_id of guest_invite_stream_ids) {
+            const sub = stream_data.get_sub_by_id(stream_id);
+            if (sub) {
+                stream_pill.append_stream(sub, stream_pill_widget, false);
+            }
+        }
+    } else {
+        $("#invite_select_default_streams").prop("checked", true);
+        invite_stream_picker_pill.add_default_stream_pills(stream_pill_widget);
+        set_streams_to_join_list_visibility();
+    }
+}
+
 function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void {
     e.stopPropagation();
     e.preventDefault();
 
+    const show_group_pill_container =
+        invite_user_group_picker_pill.get_user_groups_allowed_to_add_members().length > 0;
+
     const html_body = render_invite_user_modal({
         is_admin: current_user.is_admin,
         is_owner: current_user.is_owner,
+        show_group_pill_container,
         development_environment: page_params.development_environment,
         invite_as_options: settings_config.user_role_values,
         expires_in_options: settings_config.expires_in_values,
@@ -385,8 +406,13 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         const user_has_email_set = !settings_data.user_email_not_configured();
 
-        set_custom_time_inputs_visibility();
-        set_expires_on_text();
+        settings_components.set_custom_time_inputs_visibility(
+            $expires_in,
+            custom_expiration_time_unit,
+            custom_expiration_time_input,
+        );
+        const valid_to_text = valid_to();
+        settings_components.set_time_input_formatted_text($expires_in, valid_to_text);
 
         if (settings_data.user_can_subscribe_other_users()) {
             set_streams_to_join_list_visibility();
@@ -394,10 +420,22 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             stream_pill_widget = invite_stream_picker_pill.create($stream_pill_container);
         }
 
-        $("#invite_as, #invite_streams_container .input, #invite_select_default_streams").on(
+        if (show_group_pill_container) {
+            const $user_group_pill_container = $("#invite-user-group-container .pill-container");
+            user_group_pill_widget = invite_user_group_picker_pill.create(
+                $user_group_pill_container,
+            );
+        }
+
+        $("#invite_streams_container .input, #invite_select_default_streams").on(
             "change",
-            update_guest_visible_users_count,
+            update_guest_visible_users_count_and_stream_ids,
         );
+
+        $("#invite_as").on("change", () => {
+            update_stream_list();
+            update_guest_visible_users_count_and_stream_ids();
+        });
 
         $("#invite-user-modal").on("click", ".setup-tips-container .banner_content a", () => {
             dialog_widget.close();
@@ -439,8 +477,13 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         pills.onTextInputHook(toggle_invite_submit_button);
 
         $expires_in.on("change", () => {
-            set_custom_time_inputs_visibility();
-            set_expires_on_text();
+            settings_components.set_custom_time_inputs_visibility(
+                $expires_in,
+                custom_expiration_time_unit,
+                custom_expiration_time_input,
+            );
+            const valid_to_text = valid_to();
+            settings_components.set_time_input_formatted_text($expires_in, valid_to_text);
             toggle_invite_submit_button();
         });
 
@@ -451,14 +494,15 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             }
         });
 
-        $(".custom-expiration-time").on("change", () => {
+        $("#custom-expiration-time-input, #custom-expiration-time-unit").on("change", () => {
             custom_expiration_time_input = util.check_time_input(
                 $<HTMLInputElement>("input#custom-expiration-time-input").val()!,
             );
             custom_expiration_time_unit = $<HTMLSelectOneElement>(
                 "select:not([multiple])#custom-expiration-time-unit",
             ).val()!;
-            set_custom_expires_on_text();
+            const valid_to_text = valid_to();
+            settings_components.set_time_input_formatted_text($expires_in, valid_to_text);
             toggle_invite_submit_button();
         });
 

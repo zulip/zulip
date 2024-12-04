@@ -67,6 +67,7 @@ from zerver.models import (
     CustomProfileFieldValue,
     DefaultStream,
     Message,
+    OnboardingStep,
     OnboardingUserMessage,
     PreregistrationRealm,
     PreregistrationUser,
@@ -871,7 +872,8 @@ class PasswordResetTest(ZulipTestCase):
 
         def reset_password() -> None:
             # start the password reset process by supplying an email address
-            result = self.client_post("/accounts/password/reset/", {"email": email})
+            with self.captureOnCommitCallbacks(execute=True):
+                result = self.client_post("/accounts/password/reset/", {"email": email})
 
             # check the redirect link telling you to check mail for password reset link
             self.assertEqual(result.status_code, 302)
@@ -1024,23 +1026,10 @@ class LoginTest(ZulipTestCase):
         reset_email_visibility_to_everyone_in_zulip_realm()
 
         realm = get_realm("zulip")
-        hamlet = self.example_user("hamlet")
         stream_names = [f"stream_{i}" for i in range(40)]
         for stream_name in stream_names:
             stream = self.make_stream(stream_name, realm=realm)
             DefaultStream.objects.create(stream=stream, realm=realm)
-
-        # Make sure there's at least one recent message to be mark
-        # unread.  This prevents a bug where this test would start
-        # failing the test database was generated more than
-        # RECENT_MESSAGES_TIMEDELTA ago.
-        self.subscribe(hamlet, "stream_0")
-        self.send_stream_message(
-            hamlet,
-            "stream_0",
-            topic_name="test topic",
-            content="test message",
-        )
 
         # Clear the ContentType cache.
         ContentType.objects.clear_cache()
@@ -1051,7 +1040,7 @@ class LoginTest(ZulipTestCase):
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
         with (
-            self.assert_database_query_count(94),
+            self.assert_database_query_count(95),
             self.assert_memcached_count(14),
             self.captureOnCommitCallbacks(execute=True),
         ):
@@ -2826,6 +2815,9 @@ class UserSignUpTest(ZulipTestCase):
         hamlet_in_zulip.email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
         hamlet_in_zulip.save()
 
+        OnboardingStep.objects.filter(user=hamlet_in_zulip).delete()
+        OnboardingStep.objects.create(user=hamlet_in_zulip, onboarding_step="intro_resolve_topic")
+
         result = self.client_post("/accounts/home/", {"email": email}, subdomain=subdomain)
         self.assertEqual(result.status_code, 302)
         result = self.client_get(result["Location"], subdomain=subdomain)
@@ -2844,6 +2836,12 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(hamlet.high_contrast_mode, False)
         self.assertEqual(hamlet.enable_stream_audible_notifications, False)
         self.assertEqual(hamlet.enter_sends, False)
+        # 'visibility_policy_banner' is marked as read in 'process_new_human_user'.
+        # 'copy_default_settings' is not executed as the user decided to NOT import
+        # settings from another realm, hence 'intro_resolve_topic' not marked as seen.
+        onboarding_steps = OnboardingStep.objects.filter(user=hamlet)
+        self.assertEqual(onboarding_steps.count(), 1)
+        self.assertEqual(onboarding_steps[0].onboarding_step, "visibility_policy_banner")
 
     def test_signup_with_user_settings_from_another_realm(self) -> None:
         hamlet_in_zulip = self.example_user("hamlet")
@@ -2863,6 +2861,12 @@ class UserSignUpTest(ZulipTestCase):
         hamlet_in_zulip.enter_sends = True
         hamlet_in_zulip.email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
         hamlet_in_zulip.save()
+
+        OnboardingStep.objects.filter(user=hamlet_in_zulip).delete()
+        OnboardingStep.objects.create(user=hamlet_in_zulip, onboarding_step="intro_resolve_topic")
+        OnboardingStep.objects.create(
+            user=hamlet_in_zulip, onboarding_step="visibility_policy_banner"
+        )
 
         # Now we'll be making requests to another subdomain, so we need to logout
         # to avoid polluting the session in the test environment by still being
@@ -2908,6 +2912,13 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(hamlet_in_lear.enable_stream_audible_notifications, False)
         self.assertEqual(
             hamlet_in_lear.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
+        )
+        # Verify that 'copy_default_settings' copies the onboarding steps.
+        onboarding_steps = OnboardingStep.objects.filter(user=hamlet_in_lear)
+        self.assertEqual(onboarding_steps.count(), 2)
+        self.assertEqual(
+            set(onboarding_steps.values_list("onboarding_step", flat=True)),
+            {"intro_resolve_topic", "visibility_policy_banner"},
         )
 
         zulip_path_id = avatar_disk_path(hamlet_in_zulip)

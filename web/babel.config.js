@@ -1,6 +1,4 @@
-"use strict";
-
-module.exports = {
+export default {
     plugins: [
         [
             "formatjs",
@@ -14,13 +12,11 @@ module.exports = {
         [
             "@babel/preset-env",
             {
-                corejs: "3.37",
-                include: ["transform-optional-chaining"],
+                corejs: "3.39",
                 shippedProposals: true,
                 useBuiltIns: "usage",
             },
         ],
         "@babel/typescript",
     ],
-    sourceType: "unambiguous",
 };

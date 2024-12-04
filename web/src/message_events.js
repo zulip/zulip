@@ -2,42 +2,78 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as activity from "./activity";
-import * as alert_words from "./alert_words";
-import * as channel from "./channel";
-import * as compose_fade from "./compose_fade";
-import * as compose_notifications from "./compose_notifications";
-import * as compose_recipient from "./compose_recipient";
-import * as compose_state from "./compose_state";
-import * as compose_validate from "./compose_validate";
-import * as direct_message_group_data from "./direct_message_group_data";
-import * as drafts from "./drafts";
-import * as echo from "./echo";
-import * as message_edit from "./message_edit";
-import * as message_edit_history from "./message_edit_history";
-import * as message_events_util from "./message_events_util";
-import * as message_helper from "./message_helper";
-import * as message_list_data_cache from "./message_list_data_cache";
-import * as message_lists from "./message_lists";
-import * as message_notifications from "./message_notifications";
-import * as message_parser from "./message_parser";
-import * as message_store from "./message_store";
-import * as message_util from "./message_util";
-import * as message_view from "./message_view";
-import * as narrow_state from "./narrow_state";
-import * as pm_list from "./pm_list";
-import * as recent_senders from "./recent_senders";
-import * as recent_view_ui from "./recent_view_ui";
-import * as recent_view_util from "./recent_view_util";
-import * as starred_messages from "./starred_messages";
-import * as starred_messages_ui from "./starred_messages_ui";
-import {realm} from "./state_data";
-import * as stream_list from "./stream_list";
-import * as stream_topic_history from "./stream_topic_history";
-import * as sub_store from "./sub_store";
-import * as unread from "./unread";
-import * as unread_ui from "./unread_ui";
-import * as util from "./util";
+import * as activity from "./activity.ts";
+import * as alert_words from "./alert_words.ts";
+import * as channel from "./channel.ts";
+import * as compose_fade from "./compose_fade.ts";
+import * as compose_notifications from "./compose_notifications.ts";
+import * as compose_recipient from "./compose_recipient.ts";
+import * as compose_state from "./compose_state.ts";
+import * as compose_validate from "./compose_validate.ts";
+import * as direct_message_group_data from "./direct_message_group_data.ts";
+import * as drafts from "./drafts.ts";
+import * as echo from "./echo.ts";
+import * as message_edit from "./message_edit.ts";
+import * as message_edit_history from "./message_edit_history.ts";
+import * as message_events_util from "./message_events_util.ts";
+import * as message_helper from "./message_helper.ts";
+import * as message_list_data_cache from "./message_list_data_cache.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_notifications from "./message_notifications.ts";
+import * as message_parser from "./message_parser.ts";
+import * as message_store from "./message_store.ts";
+import * as message_util from "./message_util.ts";
+import * as message_view from "./message_view.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as pm_list from "./pm_list.ts";
+import * as recent_senders from "./recent_senders.ts";
+import * as recent_view_ui from "./recent_view_ui.ts";
+import * as recent_view_util from "./recent_view_util.ts";
+import * as starred_messages from "./starred_messages.ts";
+import * as starred_messages_ui from "./starred_messages_ui.ts";
+import {realm} from "./state_data.ts";
+import * as stream_list from "./stream_list.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
+import * as sub_store from "./sub_store.ts";
+import * as unread from "./unread.ts";
+import * as unread_ui from "./unread_ui.ts";
+import * as util from "./util.ts";
+
+function filter_has_term_type(filter, term_type) {
+    return (
+        filter !== undefined &&
+        (filter.sorted_term_types().includes(term_type) ||
+            filter.sorted_term_types().includes(`not-${term_type}`))
+    );
+}
+
+export function discard_cached_lists_with_term_type(term_type) {
+    // Discards cached MessageList and MessageListData which have
+    // `term_type` and `not-term_type`.
+    assert(!term_type.includes("not-"));
+
+    // We loop over rendered message lists and cached message data separately since
+    // they are separately maintained and can have different items.
+    for (const msg_list of message_lists.all_rendered_message_lists()) {
+        // We never want to discard the current message list.
+        if (msg_list === message_lists.current) {
+            continue;
+        }
+
+        const filter = msg_list.data.filter;
+        if (filter_has_term_type(filter, term_type)) {
+            message_lists.delete_message_list(msg_list);
+            message_list_data_cache.remove(filter);
+        }
+    }
+
+    for (const msg_list_data of message_lists.non_rendered_data()) {
+        const filter = msg_list_data.filter;
+        if (filter_has_term_type(filter, term_type)) {
+            message_list_data_cache.remove(filter);
+        }
+    }
+}
 
 export function update_current_view_for_topic_visibility() {
     // If we have rendered message list / cached data based on topic
@@ -45,11 +81,7 @@ export function update_current_view_for_topic_visibility() {
     // is easier to just load the narrow from scratch, instead of asking server
     // for relevant messages in the updated topic.
     const filter = message_lists.current?.data.filter;
-    if (
-        filter !== undefined &&
-        (filter.sorted_term_types().includes("is-followed") ||
-            filter.sorted_term_types().includes("not-is-followed"))
-    ) {
+    if (filter_has_term_type(filter, "is-followed")) {
         // Use `set_timeout to call after we update the topic
         // visibility policy locally.
         // Calling this outside `user_topics_ui` to avoid circular imports.
@@ -71,11 +103,11 @@ export function update_current_view_for_topic_visibility() {
     return false;
 }
 
-export function update_views_filtered_on_message_property(
+export let update_views_filtered_on_message_property = (
     message_ids,
     property_term_type,
     property_value,
-) {
+) => {
     // NOTE: Call this function after updating the message property locally.
     assert(!property_term_type.includes("not-"));
 
@@ -180,6 +212,7 @@ export function update_views_filtered_on_message_property(
                     // can be used to update other message lists and
                     // cached message data structures as well.
                 },
+                // eslint-disable-next-line no-loop-func
                 success(data) {
                     // `messages_to_fetch` might already be cached locally when
                     // we reach here but `message_helper.process_new_message`
@@ -226,6 +259,10 @@ export function update_views_filtered_on_message_property(
             }
         }
     }
+};
+
+export function rewire_update_views_filtered_on_message_property(value) {
+    update_views_filtered_on_message_property = value;
 }
 
 export function insert_new_messages(messages, sent_by_this_client, deliver_locally) {
@@ -279,6 +316,8 @@ export function insert_new_messages(messages, sent_by_this_client, deliver_local
 
     for (const msg_list_data of message_lists.non_rendered_data()) {
         if (!msg_list_data.filter.can_apply_locally()) {
+            // Ideally we would ask server to if messages matches filter
+            // but it is not worth doing so for every new message.
             message_list_data_cache.remove(msg_list_data.filter);
         } else {
             message_util.add_new_messages_data(messages, msg_list_data);
@@ -476,18 +515,6 @@ export function update_messages(events) {
                 drafts.rename_stream_recipient(old_stream_id, orig_topic, new_stream_id, new_topic);
             }
 
-            // Remove the stream_topic_entry for the old topics;
-            // must be called before we call set message topic.
-            const num_messages = event_messages.length;
-            if (num_messages > 0) {
-                stream_topic_history.remove_messages({
-                    stream_id: old_stream_id,
-                    topic_name: orig_topic,
-                    num_messages,
-                    max_removed_msg_id: event_messages[num_messages - 1].id,
-                });
-            }
-
             for (const moved_message of event_messages) {
                 if (realm.realm_allow_edit_history) {
                     /* Simulate the format of server-generated edit
@@ -539,6 +566,20 @@ export function update_messages(events) {
                 });
             }
 
+            // Remove the stream_topic_entry for the old topics;
+            // must be called after we call set message topic since
+            // it calls `get_messages_in_topic` which thinks that
+            // `topic` and `stream` of the messages are correctly set.
+            const num_messages = event_messages.length;
+            if (num_messages > 0) {
+                stream_topic_history.remove_messages({
+                    stream_id: old_stream_id,
+                    topic_name: orig_topic,
+                    num_messages,
+                    max_removed_msg_id: event_messages[num_messages - 1].id,
+                });
+            }
+
             if (
                 going_forward_change &&
                 // This logic is a bit awkward.  What we're trying to
@@ -587,6 +628,11 @@ export function update_messages(events) {
                 //       with data fetched from the server (which is already updated)
                 //       when we move to new narrow and what data is locally available.
                 if (changed_narrow) {
+                    // Remove outdated cached data to avoid repopulating from it.
+                    // We are yet to update the cached message list data for
+                    // the moved topics.
+                    // TODO: Update the cache instead of discarding it.
+                    message_list_data_cache.remove(new_filter);
                     const terms = new_filter.terms();
                     const opts = {
                         trigger: "stream/topic change",

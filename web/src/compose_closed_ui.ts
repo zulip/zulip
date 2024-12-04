@@ -1,13 +1,13 @@
 import $ from "jquery";
 
-import * as compose_actions from "./compose_actions";
-import {$t} from "./i18n";
-import * as message_lists from "./message_lists";
-import * as message_store from "./message_store";
-import * as message_util from "./message_util";
-import * as narrow_state from "./narrow_state";
-import * as people from "./people";
-import * as stream_data from "./stream_data";
+import * as compose_actions from "./compose_actions.ts";
+import {$t} from "./i18n.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_store from "./message_store.ts";
+import * as message_util from "./message_util.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as people from "./people.ts";
+import * as stream_data from "./stream_data.ts";
 
 function format_stream_recipient_label(stream_id: number, topic: string): string {
     const stream = stream_data.get_sub_by_id(stream_id);
@@ -60,7 +60,8 @@ export function get_recipient_label(message?: ComposeClosedMessage): string {
     return "";
 }
 
-function update_reply_button_state(disable = false): void {
+// Exported for tests
+export let update_reply_button_state = (disable = false): void => {
     $(".compose_reply_button").attr("disabled", disable ? "disabled" : null);
     if (disable) {
         $("#compose_buttons .compose-reply-button-wrapper").attr(
@@ -80,6 +81,10 @@ function update_reply_button_state(disable = false): void {
             "selected_conversation",
         );
     }
+};
+
+export function rewire_update_reply_button_state(value: typeof update_reply_button_state): void {
+    update_reply_button_state = value;
 }
 
 function update_buttons(disable_reply?: boolean): void {

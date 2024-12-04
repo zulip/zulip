@@ -1,6 +1,7 @@
 /// <reference types="webpack-dev-server" />
 
 import path from "node:path";
+import * as url from "node:url";
 
 import type {ZopfliOptions} from "@gfx/zopfli";
 import {gzip} from "@gfx/zopfli";
@@ -8,39 +9,38 @@ import CompressionPlugin from "compression-webpack-plugin";
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import {DefinePlugin} from "webpack";
-import type webpack from "webpack";
+import webpack from "webpack";
 import BundleTracker from "webpack-bundle-tracker";
 
-import DebugRequirePlugin from "./debug-require-webpack-plugin";
-import assets from "./webpack.assets.json";
-import dev_assets from "./webpack.dev-assets.json";
+import DebugRequirePlugin from "./debug-require-webpack-plugin.ts";
+import assets from "./webpack.assets.json" with {type: "json"};
+import dev_assets from "./webpack.dev-assets.json" with {type: "json"};
 
 const config = (
-    env: {minimize?: boolean; ZULIP_VERSION?: string} = {},
+    env: {minimize?: true; puppeteer_tests?: true; ZULIP_VERSION?: string} = {},
     argv: {mode?: string},
 ): webpack.Configuration[] => {
     const production: boolean = argv.mode === "production";
 
     const baseConfig: webpack.Configuration = {
         mode: production ? "production" : "development",
-        context: __dirname,
+        context: import.meta.dirname,
         cache: {
             type: "filesystem",
             buildDependencies: {
-                config: [__filename],
+                config: [import.meta.filename],
             },
         },
     };
 
     const plugins: webpack.WebpackPluginInstance[] = [
-        new DefinePlugin({
+        new webpack.DefinePlugin({
             DEVELOPMENT: JSON.stringify(!production),
             ZULIP_VERSION: JSON.stringify(env.ZULIP_VERSION ?? "development"),
         }),
         new DebugRequirePlugin(),
         new BundleTracker({
-            path: path.join(__dirname, production ? ".." : "../var"),
+            path: path.join(import.meta.dirname, production ? ".." : "../var"),
             filename: production ? "webpack-stats-production.json" : "webpack-stats-dev.json",
         }),
         // Extract CSS from files
@@ -55,7 +55,7 @@ const config = (
             publicPath: production ? "/static/webpack-bundles/" : "/webpack/",
         }),
     ];
-    if (production) {
+    if (production && !env.puppeteer_tests) {
         plugins.push(
             new CompressionPlugin<ZopfliOptions>({
                 // Use zopfli to write pre-compressed versions of text files
@@ -73,29 +73,29 @@ const config = (
             : Object.fromEntries(
                   Object.entries({...assets, ...dev_assets}).map(([name, paths]) => [
                       name,
-                      [...paths, "./src/debug"],
+                      [...paths, "./src/debug.ts"],
                   ]),
               ),
         module: {
             rules: [
                 {
-                    test: require.resolve("./src/zulip_test"),
+                    test: path.resolve(import.meta.dirname, "src/zulip_test.ts"),
                     loader: "expose-loader",
                     options: {exposes: "zulip_test"},
                 },
                 {
-                    test: require.resolve("./debug-require"),
+                    test: path.resolve(import.meta.dirname, "debug-require.cjs"),
                     loader: "expose-loader",
                     options: {exposes: "require"},
                 },
                 {
-                    test: require.resolve("jquery"),
+                    test: url.fileURLToPath(import.meta.resolve("jquery")),
                     loader: "expose-loader",
                     options: {exposes: ["$", "jQuery"]},
                 },
                 // Generate webfont
                 {
-                    test: /\.font\.js$/,
+                    test: /\.font\.cjs$/,
                     use: [
                         MiniCssExtractPlugin.loader,
                         {
@@ -114,20 +114,21 @@ const config = (
                             },
                         },
                     ],
+                    type: "javascript/auto",
                 },
                 // Transpile .js and .ts files with Babel
                 {
-                    test: /\.(js|ts)$/,
+                    test: /\.[cm]?[jt]s$/,
                     include: [
-                        path.resolve(__dirname, "shared/src"),
-                        path.resolve(__dirname, "src"),
+                        path.resolve(import.meta.dirname, "shared/src"),
+                        path.resolve(import.meta.dirname, "src"),
                     ],
                     loader: "babel-loader",
                 },
                 // regular css files
                 {
                     test: /\.css$/,
-                    exclude: path.resolve(__dirname, "styles"),
+                    exclude: path.resolve(import.meta.dirname, "styles"),
                     use: [
                         MiniCssExtractPlugin.loader,
                         {
@@ -141,7 +142,7 @@ const config = (
                 // PostCSS loader
                 {
                     test: /\.css$/,
-                    include: path.resolve(__dirname, "styles"),
+                    include: path.resolve(import.meta.dirname, "styles"),
                     use: [
                         MiniCssExtractPlugin.loader,
                         {
@@ -166,12 +167,7 @@ const config = (
                         ignoreHelpers: true,
                         // Tell webpack not to explicitly require these.
                         knownHelpers: [
-                            "if",
-                            "unless",
-                            "each",
-                            "with",
-                            // The ones below are defined in web/src/templates.js
-                            "plural",
+                            // The ones below are defined in web/src/templates.ts
                             "eq",
                             "and",
                             "or",
@@ -179,10 +175,15 @@ const config = (
                             "t",
                             "tr",
                             "rendered_markdown",
+                            "numberFormat",
                             "tooltip_hotkey_hints",
                             "popover_hotkey_hints",
                         ],
-                        precompileOptions: {strict: true},
+                        precompileOptions: {
+                            knownHelpersOnly: true,
+                            strict: true,
+                            explicitPartialContext: true,
+                        },
                         preventIndent: true,
                         // This replaces relative image resources with
                         // a computed require() path to them, so their
@@ -198,7 +199,7 @@ const config = (
             ],
         },
         output: {
-            path: path.resolve(__dirname, "../static/webpack-bundles"),
+            path: path.resolve(import.meta.dirname, "../static/webpack-bundles"),
             publicPath: "auto",
             filename: production ? "[name].[contenthash].js" : "[name].js",
             assetModuleFilename: production
@@ -208,10 +209,6 @@ const config = (
                   (pathData) => "files" + path.join("/", pathData.filename!),
             chunkFilename: production ? "[contenthash].js" : "[id].js",
             crossOriginLoading: "anonymous",
-        },
-        resolve: {
-            ...baseConfig.resolve,
-            extensions: [".ts", ".js"],
         },
         // We prefer cheap-module-source-map over any eval-* options
         // because stacktrace-gps doesn't currently support extracting
@@ -276,13 +273,7 @@ const config = (
             "katex-cli": "shebang-loader!katex/cli",
         },
         output: {
-            path: path.resolve(__dirname, "../static/webpack-bundles"),
-        },
-        resolve: {
-            alias: {
-                // koa-body uses formidable 2.x, which suffers from https://github.com/node-formidable/formidable/issues/337
-                hexoid: "hexoid/dist/index.js",
-            },
+            path: path.resolve(import.meta.dirname, "../static/webpack-bundles"),
         },
     };
 

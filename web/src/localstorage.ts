@@ -1,6 +1,6 @@
 import {z} from "zod";
 
-import * as blueslip from "./blueslip";
+import * as blueslip from "./blueslip.ts";
 
 const formDataSchema = z
     .object({

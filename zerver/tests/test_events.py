@@ -210,6 +210,7 @@ from zerver.lib.events import apply_events, fetch_initial_state_data, post_proce
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.muted_users import get_mute_object
+from zerver.lib.streams import check_update_all_streams_active_status
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     create_dummy_file,
@@ -221,10 +222,9 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
-from zerver.lib.types import ProfileDataElementUpdateDict
+from zerver.lib.types import AnonymousSettingGroupDict, ProfileDataElementUpdateDict
 from zerver.lib.upload import upload_message_attachment
 from zerver.lib.user_groups import (
-    AnonymousSettingGroupDict,
     get_group_setting_value_for_api,
     get_role_based_system_groups_dict,
 )
@@ -1892,6 +1892,10 @@ class NormalActionsTest(BaseAction):
                 direct_members=[othello.id], direct_subgroups=[moderators_group.id]
             ),
         )
+        self.assertEqual(
+            events[0]["group"]["can_remove_members_group"],
+            nobody_group.id,
+        )
 
         # Test name update
         backend = NamedUserGroup.objects.get(name="backend")
@@ -3479,6 +3483,19 @@ class NormalActionsTest(BaseAction):
             is_legacy=False,
         )
 
+    def test_check_update_all_streams_active_status(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.subscribe(hamlet, "test_stream1")
+        stream = get_stream("test_stream1", self.user_profile.realm)
+
+        # Delete all messages in the stream so that it becomes inactive.
+        Message.objects.filter(recipient__type_id=stream.id, realm=stream.realm).delete()
+
+        with self.verify_action() as events:
+            check_update_all_streams_active_status()
+
+        check_stream_update("events[0]", events[0])
+
     def test_do_delete_message_personal(self) -> None:
         msg_id = self.send_personal_message(
             self.example_user("cordelia"),
@@ -3742,7 +3759,6 @@ class RealmPropertyActionTest(BaseAction):
             ],
             default_code_block_language=["python", "javascript"],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
-            invite_to_realm_policy=Realm.INVITE_TO_REALM_POLICY_TYPES,
             message_content_edit_limit_seconds=[1000, 1100, 1200, None],
             move_messages_within_stream_limit_seconds=[1000, 1100, 1200],
             move_messages_between_streams_limit_seconds=[1000, 1100, 1200],
@@ -3836,12 +3852,6 @@ class RealmPropertyActionTest(BaseAction):
             if (
                 not setting_permission_configuration.allow_everyone_group
                 and user_group.name == SystemGroups.EVERYONE
-            ):
-                continue
-
-            if (
-                not setting_permission_configuration.allow_owners_group
-                and user_group.name == SystemGroups.OWNERS
             ):
                 continue
 
@@ -4463,7 +4473,7 @@ class SubscribeActionTest(BaseAction):
                 invite_only=False,
                 history_public_to_subscribers=True,
                 is_web_public=True,
-                acting_user=self.example_user("hamlet"),
+                acting_user=iago,
             )
         check_stream_update("events[0]", events[0])
         check_message("events[1]", events[1])
@@ -4475,7 +4485,7 @@ class SubscribeActionTest(BaseAction):
                 invite_only=True,
                 history_public_to_subscribers=True,
                 is_web_public=False,
-                acting_user=self.example_user("hamlet"),
+                acting_user=iago,
             )
         check_stream_update("events[0]", events[0])
         check_message("events[1]", events[1])
@@ -4488,7 +4498,7 @@ class SubscribeActionTest(BaseAction):
                 invite_only=False,
                 history_public_to_subscribers=True,
                 is_web_public=False,
-                acting_user=self.example_user("hamlet"),
+                acting_user=iago,
             )
         check_stream_create("events[0]", events[0])
         check_subscription_peer_add("events[1]", events[1])
@@ -4498,7 +4508,7 @@ class SubscribeActionTest(BaseAction):
             invite_only=True,
             history_public_to_subscribers=True,
             is_web_public=False,
-            acting_user=self.example_user("hamlet"),
+            acting_user=iago,
         )
         self.subscribe(self.example_user("cordelia"), stream.name)
         self.unsubscribe(self.example_user("cordelia"), stream.name)
@@ -4510,7 +4520,7 @@ class SubscribeActionTest(BaseAction):
                 invite_only=False,
                 history_public_to_subscribers=True,
                 is_web_public=False,
-                acting_user=self.example_user("hamlet"),
+                acting_user=iago,
             )
 
         self.user_profile = self.example_user("hamlet")
@@ -4526,19 +4536,10 @@ class SubscribeActionTest(BaseAction):
             do_change_stream_message_retention_days(stream, self.example_user("hamlet"), -1)
         check_stream_update("events[0]", events[0])
 
-        moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS,
-            is_system_group=True,
-            realm=self.user_profile.realm,
-        )
-        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
-            do_change_stream_group_based_setting(
-                stream,
-                "can_remove_subscribers_group",
-                moderators_group,
-                acting_user=self.example_user("hamlet"),
+        for setting_name in Stream.stream_permission_group_settings:
+            self.do_test_subscribe_events_for_stream_permission_group_setting(
+                setting_name, stream, iago, include_subscribers
             )
-        check_stream_update("events[0]", events[0])
 
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it
         stream = self.make_stream("private", self.user_profile.realm, invite_only=True)
@@ -4650,6 +4651,43 @@ class SubscribeActionTest(BaseAction):
                 user_profile.realm, [self.user_profile], [stream], acting_user=None
             )
         check_subscription_remove("events[0]", events[0])
+
+    def do_test_subscribe_events_for_stream_permission_group_setting(
+        self, setting_name: str, stream: Stream, acting_user: UserProfile, include_subscribers: bool
+    ) -> None:
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS,
+            is_system_group=True,
+            realm=self.user_profile.realm,
+        )
+        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
+            do_change_stream_group_based_setting(
+                stream,
+                setting_name,
+                moderators_group,
+                acting_user=acting_user,
+            )
+        check_stream_update("events[0]", events[0])
+        self.assertEqual(events[0]["value"], moderators_group.id)
+
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [self.user_profile],
+            [moderators_group],
+        )
+        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
+            do_change_stream_group_based_setting(
+                stream,
+                setting_name,
+                setting_group,
+                acting_user=acting_user,
+            )
+        check_stream_update("events[0]", events[0])
+        self.assertEqual(
+            events[0]["value"],
+            AnonymousSettingGroupDict(
+                direct_members=[self.user_profile.id], direct_subgroups=[moderators_group.id]
+            ),
+        )
 
     def test_user_access_events_on_changing_subscriptions(self) -> None:
         self.set_up_db_for_testing_user_access()

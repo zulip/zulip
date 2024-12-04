@@ -10,11 +10,11 @@ import $ from "jquery";
 
 import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.hbs";
 
-import {$t} from "./i18n";
-import {difference_in_calendar_days, get_offset, start_of_day} from "./time_zone_util";
-import {parse_html} from "./ui_util";
-import {user_settings} from "./user_settings";
-import * as util from "./util";
+import {$t} from "./i18n.ts";
+import {difference_in_calendar_days, get_offset, start_of_day} from "./time_zone_util.ts";
+import {parse_html} from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 let next_timerender_id = 0;
 
@@ -175,7 +175,7 @@ export type TimeRender = {
     needs_update: boolean;
 };
 
-export function render_now(time: Date, today = new Date(), display_year?: boolean): TimeRender {
+export let render_now = (time: Date, today = new Date(), display_year?: boolean): TimeRender => {
     let time_str = "";
     let needs_update = false;
     // render formal time to be used for tippy tooltip
@@ -210,6 +210,10 @@ export function render_now(time: Date, today = new Date(), display_year?: boolea
         formal_time_str,
         needs_update,
     };
+};
+
+export function rewire_render_now(value: typeof render_now): void {
+    render_now = value;
 }
 
 // Relative time rendering for use in most screens like Recent conversations.

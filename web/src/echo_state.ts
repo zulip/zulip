@@ -1,6 +1,6 @@
 import assert from "minimalistic-assert";
 
-import type {Message} from "./message_store";
+import type {Message} from "./message_store.ts";
 
 const waiting_for_id = new Map<string, Message>();
 let waiting_for_ack = new Map<string, Message>();

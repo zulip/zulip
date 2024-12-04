@@ -222,7 +222,7 @@ input::placeholder {
         }
     }
 
-    &.btn-warning {
+    &.button-warning {
         color: hsl(35deg 70% 56%);
         border-color: hsl(35deg 98% 84%);
 
@@ -237,7 +237,7 @@ input::placeholder {
         }
     }
 
-    &.btn-danger {
+    &.button-danger {
         color: hsl(357deg 64% 72%);
         border-color: hsl(4deg 56% 82%);
 
@@ -623,10 +623,29 @@ input.settings_text_input {
     color: hsl(0deg 0% 100%);
 }
 
+/* Unread-count attention levels. */
+
+.prominent-count {
+    background-color: var(--color-background-unread-counter-prominent);
+    color: var(--color-unread-counter-prominent);
+}
+
+.normal-count {
+    background-color: var(--color-background-unread-counter-normal);
+    color: var(--color-unread-counter-normal);
+    box-shadow: var(--box-shadow-unread-counter-normal);
+}
+
+.quiet-count {
+    background-color: var(--color-background-unread-counter-quiet);
+    color: var(--color-unread-counter-quiet);
+    font-weight: 475;
+}
+
 .unread_mention_info:not(:empty) {
     margin-right: 5px;
     margin-left: 2px;
-    opacity: 0.7;
+    opacity: 0.5;
 }
 
 /* Implement the web app's default-hidden convention for alert
@@ -1325,37 +1344,37 @@ input.settings_text_input {
     }
 }
 
-.copy-btn {
+.copy-button {
     display: flex;
     border-radius: 4px;
-    color: var(--color-copy-btn);
+    color: var(--color-copy-button);
     /* 2px at 16px/1em */
     padding: 0.125em;
     cursor: pointer;
 
     &:hover,
     &:focus-visible {
-        color: var(--color-copy-btn-hover);
+        color: var(--color-copy-button-hover);
     }
 
     &:active {
-        color: var(--color-copy-btn-active);
+        color: var(--color-copy-button-active);
     }
 
-    &.copy-btn-square {
+    &.copy-button-square {
         &:hover,
         :focus-visible {
-            background-color: var(--color-copy-btn-square-bg-hover);
+            background-color: var(--color-copy-button-square-bg-hover);
         }
 
         &:active {
-            background-color: var(--color-copy-btn-square-bg-active);
-            color: var(--color-copy-btn-square-active);
+            background-color: var(--color-copy-button-square-bg-active);
+            color: var(--color-copy-button-square-active);
         }
     }
 
-    &.copy-btn-success {
-        color: var(--color-copy-btn-success);
+    &.copy-button-success {
+        color: var(--color-copy-button-success);
     }
 }
 

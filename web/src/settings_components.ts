@@ -6,38 +6,44 @@ import {z} from "zod";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
-import * as blueslip from "./blueslip";
-import * as compose_banner from "./compose_banner";
-import type {DropdownWidget} from "./dropdown_widget";
-import * as group_permission_settings from "./group_permission_settings";
-import * as group_setting_pill from "./group_setting_pill";
-import {$t} from "./i18n";
+import * as blueslip from "./blueslip.ts";
+import * as compose_banner from "./compose_banner.ts";
+import type {DropdownWidget} from "./dropdown_widget.ts";
+import * as group_permission_settings from "./group_permission_settings.ts";
+import * as group_setting_pill from "./group_setting_pill.ts";
+import {$t} from "./i18n.ts";
 import {
     LEGACY_FONT_SIZE_PX,
     LEGACY_LINE_HEIGHT_PERCENT,
     NON_COMPACT_MODE_FONT_SIZE_PX,
     NON_COMPACT_MODE_LINE_HEIGHT_PERCENT,
-} from "./information_density";
-import * as people from "./people";
+} from "./information_density.ts";
+import * as people from "./people.ts";
 import {
     realm_default_settings_schema,
     realm_user_settings_defaults,
-} from "./realm_user_settings_defaults";
-import * as scroll_util from "./scroll_util";
-import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
-import type {CustomProfileField, GroupSettingValue} from "./state_data";
-import {current_user, group_setting_value_schema, realm, realm_schema} from "./state_data";
-import * as stream_data from "./stream_data";
-import type {StreamSubscription} from "./sub_store";
-import {stream_subscription_schema} from "./sub_store";
-import type {GroupSettingPillContainer} from "./typeahead_helper";
-import type {HTMLSelectOneElement} from "./types";
-import * as user_group_pill from "./user_group_pill";
-import * as user_groups from "./user_groups";
-import type {UserGroup} from "./user_groups";
-import * as user_pill from "./user_pill";
-import * as util from "./util";
+} from "./realm_user_settings_defaults.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import type {CustomProfileField, GroupSettingValue} from "./state_data.ts";
+import {current_user, realm, realm_schema} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_settings_containers from "./stream_settings_containers.ts";
+import {
+    type StreamPermissionGroupSetting,
+    stream_permission_group_settings_schema,
+} from "./stream_types.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import {stream_subscription_schema} from "./sub_store.ts";
+import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
+import {group_setting_value_schema} from "./types.ts";
+import type {HTMLSelectOneElement} from "./types.ts";
+import * as user_group_pill from "./user_group_pill.ts";
+import * as user_groups from "./user_groups.ts";
+import type {UserGroup} from "./user_groups.ts";
+import * as user_pill from "./user_pill.ts";
+import * as util from "./util.ts";
 
 const MAX_CUSTOM_TIME_LIMIT_SETTING_VALUE = 2147483647;
 
@@ -236,7 +242,6 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
 
 export const simple_dropdown_realm_settings_schema = realm_schema.pick({
     realm_invite_to_stream_policy: true,
-    realm_invite_to_realm_policy: true,
     realm_wildcard_mention_policy: true,
     realm_org_type: true,
 });
@@ -476,16 +481,8 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_signup_announcements_stream_id", null],
     ["realm_zulip_update_announcements_stream_id", null],
     ["realm_default_code_block_language", null],
-    ["can_remove_subscribers_group", null],
     ["realm_can_access_all_users_group", null],
-    ["realm_can_add_custom_emoji_group", null],
     ["realm_can_create_web_public_channel_group", null],
-    ["realm_can_delete_any_message_group", null],
-    ["realm_can_delete_own_message_group", null],
-    ["realm_can_move_messages_between_channels_group", null],
-    ["realm_can_move_messages_between_topics_group", null],
-    ["realm_direct_message_initiator_group", null],
-    ["realm_direct_message_permission_group", null],
 ]);
 
 export function get_widget_for_dropdown_list_settings(
@@ -546,16 +543,16 @@ export function change_save_button_state($element: JQuery, state: string): void 
         }, fadeout_delay);
     }
 
-    const $saveBtn = $element.find(".save-button");
-    const $textEl = $saveBtn.find(".save-discard-widget-button-text");
+    const $save_button = $element.find(".save-button");
+    const $textEl = $save_button.find(".save-discard-widget-button-text");
 
     if (state !== "saving") {
-        $saveBtn.removeClass("saving");
+        $save_button.removeClass("saving");
     }
 
     if (state === "discarded") {
         let hide_delay = 0;
-        if ($saveBtn.attr("data-status") === "saved") {
+        if ($save_button.attr("data-status") === "saved") {
             // Keep saved button displayed a little longer.
             hide_delay = 500;
         }
@@ -587,7 +584,7 @@ export function change_save_button_state($element: JQuery, state: string): void 
             is_show = true;
 
             $element.find(".discard-button").hide();
-            $saveBtn.addClass("saving");
+            $save_button.addClass("saving");
             break;
         case "failed":
             button_text = $t({defaultMessage: "Save changes"});
@@ -604,7 +601,7 @@ export function change_save_button_state($element: JQuery, state: string): void 
     assert(button_text !== undefined);
     $textEl.text(button_text);
     assert(data_status !== undefined);
-    $saveBtn.attr("data-status", data_status);
+    $save_button.attr("data-status", data_status);
     if (state === "unsaved") {
         // Do not scroll if the currently focused element is a textarea or an input
         // of type text, to not interrupt the user's typing flow. Scrolling will happen
@@ -638,10 +635,10 @@ export function get_input_type($input_elem: JQuery, input_type?: string): string
     return input_type;
 }
 
-export function get_input_element_value(
+export let get_input_element_value = (
     input_elem: HTMLElement,
     input_type?: string,
-): boolean | number | string | null | undefined | GroupSettingValue {
+): boolean | number | string | null | undefined | GroupSettingValue => {
     const $input_elem = $(input_elem);
     input_type = get_input_type($input_elem, input_type);
     let input_value;
@@ -698,6 +695,10 @@ export function get_input_element_value(
         default:
             return undefined;
     }
+};
+
+export function rewire_get_input_element_value(value: typeof get_input_element_value): void {
+    get_input_element_value = value;
 }
 
 export function set_input_element_value(
@@ -797,21 +798,22 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_zulip_update_announcements_stream_id":
         case "realm_default_code_block_language":
         case "realm_can_access_all_users_group":
-        case "realm_can_add_custom_emoji_group":
         case "realm_can_create_web_public_channel_group":
-        case "realm_can_delete_any_message_group":
-        case "realm_can_delete_own_message_group":
-        case "realm_can_move_messages_between_channels_group":
-        case "realm_can_move_messages_between_topics_group":
-        case "realm_direct_message_initiator_group":
-        case "realm_direct_message_permission_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
+        case "realm_can_add_custom_emoji_group":
         case "realm_can_create_groups":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
+        case "realm_can_delete_any_message_group":
+        case "realm_can_delete_own_message_group":
+        case "realm_can_invite_users_group":
         case "realm_can_manage_all_groups":
-        case "realm_create_multiuse_invite_group": {
+        case "realm_can_move_messages_between_channels_group":
+        case "realm_can_move_messages_between_topics_group":
+        case "realm_create_multiuse_invite_group":
+        case "realm_direct_message_initiator_group":
+        case "realm_direct_message_permission_group": {
             const pill_widget = get_group_setting_widget(property_name);
             assert(pill_widget !== null);
             proposed_val = get_group_setting_widget_value(pill_widget);
@@ -857,10 +859,15 @@ export function check_stream_settings_property_changed(
     const property_name = extract_property_name($elem) as StreamSettingProperty;
     const current_val = get_stream_settings_property_value(property_name, sub);
     let proposed_val;
+
+    if (Object.keys(realm.server_supported_permission_settings.stream).includes(property_name)) {
+        const pill_widget = get_group_setting_widget(property_name);
+        assert(pill_widget !== null);
+        proposed_val = get_group_setting_widget_value(pill_widget);
+        return !_.isEqual(current_val, proposed_val);
+    }
+
     switch (property_name) {
-        case "can_remove_subscribers_group":
-            proposed_val = get_dropdown_list_widget_setting_value($elem);
-            break;
         case "message_retention_days":
             assert(elem instanceof HTMLSelectElement);
             proposed_val = get_message_retention_setting_value($(elem), false);
@@ -875,7 +882,7 @@ export function check_stream_settings_property_changed(
                 blueslip.error("Element refers to unknown property", {property_name});
             }
     }
-    return current_val !== proposed_val;
+    return !_.isEqual(current_val, proposed_val);
 }
 
 export function get_group_setting_widget_value(
@@ -915,24 +922,17 @@ export function check_group_property_changed(elem: HTMLElement, group: UserGroup
     const property_name = extract_property_name($elem) as keyof UserGroup;
     const current_val = get_group_property_value(property_name, group);
     let proposed_val;
-    switch (property_name) {
-        case "can_add_members_group":
-        case "can_join_group":
-        case "can_leave_group":
-        case "can_manage_group":
-        case "can_mention_group": {
-            const pill_widget = get_group_setting_widget(property_name);
-            assert(pill_widget !== null);
-            proposed_val = get_group_setting_widget_value(pill_widget);
-            break;
-        }
-        default:
-            if (current_val !== undefined) {
-                proposed_val = get_input_element_value(elem, typeof current_val);
-            } else {
-                blueslip.error("Element refers to unknown property", {property_name});
-            }
+
+    if (Object.keys(realm.server_supported_permission_settings.group).includes(property_name)) {
+        const pill_widget = get_group_setting_widget(property_name);
+        assert(pill_widget !== null);
+        proposed_val = get_group_setting_widget_value(pill_widget);
+    } else if (current_val !== undefined) {
+        proposed_val = get_input_element_value(elem, typeof current_val);
+    } else {
+        blueslip.error("Element refers to unknown property", {property_name});
     }
+
     return !_.isEqual(current_val, proposed_val);
 }
 
@@ -1054,6 +1054,7 @@ export function populate_data_for_realm_settings_request(
                     "can_manage_all_groups",
                     "can_delete_any_message_group",
                     "can_delete_own_message_group",
+                    "can_invite_users_group",
                     "can_move_messages_between_channels_group",
                     "can_move_messages_between_topics_group",
                     "create_multiuse_invite_group",
@@ -1098,6 +1099,18 @@ export function populate_data_for_stream_settings_request(
                         ...data,
                         ...settings_data.get_request_data_for_stream_privacy(input_value),
                     };
+                    continue;
+                }
+
+                if (stream_permission_group_settings_schema.safeParse(property_name).success) {
+                    const old_value = get_stream_settings_property_value(
+                        stream_settings_property_schema.parse(property_name),
+                        sub,
+                    );
+                    data[property_name] = JSON.stringify({
+                        new: input_value,
+                        old: old_value,
+                    });
                     continue;
                 }
 
@@ -1203,25 +1216,28 @@ export function save_discard_realm_settings_widget_status_handler($subsection: J
         check_realm_settings_property_changed(elem),
     );
 
-    const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");
+    const $save_button_controls = $subsection.find(".subsection-header .save-button-controls");
     const button_state = show_change_process_button ? "unsaved" : "discarded";
-    change_save_button_state($save_btn_controls, button_state);
+    change_save_button_state($save_button_controls, button_state);
 }
 
 export function save_discard_stream_settings_widget_status_handler(
     $subsection: JQuery,
-    sub: StreamSubscription,
+    sub: StreamSubscription | undefined,
 ): void {
     $subsection.find(".subsection-failed-status p").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
-    const show_change_process_button = properties_elements.some((elem) =>
-        check_stream_settings_property_changed(elem, sub),
-    );
+    let show_change_process_button = false;
+    if (sub !== undefined) {
+        show_change_process_button = properties_elements.some((elem) =>
+            check_stream_settings_property_changed(elem, sub),
+        );
+    }
 
-    const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");
+    const $save_button_controls = $subsection.find(".subsection-header .save-button-controls");
     const button_state = show_change_process_button ? "unsaved" : "discarded";
-    change_save_button_state($save_btn_controls, button_state);
+    change_save_button_state($save_button_controls, button_state);
 
     // If the stream isn't currently private but being changed to private,
     // and the user changing this setting isn't subscribed, we show a
@@ -1229,6 +1245,7 @@ export function save_discard_stream_settings_widget_status_handler(
     // making it private unless they subscribe.
     if (
         button_state === "unsaved" &&
+        sub &&
         !sub.invite_only &&
         !sub.subscribed &&
         switching_to_private(properties_elements)
@@ -1264,9 +1281,9 @@ export function save_discard_group_widget_status_handler(
     const show_change_process_button = properties_elements.some((elem) =>
         check_group_property_changed(elem, group),
     );
-    const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");
+    const $save_button_controls = $subsection.find(".subsection-header .save-button-controls");
     const button_state = show_change_process_button ? "unsaved" : "discarded";
-    change_save_button_state($save_btn_controls, button_state);
+    change_save_button_state($save_button_controls, button_state);
 }
 
 export function save_discard_default_realm_settings_widget_status_handler(
@@ -1279,9 +1296,9 @@ export function save_discard_default_realm_settings_widget_status_handler(
         check_realm_default_settings_property_changed(elem),
     );
 
-    const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");
+    const $save_button_controls = $subsection.find(".subsection-header .save-button-controls");
     const button_state = show_change_process_button ? "unsaved" : "discarded";
-    change_save_button_state($save_btn_controls, button_state);
+    change_save_button_state($save_button_controls, button_state);
 }
 
 function check_maximum_valid_value(
@@ -1292,6 +1309,8 @@ function check_maximum_valid_value(
     if (
         property_name === "realm_message_content_edit_limit_seconds" ||
         property_name === "realm_message_content_delete_limit_seconds" ||
+        property_name === "realm_move_messages_between_streams_limit_seconds" ||
+        property_name === "realm_move_messages_within_stream_limit_seconds" ||
         property_name === "email_notifications_batching_period_seconds"
     ) {
         setting_value = parse_time_limit($custom_input_elem);
@@ -1318,7 +1337,7 @@ function should_disable_save_button_for_jitsi_server_url_setting(): boolean {
 function should_disable_save_button_for_time_limit_settings(
     time_limit_settings: HTMLElement[],
 ): boolean {
-    let disable_save_btn = false;
+    let disable_save_button = false;
     for (const setting_elem of time_limit_settings) {
         const $dropdown_elem = $(setting_elem).find<HTMLSelectOneElement>("select:not([multiple])");
         const $custom_input_elem = $(setting_elem).find<HTMLInputElement>(
@@ -1331,7 +1350,7 @@ function should_disable_save_button_for_time_limit_settings(
             "realm-user-default-settings";
         const property_name = extract_property_name($dropdown_elem, for_realm_default_settings);
 
-        disable_save_btn =
+        disable_save_button =
             $dropdown_elem.val() === "custom_period" &&
             (custom_input_elem_val <= 0 ||
                 Number.isNaN(custom_input_elem_val) ||
@@ -1344,15 +1363,15 @@ function should_disable_save_button_for_time_limit_settings(
             // 0 is a valid value for realm_waiting_period_threshold setting. We specifically
             // check for $custom_input_elem.val() to be "0" and not custom_input_elem_val
             // because it is 0 even when custom input box is empty.
-            disable_save_btn = false;
+            disable_save_button = false;
         }
 
-        if (disable_save_btn) {
+        if (disable_save_button) {
             break;
         }
     }
 
-    return disable_save_btn;
+    return disable_save_button;
 }
 
 function should_disable_save_button_for_group_settings(settings: string[]): boolean {
@@ -1364,9 +1383,12 @@ function should_disable_save_button_for_group_settings(settings: string[]): bool
                 setting_name_without_prefix,
                 "realm",
             );
+        } else if (stream_permission_group_settings_schema.safeParse(setting_name).success) {
+            group_setting_config = group_permission_settings.get_group_permission_setting_config(
+                setting_name,
+                "stream",
+            );
         } else {
-            // We do not have any stream settings using the new UI currently,
-            // so we know that this block will be called for group setting only.
             group_setting_config = group_permission_settings.get_group_permission_setting_config(
                 setting_name,
                 "group",
@@ -1392,20 +1414,21 @@ function should_disable_save_button_for_group_settings(settings: string[]): bool
 function enable_or_disable_save_button($subsection_elem: JQuery): void {
     const time_limit_settings = [...$subsection_elem.find(".time-limit-setting")];
 
-    let disable_save_btn = false;
+    let disable_save_button = false;
     if (time_limit_settings.length) {
-        disable_save_btn = should_disable_save_button_for_time_limit_settings(time_limit_settings);
+        disable_save_button =
+            should_disable_save_button_for_time_limit_settings(time_limit_settings);
     } else if ($subsection_elem.attr("id") === "org-other-settings") {
-        disable_save_btn = should_disable_save_button_for_jitsi_server_url_setting();
+        disable_save_button = should_disable_save_button_for_jitsi_server_url_setting();
         const $button_wrapper = $subsection_elem.find<tippy.PopperElement>(
             ".subsection-changes-save",
         );
         const tippy_instance = util.the($button_wrapper)._tippy;
-        if (disable_save_btn) {
+        if (disable_save_button) {
             // avoid duplication of tippy
             if (!tippy_instance) {
                 const opts: Partial<tippy.Props> = {placement: "top"};
-                initialize_disable_btn_hint_popover(
+                initialize_disable_button_hint_popover(
                     $button_wrapper,
                     $t({defaultMessage: "Cannot save invalid Jitsi server URL."}),
                     opts,
@@ -1418,20 +1441,20 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
         }
     }
 
-    if (!disable_save_btn) {
+    if (!disable_save_button) {
         const group_settings = [...$subsection_elem.find(".pill-container")].map((elem) =>
             extract_property_name($(elem)),
         );
         if (group_settings.length) {
-            disable_save_btn = should_disable_save_button_for_group_settings(group_settings);
+            disable_save_button = should_disable_save_button_for_group_settings(group_settings);
         }
     }
 
-    $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);
+    $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_button);
 }
 
-export function initialize_disable_btn_hint_popover(
-    $btn_wrapper: JQuery,
+export function initialize_disable_button_hint_popover(
+    $button_wrapper: JQuery,
     hint_text: string | undefined,
     opts: Partial<tippy.Props> = {},
 ): void {
@@ -1447,7 +1470,7 @@ export function initialize_disable_btn_hint_popover(
     if (hint_text !== undefined) {
         tippy_opts.content = hint_text;
     }
-    tippy.default(util.the($btn_wrapper), tippy_opts);
+    tippy.default(util.the($button_wrapper), tippy_opts);
 }
 
 export function enable_opening_typeahead_on_clicking_label($container: JQuery): void {
@@ -1465,17 +1488,34 @@ export function disable_opening_typeahead_on_clicking_label($container: JQuery):
     $group_setting_labels.off("click");
 }
 
+export function disable_group_permission_setting($container: JQuery): void {
+    $container.find(".input").prop("contenteditable", false);
+    $container.closest(".input-group").addClass("group_setting_disabled");
+    disable_opening_typeahead_on_clicking_label($container.closest(".input-group"));
+}
+
 export const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
     ["can_add_members_group", null],
+    ["can_administer_channel_group", null],
     ["can_join_group", null],
     ["can_leave_group", null],
     ["can_manage_group", null],
     ["can_mention_group", null],
+    ["can_remove_members_group", null],
+    ["can_remove_subscribers_group", null],
+    ["realm_can_add_custom_emoji_group", null],
     ["realm_can_create_groups", null],
     ["realm_can_create_public_channel_group", null],
     ["realm_can_create_private_channel_group", null],
+    ["realm_can_delete_any_message_group", null],
+    ["realm_can_delete_own_message_group", null],
+    ["realm_can_invite_users_group", null],
     ["realm_can_manage_all_groups", null],
+    ["realm_can_move_messages_between_channels_group", null],
+    ["realm_can_move_messages_between_topics_group", null],
     ["realm_create_multiuse_invite_group", null],
+    ["realm_direct_message_initiator_group", null],
+    ["realm_direct_message_permission_group", null],
 ]);
 
 export function get_group_setting_widget(setting_name: string): GroupSettingPillContainer | null {
@@ -1516,12 +1556,16 @@ export function set_group_setting_widget_value(
     }
 }
 
-type group_setting_name =
-    | "can_add_members_group"
-    | "can_join_group"
-    | "can_leave_group"
-    | "can_manage_group"
-    | "can_mention_group";
+export const group_setting_name_schema = z.enum([
+    "can_add_members_group",
+    "can_join_group",
+    "can_leave_group",
+    "can_manage_group",
+    "can_mention_group",
+    "can_remove_members_group",
+]);
+
+type GroupSettingName = z.infer<typeof group_setting_name_schema>;
 
 export function create_group_setting_widget({
     $pill_container,
@@ -1529,7 +1573,7 @@ export function create_group_setting_widget({
     group,
 }: {
     $pill_container: JQuery;
-    setting_name: group_setting_name;
+    setting_name: GroupSettingName;
     group?: UserGroup;
 }): GroupSettingPillContainer {
     const pill_widget = group_setting_pill.create_pills($pill_container, setting_name, "group");
@@ -1576,18 +1620,31 @@ export function create_group_setting_widget({
     return pill_widget;
 }
 
-type realm_group_setting_name =
-    | "can_create_groups"
-    | "can_create_public_channel_group"
-    | "can_create_private_channel_group"
-    | "can_manage_all_groups"
-    | "create_multiuse_invite_group";
+export const realm_group_setting_name_schema = z.enum([
+    "can_add_custom_emoji_group",
+    "can_create_groups",
+    "can_create_public_channel_group",
+    "can_create_private_channel_group",
+    "can_delete_any_message_group",
+    "can_delete_own_message_group",
+    "can_invite_users_group",
+    "can_manage_all_groups",
+    "can_move_messages_between_channels_group",
+    "can_move_messages_between_topics_group",
+    "create_multiuse_invite_group",
+    "direct_message_initiator_group",
+    "direct_message_permission_group",
+]);
+export type RealmGroupSettingName = z.infer<typeof realm_group_setting_name_schema>;
+
 export function create_realm_group_setting_widget({
     $pill_container,
     setting_name,
+    pill_update_callback,
 }: {
     $pill_container: JQuery;
-    setting_name: realm_group_setting_name;
+    setting_name: RealmGroupSettingName;
+    pill_update_callback?: () => void;
 }): void {
     const pill_widget = group_setting_pill.create_pills($pill_container, setting_name, "realm");
     const opts: {
@@ -1612,9 +1669,100 @@ export function create_realm_group_setting_widget({
         ".settings-subsection-parent",
     );
     pill_widget.onPillCreate(() => {
+        if (pill_update_callback !== undefined) {
+            pill_update_callback();
+        }
         save_discard_realm_settings_widget_status_handler($save_discard_widget_container);
     });
     pill_widget.onPillRemove(() => {
+        if (pill_update_callback !== undefined) {
+            pill_update_callback();
+        }
         save_discard_realm_settings_widget_status_handler($save_discard_widget_container);
     });
+}
+
+export function create_stream_group_setting_widget({
+    $pill_container,
+    setting_name,
+    sub,
+}: {
+    $pill_container: JQuery;
+    setting_name: StreamPermissionGroupSetting;
+    sub?: StreamSubscription;
+}): GroupSettingPillContainer {
+    const pill_widget = group_setting_pill.create_pills($pill_container, setting_name, "stream");
+    const opts: {
+        setting_name: string;
+        sub: StreamSubscription | undefined;
+        setting_type: "stream";
+    } = {
+        setting_name,
+        sub,
+        setting_type: "stream",
+    };
+    group_setting_pill.set_up_pill_typeahead({pill_widget, $pill_container, opts});
+
+    if (sub !== undefined) {
+        group_setting_widget_map.set(setting_name, pill_widget);
+    }
+
+    if (sub !== undefined) {
+        set_group_setting_widget_value(pill_widget, sub[setting_name]);
+        const $edit_container = stream_settings_containers.get_edit_container(sub);
+        const $subsection = $edit_container.find(".advanced-configurations-container");
+
+        pill_widget.onPillCreate(() => {
+            save_discard_stream_settings_widget_status_handler($subsection, sub);
+        });
+        pill_widget.onPillRemove(() => {
+            save_discard_stream_settings_widget_status_handler($subsection, sub);
+        });
+    } else {
+        const default_group_name = group_permission_settings.get_group_permission_setting_config(
+            setting_name,
+            "stream",
+        )!.default_group_name;
+        if (default_group_name === "stream_creator_or_nobody") {
+            set_group_setting_widget_value(pill_widget, {
+                direct_members: [current_user.user_id],
+                direct_subgroups: [],
+            });
+        } else {
+            const default_group_id = user_groups.get_user_group_from_name(default_group_name)!.id;
+            set_group_setting_widget_value(pill_widget, default_group_id);
+        }
+    }
+
+    return pill_widget;
+}
+
+export function set_time_input_formatted_text(
+    $time_select_elem: JQuery,
+    formatted_text: string,
+): void {
+    if ($time_select_elem.val() === "custom") {
+        $time_select_elem.parent().find(".time-input-formatted-description").hide();
+        $time_select_elem
+            .parent()
+            .find(".custom-time-input-formatted-description")
+            .text(formatted_text);
+    } else {
+        $time_select_elem.parent().find(".time-input-formatted-description").show();
+        $time_select_elem.parent().find(".time-input-formatted-description").text(formatted_text);
+    }
+}
+
+export function set_custom_time_inputs_visibility(
+    $time_select_elem: JQuery,
+    time_unit: string,
+    time_value: number,
+): void {
+    if ($time_select_elem.val() === "custom") {
+        $time_select_elem.parent().find(".custom-time-input-value").val(time_value);
+        $time_select_elem.parent().find(".custom-time-input-unit").val(time_unit);
+        $time_select_elem.parent().find(".custom-time-input-container").show();
+    } else {
+        $time_select_elem.parent().find(".custom-time-input-container").hide();
+    }
 }

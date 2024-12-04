@@ -348,7 +348,7 @@ class PreviewTestCase(ZulipTestCase):
         url = "http://test.org/"
         self.create_mock_response(url)
 
-        with mock_queue_publish("zerver.actions.message_edit.queue_json_publish") as patched:
+        with mock_queue_publish("zerver.actions.message_edit.queue_event_on_commit") as patched:
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
                 {
@@ -434,7 +434,7 @@ class PreviewTestCase(ZulipTestCase):
             self.assertEqual(queue, "embed_links")
             event = patched.call_args[0][1]
 
-        def wrapped_queue_json_publish(*args: Any, **kwargs: Any) -> None:
+        def wrapped_queue_event_on_commit(*args: Any, **kwargs: Any) -> None:
             self.create_mock_response(original_url)
             self.create_mock_response(edited_url)
 
@@ -472,7 +472,7 @@ class PreviewTestCase(ZulipTestCase):
             )
 
         with mock_queue_publish(
-            "zerver.actions.message_edit.queue_json_publish", wraps=wrapped_queue_json_publish
+            "zerver.actions.message_edit.queue_event_on_commit", wraps=wrapped_queue_event_on_commit
         ):
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),

@@ -5,12 +5,12 @@ import {z} from "zod";
 import render_widgets_todo_widget from "../templates/widgets/todo_widget.hbs";
 import render_widgets_todo_widget_tasks from "../templates/widgets/todo_widget_tasks.hbs";
 
-import * as blueslip from "./blueslip";
-import {$t} from "./i18n";
-import type {Message} from "./message_store";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import type {Event} from "./poll_widget";
+import * as blueslip from "./blueslip.ts";
+import {$t} from "./i18n.ts";
+import type {Message} from "./message_store.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import type {Event} from "./poll_widget.ts";
 
 // Any single user should send add a finite number of tasks
 // to a todo list. We arbitrarily pick this value.

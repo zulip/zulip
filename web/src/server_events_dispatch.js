@@ -1,96 +1,97 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import * as activity_ui from "./activity_ui";
-import * as alert_words from "./alert_words";
-import * as alert_words_ui from "./alert_words_ui";
-import * as attachments_ui from "./attachments_ui";
-import * as audible_notifications from "./audible_notifications";
-import * as blueslip from "./blueslip";
-import * as bot_data from "./bot_data";
-import * as browser_history from "./browser_history";
-import {buddy_list} from "./buddy_list";
-import * as compose_call from "./compose_call";
-import * as compose_call_ui from "./compose_call_ui";
-import * as compose_closed_ui from "./compose_closed_ui";
-import * as compose_pm_pill from "./compose_pm_pill";
-import * as compose_recipient from "./compose_recipient";
-import * as compose_state from "./compose_state";
-import {electron_bridge} from "./electron_bridge";
-import * as emoji from "./emoji";
-import * as emoji_picker from "./emoji_picker";
-import * as gear_menu from "./gear_menu";
-import * as giphy from "./giphy";
-import * as information_density from "./information_density";
-import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
-import * as linkifiers from "./linkifiers";
-import * as message_edit from "./message_edit";
-import * as message_events from "./message_events";
-import * as message_lists from "./message_lists";
-import * as message_live_update from "./message_live_update";
-import * as message_view_header from "./message_view_header";
-import * as muted_users_ui from "./muted_users_ui";
-import * as narrow_state from "./narrow_state";
-import * as narrow_title from "./narrow_title";
-import * as navbar_alerts from "./navbar_alerts";
-import * as onboarding_steps from "./onboarding_steps";
-import * as overlays from "./overlays";
-import * as peer_data from "./peer_data";
-import * as people from "./people";
-import * as pm_list from "./pm_list";
-import * as reactions from "./reactions";
-import * as realm_icon from "./realm_icon";
-import * as realm_logo from "./realm_logo";
-import * as realm_playground from "./realm_playground";
-import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
-import * as reload from "./reload";
-import * as saved_snippets from "./saved_snippets";
-import * as saved_snippets_ui from "./saved_snippets_ui";
-import * as scheduled_messages from "./scheduled_messages";
-import * as scheduled_messages_feed_ui from "./scheduled_messages_feed_ui";
-import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
-import * as scheduled_messages_ui from "./scheduled_messages_ui";
-import * as scroll_bar from "./scroll_bar";
-import * as settings_account from "./settings_account";
-import * as settings_bots from "./settings_bots";
-import * as settings_components from "./settings_components";
-import * as settings_config from "./settings_config";
-import * as settings_emoji from "./settings_emoji";
-import * as settings_exports from "./settings_exports";
-import * as settings_invites from "./settings_invites";
-import * as settings_linkifiers from "./settings_linkifiers";
-import * as settings_notifications from "./settings_notifications";
-import * as settings_org from "./settings_org";
-import * as settings_playgrounds from "./settings_playgrounds";
-import * as settings_preferences from "./settings_preferences";
-import * as settings_profile_fields from "./settings_profile_fields";
-import * as settings_realm_domains from "./settings_realm_domains";
-import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
-import * as settings_streams from "./settings_streams";
-import * as settings_users from "./settings_users";
-import * as sidebar_ui from "./sidebar_ui";
-import * as starred_messages from "./starred_messages";
-import * as starred_messages_ui from "./starred_messages_ui";
-import {current_user, realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as stream_events from "./stream_events";
-import * as stream_list from "./stream_list";
-import * as stream_list_sort from "./stream_list_sort";
-import * as stream_settings_ui from "./stream_settings_ui";
-import * as stream_topic_history from "./stream_topic_history";
-import * as stream_ui_updates from "./stream_ui_updates";
-import * as sub_store from "./sub_store";
-import * as submessage from "./submessage";
-import * as theme from "./theme";
-import * as typing_events from "./typing_events";
-import * as unread_ops from "./unread_ops";
-import * as unread_ui from "./unread_ui";
-import * as user_events from "./user_events";
-import * as user_group_edit from "./user_group_edit";
-import * as user_groups from "./user_groups";
-import {user_settings} from "./user_settings";
-import * as user_status from "./user_status";
-import * as user_topics_ui from "./user_topics_ui";
+import * as activity_ui from "./activity_ui.ts";
+import * as alert_words from "./alert_words.ts";
+import * as alert_words_ui from "./alert_words_ui.ts";
+import * as attachments_ui from "./attachments_ui.ts";
+import * as audible_notifications from "./audible_notifications.ts";
+import * as blueslip from "./blueslip.ts";
+import * as bot_data from "./bot_data.ts";
+import * as browser_history from "./browser_history.ts";
+import {buddy_list} from "./buddy_list.ts";
+import * as compose_call from "./compose_call.ts";
+import * as compose_call_ui from "./compose_call_ui.ts";
+import * as compose_closed_ui from "./compose_closed_ui.ts";
+import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as compose_recipient from "./compose_recipient.ts";
+import * as compose_state from "./compose_state.ts";
+import {electron_bridge} from "./electron_bridge.ts";
+import * as emoji from "./emoji.ts";
+import * as emoji_picker from "./emoji_picker.ts";
+import * as gear_menu from "./gear_menu.ts";
+import * as giphy from "./giphy.ts";
+import * as information_density from "./information_density.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
+import * as linkifiers from "./linkifiers.ts";
+import * as message_edit from "./message_edit.ts";
+import * as message_events from "./message_events.js";
+import * as message_lists from "./message_lists.ts";
+import * as message_live_update from "./message_live_update.ts";
+import * as message_view_header from "./message_view_header.ts";
+import * as muted_users_ui from "./muted_users_ui.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as narrow_title from "./narrow_title.ts";
+import * as navbar_alerts from "./navbar_alerts.ts";
+import * as onboarding_steps from "./onboarding_steps.ts";
+import * as overlays from "./overlays.ts";
+import * as peer_data from "./peer_data.ts";
+import * as people from "./people.ts";
+import * as pm_list from "./pm_list.ts";
+import * as reactions from "./reactions.ts";
+import * as realm_icon from "./realm_icon.ts";
+import * as realm_logo from "./realm_logo.ts";
+import * as realm_playground from "./realm_playground.ts";
+import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
+import * as reload from "./reload.ts";
+import * as saved_snippets from "./saved_snippets.ts";
+import * as saved_snippets_ui from "./saved_snippets_ui.ts";
+import * as scheduled_messages from "./scheduled_messages.ts";
+import * as scheduled_messages_feed_ui from "./scheduled_messages_feed_ui.ts";
+import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
+import * as scheduled_messages_ui from "./scheduled_messages_ui.ts";
+import * as scroll_bar from "./scroll_bar.ts";
+import * as settings_account from "./settings_account.ts";
+import * as settings_bots from "./settings_bots.ts";
+import * as settings_components from "./settings_components.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_emoji from "./settings_emoji.ts";
+import * as settings_exports from "./settings_exports.ts";
+import * as settings_invites from "./settings_invites.ts";
+import * as settings_linkifiers from "./settings_linkifiers.ts";
+import * as settings_notifications from "./settings_notifications.ts";
+import * as settings_org from "./settings_org.ts";
+import * as settings_playgrounds from "./settings_playgrounds.ts";
+import * as settings_preferences from "./settings_preferences.ts";
+import * as settings_profile_fields from "./settings_profile_fields.ts";
+import * as settings_realm_domains from "./settings_realm_domains.ts";
+import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults.ts";
+import * as settings_streams from "./settings_streams.ts";
+import * as settings_users from "./settings_users.ts";
+import * as sidebar_ui from "./sidebar_ui.ts";
+import * as starred_messages from "./starred_messages.ts";
+import * as starred_messages_ui from "./starred_messages_ui.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_events from "./stream_events.ts";
+import * as stream_list from "./stream_list.ts";
+import * as stream_list_sort from "./stream_list_sort.ts";
+import * as stream_settings_ui from "./stream_settings_ui.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
+import * as stream_ui_updates from "./stream_ui_updates.ts";
+import * as sub_store from "./sub_store.ts";
+import * as submessage from "./submessage.ts";
+import * as theme from "./theme.ts";
+import * as typing_events from "./typing_events.ts";
+import * as unread_ops from "./unread_ops.ts";
+import * as unread_ui from "./unread_ui.ts";
+import * as user_events from "./user_events.js";
+import * as user_group_edit from "./user_group_edit.js";
+import * as user_groups from "./user_groups.ts";
+import {user_settings} from "./user_settings.ts";
+import * as user_status from "./user_status.ts";
+import * as user_topics from "./user_topics.ts";
+import * as user_topics_ui from "./user_topics_ui.ts";
 
 export function dispatch_normal_event(event) {
     const noop = function () {};
@@ -210,9 +211,15 @@ export function dispatch_normal_event(event) {
                 allow_message_editing: noop,
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
                 bot_creation_policy: settings_bots.update_bot_permissions_ui,
+                can_add_custom_emoji_group: noop,
+                can_create_groups: noop,
+                can_create_private_channel_group: noop,
+                can_create_public_channel_group: noop,
                 can_delete_any_message_group: noop,
                 can_delete_own_message_group: noop,
+                can_manage_all_groups: noop,
                 can_move_messages_between_channels_group: noop,
+                can_move_messages_between_topics_group: noop,
                 create_multiuse_invite_group: noop,
                 invite_to_stream_policy: noop,
                 default_code_block_language: noop,
@@ -226,7 +233,6 @@ export function dispatch_normal_event(event) {
                 disallow_disposable_email_addresses: noop,
                 inline_image_preview: noop,
                 inline_url_embed_preview: noop,
-                invite_to_realm_policy: noop,
                 invite_required: noop,
                 mandatory_topics: noop,
                 message_content_edit_limit_seconds: noop,
@@ -266,12 +272,6 @@ export function dispatch_normal_event(event) {
                             electron_bridge?.send_event("realm_name", event.value);
                         }
 
-                        if (event.property === "invite_to_realm_policy") {
-                            settings_invites.update_invite_user_panel();
-                            sidebar_ui.update_invite_user_option();
-                            gear_menu.rerender();
-                        }
-
                         if (event.property === "enable_spectator_access") {
                             stream_settings_ui.update_stream_privacy_choices(
                                 "can_create_web_public_channel_group",
@@ -293,7 +293,10 @@ export function dispatch_normal_event(event) {
                                     settings_org.sync_realm_settings(key);
                                 }
 
-                                if (key === "create_multiuse_invite_group") {
+                                if (
+                                    key === "create_multiuse_invite_group" ||
+                                    key === "can_invite_users_group"
+                                ) {
                                     settings_invites.update_invite_user_panel();
                                     sidebar_ui.update_invite_user_option();
                                     gear_menu.rerender();
@@ -315,9 +318,7 @@ export function dispatch_normal_event(event) {
                                     key === "direct_message_initiator_group" ||
                                     key === "direct_message_permission_group"
                                 ) {
-                                    settings_org.check_disable_direct_message_initiator_group_dropdown(
-                                        realm.realm_direct_message_permission_group,
-                                    );
+                                    settings_org.check_disable_direct_message_initiator_group_widget();
                                     compose_closed_ui.update_buttons_for_private();
                                     compose_recipient.check_posting_policy_for_compose_box();
                                 }
@@ -1013,11 +1014,23 @@ export function dispatch_normal_event(event) {
             }
             break;
 
-        case "user_topic":
+        case "user_topic": {
+            const previous_topic_visibility = user_topics.get_topic_visibility_policy(
+                event.stream_id,
+                event.topic_name,
+            );
             user_topics_ui.handle_topic_updates(
                 event,
                 message_events.update_current_view_for_topic_visibility(),
             );
+            // Discard cached message lists if `event` topic was / is followed.
+            if (
+                event.visibility_policy === user_topics.all_visibility_policies.FOLLOWED ||
+                previous_topic_visibility === user_topics.all_visibility_policies.FOLLOWED
+            ) {
+                message_events.discard_cached_lists_with_term_type("is-followed");
+            }
             break;
+        }
     }
 }

@@ -11,7 +11,9 @@
         "strict": true,
 
         /* Modules */
-        "moduleResolution": "node",
+        "allowImportingTsExtensions": true,
+        "module": "preserve",
+        "moduleResolution": "bundler",
         "paths": {
             "*": ["./web/src/types/*"],
         },
@@ -24,7 +26,7 @@
         /* Interop Constraints */
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
-        "isolatedModules": true,
+        "verbatimModuleSyntax": true,
 
         /* Language and Environment */
         "target": "ESNext",
@@ -33,9 +35,6 @@
         "composite": true,
     },
     "exclude": [
-        // Type stubs are not part of the top-level project.
-        "web/src/types",
-
         // This is a separate package with its own TypeScript configuration.
         "help-beta",
 
@@ -44,8 +43,5 @@
         "static/webpack-bundles",
         "var",
         "zulip-py3-venv",
-
-        // Even though allowJs defaults to false, typescript-eslint forces it to true.
-        "**/*.js",
     ],
 }

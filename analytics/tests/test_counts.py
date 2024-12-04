@@ -55,6 +55,7 @@ from zerver.lib.push_notifications import (
     get_message_payload_gcm,
     hex_to_b64,
 )
+from zerver.lib.streams import get_default_values_for_stream_permission_group_settings
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.lib.timestamp import TimeZoneNotUTCError, ceiling_to_day, floor_to_day
@@ -65,7 +66,6 @@ from zerver.models import (
     Client,
     DirectMessageGroup,
     Message,
-    NamedUserGroup,
     PreregistrationUser,
     RealmAuditLog,
     Recipient,
@@ -74,7 +74,6 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.clients import get_client
-from zerver.models.groups import SystemGroups
 from zerver.models.messages import Attachment
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.scheduled_jobs import NotificationTriggers
@@ -101,11 +100,6 @@ class AnalyticsTestCase(ZulipTestCase):
         super().setUp()
         self.default_realm = do_create_realm(
             string_id="realmtest", name="Realm Test", date_created=self.TIME_ZERO - 2 * self.DAY
-        )
-        self.administrators_user_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS,
-            realm=self.default_realm,
-            is_system_group=True,
         )
 
         # used to generate unique names in self.create_*
@@ -164,7 +158,7 @@ class AnalyticsTestCase(ZulipTestCase):
             "name": f"stream name {self.name_counter}",
             "realm": self.default_realm,
             "date_created": self.TIME_LAST_HOUR,
-            "can_remove_subscribers_group": self.administrators_user_group,
+            **get_default_values_for_stream_permission_group_settings(self.default_realm),
         }
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)

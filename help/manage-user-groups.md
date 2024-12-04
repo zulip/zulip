@@ -1,6 +1,10 @@
 # Manage user groups
 
+{!cloud-paid-plans-only.md!}
+
 {!user-groups-intro.md!}
+
+{!user-groups-applications.md!}
 
 ## Create a user group
 
@@ -34,7 +38,7 @@
 
 !!! warn ""
 
-    Guests can never manage user groups, add anyone else to a group, or remove
+    Guests can never administer user groups, add anyone else to a group, or remove
     anyone else from a group, even if they belong to a group that has permissions
     to do so.
 
@@ -52,15 +56,15 @@
 
 1. Select the **General** tab on the right.
 
-1. Under **Group permissions**, configure **Who can manage this group**, **Who
-   can mention this group**, **Who can add members to this group**, **Who can join
-   this group**, and **Who can leave this group**.
+1. Under **Group permissions**, configure **Who can administer this group**, **Who
+   can mention this group**, **Who can add members to this group**, **Who can remove
+   members from this group**, **Who can join this group**, and **Who can leave this group**.
 
 {!save-changes.md!}
 
 {end_tabs}
 
-## Add groups and users to a group
+## Add users to a group
 
 {start_tabs}
 
@@ -72,14 +76,16 @@
 
 1. Select the **Members** tab on the right.
 
-1. Under **Add members**, enter groups and users you want to add. You can enter
-   a `#channel` to add all subscribers to the group.
+1. Under **Add members**, enter users you want to add. You can enter a
+   `#channel` to add all subscribers to the group.
 
 1. Click **Add**. Zulip will notify everyone who is added to the group.
 
 {end_tabs}
 
-## Remove users from a user group
+## Add user groups to a group
+
+{!user-subgroups-intro.md!}
 
 {start_tabs}
 
@@ -91,7 +97,25 @@
 
 1. Select the **Members** tab on the right.
 
-1. Under **Members**, find the user you would like to remove.
+1. Under **Add members**, enter groups you want to add.
+
+1. Click **Add**.
+
+{end_tabs}
+
+## Remove user or group from a group
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{relative|group|all}
+
+1. Select a user group.
+
+1. Select the **Members** tab on the right.
+
+1. Under **Members**, find the user or group you would like to remove.
 
 1. Click the **Remove** button in that row. Zulip will notify everyone who is
    removed from the group.
@@ -135,16 +159,17 @@ so.
 
 {end_tabs}
 
-## Configure who can manage user groups
+## Configure who can administer all user groups
 
 {!admin-only.md!}
 
-You can configure who can manage groups in your organization. Guests can never
-manage user groups, even if they belong to a group that has permissions to do
-so.
+You can configure who can administer all user groups in your
+organization. Guests can never administer user groups, even if they
+belong to a group that has permissions to do so.
 
-In addition, you can [give users permission](#configure-group-permissions) to
-manage a specific group.
+In addition, you can [give users
+permission](#configure-group-permissions) to administer a specific
+group.
 
 {start_tabs}
 
@@ -152,7 +177,7 @@ manage a specific group.
 
 {settings_tab|organization-permissions}
 
-1. Under **Other permissions**, configure **Who can manage user groups**.
+1. Under **Other permissions**, configure **Who can administer all user groups**.
 
 {!save-changes.md!}
 

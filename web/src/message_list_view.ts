@@ -3,7 +3,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as resolved_topic from "../shared/src/resolved_topic";
+import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_bookend from "../templates/bookend.hbs";
 import render_login_to_view_image_button from "../templates/login_to_view_image_button.hbs";
 import render_message_group from "../templates/message_group.hbs";
@@ -11,40 +11,40 @@ import render_message_list from "../templates/message_list.hbs";
 import render_recipient_row from "../templates/recipient_row.hbs";
 import render_single_message from "../templates/single_message.hbs";
 
-import * as activity from "./activity";
-import * as blueslip from "./blueslip";
-import * as compose_fade from "./compose_fade";
-import * as compose_state from "./compose_state";
-import * as condense from "./condense";
-import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
-import * as message_edit from "./message_edit";
-import type {MessageList} from "./message_list";
-import * as message_list_tooltips from "./message_list_tooltips";
-import * as message_lists from "./message_lists";
-import * as message_store from "./message_store";
-import type {Message} from "./message_store";
-import * as message_viewport from "./message_viewport";
-import type {MessageViewportInfo} from "./message_viewport";
-import * as muted_users from "./muted_users";
-import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import * as popovers from "./popovers";
-import * as reactions from "./reactions";
-import * as rendered_markdown from "./rendered_markdown";
-import * as rows from "./rows";
-import * as sidebar_ui from "./sidebar_ui";
-import * as stream_color from "./stream_color";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import * as submessage from "./submessage";
-import {is_same_day} from "./time_zone_util";
-import * as timerender from "./timerender";
-import type {TopicLink} from "./types";
-import * as user_topics from "./user_topics";
-import type {AllVisibilityPolicies} from "./user_topics";
-import * as util from "./util";
+import * as activity from "./activity.ts";
+import * as blueslip from "./blueslip.ts";
+import * as compose_fade from "./compose_fade.ts";
+import * as compose_state from "./compose_state.ts";
+import * as condense from "./condense.ts";
+import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
+import * as message_edit from "./message_edit.ts";
+import type {MessageList} from "./message_list.ts";
+import * as message_list_tooltips from "./message_list_tooltips.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_store from "./message_store.ts";
+import type {Message} from "./message_store.ts";
+import * as message_viewport from "./message_viewport.ts";
+import type {MessageViewportInfo} from "./message_viewport.ts";
+import * as muted_users from "./muted_users.ts";
+import * as narrow_state from "./narrow_state.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import * as popovers from "./popovers.ts";
+import * as reactions from "./reactions.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
+import * as rows from "./rows.ts";
+import * as sidebar_ui from "./sidebar_ui.ts";
+import * as stream_color from "./stream_color.ts";
+import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import * as submessage from "./submessage.ts";
+import {is_same_day} from "./time_zone_util.ts";
+import * as timerender from "./timerender.ts";
+import type {TopicLink} from "./types.ts";
+import * as user_topics from "./user_topics.ts";
+import type {AllVisibilityPolicies} from "./user_topics.ts";
+import * as util from "./util.ts";
 
 export type MessageContainer = {
     background_color?: string;
@@ -428,14 +428,6 @@ function maybe_restore_focus_to_message_edit_form(): void {
     }, 0);
 }
 
-function is_search_view(): boolean {
-    const current_filter = narrow_state.filter();
-    if (current_filter && !current_filter.supports_collapsing_recipients()) {
-        return true;
-    }
-    return false;
-}
-
 type SubscriptionMarkers = {
     bookend_top: boolean;
     stream_name: string;
@@ -456,7 +448,7 @@ function populate_group_from_message(
 
     // Each searched message is a self-contained result,
     // so we always display date in the recipient bar for those messages.
-    const always_display_date = is_search_view();
+    const always_display_date = narrow_state.is_search_view();
     if (is_stream) {
         assert(message.type === "stream");
         // stream messages have string display_recipient
@@ -478,7 +470,7 @@ function populate_group_from_message(
             // Hack to handle unusual cases like the tutorial where
             // the streams used don't actually exist in the subs
             // module.  Ideally, we'd clean this up by making the
-            // tutorial populate stream_settings_ui.js "properly".
+            // tutorial populate stream_settings_ui.ts "properly".
             stream_id = -1;
         } else {
             stream_id = sub.stream_id;
@@ -1949,11 +1941,11 @@ export class MessageListView {
     }
 
     render_trailing_bookend(
+        stream_id: number,
         stream_name: string | undefined,
         subscribed: boolean,
         deactivated: boolean,
         just_unsubscribed: boolean,
-        can_toggle_subscription: boolean,
         is_spectator: boolean,
         invite_only: boolean,
         is_web_public: boolean,
@@ -1962,8 +1954,8 @@ export class MessageListView {
         // partial in message_group.hbs, which do not set is_trailing_bookend.
         const $rendered_trailing_bookend = $(
             render_bookend({
+                stream_id,
                 stream_name,
-                can_toggle_subscription,
                 subscribed,
                 deactivated,
                 just_unsubscribed,

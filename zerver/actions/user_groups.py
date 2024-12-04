@@ -9,8 +9,8 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.types import AnonymousSettingGroupDict
 from zerver.lib.user_groups import (
-    AnonymousSettingGroupDict,
     get_group_setting_value_for_api,
     get_group_setting_value_for_audit_log_data,
     get_role_based_system_groups_dict,
@@ -176,6 +176,12 @@ def do_send_create_user_group_event(
     assert user_group.date_created is not None
     date_created = datetime_to_timestamp(user_group.date_created)
 
+    setting_values = {}
+    for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
+        setting_values[setting_name] = get_group_setting_value_for_api(
+            getattr(user_group, setting_name)
+        )
+
     event = dict(
         type="user_group",
         op="add",
@@ -188,11 +194,7 @@ def do_send_create_user_group_event(
             id=user_group.id,
             is_system_group=user_group.is_system_group,
             direct_subgroup_ids=[direct_subgroup.id for direct_subgroup in direct_subgroups],
-            can_add_members_group=get_group_setting_value_for_api(user_group.can_add_members_group),
-            can_join_group=get_group_setting_value_for_api(user_group.can_join_group),
-            can_leave_group=get_group_setting_value_for_api(user_group.can_leave_group),
-            can_manage_group=get_group_setting_value_for_api(user_group.can_manage_group),
-            can_mention_group=get_group_setting_value_for_api(user_group.can_mention_group),
+            **setting_values,
             deactivated=False,
         ),
     )
@@ -366,7 +368,7 @@ def do_send_subgroups_update_event(
     send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def add_subgroups_to_user_group(
     user_group: NamedUserGroup,
     subgroups: list[NamedUserGroup],
@@ -406,7 +408,7 @@ def add_subgroups_to_user_group(
     do_send_subgroups_update_event("add_subgroups", user_group, subgroup_ids)
 
 
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def remove_subgroups_from_user_group(
     user_group: NamedUserGroup,
     subgroups: list[NamedUserGroup],

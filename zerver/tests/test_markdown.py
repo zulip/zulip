@@ -1621,7 +1621,7 @@ class MarkdownLinkifierTest(ZulipTestCase):
         )
 
     def test_topic_links_ordering_by_priority(self) -> None:
-        # The same test case is also implemented in web/tests/markdown_parse.test.js
+        # The same test case is also implemented in web/tests/markdown_parse.test.cjs
         realm = get_realm("zulip")
         self.check_add_linkifiers(
             [
@@ -3105,6 +3105,28 @@ class MarkdownStreamMentionTests(ZulipTestCase):
             f'<a class="stream-topic" data-stream-id="{scotland.id}" '
             f'href="/#narrow/channel/{scotland.id}-{scotland.name}/topic/other.20topic">'
             f"#{scotland.name} &gt; other topic</a>"
+            ".</p>",
+        )
+
+    def test_message_id_multiple(self) -> None:
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        sender_user_profile = self.example_user("othello")
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        content = "As mentioned in #**Denmark>danish@123** and #**Denmark>danish@456**."
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            "<p>As mentioned in "
+            f'<a class="message-link" '
+            f'href="/#narrow/channel/{denmark.id}-{denmark.name}/topic/danish/near/123">'
+            f"#Denmark &gt; danish @ 💬</a>"
+            " and "
+            f'<a class="message-link" '
+            f'href="/#narrow/channel/{denmark.id}-{denmark.name}/topic/danish/near/456">'
+            f"#Denmark &gt; danish @ 💬</a>"
             ".</p>",
         )
 

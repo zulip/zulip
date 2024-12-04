@@ -1,8 +1,8 @@
 import $ from "jquery";
 import * as tippy from "tippy.js";
 
-import {$t} from "./i18n";
-import * as util from "./util";
+import {$t} from "./i18n.ts";
+import * as util from "./util.ts";
 
 export const status_classes = "alert-error alert-success alert-info alert-warning alert-loading";
 
@@ -34,10 +34,14 @@ export function adjust_mac_kbd_tags(kbd_elem_class: string): void {
         let key_text = $(this).text();
 
         // We use data-mac-key attribute to override the default key in case
-        // of exceptions. Currently, there are 2 shortcuts (for navigating back
-        // and forth in browser history) which need `Cmd` instead of the expected
-        // mapping (`Opt`) for the `Alt` key, so we use this attribute to override
-        // `Opt` with `Cmd`.
+        // of exceptions:
+        // - There are 2 shortcuts (for navigating back and forth in browser
+        //   history) which need "⌘" instead of the expected mapping ("Opt")
+        //   for the "Alt" key, so we use this attribute to override "Opt"
+        //   with "⌘".
+        // - The "Ctrl" + "[" shortcuts (which match the Vim keybinding behavior
+        //   of mapping to "Esc") need to display "Ctrl" for all users, so we
+        //   use this attribute to override "⌘" with "Ctrl".
         const replace_key = $(this).attr("data-mac-key") ?? keys_map.get(key_text);
         if (replace_key !== undefined) {
             key_text = replace_key;

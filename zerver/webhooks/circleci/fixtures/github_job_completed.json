@@ -13,7 +13,7 @@
         "target_repository_url": "https://github.com/zulip-testing/circleci-webhook-test",
         "revision": "a5e30a908224e46626a796d058289475f6d387b5",
         "commit": {
-          "subject": ".circleci: Update Webhook URL.",
+          "subject": "Fix remove-op on reaction event.",
           "body": "",
           "author": {
             "name": "Hari Prashant Bhimaraju",
@@ -47,7 +47,7 @@
     },
     "project": {
       "id": "c4fa043c-d2ba-4d97-a6ca-2745b3518114",
-      "name": "circleci-webhook-test",
+      "name": "main branch - build notifications",
       "slug": "github/zulip-testing/circleci-webhook-test"
     },
     "id": "e7346c18-44cb-331d-9d45-698a38edb2e0",

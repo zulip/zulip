@@ -2,9 +2,10 @@
 
 import argparse
 import html
-import json
 import sys
 from typing import NamedTuple
+
+import orjson
 
 
 class CLIArgs(NamedTuple):
@@ -38,8 +39,8 @@ if __name__ == "__main__":
 
     json_data: dict[str, str] = {}
 
-    with open(args.filename) as source:
-        json_data = json.load(source)
+    with open(args.filename, "rb") as source:
+        json_data = orjson.loads(source.read())
 
         if args.unescape_html:
             for key, value in json_data.items():
@@ -51,11 +52,13 @@ if __name__ == "__main__":
                         file=sys.stderr,
                     )
 
-    with open(args.filename, mode="w") as dest:
-        # At least on Linux systems with LANG=en_US.UTF-8, ensure_ascii=False
-        # ensures our output uses real UTF-8 codepoints for human readability,
-        # rather than \u0000 style escape sequences, providing us a
-        # somewhat-implicit JSON unescape. This may behave in unexpected ways
-        # on other OSes or system encodings.
-        json.dump(json_data, dest, ensure_ascii=False, indent=args.indent_level)
-        dest.write("\n")
+    with open(args.filename, mode="wb") as dest:
+        # orjson ensures our output uses real UTF-8 codepoints for
+        # human readability, rather than \u0000 style escape
+        # sequences, providing us a somewhat-implicit JSON unescape.
+        dest.write(
+            orjson.dumps(
+                json_data,
+                option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS,
+            )
+        )

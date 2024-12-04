@@ -5,24 +5,27 @@ import {z} from "zod";
 import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
 
-import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
-import * as dialog_widget from "./dialog_widget";
-import {$t, $t_html} from "./i18n";
-import * as keydown_util from "./keydown_util";
-import * as loading from "./loading";
-import * as onboarding_steps from "./onboarding_steps";
-import * as people from "./people";
-import * as settings_data from "./settings_data";
-import {current_user, realm} from "./state_data";
-import * as stream_create_subscribers from "./stream_create_subscribers";
-import * as stream_data from "./stream_data";
-import * as stream_settings_components from "./stream_settings_components";
-import * as stream_settings_data from "./stream_settings_data";
-import * as stream_ui_updates from "./stream_ui_updates";
-import type {HTMLSelectOneElement} from "./types";
-import * as ui_report from "./ui_report";
-import * as util from "./util";
+import * as channel from "./channel.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
+import * as loading from "./loading.ts";
+import * as onboarding_steps from "./onboarding_steps.ts";
+import * as people from "./people.ts";
+import * as settings_components from "./settings_components.ts";
+import * as settings_data from "./settings_data.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as stream_create_subscribers from "./stream_create_subscribers.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_settings_components from "./stream_settings_components.ts";
+import * as stream_settings_data from "./stream_settings_data.ts";
+import {stream_permission_group_settings_schema} from "./stream_types.ts";
+import * as stream_ui_updates from "./stream_ui_updates.ts";
+import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
+import type {HTMLSelectOneElement} from "./types.ts";
+import * as ui_report from "./ui_report.ts";
+import * as util from "./util.ts";
 
 let created_stream: string | undefined;
 // Default is true since the current user is added to
@@ -363,11 +366,13 @@ function create_stream(): void {
     const principals = JSON.stringify(user_ids);
     set_current_user_subscribed_to_created_stream(user_ids.includes(current_user.user_id));
 
-    assert(stream_settings_components.new_stream_can_remove_subscribers_group_widget !== null);
-    const widget_value =
-        stream_settings_components.new_stream_can_remove_subscribers_group_widget.value();
-    assert(typeof widget_value === "number");
-    const can_remove_subscribers_group_id = widget_value;
+    const group_setting_values: Record<string, string> = {};
+    for (const setting_name of Object.keys(realm.server_supported_permission_settings.stream)) {
+        assert(group_setting_widgets[setting_name] !== undefined);
+        group_setting_values[setting_name] = JSON.stringify(
+            settings_components.get_group_setting_widget_value(group_setting_widgets[setting_name]),
+        );
+    }
 
     loading.make_indicator($("#stream_creating_indicator"), {
         text: $t({defaultMessage: "Creating channel..."}),
@@ -383,7 +388,7 @@ function create_stream(): void {
         message_retention_days: JSON.stringify(message_retention_selection),
         announce: JSON.stringify(announce),
         principals,
-        can_remove_subscribers_group: can_remove_subscribers_group_id,
+        ...group_setting_values,
     };
 
     // Subscribe yourself and possible other people to a new stream.
@@ -506,6 +511,18 @@ export function show_new_stream_modal(): void {
     clear_error_display();
 }
 
+let group_setting_widgets: Record<string, GroupSettingPillContainer | undefined> = {};
+
+function set_up_group_setting_widgets(): void {
+    for (const setting_name of Object.keys(realm.server_supported_permission_settings.stream)) {
+        group_setting_widgets[setting_name] =
+            settings_components.create_stream_group_setting_widget({
+                $pill_container: $("#id_new_" + setting_name),
+                setting_name: stream_permission_group_settings_schema.parse(setting_name),
+            });
+    }
+}
+
 export function set_up_handlers(): void {
     stream_announce_previous_value =
         settings_data.user_can_create_public_streams() ||
@@ -580,8 +597,8 @@ export function set_up_handlers(): void {
         }
     });
 
-    assert(stream_settings_components.new_stream_can_remove_subscribers_group_widget !== null);
-    stream_settings_components.new_stream_can_remove_subscribers_group_widget.setup();
+    set_up_group_setting_widgets();
+    settings_components.enable_opening_typeahead_on_clicking_label($container);
 }
 
 export function initialize(): void {

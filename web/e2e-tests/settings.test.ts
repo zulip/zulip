@@ -2,9 +2,8 @@ import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
 
-import {test_credentials} from "../../var/puppeteer/test_credentials";
-
-import * as common from "./lib/common";
+import * as common from "./lib/common.ts";
+import {test_credentials} from "./lib/common.ts";
 
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const GENERIC_BOT_TYPE = "1";
@@ -30,6 +29,8 @@ async function open_settings(page: Page): Promise<void> {
         page_url.includes("/#settings/"),
         `Page url: ${page_url} does not contain /#settings/`,
     );
+    // Wait for settings overlay to open.
+    await page.waitForSelector("#settings_overlay_container", {visible: true});
 }
 
 async function close_settings_and_date_picker(page: Page): Promise<void> {
@@ -40,9 +41,11 @@ async function close_settings_and_date_picker(page: Page): Promise<void> {
 
     await page.keyboard.press("Escape");
     await page.waitForSelector(".flatpickr-calendar", {hidden: true});
+    await page.waitForSelector("#settings_overlay_container", {hidden: true});
 }
 
 async function test_change_full_name(page: Page): Promise<void> {
+    await page.waitForSelector("#full_name", {visible: true});
     await page.click("#full_name");
 
     const full_name_input_selector = 'input[name="full_name"]';
@@ -193,8 +196,8 @@ async function test_botserverrc(page: Page): Promise<void> {
 async function test_edit_bot_form(page: Page): Promise<void> {
     return;
     const bot1_email = "1-bot@zulip.testserver";
-    const bot1_edit_btn = `.open_edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
-    await page.click(bot1_edit_btn);
+    const bot1_edit_button = `.open_edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
+    await page.click(bot1_edit_button);
 
     const edit_form_selector = `#bot-edit-form[data-email="${CSS.escape(bot1_email)}"]`;
     await page.waitForSelector(edit_form_selector, {visible: true});
@@ -204,8 +207,8 @@ async function test_edit_bot_form(page: Page): Promise<void> {
     );
 
     await common.fill_form(page, edit_form_selector, {full_name: "Bot one"});
-    const save_btn_selector = "#user-profile-modal .dialog_submit_button";
-    await page.click(save_btn_selector);
+    const save_button_selector = "#user-profile-modal .dialog_submit_button";
+    await page.click(save_button_selector);
 
     // The form gets closed on saving. So, assert it's closed by waiting for it to be hidden.
     await page.waitForSelector("#edit_bot_modal", {hidden: true});
@@ -227,8 +230,8 @@ async function test_edit_bot_form(page: Page): Promise<void> {
 async function test_invalid_edit_bot_form(page: Page): Promise<void> {
     return;
     const bot1_email = "1-bot@zulip.testserver";
-    const bot1_edit_btn = `.open_edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
-    await page.click(bot1_edit_btn);
+    const bot1_edit_button = `.open_edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
+    await page.click(bot1_edit_button);
 
     const edit_form_selector = `#bot-edit-form[data-email="${CSS.escape(bot1_email)}"]`;
     await page.waitForSelector(edit_form_selector, {visible: true});
@@ -238,8 +241,8 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
     );
 
     await common.fill_form(page, edit_form_selector, {full_name: "Bot 2"});
-    const save_btn_selector = "#user-profile-modal .dialog_submit_button";
-    await page.click(save_btn_selector);
+    const save_button_selector = "#user-profile-modal .dialog_submit_button";
+    await page.click(save_button_selector);
 
     // The form should not get closed on saving. Errors should be visible on the form.
     await common.wait_for_micromodal_to_open(page);
@@ -301,8 +304,8 @@ async function get_alert_words_status_text(page: Page): Promise<string> {
 }
 
 async function close_alert_words_status(page: Page): Promise<void> {
-    const status_close_btn = ".close-alert-word-status";
-    await page.click(status_close_btn);
+    const status_close_button = ".close-alert-word-status";
+    await page.click(status_close_button);
     await page.waitForSelector(alert_word_status_selector, {hidden: true});
 }
 
@@ -326,9 +329,9 @@ async function test_duplicate_alert_words_cannot_be_added(
 }
 
 async function delete_alert_word(page: Page, word: string): Promise<void> {
-    const delete_btn_selector = `.remove-alert-word[data-word="${CSS.escape(word)}"]`;
-    await page.click(delete_btn_selector);
-    await page.waitForSelector(delete_btn_selector, {hidden: true});
+    const delete_button_selector = `.remove-alert-word[data-word="${CSS.escape(word)}"]`;
+    await page.click(delete_button_selector);
+    await page.waitForSelector(delete_button_selector, {hidden: true});
 }
 
 async function test_alert_word_deletion(page: Page, word: string): Promise<void> {

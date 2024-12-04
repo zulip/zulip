@@ -3,13 +3,14 @@ import assert from "minimalistic-assert";
 
 import render_stream_card_popover from "../templates/popovers/stream_card_popover.hbs";
 
-import * as browser_history from "./browser_history";
-import * as hash_util from "./hash_util";
-import * as modals from "./modals";
-import * as popover_menus from "./popover_menus";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import * as ui_util from "./ui_util";
+import * as browser_history from "./browser_history.ts";
+import * as hash_util from "./hash_util.ts";
+import * as modals from "./modals.ts";
+import * as peer_data from "./peer_data.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import * as ui_util from "./ui_util.ts";
 
 let stream_id: number | undefined;
 
@@ -25,6 +26,7 @@ export function initialize(): void {
             const stream_id_str = $elt.attr("data-stream-id");
             assert(stream_id_str !== undefined);
             stream_id = Number.parseInt(stream_id_str, 10);
+            const subscribers_count = peer_data.get_subscriber_count(stream_id);
 
             instance.setContent(
                 ui_util.parse_html(
@@ -32,6 +34,7 @@ export function initialize(): void {
                         stream: {
                             ...sub_store.get(stream_id),
                         },
+                        subscribers_count,
                     }),
                 ),
             );
@@ -48,7 +51,7 @@ export function initialize(): void {
                 // modals.close_active_if_any() is mainly used to handle navigation to channel settings
                 // using the popover that is opened when clicking on channel pills in the invite user modal.
                 modals.close_active_if_any();
-                const can_change_name_description = stream_data.can_edit_description();
+                const can_change_name_description = stream_data.can_edit_description(sub);
                 const can_change_stream_permissions = stream_data.can_change_permissions(sub);
                 let stream_edit_hash = hash_util.channels_settings_edit_url(sub, "general");
                 if (!can_change_stream_permissions && !can_change_name_description) {

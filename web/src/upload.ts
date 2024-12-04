@@ -7,17 +7,17 @@ import {z} from "zod";
 
 import render_upload_banner from "../templates/compose_banner/upload_banner.hbs";
 
-import * as blueslip from "./blueslip";
-import * as compose_actions from "./compose_actions";
-import * as compose_banner from "./compose_banner";
-import * as compose_reply from "./compose_reply";
-import * as compose_state from "./compose_state";
-import * as compose_ui from "./compose_ui";
-import * as compose_validate from "./compose_validate";
-import {$t} from "./i18n";
-import * as message_lists from "./message_lists";
-import * as rows from "./rows";
-import {realm} from "./state_data";
+import * as blueslip from "./blueslip.ts";
+import * as compose_actions from "./compose_actions.ts";
+import * as compose_banner from "./compose_banner.ts";
+import * as compose_reply from "./compose_reply.ts";
+import * as compose_state from "./compose_state.ts";
+import * as compose_ui from "./compose_ui.ts";
+import * as compose_validate from "./compose_validate.ts";
+import {$t} from "./i18n.ts";
+import * as message_lists from "./message_lists.ts";
+import * as rows from "./rows.ts";
+import {realm} from "./state_data.ts";
 
 let drag_drop_img: HTMLElement | null = null;
 let compose_upload_object: Uppy;
@@ -125,7 +125,7 @@ export function edit_config(row: number): Config {
     };
 }
 
-export function hide_upload_banner(uppy: Uppy, config: Config, file_id: string): void {
+export let hide_upload_banner = (uppy: Uppy, config: Config, file_id: string): void => {
     config.upload_banner(file_id).remove();
     if (uppy.getFiles().length === 0) {
         if (config.mode === "compose") {
@@ -134,6 +134,10 @@ export function hide_upload_banner(uppy: Uppy, config: Config, file_id: string):
             config.send_button().prop("disabled", false);
         }
     }
+};
+
+export function rewire_hide_upload_banner(value: typeof hide_upload_banner): void {
+    hide_upload_banner = value;
 }
 
 function add_upload_banner(
@@ -172,7 +176,7 @@ export function show_error_message(
     }
 }
 
-export function upload_files(uppy: Uppy, config: Config, files: File[] | FileList): void {
+export let upload_files = (uppy: Uppy, config: Config, files: File[] | FileList): void => {
     if (files.length === 0) {
         return;
     }
@@ -230,6 +234,7 @@ export function upload_files(uppy: Uppy, config: Config, files: File[] | FileLis
             file_id,
             true,
         );
+        // eslint-disable-next-line no-loop-func
         config.upload_banner_cancel_button(file_id).one("click", () => {
             compose_ui.replace_syntax(get_translated_status(file), "", config.textarea());
             compose_ui.autosize_textarea(config.textarea());
@@ -238,10 +243,15 @@ export function upload_files(uppy: Uppy, config: Config, files: File[] | FileLis
             uppy.removeFile(file_id);
             hide_upload_banner(uppy, config, file_id);
         });
+        // eslint-disable-next-line no-loop-func
         config.upload_banner_hide_button(file_id).one("click", () => {
             hide_upload_banner(uppy, config, file_id);
         });
     }
+};
+
+export function rewire_upload_files(value: typeof upload_files): void {
+    upload_files = value;
 }
 
 export function setup_upload(config: Config): Uppy {

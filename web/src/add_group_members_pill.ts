@@ -1,17 +1,17 @@
 import assert from "minimalistic-assert";
 
-import * as add_subscribers_pill from "./add_subscribers_pill";
-import * as input_pill from "./input_pill";
-import * as keydown_util from "./keydown_util";
-import type {User} from "./people";
-import * as stream_pill from "./stream_pill";
-import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper";
-import * as user_group_components from "./user_group_components";
-import * as user_group_create_members_data from "./user_group_create_members_data";
-import * as user_group_pill from "./user_group_pill";
-import * as user_groups from "./user_groups";
-import type {UserGroup} from "./user_groups";
-import * as user_pill from "./user_pill";
+import * as add_subscribers_pill from "./add_subscribers_pill.ts";
+import * as input_pill from "./input_pill.ts";
+import * as keydown_util from "./keydown_util.ts";
+import type {User} from "./people.ts";
+import * as stream_pill from "./stream_pill.ts";
+import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper.ts";
+import * as user_group_components from "./user_group_components.ts";
+import * as user_group_create_members_data from "./user_group_create_members_data.ts";
+import * as user_group_pill from "./user_group_pill.ts";
+import * as user_groups from "./user_groups.ts";
+import type {UserGroup} from "./user_groups.ts";
+import * as user_pill from "./user_pill.ts";
 
 function get_pill_user_ids(pill_widget: CombinedPillContainer): number[] {
     const user_ids = user_pill.get_user_ids(pill_widget);

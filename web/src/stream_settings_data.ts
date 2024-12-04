@@ -1,14 +1,14 @@
-import * as hash_util from "./hash_util";
-import * as peer_data from "./peer_data";
-import type {User} from "./people";
-import * as settings_config from "./settings_config";
-import {current_user} from "./state_data";
-import * as stream_data from "./stream_data";
-import type {StreamSpecificNotificationSettings, StreamSubscription} from "./sub_store";
-import * as sub_store from "./sub_store";
-import * as timerender from "./timerender";
-import {user_settings} from "./user_settings";
-import * as util from "./util";
+import * as hash_util from "./hash_util.ts";
+import * as peer_data from "./peer_data.ts";
+import type {User} from "./people.ts";
+import * as settings_config from "./settings_config.ts";
+import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import type {StreamSpecificNotificationSettings, StreamSubscription} from "./sub_store.ts";
+import * as sub_store from "./sub_store.ts";
+import * as timerender from "./timerender.ts";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 export type SettingsSubscription = StreamSubscription & {
     date_created_string: string;
@@ -42,7 +42,7 @@ export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscript
         is_realm_admin: current_user.is_admin,
         // Admin can change any stream's name & description either stream is public or
         // private, subscribed or unsubscribed.
-        can_change_name_description: stream_data.can_edit_description(),
+        can_change_name_description: stream_data.can_edit_description(sub),
 
         should_display_subscription_button: stream_data.can_toggle_subscription(sub),
         should_display_preview_button: stream_data.can_preview(sub),

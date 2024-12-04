@@ -1,6 +1,6 @@
-import * as dialog_widget from "./dialog_widget";
-import type {DialogWidgetConfig} from "./dialog_widget";
-import {$t_html} from "./i18n";
+import * as dialog_widget from "./dialog_widget.ts";
+import type {DialogWidgetConfig} from "./dialog_widget.ts";
+import {$t_html} from "./i18n.ts";
 
 export function launch(conf: DialogWidgetConfig): string {
     return dialog_widget.launch({

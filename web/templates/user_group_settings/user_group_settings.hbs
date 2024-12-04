@@ -3,14 +3,14 @@
     <div class="button-group">
         <div class="join_leave_button_wrapper inline-block">
             <button class="button small rounded join_leave_button" type="button" name="button">
-                {{#if is_member}}
+                {{#if is_direct_member}}
                     {{t "Leave group" }}
                 {{else}}
                     {{t "Join group" }}
                 {{/if}}
             </button>
         </div>
-        <button class="button small rounded btn-danger deactivate tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Deactivate group'}}" type="button" name="delete_button"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
+        <button class="button small rounded button-danger deactivate tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Deactivate group'}}" type="button" name="delete_button"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
     </div>
 </div>
 <div class="user_group_settings_wrapper" data-group-id="{{group.id}}">
@@ -23,7 +23,7 @@
                 </div>
                 <div class="group_change_property_info alert-notification"></div>
                 <div class="button-group">
-                    <button id="open_group_info_modal" class="button rounded small btn-warning tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Change group info' }}">
+                    <button id="open_group_info_modal" class="button rounded small button-warning tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Change group info' }}">
                         <i class="fa fa-pencil" aria-hidden="true"></i>
                     </button>
                 </div>
@@ -36,18 +36,14 @@
 
             <div class="group-permissions settings-subsection-parent" id="group_permission_settings">
                 <div class="subsection-header">
-                    <h3 class="user_group_setting_subsection_title">{{t "Group permissions" }}
+                    <h3 class="user_group_setting_subsection_title">
+                        {{t "Group permissions" }}
+                        {{> ../help_link_widget link="/help/manage-user-groups#configure-group-permissions"}}
                     </h3>
                     {{> ../settings/settings_save_discard_widget section_name="group-permissions" }}
                 </div>
 
-                {{> group_permissions
-                  can_add_members_group_widget_name="can_add_members_group"
-                  can_join_group_widget_name="can_join_group"
-                  can_leave_group_widget_name="can_leave_group"
-                  can_mention_group_widget_name="can_mention_group"
-                  can_manage_group_widget_name="can_manage_group"
-                  }}
+                {{> group_permissions prefix="id_"}}
             </div>
 
             <div class="group_detail_box">
@@ -57,7 +53,7 @@
                     </h3>
                 </div>
                 <div class="creator_details group_details_box_subsection">
-                    {{> ../creator_details }}
+                    {{> ../creator_details . }}
                 </div>
                 <div class="group_details_box_subsection">
                     {{t "User group ID"}}<br/>
@@ -68,7 +64,7 @@
 
         <div class="group_member_settings group_setting_section" data-group-section="members">
             <div class="edit_members_for_user_group">
-                {{> user_group_members}}
+                {{> user_group_members .}}
             </div>
         </div>
     </div>

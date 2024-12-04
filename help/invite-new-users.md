@@ -16,8 +16,11 @@ When you invite users, you can:
 * Set the [role](/help/roles-and-permissions) that they will have when
   they join.
 
-* Configure which channels they will be added to. The organization's
-  [default channels](/help/set-default-channels-for-new-users) will be preselected.
+* Configure which [channels](/help/introduction-to-channels) they will be
+  subscribed to. The organization's [default
+  channels](/help/set-default-channels-for-new-users) will be preselected.
+
+* Configure which [groups](/help/user-groups) they will be added to.
 
 Organization administrators can
 [configure](/help/restrict-account-creation#change-who-can-send-invitations)
@@ -40,7 +43,10 @@ permission to invite users.
 
 1. Select what [role](/help/roles-and-permissions) the users will join as.
 
-1. Configure which channels they will be added to.
+1. Configure which [channels](/help/introduction-to-channels) they will be subscribed
+   to.
+
+1. Configure which [groups](/help/user-groups) they will be added to.
 
 1. Click **Invite**.
 
@@ -72,7 +78,10 @@ permission to invite users.
 
 1. Select what [role](/help/roles-and-permissions) the users will join as.
 
-1. Configure which channels they will be added to.
+1. Configure which [channels](/help/introduction-to-channels) they will be subscribed
+   to.
+
+1. Configure which [groups](/help/user-groups) they will be added to.
 
 1. Click **Create link**.
 
@@ -104,6 +113,7 @@ for invitations for the organization owners role.
 * [Configure default new user settings](/help/configure-default-new-user-settings)
 * [Configure organization language for automated messages and invitation emails][org-lang]
 * [Roles and permissions](/help/roles-and-permissions)
+* [User groups](/help/user-groups)
 * [Joining a Zulip organization](/help/join-a-zulip-organization)
 
 [org-lang]: /help/configure-organization-language

@@ -1,16 +1,12 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Optional, TypedDict, Union
-from urllib.parse import urlencode, urljoin, urlunsplit
 
-from django.conf import settings
 from django.db.models import Sum
-from django.urls import reverse
 from django.utils.timezone import now as timezone_now
 
 from corporate.lib.stripe import (
     BillingSession,
-    PushNotificationsEnabledStatus,
     RealmBillingSession,
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
@@ -25,12 +21,14 @@ from corporate.models import (
     Customer,
     CustomerPlan,
     CustomerPlanOffer,
+    LicenseLedger,
     ZulipSponsorshipRequest,
     get_current_plan_by_customer,
 )
+from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Realm
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import get_org_type_display_name, get_realm
+from zerver.models.realms import get_org_type_display_name
 from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
     RemoteCustomerUserCount,
@@ -45,7 +43,7 @@ from zilencer.models import (
     has_stale_audit_log,
 )
 
-USER_DATA_STALE_WARNING = "Recent audit log data missing: No information for used licenses"
+USER_DATA_STALE_WARNING = "Recent audit log missing: No data for used licenses."
 
 
 class SponsorshipRequestDict(TypedDict):
@@ -89,15 +87,22 @@ class PlanData:
     has_fixed_price: bool = False
     is_current_plan_billable: bool = False
     stripe_customer_url: str | None = None
-    warning: str | None = None
+    warning: str = ""
     annual_recurring_revenue: int | None = None
     estimated_next_plan_revenue: int | None = None
 
 
 @dataclass
+class PushNotificationsStatus:
+    can_push: bool
+    expected_end: datetime | None
+    message: str
+
+
+@dataclass
 class MobilePushData:
     total_mobile_users: int
-    push_notification_status: PushNotificationsEnabledStatus
+    push_notification_status: PushNotificationsStatus
     uncategorized_mobile_users: int | None = None
     mobile_pushes_forwarded: int | None = None
     last_mobile_push_sent: str = ""
@@ -128,15 +133,6 @@ class CloudSupportData:
 
 def get_stripe_customer_url(stripe_id: str) -> str:
     return f"https://dashboard.stripe.com/customers/{stripe_id}"  # nocoverage
-
-
-def get_realm_support_url(realm: Realm) -> str:
-    support_realm_url = get_realm(settings.STAFF_SUBDOMAIN).url
-    support_url = urljoin(
-        support_realm_url,
-        urlunsplit(("", "", reverse("support"), urlencode({"q": realm.string_id}), "")),
-    )
-    return support_url
 
 
 def get_realm_user_data(realm: Realm) -> UserData:
@@ -265,26 +261,46 @@ def get_plan_data_for_support_view(
         current_plan=plan,
     )
 
-    if plan is not None:
-        new_plan, last_ledger_entry = billing_session.make_end_of_cycle_updates_if_needed(
-            plan, timezone_now()
+    if plan_data.current_plan is not None:
+        last_ledger_entry = (
+            LicenseLedger.objects.filter(
+                plan=plan_data.current_plan, event_time__lte=timezone_now()
+            )
+            .order_by("-id")
+            .first()
         )
-        if last_ledger_entry is not None:
-            if new_plan is not None:
-                plan_data.current_plan = new_plan  # nocoverage
+
+        if last_ledger_entry is None:  # nocoverage
+            # This shouldn't be possible because at least one
+            # license ledger entry should exist when a plan's
+            # status is less than CustomerPlan.LIVE_STATUS_THRESHOLD.
+            # But since we have a warning feature in the support
+            # view for plan data, we use that instead of raising
+            # an assertion error so that support staff can debug
+            # if this does ever occur.
+            plan_data.warning += "License ledger missing: No data for total licenses and revenue. "
+            plan_data.licenses = None
+            plan_data.annual_recurring_revenue = 0
+        else:
             plan_data.licenses = last_ledger_entry.licenses
-        assert plan_data.current_plan is not None  # for mypy
+            plan_data.annual_recurring_revenue = (
+                billing_session.get_annual_recurring_revenue_for_support_data(
+                    plan_data.current_plan, last_ledger_entry
+                )
+            )
 
         # If we already have user count data, we use that
         # instead of querying the database again to get
         # the number of currently used licenses.
         if stale_user_data:
-            plan_data.warning = USER_DATA_STALE_WARNING
+            plan_data.warning += USER_DATA_STALE_WARNING
+            plan_data.licenses_used = None
         elif user_count is None:
             try:
                 plan_data.licenses_used = billing_session.current_count_for_billed_licenses()
             except MissingDataError:  # nocoverage
-                plan_data.warning = USER_DATA_STALE_WARNING
+                plan_data.warning += USER_DATA_STALE_WARNING
+                plan_data.licenses_used = None
         else:  # nocoverage
             assert user_count is not None
             plan_data.licenses_used = user_count
@@ -307,14 +323,6 @@ def get_plan_data_for_support_view(
         plan_data.is_current_plan_billable = billing_session.check_plan_tier_is_billable(
             plan_tier=plan_data.current_plan.tier
         )
-        if last_ledger_entry is not None:
-            plan_data.annual_recurring_revenue = (
-                billing_session.get_annual_recurring_revenue_for_support_data(
-                    plan_data.current_plan, last_ledger_entry
-                )
-            )
-        else:
-            plan_data.annual_recurring_revenue = 0  # nocoverage
 
     # Check for a non-active/scheduled CustomerPlan or CustomerPlanOffer
     if customer is not None:
@@ -362,8 +370,15 @@ def get_mobile_push_data(remote_entity: RemoteZulipServer | RemoteRealm) -> Mobi
             ).strftime("%Y-%m-%d")
         else:
             push_forwarded_interval_start = "None"
-        push_notification_status = get_push_status_for_remote_request(
+        push_status = get_push_status_for_remote_request(
             remote_server=remote_entity, remote_realm=None
+        )
+        push_notification_status = PushNotificationsStatus(
+            can_push=push_status.can_push,
+            expected_end=timestamp_to_datetime(push_status.expected_end_timestamp)
+            if push_status.expected_end_timestamp
+            else None,
+            message=push_status.message,
         )
         return MobilePushData(
             total_mobile_users=total_users,
@@ -398,8 +413,13 @@ def get_mobile_push_data(remote_entity: RemoteZulipServer | RemoteRealm) -> Mobi
             ).strftime("%Y-%m-%d")
         else:
             push_forwarded_interval_start = "None"
-        push_notification_status = get_push_status_for_remote_request(
-            remote_entity.server, remote_entity
+        push_status = get_push_status_for_remote_request(remote_entity.server, remote_entity)
+        push_notification_status = PushNotificationsStatus(
+            can_push=push_status.can_push,
+            expected_end=timestamp_to_datetime(push_status.expected_end_timestamp)
+            if push_status.expected_end_timestamp
+            else None,
+            message=push_status.message,
         )
         return MobilePushData(
             total_mobile_users=mobile_users,

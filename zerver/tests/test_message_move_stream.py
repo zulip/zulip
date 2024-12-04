@@ -11,6 +11,7 @@ from zerver.actions.streams import do_change_stream_post_policy
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.users import do_change_user_role
 from zerver.lib.message import has_message_access
+from zerver.lib.streams import check_update_all_streams_active_status
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import queries_captured
 from zerver.lib.url_encoding import near_stream_message_url
@@ -1906,3 +1907,29 @@ class MessageMoveStreamTest(ZulipTestCase):
             ),
             True,
         )
+
+    def test_move_message_update_stream_active_status(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test"
+        )
+
+        # Delete all messages in new stream and mark it as inactive.
+        Message.objects.filter(recipient__type_id=new_stream.id, realm=user_profile.realm).delete()
+
+        check_update_all_streams_active_status()
+        new_stream.refresh_from_db()
+        self.assertFalse(new_stream.is_recently_active)
+
+        # Move the message to new stream should make active again.
+        result = self.client_patch(
+            f"/json/messages/{msg_id_later}",
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_later",
+                "send_notification_to_new_thread": "false",
+            },
+        )
+        self.assert_json_success(result)
+
+        new_stream.refresh_from_db()
+        self.assertTrue(new_stream.is_recently_active)

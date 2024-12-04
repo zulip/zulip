@@ -1,14 +1,14 @@
 import assert from "minimalistic-assert";
 
-import * as blueslip from "./blueslip";
-import {Filter} from "./filter";
-import * as message_lists from "./message_lists";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import type {NarrowTerm} from "./state_data";
-import * as stream_data from "./stream_data";
-import type {StreamSubscription} from "./sub_store";
-import * as unread from "./unread";
+import * as blueslip from "./blueslip.ts";
+import {Filter} from "./filter.ts";
+import * as message_lists from "./message_lists.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import type {NarrowTerm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as unread from "./unread.ts";
 
 export function filter(): Filter | undefined {
     // `Recent Conversations` and `Inbox` return undefined;
@@ -23,6 +23,13 @@ export function search_terms(current_filter: Filter | undefined = filter()): Nar
         return new Filter([]).terms();
     }
     return current_filter.terms();
+}
+
+export function is_search_view(current_filter: Filter | undefined = filter()): boolean {
+    if (current_filter && !current_filter.supports_collapsing_recipients()) {
+        return true;
+    }
+    return false;
 }
 
 export function is_message_feed_visible(): boolean {
@@ -114,7 +121,7 @@ export function set_compose_defaults(): {
     return opts;
 }
 
-export function stream_id(current_filter: Filter | undefined = filter()): number | undefined {
+export let stream_id = (current_filter: Filter | undefined = filter()): number | undefined => {
     if (current_filter === undefined) {
         return undefined;
     }
@@ -123,6 +130,10 @@ export function stream_id(current_filter: Filter | undefined = filter()): number
         return Number.parseInt(stream_operands[0], 10);
     }
     return undefined;
+};
+
+export function rewire_stream_id(value: typeof stream_id): void {
+    stream_id = value;
 }
 
 export function stream_name(current_filter: Filter | undefined = filter()): string | undefined {
@@ -148,7 +159,7 @@ export function stream_sub(
     return stream_data.get_sub_by_id_string(stream_operands[0]);
 }
 
-export function topic(current_filter: Filter | undefined = filter()): string | undefined {
+export let topic = (current_filter: Filter | undefined = filter()): string | undefined => {
     if (current_filter === undefined) {
         return undefined;
     }
@@ -157,6 +168,10 @@ export function topic(current_filter: Filter | undefined = filter()): string | u
         return operands[0];
     }
     return undefined;
+};
+
+export function rewire_topic(value: typeof topic): void {
+    topic = value;
 }
 
 export function pm_ids_string(filter?: Filter): string | undefined {
@@ -173,10 +188,14 @@ export function pm_ids_string(filter?: Filter): string | undefined {
     return user_ids_string;
 }
 
-export function pm_ids_set(filter?: Filter): Set<number> {
+export let pm_ids_set = (filter?: Filter): Set<number> => {
     const ids_string = pm_ids_string(filter);
     const pm_ids_list = ids_string ? people.user_ids_string_to_ids_array(ids_string) : [];
     return new Set(pm_ids_list);
+};
+
+export function rewire_pm_ids_set(value: typeof pm_ids_set): void {
+    pm_ids_set = value;
 }
 
 export function pm_emails_string(
@@ -194,9 +213,9 @@ export function pm_emails_string(
     return operands[0];
 }
 
-export function get_first_unread_info(
+export let get_first_unread_info = (
     current_filter: Filter | undefined = filter(),
-): {flavor: "cannot_compute" | "not_found"} | {flavor: "found"; msg_id: number} {
+): {flavor: "cannot_compute" | "not_found"} | {flavor: "found"; msg_id: number} => {
     const cannot_compute_response: {flavor: "cannot_compute"} = {flavor: "cannot_compute"};
     if (current_filter === undefined) {
         // we don't yet support the all-messages view
@@ -231,11 +250,15 @@ export function get_first_unread_info(
         flavor: "found",
         msg_id,
     };
+};
+
+export function rewire_get_first_unread_info(value: typeof get_first_unread_info): void {
+    get_first_unread_info = value;
 }
 
-export function _possible_unread_message_ids(
+export let _possible_unread_message_ids = (
     current_filter: Filter | undefined = filter(),
-): number[] | undefined {
+): number[] | undefined => {
     // This function currently only returns valid results for
     // certain types of narrows, mostly left sidebar narrows.
     // For more complicated narrows we may return undefined.
@@ -318,6 +341,12 @@ export function _possible_unread_message_ids(
     }
 
     return undefined;
+};
+
+export function rewire__possible_unread_message_ids(
+    value: typeof _possible_unread_message_ids,
+): void {
+    _possible_unread_message_ids = value;
 }
 
 // Are we narrowed to direct messages: the direct message feed or a

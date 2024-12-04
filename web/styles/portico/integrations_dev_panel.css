@@ -116,9 +116,10 @@
     margin-right: 2%;
 
     button {
+        padding: 6px 12px;
         color: hsl(0deg 0% 100%);
         background-color: hsl(208deg 56% 53%);
-        border-color: hsl(208deg 56% 47%);
+        border: 1px solid hsl(208deg 56% 47%);
 
         &:hover,
         &:active,

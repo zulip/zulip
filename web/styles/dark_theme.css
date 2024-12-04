@@ -342,11 +342,10 @@
     select,
     .pill-container,
     .user-status-content-wrapper,
-    #custom-expiration-time-input,
+    .custom-time-input-value,
     #organization-permissions .dropdown-widget-button,
     #organization-settings .dropdown-widget-button,
-    #stream-advanced-configurations .dropdown-widget-button,
-    #compose_recipient_box {
+    #stream-advanced-configurations .dropdown-widget-button {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
         color: inherit;
@@ -510,20 +509,12 @@
         background-color: hsl(211deg 18% 25%) !important;
     }
 
-    .recent_view_container #recent_view_table .btn-recent-filters {
-        background-color: hsl(211deg 29% 14%);
-        border-color: hsl(0deg 0% 0%);
-        color: hsl(0deg 0% 100%);
-
+    .recent_view_container #recent_view_table .button-recent-filters {
         &:focus {
             background-color: hsl(0deg 0% 0% / 50%) !important;
-            outline: 0;
         }
 
         &.fake_disabled_button {
-            cursor: not-allowed;
-            opacity: 0.5;
-
             &:hover {
                 background-color: hsl(0deg 0% 0% / 50%);
                 border-color: hsl(0deg 0% 0%);
@@ -531,7 +522,7 @@
         }
     }
 
-    .btn-recent-selected,
+    .button-recent-selected,
     #recent_view_table thead th {
         background-color: hsl(228deg 11% 17%) !important;
 

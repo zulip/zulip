@@ -1,9 +1,9 @@
 import $ from "jquery";
 import {z} from "zod";
 
-import * as channel from "./channel";
-import * as common from "./common";
-import {$t} from "./i18n";
+import * as channel from "./channel.ts";
+import * as common from "./common.ts";
+import {$t} from "./i18n.ts";
 
 /* Arguments used in the report_* functions are,
    response- response that we want to display
@@ -68,7 +68,7 @@ export function generic_embed_error(error_html: string, remove_after?: number): 
     }
 }
 
-export function generic_row_button_error(xhr: JQuery.jqXHR, $btn: JQuery): void {
+export function generic_row_button_error(xhr: JQuery.jqXHR, $button: JQuery): void {
     let parsed;
     if (
         xhr.status >= 400 &&
@@ -76,9 +76,9 @@ export function generic_row_button_error(xhr: JQuery.jqXHR, $btn: JQuery): void 
         (parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON)).success
     ) {
         const $error = $("<p>").addClass("text-error").text(parsed.data.msg);
-        $btn.closest("td").empty().append($error);
+        $button.closest("td").empty().append($error);
     } else {
-        $btn.text($t({defaultMessage: "Failed!"}));
+        $button.text($t({defaultMessage: "Failed!"}));
     }
 }
 

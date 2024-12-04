@@ -7,24 +7,28 @@ import {z} from "zod";
 
 import render_confirm_delete_all_drafts from "../templates/confirm_dialog/confirm_delete_all_drafts.hbs";
 
-import * as blueslip from "./blueslip";
-import * as compose_state from "./compose_state";
-import * as confirm_dialog from "./confirm_dialog";
-import {$t, $t_html} from "./i18n";
-import {localstorage} from "./localstorage";
-import * as markdown from "./markdown";
-import * as narrow_state from "./narrow_state";
-import * as people from "./people";
-import * as stream_color from "./stream_color";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import * as timerender from "./timerender";
-import * as ui_util from "./ui_util";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as compose_state from "./compose_state.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import {$t, $t_html} from "./i18n.ts";
+import {localstorage} from "./localstorage.ts";
+import * as markdown from "./markdown.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as people from "./people.ts";
+import * as stream_color from "./stream_color.ts";
+import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import * as timerender from "./timerender.ts";
+import * as ui_util from "./ui_util.ts";
+import * as util from "./util.ts";
 
-export function set_count(count: number): void {
+export let set_count = (count: number): void => {
     const $drafts_li = $(".top_left_drafts");
     ui_util.update_unread_count_in_dom($drafts_li, count);
+};
+
+export function rewire_set_count(value: typeof set_count): void {
+    set_count = value;
 }
 
 function getTimestamp(): number {
@@ -57,7 +61,7 @@ const draft_schema = z.intersection(
     ]),
 );
 
-type LocalStorageDraft = z.infer<typeof draft_schema>;
+export type LocalStorageDraft = z.infer<typeof draft_schema>;
 
 // The id is added to the draft in format_drafts in drafts_overlay_ui.
 // We should probably just include it in the draft object itself always?
@@ -219,7 +223,7 @@ export const draft_model = (function () {
     };
 })();
 
-export function update_compose_draft_count(): void {
+export let update_compose_draft_count = (): void => {
     const $count_container = $(".compose-drafts-count-container");
     const $count_ele = $count_container.find(".compose-drafts-count");
     if (!compose_state.has_full_recipient()) {
@@ -235,11 +239,19 @@ export function update_compose_draft_count(): void {
         $count_ele.text("");
         $count_container.hide();
     }
+};
+
+export function rewire_update_compose_draft_count(value: typeof update_compose_draft_count): void {
+    update_compose_draft_count = value;
 }
 
-export function sync_count(): void {
+export let sync_count = (): void => {
     const drafts = draft_model.get();
     set_count(Object.keys(drafts).length);
+};
+
+export function rewire_sync_count(value: typeof sync_count): void {
+    sync_count = value;
 }
 
 export function delete_all_drafts(): void {
@@ -396,7 +408,7 @@ type UpdateDraftOptions = {
     is_sending_saving?: boolean;
 };
 
-export function update_draft(opts: UpdateDraftOptions = {}): string | undefined {
+export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined => {
     const draft_id = compose_draft_id;
     const old_draft = draft_id === undefined ? undefined : draft_model.getDraft(draft_id);
 
@@ -439,6 +451,10 @@ export function update_draft(opts: UpdateDraftOptions = {}): string | undefined 
     maybe_notify(no_notify);
 
     return new_draft_id;
+};
+
+export function rewire_update_draft(value: typeof update_draft): void {
+    update_draft = value;
 }
 
 export const DRAFT_LIFETIME = 30;
@@ -552,7 +568,7 @@ export function remove_old_drafts(): void {
     }
 }
 
-type FormattedDraft =
+export type FormattedDraft =
     | {
           is_stream: true;
           draft_id: string;

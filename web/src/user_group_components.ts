@@ -1,10 +1,11 @@
 import $ from "jquery";
 
-import {$t_html} from "./i18n";
-import * as people from "./people";
-import type {User} from "./people";
-import type {UserGroup} from "./user_groups";
-import * as user_sort from "./user_sort";
+import {$t_html} from "./i18n.ts";
+import * as people from "./people.ts";
+import type {User} from "./people.ts";
+import type {UserGroup} from "./user_groups.ts";
+import * as user_sort from "./user_sort.ts";
+import * as util from "./util.ts";
 
 export let active_group_id: number | undefined;
 
@@ -77,7 +78,7 @@ export function sort_group_member_email(a: User | UserGroup, b: User | UserGroup
         return 1;
     }
 
-    return user_sort.compare_a_b(a.name.toLowerCase(), b.name.toLowerCase());
+    return util.compare_a_b(a.name.toLowerCase(), b.name.toLowerCase());
 }
 
 export function sort_group_member_name(a: User | UserGroup, b: User | UserGroup): number {
@@ -95,7 +96,7 @@ export function sort_group_member_name(a: User | UserGroup, b: User | UserGroup)
         b_name = b.name;
     }
 
-    return user_sort.compare_a_b(a_name.toLowerCase(), b_name.toLowerCase());
+    return util.compare_a_b(a_name.toLowerCase(), b_name.toLowerCase());
 }
 
 export function build_group_member_matcher(query: string): (member: User | UserGroup) => boolean {

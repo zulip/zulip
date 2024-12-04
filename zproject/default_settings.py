@@ -222,6 +222,9 @@ AVATAR_CHANGES_DISABLED = False
 PASSWORD_MIN_LENGTH = 6
 PASSWORD_MIN_GUESSES = 10000
 
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
+
 ZULIP_SERVICES_URL = "https://push.zulipchat.com"
 ZULIP_SERVICE_PUSH_NOTIFICATIONS = False
 
@@ -667,13 +670,11 @@ SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS = 60
 
 CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION: Callable[..., Any] | None = None
 
-# Whether we allow settings to be set to a collection of users and
-# groups as described in api_docs/group-setting-values.md. Set to
-# False in production, as we can only handle named user groups in the
-# web app settings UI.
-ALLOW_GROUP_VALUED_SETTINGS = False
-
 # Grace period during which we don't send a resolve/unresolve
 # notification to a stream and also delete the previous counter
 # notification.
 RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 60
+
+# For realm imports during registration, maximum size of file
+# that can be uploaded.
+MAX_WEB_DATA_IMPORT_SIZE_MB = 1024

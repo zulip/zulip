@@ -371,8 +371,12 @@ class NarrowBuilder:
         assert self.user_profile is not None
 
         if operand == "home":
-            conditions = exclude_muting_conditions(self.user_profile, [])
-            return query.where(and_(*conditions))
+            conditions = exclude_muting_conditions(
+                self.user_profile, [NarrowParameter(operator="in", operand="home")]
+            )
+            if conditions:
+                return query.where(maybe_negate(and_(*conditions)))
+            return query  # nocoverage
         elif operand == "all":
             return query
 
@@ -857,7 +861,8 @@ def ok_to_include_history(
         # that's a property on the UserMessage table.  There cannot be
         # historical messages in these cases anyway.
         for term in narrow:
-            if term.operator == "is" and term.operand not in {"resolved", "followed"}:
+            # NOTE: Needs to be in sync with `Filter.is_personal_filter`.
+            if term.operator == "is" and term.operand != "resolved":
                 include_history = False
 
     return include_history

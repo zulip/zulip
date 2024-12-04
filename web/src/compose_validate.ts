@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import * as resolved_topic from "../shared/src/resolved_topic";
+import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
 import render_private_stream_warning from "../templates/compose_banner/private_stream_warning.hbs";
@@ -8,27 +8,27 @@ import render_stream_wildcard_warning from "../templates/compose_banner/stream_w
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_compose_limit_indicator from "../templates/compose_limit_indicator.hbs";
 
-import * as compose_banner from "./compose_banner";
-import * as compose_pm_pill from "./compose_pm_pill";
-import * as compose_state from "./compose_state";
-import * as compose_ui from "./compose_ui";
-import {$t} from "./i18n";
-import * as message_store from "./message_store";
-import * as message_util from "./message_util";
-import * as narrow_state from "./narrow_state";
-import * as peer_data from "./peer_data";
-import * as people from "./people";
-import * as reactions from "./reactions";
-import * as recent_senders from "./recent_senders";
-import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
-import {current_user, realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import type {StreamSubscription} from "./sub_store";
-import type {UserOrMention} from "./typeahead_helper";
-import * as user_groups from "./user_groups";
-import * as util from "./util";
+import * as compose_banner from "./compose_banner.ts";
+import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as compose_state from "./compose_state.ts";
+import * as compose_ui from "./compose_ui.ts";
+import {$t} from "./i18n.ts";
+import * as message_store from "./message_store.ts";
+import * as message_util from "./message_util.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as peer_data from "./peer_data.ts";
+import * as people from "./people.ts";
+import * as reactions from "./reactions.ts";
+import * as recent_senders from "./recent_senders.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import type {UserOrMention} from "./typeahead_helper.ts";
+import * as user_groups from "./user_groups.ts";
+import * as util from "./util.ts";
 
 let user_acknowledged_stream_wildcard = false;
 let upload_in_progress = false;
@@ -49,9 +49,20 @@ export function set_upload_in_progress(status: boolean): void {
     update_send_button_status();
 }
 
-function set_message_too_long(status: boolean): void {
+function set_message_too_long_for_compose(status: boolean): void {
     message_too_long = status;
     update_send_button_status();
+}
+
+function set_message_too_long_for_edit(status: boolean, $container: JQuery): void {
+    message_too_long = status;
+    const $message_edit_save_container = $container.find(".message_edit_save_container");
+    const save_is_disabled =
+        message_too_long ||
+        $message_edit_save_container.hasClass("message-edit-time-limit-expired");
+
+    $container.find(".message_edit_save").prop("disabled", save_is_disabled);
+    $message_edit_save_container.toggleClass("disabled-message-edit-save", save_is_disabled);
 }
 
 export function set_recipient_disallowed(status: boolean): void {
@@ -78,6 +89,25 @@ export function get_disabled_send_tooltip(): string {
     return "";
 }
 
+export function get_disabled_save_tooltip($container: JQuery): string {
+    const $button_wrapper = $container.find(".message_edit_save_container");
+    if ($button_wrapper.hasClass("message-edit-time-limit-expired")) {
+        return $t({
+            defaultMessage: "You can no longer save changes to this message.",
+        });
+    }
+    if (message_too_long) {
+        return $t(
+            {
+                defaultMessage: `Message length shouldn't be greater than {max_length} characters.`,
+            },
+            {
+                max_length: realm.max_message_length,
+            },
+        );
+    }
+    return "";
+}
 export function needs_subscribe_warning(user_id: number, stream_id: number): boolean {
     // This returns true if all of these conditions are met:
     //  * the user is valid
@@ -114,7 +144,7 @@ export function needs_subscribe_warning(user_id: number, stream_id: number): boo
 
 export function check_dm_permissions_and_get_error_string(user_ids_string: string): string {
     if (!people.user_can_direct_message(user_ids_string)) {
-        if (user_groups.is_empty_group(realm.realm_direct_message_permission_group)) {
+        if (user_groups.is_setting_group_empty(realm.realm_direct_message_permission_group)) {
             return $t({
                 defaultMessage: "Direct messages are disabled in this organization.",
             });
@@ -475,7 +505,8 @@ function is_recipient_large_topic(): boolean {
     return topic_participant_count_more_than_threshold(stream_id, compose_state.topic());
 }
 
-function wildcard_mention_policy_authorizes_user(): boolean {
+// Exported for tests
+export let wildcard_mention_policy_authorizes_user = (): boolean => {
     if (
         realm.realm_wildcard_mention_policy ===
         settings_config.wildcard_mention_policy_values.by_everyone.code
@@ -517,6 +548,12 @@ function wildcard_mention_policy_authorizes_user(): boolean {
         return days >= realm.realm_waiting_period_threshold && !current_user.is_guest;
     }
     return !current_user.is_guest;
+};
+
+export function rewire_wildcard_mention_policy_authorizes_user(
+    value: typeof wildcard_mention_policy_authorizes_user,
+): void {
+    wildcard_mention_policy_authorizes_user = value;
 }
 
 export function stream_wildcard_mention_allowed(): boolean {
@@ -710,47 +747,65 @@ function validate_private_message(): boolean {
     return true;
 }
 
-export function check_overflow_text(): number {
+export function check_overflow_text($container: JQuery): number {
     // This function is called when typing every character in the
     // compose box, so it's important that it not doing anything
     // expensive.
-    const text = compose_state.message_content();
+    const $textarea = $container.find<HTMLTextAreaElement>(".message-textarea");
+    // Match the behavior of compose_state.message_content of trimming trailing whitespace
+    const text = $textarea.val()!.trimEnd();
     const max_length = realm.max_message_length;
     const remaining_characters = max_length - text.length;
-    const $indicator = $("#compose-limit-indicator");
+    const $indicator = $container.find(".message-limit-indicator");
+    const is_edit_container = $textarea.closest(".message_row").length > 0;
 
     if (text.length > max_length) {
         $indicator.addClass("over_limit");
-        $("textarea#compose-textarea").addClass("over_limit");
+        $textarea.addClass("over_limit");
         $indicator.html(
             render_compose_limit_indicator({
                 remaining_characters,
             }),
         );
-        set_message_too_long(true);
+        if (is_edit_container) {
+            set_message_too_long_for_edit(true, $container);
+        } else {
+            set_message_too_long_for_compose(true);
+        }
     } else if (remaining_characters <= 900) {
         $indicator.removeClass("over_limit");
-        $("textarea#compose-textarea").removeClass("over_limit");
+        $textarea.removeClass("over_limit");
         $indicator.html(
             render_compose_limit_indicator({
                 remaining_characters,
             }),
         );
-        set_message_too_long(false);
+        if (is_edit_container) {
+            set_message_too_long_for_edit(false, $container);
+        } else {
+            set_message_too_long_for_compose(false);
+        }
     } else {
         $indicator.text("");
-        $("textarea#compose-textarea").removeClass("over_limit");
+        $textarea.removeClass("over_limit");
 
-        set_message_too_long(false);
+        if (is_edit_container) {
+            set_message_too_long_for_edit(false, $container);
+        } else {
+            set_message_too_long_for_compose(false);
+        }
     }
 
     return text.length;
 }
 
-export function validate_message_length(): boolean {
-    if (compose_state.message_content().length > realm.max_message_length) {
-        $("textarea#compose-textarea").addClass("flash");
-        setTimeout(() => $("textarea#compose-textarea").removeClass("flash"), 1500);
+export function validate_message_length($container: JQuery): boolean {
+    const $textarea = $container.find<HTMLTextAreaElement>(".message-textarea");
+    // Match the behavior of compose_state.message_content of trimming trailing whitespace
+    const text = $textarea.val()!.trimEnd();
+    if (text.length > realm.max_message_length) {
+        $textarea.addClass("flash");
+        setTimeout(() => $textarea.removeClass("flash"), 1500);
         return false;
     }
     return true;
@@ -774,7 +829,7 @@ export function validate(scheduling_message: boolean): boolean {
         );
         return false;
     }
-    if (!validate_message_length()) {
+    if (!validate_message_length($("#send_message_form"))) {
         return false;
     }
 

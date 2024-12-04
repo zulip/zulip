@@ -111,15 +111,6 @@ class Stream(models.Model):
     # and the reason for denormalizing field is performance.
     is_in_zephyr_realm = models.BooleanField(default=False)
 
-    # Used by the e-mail forwarder. The e-mail RFC specifies a maximum
-    # e-mail length of 254, and our max stream length is 30, so we
-    # have plenty of room for the token.
-    email_token = models.CharField(
-        max_length=32,
-        default=generate_email_token_for_stream,
-        unique=True,
-    )
-
     # For old messages being automatically deleted.
     # Value NULL means "use retention policy of the realm".
     # Value -1 means "disable retention policy for this stream unconditionally".
@@ -130,10 +121,14 @@ class Stream(models.Model):
     }
     message_retention_days = models.IntegerField(null=True, default=None)
 
-    # on_delete field here is set to RESTRICT because we don't want to allow
-    # deleting a user group in case it is referenced by this setting.
-    # We are not using PROTECT since we want to allow deletion of user groups
-    # when realm itself is deleted.
+    # on_delete field for group value settings is set to RESTRICT
+    # because we don't want to allow deleting a user group in case it
+    # is referenced by the respective setting. We are not using PROTECT
+    # since we want to allow deletion of user groups when the realm
+    # itself is deleted.
+    can_administer_channel_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
     can_remove_subscribers_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT)
 
     # The very first message ID in the stream.  Used to help clients
@@ -141,15 +136,25 @@ class Stream(models.Model):
     # stream based on what messages they have cached.
     first_message_id = models.IntegerField(null=True, db_index=True)
 
+    LAST_ACTIVITY_DAYS_BEFORE_FOR_ACTIVE = 180
+
+    # Whether a message has been sent to this stream in the last X days.
+    is_recently_active = models.BooleanField(default=True, db_default=True)
+
     stream_permission_group_settings = {
-        "can_remove_subscribers_group": GroupPermissionSetting(
-            require_system_group=True,
+        "can_administer_channel_group": GroupPermissionSetting(
+            require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=False,
-            allow_nobody_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name="stream_creator_or_nobody",
+        ),
+        "can_remove_subscribers_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.ADMINISTRATORS,
-            id_field_name="can_remove_subscribers_group_id",
         ),
     }
 
@@ -175,7 +180,6 @@ class Stream(models.Model):
     # Stream fields included whenever a Stream object is provided to
     # Zulip clients via the API.  A few details worth noting:
     # * "id" is represented as "stream_id" in most API interfaces.
-    # * "email_token" is not realm-public and thus is not included here.
     # * is_in_zephyr_realm is a backend-only optimization.
     # * "deactivated" streams are filtered from the API entirely.
     # * "realm" and "recipient" are not exposed to clients via the API.
@@ -193,12 +197,15 @@ class Stream(models.Model):
         "name",
         "rendered_description",
         "stream_post_policy",
+        "can_administer_channel_group_id",
         "can_remove_subscribers_group_id",
+        "is_recently_active",
     ]
 
     def to_dict(self) -> DefaultStreamDict:
         return DefaultStreamDict(
             is_archived=self.deactivated,
+            can_administer_channel_group=self.can_administer_channel_group_id,
             can_remove_subscribers_group=self.can_remove_subscribers_group_id,
             creator_id=self.creator_id,
             date_created=datetime_to_timestamp(self.date_created),
@@ -213,6 +220,7 @@ class Stream(models.Model):
             stream_id=self.id,
             stream_post_policy=self.stream_post_policy,
             is_announcement_only=self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
+            is_recently_active=self.is_recently_active,
         )
 
 
@@ -400,3 +408,32 @@ class DefaultStreamGroup(models.Model):
 
 def get_default_stream_groups(realm: Realm) -> QuerySet[DefaultStreamGroup]:
     return DefaultStreamGroup.objects.filter(realm=realm)
+
+
+class ChannelEmailAddress(models.Model):
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    channel = models.ForeignKey(Stream, on_delete=CASCADE)
+    creator = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE, related_name="+")
+    sender = models.ForeignKey(UserProfile, on_delete=CASCADE, related_name="+")
+
+    # Used by the e-mail forwarder. The e-mail RFC specifies a maximum
+    # e-mail length of 254, and our max stream length is 30, so we
+    # have plenty of room for the token.
+    email_token = models.CharField(
+        max_length=32,
+        default=generate_email_token_for_stream,
+        unique=True,
+        db_index=True,
+    )
+
+    date_created = models.DateTimeField(default=timezone_now)
+    deactivated = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("channel", "creator", "sender")
+        indexes = [
+            models.Index(
+                fields=("realm", "channel"),
+                name="zerver_channelemailaddress_realm_id_channel_id_idx",
+            ),
+        ]

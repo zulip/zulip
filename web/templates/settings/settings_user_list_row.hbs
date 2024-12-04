@@ -1,0 +1,57 @@
+<tr class="user_row{{#if is_active}} active-user{{else}} deactivated_user{{/if}}" data-user-id="{{user_id}}">
+    <td class="user_name panel_user_list">
+        {{> ../user_display_only_pill display_value=full_name user_id=user_id img_src=img_src is_active=is_active is_current_user=is_current_user}}
+    </td>
+    {{#if display_email}}
+    <td class="email settings-email-column">
+        <span class="email">{{display_email}}</span>
+    </td>
+    {{else}}
+    <td class="email settings-email-column">
+        <span class="hidden-email">{{t "(hidden)"}}</span>
+    </td>
+    {{/if}}
+    <td>
+        <span class="user_role">{{user_role_text}}</span>
+    </td>
+    {{#if is_bot}}
+    <td>
+        <span class="owner panel_user_list">
+            {{#if no_owner }}
+            {{bot_owner_full_name}}
+            {{else}}
+            {{> ../user_display_only_pill display_value=bot_owner_full_name user_id=bot_owner_id img_src=owner_img_src is_active=is_bot_owner_active}}
+            {{/if}}
+        </span>
+    </td>
+    <td class="bot_type">
+        <span class="bot type">{{bot_type}}</span>
+    </td>
+    {{else if display_last_active_column}}
+    <td class="last_active">
+        {{ last_active_date }}
+    </td>
+    {{/if}}
+    {{#if can_modify}}
+    <td class="actions">
+        <span class="user-status-settings">
+            <span {{#if (and is_bot cannot_edit)}}class="tippy-zulip-tooltip"{{/if}} {{#if (and is_bot cannot_edit)}}data-tippy-content="{{t 'This bot cannot be edited.'}}"{{/if}}>
+                <button class="button rounded small button-warning open-user-form tippy-zulip-delayed-tooltip" data-tippy-content="{{#if is_bot}}{{#unless cannot_edit}}{{t 'Edit bot' }}{{/unless}}{{else}}{{t 'Edit user' }}{{/if}}" data-user-id="{{user_id}}" {{#if cannot_edit}}disabled="disabled"{{/if}}>
+                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                </button>
+            </span>
+            {{#if is_active}}
+            <span {{#if (and is_bot cannot_deactivate)}}class="tippy-zulip-tooltip"{{/if}} {{#if (and is_bot cannot_deactivate)}}data-tippy-content="{{t 'This bot cannot be deactivated.'}}"{{/if}}>
+                <button class="button rounded small button-danger {{#unless (and is_bot cannot_deactivate) }}deactivate{{/unless}}" {{#if cannot_deactivate}}disabled="disabled"{{/if}}>
+                    <i class="fa fa-user-times" aria-hidden="true"></i>
+                </button>
+            </span>
+            {{else}}
+            <button class="button rounded small reactivate button-warning">
+                <i class="fa fa-user-plus" aria-hidden="true"></i>
+            </button>
+            {{/if}}
+        </span>
+    </td>
+    {{/if}}
+</tr>

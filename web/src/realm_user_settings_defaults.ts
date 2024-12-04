@@ -1,6 +1,6 @@
 import {z} from "zod";
 
-import type {StateData} from "./state_data";
+import type {StateData} from "./state_data.ts";
 
 export const realm_default_settings_schema = z.object({
     allow_private_data_export: z.boolean(),

@@ -1,9 +1,9 @@
 import _ from "lodash";
 
-import * as blueslip from "./blueslip";
-import type {MatchedMessage, Message, RawMessage} from "./message_store";
-import type {UpdateMessageEvent} from "./types";
-import {user_settings} from "./user_settings";
+import * as blueslip from "./blueslip.ts";
+import type {MatchedMessage, Message, RawMessage} from "./message_store.ts";
+import type {UpdateMessageEvent} from "./types.ts";
+import {user_settings} from "./user_settings.ts";
 
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
 export function random_int(min: number, max: number): number {
@@ -315,7 +315,7 @@ export function get_time_from_date_muted(date_muted: number | undefined): number
     return date_muted * 1000;
 }
 
-export function call_function_periodically(callback: () => void, delay: number): void {
+export let call_function_periodically = (callback: () => void, delay: number): void => {
     // We previously used setInterval for this purpose, but
     // empirically observed that after unsuspend, Chrome can end
     // up trying to "catch up" by doing dozens of these requests
@@ -337,6 +337,10 @@ export function call_function_periodically(callback: () => void, delay: number):
         // exception.
         callback();
     }, delay);
+};
+
+export function rewire_call_function_periodically(value: typeof call_function_periodically): void {
+    call_function_periodically = value;
 }
 
 export function get_string_diff(string1: string, string2: string): [number, number, number] {
@@ -440,15 +444,17 @@ export function get_remaining_time(start_time: number, duration: number): number
 
 export function get_custom_time_in_minutes(time_unit: string, time_input: number): number {
     switch (time_unit) {
+        case "minutes":
+            return time_input;
         case "hours":
             return time_input * 60;
         case "days":
             return time_input * 24 * 60;
         case "weeks":
             return time_input * 7 * 24 * 60;
-        default:
-            return time_input;
     }
+    blueslip.error(`Unexpected custom time unit: ${time_unit}`);
+    return time_input;
 }
 
 export function check_time_input(input_value: string, keep_number_as_float = false): number {
@@ -485,4 +491,13 @@ export function the<T>(items: T[] | JQuery<T>): T {
         });
     }
     return items[0]!;
+}
+
+export function compare_a_b<T>(a: T, b: T): number {
+    if (a > b) {
+        return 1;
+    } else if (a === b) {
+        return 0;
+    }
+    return -1;
 }

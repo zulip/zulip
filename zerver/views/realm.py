@@ -52,7 +52,6 @@ from zerver.models.realms import (
     BotCreationPolicyEnum,
     CommonPolicyEnum,
     DigestWeekdayEnum,
-    InviteToRealmPolicyEnum,
     OrgTypeEnum,
     WildcardMentionPolicyEnum,
 )
@@ -99,7 +98,6 @@ def update_realm(
     emails_restricted_to_domains: Json[bool] | None = None,
     disallow_disposable_email_addresses: Json[bool] | None = None,
     invite_required: Json[bool] | None = None,
-    invite_to_realm_policy: Json[InviteToRealmPolicyEnum] | None = None,
     create_multiuse_invite_group: Json[GroupSettingChangeRequest] | None = None,
     require_unique_names: Json[bool] | None = None,
     name_changes_disabled: Json[bool] | None = None,
@@ -139,6 +137,7 @@ def update_realm(
     can_create_public_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_create_private_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_create_web_public_channel_group: Json[GroupSettingChangeRequest] | None = None,
+    can_invite_users_group: Json[GroupSettingChangeRequest] | None = None,
     can_manage_all_groups: Json[GroupSettingChangeRequest] | None = None,
     can_move_messages_between_channels_group: Json[GroupSettingChangeRequest] | None = None,
     can_move_messages_between_topics_group: Json[GroupSettingChangeRequest] | None = None,
@@ -218,11 +217,14 @@ def update_realm(
             message_retention_days_raw, Realm.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
 
+    if can_create_groups is not None:
+        realm.ensure_not_on_limited_plan()
+
     if (
-        invite_to_realm_policy is not None
-        or invite_required is not None
+        invite_required is not None
         or create_multiuse_invite_group is not None
         or can_create_groups is not None
+        or can_invite_users_group is not None
         or can_manage_all_groups is not None
     ) and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequiredError
@@ -342,8 +344,8 @@ def update_realm(
         if k in realm.property_types:
             req_vars[k] = v
 
-        for setting_name, permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
-            if k in [permission_configuration.id_field_name, setting_name]:
+        for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
+            if k == setting_name:
                 req_group_setting_vars[k] = v
 
     for k, v in req_vars.items():

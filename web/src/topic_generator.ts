@@ -1,12 +1,12 @@
 import _ from "lodash";
 
-import * as narrow_state from "./narrow_state";
-import * as pm_conversations from "./pm_conversations";
-import * as stream_data from "./stream_data";
-import * as stream_list_sort from "./stream_list_sort";
-import * as stream_topic_history from "./stream_topic_history";
-import * as unread from "./unread";
-import * as user_topics from "./user_topics";
+import * as narrow_state from "./narrow_state.ts";
+import * as pm_conversations from "./pm_conversations.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_list_sort from "./stream_list_sort.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
+import * as unread from "./unread.ts";
+import * as user_topics from "./user_topics.ts";
 
 export function next_topic(
     stream_ids: number[],

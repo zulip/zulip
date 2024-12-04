@@ -1,13 +1,13 @@
 import {z} from "zod";
 
-import * as blueslip from "./blueslip";
+import * as blueslip from "./blueslip.ts";
 import type {
     never_subscribed_stream_schema,
     stream_properties_schema,
     stream_schema,
     stream_specific_notification_settings_schema,
-} from "./stream_types";
-import {api_stream_subscription_schema} from "./stream_types";
+} from "./stream_types.ts";
+import {api_stream_subscription_schema} from "./stream_types.ts";
 
 export type Stream = z.infer<typeof stream_schema>;
 export type StreamSpecificNotificationSettings = z.infer<
@@ -33,8 +33,11 @@ export type StreamSubscription = z.infer<typeof stream_subscription_schema>;
 
 const subs_by_stream_id = new Map<number, StreamSubscription>();
 
-export function get(stream_id: number): StreamSubscription | undefined {
-    return subs_by_stream_id.get(stream_id);
+export let get = (stream_id: number): StreamSubscription | undefined =>
+    subs_by_stream_id.get(stream_id);
+
+export function rewire_get(value: typeof get): void {
+    get = value;
 }
 
 export function validate_stream_ids(stream_ids: number[]): number[] {

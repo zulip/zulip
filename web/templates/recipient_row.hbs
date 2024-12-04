@@ -6,7 +6,7 @@
           href="{{stream_url}}"
           data-tippy-content="{{t 'Go to #{display_recipient}' }}">
             <span class="stream-privacy-modified-color-{{stream_id}} stream-privacy filter-icon"  style="color: {{stream_privacy_icon_color}}">
-                {{> stream_privacy}}
+                {{> stream_privacy .}}
             </span>
 
             {{~! Recipient (e.g. stream/topic or topic) ~}}

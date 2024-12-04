@@ -7,23 +7,19 @@ import render_confirm_delete_linkifier from "../templates/confirm_dialog/confirm
 import render_admin_linkifier_edit_form from "../templates/settings/admin_linkifier_edit_form.hbs";
 import render_admin_linkifier_list from "../templates/settings/admin_linkifier_list.hbs";
 
-import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
-import * as dialog_widget from "./dialog_widget";
-import {$t_html} from "./i18n";
-import * as ListWidget from "./list_widget";
-import * as scroll_util from "./scroll_util";
-import * as settings_ui from "./settings_ui";
-import {current_user, realm} from "./state_data";
-import * as ui_report from "./ui_report";
-import * as ui_util from "./ui_util";
-import * as util from "./util";
+import * as channel from "./channel.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t_html} from "./i18n.ts";
+import * as ListWidget from "./list_widget.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as settings_ui from "./settings_ui.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as ui_report from "./ui_report.ts";
+import * as ui_util from "./ui_util.ts";
+import * as util from "./util.ts";
 
 type RealmLinkifiers = typeof realm.realm_linkifiers;
-
-const configure_linkifier_api_response_schema = z.object({
-    id: z.number(),
-});
 
 const meta = {
     loaded: false,
@@ -221,9 +217,9 @@ export function build_page(): void {
     $(".admin_linkifiers_table").on("click", ".delete", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        const $btn = $(this);
+        const $button = $(this);
         const html_body = render_confirm_delete_linkifier();
-        const url = "/json/realm/filters/" + encodeURIComponent($btn.attr("data-linkifier-id")!);
+        const url = "/json/realm/filters/" + encodeURIComponent($button.attr("data-linkifier-id")!);
 
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Delete linkifier?"}),
@@ -240,8 +236,8 @@ export function build_page(): void {
         e.preventDefault();
         e.stopPropagation();
 
-        const $btn = $(this);
-        const linkifier_id = Number.parseInt($btn.attr("data-linkifier-id")!, 10);
+        const $button = $(this);
+        const linkifier_id = Number.parseInt($button.attr("data-linkifier-id")!, 10);
         open_linkifier_edit_form(linkifier_id);
     });
 
@@ -258,21 +254,14 @@ export function build_page(): void {
             $linkifier_status.hide();
             $pattern_status.hide();
             $template_status.hide();
-            const linkifier: {[key in string]?: string} & {id?: number} = {};
-
-            for (const obj of $(this).serializeArray()) {
-                linkifier[obj.name] = obj.value;
-            }
 
             void channel.post({
                 url: "/json/realm/filters",
                 data: $(this).serialize(),
-                success(raw_data) {
-                    const data = configure_linkifier_api_response_schema.parse(raw_data);
+                success() {
                     $("#linkifier_pattern").val("");
                     $("#linkifier_template").val("");
                     $add_linkifier_button.prop("disabled", false);
-                    linkifier.id = data.id;
                     ui_report.success(
                         $t_html({defaultMessage: "Custom linkifier added!"}),
                         $linkifier_status,

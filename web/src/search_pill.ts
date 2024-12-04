@@ -4,16 +4,16 @@ import assert from "minimalistic-assert";
 import render_input_pill from "../templates/input_pill.hbs";
 import render_search_user_pill from "../templates/search_user_pill.hbs";
 
-import {Filter} from "./filter";
-import * as input_pill from "./input_pill";
-import type {InputPill, InputPillContainer} from "./input_pill";
-import * as people from "./people";
-import type {User} from "./people";
-import type {NarrowTerm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as user_status from "./user_status";
-import type {UserStatusEmojiInfo} from "./user_status";
-import * as util from "./util";
+import {Filter} from "./filter.ts";
+import * as input_pill from "./input_pill.ts";
+import type {InputPill, InputPillContainer} from "./input_pill.ts";
+import * as people from "./people.ts";
+import type {User} from "./people.ts";
+import type {NarrowTerm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as user_status from "./user_status.ts";
+import type {UserStatusEmojiInfo} from "./user_status.ts";
+import * as util from "./util.ts";
 
 export type SearchUserPill = {
     type: "search_user";

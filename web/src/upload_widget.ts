@@ -1,5 +1,5 @@
-import {$t} from "./i18n";
-import * as util from "./util";
+import {$t} from "./i18n.ts";
+import * as util from "./util.ts";
 
 export type UploadWidget = {
     clear: () => void;

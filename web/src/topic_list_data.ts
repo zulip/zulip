@@ -1,14 +1,14 @@
 import assert from "minimalistic-assert";
 
-import * as resolved_topic from "../shared/src/resolved_topic";
+import * as resolved_topic from "../shared/src/resolved_topic.ts";
 
-import * as hash_util from "./hash_util";
-import * as narrow_state from "./narrow_state";
-import * as stream_topic_history from "./stream_topic_history";
-import * as sub_store from "./sub_store";
-import * as unread from "./unread";
-import * as user_topics from "./user_topics";
-import * as util from "./util";
+import * as hash_util from "./hash_util.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
+import * as sub_store from "./sub_store.ts";
+import * as unread from "./unread.ts";
+import * as user_topics from "./user_topics.ts";
+import * as util from "./util.ts";
 
 const max_topics = 8;
 const max_topics_with_unread = 12;

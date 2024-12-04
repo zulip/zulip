@@ -20,7 +20,7 @@ sanity_check.check_venv(__file__)
 import orjson
 from zulint.printer import BOLDRED, CYAN, ENDC, GREEN
 
-INDEX_JS = os.path.join(ROOT_DIR, "web/tests/lib/index.js")
+INDEX_JS = os.path.join(ROOT_DIR, "web/tests/lib/index.cjs")
 NODE_COVERAGE_PATH = os.path.join(ROOT_DIR, "var/node-coverage/coverage-final.json")
 
 # Ideally, we wouldn't need this line, but it seems to be required to
@@ -28,9 +28,9 @@ NODE_COVERAGE_PATH = os.path.join(ROOT_DIR, "var/node-coverage/coverage-final.js
 os.chdir(ROOT_DIR)
 
 USAGE = """
-    tools/test-js-with-node                                - to run all tests
-    tools/test-js-with-node util.test.js activity.test.js  - to run just a couple tests
-    tools/test-js-with-node --coverage                     - to generate coverage report
+    tools/test-js-with-node                                  - to run all tests
+    tools/test-js-with-node util.test.cjs activity.test.cjs  - to run just a couple tests
+    tools/test-js-with-node --coverage                       - to generate coverage report
     """
 
 
@@ -49,18 +49,15 @@ EXEMPT_FILES = make_set(
         "web/src/add_group_members_pill.ts",
         "web/src/add_stream_options_popover.ts",
         "web/src/add_subscribers_pill.ts",
-        "web/src/admin.js",
+        "web/src/admin.ts",
         "web/src/alert_popup.ts",
         "web/src/alert_words_ui.ts",
-        "web/src/archive.js",
         "web/src/assets.d.ts",
         "web/src/attachments.ts",
         "web/src/attachments_ui.ts",
         "web/src/audible_notifications.ts",
         "web/src/avatar.ts",
         "web/src/base_page_params.ts",
-        "web/src/billing/event_status.ts",
-        "web/src/billing/helpers.ts",
         "web/src/blueslip.ts",
         "web/src/blueslip_stacktrace.ts",
         "web/src/bootstrap_typeahead.ts",
@@ -90,17 +87,16 @@ EXEMPT_FILES = make_set(
         "web/src/copied_tooltip.ts",
         "web/src/copy_and_paste.ts",
         "web/src/csrf.ts",
-        "web/src/css_variables.d.ts",
-        "web/src/css_variables.js",
+        "web/src/css_variables.ts",
         "web/src/custom_profile_fields_ui.ts",
         "web/src/debug.ts",
-        "web/src/demo_organizations_ui.js",
+        "web/src/demo_organizations_ui.ts",
         "web/src/deprecated_feature_notice.ts",
-        "web/src/desktop_integration.js",
+        "web/src/desktop_integration.ts",
         "web/src/desktop_notifications.ts",
         "web/src/dialog_widget.ts",
         "web/src/drafts.ts",
-        "web/src/drafts_overlay_ui.js",
+        "web/src/drafts_overlay_ui.ts",
         "web/src/dropdown_widget.ts",
         "web/src/echo.ts",
         "web/src/electron_bridge.ts",
@@ -111,8 +107,8 @@ EXEMPT_FILES = make_set(
         "web/src/feedback_widget.ts",
         "web/src/fetch_status.ts",
         "web/src/flatpickr.ts",
-        "web/src/gear_menu.js",
-        "web/src/giphy.js",
+        "web/src/gear_menu.ts",
+        "web/src/giphy.ts",
         "web/src/giphy_state.ts",
         "web/src/global.ts",
         "web/src/group_setting_pill.ts",
@@ -128,6 +124,7 @@ EXEMPT_FILES = make_set(
         "web/src/integration_url_modal.ts",
         "web/src/invite.ts",
         "web/src/invite_stream_picker_pill.ts",
+        "web/src/invite_user_group_picker_pill.ts",
         "web/src/left_sidebar_navigation_area.ts",
         "web/src/left_sidebar_navigation_area_popovers.ts",
         "web/src/lightbox.ts",
@@ -136,7 +133,7 @@ EXEMPT_FILES = make_set(
         "web/src/loading.ts",
         "web/src/local_message.ts",
         "web/src/localstorage.ts",
-        "web/src/message_actions_popover.js",
+        "web/src/message_actions_popover.ts",
         "web/src/message_edit.ts",
         "web/src/message_edit_history.ts",
         "web/src/message_events.js",
@@ -153,7 +150,7 @@ EXEMPT_FILES = make_set(
         "web/src/message_lists.ts",
         "web/src/message_live_update.ts",
         "web/src/message_notifications.ts",
-        "web/src/message_scroll.js",
+        "web/src/message_scroll.ts",
         "web/src/message_scroll_state.ts",
         "web/src/message_util.ts",
         "web/src/message_view.ts",
@@ -166,8 +163,8 @@ EXEMPT_FILES = make_set(
         "web/src/narrow_title.ts",
         "web/src/navbar_alerts.ts",
         "web/src/navbar_help_menu.ts",
-        "web/src/navbar_menus.js",
-        "web/src/navigate.js",
+        "web/src/navbar_menus.ts",
+        "web/src/navigate.ts",
         "web/src/onboarding_steps.ts",
         "web/src/overlay_util.ts",
         "web/src/overlays.ts",
@@ -175,7 +172,6 @@ EXEMPT_FILES = make_set(
         "web/src/page_params.ts",
         "web/src/personal_menu_popover.ts",
         "web/src/playground_links_popover.ts",
-        "web/src/plotly.js.d.ts",
         "web/src/pm_list.ts",
         "web/src/pm_list_dom.ts",
         "web/src/poll_modal.ts",
@@ -183,16 +179,13 @@ EXEMPT_FILES = make_set(
         "web/src/popover_menus.ts",
         "web/src/popover_menus_data.ts",
         "web/src/popovers.ts",
-        "web/src/popperjs.d.ts",
         "web/src/read_receipts.ts",
-        "web/src/ready.ts",
         "web/src/realm_icon.ts",
         "web/src/realm_logo.ts",
         "web/src/realm_playground.ts",
         "web/src/recent_view_ui.ts",
         "web/src/reload.ts",
         "web/src/reload_setup.js",
-        "web/src/reminder.js",
         "web/src/resize.ts",
         "web/src/resize_handler.ts",
         "web/src/rows.ts",
@@ -209,7 +202,7 @@ EXEMPT_FILES = make_set(
         "web/src/sent_messages.ts",
         "web/src/sentry.ts",
         "web/src/server_events.js",
-        "web/src/settings.js",
+        "web/src/settings.ts",
         "web/src/settings_account.ts",
         "web/src/settings_bots.ts",
         "web/src/settings_components.ts",
@@ -220,18 +213,18 @@ EXEMPT_FILES = make_set(
         "web/src/settings_muted_users.ts",
         "web/src/settings_notifications.ts",
         "web/src/settings_org.ts",
-        "web/src/settings_panel_menu.js",
+        "web/src/settings_panel_menu.ts",
         "web/src/settings_playgrounds.ts",
         "web/src/settings_preferences.ts",
         "web/src/settings_profile_fields.ts",
         "web/src/settings_realm_domains.ts",
-        "web/src/settings_realm_user_settings_defaults.js",
-        "web/src/settings_sections.js",
+        "web/src/settings_realm_user_settings_defaults.ts",
+        "web/src/settings_sections.ts",
         "web/src/settings_streams.ts",
-        "web/src/settings_toggle.js",
+        "web/src/settings_toggle.ts",
         "web/src/settings_ui.ts",
         "web/src/settings_user_topics.ts",
-        "web/src/settings_users.js",
+        "web/src/settings_users.ts",
         "web/src/setup.ts",
         "web/src/sidebar_ui.ts",
         "web/src/spectators.ts",
@@ -243,16 +236,16 @@ EXEMPT_FILES = make_set(
         "web/src/stream_color_events.ts",
         "web/src/stream_create.ts",
         "web/src/stream_create_subscribers.ts",
-        "web/src/stream_edit.js",
+        "web/src/stream_edit.ts",
         "web/src/stream_edit_subscribers.ts",
         "web/src/stream_edit_toggler.ts",
         "web/src/stream_list.ts",
-        "web/src/stream_muting.js",
-        "web/src/stream_popover.js",
+        "web/src/stream_muting.ts",
+        "web/src/stream_popover.ts",
         "web/src/stream_settings_api.ts",
         "web/src/stream_settings_components.ts",
         "web/src/stream_settings_containers.ts",
-        "web/src/stream_settings_ui.js",
+        "web/src/stream_settings_ui.ts",
         "web/src/stream_ui_updates.ts",
         "web/src/submessage.ts",
         "web/src/subscriber_api.ts",
@@ -262,8 +255,7 @@ EXEMPT_FILES = make_set(
         "web/src/tippyjs.ts",
         "web/src/todo_widget.ts",
         "web/src/topic_list.ts",
-        "web/src/topic_popover.js",
-        "web/src/tutorial.js",
+        "web/src/topic_popover.ts",
         "web/src/typing.ts",
         "web/src/typing_events.ts",
         "web/src/ui_init.js",
@@ -274,8 +266,7 @@ EXEMPT_FILES = make_set(
         "web/src/unread_ui.ts",
         "web/src/upload.ts",
         "web/src/upload_widget.ts",
-        "web/src/url-template.d.ts",
-        "web/src/user_card_popover.js",
+        "web/src/user_card_popover.ts",
         "web/src/user_deactivation_ui.ts",
         "web/src/user_events.js",
         "web/src/user_group_components.ts",
@@ -285,7 +276,6 @@ EXEMPT_FILES = make_set(
         "web/src/user_group_edit.js",
         "web/src/user_group_edit_members.ts",
         "web/src/user_group_popover.ts",
-        "web/src/user_group_ui_updates.js",
         "web/src/user_groups.ts",
         "web/src/user_pill.ts",
         "web/src/user_profile.ts",
@@ -298,16 +288,15 @@ EXEMPT_FILES = make_set(
         "web/src/views_util.ts",
         "web/src/zcommand.ts",
         "web/src/zform.js",
-        "web/src/zulip.js",
         "web/src/zulip_test.ts",
-        "web/tests/lib/example_user.js",
-        "web/tests/lib/mdiff.js",
-        "web/tests/lib/real_jquery.js",
-        "web/tests/lib/zjquery_element.js",
-        "web/tests/lib/zpage_billing_params.js",
+        "web/tests/lib/example_user.cjs",
+        "web/tests/lib/mdiff.cjs",
+        "web/tests/lib/real_jquery.cjs",
+        "web/tests/lib/zjquery_element.cjs",
+        "web/tests/lib/zpage_billing_params.cjs",
         # There are some important functions which are not called right now but will
         # be reused when we add tests for dropdown widget so it doesn't make sense to remove them.
-        "web/tests/recent_view.test.js",
+        "web/tests/recent_view.test.cjs",
     ]
 )
 
@@ -371,8 +360,8 @@ def print_error(msg: str) -> None:
 
 def clean_file(orig_fn: str) -> str:
     fn = orig_fn
-    if not fn.endswith(".test.js"):
-        fn += ".test.js"
+    if not fn.endswith(".test.cjs"):
+        fn += ".test.cjs"
     if "web/tests/" not in fn:
         fn = os.path.join(ROOT_DIR, "web", "tests", fn)
     fn = os.path.abspath(fn)
@@ -390,19 +379,25 @@ def clean_files(fns: list[str]) -> list[str]:
 def run_tests_via_node_js() -> int:
     os.environ["TZ"] = "UTC"
 
-    # The index.js test runner is the real "driver" here, and we launch
+    # The index.cjs test runner is the real "driver" here, and we launch
     # with either nyc or node, depending on whether we want coverage
     # reports.  Running under nyc is slower and creates funny
     # tracebacks, so you generally want to get coverage reports only
     # after making sure tests will pass.
-    node_tests_cmd = ["node", "--stack-trace-limit=100", INDEX_JS]
+    node_tests_cmd = [
+        "node",
+        "--stack-trace-limit=100",
+        "--experimental-require-module",
+        "--no-warnings=ExperimentalWarning",
+        INDEX_JS,
+    ]
     if individual_files:
         # If we passed a specific set of tests, run in serial mode.
         global parallel
         parallel = 1
         files = individual_files
     else:
-        files = sorted(glob.glob(os.path.join(ROOT_DIR, "web/tests/*.test.js")))
+        files = sorted(glob.glob(os.path.join(ROOT_DIR, "web/tests/*.test.cjs")))
 
     test_files = clean_files(files)
 
@@ -426,14 +421,15 @@ def run_tests_via_node_js() -> int:
         coverage_dir = os.path.join(ROOT_DIR, "var/node-coverage")
 
         nyc = os.path.join(ROOT_DIR, "node_modules/.bin/nyc")
-        command = [nyc, "--extension", ".hbs", "--extension", ".ts"]
+        command = [nyc]
+        command += [f"--extension={ext}" for ext in [".cjs", ".cts", ".hbs", ".mjs", ".mts", ".ts"]]
         command += ["--report-dir", coverage_dir]
         command += ["--temp-directory", coverage_dir]
         command += ["-r=lcov", "-r=json", "-r=text-summary"]
         command += node_tests_cmd
     else:
         # Normal testing, no coverage analysis.
-        # Run the index.js test runner, which runs all the other tests.
+        # Run the index.cjs test runner, which runs all the other tests.
         command = node_tests_cmd
 
     try:
@@ -482,9 +478,11 @@ def enforce_proper_coverage(coverage_json: Any) -> bool:
         *glob.glob("web/src/*.js"),
         *glob.glob("web/src/*.ts"),
         *glob.glob("web/src/billing/*.js"),
-        *glob.glob("web/tests/*.js"),
-        *glob.glob("web/tests/lib/*.js"),
+        *glob.glob("web/tests/*.cjs"),
+        *glob.glob("web/tests/lib/*.cjs"),
     }
+    missing_files = sorted(EXEMPT_FILES - all_js_files)
+    assert not missing_files, f"Missing files should be removed from EXEMPT_FILES: {missing_files}"
     enforce_fully_covered = sorted(all_js_files - EXEMPT_FILES)
 
     coverage_lost = False

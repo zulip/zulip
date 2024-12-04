@@ -14,7 +14,7 @@ ZULIP_VERSION = lines.pop(0).strip()
 ZULIP_MERGE_BASE = lines.pop(0).strip()
 
 LATEST_MAJOR_VERSION = "9.0"
-LATEST_RELEASE_VERSION = "9.2"
+LATEST_RELEASE_VERSION = "9.3"
 LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.com/2023/12/15/zulip-8-0-released/"
 
 # Versions of the desktop app below DESKTOP_MINIMUM_VERSION will be
@@ -34,7 +34,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 316  # Last bumped for `can_move_messages_between_topics_group`
+API_FEATURE_LEVEL = 325  # Last bumped for can_administer_channel_group
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 316  # Last bumped for `can_move_messages_between_topics_gro
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (295, 1)  # bumped 2024-10-23 for stylelint-high-performance-animation
+PROVISION_VERSION = (305, 0)  # bumped 2024-11-27 to downgrade @uppy/tus

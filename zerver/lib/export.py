@@ -31,6 +31,7 @@ from django.utils.timezone import now as timezone_now
 import zerver.lib.upload
 from analytics.models import RealmCount, StreamCount, UserCount
 from scripts.lib.zulip_tools import overwrite_symlink
+from version import ZULIP_VERSION
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -97,11 +98,18 @@ SourceFilter: TypeAlias = Callable[[Record], bool]
 
 CustomFetch: TypeAlias = Callable[[TableData, Context], None]
 
+AppMigrations: TypeAlias = dict[str, list[str]]
+
 
 class MessagePartial(TypedDict):
     zerver_message: list[Record]
     zerver_userprofile_ids: list[int]
     realm_id: int
+
+
+class MigrationStatusJson(TypedDict):
+    migrations_by_app: AppMigrations
+    zulip_version: str
 
 
 MESSAGE_BATCH_CHUNK_SIZE = 1000
@@ -134,6 +142,7 @@ ALL_ZULIP_TABLES = {
     "zerver_archivetransaction",
     "zerver_botconfigdata",
     "zerver_botstoragedata",
+    "zerver_channelemailaddress",
     "zerver_client",
     "zerver_customprofilefield",
     "zerver_customprofilefieldvalue",
@@ -149,12 +158,14 @@ ALL_ZULIP_TABLES = {
     "zerver_missedmessageemailaddress",
     "zerver_multiuseinvite",
     "zerver_multiuseinvite_streams",
+    "zerver_multiuseinvite_groups",
     "zerver_namedusergroup",
     "zerver_onboardingstep",
     "zerver_onboardingusermessage",
     "zerver_preregistrationrealm",
     "zerver_preregistrationuser",
     "zerver_preregistrationuser_streams",
+    "zerver_preregistrationuser_groups",
     "zerver_presencesequence",
     "zerver_pushdevicetoken",
     "zerver_reaction",
@@ -203,9 +214,11 @@ NON_EXPORTED_TABLES = {
     "zerver_emailchangestatus",
     "zerver_multiuseinvite",
     "zerver_multiuseinvite_streams",
+    "zerver_multiuseinvite_groups",
     "zerver_preregistrationrealm",
     "zerver_preregistrationuser",
     "zerver_preregistrationuser_streams",
+    "zerver_preregistrationuser_groups",
     "zerver_realmreactivationstatus",
     # Missed message addresses are low value to export since
     # missed-message email addresses include the server's hostname and
@@ -263,6 +276,9 @@ NON_EXPORTED_TABLES = {
     # The importer cannot trust ImageAttachment objects anyway and needs to check
     # and process images for thumbnailing on its own.
     "zerver_imageattachment",
+    # ChannelEmailAddress entries are low value to export since
+    # channel email addresses include the server's hostname.
+    "zerver_channelemailaddress",
     # For any tables listed below here, it's a bug that they are not present in the export.
 }
 
@@ -897,7 +913,6 @@ def get_realm_config() -> Config:
     stream_config = Config(
         table="zerver_stream",
         model=Stream,
-        exclude=["email_token"],
         normal_parent=realm_config,
         include_rows="realm_id__in",
     )
@@ -2093,6 +2108,8 @@ def do_export_realm(
         export_full_with_consent=export_type == RealmExport.EXPORT_FULL_WITH_CONSENT,
     )
 
+    do_common_export_processes(output_dir)
+
     logging.info("Finished exporting %s", realm.string_id)
     create_soft_link(source=output_dir, in_progress=False)
 
@@ -2245,7 +2262,6 @@ def get_single_user_config() -> Config:
         virtual_parent=recipient_config,
         id_source=("zerver_recipient", "type_id"),
         source_filter=lambda r: r["type"] == Recipient.STREAM,
-        exclude=["email_token"],
     )
 
     Config(
@@ -2594,3 +2610,33 @@ def get_realm_exports_serialized(realm: Realm) -> list[dict[str, Any]]:
             export_type=export.type,
         )
     return sorted(exports_dict.values(), key=lambda export_dict: export_dict["id"])
+
+
+def get_migrations_by_app() -> AppMigrations:
+    from django.db import DEFAULT_DB_ALIAS, connections
+    from django.db.migrations.recorder import MigrationRecorder
+
+    recorder = MigrationRecorder(connections[DEFAULT_DB_ALIAS])
+    applied = recorder.applied_migrations()
+    migrations_by_app: AppMigrations = {}
+    for app_name, migration_name in applied:
+        migrations_by_app.setdefault(app_name, []).append(migration_name)
+    return migrations_by_app
+
+
+def export_migration_status(output_dir: str) -> None:
+    migration_status_json = MigrationStatusJson(
+        migrations_by_app=get_migrations_by_app(), zulip_version=ZULIP_VERSION
+    )
+    output_file = os.path.join(output_dir, "migration_status.json")
+    with open(output_file, "wb") as f:
+        f.write(orjson.dumps(migration_status_json, option=orjson.OPT_INDENT_2))
+
+
+def do_common_export_processes(output_dir: str) -> None:
+    # Performs common task(s) necessary for preparing Zulip data exports.
+    # This function is typically shared with migration tools in the
+    # `zerver/data_import` directory.
+
+    logging.info("Exporting migration status")
+    export_migration_status(output_dir)

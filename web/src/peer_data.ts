@@ -1,8 +1,8 @@
-import * as blueslip from "./blueslip";
-import {LazySet} from "./lazy_set";
-import type {User} from "./people";
-import * as people from "./people";
-import * as sub_store from "./sub_store";
+import * as blueslip from "./blueslip.ts";
+import {LazySet} from "./lazy_set.ts";
+import type {User} from "./people.ts";
+import * as people from "./people.ts";
+import * as sub_store from "./sub_store.ts";
 
 // This maps a stream_id to a LazySet of user_ids who are subscribed.
 const stream_subscribers = new Map<number, LazySet>();
@@ -43,7 +43,7 @@ export function potential_subscribers(stream_id: number): User[] {
         stream.  This may include some bots.
 
         We currently use it for typeahead in
-        stream_edit.js.
+        stream_edit.ts.
 
         This may be a superset of the actual
         subscribers that you can change in some cases
@@ -69,7 +69,7 @@ export function potential_subscribers(stream_id: number): User[] {
     return people.filter_all_users(is_potential_subscriber);
 }
 
-export function get_subscriber_count(stream_id: number, include_bots = true): number {
+export let get_subscriber_count = (stream_id: number, include_bots = true): number => {
     if (include_bots) {
         return get_user_set(stream_id).size;
     }
@@ -81,6 +81,10 @@ export function get_subscriber_count(stream_id: number, include_bots = true): nu
         }
     }
     return count;
+};
+
+export function rewire_get_subscriber_count(value: typeof get_subscriber_count): void {
+    get_subscriber_count = value;
 }
 
 export function get_subscribers(stream_id: number): number[] {

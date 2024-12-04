@@ -3,9 +3,10 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import * as resolved_topic from "../shared/src/resolved_topic";
+import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
+import render_confirm_edit_messages from "../templates/confirm_dialog/confirm_edit_messages.hbs";
 import render_confirm_merge_topics_with_rename from "../templates/confirm_dialog/confirm_merge_topics_with_rename.hbs";
 import render_confirm_moving_messages_modal from "../templates/confirm_dialog/confirm_moving_messages.hbs";
 import render_intro_resolve_topic_modal from "../templates/confirm_dialog/intro_resolve_topic.hbs";
@@ -14,49 +15,49 @@ import render_message_moved_widget_body from "../templates/message_moved_widget_
 import render_resolve_topic_time_limit_error_modal from "../templates/resolve_topic_time_limit_error_modal.hbs";
 import render_topic_edit_form from "../templates/topic_edit_form.hbs";
 
-import {detached_uploads_api_response_schema} from "./attachments";
-import * as attachments_ui from "./attachments_ui";
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as compose_actions from "./compose_actions";
-import * as compose_banner from "./compose_banner";
-import * as compose_call from "./compose_call";
-import * as compose_state from "./compose_state";
-import * as compose_tooltips from "./compose_tooltips";
-import * as compose_ui from "./compose_ui";
-import * as compose_validate from "./compose_validate";
-import * as composebox_typeahead from "./composebox_typeahead";
-import * as condense from "./condense";
-import * as confirm_dialog from "./confirm_dialog";
-import {show_copied_confirmation} from "./copied_tooltip";
-import * as dialog_widget from "./dialog_widget";
-import * as echo from "./echo";
-import * as feedback_widget from "./feedback_widget";
-import * as giphy_state from "./giphy_state";
-import * as hash_util from "./hash_util";
-import {$t, $t_html} from "./i18n";
-import * as keydown_util from "./keydown_util";
-import * as loading from "./loading";
-import * as markdown from "./markdown";
-import * as message_lists from "./message_lists";
-import * as message_live_update from "./message_live_update";
-import * as message_store from "./message_store";
-import type {Message} from "./message_store";
-import * as message_viewport from "./message_viewport";
-import * as onboarding_steps from "./onboarding_steps";
-import * as people from "./people";
-import * as resize from "./resize";
-import * as rows from "./rows";
-import * as settings_data from "./settings_data";
-import {current_user, realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as stream_topic_history from "./stream_topic_history";
-import * as sub_store from "./sub_store";
-import * as timerender from "./timerender";
-import * as ui_report from "./ui_report";
-import * as upload from "./upload";
-import {the} from "./util";
-import * as util from "./util";
+import {detached_uploads_api_response_schema} from "./attachments.ts";
+import * as attachments_ui from "./attachments_ui.ts";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as compose_actions from "./compose_actions.ts";
+import * as compose_banner from "./compose_banner.ts";
+import * as compose_call from "./compose_call.ts";
+import * as compose_state from "./compose_state.ts";
+import * as compose_tooltips from "./compose_tooltips.ts";
+import * as compose_ui from "./compose_ui.ts";
+import * as compose_validate from "./compose_validate.ts";
+import * as composebox_typeahead from "./composebox_typeahead.ts";
+import * as condense from "./condense.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import {show_copied_confirmation} from "./copied_tooltip.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import * as echo from "./echo.ts";
+import * as feedback_widget from "./feedback_widget.ts";
+import * as giphy_state from "./giphy_state.ts";
+import * as hash_util from "./hash_util.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
+import * as loading from "./loading.ts";
+import * as markdown from "./markdown.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_live_update from "./message_live_update.ts";
+import * as message_store from "./message_store.ts";
+import type {Message} from "./message_store.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as onboarding_steps from "./onboarding_steps.ts";
+import * as people from "./people.ts";
+import * as resize from "./resize.ts";
+import * as rows from "./rows.ts";
+import * as settings_data from "./settings_data.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
+import * as sub_store from "./sub_store.ts";
+import * as timerender from "./timerender.ts";
+import * as ui_report from "./ui_report.ts";
+import * as upload from "./upload.ts";
+import {the} from "./util.ts";
+import * as util from "./util.ts";
 
 // Stores the message ID of the message being edited, and the
 // textarea element which has the modified content.
@@ -340,8 +341,8 @@ export function stream_and_topic_exist_in_edit_history(
 export function hide_message_edit_spinner($row: JQuery): void {
     $row.find(".loader").hide();
     $row.find(".message_edit_save span").show();
-    $row.find(".message_edit_save").removeClass("disable-btn");
-    $row.find(".message_edit_cancel").removeClass("disable-btn");
+    $row.find(".message_edit_save").removeClass("message-edit-button-disabled");
+    $row.find(".message_edit_cancel").removeClass("message-edit-button-disabled");
 }
 
 export function show_message_edit_spinner($row: JQuery): void {
@@ -349,8 +350,8 @@ export function show_message_edit_spinner($row: JQuery): void {
     // do for send button in compose box.
     loading.show_button_spinner($row.find(".loader"), true);
     $row.find(".message_edit_save span").hide();
-    $row.find(".message_edit_save").addClass("disable-btn");
-    $row.find(".message_edit_cancel").addClass("disable-btn");
+    $row.find(".message_edit_save").addClass("message-edit-button-disabled");
+    $row.find(".message_edit_cancel").addClass("message-edit-button-disabled");
 }
 
 export function show_topic_edit_spinner($row: JQuery): void {
@@ -403,6 +404,7 @@ function handle_message_edit_enter(
             // Prevent default to avoid new-line on pressing
             // Enter inside the textarea in this case
             e.preventDefault();
+            compose_validate.validate_message_length($row);
             return;
         }
         save_message_row_edit($row);
@@ -537,6 +539,10 @@ function edit_message($row: JQuery, raw_content: string): void {
         }
     });
 
+    $form.on("input propertychange", () => {
+        compose_validate.check_overflow_text($row);
+    });
+
     $form
         .find(".message-edit-feature-group .video_link")
         .toggle(compose_call.compute_show_video_chat_button());
@@ -594,7 +600,8 @@ function edit_message($row: JQuery, raw_content: string): void {
                 // the half-finished edit around so that they can copy-paste it, but we don't want
                 // people to think "Save" will save the half-finished edit.
                 $message_edit_save.prop("disabled", true);
-                $message_edit_save_container.addClass("tippy-zulip-tooltip");
+                $message_edit_save_container.addClass("message-edit-time-limit-expired");
+                $message_edit_save_container.addClass("disabled-message-edit-save");
                 $message_edit_countdown_timer.addClass("expired");
                 $message_edit_countdown_timer.text($t({defaultMessage: "Time's up!"}));
             } else {
@@ -613,6 +620,7 @@ function edit_message($row: JQuery, raw_content: string): void {
         if (contents) {
             $message_edit_content.val(contents);
         }
+        compose_validate.check_overflow_text($row);
     }
 }
 
@@ -631,7 +639,7 @@ function start_edit_maintaining_scroll($row: JQuery, content: string): void {
 function start_edit_with_content(
     $row: JQuery,
     content: string,
-    edit_box_open_callback: () => void,
+    edit_box_open_callback?: () => void,
 ): void {
     start_edit_maintaining_scroll($row, content);
     if (edit_box_open_callback) {
@@ -641,7 +649,7 @@ function start_edit_with_content(
     upload.setup_upload(upload.edit_config(row_id));
 }
 
-export function start($row: JQuery, edit_box_open_callback: () => void): void {
+export function start($row: JQuery, edit_box_open_callback?: () => void): void {
     assert(message_lists.current !== undefined);
     const message = message_lists.current.get(rows.id($row));
     if (message === undefined) {
@@ -784,7 +792,7 @@ export function toggle_resolve_topic(
     message_id: number,
     old_topic_name: string,
     report_errors_in_global_banner: boolean,
-    $row: JQuery,
+    $row?: JQuery,
 ): void {
     let new_topic_name;
     const topic_is_resolved = resolved_topic.is_resolved(old_topic_name);
@@ -825,7 +833,7 @@ function do_toggle_resolve_topic(
     new_topic_name: string,
     topic_is_resolved: boolean,
     report_errors_in_global_banner: boolean,
-    $row: JQuery,
+    $row?: JQuery,
 ): void {
     if ($row) {
         show_toggle_resolve_topic_spinner($row);
@@ -1252,33 +1260,71 @@ export function maybe_show_edit($row: JQuery, id: number): void {
     }
 }
 
+function warn_user_about_unread_msgs(last_sent_msg_id: number, num_unread: number): void {
+    confirm_dialog.launch({
+        html_heading: $t({defaultMessage: "Edit your last message?"}),
+        html_body: render_confirm_edit_messages({
+            num_unread,
+        }),
+        on_click() {
+            // Select the message we want to edit to mark messages between it and the
+            // current selected id as read.
+            message_lists.current?.select_id(last_sent_msg_id, {
+                then_scroll: true,
+            });
+            edit_last_sent_message();
+        },
+    });
+}
+
 export function edit_last_sent_message(): void {
     if (message_lists.current === undefined) {
         return;
     }
 
-    const msg = message_lists.current.get_last_message_sent_by_me();
+    const last_sent_msg = message_lists.current.get_last_message_sent_by_me();
 
-    if (!msg) {
+    if (!last_sent_msg) {
         return;
     }
 
-    if (!msg.id) {
+    if (!last_sent_msg.id) {
         blueslip.error("Message has invalid id in edit_last_sent_message.");
         return;
     }
 
-    if (!is_content_editable(msg, 5)) {
+    if (!is_content_editable(last_sent_msg, 5)) {
         return;
     }
 
-    message_lists.current.select_id(msg.id, {then_scroll: true, from_scroll: true});
+    const current_selected_msg = message_store.get(message_lists.current.selected_id());
+    if (
+        current_selected_msg &&
+        current_selected_msg.id < last_sent_msg.id &&
+        message_lists.current.can_mark_messages_read()
+    ) {
+        // If there are any unread messages between the selected message and the
+        // message we want to edit, we don't edit the last sent message to avoid
+        // marking messages as read unintentionally.
+        let num_unread = 0;
+        for (const msg of message_lists.current.all_messages()) {
+            if (current_selected_msg.id < msg.id && msg.id < last_sent_msg.id && msg.unread) {
+                num_unread += 1;
+            }
+        }
+        if (num_unread > 0) {
+            warn_user_about_unread_msgs(last_sent_msg.id, num_unread);
+            return;
+        }
+    }
 
-    const $msg_row = message_lists.current.get_row(msg.id);
+    message_lists.current.select_id(last_sent_msg.id, {then_scroll: true});
+
+    const $msg_row = message_lists.current.get_row(last_sent_msg.id);
     if (!$msg_row) {
         // This should never happen, since we got the message above
         // from message_lists.current.
-        blueslip.error("Could not find row for id", {msg_id: msg.id});
+        blueslip.error("Could not find row for id", {msg_id: last_sent_msg.id});
         return;
     }
 
@@ -1434,7 +1480,7 @@ function show_message_moved_toast(toast_params: ToastParams): void {
 export function move_topic_containing_message_to_stream(
     message_id: number,
     new_stream_id: number | undefined,
-    new_topic_name: string,
+    new_topic_name: string | undefined,
     send_notification_to_new_thread: boolean,
     send_notification_to_old_thread: boolean,
     propagate_mode: string,

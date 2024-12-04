@@ -7,14 +7,14 @@
 #
 # For details, see requirements/README.md .
 #
-wheel==0.44.0 \
-    --hash=sha256:2376a90c98cc337d18623527a97c31797bd02bad0033d41547043a1cbfbe448f \
-    --hash=sha256:a29c3f2817e95ab89aa4660681ad547c0e9547f20e75b0562fe7723c9a2a9d49
+wheel==0.45.0 \
+    --hash=sha256:52f0baa5e6522155090a09c6bd95718cc46956d1b51d537ea5454249edb671c7 \
+    --hash=sha256:a57353941a3183b3d5365346b567a260a0602a0f8a635926a7dede41b94c674a
     # via -r requirements/pip.in
 
 # The following packages are considered to be unsafe in a requirements file:
-https://github.com/zulip/pip/archive/39e8b5ecfcd8d19872f103d680713bc8e9de9d00.zip#egg=pip==20.3.4+git \
-    --hash=sha256:2c8ae0783fea3e2b98b422d443b19c443779f0881882f905e0728be7b4043d1b
+https://github.com/zulip/pip/archive/50e61dcc78d0da8a041e4fecc566f40b2b0604df.zip#egg=pip==20.3.4+git \
+    --hash=sha256:35e47938b7e2a91523359b54a53c62fc2aeed5adaaba24437a33cbd9a4641574
     # via -r requirements/pip.in
 setuptools==71.0.0 \
     --hash=sha256:98da3b8aca443b9848a209ae4165e2edede62633219afa493a58fbba57f72e2e \

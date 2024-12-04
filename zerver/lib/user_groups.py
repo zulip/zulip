@@ -18,7 +18,11 @@ from zerver.lib.exceptions import (
     SystemGroupRequiredError,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import GroupPermissionSetting, ServerSupportedPermissionSettings
+from zerver.lib.types import (
+    AnonymousSettingGroupDict,
+    GroupPermissionSetting,
+    ServerSupportedPermissionSettings,
+)
 from zerver.models import (
     GroupGroupMembership,
     NamedUserGroup,
@@ -31,12 +35,6 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
-
-
-@dataclass
-class AnonymousSettingGroupDict:
-    direct_members: list[int]
-    direct_subgroups: list[int]
 
 
 @dataclass
@@ -59,6 +57,7 @@ class UserGroupDict(TypedDict):
     can_leave_group: int | AnonymousSettingGroupDict
     can_manage_group: int | AnonymousSettingGroupDict
     can_mention_group: int | AnonymousSettingGroupDict
+    can_remove_members_group: int | AnonymousSettingGroupDict
     deactivated: bool
 
 
@@ -370,16 +369,6 @@ def check_setting_configuration_for_system_groups(
         )
 
     if (
-        not permission_configuration.allow_owners_group
-        and setting_group.name == SystemGroups.OWNERS
-    ):
-        raise JsonableError(
-            _("'{setting_name}' setting cannot be set to 'role:owners' group.").format(
-                setting_name=setting_name
-            )
-        )
-
-    if (
         not permission_configuration.allow_nobody_group
         and setting_group.name == SystemGroups.NOBODY
     ):
@@ -564,6 +553,8 @@ def user_groups_in_realm_serialized(
         "can_manage_group__named_user_group",
         "can_mention_group",
         "can_mention_group__named_user_group",
+        "can_remove_members_group",
+        "can_remove_members_group__named_user_group",
     ).filter(realm=realm)
 
     if not include_deactivated_groups:
@@ -628,6 +619,9 @@ def user_groups_in_realm_serialized(
             ),
             can_mention_group=get_setting_value_for_user_group_object(
                 user_group.can_mention_group, group_members, group_subgroups
+            ),
+            can_remove_members_group=get_setting_value_for_user_group_object(
+                user_group.can_remove_members_group, group_members, group_subgroups
             ),
             deactivated=user_group.deactivated,
         )
@@ -844,12 +838,13 @@ def bulk_create_system_user_groups(groups: list[dict[str, str]], realm: Realm) -
         user_group_ids = [id for (id,) in cursor.fetchall()]
 
     rows = [
-        SQL("({},{},{},{},{},{},{},{},{},{},{})").format(
+        SQL("({},{},{},{},{},{},{},{},{},{},{},{})").format(
             Literal(user_group_ids[idx]),
             Literal(realm.id),
             Literal(group["name"]),
             Literal(group["description"]),
             Literal(True),
+            Literal(initial_group_setting_value),
             Literal(initial_group_setting_value),
             Literal(initial_group_setting_value),
             Literal(initial_group_setting_value),
@@ -861,7 +856,7 @@ def bulk_create_system_user_groups(groups: list[dict[str, str]], realm: Realm) -
     ]
     query = SQL(
         """
-        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_add_members_group_id, can_join_group_id, can_leave_group_id, can_manage_group_id, can_mention_group_id, deactivated)
+        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_add_members_group_id, can_join_group_id, can_leave_group_id, can_manage_group_id, can_mention_group_id, can_remove_members_group_id, deactivated)
         VALUES {rows}
         """
     ).format(rows=SQL(", ").join(rows))
@@ -870,12 +865,11 @@ def bulk_create_system_user_groups(groups: list[dict[str, str]], realm: Realm) -
 
 
 @transaction.atomic(savepoint=False)
-def create_system_user_groups_for_realm(realm: Realm) -> dict[int, NamedUserGroup]:
+def create_system_user_groups_for_realm(realm: Realm) -> dict[str, NamedUserGroup]:
     """Any changes to this function likely require a migration to adjust
     existing realms.  See e.g. migration 0382_create_role_based_system_groups.py,
     which is a copy of this function from when we introduced system groups.
     """
-    role_system_groups_dict: dict[int, NamedUserGroup] = {}
 
     system_groups_info_list: list[dict[str, str]] = []
 
@@ -908,9 +902,6 @@ def create_system_user_groups_for_realm(realm: Realm) -> dict[int, NamedUserGrou
     bulk_create_system_user_groups(system_groups_info_list, realm)
 
     system_groups_name_dict: dict[str, NamedUserGroup] = get_role_based_system_groups_dict(realm)
-    for role in NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP:
-        group_name = NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[role]["name"]
-        role_system_groups_dict[role] = system_groups_name_dict[group_name]
 
     # Order of this list here is important to create correct GroupGroupMembership objects
     # Note that because we do not create user memberships here, no audit log entries for
@@ -950,6 +941,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> dict[int, NamedUserGrou
             "can_leave_group",
             "can_manage_group",
             "can_mention_group",
+            "can_remove_members_group",
         ],
     )
 
@@ -984,7 +976,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> dict[int, NamedUserGrou
     GroupGroupMembership.objects.bulk_create(subgroup_objects)
     RealmAuditLog.objects.bulk_create(realmauditlog_objects)
 
-    return role_system_groups_dict
+    return system_groups_name_dict
 
 
 def get_system_user_group_for_user(user_profile: UserProfile) -> NamedUserGroup:

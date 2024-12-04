@@ -26,7 +26,7 @@ from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.message import bulk_access_messages
 from zerver.lib.notification_data import get_mentioned_user_group
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.tex import change_katex_to_raw_latex
@@ -593,7 +593,7 @@ def do_send_missedmessage_events_reply_in_zulip(
         "reply_to_email": str(Address(display_name=reply_to_name, addr_spec=reply_to_address)),
         "context": context,
     }
-    queue_json_publish("email_senders", email_dict)
+    queue_event_on_commit("email_senders", email_dict)
 
     user_profile.last_reminder = timezone_now()
     user_profile.save(update_fields=["last_reminder"])
@@ -938,7 +938,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
 def convert_html_to_markdown(html: str) -> str:
     # html2text is GPL licensed, so run it as a subprocess.
     markdown = subprocess.check_output(
-        [os.path.join(sys.prefix, "bin", "html2text")], input=html, text=True
+        [os.path.join(sys.prefix, "bin", "html2text"), "--unicode-snob"], input=html, text=True
     ).strip()
 
     # We want images to get linked and inline previewed, but html2text will turn

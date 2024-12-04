@@ -462,7 +462,8 @@ body.has-overlay-scrollbar {
                 --color-navbar-spectator-medium-attention-brand-button-background
             );
 
-            &:hover {
+            &:hover,
+            &:focus {
                 color: var(
                     --color-navbar-spectator-medium-attention-brand-button-text
                 );
@@ -550,7 +551,7 @@ body.has-overlay-scrollbar {
     }
 
     .column-right .right-sidebar {
-        padding-left: 10px;
+        padding-left: 5px;
         width: 240px;
     }
 
@@ -619,7 +620,7 @@ li,
     line-height: inherit;
 }
 
-.btn {
+.bootstrap-btn {
     font-size: inherit;
     height: auto;
     line-height: 100%;
@@ -648,7 +649,7 @@ li,
     right: 5px;
     height: 1em;
     backdrop-filter: blur(20px);
-    outline: 1px solid var(--color-copy-btn-square-bg-active);
+    outline: 1px solid var(--color-copy-button-square-bg-active);
 }
 
 #copy_generated_link_container {
@@ -999,10 +1000,10 @@ div.focused-message-list {
     background-color: transparent;
 }
 
+.information-settings .user-profile-picture,
+.user_sidebar_entry.with_avatar .user-profile-picture,
 .inline_profile_picture {
     display: inline-block;
-    width: var(--message-box-avatar-width);
-    height: var(--message-box-avatar-height);
     /* Don't inherit the line-height from message-avatar;
        this preserves the dimensions and rounded corners
        on the image itself. */
@@ -1015,6 +1016,17 @@ div.focused-message-list {
     &.guest-avatar::after {
         outline: 2px solid hsl(0deg 0% 100%);
     }
+}
+
+.inline_profile_picture {
+    width: var(--message-box-avatar-width);
+    height: var(--message-box-avatar-height);
+}
+
+.information-settings .user-profile-picture,
+.user_sidebar_entry.with_avatar .user-profile-picture {
+    width: var(--right-sidebar-avatar-width);
+    height: var(--right-sidebar-avatar-height);
 }
 
 .home-error-bar {
@@ -1261,7 +1273,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     }
 }
 
-#custom-expiration-time-input,
+.custom-time-input-value,
 #invite-user-form {
     margin: 0;
 }
@@ -1285,7 +1297,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     width: 100%;
 }
 
-#custom-expiration-time-input {
+.custom-time-input-value {
     width: 5ch;
     margin-right: 15px;
 
@@ -1307,7 +1319,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     }
 }
 
-#custom-expiration-time-unit {
+.custom-time-input-unit {
     width: auto;
 }
 

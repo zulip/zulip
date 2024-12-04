@@ -2,17 +2,17 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as compose_validate from "./compose_validate";
-import {$t, $t_html} from "./i18n";
-import type {NarrowBannerData, SearchData} from "./narrow_error";
-import {narrow_error} from "./narrow_error";
-import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import * as spectators from "./spectators";
-import {realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as util from "./util";
+import * as compose_validate from "./compose_validate.ts";
+import {$t, $t_html} from "./i18n.ts";
+import type {NarrowBannerData, SearchData} from "./narrow_error.ts";
+import {narrow_error} from "./narrow_error.ts";
+import * as narrow_state from "./narrow_state.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import * as spectators from "./spectators.ts";
+import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as util from "./util.ts";
 
 const SPECTATOR_STREAM_NARROW_BANNER = {
     title: "",

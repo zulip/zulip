@@ -29,6 +29,7 @@ IGNORED_PHRASES = [
     r"IP",
     r"JSON",
     r"Jitsi",
+    r"Jotform",
     r"Kerberos",
     r"LinkedIn",
     r"LDAP",
@@ -175,6 +176,8 @@ IGNORED_PHRASES = [
     r"hours",
     r"days",
     r"weeks",
+    # Used in "Who can unsubscribe others from this channel" label.
+    r"in addition to organization administrators",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

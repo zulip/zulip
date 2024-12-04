@@ -5,13 +5,13 @@ import assert from "minimalistic-assert";
 import {insertTextIntoField} from "text-field-edit";
 import TurndownService from "turndown";
 
-import * as compose_ui from "./compose_ui";
-import * as hash_util from "./hash_util";
-import * as message_lists from "./message_lists";
-import * as rows from "./rows";
-import * as stream_data from "./stream_data";
-import * as topic_link_util from "./topic_link_util";
-import * as util from "./util";
+import * as compose_ui from "./compose_ui.ts";
+import * as hash_util from "./hash_util.ts";
+import * as message_lists from "./message_lists.ts";
+import * as rows from "./rows.ts";
+import * as stream_data from "./stream_data.ts";
+import * as topic_link_util from "./topic_link_util.ts";
+import * as util from "./util.ts";
 
 declare global {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -673,20 +673,33 @@ export function try_stream_topic_syntax_text(text: string): string | null {
     assert(stream !== undefined);
     const stream_name = stream.name;
     if (topic_link_util.will_produce_broken_stream_topic_link(stream_name)) {
-        return topic_link_util.get_fallback_markdown_link(stream_name, stream_topic.topic_name);
+        return topic_link_util.get_fallback_markdown_link(
+            stream_name,
+            stream_topic.topic_name,
+            stream_topic.message_id,
+        );
     }
 
     if (
         stream_topic.topic_name !== undefined &&
         topic_link_util.will_produce_broken_stream_topic_link(stream_topic.topic_name)
     ) {
-        return topic_link_util.get_fallback_markdown_link(stream_name, stream_topic.topic_name);
+        return topic_link_util.get_fallback_markdown_link(
+            stream_name,
+            stream_topic.topic_name,
+            stream_topic.message_id,
+        );
     }
 
     let syntax_text = "#**" + stream_name;
     if (stream_topic.topic_name) {
         syntax_text += ">" + stream_topic.topic_name;
     }
+
+    if (stream_topic.message_id !== undefined) {
+        syntax_text += "@" + stream_topic.message_id;
+    }
+
     syntax_text += "**";
     return syntax_text;
 }

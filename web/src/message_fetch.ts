@@ -2,30 +2,30 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import {all_messages_data} from "./all_messages_data";
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as compose_closed_ui from "./compose_closed_ui";
-import * as compose_recipient from "./compose_recipient";
-import * as direct_message_group_data from "./direct_message_group_data";
-import {Filter} from "./filter";
-import * as message_feed_loading from "./message_feed_loading";
-import * as message_feed_top_notices from "./message_feed_top_notices";
-import * as message_helper from "./message_helper";
-import type {MessageList} from "./message_list";
-import type {MessageListData} from "./message_list_data";
-import * as message_lists from "./message_lists";
-import {raw_message_schema} from "./message_store";
-import * as message_util from "./message_util";
-import * as narrow_banner from "./narrow_banner";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import * as recent_view_ui from "./recent_view_ui";
-import type {NarrowTerm} from "./state_data";
-import {narrow_term_schema} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as stream_list from "./stream_list";
-import * as ui_report from "./ui_report";
+import {all_messages_data} from "./all_messages_data.ts";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as compose_closed_ui from "./compose_closed_ui.ts";
+import * as compose_recipient from "./compose_recipient.ts";
+import * as direct_message_group_data from "./direct_message_group_data.ts";
+import {Filter} from "./filter.ts";
+import * as message_feed_loading from "./message_feed_loading.ts";
+import * as message_feed_top_notices from "./message_feed_top_notices.ts";
+import * as message_helper from "./message_helper.ts";
+import type {MessageList} from "./message_list.ts";
+import type {MessageListData} from "./message_list_data.ts";
+import * as message_lists from "./message_lists.ts";
+import {raw_message_schema} from "./message_store.ts";
+import * as message_util from "./message_util.ts";
+import * as narrow_banner from "./narrow_banner.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import * as recent_view_ui from "./recent_view_ui.ts";
+import type {NarrowTerm} from "./state_data.ts";
+import {narrow_term_schema} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_list from "./stream_list.ts";
+import * as ui_report from "./ui_report.ts";
 
 const response_schema = z.object({
     anchor: z.number(),
@@ -49,6 +49,14 @@ type MessageFetchOptions = {
     msg_list_data: MessageListData;
     msg_list?: MessageList | undefined;
     validate_filter_topic_post_fetch?: boolean | undefined;
+};
+
+type MessageFetchAPIParams = {
+    anchor: number | string;
+    num_before: number;
+    num_after: number;
+    client_gravatar: boolean;
+    narrow?: string;
 };
 
 let first_messages_fetch = true;
@@ -103,6 +111,36 @@ export function load_messages_around_anchor(
     });
 }
 
+export function fetch_more_if_required_for_current_msg_list(
+    has_found_oldest: boolean,
+    has_found_newest: boolean,
+    looking_for_new_msgs: boolean,
+    looking_for_old_msgs: boolean,
+): void {
+    assert(message_lists.current !== undefined);
+    if (message_lists.current.is_combined_feed_view) {
+        return;
+    }
+
+    if (has_found_oldest && has_found_newest) {
+        // Even after loading more messages, we have
+        // no messages to display in this narrow.
+        narrow_banner.show_empty_narrow_message();
+        compose_closed_ui.update_buttons_for_private();
+        compose_recipient.check_posting_policy_for_compose_box();
+    }
+
+    if (looking_for_old_msgs && !has_found_oldest) {
+        maybe_load_older_messages({
+            msg_list: message_lists.current,
+            msg_list_data: message_lists.current.data,
+        });
+    }
+    if (looking_for_new_msgs && !has_found_newest) {
+        maybe_load_newer_messages({msg_list: message_lists.current});
+    }
+}
+
 function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): void {
     const raw_messages = data.messages;
 
@@ -136,29 +174,22 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
     if (
         message_lists.current !== undefined &&
         opts.msg_list === message_lists.current &&
-        !opts.msg_list.is_combined_feed_view &&
-        opts.msg_list.visibly_empty()
-    ) {
         // The view appears to be empty. However, because in stream
         // narrows, we fetch messages including those that might be
         // hidden by topic muting, it's possible that we received all
         // the messages we requested, and all of them are in muted
         // topics, but there are older messages for this stream that
         // we need to ask the server for.
-        if (has_found_oldest && has_found_newest) {
-            // Even after loading more messages, we have
-            // no messages to display in this narrow.
-            narrow_banner.show_empty_narrow_message();
-            compose_closed_ui.update_buttons_for_private();
-            compose_recipient.check_posting_policy_for_compose_box();
-        }
-
-        if (opts.num_before > 0 && !has_found_oldest) {
-            maybe_load_older_messages({msg_list: opts.msg_list, msg_list_data: opts.msg_list.data});
-        }
-        if (opts.num_after > 0 && !has_found_newest) {
-            maybe_load_newer_messages({msg_list: opts.msg_list});
-        }
+        message_lists.current.visibly_empty()
+    ) {
+        const looking_for_new_msgs = opts.num_after > 0;
+        const looking_for_old_msgs = opts.num_before > 0;
+        fetch_more_if_required_for_current_msg_list(
+            has_found_oldest,
+            has_found_newest,
+            looking_for_new_msgs,
+            looking_for_old_msgs,
+        );
     }
 
     if (opts.cont !== undefined) {
@@ -282,7 +313,7 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
     return JSON.stringify(narrow_terms);
 }
 
-export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
+function get_parameters_for_message_fetch_api(opts: MessageFetchOptions): MessageFetchAPIParams {
     if (typeof opts.anchor === "number") {
         // Messages that have been locally echoed messages have
         // floating point temporary IDs, which is intended to be a.
@@ -290,13 +321,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         // the nearest integer before sending a request to the server.
         opts.anchor = opts.anchor.toFixed(0);
     }
-    const data: {
-        anchor: number | string;
-        num_before: number;
-        num_after: number;
-        client_gravatar: boolean;
-        narrow?: string;
-    } = {
+    const data: MessageFetchAPIParams = {
         anchor: opts.anchor,
         num_before: opts.num_before,
         num_after: opts.num_after,
@@ -308,16 +333,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         blueslip.error("Message list data is undefined!");
     }
 
-    // This block is a hack; structurally, we want to set
-    //   data.narrow = opts.msg_list.data.filter.public_terms()
-    //
-    // But support for the all_messages_data sharing of data with
-    // the combined feed view and the (hacky) page_params.narrow feature
-    // requires a somewhat ugly bundle of conditionals.
-    let narrow_data: NarrowTerm[] = [];
-    if (!msg_list_data.filter.is_in_home()) {
-        narrow_data = msg_list_data.filter.public_terms();
-    }
+    let narrow_data = msg_list_data.filter.public_terms();
     if (page_params.narrow !== undefined) {
         narrow_data = [...narrow_data, ...page_params.narrow];
     }
@@ -331,20 +347,19 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         // will return an error if appropriate.
         narrow_data = [...narrow_data, ...web_public_narrow];
     }
-    // We don't pass a narrow for the non-spectator, combined feed view; this
-    // is required to display messages if their muted status changes without
-    // a new network request, and so we need the server to send the message
-    // history from muted streams and topics even though the combined feed
-    // view's "in:home" narrow term will filter those.
     if (narrow_data.length > 0) {
         const narrow_param_string = JSON.stringify(narrow_data);
         data.narrow = handle_operators_supporting_id_based_api(narrow_param_string);
     }
+    return data;
+}
 
+export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
+    const data = get_parameters_for_message_fetch_api(opts);
     let update_loading_indicator =
         message_lists.current !== undefined && opts.msg_list === message_lists.current;
     if (opts.num_before > 0) {
-        msg_list_data.fetch_status.start_older_batch({
+        opts.msg_list_data.fetch_status.start_older_batch({
             update_loading_indicator,
         });
     }
@@ -352,7 +367,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
     if (opts.num_after > 0) {
         // We hide the bottom loading indicator when we're fetching both top and bottom messages.
         update_loading_indicator = update_loading_indicator && opts.num_before === 0;
-        msg_list_data.fetch_status.start_newer_batch({
+        opts.msg_list_data.fetch_status.start_newer_batch({
             update_loading_indicator,
         });
     }

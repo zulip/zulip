@@ -3,10 +3,10 @@ import assert from "minimalistic-assert";
 
 import render_typing_notifications from "../templates/typing_notifications.hbs";
 
-import * as narrow_state from "./narrow_state";
-import * as people from "./people";
-import {current_user, realm} from "./state_data";
-import * as typing_data from "./typing_data";
+import * as narrow_state from "./narrow_state.ts";
+import * as people from "./people.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as typing_data from "./typing_data.ts";
 
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
 

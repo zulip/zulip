@@ -5,12 +5,12 @@
 import $ from "jquery";
 import * as tippy from "tippy.js";
 
-import * as blueslip from "./blueslip";
-import {media_breakpoints_num} from "./css_variables";
-import * as modals from "./modals";
-import * as overlays from "./overlays";
-import * as popovers from "./popovers";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import {media_breakpoints_num} from "./css_variables.ts";
+import * as modals from "./modals.ts";
+import * as overlays from "./overlays.ts";
+import * as popovers from "./popovers.ts";
+import * as util from "./util.ts";
 
 type PopoverName =
     | "compose_control_buttons"
@@ -78,7 +78,7 @@ export function popover_items_handle_keyboard(key: string, $items?: JQuery): voi
     $items.eq(index).trigger("focus");
 }
 
-export function focus_first_popover_item($items: JQuery, index = 0): void {
+export function focus_first_popover_item($items: JQuery | undefined, index = 0): void {
     if (!$items) {
         return;
     }
@@ -99,20 +99,20 @@ export function get_topic_menu_popover(): tippy.Instance | null {
     return popover_instances.topics_menu;
 }
 
-export function is_topic_menu_popover_displayed(): boolean | undefined {
-    return popover_instances.topics_menu?.state.isVisible;
+export function is_topic_menu_popover_displayed(): boolean {
+    return popover_instances.topics_menu?.state.isVisible ?? false;
 }
 
-export function is_visibility_policy_popover_displayed(): boolean | undefined {
-    return popover_instances.change_visibility_policy?.state.isVisible;
+export function is_visibility_policy_popover_displayed(): boolean {
+    return popover_instances.change_visibility_policy?.state.isVisible ?? false;
 }
 
 export function get_scheduled_messages_popover(): tippy.Instance | null {
     return popover_instances.send_later;
 }
 
-export function is_scheduled_messages_popover_displayed(): boolean | undefined {
-    return popover_instances.send_later?.state.isVisible;
+export function is_scheduled_messages_popover_displayed(): boolean {
+    return popover_instances.send_later?.state.isVisible ?? false;
 }
 
 export function get_compose_control_buttons_popover(): tippy.Instance | null {
@@ -123,24 +123,24 @@ export function get_starred_messages_popover(): tippy.Instance | null {
     return popover_instances.starred_messages;
 }
 
-export function is_personal_menu_popover_displayed(): boolean | undefined {
-    return popover_instances.personal_menu?.state.isVisible;
+export function is_personal_menu_popover_displayed(): boolean {
+    return popover_instances.personal_menu?.state.isVisible ?? false;
 }
 
-export function is_gear_menu_popover_displayed(): boolean | undefined {
-    return popover_instances.gear_menu?.state.isVisible;
+export function is_gear_menu_popover_displayed(): boolean {
+    return popover_instances.gear_menu?.state.isVisible ?? false;
 }
 
 export function get_gear_menu_instance(): tippy.Instance | null {
     return popover_instances.gear_menu;
 }
 
-export function is_help_menu_popover_displayed(): boolean | undefined {
-    return popover_instances.help_menu?.state.isVisible;
+export function is_help_menu_popover_displayed(): boolean {
+    return popover_instances.help_menu?.state.isVisible ?? false;
 }
 
-export function is_message_actions_popover_displayed(): boolean | undefined {
-    return popover_instances.message_actions?.state.isVisible;
+export function is_message_actions_popover_displayed(): boolean {
+    return popover_instances.message_actions?.state.isVisible ?? false;
 }
 
 function get_popover_items_for_instance(instance: tippy.Instance): JQuery | undefined {

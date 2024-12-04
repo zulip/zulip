@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import {user_settings} from "./user_settings";
+import {user_settings} from "./user_settings.ts";
 
 export function set_layout_width(): void {
     if (user_settings.fluid_layout_width) {

@@ -1,0 +1,17 @@
+Error: Export was generated on a different Zulip version.
+Export version: {version_placeholder}
+Server version: {version_placeholder}
+
+Database formats differ between the exported realm and this server.
+Printing migrations that differ between the versions:
+--- exported realm
++++ this server
+'auth' app:
+ 0002_alter_permission_name_max_length
++0003_alter_user_email_max_length
++0004_alter_user_username_opts
+
+'zerver' app:
+ 0029_realm_subdomain
++0030_realm_org_type
++0031_remove_system_avatar_source

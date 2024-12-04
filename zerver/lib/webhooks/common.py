@@ -1,6 +1,7 @@
 import fnmatch
 import importlib
 from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Annotated, Any, TypeAlias
 from urllib.parse import unquote
@@ -47,6 +48,13 @@ SETUP_MESSAGE_TEMPLATE = "{integration} webhook has been successfully configured
 SETUP_MESSAGE_USER_PART = " by {user_name}"
 
 OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[str | None, ApiParamConfig("topic")]
+
+
+@dataclass
+class WebhookConfigOption:
+    name: str
+    description: str
+    validator: Callable[[str, str], str | bool | None]
 
 
 def get_setup_webhook_message(integration: str, user_name: str | None = None) -> str:
@@ -241,3 +249,27 @@ def unix_milliseconds_to_timestamp(milliseconds: Any, webhook: str) -> datetime:
         raise JsonableError(
             _("The {webhook} webhook expects time in milliseconds.").format(webhook=webhook)
         )
+
+
+def parse_multipart_string(body: str) -> dict[str, str]:
+    """
+    Converts multipart/form-data string (fixture) to dict
+    """
+    boundary = body.split("\n")[0][2:]
+    parts = body.split(f"--{boundary}")
+
+    data = {}
+    for part in parts:
+        if part.strip() in ["", "--"]:
+            continue
+
+        headers, body = part.split("\n\n", 1)
+        body = body.removesuffix("\n--")
+
+        content_disposition = next(
+            (line for line in headers.splitlines() if "Content-Disposition" in line), ""
+        )
+        field_name = content_disposition.split('name="')[1].split('"')[0]
+        data[field_name] = body
+
+    return data

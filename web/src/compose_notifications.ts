@@ -7,18 +7,18 @@ import render_jump_to_sent_message_conversation_banner from "../templates/compos
 import render_message_sent_banner from "../templates/compose_banner/message_sent_banner.hbs";
 import render_unmute_topic_banner from "../templates/compose_banner/unmute_topic_banner.hbs";
 
-import * as blueslip from "./blueslip";
-import * as compose_banner from "./compose_banner";
-import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
-import * as message_lists from "./message_lists";
-import type {Message} from "./message_store";
-import * as narrow_state from "./narrow_state";
-import * as onboarding_steps from "./onboarding_steps";
-import * as people from "./people";
-import * as stream_data from "./stream_data";
-import {user_settings} from "./user_settings";
-import * as user_topics from "./user_topics";
+import * as blueslip from "./blueslip.ts";
+import * as compose_banner from "./compose_banner.ts";
+import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
+import * as message_lists from "./message_lists.ts";
+import type {Message} from "./message_store.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as onboarding_steps from "./onboarding_steps.ts";
+import * as people from "./people.ts";
+import * as stream_data from "./stream_data.ts";
+import {user_settings} from "./user_settings.ts";
+import * as user_topics from "./user_topics.ts";
 
 export function notify_unmute(muted_narrow: string, stream_id: number, topic_name: string): void {
     const $unmute_notification = $(

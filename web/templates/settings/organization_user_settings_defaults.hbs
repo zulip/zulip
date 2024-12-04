@@ -6,9 +6,9 @@
             {{#*inline "z-link"}}<a href="/help/configure-default-new-user-settings" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
         {{/tr}}
     </div>
-    {{> preferences prefix="realm_" for_realm_settings=true full_name=full_name}}
+    {{> preferences . prefix="realm_" for_realm_settings=true full_name=full_name}}
 
-    {{> notification_settings prefix="realm_" for_realm_settings=true}}
+    {{> notification_settings . prefix="realm_" for_realm_settings=true}}
 
     <div class="privacy_settings settings-subsection-parent">
         <div class="subsection-header inline-block">
@@ -40,7 +40,7 @@
           help_link="/help/read-receipts"}}
 
         <div class="input-group">
-            <label for="email_address_visibility" class="settings-field-label">{{t "Who can access user's email address" }}
+            <label for="realm_email_address_visibility" class="settings-field-label">{{t "Who can access user's email address" }}
                 {{> ../help_link_widget link="/help/configure-email-visibility" }}
             </label>
             <select name="email_address_visibility" class="email_address_visibility prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number"

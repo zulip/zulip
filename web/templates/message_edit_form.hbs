@@ -5,10 +5,10 @@
             <div class="edit_form_banners"></div>
             <div class="edit-controls edit-content-container {{#if is_editable}}surround-formatting-buttons-row{{/if}}">
                 <div class="message-edit-textbox">
-                    <span class="copy_message copy-btn copy-btn-square tippy-zulip-tooltip" data-tippy-content="{{t 'Copy and close' }}" aria-label="{{t 'Copy and close' }}" role="button">
+                    <span class="copy_message copy-button copy-button-square tippy-zulip-tooltip" data-tippy-content="{{t 'Copy and close' }}" aria-label="{{t 'Copy and close' }}" role="button">
                         <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
                     </span>
-                    <textarea class="message_edit_content" maxlength="{{ max_message_length }}">{{content}}</textarea>
+                    <textarea class="message_edit_content message-textarea">{{content}}</textarea>
                 </div>
                 <div class="scrolling_list preview_message_area" id="preview_message_area_{{message_id}}" style="display:none;">
                     <div class="markdown_preview_spinner"></div>
@@ -19,19 +19,19 @@
                 <div class="controls edit-controls">
                     {{#if is_editable}}
                     <div class="message-edit-feature-group">
-                        {{> compose_control_buttons }}
+                        {{> compose_control_buttons . }}
                     </div>
                     {{/if}}
                     <div class="message-edit-buttons-and-timer">
                         {{#if is_editable}}
-                            <div class="message_edit_save_container"
-                              data-tippy-content="{{t 'You can no longer save changes to this message.' }}">
+                            <div class="message_edit_save_container">
                                 <button type="button" class="message-actions-button message_edit_save">
                                     <img class="loader" alt="" src="" />
                                     <span>{{t "Save" }}</span>
                                 </button>
                             </div>
                             <button type="button" class="message-actions-button message_edit_cancel"><span>{{t "Cancel" }}</span></button>
+                            <span class="tippy-zulip-tooltip message-limit-indicator" data-tippy-content="{{t 'Maximum message length: {max_message_length} characters' }}"></span>
                             <div class="message-edit-timer">
                                 <span class="message_edit_countdown_timer
                                   tippy-zulip-tooltip" data-tippy-content="{{t 'This organization is configured to restrict editing of message content to {minutes_to_edit} minutes after it is sent.' }}"></span>

@@ -2,10 +2,10 @@ import autosize from "autosize";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import * as blueslip from "./blueslip";
-import * as compose_state from "./compose_state";
-import * as compose_ui from "./compose_ui";
-import * as message_viewport from "./message_viewport";
+import * as blueslip from "./blueslip.ts";
+import * as compose_state from "./compose_state.ts";
+import * as compose_ui from "./compose_ui.ts";
+import * as message_viewport from "./message_viewport.ts";
 
 function get_bottom_whitespace_height(): number {
     return message_viewport.height() * 0.4;
@@ -33,8 +33,7 @@ function get_new_heights(): {
     const usable_height =
         viewport_height -
         Number.parseInt($("#right-sidebar").css("paddingTop"), 10) -
-        ($("#userlist-header").outerHeight(true) ?? 0) -
-        ($("#user_search_section:not(.notdisplayed)").outerHeight(true) ?? 0);
+        ($("#userlist-header").outerHeight(true) ?? 0);
 
     const buddy_list_wrapper_max_height = Math.max(80, usable_height);
 

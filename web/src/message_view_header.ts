@@ -3,20 +3,19 @@ import assert from "minimalistic-assert";
 
 import render_message_view_header from "../templates/message_view_header.hbs";
 
-import type {Filter} from "./filter";
-import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
-import * as inbox_util from "./inbox_util";
-import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
-import * as peer_data from "./peer_data";
-import * as recent_view_util from "./recent_view_util";
-import * as rendered_markdown from "./rendered_markdown";
-import * as search from "./search";
-import {current_user} from "./state_data";
-import * as stream_data from "./stream_data";
-import type {SettingsSubscription} from "./stream_settings_data";
-import type {StreamSubscription} from "./sub_store";
+import type {Filter} from "./filter.ts";
+import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
+import * as inbox_util from "./inbox_util.ts";
+import * as narrow_state from "./narrow_state.ts";
+import {page_params} from "./page_params.ts";
+import * as peer_data from "./peer_data.ts";
+import * as recent_view_util from "./recent_view_util.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
+import * as search from "./search.ts";
+import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 
 type MessageViewHeaderContext = {
     title: string;
@@ -176,7 +175,7 @@ export function render_title_area(): void {
 // This function checks if "modified_sub" which is the stream whose values
 // have been updated is the same as the stream which is currently
 // narrowed and rerenders if necessary
-export function maybe_rerender_title_area_for_stream(modified_sub: SettingsSubscription): void {
+export function maybe_rerender_title_area_for_stream(modified_sub: StreamSubscription): void {
     const current_stream_id = narrow_state.stream_id();
     if (current_stream_id === modified_sub.stream_id) {
         render_title_area();

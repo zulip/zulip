@@ -22,8 +22,8 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
+from zerver.lib.types import AnonymousSettingGroupDict
 from zerver.lib.user_groups import (
-    AnonymousSettingGroupDict,
     GroupSettingChangeRequest,
     access_user_group_for_deactivation,
     access_user_group_for_setting,
@@ -63,7 +63,9 @@ def add_user_group(
     can_leave_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_manage_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_mention_group: Json[int | AnonymousSettingGroupDict] | None = None,
+    can_remove_members_group: Json[int | AnonymousSettingGroupDict] | None = None,
 ) -> HttpResponse:
+    user_profile.realm.ensure_not_on_limited_plan()
     user_profiles = user_ids_to_users(members, user_profile.realm, allow_deactivated=False)
     name = check_user_group_name(name)
 
@@ -101,8 +103,7 @@ def add_user_group(
             add_subgroups_to_user_group(
                 context.supergroup, context.direct_subgroups, acting_user=user_profile
             )
-
-    return json_success(request)
+    return json_success(request, data={"group_id": user_group.id})
 
 
 @require_member_or_admin
@@ -134,6 +135,7 @@ def edit_user_group(
     can_leave_group: Json[GroupSettingChangeRequest] | None = None,
     can_manage_group: Json[GroupSettingChangeRequest] | None = None,
     can_mention_group: Json[GroupSettingChangeRequest] | None = None,
+    can_remove_members_group: Json[GroupSettingChangeRequest] | None = None,
 ) -> HttpResponse:
     if (
         name is None
@@ -143,6 +145,7 @@ def edit_user_group(
         and can_leave_group is None
         and can_manage_group is None
         and can_mention_group is None
+        and can_remove_members_group is None
     ):
         raise JsonableError(_("No new data supplied"))
 
@@ -157,6 +160,7 @@ def edit_user_group(
         or can_leave_group is not None
         or can_mention_group is not None
         or can_manage_group is not None
+        or can_remove_members_group is not None
     ):
         raise JsonableError(_("You can only change name of deactivated user groups"))
 
@@ -208,7 +212,7 @@ def edit_user_group(
 
 
 @typed_endpoint
-@transaction.atomic
+@transaction.atomic(durable=True)
 def deactivate_user_group(
     request: HttpRequest,
     user_profile: UserProfile,
@@ -375,12 +379,19 @@ def remove_members_from_group_backend(
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm, allow_deactivated=False)
     if len(members) == 1 and user_profile.id == members[0]:
-        user_group = access_user_group_for_update(
-            user_group_id, user_profile, permission_setting="can_leave_group"
-        )
+        try:
+            user_group = access_user_group_for_update(
+                user_group_id, user_profile, permission_setting="can_leave_group"
+            )
+        except JsonableError:
+            # User can still leave the group if user has permission to remove
+            # anyone from the group.
+            user_group = access_user_group_for_update(
+                user_group_id, user_profile, permission_setting="can_remove_members_group"
+            )
     else:
         user_group = access_user_group_for_update(
-            user_group_id, user_profile, permission_setting="can_manage_group"
+            user_group_id, user_profile, permission_setting="can_remove_members_group"
         )
 
     group_member_ids = get_user_group_direct_member_ids(user_group)
@@ -469,6 +480,7 @@ def remove_subgroups_from_group_backend(
 
 @require_member_or_admin
 @typed_endpoint
+@transaction.atomic(durable=True)
 def update_subgroups_of_user_group(
     request: HttpRequest,
     user_profile: UserProfile,

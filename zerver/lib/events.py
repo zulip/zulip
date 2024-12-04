@@ -589,7 +589,9 @@ def fetch_initial_state_data(
             or state["can_create_web_public_streams"]
         )
         state["can_subscribe_other_users"] = settings_user.can_subscribe_other_users()
-        state["can_invite_others_to_realm"] = settings_user.can_invite_users_by_email()
+        state["can_invite_others_to_realm"] = (
+            realm.can_invite_users_group_id in settings_user_recursive_group_ids
+        )
         state["is_admin"] = settings_user.is_realm_admin
         state["is_owner"] = settings_user.is_realm_owner
         state["is_moderator"] = settings_user.is_moderator
@@ -621,7 +623,16 @@ def fetch_initial_state_data(
                 "name": integration.name,
                 "display_name": integration.display_name,
                 "all_event_types": get_all_event_types_for_integration(integration),
-                "config": {c[1]: c[0] for c in integration.config_options},
+                "config_options": [
+                    {
+                        "key": c.name,
+                        "label": c.description,
+                        "validator": c.validator.__name__,
+                    }
+                    for c in integration.config_options
+                ]
+                if integration.config_options
+                else [],
             }
             for integration in WEBHOOK_INTEGRATIONS
             if integration.legacy is False
@@ -1293,26 +1304,11 @@ def apply_event(
                     else state["server_jitsi_server_url"]
                 )
 
-            policy_permission_dict = {
-                "invite_to_stream_policy": "can_subscribe_other_users",
-                "invite_to_realm_policy": "can_invite_others_to_realm",
-            }
-
-            # Tricky interaction: Whether we can create streams and can subscribe other users
-            # can get changed here.
-
-            if field == "realm_waiting_period_threshold":
-                for policy, permission in policy_permission_dict.items():
-                    if permission in state:
-                        state[permission] = user_profile.has_permission(policy)
-
             if (
-                event["property"] in policy_permission_dict
-                and policy_permission_dict[event["property"]] in state
+                event["property"] == "invite_to_stream_policy"
+                and "can_subscribe_other_users" in state
             ):
-                state[policy_permission_dict[event["property"]]] = user_profile.has_permission(
-                    event["property"]
-                )
+                state["can_subscribe_other_users"] = user_profile.has_permission(event["property"])
         elif event["op"] == "update_dict":
             for key, value in event["data"].items():
                 if key == "max_file_upload_size_mib":
@@ -1366,6 +1362,11 @@ def apply_event(
                         state["can_create_private_streams"]
                         or state["can_create_public_streams"]
                         or state["can_create_web_public_streams"]
+                    )
+
+                if key == "can_invite_users_group" and "can_invite_others_to_realm" in state:
+                    state["can_invite_others_to_realm"] = user_profile.has_permission(
+                        "can_invite_users_group"
                     )
 
                 if key == "plan_type":
@@ -1737,6 +1738,9 @@ class ClientCapabilities(TypedDict):
     archived_channels: NotRequired[bool]
 
 
+DEFAULT_CLIENT_CAPABILITIES = ClientCapabilities(notification_settings_null=False)
+
+
 def do_events_register(
     user_profile: UserProfile | None,
     realm: Realm,
@@ -1751,7 +1755,7 @@ def do_events_register(
     all_public_streams: bool = False,
     include_subscribers: bool = True,
     include_streams: bool = True,
-    client_capabilities: ClientCapabilities = ClientCapabilities(notification_settings_null=False),
+    client_capabilities: ClientCapabilities = DEFAULT_CLIENT_CAPABILITIES,
     narrow: Collection[NarrowTerm] = [],
     fetch_event_types: Collection[str] | None = None,
     spectator_requested_language: str | None = None,

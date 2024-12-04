@@ -1,7 +1,7 @@
 import $ from "jquery";
 
-import {stringify_time} from "./timerender";
-import {user_settings} from "./user_settings";
+import {stringify_time} from "./timerender.ts";
+import {user_settings} from "./user_settings.ts";
 
 // These are all relative-unit values for Source Sans Pro VF,
 // as opened and inspected in FontForge.

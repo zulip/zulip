@@ -7,24 +7,24 @@ import type * as tippy from "tippy.js";
 
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 
-import * as compose_banner from "./compose_banner";
-import * as compose_fade from "./compose_fade";
-import * as compose_pm_pill from "./compose_pm_pill";
-import * as compose_state from "./compose_state";
-import * as compose_ui from "./compose_ui";
-import type {ComposeTriggeredOptions} from "./compose_ui";
-import * as compose_validate from "./compose_validate";
-import * as drafts from "./drafts";
-import * as dropdown_widget from "./dropdown_widget";
-import type {Option} from "./dropdown_widget";
-import {$t} from "./i18n";
-import * as narrow_state from "./narrow_state";
-import {realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import * as ui_util from "./ui_util";
-import * as user_groups from "./user_groups";
-import * as util from "./util";
+import * as compose_banner from "./compose_banner.ts";
+import * as compose_fade from "./compose_fade.ts";
+import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as compose_state from "./compose_state.ts";
+import * as compose_ui from "./compose_ui.ts";
+import type {ComposeTriggeredOptions} from "./compose_ui.ts";
+import * as compose_validate from "./compose_validate.ts";
+import * as drafts from "./drafts.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
+import type {Option} from "./dropdown_widget.ts";
+import {$t} from "./i18n.ts";
+import * as narrow_state from "./narrow_state.ts";
+import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import * as ui_util from "./ui_util.ts";
+import * as user_groups from "./user_groups.ts";
+import * as util from "./util.ts";
 
 type MessageType = "stream" | "private";
 type DirectMessagesOption = {
@@ -62,7 +62,7 @@ function composing_to_current_private_message_narrow(): boolean {
     );
 }
 
-export function update_narrow_to_recipient_visibility(): void {
+export let update_narrow_to_recipient_visibility = (): void => {
     const message_type = compose_state.get_message_type();
     if (message_type === "stream") {
         const stream_exists = Boolean(compose_state.stream_id());
@@ -87,6 +87,12 @@ export function update_narrow_to_recipient_visibility(): void {
         }
     }
     $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", false);
+};
+
+export function rewire_update_narrow_to_recipient_visibility(
+    value: typeof update_narrow_to_recipient_visibility,
+): void {
+    update_narrow_to_recipient_visibility = value;
 }
 
 function update_fade(): void {
@@ -131,7 +137,7 @@ export function get_posting_policy_error_message(): string {
     return "";
 }
 
-export function check_posting_policy_for_compose_box(): void {
+export let check_posting_policy_for_compose_box = (): void => {
     const banner_text = get_posting_policy_error_message();
     if (banner_text === "") {
         compose_validate.set_recipient_disallowed(false);
@@ -147,6 +153,12 @@ export function check_posting_policy_for_compose_box(): void {
     } else {
         compose_banner.show_error_message(banner_text, banner_classname, $("#compose_banners"));
     }
+};
+
+export function rewire_check_posting_policy_for_compose_box(
+    value: typeof check_posting_policy_for_compose_box,
+): void {
+    check_posting_policy_for_compose_box = value;
 }
 
 function switch_message_type(message_type: MessageType): void {
@@ -207,7 +219,7 @@ export function update_compose_for_message_type(opts: ComposeTriggeredOptions): 
     compose_banner.clear_uploads();
 }
 
-export function on_compose_select_recipient_update(): void {
+export let on_compose_select_recipient_update = (): void => {
     const prev_message_type = compose_state.get_message_type();
 
     let curr_message_type: MessageType = "stream";
@@ -226,6 +238,12 @@ export function on_compose_select_recipient_update(): void {
     }
 
     update_on_recipient_change();
+};
+
+export function rewire_on_compose_select_recipient_update(
+    value: typeof on_compose_select_recipient_update,
+): void {
+    on_compose_select_recipient_update = value;
 }
 
 export function possibly_update_stream_name_in_compose(stream_id: number): void {
@@ -259,7 +277,7 @@ function get_options_for_recipient_widget(): Option[] {
         name: $t({defaultMessage: "Direct message"}),
     };
 
-    if (!user_groups.is_empty_group(realm.realm_direct_message_permission_group)) {
+    if (!user_groups.is_setting_group_empty(realm.realm_direct_message_permission_group)) {
         options.unshift(direct_messages_option);
     } else {
         options.push(direct_messages_option);
@@ -327,7 +345,7 @@ export function initialize(): void {
     });
 }
 
-export function update_placeholder_text(): void {
+export let update_placeholder_text = (): void => {
     const $textarea: JQuery<HTMLTextAreaElement> = $("textarea#compose-textarea");
     // Change compose placeholder text only if compose box is open.
     if (!$textarea.is(":visible")) {
@@ -352,4 +370,8 @@ export function update_placeholder_text(): void {
 
     $textarea.attr("placeholder", placeholder);
     compose_ui.autosize_textarea($textarea);
+};
+
+export function rewire_update_placeholder_text(value: typeof update_placeholder_text): void {
+    update_placeholder_text = value;
 }

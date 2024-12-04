@@ -2,13 +2,13 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import * as channel from "./channel";
-import {electron_bridge} from "./electron_bridge";
-import {page_params} from "./page_params";
-import * as presence from "./presence";
-import * as watchdog from "./watchdog";
+import * as channel from "./channel.ts";
+import {electron_bridge} from "./electron_bridge.ts";
+import {page_params} from "./page_params.ts";
+import * as presence from "./presence.ts";
+import * as watchdog from "./watchdog.ts";
 
-const post_presence_response_schema = z.object({
+export const post_presence_response_schema = z.object({
     msg: z.string(),
     result: z.string(),
     // A bunch of these fields below are .optional() due to the fact
@@ -114,7 +114,7 @@ export function compute_active_status(): ActivityState {
     return ActivityState.IDLE;
 }
 
-export function send_presence_to_server(redraw?: () => void): void {
+export let send_presence_to_server = (redraw?: () => void): void => {
     // Zulip has 2 data feeds coming from the server to the client:
     // The server_events data, and this presence feed.  Data from
     // server_events is nicely serialized, but if we've been offline
@@ -180,6 +180,10 @@ export function send_presence_to_server(redraw?: () => void): void {
             }
         },
     });
+};
+
+export function rewire_send_presence_to_server(value: typeof send_presence_to_server): void {
+    send_presence_to_server = value;
 }
 
 export function mark_client_active(): void {

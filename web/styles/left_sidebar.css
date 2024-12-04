@@ -25,6 +25,10 @@
     text-overflow: ellipsis;
 }
 
+#left-sidebar .unread_count {
+    user-select: none;
+}
+
 .sidebar-topic-check,
 .topic-markers-and-unreads {
     cursor: pointer;
@@ -67,7 +71,7 @@
     /* Masked unreads display as flex when revealed. */
     align-items: center;
     justify-content: center;
-    color: var(--color-masked-unread-marker);
+    color: var(--color-unread-counter-muted);
     width: var(--left-sidebar-single-digit-unread-width);
 }
 
@@ -81,11 +85,10 @@
         margin: 3px 0;
 
         .clear_search_button {
-            grid-area: row-content;
-            justify-self: self-end;
+            grid-area: clear-button;
             /* Override app-component positioning. */
             position: static;
-            padding-right: 4px;
+            padding: 0;
         }
     }
 
@@ -288,7 +291,7 @@
             }
 
             .zulip-icon {
-                opacity: 0.7;
+                color: var(--color-left-sidebar-dm-partners-icon);
             }
         }
 
@@ -409,11 +412,38 @@
     }
 }
 
+#subscribe-to-more-streams {
+    /* --left-sidebar-bottom-scrolling-buffer is to prevent the row from
+       being cut off, and --sidebar-bottom-spacing is extra padding. */
+    margin: 5px var(--left-sidebar-right-margin)
+        calc(
+            var(--left-sidebar-bottom-scrolling-buffer) +
+                var(--sidebar-bottom-spacing)
+        )
+        0;
+    padding-left: var(--left-sidebar-toggle-width-offset);
+    border-radius: 4px;
+
+    &:hover {
+        background: var(--color-background-sidebar-action-heading-hover);
+        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+        color: var(--color-text-sidebar-action-heading-hover);
+    }
+
+    .subscribe-more-link {
+        display: grid;
+        grid-template:
+            "plus-icon row-text" var(--line-height-sidebar-row-prominent)
+            / auto 1fr;
+        align-items: center;
+        color: var(--color-text-sidebar-action-heading);
+        text-decoration: none;
+    }
+}
+
 #login-link-container,
 #subscribe-to-more-streams {
     text-decoration: none;
-    margin: 5px auto var(--left-sidebar-bottom-scrolling-buffer)
-        var(--left-sidebar-toggle-width-offset);
 
     .subscribe-more-icon {
         min-width: 19px;
@@ -429,6 +459,8 @@
     color: var(--color-text-url);
     display: flex;
     align-items: center;
+    margin: 5px auto var(--left-sidebar-bottom-scrolling-buffer)
+        var(--left-sidebar-toggle-width-offset);
 
     &:hover {
         cursor: pointer;
@@ -493,7 +525,7 @@ ul.filters {
     }
 
     .zulip-icon-follow {
-        opacity: 0.6;
+        opacity: 0.5;
 
         &:hover {
             opacity: 1;
@@ -673,11 +705,7 @@ li.active-sub-filter {
 
 #left-sidebar-navigation-list {
     margin-bottom: var(--left-sidebar-sections-vertical-gutter);
-    /* We display this as a grid only to control
-       the order of home views, using a single
-       named grid area. */
     display: grid;
-    grid-template-areas: "selected-home-view";
     line-height: var(--line-height-sidebar-row);
     /* Explicitly ensure parity with the line-height
        for the sake of low-resolution screens, whose
@@ -688,37 +716,11 @@ li.active-sub-filter {
 
     .left-sidebar-navigation-label-container {
         .left-sidebar-navigation-label {
-            /* Again, for the sake of low-resolution screens,
-               we'll let the actual label take 1 as a line-height
-               value, and allow grid to handle the alignment. */
-            line-height: 1;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
     }
-}
-
-.selected-home-view {
-    /* This bumps the selected view to the
-       top of the grid (expanded list).
-       Others items will auto place in the
-       remaining auto-generated grid rows. */
-    grid-area: selected-home-view;
-    /* The condensed view is a flexbox, so
-       here we'll use a negative order to
-       bump the selected home view to the
-       start of the flexbox (lefthand side). */
-    order: -1;
-}
-
-.top_left_starred_messages .unread_count,
-.top_left_drafts .unread_count,
-.top_left_scheduled_messages .unread_count,
-.condensed-views-popover-menu .unread_count {
-    background-color: unset;
-    color: inherit;
-    border: 0.5px solid var(--color-border-unread-counter);
 }
 
 /* Don't show unread counts on views... */
@@ -773,6 +775,13 @@ li.top_left_scheduled_messages {
     .left-sidebar-navigation-label {
         grid-area: row-content;
         padding-right: var(--left-sidebar-before-unread-count-padding);
+
+        @media screen and (resolution <= 1x) {
+            /* For the sake of low-resolution screens,
+               we'll let the actual label take 1 as a line-height
+               value, and allow grid to handle the alignment. */
+            line-height: 1;
+        }
     }
 
     .unread_count {
@@ -783,6 +792,30 @@ li.top_left_scheduled_messages {
         &:empty {
             margin-right: 0;
         }
+    }
+}
+
+/* Low-attention unreads have no bounding box,
+   so their counters should be aligned on the
+   same baseline as the navigation label. */
+.top_left_starred_messages,
+.top_left_drafts,
+.top_left_scheduled_messages {
+    .left-sidebar-navigation-label-container {
+        align-items: baseline;
+    }
+
+    .left-sidebar-navigation-label {
+        @media screen and (resolution <= 1x) {
+            /* Owing to the baseline alignment in this
+               area, we don't need the low-res line-height
+               adjustment. */
+            line-height: inherit;
+        }
+    }
+
+    .filter-icon {
+        align-self: center;
     }
 }
 
@@ -861,14 +894,13 @@ li.top_left_scheduled_messages {
     margin-right: 3px;
 }
 
-/* New .topic-box grid definitions here. */
+/* New grid definitions here. */
 #views-label-container,
 .zoom-in #hide-more-direct-messages,
 .top_left_row,
 .left-sidebar-navigation-label-container,
 .dm-box,
 .subscription_block,
-.topic-box,
 .searching-for-more-topics,
 .topic_search_section {
     display: grid;
@@ -926,10 +958,8 @@ li.top_left_scheduled_messages {
 #views-label-container {
     margin-right: var(--left-sidebar-right-margin);
     grid-template-columns:
-        0 var(--left-sidebar-header-icon-toggle-width) 0 minmax(0, 0.5fr) 0 minmax(
-            0,
-            1fr
-        )
+        0 var(--left-sidebar-header-icon-toggle-width) 0 minmax(0, 0.5fr)
+        0 minmax(0, 1fr)
         var(--left-sidebar-vdots-width) 0;
     grid-template-rows: 28px;
     cursor: pointer;
@@ -1029,14 +1059,6 @@ li.top_left_scheduled_messages {
     }
 }
 
-.condensed-views-popover-menu {
-    .unread_count {
-        margin: 1px 0 0 6px;
-        border-color: var(--color-border-unread-counter-popover-menu);
-        width: max-content;
-    }
-}
-
 .subscription_block {
     grid-template-columns:
         var(--left-sidebar-toggle-width-offset) var(
@@ -1083,10 +1105,15 @@ li.top_left_scheduled_messages {
 
 .topic-box,
 .searching-for-more-topics {
-    grid-template-columns:
-        0 var(--left-sidebar-icon-column-width) var(
-            --left-sidebar-icon-content-gap
+    display: grid;
+    grid-template:
+        "starting-offset starting-anchor-element icon-content-gap row-content controls markers-and-unreads ending-anchor-element ending-offset" var(
+            --line-height-sidebar-row-prominent
         )
+        ".               .                       .                row-content .        .                   .                     .            " auto / 0 var(
+            --left-sidebar-icon-column-width
+        )
+        var(--left-sidebar-icon-content-gap)
         minmax(0, 1fr) minmax(0, max-content) minmax(0, max-content)
         var(--left-sidebar-vdots-width) 0;
 }
@@ -1098,19 +1125,52 @@ li.top_left_scheduled_messages {
 
 .topic_search_section {
     grid-template-columns:
-        var(--left-sidebar-toggle-width-offset) 0 0 minmax(0, 1fr) minmax(
-            0,
-            max-content
-        )
-        30px 0;
+        var(--left-sidebar-toggle-width-offset) 0 0
+        [filter-box-start] minmax(0, 1fr)
+        minmax(0, max-content)
+        [clear-button-start] var(--left-sidebar-vdots-width)
+        [clear-button-end filter-box-end] 0;
 }
 
 .topic-box .zero_count {
     display: none;
 }
 
-.sidebar-topic-name,
+.sidebar-topic-name {
+    cursor: pointer;
+    grid-area: row-content;
+    padding: 0 var(--left-sidebar-before-unread-count-padding) 0 0;
+
+    &:hover {
+        color: inherit;
+    }
+
+    &:focus {
+        text-decoration: none;
+    }
+
+    .sidebar-topic-name-inner {
+        /* Clamp multi-line topics to two lines. */
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        /* Break overflowing words as necessary. */
+        overflow-wrap: break-word;
+
+        line-height: var(--line-height-sidebar-topic-inner);
+        margin: var(--spacing-top-bottom-sidebar-topic-inner) 0;
+    }
+}
+
 .sidebar-topic-action-heading {
+    color: var(--color-text-sidebar-action-heading);
+    font-size: var(--font-size-sidebar-action-heading);
+    font-weight: var(--font-weight-sidebar-action-heading);
+    font-variant: var(--font-variant-sidebar-action-heading);
+    font-feature-settings: var(--font-feature-settings-sidebar-action-heading);
+    text-transform: var(--text-transform-sidebar-action-heading);
+
     cursor: pointer;
     grid-area: row-content;
     padding: 0 var(--left-sidebar-before-unread-count-padding) 0 0;
@@ -1128,26 +1188,9 @@ li.top_left_scheduled_messages {
     overflow-x: clip;
     text-overflow: ellipsis;
 
-    span.sidebar-topic-name-inner {
-        white-space: pre;
-    }
-
-    &:hover {
-        color: inherit;
-    }
-
     &:focus {
         text-decoration: none;
     }
-}
-
-.sidebar-topic-action-heading {
-    color: var(--color-text-sidebar-action-heading);
-    font-size: var(--font-size-sidebar-action-heading);
-    font-weight: var(--font-weight-sidebar-action-heading);
-    font-variant: var(--font-variant-sidebar-action-heading);
-    font-feature-settings: var(--font-feature-settings-sidebar-action-heading);
-    text-transform: var(--text-transform-sidebar-action-heading);
 
     &:hover {
         text-decoration: none;
@@ -1157,7 +1200,7 @@ li.top_left_scheduled_messages {
 }
 
 .topic-list-filter {
-    grid-area: row-content;
+    grid-area: filter-box;
 }
 
 #filter-topic-input:placeholder-shown + #clear_search_topic_button {
@@ -1171,7 +1214,7 @@ li.top_left_scheduled_messages {
 
 .sidebar-topic-check {
     grid-area: starting-anchor-element;
-    justify-self: end;
+    place-self: center end;
     /* 15px at 14px/1em */
     font-size: 1.0714em;
     /* Use background to mask part of grouping bracket. */
@@ -1416,10 +1459,8 @@ li.topic-list-item {
         var(--left-sidebar-toggle-width-offset) [action-heading-start] var(
             --left-sidebar-icon-column-width
         )
-        var(--left-sidebar-icon-content-gap) minmax(0, 1fr) [action-heading-end] 0 minmax(
-            0,
-            max-content
-        )
+        var(--left-sidebar-icon-content-gap) minmax(0, 1fr)
+        [action-heading-end] 0 minmax(0, max-content)
         var(--left-sidebar-vdots-width) 0;
     grid-template-rows: [action-heading-start] auto [action-heading-end];
 

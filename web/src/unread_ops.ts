@@ -5,26 +5,26 @@ import {z} from "zod";
 
 import render_confirm_mark_all_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.hbs";
 
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
-import * as desktop_notifications from "./desktop_notifications";
-import * as dialog_widget from "./dialog_widget";
-import {$t_html} from "./i18n";
-import * as loading from "./loading";
-import * as message_flags from "./message_flags";
-import * as message_lists from "./message_lists";
-import type {Message} from "./message_store";
-import * as message_store from "./message_store";
-import * as message_viewport from "./message_viewport";
-import * as modals from "./modals";
-import * as overlays from "./overlays";
-import * as people from "./people";
-import * as recent_view_ui from "./recent_view_ui";
-import type {NarrowTerm} from "./state_data";
-import * as ui_report from "./ui_report";
-import * as unread from "./unread";
-import * as unread_ui from "./unread_ui";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import * as desktop_notifications from "./desktop_notifications.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t_html} from "./i18n.ts";
+import * as loading from "./loading.ts";
+import * as message_flags from "./message_flags.ts";
+import * as message_lists from "./message_lists.ts";
+import type {Message} from "./message_store.ts";
+import * as message_store from "./message_store.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as modals from "./modals.ts";
+import * as overlays from "./overlays.ts";
+import * as people from "./people.ts";
+import * as recent_view_ui from "./recent_view_ui.ts";
+import type {NarrowTerm} from "./state_data.ts";
+import * as ui_report from "./ui_report.ts";
+import * as unread from "./unread.ts";
+import * as unread_ui from "./unread_ui.ts";
 
 let loading_indicator_displayed = false;
 

@@ -1,25 +1,25 @@
-import Handlebars from "handlebars/runtime";
+import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as resolved_topic from "../shared/src/resolved_topic";
+import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_search_description from "../templates/search_description.hbs";
 
-import * as blueslip from "./blueslip";
-import * as hash_parser from "./hash_parser";
-import {$t} from "./i18n";
-import * as message_parser from "./message_parser";
-import * as message_store from "./message_store";
-import type {Message} from "./message_store";
-import {page_params} from "./page_params";
-import type {User} from "./people";
-import * as people from "./people";
-import type {UserPillItem} from "./search_suggestion";
-import {current_user, realm} from "./state_data";
-import type {NarrowTerm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as user_topics from "./user_topics";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as hash_parser from "./hash_parser.ts";
+import {$t} from "./i18n.ts";
+import * as message_parser from "./message_parser.ts";
+import * as message_store from "./message_store.ts";
+import type {Message} from "./message_store.ts";
+import {page_params} from "./page_params.ts";
+import type {User} from "./people.ts";
+import * as people from "./people.ts";
+import type {UserPillItem} from "./search_suggestion.ts";
+import {current_user, realm} from "./state_data.ts";
+import type {NarrowTerm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as user_topics from "./user_topics.ts";
+import * as util from "./util.ts";
 
 type IconData = {
     title: string;
@@ -1487,7 +1487,8 @@ export class Filter {
         //
         // Such filters should not advertise "channels:public" as it
         // will never add additional results.
-        return this.has_operand("is", "mentioned") || this.has_operand("is", "starred");
+        // NOTE: Needs to be in sync with `zerver.lib.narrow.ok_to_include_history`.
+        return this.has_operator("is") && !this.has_operand("is", "resolved");
     }
 
     can_apply_locally(is_local_echo = false): boolean {
@@ -1772,6 +1773,7 @@ export class Filter {
             "not-in-home",
             "in-all",
             "not-in-all",
+            "search",
         ]);
 
         for (const term of term_types) {

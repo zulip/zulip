@@ -6,25 +6,25 @@ import $ from "jquery";
 import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.hbs";
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 
-import * as channel from "./channel";
-import * as compose_banner from "./compose_banner";
-import * as compose_notifications from "./compose_notifications";
-import * as compose_state from "./compose_state";
-import * as compose_ui from "./compose_ui";
-import * as compose_validate from "./compose_validate";
-import * as drafts from "./drafts";
-import * as echo from "./echo";
-import * as message_events from "./message_events";
-import * as onboarding_steps from "./onboarding_steps";
-import * as people from "./people";
-import * as scheduled_messages from "./scheduled_messages";
-import * as sent_messages from "./sent_messages";
-import * as server_events from "./server_events";
-import {current_user} from "./state_data";
-import * as transmit from "./transmit";
-import {user_settings} from "./user_settings";
-import * as util from "./util";
-import * as zcommand from "./zcommand";
+import * as channel from "./channel.ts";
+import * as compose_banner from "./compose_banner.ts";
+import * as compose_notifications from "./compose_notifications.ts";
+import * as compose_state from "./compose_state.ts";
+import * as compose_ui from "./compose_ui.ts";
+import * as compose_validate from "./compose_validate.ts";
+import * as drafts from "./drafts.ts";
+import * as echo from "./echo.ts";
+import * as message_events from "./message_events.js";
+import * as onboarding_steps from "./onboarding_steps.ts";
+import * as people from "./people.ts";
+import * as scheduled_messages from "./scheduled_messages.ts";
+import * as sent_messages from "./sent_messages.ts";
+import * as server_events from "./server_events.js";
+import {current_user} from "./state_data.ts";
+import * as transmit from "./transmit.js";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
+import * as zcommand from "./zcommand.ts";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
@@ -132,7 +132,7 @@ export function clear_compose_box() {
     }
     $("textarea#compose-textarea").val("").trigger("focus");
     compose_ui.compose_textarea_typeahead?.hide();
-    compose_validate.check_overflow_text();
+    compose_validate.check_overflow_text($("#send_message_form"));
     compose_validate.clear_topic_resolved_warning();
     drafts.set_compose_draft_id(undefined);
     compose_ui.autosize_textarea($("textarea#compose-textarea"));
@@ -170,7 +170,7 @@ export function send_message_success(request, data) {
     }
 }
 
-export function send_message(request = create_message_object()) {
+export let send_message = (request = create_message_object()) => {
     compose_state.set_recipient_edited_manually(false);
     compose_state.set_is_content_unedited_restored_draft(false);
     if (request.type === "private") {
@@ -269,6 +269,10 @@ export function send_message(request = create_message_object()) {
         // taking a longtime to send.
         setTimeout(() => echo.display_slow_send_loading_spinner(message), 5000);
     }
+};
+
+export function rewire_send_message(value) {
+    send_message = value;
 }
 
 export function enter_with_preview_open(ctrl_pressed = false) {
@@ -287,7 +291,7 @@ export function enter_with_preview_open(ctrl_pressed = false) {
 // Common entrypoint for asking the server to send the message
 // currently drafted in the compose box, including for scheduled
 // messages.
-export function finish(scheduling_message = false) {
+export let finish = (scheduling_message = false) => {
     if (compose_ui.compose_spinner_visible) {
         // Avoid sending a message twice in parallel in races where
         // the user clicks the `Send` button very quickly twice or
@@ -295,7 +299,6 @@ export function finish(scheduling_message = false) {
         return undefined;
     }
 
-    clear_preview_area();
     clear_invites();
     clear_private_stream_alert();
     compose_banner.clear_message_sent_banners();
@@ -326,6 +329,10 @@ export function finish(scheduling_message = false) {
     }
     do_post_send_tasks();
     return true;
+};
+
+export function rewire_finish(value) {
+    finish = value;
 }
 
 export function do_post_send_tasks() {

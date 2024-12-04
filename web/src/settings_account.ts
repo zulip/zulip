@@ -8,33 +8,33 @@ import render_dialog_change_password from "../templates/dialog_change_password.h
 import render_settings_api_key_modal from "../templates/settings/api_key_modal.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
-import * as avatar from "./avatar";
-import * as channel from "./channel";
-import * as common from "./common";
-import {csrf_token} from "./csrf";
-import * as custom_profile_fields_ui from "./custom_profile_fields_ui";
-import type {PillUpdateField} from "./custom_profile_fields_ui";
-import * as dialog_widget from "./dialog_widget";
-import {$t_html} from "./i18n";
-import * as keydown_util from "./keydown_util";
-import * as modals from "./modals";
-import * as overlays from "./overlays";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import * as settings_bots from "./settings_bots";
-import * as settings_components from "./settings_components";
-import * as settings_data from "./settings_data";
-import * as settings_org from "./settings_org";
-import * as settings_ui from "./settings_ui";
-import {current_user, realm} from "./state_data";
-import * as ui_report from "./ui_report";
-import * as ui_util from "./ui_util";
-import * as user_deactivation_ui from "./user_deactivation_ui";
-import * as user_pill from "./user_pill";
-import type {UserPillWidget} from "./user_pill";
-import * as user_profile from "./user_profile";
-import {user_settings} from "./user_settings";
-import * as util from "./util";
+import * as avatar from "./avatar.ts";
+import * as channel from "./channel.ts";
+import * as common from "./common.ts";
+import {csrf_token} from "./csrf.ts";
+import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";
+import type {PillUpdateField} from "./custom_profile_fields_ui.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t_html} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
+import * as modals from "./modals.ts";
+import * as overlays from "./overlays.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import * as settings_bots from "./settings_bots.ts";
+import * as settings_components from "./settings_components.ts";
+import * as settings_data from "./settings_data.ts";
+import * as settings_org from "./settings_org.ts";
+import * as settings_ui from "./settings_ui.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as ui_report from "./ui_report.ts";
+import * as ui_util from "./ui_util.ts";
+import * as user_deactivation_ui from "./user_deactivation_ui.ts";
+import * as user_pill from "./user_pill.ts";
+import type {UserPillWidget} from "./user_pill.ts";
+import * as user_profile from "./user_profile.ts";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 let password_quality:
     | ((password: string, $bar: JQuery | undefined, $password_field: JQuery) => boolean)
@@ -286,11 +286,7 @@ export function update_privacy_settings_box(property: PrivacySettingName): void 
     settings_components.set_input_element_value($input_elem, user_settings[property]);
 }
 
-export function set_up(
-    load_password_quality: () => Promise<
-        (password: string, $bar: JQuery | undefined, $password_field: JQuery) => boolean
-    >,
-): void {
+export function set_up(): void {
     // Add custom profile fields elements to user account settings.
     add_custom_profile_fields_to_settings();
     $("#account-settings-status").hide();
@@ -500,7 +496,7 @@ export function set_up(
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
             void (async () => {
-                password_quality = await load_password_quality();
+                password_quality = (await import("./password_quality.ts")).password_quality;
                 $("#pw_strength .bar").removeClass("hide");
 
                 $("#new_password").on("input", () => {
@@ -713,9 +709,7 @@ export function set_up(
                 form_id: "demo_organization_add_email_form",
                 on_click: do_demo_organization_add_email,
                 on_shown() {
-                    ui_util.place_caret_at_end(
-                        util.the($("#demo_organization_add_email_form input")),
-                    );
+                    ui_util.place_caret_at_end(util.the($("input#demo_organization_add_email")));
                 },
                 post_render: demo_organization_add_email_post_render,
             });
@@ -757,7 +751,7 @@ export function set_up(
     );
     $("#user_deactivate_account_button").on("click", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
-        // will not show up because of a call to `close_active` in `settings.js`.
+        // will not show up because of a call to `close_active` in `settings.ts`.
         e.preventDefault();
         e.stopPropagation();
 

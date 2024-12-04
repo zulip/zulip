@@ -341,7 +341,10 @@
                of the avatar. We also need to account for the
                padding atop .message_content. */
             margin-top: calc(
-                (var(--message-box-markdown-aligned-vertical-space) * 0.5 * -1) -
+                (
+                        var(--message-box-markdown-aligned-vertical-space) *
+                            0.5 * -1
+                    ) -
                     var(--message-box-markdown-aligned-vertical-space)
             );
             grid-area: message;
@@ -743,13 +746,13 @@ of the base style defined for a read-only textarea in dark mode. */
 }
 
 .edit-controls {
-    .btn-wrapper {
+    .button-wrapper {
         cursor: not-allowed;
     }
+}
 
-    .disable-btn {
-        pointer-events: none;
-    }
+.message-edit-button-disabled {
+    pointer-events: none;
 }
 
 /* Reduce some of the heavy padding from Bootstrap. */

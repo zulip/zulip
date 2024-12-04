@@ -2,21 +2,21 @@ import autosize from "autosize";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import * as activity_ui from "./activity_ui";
-import * as blueslip from "./blueslip";
-import * as compose_tooltips from "./compose_tooltips";
-import type {MessageListData} from "./message_list_data";
-import * as message_list_tooltips from "./message_list_tooltips";
-import {MessageListView} from "./message_list_view";
-import * as message_lists from "./message_lists";
-import type {Message} from "./message_store";
-import * as narrow_banner from "./narrow_banner";
-import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
-import {web_mark_read_on_scroll_policy_values} from "./settings_config";
-import * as stream_data from "./stream_data";
-import * as unread from "./unread";
-import {user_settings} from "./user_settings";
+import * as activity_ui from "./activity_ui.ts";
+import * as blueslip from "./blueslip.ts";
+import * as compose_tooltips from "./compose_tooltips.ts";
+import type {MessageListData} from "./message_list_data.ts";
+import * as message_list_tooltips from "./message_list_tooltips.ts";
+import {MessageListView} from "./message_list_view.ts";
+import * as message_lists from "./message_lists.ts";
+import type {Message} from "./message_store.ts";
+import * as narrow_banner from "./narrow_banner.ts";
+import * as narrow_state from "./narrow_state.ts";
+import {page_params} from "./page_params.ts";
+import {web_mark_read_on_scroll_policy_values} from "./settings_config.ts";
+import * as stream_data from "./stream_data.ts";
+import * as unread from "./unread.ts";
+import {user_settings} from "./user_settings.ts";
 
 export type RenderInfo = {need_user_to_scroll: boolean};
 
@@ -30,6 +30,40 @@ export type SelectIdOpts = {
     from_scroll?: boolean;
     from_rendering?: boolean;
 };
+
+export type MessageSelectedEventOpts = {
+    then_scroll: boolean;
+    target_scroll_offset: number | undefined;
+    use_closest: boolean;
+    empty_ok: boolean;
+    mark_read: boolean;
+    force_rerender: boolean;
+    from_scroll?: boolean;
+    from_rendering?: boolean;
+    id: number;
+    msg_list: MessageList;
+    previously_selected_id: number;
+};
+
+export type MessageSelectedEvent<TDelegateTarget, TData, TCurrentTarget, TTarget> =
+    JQuery.EventBase<TDelegateTarget, TData, TCurrentTarget, TTarget> & {
+        type: "message_selected.zulip";
+    } & MessageSelectedEventOpts;
+
+declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace JQuery {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+        interface TypeToTriggeredEventMap<TDelegateTarget, TData, TCurrentTarget, TTarget> {
+            ["message_selected.zulip"]: MessageSelectedEvent<
+                TDelegateTarget,
+                TData,
+                TCurrentTarget,
+                TTarget
+            >;
+        }
+    }
+}
 
 // A MessageList is the main interface for a message feed that is
 // rendered in the DOM. Code outside the message feed rendering
@@ -313,7 +347,7 @@ export class MessageList {
                 throw new TypeError("Bad message id " + id);
             }
         }
-        const opts = {
+        const opts: MessageSelectedEventOpts = {
             then_scroll: false,
             target_scroll_offset: undefined,
             use_closest: false,
@@ -430,8 +464,6 @@ export class MessageList {
         const subscribed = stream_data.is_subscribed(stream_id);
         const invite_only = sub?.invite_only;
         const is_web_public = sub?.is_web_public;
-        const can_toggle_subscription =
-            sub !== undefined && stream_data.can_toggle_subscription(sub);
         if (sub === undefined || sub.is_archived) {
             deactivated = true;
         } else if (!subscribed && !this.last_message_historical) {
@@ -439,11 +471,11 @@ export class MessageList {
         }
 
         this.view.render_trailing_bookend(
+            stream_id,
             sub?.name,
             subscribed,
             deactivated,
             just_unsubscribed,
-            can_toggle_subscription,
             page_params.is_spectator,
             invite_only ?? false,
             is_web_public ?? false,
@@ -464,7 +496,10 @@ export class MessageList {
     }
 
     remove_and_rerender(message_ids: number[]): void {
-        this.data.remove(message_ids);
+        const should_rerender = this.data.remove(message_ids);
+        if (!should_rerender) {
+            return;
+        }
         this.rerender();
         // Rebuild message list if we're deleting messages from the current list,
         // since we might need to remove a participant user.

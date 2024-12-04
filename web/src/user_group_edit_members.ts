@@ -8,22 +8,22 @@ import render_user_group_members_table from "../templates/user_group_settings/us
 import render_user_group_membership_request_result from "../templates/user_group_settings/user_group_membership_request_result.hbs";
 import render_user_group_subgroup_entry from "../templates/user_group_settings/user_group_subgroup_entry.hbs";
 
-import * as add_group_members_pill from "./add_group_members_pill";
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
-import {$t, $t_html} from "./i18n";
-import * as ListWidget from "./list_widget";
-import type {ListWidget as ListWidgetType} from "./list_widget";
-import * as people from "./people";
-import type {User} from "./people";
-import * as scroll_util from "./scroll_util";
-import * as settings_data from "./settings_data";
-import {current_user} from "./state_data";
-import type {CombinedPillContainer} from "./typeahead_helper";
-import * as user_group_components from "./user_group_components";
-import * as user_groups from "./user_groups";
-import type {UserGroup} from "./user_groups";
+import * as add_group_members_pill from "./add_group_members_pill.ts";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as ListWidget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
+import * as people from "./people.ts";
+import type {User} from "./people.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as settings_data from "./settings_data.ts";
+import {current_user} from "./state_data.ts";
+import type {CombinedPillContainer} from "./typeahead_helper.ts";
+import * as user_group_components from "./user_group_components.ts";
+import * as user_groups from "./user_groups.ts";
+import type {UserGroup} from "./user_groups.ts";
 
 export let pill_widget: CombinedPillContainer;
 let current_group_id: number;
@@ -72,7 +72,7 @@ function format_member_list_elem(person: User): string {
         user_id: person.user_id,
         is_current_user: person.user_id === current_user.user_id,
         email: person.delivery_email,
-        can_remove_subscribers: settings_data.can_manage_user_group(current_group_id),
+        can_remove_subscribers: settings_data.can_remove_members_from_user_group(current_group_id),
         for_user_group_members: true,
         img_src: people.small_avatar_url_for_person(person),
     });
@@ -82,7 +82,7 @@ function format_subgroup_list_elem(group: UserGroup): string {
     return render_user_group_subgroup_entry({
         group_id: group.id,
         display_value: group.name,
-        can_edit: settings_data.can_manage_user_group(current_group_id),
+        can_remove_members: settings_data.can_remove_members_from_user_group(current_group_id),
     });
 }
 
@@ -167,7 +167,7 @@ export function rerender_members_list({
 }): void {
     $parent_container.find(".member-list-box").html(
         render_user_group_members_table({
-            can_edit: settings_data.can_manage_user_group(group.id),
+            can_remove_members: settings_data.can_remove_members_from_user_group(group.id),
         }),
     );
     member_list_widget = make_list_widget({

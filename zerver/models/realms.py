@@ -106,14 +106,6 @@ class CommonPolicyEnum(IntEnum):
     MODERATORS_ONLY = 4
 
 
-class InviteToRealmPolicyEnum(IntEnum):
-    MEMBERS_ONLY = 1
-    ADMINS_ONLY = 2
-    FULL_MEMBERS_ONLY = 3
-    MODERATORS_ONLY = 4
-    NOBODY = 6
-
-
 class CreateWebPublicStreamPolicyEnum(IntEnum):
     # We don't allow granting roles less than Moderator access to
     # create web-public streams, since it's a sensitive feature that
@@ -253,8 +245,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     COMMON_POLICY_TYPES = [field.value for field in CommonPolicyEnum]
 
-    INVITE_TO_REALM_POLICY_TYPES = [field.value for field in InviteToRealmPolicyEnum]
-
     CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES = [
         field.value for field in CreateWebPublicStreamPolicyEnum
     ]
@@ -300,9 +290,9 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
-    # Who in the organization is allowed to invite other users to organization.
-    invite_to_realm_policy = models.PositiveSmallIntegerField(
-        default=InviteToRealmPolicyEnum.MEMBERS_ONLY
+    # UserGroup whose members are allowed to invite other users to organization.
+    can_invite_users_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
     # UserGroup whose members are allowed to create invite link.
@@ -361,7 +351,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     waiting_period_threshold = models.PositiveIntegerField(default=0)
 
     DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS = (
-        600  # if changed, also change in admin.js, setting_org.js
+        600  # if changed, also change in admin.ts, settings_org.ts
     )
     MESSAGE_TIME_LIMIT_SETTING_SPECIAL_VALUES_MAP = {
         "unlimited": None,
@@ -372,7 +362,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     allow_message_editing = models.BooleanField(default=True)
     DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS = (
-        600  # if changed, also change in admin.js, setting_org.js
+        600  # if changed, also change in admin.ts, settings_org.ts
     )
     message_content_edit_limit_seconds = models.PositiveIntegerField(
         default=DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS, null=True
@@ -649,7 +639,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         inline_image_preview=bool,
         inline_url_embed_preview=bool,
         invite_required=bool,
-        invite_to_realm_policy=int,
         invite_to_stream_policy=int,
         jitsi_server_url=(str, type(None)),
         mandatory_topics=bool,
@@ -672,68 +661,54 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     REALM_PERMISSION_GROUP_SETTINGS: dict[str, GroupPermissionSetting] = dict(
         create_multiuse_invite_group=GroupPermissionSetting(
-            require_system_group=not settings.ALLOW_GROUP_VALUED_SETTINGS,
+            require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.ADMINISTRATORS,
-            id_field_name="create_multiuse_invite_group_id",
         ),
         can_access_all_users_group=GroupPermissionSetting(
             require_system_group=True,
             allow_internet_group=False,
-            allow_owners_group=False,
             allow_nobody_group=False,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
-            id_field_name="can_access_all_users_group_id",
             allowed_system_groups=[SystemGroups.EVERYONE, SystemGroups.MEMBERS],
         ),
         can_add_custom_emoji_group=GroupPermissionSetting(
-            require_system_group=not settings.ALLOW_GROUP_VALUED_SETTINGS,
+            require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=False,
-            allow_nobody_group=False,
+            allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
-            id_field_name="can_add_custom_emoji_group_id",
         ),
         can_create_groups=GroupPermissionSetting(
-            require_system_group=not settings.ALLOW_GROUP_VALUED_SETTINGS,
+            require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=True,
-            allow_nobody_group=False,
+            allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
-            id_field_name="can_create_groups_id",
         ),
         can_create_public_channel_group=GroupPermissionSetting(
-            require_system_group=not settings.ALLOW_GROUP_VALUED_SETTINGS,
+            require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=False,
-            allow_nobody_group=False,
+            allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
-            id_field_name="can_create_public_channel_group_id",
         ),
         can_create_private_channel_group=GroupPermissionSetting(
-            require_system_group=not settings.ALLOW_GROUP_VALUED_SETTINGS,
+            require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=False,
-            allow_nobody_group=False,
+            allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
-            id_field_name="can_create_private_channel_group_id",
         ),
         can_create_web_public_channel_group=GroupPermissionSetting(
             require_system_group=True,
             allow_internet_group=False,
-            allow_owners_group=True,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.OWNERS,
-            id_field_name="can_create_web_public_channel_group_id",
             allowed_system_groups=[
                 SystemGroups.MODERATORS,
                 SystemGroups.ADMINISTRATORS,
@@ -742,67 +717,60 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             ],
         ),
         can_delete_any_message_group=GroupPermissionSetting(
-            require_system_group=not settings.ALLOW_GROUP_VALUED_SETTINGS,
+            require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=False,
-            allow_nobody_group=False,
+            allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.ADMINISTRATORS,
-            id_field_name="can_delete_any_message_group_id",
         ),
         can_delete_own_message_group=GroupPermissionSetting(
-            require_system_group=not settings.ALLOW_GROUP_VALUED_SETTINGS,
+            require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=False,
-            allow_nobody_group=False,
+            allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
-            id_field_name="can_delete_own_message_group_id",
         ),
-        can_manage_all_groups=GroupPermissionSetting(
-            require_system_group=not settings.ALLOW_GROUP_VALUED_SETTINGS,
+        can_invite_users_group=GroupPermissionSetting(
+            require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=True,
-            allow_nobody_group=False,
-            allow_everyone_group=False,
-            default_group_name=SystemGroups.OWNERS,
-            id_field_name="can_manage_all_groups_id",
-        ),
-        can_move_messages_between_channels_group=GroupPermissionSetting(
-            require_system_group=not settings.ALLOW_GROUP_VALUED_SETTINGS,
-            allow_internet_group=False,
-            allow_owners_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
-            id_field_name="can_move_messages_between_channels_group_id",
+        ),
+        can_manage_all_groups=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=False,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.OWNERS,
+        ),
+        can_move_messages_between_channels_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.MEMBERS,
         ),
         can_move_messages_between_topics_group=GroupPermissionSetting(
-            require_system_group=not settings.ALLOW_GROUP_VALUED_SETTINGS,
+            require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
-            id_field_name="can_move_messages_between_topics_group_id",
         ),
         direct_message_initiator_group=GroupPermissionSetting(
-            require_system_group=not settings.ALLOW_GROUP_VALUED_SETTINGS,
+            require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=True,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
-            id_field_name="direct_message_initiator_group_id",
         ),
         direct_message_permission_group=GroupPermissionSetting(
-            require_system_group=not settings.ALLOW_GROUP_VALUED_SETTINGS,
+            require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=True,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
-            id_field_name="direct_message_permission_group_id",
         ),
     )
 
@@ -1198,6 +1166,8 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "can_delete_any_message_group__named_user_group",
         "can_delete_own_message_group",
         "can_delete_own_message_group__named_user_group",
+        "can_invite_users_group",
+        "can_invite_users_group__named_user_group",
         "can_manage_all_groups",
         "can_manage_all_groups__named_user_group",
         "can_move_messages_between_channels_group",
@@ -1368,5 +1338,5 @@ class RealmExport(models.Model):
     acting_user = models.ForeignKey("UserProfile", null=True, on_delete=models.SET_NULL)
     export_path = models.TextField(default=None, null=True)
     sha256sum_hex = models.CharField(default=None, null=True, max_length=64)
-    tarball_size_bytes = models.PositiveIntegerField(default=None, null=True)
+    tarball_size_bytes = models.PositiveBigIntegerField(default=None, null=True)
     stats = models.JSONField(default=None, null=True)

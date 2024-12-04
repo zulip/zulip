@@ -1,22 +1,22 @@
 import assert from "minimalistic-assert";
 
-import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
-import * as message_lists from "./message_lists";
-import * as muted_users from "./muted_users";
-import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
-import * as peer_data from "./peer_data";
-import * as people from "./people";
-import * as presence from "./presence";
-import {realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import type {StreamSubscription} from "./sub_store";
-import * as timerender from "./timerender";
-import * as unread from "./unread";
-import {user_settings} from "./user_settings";
-import * as user_status from "./user_status";
-import * as util from "./util";
+import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
+import * as message_lists from "./message_lists.ts";
+import * as muted_users from "./muted_users.ts";
+import * as narrow_state from "./narrow_state.ts";
+import {page_params} from "./page_params.ts";
+import * as peer_data from "./peer_data.ts";
+import * as people from "./people.ts";
+import * as presence from "./presence.ts";
+import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as timerender from "./timerender.ts";
+import * as unread from "./unread.ts";
+import {user_settings} from "./user_settings.ts";
+import * as user_status from "./user_status.ts";
+import * as util from "./util.ts";
 
 /*
 
@@ -27,8 +27,19 @@ import * as util from "./util";
 
 */
 
-export const max_size_before_shrinking = 600;
-export const max_channel_size_to_show_all_subscribers = 75;
+export let max_size_before_shrinking = 600;
+
+export function rewire_max_size_before_shrinking(value: typeof max_size_before_shrinking): void {
+    max_size_before_shrinking = value;
+}
+
+export let max_channel_size_to_show_all_subscribers = 75;
+
+export function rewire_max_channel_size_to_show_all_subscribers(
+    value: typeof max_channel_size_to_show_all_subscribers,
+): void {
+    max_channel_size_to_show_all_subscribers = value;
+}
 
 let is_searching_users = false;
 
@@ -71,11 +82,11 @@ export function level(user_id: number): number {
     }
 }
 
-export function user_matches_narrow(
+export let user_matches_narrow = (
     user_id: number,
     pm_ids: Set<number>,
     stream_id?: number | null,
-): boolean {
+): boolean => {
     if (stream_id) {
         return stream_data.is_user_subscribed(stream_id, user_id);
     }
@@ -83,6 +94,10 @@ export function user_matches_narrow(
         return pm_ids.has(user_id) || people.is_my_user_id(user_id);
     }
     return false;
+};
+
+export function rewire_user_matches_narrow(value: typeof user_matches_narrow): void {
+    user_matches_narrow = value;
 }
 
 export function compare_function(
@@ -172,11 +187,13 @@ export type BuddyUserInfo = {
     href: string;
     name: string;
     user_id: number;
+    profile_picture: string;
     status_emoji_info: user_status.UserStatusEmojiInfo | undefined;
     is_current_user: boolean;
     num_unread: number;
     user_circle_class: string;
     status_text: string | undefined;
+    has_status_text: boolean;
     user_list_style: {
         COMPACT: boolean;
         WITH_STATUS: boolean;
@@ -204,10 +221,12 @@ export function info_for(user_id: number): BuddyUserInfo {
         name: person.full_name,
         user_id,
         status_emoji_info,
+        profile_picture: people.small_avatar_url_for_person(person),
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
         user_circle_class,
         status_text,
+        has_status_text: Boolean(status_text),
         user_list_style,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
     };
@@ -221,6 +240,7 @@ export function get_title_data(
     second_line: string | undefined;
     third_line: string;
     show_you?: boolean;
+    is_deactivated?: boolean;
 } {
     if (is_group) {
         // For groups, just return a string with recipient names.
@@ -234,6 +254,7 @@ export function get_title_data(
     // Since it's not a group, user_ids_string is a single user ID.
     const user_id = Number.parseInt(user_ids_string, 10);
     const person = people.get_by_user_id(user_id);
+    const is_deactivated = !people.is_person_active(user_id);
 
     if (person.is_bot) {
         const bot_owner = people.get_bot_owner_user(person);
@@ -247,7 +268,10 @@ export function get_title_data(
             return {
                 first_line: person.full_name,
                 second_line: bot_owner_name,
-                third_line: "",
+                third_line: is_deactivated
+                    ? $t({defaultMessage: "This bot has been deactivated."})
+                    : "",
+                is_deactivated,
             };
         }
 
@@ -263,6 +287,16 @@ export function get_title_data(
     // Since is_group=False, it's a single, human user.
     const last_seen = user_last_seen_time_status(user_id);
     const is_my_user = people.is_my_user_id(user_id);
+
+    if (is_deactivated) {
+        return {
+            first_line: person.full_name,
+            second_line: $t({defaultMessage: "This user has been deactivated."}),
+            third_line: "",
+            show_you: is_my_user,
+            is_deactivated,
+        };
+    }
 
     // Users has a status.
     if (user_status.get_status_text(user_id)) {
@@ -370,7 +404,7 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
         return user_ids;
     }
 
-    // If a query is present in "Search people", we return matches.
+    // If a query is present in "Filter users", we return matches.
     const persons = user_ids.map((user_id) => people.get_by_user_id(user_id));
     return [...people.filter_people_by_search_terms(persons, user_filter_text)];
 }
@@ -379,8 +413,7 @@ function get_filtered_user_id_list(
     user_filter_text: string,
     conversation_participants: Set<number>,
 ): number[] {
-    // We always want to show conversation participants even if they're inactive.
-    let base_user_id_list = [...conversation_participants];
+    let base_user_id_list = [];
 
     if (user_filter_text) {
         // If there's a filter, select from all users, not just those
@@ -417,8 +450,9 @@ function get_filtered_user_id_list(
         }
     }
 
-    const user_ids = filter_user_ids(user_filter_text, base_user_id_list);
-    return user_ids;
+    // Make sure all the participants are in the list, even if they're inactive.
+    const user_ids_set = new Set([...base_user_id_list, ...conversation_participants]);
+    return filter_user_ids(user_filter_text, [...user_ids_set]);
 }
 
 export function get_conversation_participants(): Set<number> {

@@ -5,25 +5,25 @@ import {z} from "zod";
 import render_message_edit_history from "../templates/message_edit_history.hbs";
 import render_message_history_overlay from "../templates/message_history_overlay.hbs";
 
-import {exit_overlay} from "./browser_history";
-import * as channel from "./channel";
-import {$t, $t_html} from "./i18n";
-import * as loading from "./loading";
-import * as message_lists from "./message_lists";
-import type {Message} from "./message_store";
-import * as messages_overlay_ui from "./messages_overlay_ui";
-import * as overlays from "./overlays";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import * as rendered_markdown from "./rendered_markdown";
-import * as rows from "./rows";
-import * as spectators from "./spectators";
-import {realm} from "./state_data";
-import {get_recipient_bar_color} from "./stream_color";
-import {get_color} from "./stream_data";
-import * as sub_store from "./sub_store";
-import * as timerender from "./timerender";
-import * as ui_report from "./ui_report";
+import {exit_overlay} from "./browser_history.ts";
+import * as channel from "./channel.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as loading from "./loading.ts";
+import * as message_lists from "./message_lists.ts";
+import type {Message} from "./message_store.ts";
+import * as messages_overlay_ui from "./messages_overlay_ui.ts";
+import * as overlays from "./overlays.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
+import * as rows from "./rows.ts";
+import * as spectators from "./spectators.ts";
+import {realm} from "./state_data.ts";
+import {get_recipient_bar_color} from "./stream_color.ts";
+import {get_color} from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import * as timerender from "./timerender.ts";
+import * as ui_report from "./ui_report.ts";
 
 type EditHistoryEntry = {
     edited_at_time: string;
@@ -66,15 +66,15 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
     row_item_selector: "message-edit-message-row",
     box_item_selector: "message-edit-message-info-box",
     id_attribute_name: "data-message-edit-history-id",
-    get_items_ids(): number[] {
-        const edited_messages_ids: number[] = [];
+    get_items_ids() {
+        const edited_messages_ids: string[] = [];
         const $message_history_list: JQuery = $(
             "#message-history-overlay .message-edit-history-list",
         );
         for (const message of $message_history_list.children()) {
             const data_message_edit_history_id = $(message).attr("data-message-edit-history-id");
             assert(data_message_edit_history_id !== undefined);
-            edited_messages_ids.push(Number(data_message_edit_history_id));
+            edited_messages_ids.push(data_message_edit_history_id);
         }
         return edited_messages_ids;
     },

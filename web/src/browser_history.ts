@@ -1,10 +1,10 @@
 // TODO: Rewrite this module to use window.history.pushState.
 import {z} from "zod";
 
-import * as blueslip from "./blueslip";
-import * as hash_parser from "./hash_parser";
-import * as ui_util from "./ui_util";
-import {user_settings} from "./user_settings";
+import * as blueslip from "./blueslip.ts";
+import * as hash_parser from "./hash_parser.ts";
+import * as ui_util from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
 
 export const state: {
     is_internal_change: boolean;
@@ -58,7 +58,7 @@ export function save_old_hash(): boolean {
     return was_internal_change;
 }
 
-export function update(new_hash: string): void {
+export let update = (new_hash: string): void => {
     const old_hash = window.location.hash;
 
     if (!new_hash.startsWith("#")) {
@@ -78,6 +78,10 @@ export function update(new_hash: string): void {
     state.old_hash = old_hash;
     state.is_internal_change = true;
     window.location.hash = new_hash;
+};
+
+export function rewire_update(value: typeof update): void {
+    update = value;
 }
 
 export function exit_overlay(): void {

@@ -5,20 +5,20 @@ import render_settings_resend_invite_modal from "../templates/confirm_dialog/con
 import render_settings_revoke_invite_modal from "../templates/confirm_dialog/confirm_revoke_invite.hbs";
 import render_admin_invites_list from "../templates/settings/admin_invites_list.hbs";
 
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
-import * as dialog_widget from "./dialog_widget";
-import {$t, $t_html} from "./i18n";
-import * as ListWidget from "./list_widget";
-import * as loading from "./loading";
-import * as people from "./people";
-import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
-import {current_user, realm} from "./state_data";
-import * as timerender from "./timerender";
-import * as ui_report from "./ui_report";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as ListWidget from "./list_widget.ts";
+import * as loading from "./loading.ts";
+import * as people from "./people.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import {current_user} from "./state_data.ts";
+import * as timerender from "./timerender.ts";
+import * as ui_report from "./ui_report.ts";
+import * as util from "./util.ts";
 
 export const invite_schema = z.intersection(
     z.object({
@@ -226,7 +226,7 @@ function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}):
             dialog_widget.close();
             $resend_button.prop("disabled", true);
             $resend_button.text($t({defaultMessage: "Sent!"}));
-            $resend_button.removeClass("resend btn-warning").addClass("sea-green");
+            $resend_button.removeClass("resend button-warning").addClass("sea-green");
         },
     });
 }
@@ -260,7 +260,7 @@ export function on_load_success(
     }
     $(".admin_invites_table").on("click", ".revoke", function (this: HTMLElement, e) {
         // This click event must not get propagated to parent container otherwise the modal
-        // will not show up because of a call to `close_active` in `settings.js`.
+        // will not show up because of a call to `close_active` in `settings.ts`.
         e.preventDefault();
         e.stopPropagation();
         const $row = $(this).closest(".invite_row");
@@ -294,7 +294,7 @@ export function on_load_success(
 
     $(".admin_invites_table").on("click", ".resend", function (this: HTMLElement, e) {
         // This click event must not get propagated to parent container otherwise the modal
-        // will not show up because of a call to `close_active` in `settings.js`.
+        // will not show up because of a call to `close_active` in `settings.ts`.
         e.preventDefault();
         e.stopPropagation();
 
@@ -319,55 +319,18 @@ export function on_load_success(
 }
 
 export function update_invite_users_setting_tip(): void {
-    if (settings_data.user_can_invite_users_by_email() && !current_user.is_admin) {
+    if (settings_data.user_can_invite_users_by_email()) {
         $(".invite-user-settings-tip").hide();
         return;
     }
-    const permission_type = settings_config.email_invite_to_realm_policy_values;
-    const current_permission = realm.realm_invite_to_realm_policy;
-    let tip_text;
-    switch (current_permission) {
-        case permission_type.by_admins_only.code: {
-            tip_text = $t({
-                defaultMessage:
-                    "This organization is configured so that admins can invite users to this organization.",
-            });
 
-            break;
-        }
-        case permission_type.by_moderators_only.code: {
-            tip_text = $t({
-                defaultMessage:
-                    "This organization is configured so that admins and moderators can invite users to this organization.",
-            });
-
-            break;
-        }
-        case permission_type.by_members.code: {
-            tip_text = $t({
-                defaultMessage:
-                    "This organization is configured so that admins, moderators and members can invite users to this organization.",
-            });
-
-            break;
-        }
-        case permission_type.by_full_members.code: {
-            tip_text = $t({
-                defaultMessage:
-                    "This organization is configured so that admins, moderators and full members can invite users to this organization.",
-            });
-
-            break;
-        }
-        default: {
-            tip_text = $t({
-                defaultMessage:
-                    "This organization is configured so that nobody can invite users to this organization.",
-            });
-        }
-    }
     $(".invite-user-settings-tip").show();
-    $(".invite-user-settings-tip").text(tip_text);
+    $(".invite-user-settings-tip").text(
+        $t({
+            defaultMessage:
+                "You do not have permission to send invite emails in this organization.",
+        }),
+    );
 }
 
 export function update_invite_user_panel(): void {

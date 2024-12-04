@@ -2,8 +2,8 @@ import $ from "jquery";
 import Micromodal from "micromodal";
 import assert from "minimalistic-assert";
 
-import * as blueslip from "./blueslip";
-import * as overlay_util from "./overlay_util";
+import * as blueslip from "./blueslip.ts";
+import * as overlay_util from "./overlay_util.ts";
 
 type Hook = () => void;
 

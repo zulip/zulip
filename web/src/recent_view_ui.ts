@@ -4,48 +4,48 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import {z} from "zod";
 
-import * as typeahead from "../shared/src/typeahead";
+import * as typeahead from "../shared/src/typeahead.ts";
 import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
 import render_recent_view_filters from "../templates/recent_view_filters.hbs";
 import render_recent_view_row from "../templates/recent_view_row.hbs";
 import render_recent_view_body from "../templates/recent_view_table.hbs";
 import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
 
-import * as blueslip from "./blueslip";
-import * as buddy_data from "./buddy_data";
-import * as compose_closed_ui from "./compose_closed_ui";
-import * as dialog_widget from "./dialog_widget";
-import * as dropdown_widget from "./dropdown_widget";
-import type {DropdownWidget} from "./dropdown_widget";
-import * as hash_util from "./hash_util";
-import {$t, $t_html} from "./i18n";
-import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
-import * as list_widget from "./list_widget";
-import type {ListWidget} from "./list_widget";
-import * as loading from "./loading";
-import {localstorage} from "./localstorage";
-import type {MessageListData} from "./message_list_data";
-import * as message_store from "./message_store";
-import type {DisplayRecipientUser, Message} from "./message_store";
-import * as message_util from "./message_util";
-import * as muted_users from "./muted_users";
-import * as onboarding_steps from "./onboarding_steps";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import * as recent_senders from "./recent_senders";
-import * as recent_view_data from "./recent_view_data";
-import type {ConversationData} from "./recent_view_data";
-import * as recent_view_util from "./recent_view_util";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import * as timerender from "./timerender";
-import * as ui_util from "./ui_util";
-import * as unread from "./unread";
-import {user_settings} from "./user_settings";
-import * as user_status from "./user_status";
-import * as user_topics from "./user_topics";
-import * as util from "./util";
-import * as views_util from "./views_util";
+import * as blueslip from "./blueslip.ts";
+import * as buddy_data from "./buddy_data.ts";
+import * as compose_closed_ui from "./compose_closed_ui.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
+import type {DropdownWidget} from "./dropdown_widget.ts";
+import * as hash_util from "./hash_util.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
+import * as list_widget from "./list_widget.ts";
+import type {ListWidget} from "./list_widget.ts";
+import * as loading from "./loading.ts";
+import {localstorage} from "./localstorage.ts";
+import type {MessageListData} from "./message_list_data.ts";
+import * as message_store from "./message_store.ts";
+import type {DisplayRecipientUser, Message} from "./message_store.ts";
+import * as message_util from "./message_util.ts";
+import * as muted_users from "./muted_users.ts";
+import * as onboarding_steps from "./onboarding_steps.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import * as recent_senders from "./recent_senders.ts";
+import * as recent_view_data from "./recent_view_data.ts";
+import type {ConversationData} from "./recent_view_data.ts";
+import * as recent_view_util from "./recent_view_util.ts";
+import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import * as timerender from "./timerender.ts";
+import * as ui_util from "./ui_util.ts";
+import * as unread from "./unread.ts";
+import {user_settings} from "./user_settings.ts";
+import * as user_status from "./user_status.ts";
+import * as user_topics from "./user_topics.ts";
+import * as util from "./util.ts";
+import * as views_util from "./views_util.ts";
 
 type Row = {
     last_msg_id: number;
@@ -443,10 +443,12 @@ export function revive_current_focus(): boolean {
 }
 
 export function show_loading_indicator(): void {
+    $("#recent-view-content-table").hide();
     loading.make_indicator($("#recent_view_loading_messages_indicator"));
 }
 
 export function hide_loading_indicator(): void {
+    $("#recent-view-content-table").show();
     $("#recent_view_bottom_whitespace").hide();
     loading.destroy_indicator($("#recent_view_loading_messages_indicator"));
 }
@@ -923,14 +925,20 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
     // we ensure the list remains sorted after insertion.
     topics_widget.replace_list_data(get_list_data_for_widget(), false);
     topics_widget.filter_and_sort();
-    for (const key of row_keys) {
-        inplace_rerender(key, true);
+    // Iterate in the order of which the rows should be present so that
+    // we are not inserting rows without any rows being present around them.
+    for (const topic_data of topics_widget.get_current_list()) {
+        const msg = message_store.get(topic_data.last_msg_id);
+        assert(msg !== undefined);
+        const topic_key = recent_view_util.get_key_from_message(msg);
+        if (row_keys.includes(topic_key)) {
+            inplace_rerender(topic_key, true);
+        }
     }
-
     setTimeout(revive_current_focus, 0);
 }
 
-export function inplace_rerender(topic_key: string, is_bulk_rerender?: boolean): boolean {
+export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): boolean => {
     if (!recent_view_util.is_visible()) {
         return false;
     }
@@ -990,6 +998,10 @@ export function inplace_rerender(topic_key: string, is_bulk_rerender?: boolean):
         setTimeout(revive_current_focus, 0);
     }
     return true;
+};
+
+export function rewire_inplace_rerender(value: typeof inplace_rerender): void {
+    inplace_rerender = value;
 }
 
 export function update_topic_visibility_policy(stream_id: number, topic: string): boolean {
@@ -1012,7 +1024,7 @@ export function update_topic_unread_count(message: Message): void {
 export function set_filter(filter: string): void {
     // This function updates the `filters` variable
     // after user clicks on one of the filter buttons
-    // based on `btn-recent-selected` class and current
+    // based on `button-recent-selected` class and current
     // set `filters`.
 
     // Get the button which was clicked.
@@ -1020,7 +1032,7 @@ export function set_filter(filter: string): void {
         `[data-filter="${CSS.escape(filter)}"]`,
     );
 
-    if ($filter_elem.hasClass("btn-recent-selected")) {
+    if ($filter_elem.hasClass("button-recent-selected")) {
         filters.delete(filter);
         // If the button was not selected, we add the filter.
     } else {
@@ -1031,12 +1043,12 @@ export function set_filter(filter: string): void {
 }
 
 function show_selected_filters(): void {
-    // Add `btn-selected-filter` to the buttons to show
+    // Add `button-recent-selected` to the buttons to show
     // which filters are applied.
     for (const filter of filters) {
         $("#recent_view_filter_buttons")
             .find(`[data-filter="${CSS.escape(filter)}"]`)
-            .addClass("btn-recent-selected")
+            .addClass("button-recent-selected")
             .attr("aria-checked", "true");
     }
 }
@@ -1561,7 +1573,7 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
 
             if (
                 post_tab_focus_elem.id === "recent_view_search" ||
-                post_tab_focus_elem.classList.contains("btn-recent-filters") ||
+                post_tab_focus_elem.classList.contains("button-recent-filters") ||
                 post_tab_focus_elem.classList.contains("dropdown-widget-button")
             ) {
                 $current_focus_elem = $(post_tab_focus_elem);
@@ -1638,7 +1650,7 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
                 set_table_focus(row_focus, col_focus);
                 return true;
         }
-    } else if ($elt.hasClass("btn-recent-filters") || $elt.hasClass("dropdown-widget-button")) {
+    } else if ($elt.hasClass("button-recent-filters") || $elt.hasClass("dropdown-widget-button")) {
         switch (input_key) {
             case "click":
                 $current_focus_elem = $elt;
@@ -1737,7 +1749,7 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
     }
     if ($current_focus_elem !== "table" && input_key !== "escape") {
         $current_focus_elem.trigger("focus");
-        if ($current_focus_elem.hasClass("btn-recent-filters")) {
+        if ($current_focus_elem.hasClass("button-recent-filters")) {
             compose_closed_ui.set_standard_text_for_reply_button();
         }
         return true;
@@ -1828,7 +1840,7 @@ export function initialize({
 
     $("body").on("keydown", ".on_hover_topic_read", ui_util.convert_enter_to_click);
 
-    $("body").on("click", ".btn-recent-filters", (e) => {
+    $("body").on("click", ".button-recent-filters", (e) => {
         e.stopPropagation();
         if (page_params.is_spectator) {
             // Filter buttons are disabled for spectator.

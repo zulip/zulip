@@ -9,22 +9,22 @@ import render_admin_profile_field_list from "../templates/settings/admin_profile
 import render_edit_custom_profile_field_form from "../templates/settings/edit_custom_profile_field_form.hbs";
 import render_settings_profile_field_choice from "../templates/settings/profile_field_choice.hbs";
 
-import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
-import * as dialog_widget from "./dialog_widget";
-import {$t, $t_html} from "./i18n";
-import * as ListWidget from "./list_widget";
-import * as loading from "./loading";
-import * as people from "./people";
-import * as settings_components from "./settings_components";
-import type {FieldData, SelectFieldData} from "./settings_components";
-import * as settings_ui from "./settings_ui";
-import type {CustomProfileField} from "./state_data";
-import {current_user, realm} from "./state_data";
-import type {HTMLSelectOneElement} from "./types";
-import * as ui_report from "./ui_report";
-import {place_caret_at_end} from "./ui_util";
-import * as util from "./util";
+import * as channel from "./channel.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as ListWidget from "./list_widget.ts";
+import * as loading from "./loading.ts";
+import * as people from "./people.ts";
+import * as settings_components from "./settings_components.ts";
+import type {FieldData, SelectFieldData} from "./settings_components.ts";
+import * as settings_ui from "./settings_ui.ts";
+import type {CustomProfileField} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
+import type {HTMLSelectOneElement} from "./types.ts";
+import * as ui_report from "./ui_report.ts";
+import {place_caret_at_end} from "./ui_util.ts";
+import * as util from "./util.ts";
 
 type FieldChoice = {
     value: string;
@@ -314,7 +314,7 @@ function delete_choice_row_for_edit(
     field: CustomProfileField,
 ): void {
     delete_choice_row(row);
-    disable_submit_btn_if_no_property_changed($profile_field_form, field);
+    disable_submit_button_if_no_property_changed($profile_field_form, field);
 }
 
 function show_modal_for_deleting_options(
@@ -384,7 +384,7 @@ function set_up_external_account_field_edit_form(
     }
 }
 
-function disable_submit_btn_if_no_property_changed(
+function disable_submit_button_if_no_property_changed(
     $profile_field_form: JQuery,
     field: CustomProfileField,
 ): void {
@@ -434,7 +434,7 @@ function set_up_select_field_edit_form(
         filter: "input",
         preventOnFilter: false,
         onSort() {
-            disable_submit_btn_if_no_property_changed($profile_field_form, field);
+            disable_submit_button_if_no_property_changed($profile_field_form, field);
         },
     });
 }
@@ -520,7 +520,7 @@ function open_edit_form_modal(this: HTMLElement): void {
         // select field add/update/remove operations are covered in onSort and
         // row delete button is separately covered in delete_choice_row_for_edit.
         $profile_field_form.on("input", () => {
-            disable_submit_btn_if_no_property_changed($profile_field_form, field);
+            disable_submit_button_if_no_property_changed($profile_field_form, field);
         });
     }
 
@@ -817,7 +817,7 @@ export function build_page(): void {
     meta.loaded = true;
 
     $("#admin_profile_fields_table").on("click", ".delete", delete_profile_field);
-    $("#add-custom-profile-field-btn").on("click", open_custom_profile_field_form_modal);
+    $("#add-custom-profile-field-button").on("click", open_custom_profile_field_form_modal);
     $("#admin_profile_fields_table").on("click", ".open-edit-form-modal", open_edit_form_modal);
     $("#admin_profile_fields_table").on(
         "click",

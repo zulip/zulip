@@ -49,7 +49,7 @@
         </div>
         <div class="white-box">
             <div id="sponsorship-status-page-details">
-                <div class="input-box sponsorship-form-field no-validation">
+                <div class="input-box sponsorship-form-field">
                     <label for="sponsored-org-current-plan" class="inline-block label-title">Your plan</label>
                     <div id="sponsored-org-current-plan" class="not-editable-realm-field">
                         {% if is_sponsored %}
@@ -102,7 +102,7 @@
             <div id="sponsorship-input-section">
                 <form id="sponsorship-form" method="post" data-billing-base-url="{{ billing_base_url }}" data-is-remotely-hosted="{{ is_remotely_hosted }}">
                     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
-                    <div class="input-box sponsorship-form-field no-validation">
+                    <div class="input-box sponsorship-form-field">
                         <label for="org-name" class="inline-block label-title">Organization</label>
                         <div id="org-name" class="not-editable-realm-field">{{ org_name }}</div>
                     </div>
@@ -148,7 +148,7 @@
                         <label for="organization-requested-plan" class="inline-block label-title">Requested plan</label>
                     </div>
                     {% endif %}
-                    <div class="input-box sponsorship-form-field no-validation">
+                    <div class="input-box sponsorship-form-field">
                         <label for="org-website" class="inline-block
                           label-title">Organization website (if any)</label>
                         <input id="org-website" name="website" type="text"/>
@@ -165,7 +165,7 @@
                         <input id="expected-total-users" name="expected_total_users" type="text" />
                         <div id="sponsorship-expected-total-users-error" class="alert alert-danger sponsorship-field-error"></div>
                     </div>
-                    <div class="input-box sponsorship-form-field no-validation">
+                    <div class="input-box sponsorship-form-field">
                         <label for="paid-users-count" class="inline-block label-title">How many paid staff does your organization have?</label>
                         <input id="paid-users-count" name="paid_users_count" type="text"/>
                         <div id="sponsorship-paid-users-count-error" class="alert alert-danger sponsorship-field-error"></div>

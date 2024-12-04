@@ -2,24 +2,24 @@ import md5 from "blueimp-md5";
 import assert from "minimalistic-assert";
 import type {z} from "zod";
 
-import * as typeahead from "../shared/src/typeahead";
+import * as typeahead from "../shared/src/typeahead.ts";
 
-import * as blueslip from "./blueslip";
-import {FoldDict} from "./fold_dict";
-import {$t} from "./i18n";
-import type {DisplayRecipientUser, Message, MessageWithBooleans} from "./message_store";
-import * as message_user_ids from "./message_user_ids";
-import * as muted_users from "./muted_users";
-import {page_params} from "./page_params";
-import * as reload_state from "./reload_state";
-import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
-import type {StateData, profile_datum_schema, user_schema} from "./state_data";
-import {current_user, realm} from "./state_data";
-import * as timerender from "./timerender";
-import {is_user_in_group} from "./user_groups";
-import {user_settings} from "./user_settings";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import {FoldDict} from "./fold_dict.ts";
+import {$t} from "./i18n.ts";
+import type {DisplayRecipientUser, Message, MessageWithBooleans} from "./message_store.ts";
+import * as message_user_ids from "./message_user_ids.ts";
+import * as muted_users from "./muted_users.ts";
+import {page_params} from "./page_params.ts";
+import * as reload_state from "./reload_state.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import type {CurrentUser, StateData, profile_datum_schema, user_schema} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as timerender from "./timerender.ts";
+import {is_user_in_setting_group} from "./user_groups.ts";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 export type ProfileDatum = z.infer<typeof profile_datum_schema>;
 export type User = z.infer<typeof user_schema>;
@@ -89,10 +89,14 @@ export function get_users_from_ids(user_ids: number[]): User[] {
 }
 
 // Use this function only when you are sure that user_id is valid.
-export function get_by_user_id(user_id: number): User {
+export let get_by_user_id = (user_id: number): User => {
     const person = people_by_user_id_dict.get(user_id);
     assert(person, `Unknown user_id in get_by_user_id: ${user_id}`);
     return person;
+};
+
+export function rewire_get_by_user_id(value: typeof get_by_user_id): void {
+    get_by_user_id = value;
 }
 
 // This is type unsafe version of get_by_user_id for the callers that expects undefined values.
@@ -123,7 +127,7 @@ export function validate_user_ids(user_ids: number[]): number[] {
     return good_ids;
 }
 
-export function get_by_email(email: string): User | undefined {
+export let get_by_email = (email: string): User | undefined => {
     const person = people_dict.get(email);
 
     if (!person) {
@@ -137,6 +141,10 @@ export function get_by_email(email: string): User | undefined {
     }
 
     return person;
+};
+
+export function rewire_get_by_email(value: typeof get_by_email): void {
+    get_by_email = value;
 }
 
 export function get_bot_owner_user(user: User & {is_bot: true}): User | undefined {
@@ -382,7 +390,7 @@ export function emails_strings_to_user_ids_string(emails_string: string): string
     return email_list_to_user_ids_string(emails);
 }
 
-export function email_list_to_user_ids_string(emails: string[]): string | undefined {
+export let email_list_to_user_ids_string = (emails: string[]): string | undefined => {
     let user_ids = util.try_parse_as_truthy(
         emails.map((email) => {
             const person = get_by_email(email);
@@ -398,6 +406,12 @@ export function email_list_to_user_ids_string(emails: string[]): string | undefi
     user_ids = sort_numerically(user_ids);
 
     return user_ids.join(",");
+};
+
+export function rewire_email_list_to_user_ids_string(
+    value: typeof email_list_to_user_ids_string,
+): void {
+    email_list_to_user_ids_string = value;
 }
 
 export function get_full_names_for_poll_option(user_ids: number[]): string {
@@ -767,9 +781,8 @@ export function should_add_guest_user_indicator(user_id: number): boolean {
 }
 
 export function user_can_initiate_direct_message_thread(recipient_ids_string: string): boolean {
-    const direct_message_initiator_group_id = realm.realm_direct_message_initiator_group;
     const recipient_ids = user_ids_string_to_ids_array(recipient_ids_string);
-    if (is_user_in_group(direct_message_initiator_group_id, my_user_id)) {
+    if (is_user_in_setting_group(realm.realm_direct_message_initiator_group, my_user_id)) {
         return true;
     }
     for (const recipient of recipient_ids) {
@@ -781,9 +794,8 @@ export function user_can_initiate_direct_message_thread(recipient_ids_string: st
 }
 
 export function user_can_direct_message(recipient_ids_string: string): boolean {
-    const direct_message_permission_group_id = realm.realm_direct_message_permission_group;
     const recipient_ids = user_ids_string_to_ids_array(recipient_ids_string);
-    if (is_user_in_group(direct_message_permission_group_id, my_user_id)) {
+    if (is_user_in_setting_group(realm.realm_direct_message_permission_group, my_user_id)) {
         return true;
     }
 
@@ -792,7 +804,7 @@ export function user_can_direct_message(recipient_ids_string: string): boolean {
         if (is_valid_bot_user(recipient_id) || recipient_id === my_user_id) {
             continue;
         }
-        if (is_user_in_group(direct_message_permission_group_id, recipient_id)) {
+        if (is_user_in_setting_group(realm.realm_direct_message_permission_group, recipient_id)) {
             return true;
         }
         other_human_recipients_exist = true;
@@ -805,24 +817,17 @@ export function gravatar_url_for_email(email: string): string {
     return "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
 }
 
-export function small_avatar_url_for_person(person: User): string {
+export function small_avatar_url_for_person(person: User | CurrentUser): string {
     if (person.avatar_url) {
         return person.avatar_url;
     }
 
     if (person.avatar_url === null) {
-        return gravatar_url_for_email(person.email);
+        person.avatar_url = gravatar_url_for_email(person.email);
+        return person.avatar_url;
     }
 
     return `/avatar/${person.user_id}`;
-}
-
-function medium_gravatar_url_for_email(email: string): string {
-    const hash = md5(email.toLowerCase());
-    const avatar_url = "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
-    const url = new URL(avatar_url, window.location.origin);
-    url.search += (url.search ? "&" : "") + "s=500";
-    return url.href;
 }
 
 export function medium_avatar_url_for_person(person: User): string {
@@ -831,7 +836,15 @@ export function medium_avatar_url_for_person(person: User): string {
      * gravatar and server endpoints here. */
 
     if (person.avatar_url === null) {
-        return medium_gravatar_url_for_email(person.email);
+        person.avatar_url = gravatar_url_for_email(person.email);
+    }
+
+    if (person.avatar_url !== undefined) {
+        const url = new URL(person.avatar_url, window.location.origin);
+        if (url.origin === "https://secure.gravatar.com") {
+            url.search += (url.search ? "&" : "") + "s=500";
+            return url.href;
+        }
     }
 
     // We need to attach a version to the URL as a cache-breaker so that the browser
@@ -1057,7 +1070,7 @@ export function get_bot_ids(): number[] {
     return bot_ids;
 }
 
-export function get_active_human_count(): number {
+export let get_active_human_count = (): number => {
     let count = 0;
     for (const person of active_user_dict.values()) {
         if (!person.is_bot) {
@@ -1065,6 +1078,10 @@ export function get_active_human_count(): number {
         }
     }
     return count;
+};
+
+export function rewire_get_active_human_count(value: typeof get_active_human_count): void {
+    get_active_human_count = value;
 }
 
 export function get_active_user_ids(): number[] {

@@ -588,6 +588,10 @@ ul.popover-group-menu-member-list {
             margin-bottom: 8px;
         }
 
+        .user-profile-group-list-alert {
+            margin-bottom: 8px;
+        }
+
         .stream-privacy {
             display: inline-flex;
             align-items: center;
@@ -602,6 +606,12 @@ ul.popover-group-menu-member-list {
             justify-content: space-between;
             align-items: baseline;
             padding-top: 2px;
+        }
+
+        .dropdown_widget_value {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     }
 
@@ -636,7 +646,8 @@ ul.popover-group-menu-member-list {
         margin-bottom: 5px;
         -webkit-overflow-scrolling: touch;
 
-        .remove-subscription-button {
+        .remove-subscription-button,
+        .remove-member-button {
             padding-top: 2px;
             padding-bottom: 2px;
         }
@@ -676,7 +687,8 @@ ul.popover-group-menu-member-list {
                         align-items: center;
                     }
 
-                    &.remove_subscription {
+                    &.remove_subscription,
+                    &.remove_member {
                         text-align: right;
                     }
                 }
@@ -1194,12 +1206,16 @@ ul.popover-group-menu-member-list {
         flex-flow: row nowrap;
         align-items: flex-start;
         gap: 5px;
+        /* 3px at 15px/1em, 10px at 15px/1em */
         padding: 0.2em 0.6666em;
         /* 15px at 15px/1em */
         font-size: 1em;
         /* 16px at 15px/1em */
         line-height: 1.0667em;
-        min-height: 26px;
+        /* 26px at 16px/1em - this height was carried forward
+           despite the information density change in 15px > 16px,
+           so we calculate its height to the 16px em in use. */
+        min-height: 1.625em;
 
         .popover-menu-icon {
             /* 16px at 15px/1em */
@@ -1478,5 +1494,37 @@ ul.popover-menu-list {
         padding: 2px 4px;
         border-radius: 3px;
         border: 1px solid var(--color-border-popover-hotkey-hint);
+    }
+}
+
+.condensed-views-popover-menu {
+    .popover-menu-link:has(.label-and-unread-wrapper) {
+        align-items: center;
+
+        .popover-menu-icon {
+            margin-top: 1px;
+        }
+
+        .label-and-unread-wrapper {
+            /* Occupy the maximum width of the
+               parent flex container. */
+            flex: 1 0 max-content;
+            display: flex;
+            gap: 5px;
+            align-items: baseline;
+        }
+
+        .popover-menu-label {
+            margin-top: 0;
+        }
+
+        .unread_count {
+            margin: 0 0 0 6px;
+            border-color: var(--color-border-unread-counter-popover-menu);
+            width: max-content;
+            height: auto;
+            line-height: 1.2445em;
+            align-self: baseline;
+        }
     }
 }

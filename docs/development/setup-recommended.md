@@ -5,9 +5,15 @@ Zulip development environment on Windows, macOS, and Linux.
 
 The recommended method for installing the Zulip development environment is
 to use WSL 2 on Windows, and Vagrant with Docker on macOS and Linux.
-This method uses the Windows Subsystem for Linux or creates a Linux container
-(for macOS and Linux) inside which the Zulip server and all related
-services will run.
+
+All of these recommended methods work by creating a container or VM
+for the Zulip server and related services, with the Git repository
+containing your source code mounted inside it. This strategy allows
+the environment to be as reliable and portable as possible. The
+specific technologies (Vagrant/Docker and WSL 2) were chosen based on
+what technologies have been most reliable through our experience
+supporting the thousands of people who've set up the Zulip development
+environment.
 
 Contents:
 
@@ -114,7 +120,13 @@ installation method described here. We require version 0.67.6+ of WSL 2.
    depends on your specific hardware and brand, but here are [some
    basic instructions.][windows-bios-virtualization]
 
-1. [Install WSL 2](https://docs.microsoft.com/en-us/windows/wsl/setup/environment).
+1. [Install WSL
+   2](https://docs.microsoft.com/en-us/windows/wsl/setup/environment),
+   which includes installing an Ubuntu WSL distribution. Using an
+   existing distribution will probably work, but [a fresh
+   distribution](#rebuilding-the-development-environment) is
+   recommended if you previously installed other software in your WSL
+   environment that might conflict with the Zulip environment.
 
 1. It is required to enable `systemd` for WSL 2 to manage the database, cache and other services.
    To configure it, please follow [these instructions](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#systemd-support).
@@ -544,7 +556,7 @@ help.
 :::{tab-item} Windows (WSL)
 :sync: os-windows
 
-```{include} setup/vagrant-rebuild.md
+```{include} setup/wsl-rebuild.md
 
 ```
 

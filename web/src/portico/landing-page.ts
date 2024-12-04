@@ -2,12 +2,12 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import {page_params} from "../base_page_params";
-import * as util from "../util";
+import {page_params} from "../base_page_params.ts";
+import * as util from "../util.ts";
 
-import type {UserOS} from "./tabbed-instructions";
-import {detect_user_os} from "./tabbed-instructions";
-import render_tabs from "./team";
+import type {UserOS} from "./tabbed-instructions.ts";
+import {detect_user_os} from "./tabbed-instructions.ts";
+import render_tabs from "./team.ts";
 
 type VersionInfo = {
     description: string;

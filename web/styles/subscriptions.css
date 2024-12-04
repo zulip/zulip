@@ -16,7 +16,7 @@
     overflow-wrap: break-word;
 }
 
-.subscription_settings .btn {
+.subscription_settings .bootstrap-btn {
     border-radius: 2px;
 }
 
@@ -91,6 +91,12 @@
     .create_button_plus_sign {
         position: relative;
         top: -5px;
+    }
+
+    &:disabled {
+        /* Replicate disabled values */
+        cursor: not-allowed;
+        opacity: 0.5;
     }
 }
 
@@ -253,8 +259,8 @@ h4.user_group_setting_subsection_title {
     align-items: center;
 }
 
-.add_subscribers_container .add_subscriber_btn_wrapper,
-.add_members_container .add_member_btn_wrapper {
+.add_subscribers_container .add_subscriber_button_wrapper,
+.add_members_container .add_member_button_wrapper {
     padding-left: 5px;
 }
 
@@ -365,16 +371,49 @@ h4.user_group_setting_subsection_title {
 
     .left .no-streams-to-show,
     .left .no-groups-to-show,
-    .right .nothing-selected {
+    .right .nothing-selected .create-stream-button-container {
         display: block;
-        margin-top: calc(45vh - 75px);
         text-align: center;
         font-size: 1em;
         margin-left: 2em;
         margin-right: 2em;
 
         .settings-empty-option-text {
-            color: hsl(0deg 0% 67%);
+            color: var(--color-text-item);
+        }
+    }
+
+    .left .no-streams-to-show,
+    .left .no-groups-to-show {
+        margin-top: calc(45vh - 75px);
+    }
+
+    .right .nothing-selected {
+        padding: 5px 5px 0;
+
+        .stream-info-banner a,
+        .group-info-banner a {
+            color: inherit;
+        }
+
+        .create-stream-button-container {
+            margin-top: calc(45vh - 128px);
+        }
+
+        .create-group-button-container {
+            margin-top: calc(45vh - 134px);
+            text-align: center;
+
+            .settings-empty-option-text {
+                color: var(--color-text-item);
+            }
+
+            .upgrade-or-sponsorship-tip,
+            .upgrade-tip {
+                /* Center tip in parent container */
+                margin-left: auto;
+                margin-right: auto;
+            }
         }
     }
 
@@ -398,12 +437,11 @@ h4.user_group_setting_subsection_title {
     .right {
         width: calc(50% + 1px);
 
-        .nothing-selected {
-            & button {
-                padding: 6px 10px 8px;
-                display: block;
-                margin: 0 auto 10px;
-            }
+        .nothing-selected .create_stream_button,
+        .nothing-selected .create_user_group_button {
+            padding: 6px 10px 8px;
+            display: block;
+            margin: 0 auto 10px;
         }
 
         .display-type {
@@ -562,6 +600,12 @@ h4.user_group_setting_subsection_title {
             fill: hsl(240deg 41% 50%);
         }
 
+        &.not-direct-member {
+            svg {
+                cursor: default;
+            }
+        }
+
         &.disabled {
             &:not(.checked) svg {
                 fill: hsl(0deg 0% 87%);
@@ -696,28 +740,35 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-.group_setting_disabled {
-    cursor: not-allowed;
-    /* This ensures that we do not see the not allowed cursor in the
-       extra space of a div */
-    width: fit-content;
-
-    /* This specific rules are needed to override the default settings
-       of these elements */
-    .pill-container,
-    .group-setting-label {
+.org-permissions-form,
+.group-permissions,
+.stream-permissions {
+    .group_setting_disabled {
         cursor: not-allowed;
-    }
+        /* This ensures that we do not see the not allowed cursor in the
+           extra space of a div */
+        width: fit-content;
 
-    .pill-container {
-        .pill {
-            .exit {
-                display: none;
-            }
+        /* This specific rules are needed to override the default settings
+           of these elements */
+        .pill-container,
+        .group-setting-label {
+            cursor: not-allowed;
         }
 
-        .input {
-            pointer-events: none;
+        .pill-container {
+            background-color: hsl(0deg 0% 93%);
+            opacity: 0.7;
+
+            .pill {
+                .exit {
+                    display: none;
+                }
+            }
+
+            .input {
+                pointer-events: none;
+            }
         }
     }
 }
@@ -856,6 +907,14 @@ h4.user_group_setting_subsection_title {
             .deactivate {
                 margin-right: 3px;
                 text-decoration: none;
+            }
+
+            .deactivate {
+                height: 100%;
+
+                .icon-container {
+                    display: flex;
+                }
             }
         }
     }
@@ -1108,7 +1167,8 @@ div.settings-radio-input-parent {
     }
 }
 
-.group-permissions .pill-container {
+.group-permissions .pill-container,
+.stream-permissions .pill-container {
     /* 319px + 2 * (2px padding) + 2 * (1px border) = 325px, which is the total
     width of dropdown widget buttons */
     min-width: 319px;
@@ -1122,6 +1182,10 @@ div.settings-radio-input-parent {
             content: attr(data-placeholder);
         }
     }
+}
+
+.stream-permissions .pill-container {
+    margin-bottom: 10px;
 }
 
 .group-permissions .dropdown_widget_with_label_wrapper {
@@ -1149,6 +1213,11 @@ div.settings-radio-input-parent {
     box-shadow: none;
     margin: 0;
     height: inherit;
+}
+
+.group-setting-label {
+    /* Avoid having the clickable area extend to the full width of the containing element */
+    width: fit-content;
 }
 
 @media (width < $lg_min) {

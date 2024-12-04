@@ -13,7 +13,7 @@ from zerver.actions.realm_export import do_delete_realm_export, notify_realm_exp
 from zerver.decorator import require_realm_admin
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.export import get_realm_exports_serialized
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_int_in_validator
@@ -100,7 +100,7 @@ def export_realm(
         "user_profile_id": user.id,
         "realm_export_id": row.id,
     }
-    transaction.on_commit(lambda: queue_json_publish("deferred_work", event))
+    queue_event_on_commit("deferred_work", event)
     return json_success(request, data={"id": row.id})
 
 

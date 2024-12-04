@@ -2,10 +2,10 @@ import $ from "jquery";
 
 import checkbox_image from "../images/checkbox-green.svg";
 
-import type {AjaxRequestHandler} from "./channel";
-import {$t, $t_html} from "./i18n";
-import * as loading from "./loading";
-import * as ui_report from "./ui_report";
+import type {AjaxRequestHandler} from "./channel.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as loading from "./loading.ts";
+import * as ui_report from "./ui_report.ts";
 
 export type RequestOpts = {
     success_msg_html?: string | undefined;

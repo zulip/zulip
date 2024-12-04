@@ -1,12 +1,12 @@
 import assert from "minimalistic-assert";
 
-import * as group_permission_settings from "./group_permission_settings";
-import {page_params} from "./page_params";
-import * as settings_config from "./settings_config";
-import {current_user, realm} from "./state_data";
-import type {GroupSettingValue} from "./state_data";
-import * as user_groups from "./user_groups";
-import {user_settings} from "./user_settings";
+import * as group_permission_settings from "./group_permission_settings.ts";
+import {page_params} from "./page_params.ts";
+import * as settings_config from "./settings_config.ts";
+import {current_user, realm} from "./state_data.ts";
+import type {GroupSettingValue} from "./state_data.ts";
+import * as user_groups from "./user_groups.ts";
+import {user_settings} from "./user_settings.ts";
 
 let user_join_date: Date;
 export function initialize(current_user_join_date: Date): void {
@@ -59,14 +59,6 @@ export function user_can_change_logo(): boolean {
 }
 
 function user_has_permission(policy_value: number): boolean {
-    /* At present, nobody is not present in common_policy_values,
-     * but we include a check for it here, so that code using
-     * email_invite_to_realm_policy_values or other supersets can
-     * use this function. */
-    if (policy_value === settings_config.email_invite_to_realm_policy_values.nobody.code) {
-        return false;
-    }
-
     if (current_user.is_admin) {
         return true;
     }
@@ -121,7 +113,11 @@ export function user_has_permission_for_group_setting(
 }
 
 export function user_can_invite_users_by_email(): boolean {
-    return user_has_permission(realm.realm_invite_to_realm_policy);
+    return user_has_permission_for_group_setting(
+        realm.realm_can_invite_users_group,
+        "can_invite_users_group",
+        "realm",
+    );
 }
 
 export function user_can_create_multiuse_invite(): boolean {
@@ -214,6 +210,22 @@ export function can_add_members_to_user_group(group_id: number): boolean {
     return can_manage_user_group(group_id);
 }
 
+export function can_remove_members_from_user_group(group_id: number): boolean {
+    const group = user_groups.get_user_group_from_id(group_id);
+
+    if (
+        user_has_permission_for_group_setting(
+            group.can_remove_members_group,
+            "can_remove_members_group",
+            "group",
+        )
+    ) {
+        return true;
+    }
+
+    return can_manage_user_group(group_id);
+}
+
 export function can_join_user_group(group_id: number): boolean {
     const group = user_groups.get_user_group_from_id(group_id);
 
@@ -221,7 +233,7 @@ export function can_join_user_group(group_id: number): boolean {
         return true;
     }
 
-    return can_manage_user_group(group_id);
+    return can_add_members_to_user_group(group_id);
 }
 
 export function can_leave_user_group(group_id: number): boolean {
@@ -231,7 +243,7 @@ export function can_leave_user_group(group_id: number): boolean {
         return true;
     }
 
-    return can_manage_user_group(group_id);
+    return can_remove_members_from_user_group(group_id);
 }
 
 export function user_can_create_user_groups(): boolean {

@@ -4,16 +4,16 @@ import {z} from "zod";
 
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
 
-import {Typeahead} from "./bootstrap_typeahead";
-import * as bootstrap_typeahead from "./bootstrap_typeahead";
-import {$t} from "./i18n";
-import * as people from "./people";
-import * as pill_typeahead from "./pill_typeahead";
-import * as settings_components from "./settings_components";
-import {current_user, realm} from "./state_data";
-import * as typeahead_helper from "./typeahead_helper";
-import type {UserPillWidget} from "./user_pill";
-import * as user_pill from "./user_pill";
+import {Typeahead} from "./bootstrap_typeahead.ts";
+import * as bootstrap_typeahead from "./bootstrap_typeahead.ts";
+import {$t} from "./i18n.ts";
+import * as people from "./people.ts";
+import * as pill_typeahead from "./pill_typeahead.ts";
+import * as settings_components from "./settings_components.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as typeahead_helper from "./typeahead_helper.ts";
+import type {UserPillWidget} from "./user_pill.ts";
+import * as user_pill from "./user_pill.ts";
 
 const user_value_schema = z.array(z.number());
 
@@ -154,6 +154,16 @@ export function initialize_custom_user_type_fields(
         }
     }
 
+    // Enable the label associated to this field to focus on the input when clicked.
+    $(element_id)
+        .find(".custom_user_field label.settings-field-label")
+        .on("click", function () {
+            const $input_element = $(this)
+                .closest(".custom_user_field")
+                .find(".person_picker.pill-container .input");
+            $input_element.trigger("focus");
+        });
+
     return user_pills;
 }
 
@@ -169,6 +179,13 @@ export function initialize_custom_date_type_fields(element_id: string): void {
         allowInput: true,
         static: true,
     });
+
+    // Enable the label associated to this field to open the datepicker when clicked.
+    $(element_id)
+        .find(".custom_user_field label.settings-field-label")
+        .on("click", function () {
+            $(this).closest(".custom_user_field").find("input.datepicker").trigger("click");
+        });
 
     $(element_id)
         .find<HTMLInputElement>(".custom_user_field input.datepicker")

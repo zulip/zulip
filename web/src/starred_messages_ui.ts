@@ -1,18 +1,18 @@
 import render_confirm_unstar_all_messages from "../templates/confirm_dialog/confirm_unstar_all_messages.hbs";
 import render_confirm_unstar_all_messages_in_topic from "../templates/confirm_dialog/confirm_unstar_all_messages_in_topic.hbs";
 
-import * as confirm_dialog from "./confirm_dialog";
-import {$t_html} from "./i18n";
-import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
-import * as message_flags from "./message_flags";
-import * as message_live_update from "./message_live_update";
-import * as message_store from "./message_store";
-import type {Message} from "./message_store";
-import * as popover_menus from "./popover_menus";
-import * as starred_messages from "./starred_messages";
-import * as sub_store from "./sub_store";
-import * as unread_ops from "./unread_ops";
-import {user_settings} from "./user_settings";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import {$t_html} from "./i18n.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
+import * as message_flags from "./message_flags.ts";
+import * as message_live_update from "./message_live_update.ts";
+import * as message_store from "./message_store.ts";
+import type {Message} from "./message_store.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as starred_messages from "./starred_messages.ts";
+import * as sub_store from "./sub_store.ts";
+import * as unread_ops from "./unread_ops.ts";
+import {user_settings} from "./user_settings.ts";
 
 export function toggle_starred_and_update_server(message: Message): void {
     if (message.locally_echoed) {

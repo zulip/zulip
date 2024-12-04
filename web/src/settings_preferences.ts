@@ -4,28 +4,28 @@ import assert from "minimalistic-assert";
 
 import render_dialog_default_language from "../templates/default_language_modal.hbs";
 
-import * as channel from "./channel";
-import * as dialog_widget from "./dialog_widget";
-import * as emojisets from "./emojisets";
-import * as hash_parser from "./hash_parser";
-import {$t_html, get_language_list_columns, get_language_name} from "./i18n";
+import * as channel from "./channel.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import * as emojisets from "./emojisets.ts";
+import * as hash_parser from "./hash_parser.ts";
+import {$t_html, get_language_list_columns, get_language_name} from "./i18n.ts";
 import {
     LEGACY_FONT_SIZE_PX,
     LEGACY_LINE_HEIGHT_PERCENT,
     NON_COMPACT_MODE_FONT_SIZE_PX,
     NON_COMPACT_MODE_LINE_HEIGHT_PERCENT,
-} from "./information_density";
-import * as loading from "./loading";
-import * as overlays from "./overlays";
-import {page_params} from "./page_params";
-import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
-import * as settings_components from "./settings_components";
-import type {RequestOpts} from "./settings_ui";
-import * as settings_ui from "./settings_ui";
-import {realm} from "./state_data";
-import * as ui_report from "./ui_report";
-import {user_settings} from "./user_settings";
-import type {UserSettings} from "./user_settings";
+} from "./information_density.ts";
+import * as loading from "./loading.ts";
+import * as overlays from "./overlays.ts";
+import {page_params} from "./page_params.ts";
+import type {RealmDefaultSettings} from "./realm_user_settings_defaults.ts";
+import * as settings_components from "./settings_components.ts";
+import type {RequestOpts} from "./settings_ui.ts";
+import * as settings_ui from "./settings_ui.ts";
+import {realm} from "./state_data.ts";
+import * as ui_report from "./ui_report.ts";
+import {user_settings} from "./user_settings.ts";
+import type {UserSettings} from "./user_settings.ts";
 
 export type SettingsPanel = {
     container: string;

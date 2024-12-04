@@ -4,8 +4,8 @@ import assert from "minimalistic-assert";
 import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.hbs";
 import render_empty_list_widget_for_table from "../templates/empty_list_widget_for_table.hbs";
 
-import * as blueslip from "./blueslip";
-import * as scroll_util from "./scroll_util";
+import * as blueslip from "./blueslip.ts";
+import * as scroll_util from "./scroll_util.ts";
 
 type SortingFunction<T> = (a: T, b: T) => number;
 
@@ -541,8 +541,23 @@ export function create<Key, Item = Key>(
                     const $target_row = opts.html_selector!(meta.filtered_list[insert_index - 1]!);
                     $target_row.after($(rendered_row));
                 } else {
-                    const $target_row = opts.html_selector!(meta.filtered_list[insert_index + 1]!);
-                    $target_row.before($(rendered_row));
+                    let $target_row = opts.html_selector!(meta.filtered_list[insert_index + 1]!);
+                    if ($target_row.length !== 0) {
+                        $target_row.before($(rendered_row));
+                    } else if (insert_index > 0) {
+                        // We don't have a row rendered after row we are trying to insert at.
+                        // So, try looking for the row before current row.
+                        $target_row = opts.html_selector!(meta.filtered_list[insert_index - 1]!);
+                        if ($target_row.length !== 0) {
+                            $target_row.after($(rendered_row));
+                        }
+                    }
+
+                    // If we failed at inserting the row due rows around the row
+                    // not being rendered yet, just do a clean redraw.
+                    if ($target_row.length === 0) {
+                        widget.clean_redraw();
+                    }
                 }
                 widget.increase_rendered_offset();
             }

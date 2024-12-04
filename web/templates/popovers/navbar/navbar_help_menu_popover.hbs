@@ -38,6 +38,14 @@
                 <span class="popover-menu-label">{{t 'Contact support' }}</span>
             </a>
         </li>
+        {{#if (or is_admin is_owner)}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" href="/contact-sales" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
+                <i class="popover-menu-icon zulip-icon zulip-icon-handshake" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t 'Contact sales' }}</span>
+            </a>
+        </li>
+        {{/if}}
         {{/if}}
     </ul>
 </div>

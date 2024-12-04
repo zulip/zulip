@@ -1,12 +1,12 @@
 import assert from "minimalistic-assert";
 
-import {all_messages_data} from "./all_messages_data";
-import * as echo_state from "./echo_state";
-import {FoldDict} from "./fold_dict";
-import * as message_util from "./message_util";
-import * as sub_store from "./sub_store";
-import type {StreamSubscription} from "./sub_store";
-import * as unread from "./unread";
+import {all_messages_data} from "./all_messages_data.ts";
+import * as echo_state from "./echo_state.ts";
+import {FoldDict} from "./fold_dict.ts";
+import * as message_util from "./message_util.ts";
+import * as sub_store from "./sub_store.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as unread from "./unread.ts";
 
 // stream_id -> PerStreamHistory object
 const stream_dict = new Map<number, PerStreamHistory>();
@@ -356,10 +356,14 @@ export function has_history_for(stream_id: number): boolean {
     return fetched_stream_ids.has(stream_id);
 }
 
-export function get_recent_topic_names(stream_id: number): string[] {
+export let get_recent_topic_names = (stream_id: number): string[] => {
     const history = find_or_create(stream_id);
 
     return history.get_recent_topic_names();
+};
+
+export function rewire_get_recent_topic_names(value: typeof get_recent_topic_names): void {
+    get_recent_topic_names = value;
 }
 
 export function get_max_message_id(stream_id: number): number {

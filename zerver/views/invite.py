@@ -2,6 +2,7 @@ import re
 from typing import Annotated
 
 from django.conf import settings
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -22,7 +23,8 @@ from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_int_in_validator
-from zerver.models import MultiuseInvite, PreregistrationUser, Stream, UserProfile
+from zerver.lib.user_groups import access_user_group_for_update
+from zerver.models import MultiuseInvite, NamedUserGroup, PreregistrationUser, Stream, UserProfile
 
 # Convert INVITATION_LINK_VALIDITY_DAYS into minutes.
 # Because mypy fails to correctly infer the type of the validator, we want this constant
@@ -91,6 +93,7 @@ def invite_users_backend(
     ] = PreregistrationUser.INVITE_AS["MEMBER"],
     notify_referrer_on_join: Json[bool] = True,
     stream_ids: Json[list[int]],
+    group_ids: Json[list[int]] | None = None,
     include_realm_default_subscriptions: Json[bool] = False,
 ) -> HttpResponse:
     if not user_profile.can_invite_users_by_email():
@@ -127,11 +130,21 @@ def invite_users_backend(
     if len(streams) and not user_profile.can_subscribe_other_users():
         raise JsonableError(_("You do not have permission to subscribe other users to channels."))
 
+    user_groups: list[NamedUserGroup] = []
+    if group_ids:
+        with transaction.atomic(durable=True):
+            for group_id in group_ids:
+                user_group = access_user_group_for_update(
+                    group_id, user_profile, permission_setting="can_add_members_group"
+                )
+                user_groups.append(user_group)
+
     skipped = do_invite_users(
         user_profile,
         invitee_emails,
         streams,
         notify_referrer_on_join,
+        user_groups,
         invite_expires_in_minutes=invite_expires_in_minutes,
         include_realm_default_subscriptions=include_realm_default_subscriptions,
         invite_as=invite_as,
@@ -210,6 +223,7 @@ def generate_multiuse_invite_backend(
         check_int_in_validator(list(PreregistrationUser.INVITE_AS.values())),
     ] = PreregistrationUser.INVITE_AS["MEMBER"],
     stream_ids: Json[list[int]] | None = None,
+    group_ids: Json[list[int]] | None = None,
     include_realm_default_subscriptions: Json[bool] = False,
 ) -> HttpResponse:
     if stream_ids is None:
@@ -243,11 +257,21 @@ def generate_multiuse_invite_backend(
     if len(streams) and not user_profile.can_subscribe_other_users():
         raise JsonableError(_("You do not have permission to subscribe other users to channels."))
 
+    user_groups: list[NamedUserGroup] = []
+    if group_ids:
+        with transaction.atomic(durable=True):
+            for group_id in group_ids:
+                user_group = access_user_group_for_update(
+                    group_id, user_profile, permission_setting="can_add_members_group"
+                )
+                user_groups.append(user_group)
+
     invite_link = do_create_multiuse_invite_link(
         user_profile,
         invite_as,
         invite_expires_in_minutes,
         include_realm_default_subscriptions,
         streams,
+        user_groups,
     )
     return json_success(request, data={"invite_link": invite_link})

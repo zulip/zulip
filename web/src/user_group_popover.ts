@@ -4,19 +4,19 @@ import type * as tippy from "tippy.js";
 
 import render_user_group_info_popover from "../templates/popovers/user_group_info_popover.hbs";
 
-import * as blueslip from "./blueslip";
-import * as buddy_data from "./buddy_data";
-import * as hash_util from "./hash_util";
-import * as message_lists from "./message_lists";
-import * as people from "./people";
-import type {User} from "./people";
-import * as popover_menus from "./popover_menus";
-import * as rows from "./rows";
-import {current_user} from "./state_data";
-import * as ui_util from "./ui_util";
-import * as user_group_components from "./user_group_components";
-import * as user_groups from "./user_groups";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as buddy_data from "./buddy_data.ts";
+import * as hash_util from "./hash_util.ts";
+import * as message_lists from "./message_lists.ts";
+import * as people from "./people.ts";
+import type {User} from "./people.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as rows from "./rows.ts";
+import {current_user} from "./state_data.ts";
+import * as ui_util from "./ui_util.ts";
+import * as user_group_components from "./user_group_components.ts";
+import * as user_groups from "./user_groups.ts";
+import * as util from "./util.ts";
 
 let user_group_popover_instance: tippy.Instance | undefined;
 
@@ -93,13 +93,16 @@ export function toggle_user_group_info_popover(
                     message_lists.current.select_id(message_id);
                 }
                 user_group_popover_instance = instance;
+                const subgroups = user_groups.convert_name_to_display_name_for_groups(
+                    user_groups
+                        .get_direct_subgroups_of_group(group)
+                        .sort(user_group_components.sort_group_member_name),
+                );
                 const args = {
                     group_name: user_groups.get_display_group_name(group.name),
                     group_description: group.description,
                     members: sort_group_members(fetch_group_members([...group.members])),
-                    subgroups: user_groups
-                        .get_direct_subgroups_of_group(group)
-                        .sort(user_group_components.sort_group_member_name),
+                    subgroups,
                     group_edit_url: hash_util.group_edit_url(group, "general"),
                     is_guest: current_user.is_guest,
                     is_system_group: group.is_system_group,
@@ -149,6 +152,15 @@ export function register_click_handlers(): void {
         },
     );
 
+    // Show the user_group_popover in user invite section.
+    $("body").on(
+        "click",
+        "#invite-user-group-container .pill-container .pill",
+        function (this: HTMLElement, e) {
+            e.stopPropagation();
+            toggle_user_group_info_popover(this, undefined);
+        },
+    );
     // Note: Message feeds and drafts have their own direct event listeners
     // that run before this one and call stopPropagation.
     $("body").on("click", ".messagebox .user-group-mention", function (this: HTMLElement, e) {

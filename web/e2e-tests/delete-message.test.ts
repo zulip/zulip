@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
 
-import * as common from "./lib/common";
+import * as common from "./lib/common.ts";
 
 async function click_delete_and_return_last_msg_id(page: Page): Promise<string> {
     const msg = (await page.$$(".message-list .message_row")).at(-1);

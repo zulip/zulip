@@ -1,19 +1,19 @@
 import assert from "minimalistic-assert";
 
-import * as blueslip from "./blueslip";
-import {Typeahead} from "./bootstrap_typeahead";
-import type {TypeaheadInputElement} from "./bootstrap_typeahead";
-import * as people from "./people";
-import type {User} from "./people";
-import * as stream_pill from "./stream_pill";
-import type {StreamPillData, StreamPillWidget} from "./stream_pill";
-import * as typeahead_helper from "./typeahead_helper";
-import type {CombinedPillContainer, GroupSettingPillContainer} from "./typeahead_helper";
-import * as user_group_pill from "./user_group_pill";
-import type {UserGroupPillData} from "./user_group_pill";
-import type {UserGroup} from "./user_groups";
-import * as user_pill from "./user_pill";
-import type {UserPillData, UserPillWidget} from "./user_pill";
+import * as blueslip from "./blueslip.ts";
+import {Typeahead} from "./bootstrap_typeahead.ts";
+import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
+import * as people from "./people.ts";
+import type {User} from "./people.ts";
+import * as stream_pill from "./stream_pill.ts";
+import type {StreamPillData, StreamPillWidget} from "./stream_pill.ts";
+import * as typeahead_helper from "./typeahead_helper.ts";
+import type {CombinedPillContainer, GroupSettingPillContainer} from "./typeahead_helper.ts";
+import * as user_group_pill from "./user_group_pill.ts";
+import type {UserGroupPillData} from "./user_group_pill.ts";
+import type {UserGroup} from "./user_groups.ts";
+import * as user_pill from "./user_pill.ts";
+import type {UserPillData, UserPillWidget} from "./user_pill.ts";
 
 function person_matcher(query: string, item: UserPillData): boolean {
     return (
@@ -126,6 +126,45 @@ export function set_up_stream(
             opts.update_func?.();
         },
         stopAdvance: true,
+    });
+}
+
+export function set_up_user_group(
+    $input: JQuery,
+    pills: user_group_pill.UserGroupPillWidget,
+    opts: {
+        user_group_source: () => UserGroup[];
+    },
+): void {
+    const bootstrap_typeahead_input: TypeaheadInputElement = {
+        $element: $input,
+        type: "contenteditable",
+    };
+    new Typeahead(bootstrap_typeahead_input, {
+        dropup: true,
+        source(_query: string): UserGroupPillData[] {
+            return opts
+                .user_group_source()
+                .map((user_group) => ({type: "user_group", ...user_group}));
+        },
+        highlighter_html(item: UserGroupPillData, _query: string): string {
+            return typeahead_helper.render_user_group(item);
+        },
+        matcher(item: UserGroupPillData, query: string): boolean {
+            query = query.toLowerCase();
+            query = query.replaceAll("\u00A0", " ");
+            return group_matcher(query, item);
+        },
+        sorter(matches: UserGroupPillData[], query: string): UserGroupPillData[] {
+            return typeahead_helper.sort_user_groups(matches, query);
+        },
+        updater(item: UserGroupPillData, _query: string): undefined {
+            user_group_pill.append_user_group(item, pills);
+            $input.trigger("focus");
+        },
+        stopAdvance: true,
+        helpOnEmptyStrings: true,
+        hideOnEmptyAfterBackspace: true,
     });
 }
 

@@ -10,31 +10,17 @@
                 {{> settings_save_discard_widget section_name="join-settings" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
-                <div class="input-group">
-                    {{> settings_checkbox
-                      setting_name="realm_invite_required"
-                      prefix="id_"
-                      is_checked=realm_invite_required
-                      label=admin_settings_label.realm_invite_required}}
-                    <label for="realm_invite_to_realm_policy" class="settings-field-label">{{t "Who can send email invitations to new users" }}
-                    </label>
-                    <select name="realm_invite_to_realm_policy" id="id_realm_invite_to_realm_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=invite_to_realm_policy_values}}
-                    </select>
-                </div>
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_invite_users_group"
+                  label=(t 'Who can send email invitations to new users')}}
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_create_multiuse_invite_group"
+                  label=(t 'Who can create reusable invitation links')}}
 
                 <div class="input-group">
-                    <label class="group-setting-label">{{t "Who can create reusable invitation links" }}</label>
-                    <div class="pill-container person_picker prop-element" id="id_realm_create_multiuse_invite_group" data-setting-widget-type="group-setting-type">
-                        <div class="input" contenteditable="true"
-                          data-placeholder="{{t 'Add roles, groups or users' }}">
-                            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label for="realm_org_join_restrictions" class="settings-field-label">{{t "Restrict email domains of new users" }}</label>
+                    <label for="id_realm_org_join_restrictions" class="settings-field-label">{{t "Restrict email domains of new users" }}</label>
                     <select name="realm_org_join_restrictions" id="id_realm_org_join_restrictions" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">
                         <option value="no_restriction">{{t "No restrictions" }}</option>
                         <option value="no_disposable_email">{{t "Don’t allow disposable email addresses" }}</option>
@@ -48,7 +34,7 @@
                     </div>
                 </div>
                 <div class="input-group time-limit-setting">
-                    <label for="realm_waiting_period_threshold" class="settings-field-label">
+                    <label for="id_realm_waiting_period_threshold" class="settings-field-label">
                         {{t "Waiting period before new members turn into full members" }}
                         {{> ../help_link_widget link="/help/restrict-permissions-of-new-members" }}
                     </label>
@@ -73,17 +59,11 @@
                 {{> settings_save_discard_widget section_name="stream-permissions" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
-                <div class="input-group">
-                    <label class="group-setting-label">{{t "Who can create public channels" }}</label>
-                    <div class="pill-container person_picker prop-element" id="id_realm_can_create_public_channel_group" data-setting-widget-type="group-setting-type">
-                        <div class="input" contenteditable="true"
-                          data-placeholder="{{t 'Add roles, groups or users' }}">
-                            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
-                        </div>
-                    </div>
-                </div>
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_create_public_channel_group"
+                  label=(t 'Who can create public channels')}}
 
-                {{> upgrade_tip_widget }}
+                {{> upgrade_tip_widget . }}
                 {{> settings_checkbox
                   setting_name="realm_enable_spectator_access"
                   prefix="id_"
@@ -97,30 +77,42 @@
                   label=(t 'Who can create web-public channels')
                   value_type="number"}}
 
-                <div class="input-group">
-                    <label class="group-setting-label">{{t "Who can create private channels" }}</label>
-                    <div class="pill-container person_picker prop-element" id="id_realm_can_create_private_channel_group" data-setting-widget-type="group-setting-type">
-                        <div class="input" contenteditable="true"
-                          data-placeholder="{{t 'Add roles, groups or users' }}">
-                            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
-                        </div>
-                    </div>
-                </div>
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_create_private_channel_group"
+                  label=(t 'Who can create private channels')}}
 
                 <div class="input-group">
-                    <label for="realm_invite_to_stream_policy" class="settings-field-label">{{t "Who can add users to channels" }}</label>
+                    <label for="id_realm_invite_to_stream_policy" class="settings-field-label">{{t "Who can add users to channels" }}</label>
                     <select name="realm_invite_to_stream_policy" id="id_realm_invite_to_stream_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=common_policy_values}}
                     </select>
                 </div>
                 <div class="input-group">
-                    <label for="realm_wildcard_mention_policy" class="settings-field-label">{{t "Who can notify a large number of users with a wildcard mention" }}
+                    <label for="id_realm_wildcard_mention_policy" class="settings-field-label">{{t "Who can notify a large number of users with a wildcard mention" }}
                         {{> ../help_link_widget link="/help/restrict-wildcard-mentions" }}
                     </label>
                     <select name="realm_wildcard_mention_policy" id="id_realm_wildcard_mention_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=wildcard_mention_policy_values}}
                     </select>
                 </div>
+            </div>
+        </div>
+
+        <div id="org-group-permissions" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Group permissions" }}
+                    {{> ../help_link_widget link="/help/manage-user-groups" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="group-permissions" }}
+            </div>
+            <div class="m-10 inline-block organization-permissions-parent">
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_manage_all_groups"
+                  label=(t 'Who can administer all user groups')}}
+                {{> upgrade_tip_widget . }}
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_create_groups"
+                  label=(t 'Who can create user groups')}}
             </div>
         </div>
 
@@ -131,15 +123,14 @@
                 </h3>
                 {{> settings_save_discard_widget section_name="direct-message-permissions" }}
             </div>
-            {{> ../dropdown_widget_with_label
-              widget_name="realm_direct_message_permission_group"
-              label=(t 'Who can authorize a direct message conversation')
-              value_type="number" }}
 
-            {{> ../dropdown_widget_with_label
-              widget_name="realm_direct_message_initiator_group"
-              label=(t 'Who can start a direct message conversation')
-              value_type="number" }}
+            {{> group_setting_value_pill_input
+              setting_name="realm_direct_message_permission_group"
+              label=(t 'Who can authorize a direct message conversation')}}
+
+            {{> group_setting_value_pill_input
+              setting_name="realm_direct_message_initiator_group"
+              label=(t 'Who can start a direct message conversation')}}
         </div>
 
         <div id="org-msg-editing" class="settings-subsection-parent">
@@ -163,7 +154,7 @@
                   label=admin_settings_label.realm_allow_edit_history}}
 
                 <div class="input-group time-limit-setting">
-                    <label for="realm_message_content_edit_limit_seconds" class="settings-field-label">{{t "Time limit for editing messages" }}</label>
+                    <label for="id_realm_message_content_edit_limit_seconds" class="settings-field-label">{{t "Time limit for editing messages" }}</label>
                     <select name="realm_message_content_edit_limit_seconds" id="id_realm_message_content_edit_limit_seconds" class="prop-element settings_select bootstrap-focus-style" {{#unless realm_allow_message_editing}}disabled{{/unless}} data-setting-widget-type="time-limit">
                         {{#each msg_edit_limit_dropdown_values}}
                             <option value="{{value}}">{{text}}</option>
@@ -192,13 +183,12 @@
                 {{> settings_save_discard_widget section_name="moving-msgs" }}
             </div>
 
-            {{> ../dropdown_widget_with_label
-              widget_name="realm_can_move_messages_between_topics_group"
-              label=(t 'Who can move messages to another topic')
-              value_type="number" }}
+            {{> group_setting_value_pill_input
+              setting_name="realm_can_move_messages_between_topics_group"
+              label=(t 'Who can move messages to another topic')}}
 
             <div class="input-group time-limit-setting">
-                <label for="realm_move_messages_within_stream_limit_seconds" class="settings-field-label">{{t "Time limit for editing topics" }} <i>({{t "does not apply to moderators and administrators" }})</i></label>
+                <label for="id_realm_move_messages_within_stream_limit_seconds" class="settings-field-label">{{t "Time limit for editing topics" }} <i>({{t "does not apply to moderators and administrators" }})</i></label>
                 <select name="realm_move_messages_within_stream_limit_seconds" id="id_realm_move_messages_within_stream_limit_seconds" class="prop-element settings_select" data-setting-widget-type="time-limit">
                     {{#each msg_move_limit_dropdown_values}}
                         <option value="{{value}}">{{text}}</option>
@@ -215,13 +205,12 @@
                 </div>
             </div>
 
-            {{> ../dropdown_widget_with_label
-              widget_name="realm_can_move_messages_between_channels_group"
-              label=(t 'Who can move messages to another channel')
-              value_type="number" }}
+            {{> group_setting_value_pill_input
+              setting_name="realm_can_move_messages_between_channels_group"
+              label=(t 'Who can move messages to another channel')}}
 
             <div class="input-group time-limit-setting">
-                <label for="realm_move_messages_between_streams_limit_seconds" class="settings-field-label">{{t "Time limit for moving messages between channels" }} <i>({{t "does not apply to moderators and administrators" }})</i></label>
+                <label for="id_realm_move_messages_between_streams_limit_seconds" class="settings-field-label">{{t "Time limit for moving messages between channels" }} <i>({{t "does not apply to moderators and administrators" }})</i></label>
                 <select name="realm_move_messages_between_streams_limit_seconds" id="id_realm_move_messages_between_streams_limit_seconds" class="prop-element bootstrap-focus-style settings_select" data-setting-widget-type="time-limit">
                     {{#each msg_move_limit_dropdown_values}}
                         <option value="{{value}}">{{text}}</option>
@@ -247,18 +236,16 @@
                 {{> settings_save_discard_widget section_name="msg-deletion" }}
             </div>
             <div class="inline-block organization-settings-parent">
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_can_delete_any_message_group"
-                  label=(t 'Who can delete any message')
-                  value_type="number" }}
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_delete_any_message_group"
+                  label=(t 'Who can delete any message')}}
 
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_can_delete_own_message_group"
-                  label=(t 'Who can delete their own messages')
-                  value_type="number" }}
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_delete_own_message_group"
+                  label=(t 'Who can delete their own messages')}}
 
                 <div class="input-group time-limit-setting">
-                    <label for="realm_message_content_delete_limit_seconds" class="settings-field-label">
+                    <label for="id_realm_message_content_delete_limit_seconds" class="settings-field-label">
                         {{t "Time limit for deleting messages" }} <i>({{t "does not apply to users who can delete any message" }})</i>
                     </label>
                     <select name="realm_message_content_delete_limit_seconds" id="id_realm_message_content_delete_limit_seconds" class="prop-element bootstrap-focus-style settings_select" data-setting-widget-type="time-limit">
@@ -343,36 +330,15 @@
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
-                    <label for="realm_bot_creation_policy" class="settings-field-label">{{t "Who can add bots" }}</label>
+                    <label for="id_realm_bot_creation_policy" class="settings-field-label">{{t "Who can add bots" }}</label>
                     <select name="realm_bot_creation_policy" class="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_bot_creation_policy" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=bot_creation_policy_values}}
                     </select>
                 </div>
 
-                <div class="input-group">
-                    <label class="group-setting-label">{{t "Who can create user groups" }}</label>
-                    <div class="pill-container person_picker prop-element" id="id_realm_can_create_groups" data-setting-widget-type="group-setting-type">
-                        <div class="input" contenteditable="true"
-                          data-placeholder="{{t 'Add roles, groups or users' }}">
-                            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label class="group-setting-label">{{t "Who can manage user groups" }}</label>
-                    <div class="pill-container person_picker prop-element" id="id_realm_can_manage_all_groups" data-setting-widget-type="group-setting-type">
-                        <div class="input" contenteditable="true"
-                          data-placeholder="{{t 'Add roles, groups or users' }}">
-                            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
-                        </div>
-                    </div>
-                </div>
-
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_can_add_custom_emoji_group"
-                  label=(t 'Who can add custom emoji')
-                  value_type="number"}}
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_add_custom_emoji_group"
+                  label=(t 'Who can add custom emoji')}}
             </div>
         </div>
     </form>
