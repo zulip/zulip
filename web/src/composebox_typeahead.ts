@@ -8,6 +8,7 @@ import {MAX_ITEMS, Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -16,15 +17,17 @@ import type {EmojiDict} from "./emoji.ts";
 import * as flatpickr from "./flatpickr.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import type {PseudoMentionUser, User} from "./people.ts";
+import * as pm_conversations from "./pm_conversations.ts";
 import * as realm_playground from "./realm_playground.ts";
 import * as rows from "./rows.ts";
 import * as settings_data from "./settings_data.ts";
-import {realm} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamPillData} from "./stream_pill.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
@@ -144,7 +147,7 @@ export let private_message_recipient_typeahead: Typeahead<
     UserGroupPillData | user_pill.UserPillData
 >;
 
-export let stream_message_topic_typeahead: Typeahead<string>;
+export let stream_message_topic_typeahead: Typeahead<string | UserPillData>;
 
 export function get_or_set_token_for_testing(val?: string): string {
     if (val !== undefined) {
@@ -678,6 +681,67 @@ function filter_persons<T>(
     }
 
     return filterer(person_items, broadcast_items);
+}
+
+export function get_person_suggestion_for_topic_typeahead(query: string): UserPillData[] {
+    query = typeahead.clean_query_lowercase(query);
+
+    const filterer = (person_items: UserPillData[]): UserPillData[] => {
+        const should_remove_diacritics = people.should_remove_diacritics_for_query(
+            query.toLowerCase(),
+        );
+
+        return person_items.filter((item) =>
+            typeahead_helper.query_matches_person_name(query, item, should_remove_diacritics, true),
+        );
+    };
+
+    const current_narrow_participant_ids = message_lists.current?.data.participants.visible();
+
+    let filtered_persons;
+    let participants_people;
+    let dm_people;
+
+    if (current_narrow_participant_ids) {
+        participants_people = util.try_parse_as_truthy(
+            [...current_narrow_participant_ids]
+                .filter((user_id) => user_id !== current_user.user_id)
+                .map((user_id) => people.maybe_get_user_by_id(user_id))
+                .filter(Boolean),
+        );
+
+        filtered_persons = filter_persons(participants_people ?? [], false, false, filterer);
+    }
+
+    if (!(filtered_persons && filtered_persons?.length >= 3)) {
+        dm_people = util.try_parse_as_truthy(
+            pm_conversations
+                .get_partners()
+                .filter((user_id) => !current_narrow_participant_ids?.has(user_id))
+                .map((user_id) => people.maybe_get_user_by_id(user_id))
+                .filter(Boolean),
+        );
+
+        const combined_people = [...(participants_people ?? []), ...(dm_people ?? [])];
+
+        filtered_persons = filter_persons(combined_people, false, false, filterer);
+    }
+
+    const sorted_recipients = typeahead_helper.sort_recipients({
+        users: filtered_persons,
+        query,
+        current_stream_id: compose_state.stream_id(),
+        current_topic: compose_state.topic(),
+        max_num_items: 3,
+    });
+
+    filtered_persons = [];
+    for (const recipient of sorted_recipients) {
+        if (recipient.type === "user") {
+            filtered_persons.push(recipient);
+        }
+    }
+    return filtered_persons;
 }
 
 export function get_person_suggestions(
@@ -1604,12 +1668,15 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
     );
 }
 
-function get_footer_html_for_topic_typeahead(stream_id: number | undefined): string {
+function get_footer_html_for_topic_typeahead(
+    stream_id: number | undefined,
+    contains_dm: "all" | "some" | "none",
+): string {
     let can_create_new_topics_in_stream = true;
     if (stream_id !== undefined) {
         can_create_new_topics_in_stream = stream_data.can_create_new_topics_in_stream(stream_id);
     }
-    return render_topic_typeahead_hint({can_create_new_topics_in_stream});
+    return render_topic_typeahead_hint({can_create_new_topics_in_stream, contains_dm});
 }
 
 export function initialize({
@@ -1631,49 +1698,103 @@ export function initialize({
     };
     stream_message_topic_typeahead = new Typeahead(stream_message_typeahead_input, {
         dropup: true,
-        source(): string[] {
-            return topics_seen_for(compose_state.stream_id());
+        source(query: string): (UserPillData | string)[] {
+            let people_candidates: UserPillData[] = [];
+            if (query && query.length > 3) {
+                people_candidates = get_person_suggestion_for_topic_typeahead(query);
+            }
+            const topics = topics_seen_for(compose_state.stream_id());
+            return [...people_candidates, ...topics];
         },
         items: max_num_items,
-        item_html(item: string): string {
-            const is_empty_string_topic = item === "";
-            const topic_display_name = util.get_final_topic_display_name(item);
-            return typeahead_helper.render_typeahead_item({
-                primary: topic_display_name,
-                is_empty_string_topic,
-            });
+        item_html(item: string | UserPillData): string {
+            if (typeof item === "string") {
+                const is_empty_string_topic = item === "";
+                const topic_display_name = util.get_final_topic_display_name(item);
+                return typeahead_helper.render_typeahead_item({
+                    primary: topic_display_name,
+                    is_empty_string_topic,
+                });
+            }
+            return typeahead_helper.render_person_or_user_group(item);
         },
-        matcher(item: string, query: string): boolean {
-            const matcher = get_topic_matcher(query);
-            return matcher(item);
+        matcher(item: UserPillData | string, query: string): boolean {
+            if (typeof item === "string") {
+                const matcher = get_topic_matcher(query);
+                return matcher(item);
+            }
+            return true;
         },
-        sorter(items: string[], query: string): string[] {
-            const sorted = typeahead_helper.sorter(query, items, (x) =>
+        sorter(items: (UserPillData | string)[], query: string): (UserPillData | string)[] {
+            const topic_items: string[] = [];
+            const people_items: UserPillData[] = [];
+            for (const item of items) {
+                if (typeof item === "string") {
+                    topic_items.push(item);
+                } else {
+                    people_items.push(item);
+                }
+            }
+            const sorted_topics = typeahead_helper.sorter(query, topic_items, (x) =>
                 util.get_final_topic_display_name(x),
             );
             const stream_id = compose_state.stream_id();
             if (
                 stream_id &&
                 stream_data.can_create_new_topics_in_stream(stream_id) &&
-                sorted.length > 0 &&
-                !sorted.includes(query)
+                sorted_topics.length > 0 &&
+                !sorted_topics.includes(query)
             ) {
-                sorted.unshift(query);
+                sorted_topics.unshift(query);
             }
-            return sorted;
+
+            // Reserve last few places(max 3) in typeahead for user suggestions if
+            // user suggestion is available.
+            return [
+                ...sorted_topics.slice(0, max_num_items - people_items.length),
+                ...people_items,
+            ];
         },
-        updater(item: string, _query: string): string {
-            $("textarea#compose-textarea").trigger("focus");
-            $nextFocus = undefined;
-            return item;
+        updater(item: UserPillData | string, _query: string): string | undefined {
+            if (typeof item === "string") {
+                $("textarea#compose-textarea").trigger("focus");
+                $nextFocus = undefined;
+                return item;
+            }
+            compose_state.set_message_type("private");
+            compose_recipient.update_compose_for_message_type({
+                message_type: "private",
+                trigger: "typeahead",
+                private_message_recipient_ids: [],
+            });
+
+            set_recipient_from_typeahead(item);
+            return undefined;
         },
-        option_label(matching_items: string[], item: string): string | false {
-            if (!matching_items.includes(item)) {
+        option_label(
+            matching_items: (UserPillData | string)[],
+            item: UserPillData | string,
+        ): string | false {
+            if (typeof item !== "string" && item.type === "user") {
+                return `<em>${$t({defaultMessage: "DM"})}</em>`;
+            } else if (!matching_items.includes(item)) {
                 return `<em>${$t({defaultMessage: "New"})}</em>`;
             }
             return false;
         },
-        footer_html: () => get_footer_html_for_topic_typeahead(compose_state.stream_id()),
+        footer_html(matching_items: (UserPillData | string)[]): string {
+            const topic_count = matching_items.filter((item) => typeof item === "string").length;
+
+            let contains_dm: "all" | "some" | "none";
+            if (topic_count === 0) {
+                contains_dm = "all";
+            } else if (topic_count < matching_items.length) {
+                contains_dm = "some";
+            } else {
+                contains_dm = "none";
+            }
+            return get_footer_html_for_topic_typeahead(compose_state.stream_id(), contains_dm);
+        },
     });
 
     const private_message_typeahead_input: TypeaheadInputElement = {
