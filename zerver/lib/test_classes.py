@@ -49,6 +49,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscriptions
 from zerver.decorator import do_two_factor_login
 from zerver.lib.cache import bounce_key_prefix_for_testing
+from zerver.lib.email_notifications import MissedMessageData, handle_missedmessage_emails
 from zerver.lib.initial_password import initial_password
 from zerver.lib.mdiff import diff_strings
 from zerver.lib.message import access_message
@@ -2240,6 +2241,12 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
             # the Rabbitmq queue, which in testing means we
             # immediately run the worker for it, producing the thumbnails.
             return self.upload_image(image_name)
+
+    def handle_missedmessage_emails(
+        self, user_profile_id: int, message_ids: dict[int, MissedMessageData]
+    ) -> None:
+        with self.captureOnCommitCallbacks(execute=True):
+            handle_missedmessage_emails(user_profile_id, message_ids)
 
 
 def get_row_ids_in_all_tables() -> Iterator[tuple[str, set[int]]]:

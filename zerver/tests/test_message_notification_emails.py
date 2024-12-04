@@ -110,7 +110,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         tokens = self._get_tokens()
         with patch("zerver.lib.email_mirror.generate_missed_message_token", side_effect=tokens):
-            handle_missedmessage_emails(
+            self.handle_missedmessage_emails(
                 hamlet.id,
                 {
                     msg_id: MissedMessageData(
@@ -690,7 +690,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             othello, "Denmark", "@*hamlet_and_cordelia*"
         )
 
-        handle_missedmessage_emails(
+        self.handle_missedmessage_emails(
             hamlet.id,
             {
                 hamlet_only_message_id: MissedMessageData(
@@ -727,7 +727,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             othello, "Denmark", "@**King Hamlet**"
         )
 
-        handle_missedmessage_emails(
+        self.handle_missedmessage_emails(
             hamlet.id,
             {
                 user_group_mentioned_message_id: MissedMessageData(
@@ -764,7 +764,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             othello, "Denmark", "@*hamlet_and_cordelia*"
         )
 
-        handle_missedmessage_emails(
+        self.handle_missedmessage_emails(
             hamlet.id,
             {
                 topic_wildcard_mentioned_in_followed_topic_message_id: MissedMessageData(
@@ -798,7 +798,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             othello, "Denmark", "@**topic**"
         )
 
-        handle_missedmessage_emails(
+        self.handle_missedmessage_emails(
             hamlet.id,
             {
                 stream_wildcard_mentioned_in_followed_topic_message_id: MissedMessageData(
@@ -829,7 +829,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             othello, "Denmark", "@**all**"
         )
 
-        handle_missedmessage_emails(
+        self.handle_missedmessage_emails(
             hamlet.id,
             {
                 topic_wildcard_mentioned_message_id: MissedMessageData(
@@ -860,7 +860,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             othello, "Denmark", "@**topic**"
         )
 
-        handle_missedmessage_emails(
+        self.handle_missedmessage_emails(
             hamlet.id,
             {
                 stream_wildcard_mentioned_message_id: MissedMessageData(
@@ -889,7 +889,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             othello, "Denmark", "@**all**"
         )
 
-        handle_missedmessage_emails(
+        self.handle_missedmessage_emails(
             hamlet.id,
             {
                 followed_topic_mentioned_message_id: MissedMessageData(
@@ -916,7 +916,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", "0")
         followed_topic_mentioned_message_id = self.send_stream_message(othello, "Denmark", "1")
 
-        handle_missedmessage_emails(
+        self.handle_missedmessage_emails(
             hamlet.id,
             {
                 stream_mentioned_message_id: MissedMessageData(
@@ -1255,7 +1255,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         msg_id_2 = self.send_stream_message(self.example_user("iago"), "Verona", "* 1\n *2")
         msg_id_3 = self.send_personal_message(self.example_user("iago"), hamlet, "Hello")
 
-        handle_missedmessage_emails(
+        self.handle_missedmessage_emails(
             hamlet.id,
             {
                 msg_id_1: MissedMessageData(trigger=NotificationTriggers.MENTION),
@@ -1300,7 +1300,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             self.example_user("iago"), hamlet, "Personal Message 2"
         )
 
-        handle_missedmessage_emails(
+        self.handle_missedmessage_emails(
             hamlet.id,
             {
                 msg_id_1: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE),
@@ -1326,7 +1326,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             msg_id = self.send_stream_message(iago, "Denmark", content=str(i))
             message_ids[msg_id] = MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL)
 
-        handle_missedmessage_emails(
+        self.handle_missedmessage_emails(
             hamlet.id,
             message_ids,
         )
@@ -1350,7 +1350,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             self.example_user("othello"), "Denmark", "@**King Hamlet**"
         )
 
-        handle_missedmessage_emails(
+        self.handle_missedmessage_emails(
             hamlet.id,
             {
                 msg_id_1: MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL),
@@ -1378,7 +1378,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
 
         mention_msg_id = self.send_stream_message(user, stream_name, "@**King Hamlet**")
 
-        handle_missedmessage_emails(
+        self.handle_missedmessage_emails(
             late_subscribed_user.id,
             {mention_msg_id: MissedMessageData(trigger=NotificationTriggers.MENTION)},
         )
@@ -1405,7 +1405,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
         msg_id_3 = self.send_stream_message(cordelia, "Denmark", "Regular message")
 
-        handle_missedmessage_emails(
+        self.handle_missedmessage_emails(
             hamlet.id,
             {
                 msg_id_1: MissedMessageData(trigger=NotificationTriggers.MENTION),
@@ -1425,7 +1425,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             self.example_user("iago"), "Denmark", "Message2", topic_name="test2"
         )
 
-        handle_missedmessage_emails(
+        self.handle_missedmessage_emails(
             hamlet.id,
             {
                 msg_id_1: MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL),
@@ -1652,7 +1652,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         def send_personal_mention() -> None:
             mention = f"@**{hamlet.full_name}**"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
-            handle_missedmessage_emails(
+            self.handle_missedmessage_emails(
                 hamlet.id,
                 {
                     stream_mentioned_message_id: MissedMessageData(
@@ -1668,7 +1668,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         def send_direct_message() -> None:
             # Soft reactivate the user by sending a personal message
             personal_message_id = self.send_personal_message(othello, hamlet, "Message")
-            handle_missedmessage_emails(
+            self.handle_missedmessage_emails(
                 hamlet.id,
                 {
                     personal_message_id: MissedMessageData(
@@ -1698,7 +1698,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         def send_topic_wildcard_mention() -> None:
             mention = "@**topic**"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
-            handle_missedmessage_emails(
+            self.handle_missedmessage_emails(
                 hamlet.id,
                 {
                     stream_mentioned_message_id: MissedMessageData(
@@ -1714,7 +1714,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         def send_stream_wildcard_mention() -> None:
             mention = "@**all**"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
-            handle_missedmessage_emails(
+            self.handle_missedmessage_emails(
                 hamlet.id,
                 {
                     stream_mentioned_message_id: MissedMessageData(
@@ -1747,7 +1747,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         def send_small_group_mention() -> None:
             mention = "@*small_user_group*"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
-            handle_missedmessage_emails(
+            self.handle_missedmessage_emails(
                 hamlet.id,
                 {
                     stream_mentioned_message_id: MissedMessageData(
@@ -1764,7 +1764,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         def send_large_group_mention() -> None:
             mention = "@*large_user_group*"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
-            handle_missedmessage_emails(
+            self.handle_missedmessage_emails(
                 hamlet.id,
                 {
                     stream_mentioned_message_id: MissedMessageData(
@@ -1782,7 +1782,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         othello = self.example_user("othello")
         msg_id = self.send_stream_message(othello, "Denmark")
 
-        handle_missedmessage_emails(
+        self.handle_missedmessage_emails(
             hamlet.id,
             {msg_id: MissedMessageData(trigger=NotificationTriggers.FOLLOWED_TOPIC_EMAIL)},
         )
