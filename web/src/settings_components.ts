@@ -859,14 +859,15 @@ export function check_stream_settings_property_changed(
     const property_name = extract_property_name($elem) as StreamSettingProperty;
     const current_val = get_stream_settings_property_value(property_name, sub);
     let proposed_val;
+
+    if (Object.keys(realm.server_supported_permission_settings.stream).includes(property_name)) {
+        const pill_widget = get_group_setting_widget(property_name);
+        assert(pill_widget !== null);
+        proposed_val = get_group_setting_widget_value(pill_widget);
+        return !_.isEqual(current_val, proposed_val);
+    }
+
     switch (property_name) {
-        case "can_remove_subscribers_group":
-        case "can_administer_channel_group": {
-            const pill_widget = get_group_setting_widget(property_name);
-            assert(pill_widget !== null);
-            proposed_val = get_group_setting_widget_value(pill_widget);
-            break;
-        }
         case "message_retention_days":
             assert(elem instanceof HTMLSelectElement);
             proposed_val = get_message_retention_setting_value($(elem), false);

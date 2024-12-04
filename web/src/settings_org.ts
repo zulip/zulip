@@ -602,17 +602,19 @@ export function discard_stream_property_element_changes(
         stream_settings_property_schema.parse(property_name),
         sub,
     );
+
+    if (Object.keys(realm.server_supported_permission_settings.stream).includes(property_name)) {
+        const pill_widget = settings_components.get_group_setting_widget(property_name);
+        assert(pill_widget !== null);
+        settings_components.set_group_setting_widget_value(
+            pill_widget,
+            group_setting_value_schema.parse(property_value),
+        );
+        update_dependent_subsettings(property_name);
+        return;
+    }
+
     switch (property_name) {
-        case "can_remove_subscribers_group":
-        case "can_administer_channel_group": {
-            const pill_widget = settings_components.get_group_setting_widget(property_name);
-            assert(pill_widget !== null);
-            settings_components.set_group_setting_widget_value(
-                pill_widget,
-                group_setting_value_schema.parse(property_value),
-            );
-            break;
-        }
         case "stream_privacy": {
             assert(typeof property_value === "string");
             $elem.find(`input[value='${CSS.escape(property_value)}']`).prop("checked", true);
