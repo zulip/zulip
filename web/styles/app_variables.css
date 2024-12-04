@@ -1641,6 +1641,9 @@
         226.35deg 82.53% 55.1% / 38.82%
     );
     --color-typeahead-option-label: var(--grey-400);
+
+    /* Bot avatar */
+    --bot-avatar-size: 100px; /* Define the avatar size */
 }
 
 @media screen {

@@ -994,6 +994,8 @@ input[type="checkbox"] {
 
     #current_bot_avatar_image {
         margin: 5px 0 8px;
+        width: var(--bot-avatar-size);
+        height: var(--bot-avatar-size);
     }
 
     .edit_bot_avatar_preview_text {
@@ -1007,8 +1009,8 @@ input[type="checkbox"] {
 
 .edit_bot_avatar_preview_image,
 #add_bot_preview_image {
-    height: 100px;
-    width: 100px;
+    height: var(--bot-avatar-size);
+    width: var(--bot-avatar-size);
     margin: 2px 0 8px;
 }
 
