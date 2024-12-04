@@ -877,6 +877,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             return False
         return self.has_permission("can_create_web_public_channel_group")
 
+    def can_manage_default_streams(self) -> bool:
+        return self.is_realm_admin
+
     def can_subscribe_other_users(self) -> bool:
         return self.has_permission("invite_to_stream_policy")
 

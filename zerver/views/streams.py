@@ -45,7 +45,11 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_non_guest_user, require_realm_admin
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.email_mirror_helpers import encode_email_address
-from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
+from zerver.lib.exceptions import (
+    CannotManageDefaultChannelError,
+    JsonableError,
+    OrganizationOwnerRequiredError,
+)
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.message import bulk_access_stream_messages_query
 from zerver.lib.response import json_success
@@ -345,6 +349,8 @@ def update_stream_backend(
         )
 
     if is_default_stream is not None:
+        if not user_profile.can_manage_default_streams():
+            raise CannotManageDefaultChannelError
         if is_default_stream:
             do_add_default_stream(stream)
         else:

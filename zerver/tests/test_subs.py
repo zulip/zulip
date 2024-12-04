@@ -1336,6 +1336,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_error(result, "You do not have permission to administer this channel.")
         self.assertFalse(stream_id in get_default_stream_ids_for_realm(realm.id))
 
+        # User still needs to be an admin to add a default channel.
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         user_profile_group = check_add_user_group(
             realm, "user_profile_group", [user_profile], acting_user=user_profile
@@ -1347,8 +1348,8 @@ class StreamAdminTest(ZulipTestCase):
             acting_user=None,
         )
         result = self.client_patch(f"/json/streams/{stream_id}", params)
-        self.assert_json_success(result)
-        self.assertTrue(stream_id in get_default_stream_ids_for_realm(realm.id))
+        self.assert_json_error(result, "You do not have permission to change default channels.")
+        self.assertFalse(stream_id in get_default_stream_ids_for_realm(realm.id))
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         result = self.client_patch(f"/json/streams/{stream_id}", params)
@@ -1367,6 +1368,16 @@ class StreamAdminTest(ZulipTestCase):
             "is_private": orjson.dumps(True).decode(),
             "is_default_stream": orjson.dumps(False).decode(),
         }
+
+        # User still needs to be an admin to remove a default channel.
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.assertTrue(is_user_in_group(stream.can_administer_channel_group, user_profile))
+        self.assertTrue(stream_id in get_default_stream_ids_for_realm(realm.id))
+        result = self.client_patch(f"/json/streams/{stream_id}", params)
+        self.assert_json_error(result, "You do not have permission to change default channels.")
+        self.assertTrue(stream_id in get_default_stream_ids_for_realm(realm.id))
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_success(result)
         stream.refresh_from_db()

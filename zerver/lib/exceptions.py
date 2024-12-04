@@ -743,3 +743,13 @@ class CannotAdministerChannelError(JsonableError):
     @override
     def msg_format() -> str:
         return _("You do not have permission to administer this channel.")
+
+
+class CannotManageDefaultChannelError(JsonableError):
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("You do not have permission to change default channels.")
