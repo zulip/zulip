@@ -1,5 +1,7 @@
 ## Guides
 * [Getting started with Zulip](/help/getting-started-with-zulip)
+* [Choosing a team chat app](https://blog.zulip.com/2024/11/04/choosing-a-team-chat-app/)
+* [Why Zulip](https://zulip.com/why-zulip/)
 * [Trying out Zulip](/help/trying-out-zulip)
 * [Zulip Cloud or self-hosting?](/help/zulip-cloud-or-self-hosting)
 * [Moving to Zulip](/help/moving-to-zulip)
