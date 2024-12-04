@@ -1548,6 +1548,7 @@ export function initialize({
             return [...people_candidates.slice(0, 1), ...topics];
         },
         items: max_num_items,
+        dropup: true,
         highlighter_html(item: string | UserGroupPillData | UserPillData): string {
             if (typeof item === "string") {
                 const is_empty_string_topic = item === "";
