@@ -28,6 +28,7 @@ import * as message_edit from "./message_edit.ts";
 import * as message_events from "./message_events.js";
 import * as message_lists from "./message_lists.ts";
 import * as message_live_update from "./message_live_update.ts";
+import * as message_view from "./message_view.ts";
 import * as message_view_header from "./message_view_header.ts";
 import * as muted_users_ui from "./muted_users_ui.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -1028,6 +1029,7 @@ export function dispatch_normal_event(event) {
             user_topics_ui.handle_topic_updates(
                 event,
                 message_events.update_current_view_for_topic_visibility(),
+                message_view.rerender_combined_feed,
             );
             // Discard cached message lists if `event` topic was / is followed.
             if (
