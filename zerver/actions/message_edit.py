@@ -44,7 +44,7 @@ from zerver.lib.message import (
     truncate_topic,
 )
 from zerver.lib.message_cache import update_message_cache
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import (
@@ -1402,7 +1402,7 @@ def check_update_message(
             "message_realm_id": user_profile.realm_id,
             "urls": list(links_for_embed),
         }
-        queue_json_publish("embed_links", event_data)
+        queue_event_on_commit("embed_links", event_data)
 
     # Update stream active status after we have successfully moved the
     # messages. We only update the new stream here and let the daily
