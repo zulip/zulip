@@ -660,7 +660,7 @@ function validate_private_message(): boolean {
 
     if (compose_state.private_message_recipient().length === 0) {
         compose_banner.show_error_message(
-            $t({defaultMessage: "Please specify at least one valid recipient."}),
+            $t({defaultMessage: "Please specify a valid recipient."}),
             compose_banner.CLASSNAMES.missing_private_message_recipient,
             $banner_container,
             $("#private_message_recipient"),
@@ -758,15 +758,33 @@ export function validate_message_length(): boolean {
     if (compose_state.message_content().length > realm.max_message_length) {
         $("textarea#compose-textarea").addClass("flash");
         setTimeout(() => $("textarea#compose-textarea").removeClass("flash"), 1500);
+
+        const $banner_container = $("#compose_banners");
+        compose_banner.show_error_message(
+            $t({defaultMessage: "Message length shouldn't be greater than 10000 characters."}),
+            compose_banner.CLASSNAMES.missing_private_message_recipient,
+            $banner_container,
+            $("#private_message_recipient"),
+        );
+        
         return false;
     }
     return true;
 }
 
 export function validate(scheduling_message: boolean): boolean {
+    debugger
     const message_content = compose_state.message_content();
+    //P4
     if (/^\s*$/.test(message_content)) {
         $("textarea#compose-textarea").toggleClass("invalid", true);
+        const $banner_container = $("#compose_banners");
+        compose_banner.show_error_message(
+            $t({defaultMessage: "Compose a message."}),
+            compose_banner.CLASSNAMES.missing_private_message_recipient,
+            $banner_container,
+            $("#private_message_recipient"),
+        );
         return false;
     }
 
@@ -781,13 +799,15 @@ export function validate(scheduling_message: boolean): boolean {
         );
         return false;
     }
+    // P5
     if (!validate_message_length()) {
         return false;
     }
-
+    // P3
     if (compose_state.get_message_type() === "private") {
         return validate_private_message();
     }
+    // P1 and P2
     return validate_stream_message(scheduling_message);
 }
 
