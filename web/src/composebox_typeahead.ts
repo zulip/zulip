@@ -10,6 +10,7 @@ import {MAX_ITEMS, Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -1567,37 +1568,86 @@ export function initialize({
         type: "input",
     };
     new Typeahead(stream_message_typeahead_input, {
-        source(): string[] {
-            return topics_seen_for(compose_state.stream_id());
+        source(query: string): (UserGroupPillData | UserPillData | string)[] {
+            let people_candidates: (UserGroupPillData | UserPillData)[] = [];
+            if (query && query.length > 3) {
+                people_candidates = get_pm_people(query, 1);
+            }
+            const topics = topics_seen_for(compose_state.stream_id());
+            return [...people_candidates, ...topics];
         },
         items: max_num_items,
-        item_html(item: string): string {
-            const is_empty_string_topic = item === "";
-            const topic_display_name = util.get_final_topic_display_name(item);
-            return typeahead_helper.render_typeahead_item({
-                primary: topic_display_name,
-                is_empty_string_topic,
-            });
+        item_html(item: string | UserGroupPillData | UserPillData): string {
+            if (typeof item === "string") {
+                const is_empty_string_topic = item === "";
+                const topic_display_name = util.get_final_topic_display_name(item);
+                return typeahead_helper.render_typeahead_item({
+                    primary: topic_display_name,
+                    is_empty_string_topic,
+                });
+            }
+            return typeahead_helper.render_person_or_user_group(item);
         },
-        matcher(item: string, query: string): boolean {
-            const matcher = get_topic_matcher(query);
-            return matcher(item);
+        matcher(item: UserGroupPillData | UserPillData | string, query: string): boolean {
+            if (typeof item === "string") {
+                const matcher = get_topic_matcher(query);
+                return matcher(item);
+            }
+            return true;
         },
-        sorter(items: string[], query: string): string[] {
-            const sorted = typeahead_helper.sorter(query, items, (x) =>
+        sorter(
+            items: (UserGroupPillData | UserPillData | string)[],
+            query: string,
+        ): (UserGroupPillData | UserPillData | string)[] {
+            const topic_items: string[] = [];
+            const people_items: (UserGroupPillData | UserPillData)[] = [];
+            for (const item of items) {
+                if (typeof item === "string") {
+                    topic_items.push(item);
+                } else {
+                    people_items.push(item);
+                }
+            }
+            const sorted = typeahead_helper.sorter(query, topic_items, (x) =>
                 util.get_final_topic_display_name(x),
             );
+            let show_new_topic_suggestion = false;
             if (sorted.length > 0 && !sorted.includes(query)) {
+                show_new_topic_suggestion = true;
                 sorted.unshift(query);
             }
-            return sorted;
+
+            // Show 2 topic items above user suggestion if there is a new
+            // topic suggestion.
+            return [
+                ...sorted.slice(0, show_new_topic_suggestion ? 2 : 1),
+                ...people_items,
+                ...sorted.slice(show_new_topic_suggestion ? 2 : 1),
+            ];
         },
-        updater(item: string, _query: string): string {
-            $("textarea#compose-textarea").trigger("focus");
-            $nextFocus = undefined;
-            return item;
+        updater(
+            item: UserGroupPillData | UserPillData | string,
+            _query: string,
+        ): string | undefined {
+            if (typeof item === "string") {
+                $("textarea#compose-textarea").trigger("focus");
+                $nextFocus = undefined;
+                return item;
+            }
+            compose_state.set_message_type("private");
+            compose_recipient.update_compose_for_message_type({
+                message_type: "private",
+                trigger: "typeahead",
+                private_message_recipient_ids: [],
+            });
+
+            set_recipient_from_typeahead(item);
+            return undefined;
         },
-        option_label(matching_items: string[], item: string): string | false {
+        option_label(
+            matching_items: (UserGroupPillData | UserPillData | string)[],
+            item: UserGroupPillData | UserPillData | string,
+        ): string | false {
             if (!matching_items.includes(item)) {
                 return `<em>${$t({defaultMessage: "New"})}</em>`;
             }
