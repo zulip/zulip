@@ -131,16 +131,7 @@ function message_in_home(message: Message): boolean {
         return true;
     }
 
-    if (user_topics.is_topic_muted(message.stream_id, message.topic)) {
-        // If topic is muted, we don't show the message.
-        return false;
-    }
-
-    return (
-        // If channel is muted, we show the message if topic is unmuted or followed.
-        !stream_data.is_muted(message.stream_id) ||
-        user_topics.is_topic_unmuted_or_followed(message.stream_id, message.topic)
-    );
+    return user_topics.is_topic_visible_in_home(message.stream_id, message.topic);
 }
 
 function message_matches_search_term(message: Message, operator: string, operand: string): boolean {
