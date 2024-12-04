@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 324  # Last bumped for can_remove_members_group
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (305, 0)  # bumped 2024-11-27 to downgrade @uppy/tus
+PROVISION_VERSION = (306, 0)  # bumped 2024-12-03 to remove spectrum-colorpicker
