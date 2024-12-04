@@ -872,7 +872,8 @@ class PasswordResetTest(ZulipTestCase):
 
         def reset_password() -> None:
             # start the password reset process by supplying an email address
-            result = self.client_post("/accounts/password/reset/", {"email": email})
+            with self.captureOnCommitCallbacks(execute=True):
+                result = self.client_post("/accounts/password/reset/", {"email": email})
 
             # check the redirect link telling you to check mail for password reset link
             self.assertEqual(result.status_code, 302)

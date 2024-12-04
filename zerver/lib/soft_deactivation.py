@@ -12,7 +12,7 @@ from django.utils.timezone import now as timezone_now
 from sentry_sdk import capture_exception
 
 from zerver.lib.logging_util import log_to_file
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.user_message import bulk_insert_all_ums
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -396,7 +396,7 @@ def queue_soft_reactivation(user_profile_id: int) -> None:
         "type": "soft_reactivate",
         "user_profile_id": user_profile_id,
     }
-    queue_json_publish("deferred_work", event)
+    queue_event_on_commit("deferred_work", event)
 
 
 def soft_reactivate_if_personal_notification(
