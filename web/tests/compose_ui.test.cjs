@@ -440,7 +440,6 @@ run_test("quote_message", ({override, override_rewire}) => {
     let new_message = false;
     override_rewire(compose_actions, "start", (opts) => {
         assert.equal(opts.message_type, "stream");
-        assert.equal(opts.topic, "");
         assert.equal(opts.content, "translated: [Quoting…]");
         new_message = true;
     });

@@ -249,10 +249,14 @@ export function quote_message(opts: {
             : $<HTMLTextAreaElement>("textarea#compose-textarea");
 
     if (opts.forward_message) {
-        // Setting the stream_id to undefined will automatically open the recipient popover
+        let topic = "";
+        if (message.is_stream) {
+            topic = message.topic;
+        }
+
         compose_actions.start({
             message_type: message.type,
-            topic: "",
+            topic,
             keep_composebox_empty: opts.keep_composebox_empty,
             content: quoting_placeholder,
         });
