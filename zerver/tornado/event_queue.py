@@ -28,6 +28,7 @@ from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
 from zerver.lib.narrow_predicate import build_narrow_predicate
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.queue import queue_json_publish, retry_event
+from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
 from zerver.middleware import async_request_timer_restart
 from zerver.models import CustomProfileField
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
@@ -80,6 +81,7 @@ class ClientDescriptor:
         user_list_incomplete: bool = False,
         include_deactivated_groups: bool = False,
         archived_channels: bool = False,
+        empty_topic_name: bool = False,
     ) -> None:
         # TODO: We eventually want to upstream this code to the caller, but
         # serialization concerns make it a bit difficult.
@@ -112,6 +114,7 @@ class ClientDescriptor:
         self.user_list_incomplete = user_list_incomplete
         self.include_deactivated_groups = include_deactivated_groups
         self.archived_channels = archived_channels
+        self.empty_topic_name = empty_topic_name
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -144,6 +147,7 @@ class ClientDescriptor:
             user_list_incomplete=self.user_list_incomplete,
             include_deactivated_groups=self.include_deactivated_groups,
             archived_channels=self.archived_channels,
+            empty_topic_name=self.empty_topic_name,
         )
 
     @override
@@ -182,6 +186,7 @@ class ClientDescriptor:
             d.get("user_list_incomplete", False),
             d.get("include_deactivated_groups", False),
             d.get("archived_channels", False),
+            d.get("empty_topic_name", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
@@ -1119,12 +1124,16 @@ def process_message_event(
 
     @cache
     def get_client_payload(
-        apply_markdown: bool, client_gravatar: bool, can_access_sender: bool
+        apply_markdown: bool,
+        client_gravatar: bool,
+        allow_empty_topic_name: bool,
+        can_access_sender: bool,
     ) -> dict[str, Any]:
         return MessageDict.finalize_payload(
             wide_dict,
             apply_markdown=apply_markdown,
             client_gravatar=client_gravatar,
+            allow_empty_topic_name=allow_empty_topic_name,
             can_access_sender=can_access_sender,
             realm_host=realm_host,
         )
@@ -1204,7 +1213,10 @@ def process_message_event(
 
         can_access_sender = client.user_profile_id not in user_ids_without_access_to_sender
         message_dict = get_client_payload(
-            client.apply_markdown, client.client_gravatar, can_access_sender
+            client.apply_markdown,
+            client.client_gravatar,
+            client.empty_topic_name,
+            can_access_sender,
         )
 
         # Make sure Zephyr mirroring bots know whether stream is invite-only
@@ -1275,19 +1287,21 @@ def process_deletion_event(event: Mapping[str, Any], users: Iterable[int]) -> No
             if not client.accepts_event(event):
                 continue
 
+            deletion_event = dict(event)
+            if deletion_event.get("topic") == "" and not client.empty_topic_name:
+                deletion_event["topic"] = "general chat"
+
             # For clients which support message deletion in bulk, we
             # send a list of msgs_ids together, otherwise we send a
             # delete event for each message.  All clients will be
             # required to support bulk_message_deletion in the future;
             # this logic is intended for backwards-compatibility only.
             if client.bulk_message_deletion:
-                client.add_event(event)
+                client.add_event(deletion_event)
                 continue
 
-            for message_id in event["message_ids"]:
-                # We use the following rather than event.copy()
-                # because the read-only Mapping type doesn't support .copy().
-                compatibility_event = dict(event)
+            for message_id in deletion_event["message_ids"]:
+                compatibility_event = deletion_event.copy()
                 compatibility_event["message_id"] = message_id
                 del compatibility_event["message_ids"]
                 client.add_event(compatibility_event)
@@ -1430,10 +1444,18 @@ def process_message_update_event(
             )
 
         for client in get_client_descriptors_for_user(user_profile_id):
-            if client.accepts_event(user_event):
+            user_event_copy = user_event.copy()
+            if not client.empty_topic_name:
+                if user_event_copy.get(ORIG_TOPIC) == "":
+                    user_event_copy[ORIG_TOPIC] = "general chat"
+
+                if user_event_copy.get(TOPIC_NAME) == "":
+                    user_event_copy[TOPIC_NAME] = "general chat"
+
+            if client.accepts_event(user_event_copy):
                 # We need to do another shallow copy, or we risk
                 # sending the same event to multiple clients.
-                client.add_event(user_event)
+                client.add_event(user_event_copy)
 
 
 def process_custom_profile_fields_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
@@ -1589,6 +1611,50 @@ def process_user_group_name_update_event(event: Mapping[str, Any], users: Iterab
                 client.add_event(user_group_event)
 
 
+def process_user_topic_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if not client.accepts_event(event):
+                continue
+
+            event_copy = dict(event)
+            if event_copy.get("topic_name") == "" and not client.empty_topic_name:
+                event_copy["topic_name"] = "general chat"
+
+            client.add_event(event_copy)
+
+
+def process_stream_typing_notification_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if not client.accepts_event(event):
+                continue
+
+            event_copy = dict(event)
+            if event_copy.get("topic") == "" and not client.empty_topic_name:
+                event_copy["topic"] = "general chat"
+
+            client.add_event(event_copy)
+
+
+def process_mark_message_unread_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if not client.accepts_event(event):
+                continue
+
+            event_copy = copy.deepcopy(dict(event))
+            for message_id, message_detail in event_copy["message_details"].items():
+                if (
+                    message_detail["type"] == "stream"
+                    and message_detail.get("topic") == ""
+                    and not client.empty_topic_name
+                ):
+                    event_copy["message_details"][message_id]["topic"] = "general chat"
+
+            client.add_event(event_copy)
+
+
 def process_notification(notice: Mapping[str, Any]) -> None:
     event: Mapping[str, Any] = notice["event"]
     users: list[int] | list[Mapping[str, Any]] = notice["users"]
@@ -1617,6 +1683,16 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         # event sent for updating name separately for clients with different
         # capabilities.
         process_user_group_name_update_event(event, cast(list[int], users))
+    elif event["type"] == "user_topic":
+        process_user_topic_event(event, cast(list[int], users))
+    elif event["type"] == "typing" and event["message_type"] == "stream":
+        process_stream_typing_notification_event(event, cast(list[int], users))
+    elif (
+        event["type"] == "update_message_flags"
+        and event["op"] == "remove"
+        and event["flag"] == "read"
+    ):
+        process_mark_message_unread_event(event, cast(list[int], users))
     elif event["type"] == "cleanup_queue":
         # cleanup_event_queue may generate this event to forward cleanup
         # requests to the right shard.

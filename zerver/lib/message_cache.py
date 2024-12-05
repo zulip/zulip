@@ -177,6 +177,7 @@ class MessageDict:
         objs: list[dict[str, Any]],
         apply_markdown: bool,
         client_gravatar: bool,
+        allow_empty_topic_name: bool,
         realm: Realm,
     ) -> None:
         """
@@ -196,6 +197,7 @@ class MessageDict:
                 obj,
                 apply_markdown,
                 client_gravatar,
+                allow_empty_topic_name,
                 skip_copy=True,
                 can_access_sender=can_access_sender,
                 realm_host=realm.host,
@@ -206,6 +208,7 @@ class MessageDict:
         obj: dict[str, Any],
         apply_markdown: bool,
         client_gravatar: bool,
+        allow_empty_topic_name: bool,
         keep_rendered_content: bool = False,
         skip_copy: bool = False,
         can_access_sender: bool = True,
@@ -218,6 +221,16 @@ class MessageDict:
         """
         if not skip_copy:
             obj = copy.copy(obj)
+
+        # Compatibility code to change topic="" to topic="general chat"
+        # for clients with no UI support for empty topic name.
+        # TODO: Improve this comment.
+        if (
+            obj["recipient_type"] == Recipient.STREAM
+            and obj["subject"] == ""
+            and not allow_empty_topic_name
+        ):
+            obj["subject"] = "general chat"
 
         if obj["sender_email_address_visibility"] != UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
             # If email address of the sender is only available to administrators,
@@ -249,6 +262,11 @@ class MessageDict:
         for item in obj.get("edit_history", []):
             if "prev_rendered_content_version" in item:
                 del item["prev_rendered_content_version"]
+            if not allow_empty_topic_name:
+                if "prev_topic" in item and item["prev_topic"] == "":
+                    item["prev_topic"] = "general chat"
+                if "topic" in item and item["topic"] == "":
+                    item["topic"] = "general chat"
 
         if not keep_rendered_content:
             del obj["rendered_content"]
