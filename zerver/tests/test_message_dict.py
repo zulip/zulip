@@ -80,6 +80,8 @@ class MessageDictTest(ZulipTestCase):
                 wide_dict,
                 apply_markdown=apply_markdown,
                 client_gravatar=client_gravatar,
+                can_access_sender=True,
+                realm_host=get_realm("zulip").host,
             )
             return narrow_dict
 
