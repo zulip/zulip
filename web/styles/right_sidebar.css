@@ -569,13 +569,14 @@ $user_status_emoji_width: 24px;
     padding-left: 0;
 
     .invite-user-link {
-        padding-left: var(--right-sidebar-heading-left-spacing);
-        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-columns:
+            var(--right-sidebar-header-icon-toggle-width)
+            minmax(0, 1fr);
 
         .zulip-icon-user-plus {
             justify-self: center;
-            /* Some space between the icon and text */
-            margin-right: 5px;
+            /* Smaller icon size to align the link text with the other buddy list links */
+            font-size: 13px;
         }
     }
 }
