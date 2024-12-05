@@ -261,6 +261,14 @@ $user_status_emoji_width: 24px;
     opacity: var(--opacity-sidebar-heading);
     transition: opacity 140ms linear;
     grid-area: row-content;
+    display: flex;
+}
+
+.buddy-list-heading-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 2px;
 }
 
 .buddy-list-subsection-header.no-display {
