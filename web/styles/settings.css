@@ -1383,7 +1383,7 @@ $option_title_width: 180px;
             &.active {
                 /* TODO: Check with Vlad about highlight
                    colors such as this. */
-                background-color: hsl(0deg 0% 98%);
+                background-color: var(--color-active-row-modal);
             }
 
             .sidebar-item-icon {

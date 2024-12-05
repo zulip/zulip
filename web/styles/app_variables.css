@@ -609,6 +609,7 @@
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: hsl(0deg 0% 80%);
     --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
+    --color-active-row-modal: hsl(0deg 0% 98%);
     --color-background-modal: #ededed;
     --color-background-modal-bar: #f5f5f5;
     --color-border-modal: color-mix(in srgb, #8c8c8c 25%, transparent);
@@ -1367,6 +1368,7 @@
     --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: hsl(0deg 0% 30%);
+    --color-active-row-modal: hsl(0deg 0% 0% / 20%);
     --color-background-modal: #242424;
     --color-background-modal-bar: #333;
     --color-border-modal: color-mix(in srgb, #fff 8%, transparent);
