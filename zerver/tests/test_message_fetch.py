@@ -4540,6 +4540,7 @@ WHERE NOT (recipient_id = %(recipient_id_1)s AND upper(subject) = upper(%(param_
         self.assertEqual(params["param_1"], "golf")
 
         mute_channel(realm, user_profile, "Verona")
+        channel_verona_id = get_recipient_id_for_channel_name(realm, "Verona")
 
         # Using a bogus channel name should be similar to using no narrow at
         # all, and we'll exclude all mutes.
@@ -4554,24 +4555,55 @@ WHERE NOT (recipient_id = %(recipient_id_1)s AND upper(subject) = upper(%(param_
         expected_query = """\
 SELECT id \n\
 FROM zerver_message \n\
-WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1])) \
-AND NOT \
-(recipient_id = %(recipient_id_2)s AND upper(subject) = upper(%(param_1)s) OR \
-recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
+WHERE NOT (recipient_id = %(recipient_id_1)s AND upper(subject) = upper(%(param_1)s) \
+OR recipient_id = %(recipient_id_2)s AND upper(subject) = upper(%(param_2)s)) \
+AND (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_3]))\
 """
         self.assertEqual(get_sqlalchemy_sql(query), expected_query)
         params = get_sqlalchemy_query_params(query)
+        self.assertEqual(params["recipient_id_3"], [channel_verona_id])
         self.assertEqual(
-            params["recipient_id_1"], [get_recipient_id_for_channel_name(realm, "Verona")]
-        )
-        self.assertEqual(
-            params["recipient_id_2"], get_recipient_id_for_channel_name(realm, "Scotland")
+            params["recipient_id_1"], get_recipient_id_for_channel_name(realm, "Scotland")
         )
         self.assertEqual(params["param_1"], "golf")
         self.assertEqual(
-            params["recipient_id_3"], get_recipient_id_for_channel_name(realm, "web stuff")
+            params["recipient_id_2"], get_recipient_id_for_channel_name(realm, "web stuff")
         )
         self.assertEqual(params["param_2"], "css")
+
+        # check that followed topic is included in the query.
+        followed_topics = [
+            ["Verona", "Hi"],
+        ]
+        set_topic_visibility_policy(
+            user_profile, followed_topics, UserTopic.VisibilityPolicy.FOLLOWED
+        )
+
+        muting_conditions = exclude_muting_conditions(user_profile, narrow)
+        query = select(column("id", Integer)).select_from(table("zerver_message"))
+        query = query.where(and_(*muting_conditions))
+
+        expected_query = """\
+SELECT id \n\
+FROM zerver_message \n\
+WHERE NOT (recipient_id = %(recipient_id_1)s AND upper(subject) = upper(%(param_1)s) \
+OR recipient_id = %(recipient_id_2)s AND upper(subject) = upper(%(param_2)s)) \
+AND NOT (recipient_id IN (__[POSTCOMPILE_recipient_id_3]) \
+AND NOT (recipient_id = %(recipient_id_4)s AND upper(subject) = upper(%(param_3)s)))\
+"""
+        self.assertEqual(get_sqlalchemy_sql(query), expected_query)
+        params = get_sqlalchemy_query_params(query)
+        self.assertEqual(params["recipient_id_3"], [channel_verona_id])
+        self.assertEqual(
+            params["recipient_id_1"], get_recipient_id_for_channel_name(realm, "Scotland")
+        )
+        self.assertEqual(params["param_1"], "golf")
+        self.assertEqual(
+            params["recipient_id_2"], get_recipient_id_for_channel_name(realm, "web stuff")
+        )
+        self.assertEqual(params["param_2"], "css")
+        self.assertEqual(params["recipient_id_4"], channel_verona_id)
+        self.assertEqual(params["param_3"], "Hi")
 
     def test_get_messages_queries(self) -> None:
         query_ids = self.get_query_ids()
