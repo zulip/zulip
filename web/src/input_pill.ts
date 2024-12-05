@@ -170,6 +170,11 @@ export function create<ItemType extends {type: string}>(
                 store.$parent.removeClass("invalid");
             }
 
+            // If we check is_pending just after adding a pill, the
+            // text is still present until further input, so we
+            // manually clear it here.
+            this.clear_text();
+
             if (store.onPillCreate !== undefined) {
                 store.onPillCreate();
             }
