@@ -158,6 +158,24 @@ def require_realm_admin(
     return wrapper
 
 
+def check_if_user_can_manage_default_streams(
+    func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
+) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
+    @wraps(func)
+    def wrapper(
+        request: HttpRequest,
+        user_profile: UserProfile,
+        /,
+        *args: ParamT.args,
+        **kwargs: ParamT.kwargs,
+    ) -> HttpResponse:
+        if not user_profile.can_manage_default_streams():
+            raise OrganizationAdministratorRequiredError
+        return func(request, user_profile, *args, **kwargs)
+
+    return wrapper
+
+
 def require_organization_member(
     func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
