@@ -5,8 +5,7 @@ from typing import Any
 from django.conf import settings
 from django.utils.text import slugify
 
-from zerver.models import ChannelEmailAddress, Stream
-from zerver.models.users import get_system_bot
+from zerver.models import ChannelEmailAddress, Stream, UserProfile
 
 
 def default_option_handler_factory(address_option: str) -> Callable[[dict[str, Any]], None]:
@@ -48,12 +47,14 @@ def get_email_gateway_message_string_from_address(address: str) -> str:
     return msg_string
 
 
-def encode_email_address(stream: Stream, show_sender: bool = False) -> str:
+def encode_email_address(
+    stream: Stream, *, creator: UserProfile, sender: UserProfile, show_sender: bool = False
+) -> str:
     channel_email_address, ignored = ChannelEmailAddress.objects.get_or_create(
         realm=stream.realm,
         channel=stream,
-        creator=stream.creator,
-        sender=get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id),
+        creator=creator,
+        sender=sender,
     )
     return encode_email_address_helper(stream.name, channel_email_address.email_token, show_sender)
 

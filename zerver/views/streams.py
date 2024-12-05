@@ -96,7 +96,7 @@ from zerver.lib.user_groups import (
 from zerver.lib.users import bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, Stream, UserProfile
-from zerver.models.users import get_system_bot
+from zerver.models.users import get_system_bot, get_user_profile_by_id
 
 
 def bulk_principals_to_user_profiles(
@@ -1108,11 +1108,29 @@ def get_stream_email_address(
     user_profile: UserProfile,
     *,
     stream_id: Annotated[NonNegativeInt, ApiParamConfig("stream", path_only=True)],
+    sender_id: Json[NonNegativeInt] | None = None,
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_id(
         user_profile,
         stream_id,
     )
-    stream_email = encode_email_address(stream, show_sender=True)
+    email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id)
+
+    if sender_id is None:
+        sender = email_gateway_bot
+    elif sender_id == user_profile.id:
+        sender = user_profile
+    else:
+        sender = get_user_profile_by_id(sender_id)
+
+    if (
+        sender.id not in [user_profile.id, email_gateway_bot.id]
+        and sender.bot_owner_id != user_profile.id
+    ):
+        raise JsonableError(_("Invalid sender ID"))
+
+    stream_email = encode_email_address(
+        stream, creator=user_profile, sender=sender, show_sender=True
+    )
 
     return json_success(request, data={"email": stream_email})
