@@ -703,7 +703,7 @@ h4.user_group_setting_subsection_title {
     }
 
     &.active {
-        background-color: hsl(0deg 0% 93%);
+        background-color: var(--color-active-row-modal);
     }
 
     .check:not(.checked, .disabled):hover svg,

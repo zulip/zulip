@@ -546,7 +546,6 @@
     .white-box,
     .stream-email,
     #generate-integration-url-modal .integration-url,
-    #settings_page .sidebar li.active,
     .table-striped tbody tr:nth-child(odd) th {
         background-color: hsl(0deg 0% 0% / 20%);
     }
