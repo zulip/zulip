@@ -18,6 +18,7 @@ from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.upload import save_attachment_contents
 from zerver.models import AbstractUserMessage, Attachment, Message, Recipient, Stream, UserProfile
 from zerver.models.recipients import get_or_create_direct_message_group
+from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
 
 
@@ -77,24 +78,31 @@ This is most often used for legal compliance.
             help="Limit to messages on or before this ISO datetime, treated as UTC",
             type=lambda s: datetime.fromisoformat(s).astimezone(timezone.utc),
         )
-        users = parser.add_mutually_exclusive_group()
-        users.add_argument(
+        source_dest = parser.add_mutually_exclusive_group()
+
+        source_dest.add_argument(
             "--sender",
             action="append",
             metavar="<email>",
             help="Limit to messages sent by users with any of these emails (may be specified more than once)",
         )
-        users.add_argument(
+        source_dest.add_argument(
             "--recipient",
             action="append",
             metavar="<email>",
             help="Limit to messages received by users with any of these emails (may be specified more than once).  This is a superset of --sender, since senders receive every message they send.",
         )
-        users.add_argument(
+        source_dest.add_argument(
             "--dm",
             action="append",
             metavar="<email>",
             help="Limit to messages in a DM between all of the users provided.",
+        )
+        source_dest.add_argument(
+            "--channel",
+            action="append",
+            metavar="<channel-name>",
+            help="Limit to messages in the given channel.",
         )
 
     @override
@@ -112,6 +120,7 @@ This is most often used for legal compliance.
             and not options["sender"]
             and not options["recipient"]
             and not options["dm"]
+            and not options["channel"]
         ):
             raise CommandError("One or more limits are required!")
 
@@ -180,6 +189,9 @@ This is most often used for legal compliance.
                     [user.id for user in user_profiles]
                 )
                 limits &= Q(recipient=direct_message_group.recipient)
+        elif options["channel"]:
+            channels = [get_stream(n.lstrip("#"), realm) for n in options["channel"]]
+            limits &= Q(recipient__in=[s.recipient_id for s in channels])
 
         attachments_written: set[str] = set()
         messages_query = Message.objects.filter(limits, realm=realm).order_by("date_sent")
