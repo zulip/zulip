@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 327**
+
+* [`GET /messages`](/api/get-messages), [`GET
+  /messages/{message_id}`](/api/get-message), [`GET /events`](/api/get-events):
+  Adjusted the `recipient_id` field of an incoming 1:1 direct message to use the
+  same value that would be used for an outgoing message in that conversation.
+
 **Feature level 326**
 
 * [`POST /register`](/api/register-queue): Removed `allow_owners_group`

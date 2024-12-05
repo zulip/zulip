@@ -63,6 +63,7 @@ class ClientDescriptor:
         self,
         *,
         user_profile_id: int,
+        user_recipient_id: int | None,
         realm_id: int,
         event_queue: "EventQueue",
         event_types: Sequence[str] | None,
@@ -91,6 +92,7 @@ class ClientDescriptor:
         # added to load_event_queues() to update the restored objects.
         # Additionally, the to_dict and from_dict methods must be updated
         self.user_profile_id = user_profile_id
+        self.user_recipient_id = user_recipient_id
         self.realm_id = realm_id
         self.current_handler_id: int | None = None
         self.current_client_name: str | None = None
@@ -165,6 +167,7 @@ class ClientDescriptor:
 
         ret = cls(
             user_profile_id=d["user_profile_id"],
+            user_recipient_id=d.get("user_recipient_id"),
             realm_id=d["realm_id"],
             event_queue=EventQueue.from_dict(d["event_queue"]),
             event_types=d["event_types"],
@@ -1121,7 +1124,11 @@ def process_message_event(
 
     @cache
     def get_client_payload(
-        *, apply_markdown: bool, client_gravatar: bool, can_access_sender: bool
+        *,
+        apply_markdown: bool,
+        client_gravatar: bool,
+        can_access_sender: bool,
+        is_incoming_1_to_1: bool,
     ) -> dict[str, Any]:
         return MessageDict.finalize_payload(
             wide_dict,
@@ -1129,6 +1136,7 @@ def process_message_event(
             client_gravatar=client_gravatar,
             can_access_sender=can_access_sender,
             realm_host=realm_host,
+            is_incoming_1_to_1=is_incoming_1_to_1,
         )
 
     # Extra user-specific data to include
@@ -1209,6 +1217,7 @@ def process_message_event(
             apply_markdown=client.apply_markdown,
             client_gravatar=client.client_gravatar,
             can_access_sender=can_access_sender,
+            is_incoming_1_to_1=wide_dict["recipient_id"] == client.user_recipient_id,
         )
 
         # Make sure Zephyr mirroring bots know whether stream is invite-only

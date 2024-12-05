@@ -375,6 +375,7 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(events[0]["local_message_id"], local_id)
         self.assertEqual(events[0]["message"]["display_recipient"][0]["is_mirror_dummy"], False)
         self.assertEqual(events[0]["message"]["display_recipient"][1]["is_mirror_dummy"], False)
+        self.assertEqual(events[0]["message"]["recipient_id"], recipient_user_profile.recipient_id)
 
         last_event_id = events[0]["id"]
         local_id = "10.02"
@@ -407,6 +408,7 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["sender_email"], email)
         self.assertEqual(events[0]["local_message_id"], local_id)
+        self.assertEqual(events[0]["message"]["recipient_id"], recipient_user_profile.recipient_id)
 
         # Test that the received message in the receiver's event queue
         # exists and does not contain a local id
@@ -426,9 +428,12 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(recipient_events[0]["type"], "message")
         self.assertEqual(recipient_events[0]["message"]["sender_email"], email)
         self.assertTrue("local_message_id" not in recipient_events[0])
+        # Incoming DMs show the recipient_id that outgoing DMs would.
+        self.assertEqual(recipient_events[0]["message"]["recipient_id"], user_profile.recipient_id)
         self.assertEqual(recipient_events[1]["type"], "message")
         self.assertEqual(recipient_events[1]["message"]["sender_email"], email)
         self.assertTrue("local_message_id" not in recipient_events[1])
+        self.assertEqual(recipient_events[1]["message"]["recipient_id"], user_profile.recipient_id)
 
     def test_get_events_narrow(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -861,6 +866,7 @@ class ClientDescriptorsTest(ZulipTestCase):
             queue_timeout=0,
             realm_id=realm.id,
             user_profile_id=hamlet.id,
+            user_recipient_id=hamlet.recipient_id,
         )
 
         client = allocate_client_descriptor(queue_data)
@@ -915,6 +921,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                 queue_timeout=0,
                 realm_id=realm.id,
                 user_profile_id=hamlet.id,
+                user_recipient_id=hamlet.recipient_id,
             )
 
             client = allocate_client_descriptor(queue_data)
@@ -959,9 +966,15 @@ class ClientDescriptorsTest(ZulipTestCase):
 
         class MockClient:
             def __init__(
-                self, user_profile_id: int, apply_markdown: bool, client_gravatar: bool
+                self,
+                *,
+                user_profile_id: int,
+                user_recipient_id: int | None,
+                apply_markdown: bool,
+                client_gravatar: bool,
             ) -> None:
                 self.user_profile_id = user_profile_id
+                self.user_recipient_id = user_recipient_id
                 self.apply_markdown = apply_markdown
                 self.client_gravatar = client_gravatar
                 self.client_type_name = "whatever"
@@ -979,24 +992,28 @@ class ClientDescriptorsTest(ZulipTestCase):
 
         client1 = MockClient(
             user_profile_id=hamlet.id,
+            user_recipient_id=hamlet.recipient_id,
             apply_markdown=True,
             client_gravatar=False,
         )
 
         client2 = MockClient(
             user_profile_id=hamlet.id,
+            user_recipient_id=hamlet.recipient_id,
             apply_markdown=False,
             client_gravatar=False,
         )
 
         client3 = MockClient(
             user_profile_id=hamlet.id,
+            user_recipient_id=hamlet.recipient_id,
             apply_markdown=True,
             client_gravatar=True,
         )
 
         client4 = MockClient(
             user_profile_id=hamlet.id,
+            user_recipient_id=hamlet.recipient_id,
             apply_markdown=False,
             client_gravatar=True,
         )
@@ -1028,11 +1045,13 @@ class ClientDescriptorsTest(ZulipTestCase):
                 content="**hello**",
                 rendered_content="<b>hello</b>",
                 sender_id=sender.id,
+                recipient_id=1111,
                 type="stream",
                 client="website",
                 # NOTE: Some of these fields are clutter, but some
                 #       will be useful when we let clients specify
                 #       that they can compute their own gravatar URLs.
+                sender_recipient_id=sender.recipient_id,
                 sender_email=sender.email,
                 sender_delivery_email=sender.delivery_email,
                 sender_realm_id=sender.realm_id,
@@ -1073,6 +1092,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                         sender_id=sender.id,
                         sender_email=sender.email,
                         id=999,
+                        recipient_id=1111,
                         content="<b>hello</b>",
                         content_type="text/html",
                         client="website",
@@ -1092,6 +1112,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                         sender_id=sender.id,
                         sender_email=sender.email,
                         id=999,
+                        recipient_id=1111,
                         content="**hello**",
                         content_type="text/x-markdown",
                         client="website",
@@ -1112,6 +1133,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                         sender_email=sender.email,
                         avatar_url=None,
                         id=999,
+                        recipient_id=1111,
                         content="<b>hello</b>",
                         content_type="text/html",
                         client="website",
@@ -1132,6 +1154,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                         sender_email=sender.email,
                         avatar_url=None,
                         id=999,
+                        recipient_id=1111,
                         content="**hello**",
                         content_type="text/x-markdown",
                         client="website",
@@ -1159,6 +1182,7 @@ class ReloadWebClientsTest(ZulipTestCase):
             queue_timeout=0,
             realm_id=realm.id,
             user_profile_id=hamlet.id,
+            user_recipient_id=hamlet.recipient_id,
         )
         client = allocate_client_descriptor(queue_data)
 
