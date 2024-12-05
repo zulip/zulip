@@ -175,9 +175,11 @@ class MessageDict:
     @staticmethod
     def post_process_dicts(
         objs: list[dict[str, Any]],
+        *,
         apply_markdown: bool,
         client_gravatar: bool,
         realm: Realm,
+        user_recipient_id: int | None,
     ) -> None:
         """
         NOTE: This function mutates the objects in
@@ -199,6 +201,7 @@ class MessageDict:
                 skip_copy=True,
                 can_access_sender=can_access_sender,
                 realm_host=realm.host,
+                is_incoming_1_to_1=obj["recipient_id"] == user_recipient_id,
             )
 
     @staticmethod
@@ -211,6 +214,7 @@ class MessageDict:
         skip_copy: bool = False,
         can_access_sender: bool,
         realm_host: str,
+        is_incoming_1_to_1: bool,
     ) -> dict[str, Any]:
         """
         By default, we make a shallow copy of the incoming dict to avoid
@@ -247,12 +251,20 @@ class MessageDict:
         else:
             obj["content_type"] = "text/x-markdown"
 
+        if is_incoming_1_to_1:
+            # For an incoming 1:1 DM, the recipient’s own recipient_id is
+            # useless to the recipient themselves. Substitute the sender’s
+            # recipient_id, so the recipient can use recipient_id as documented
+            # to uniquely represent the set of 2 users in this conversation.
+            obj["recipient_id"] = obj["sender_recipient_id"]
+
         for item in obj.get("edit_history", []):
             if "prev_rendered_content_version" in item:
                 del item["prev_rendered_content_version"]
 
         if not keep_rendered_content:
             del obj["rendered_content"]
+        del obj["sender_recipient_id"]
         del obj["sender_realm_id"]
         del obj["sender_avatar_source"]
         del obj["sender_delivery_email"]
@@ -472,6 +484,7 @@ class MessageDict:
             "full_name",
             "delivery_email",
             "email",
+            "recipient_id",
             "realm__string_id",
             "avatar_source",
             "avatar_version",
@@ -486,6 +499,7 @@ class MessageDict:
         for obj in objs:
             sender_id = obj["sender_id"]
             user_row = sender_dict[sender_id]
+            obj["sender_recipient_id"] = user_row["recipient_id"]
             obj["sender_full_name"] = user_row["full_name"]
             obj["sender_email"] = user_row["email"]
             obj["sender_delivery_email"] = user_row["delivery_email"]
