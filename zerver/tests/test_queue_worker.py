@@ -574,7 +574,8 @@ class WorkerTest(ZulipTestCase):
     def test_mirror_worker(self, mock_mirror_email: MagicMock) -> None:
         fake_client = FakeClient()
         stream = get_stream("Denmark", get_realm("zulip"))
-        email_token = get_channel_email_token(stream)
+        hamlet = self.example_user("hamlet")
+        email_token = get_channel_email_token(stream, creator=hamlet, sender=hamlet)
         stream_to_address = encode_email_address(stream.name, email_token)
         data = [
             dict(
@@ -600,7 +601,8 @@ class WorkerTest(ZulipTestCase):
         realm = get_realm("zulip")
         RateLimitedRealmMirror(realm).clear_history()
         stream = get_stream("Denmark", realm)
-        email_token = get_channel_email_token(stream)
+        hamlet = self.example_user("hamlet")
+        email_token = get_channel_email_token(stream, creator=hamlet, sender=hamlet)
         stream_to_address = encode_email_address(stream.name, email_token)
         data = [
             dict(
