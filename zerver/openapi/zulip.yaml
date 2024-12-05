@@ -20390,6 +20390,25 @@ paths:
         **Changes**: New in Zulip 8.0 (feature level 226).
       parameters:
         - $ref: "#/components/parameters/ChannelIdInPath"
+        - name: sender_id
+          in: query
+          description: |
+            The ID of a user or bot which should appear as the sender when messages
+            are sent to the channel using the returned channel email address.
+
+            `sender_id` can be:
+
+            - ID of the current user.
+            - ID of the Email gateway bot. (Default value)
+            - ID of a bot owned by the current user.
+
+            **Changes**: New in Zulip 10.0 (feature level 335).
+
+            Previously, the sender was always Email gateway bot.
+          schema:
+            type: integer
+          example: 1
+          required: false
       responses:
         "200":
           description: Success.

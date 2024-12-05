@@ -95,7 +95,7 @@ from zerver.lib.user_groups import (
     validate_group_setting_value_change,
 )
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
-from zerver.lib.users import bulk_access_users_by_email, bulk_access_users_by_id
+from zerver.lib.users import access_bot_by_id, bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, Stream, UserMessage, UserProfile, UserTopic
 from zerver.models.users import get_system_bot
@@ -1128,12 +1128,22 @@ def get_stream_email_address(
     user_profile: UserProfile,
     *,
     stream_id: Annotated[NonNegativeInt, ApiParamConfig("stream", path_only=True)],
+    sender_id: Json[NonNegativeInt] | None = None,
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_id(
         user_profile,
         stream_id,
     )
-    email_token = get_channel_email_token(stream)
+    email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id)
+
+    if sender_id is None or sender_id == email_gateway_bot.id:
+        sender = email_gateway_bot
+    elif sender_id == user_profile.id:
+        sender = user_profile
+    else:
+        sender = access_bot_by_id(user_profile, sender_id)
+
+    email_token = get_channel_email_token(stream, creator=user_profile, sender=sender)
     stream_email = encode_email_address(stream.name, email_token, show_sender=True)
 
     return json_success(request, data={"email": stream_email})
