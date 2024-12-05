@@ -297,19 +297,27 @@ function update_display_checkmark_on_group_edit(group) {
     }
 }
 
-function update_your_groups_list(group_id) {
-    if (user_groups.is_user_in_group(group_id, people.my_current_user_id())) {
-        // We add the group row to list if the current user
-        // is added to it. The whole list is redrawed to
-        // maintain the sorted order of groups.
-        redraw_user_group_list();
-    } else if (!settings_data.can_join_user_group(group_id)) {
-        // We remove the group row immediately only if the
-        // user cannot join the group again themselves.
-        const group_row = row_for_group_id(group_id);
-        if (group_row.length) {
-            group_row.remove();
-            update_empty_left_panel_message();
+function update_your_groups_list_if_needed(group_id) {
+    // update display of group-rows on left panel.
+    // We need this update only if your-groups tab is active
+    // and current user is among the affect users as in that
+    // case the group widget list need to be updated and show
+    // or remove the group-row on the left panel accordingly.
+    const tab_key = get_active_data().$tabs.first().attr("data-tab-key");
+    if (tab_key === "your-groups") {
+        if (user_groups.is_user_in_group(group_id, people.my_current_user_id())) {
+            // We add the group row to list if the current user
+            // is added to it. The whole list is redrawed to
+            // maintain the sorted order of groups.
+            redraw_user_group_list();
+        } else if (!settings_data.can_join_user_group(group_id)) {
+            // We remove the group row immediately only if the
+            // user cannot join the group again themselves.
+            const group_row = row_for_group_id(group_id);
+            if (group_row.length) {
+                group_row.remove();
+                update_empty_left_panel_message();
+            }
         }
     }
 }
@@ -325,20 +333,12 @@ export function handle_subgroup_edit_event(group_id, direct_subgroup_ids) {
         user_group_edit_members.update_member_list_widget(group);
     }
 
-    const tab_key = get_active_data().$tabs.first().attr("data-tab-key");
     const subgroups_containing_current_user = direct_subgroup_ids.filter((group_id) =>
         user_groups.is_user_in_group(group_id, people.my_current_user_id()),
     );
-    // update display of group-rows on left panel.
-    // We need this update only if your-groups tab is active
-    // and current user is among the affect users as in that
-    // case the group widget list need to be updated and show
-    // or remove the group-row on the left panel accordingly.
-    if (tab_key === "your-groups" && subgroups_containing_current_user.length > 0) {
-        update_your_groups_list(group_id);
-    }
 
     if (subgroups_containing_current_user.length > 0) {
+        update_your_groups_list_if_needed(group_id);
         update_display_checkmark_on_group_edit(group);
     }
 }
@@ -355,17 +355,8 @@ function update_settings_for_group_overlay(group_id, user_ids) {
         }
     }
 
-    // update display of group-rows on left panel.
-    // We need this update only if your-groups tab is active
-    // and current user is among the affect users as in that
-    // case the group widget list need to be updated and show
-    // or remove the group-row on the left panel accordingly.
-    const tab_key = get_active_data().$tabs.first().attr("data-tab-key");
-    if (tab_key === "your-groups" && user_ids.includes(people.my_current_user_id())) {
-        update_your_groups_list(group_id);
-    }
-
     if (user_ids.includes(people.my_current_user_id())) {
+        update_your_groups_list_if_needed(group_id);
         update_display_checkmark_on_group_edit(group);
     }
 }
