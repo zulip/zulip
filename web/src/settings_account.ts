@@ -43,10 +43,12 @@ let password_quality:
 let user_avatar_widget_created = false;
 
 export function update_email(new_email: string): void {
-    const $email_input = $("#change_email_button");
+    const $email_input = $("#email_field_container");
 
     if ($email_input) {
         $email_input.text(new_email);
+        $("#email-change-status").hide();
+        $("#dev-account-settings-status").hide();
     }
 }
 
@@ -82,12 +84,12 @@ export function update_email_change_display(): void {
     }
 
     if (!settings_data.user_can_change_email()) {
-        $("#change_email_button").prop("disabled", true);
-        $("#change_email_button_container").addClass("disabled_setting_tooltip");
+        $("#change_email_button").addClass("hide");
+        $("#email_field_container").addClass("disabled_setting_tooltip");
         $("label[for='change_email_button']").addClass("cursor-text");
     } else {
-        $("#change_email_button").prop("disabled", false);
-        $("#change_email_button_container").removeClass("disabled_setting_tooltip");
+        $("#change_email_button").removeClass("hide");
+        $("#email_field_container").removeClass("disabled_setting_tooltip");
         $("label[for='change_email_button']").removeClass("cursor-text");
     }
 }
@@ -595,7 +597,7 @@ export function set_up(): void {
                     $t_html(
                         {
                             defaultMessage:
-                                "Check your email ({email}) to confirm the new address.",
+                                "Check your email (<b>{email}</b>) to confirm the new address.",
                         },
                         {email: data.email},
                     ),
