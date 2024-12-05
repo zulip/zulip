@@ -17,7 +17,7 @@
     ],
     "dev-buttons": [
         "./src/bundles/common.ts",
-        "./src//portico/header.ts",
+        "./src/portico/header.ts",
         "./src/portico/design-testing.ts",
         "./styles/portico/portico_styles.css",
         "./styles/portico/dev-buttons.css",
