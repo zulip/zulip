@@ -194,8 +194,8 @@ class MessageDict:
             can_access_sender = obj.get("can_access_sender", True)
             MessageDict.finalize_payload(
                 obj,
-                apply_markdown,
-                client_gravatar,
+                apply_markdown=apply_markdown,
+                client_gravatar=client_gravatar,
                 skip_copy=True,
                 can_access_sender=can_access_sender,
                 realm_host=realm.host,
@@ -204,12 +204,13 @@ class MessageDict:
     @staticmethod
     def finalize_payload(
         obj: dict[str, Any],
+        *,
         apply_markdown: bool,
         client_gravatar: bool,
         keep_rendered_content: bool = False,
         skip_copy: bool = False,
-        can_access_sender: bool = True,
-        realm_host: str = "",
+        can_access_sender: bool,
+        realm_host: str,
     ) -> dict[str, Any]:
         """
         By default, we make a shallow copy of the incoming dict to avoid

@@ -4087,6 +4087,8 @@ class GetOldMessagesTest(ZulipTestCase):
             wide_dict,
             apply_markdown=True,
             client_gravatar=False,
+            can_access_sender=True,
+            realm_host=get_realm("zulip").host,
         )
         self.assertEqual(final_dict["content"], "<p>test content</p>")
 
