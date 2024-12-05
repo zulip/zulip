@@ -42,7 +42,11 @@ from zerver.actions.streams import (
     get_subscriber_ids,
 )
 from zerver.context_processors import get_valid_realm_from_request
-from zerver.decorator import require_non_guest_user, require_realm_admin
+from zerver.decorator import (
+    check_if_user_can_manage_default_streams,
+    require_non_guest_user,
+    require_realm_admin,
+)
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.exceptions import (
@@ -141,7 +145,7 @@ def deactivate_stream_backend(
     return json_success(request)
 
 
-@require_realm_admin
+@check_if_user_can_manage_default_streams
 @typed_endpoint
 def add_default_stream(
     request: HttpRequest, user_profile: UserProfile, *, stream_id: Json[int]
@@ -153,7 +157,7 @@ def add_default_stream(
     return json_success(request)
 
 
-@require_realm_admin
+@check_if_user_can_manage_default_streams
 @typed_endpoint
 def create_default_stream_group(
     request: HttpRequest,
@@ -171,7 +175,7 @@ def create_default_stream_group(
     return json_success(request)
 
 
-@require_realm_admin
+@check_if_user_can_manage_default_streams
 @typed_endpoint
 def update_default_stream_group_info(
     request: HttpRequest,
@@ -192,7 +196,7 @@ def update_default_stream_group_info(
     return json_success(request)
 
 
-@require_realm_admin
+@check_if_user_can_manage_default_streams
 @typed_endpoint
 def update_default_stream_group_streams(
     request: HttpRequest,
@@ -217,7 +221,7 @@ def update_default_stream_group_streams(
     return json_success(request)
 
 
-@require_realm_admin
+@check_if_user_can_manage_default_streams
 @typed_endpoint
 def remove_default_stream_group(
     request: HttpRequest, user_profile: UserProfile, *, group_id: PathOnly[int]
@@ -227,7 +231,7 @@ def remove_default_stream_group(
     return json_success(request)
 
 
-@require_realm_admin
+@check_if_user_can_manage_default_streams
 @typed_endpoint
 def remove_default_stream(
     request: HttpRequest, user_profile: UserProfile, *, stream_id: Json[int]

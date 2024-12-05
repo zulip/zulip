@@ -3491,13 +3491,17 @@ class DefaultStreamTest(ZulipTestCase):
 
     def test_api_calls(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.login_user(user_profile)
 
         DefaultStream.objects.filter(realm=user_profile.realm).delete()
 
         stream_name = "stream ADDED via api"
         stream = ensure_stream(user_profile.realm, stream_name, acting_user=None)
+        result = self.client_post("/json/default_streams", dict(stream_id=stream.id))
+        self.assert_json_error(result, "Must be an organization administrator")
+        self.assertFalse(stream_name in self.get_default_stream_names(user_profile.realm))
+
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         result = self.client_post("/json/default_streams", dict(stream_id=stream.id))
         self.assert_json_success(result)
         self.assertTrue(stream_name in self.get_default_stream_names(user_profile.realm))
