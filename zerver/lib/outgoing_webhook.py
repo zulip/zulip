@@ -19,7 +19,7 @@ from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import retry_event
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.lib.url_encoding import near_message_url
-from zerver.lib.users import check_can_access_user
+from zerver.lib.users import check_can_access_user, check_user_can_access_all_users
 from zerver.models import Realm, Service, UserProfile
 from zerver.models.bots import GENERIC_INTERFACE, SLACK_INTERFACE
 from zerver.models.clients import get_client
@@ -63,7 +63,8 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
             apply_markdown=False,
             client_gravatar=False,
             keep_rendered_content=True,
-            can_access_sender=check_can_access_user(
+            can_access_sender=check_user_can_access_all_users(self.user_profile)
+            or check_can_access_user(
                 get_user_profile_by_id(event["message"]["sender_id"]), self.user_profile
             ),
             realm_host=realm.host,
