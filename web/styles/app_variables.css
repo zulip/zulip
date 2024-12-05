@@ -275,8 +275,11 @@
     );
     --right-sidebar-left-spacing: 5px;
     /* Used in both left and right sidebar at the bottom, to allow
-       the user to scroll past the bottom-most elements a little bit. */
-    --sidebar-bottom-spacing: 1.4286em; /* 20px / 14px  em */
+       the user to scroll past the bottom-most elements a little bit.
+
+       Value is chosen to avoid elements overlapping with the browser's URL
+       display when hovering links, and should not scale with font size. */
+    --sidebar-bottom-spacing: 25px;
 
     /* We base sidebar row heights on their line heights.
        Prominent rows include things like headers (e.g., VIEWS)
