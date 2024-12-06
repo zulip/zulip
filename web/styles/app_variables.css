@@ -721,6 +721,10 @@
     /* Compose box colors */
     --color-compose-box-background: hsl(232deg 30% 92%);
     --color-compose-message-content-background: hsl(0deg 0% 100%);
+    --color-compose-message-content-background-over-limit: hsl(3deg 35% 90%);
+    --color-compose-message-content-background-approaching-limit: hsl(
+        50deg 75% 92%
+    );
     --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
     --color-compose-send-button-background: hsl(240deg 96% 68%);
     --color-compose-send-button-background-interactive: hsl(240deg 41% 50%);
@@ -788,6 +792,10 @@
     --color-message-formatting-controls-container: hsl(232deg 30% 96%);
     --color-message-content-container-border: hsl(0deg 0% 0% / 10%);
     --color-message-content-container-border-focus: hsl(0deg 0% 57%);
+    --color-message-content-container-border-over-limit: hsl(0deg 76% 65%);
+    --color-message-content-container-border-approaching-limit: hsl(
+        38deg 70% 50%
+    );
     --color-compose-control-button-background-hover: hsl(0deg 0% 0% / 5%);
     --color-compose-formatting-button-divider: hsl(0deg 0% 75%);
     --color-compose-focus-ring: var(--color-outline-focus);
@@ -1634,6 +1642,10 @@
         var(--color-compose-box-background),
         hsl(0deg 0% 0%) 20%
     );
+    --color-compose-message-content-background-over-limit: hsl(3deg 50% 12%);
+    --color-compose-message-content-background-approaching-limit: hsl(
+        50deg 75% 12%
+    );
     --color-compose-send-button-focus-shadow: hsl(0deg 0% 100% / 80%);
     --color-compose-send-control-button: hsl(240deg 30% 70%);
     --color-compose-send-control-button-background: transparent;
@@ -1690,7 +1702,6 @@
     --color-message-formatting-controls-container: hsl(0deg 0% 0% / 8%);
     --color-message-content-container-border: hsl(0deg 0% 0% / 80%);
     --color-message-content-container-border-focus: hsl(0deg 0% 100% / 27%);
-    --color-message-content-container-border-over-limit: hsl(0deg 76% 65%);
     --color-compose-control-button-background-hover: hsl(0deg 0% 100% / 5%);
     --color-compose-formatting-button-divider: hsl(236deg 33% 90% / 25%);
     --color-compose-focus-ring: hsl(0deg 0% 67%);
