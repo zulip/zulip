@@ -1,29 +1,11 @@
-.user-circle-active,
-.user-circle-idle,
-.user-circle-offline {
-    border-radius: 50%;
-    border: 1px solid;
-}
-
-.user_sidebar_entry.with_avatar .user-circle {
-    outline: 1px solid var(--color-background);
-}
-
 .user-circle-active {
-    background-color: var(--color-user-circle-active);
-    border-color: var(--color-user-circle-active);
+    color: var(--color-user-circle-active);
 }
 
 .user-circle-idle {
-    border-color: var(--color-user-circle-idle);
-    background: linear-gradient(
-        to bottom,
-        hsl(0deg 0% 100% / 0%) 50%,
-        var(--color-user-circle-idle) 50%
-    );
+    color: var(--color-user-circle-idle);
 }
 
 .user-circle-offline {
-    background-color: transparent;
-    border-color: hsl(0deg 0% 50%);
+    color: var(--color-user-circle-offline);
 }
