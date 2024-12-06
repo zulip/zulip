@@ -250,7 +250,7 @@ export function get_topic_popover_content_context({
     const visibility_policy = user_topics.get_topic_visibility_policy(sub.stream_id, topic_name);
     const all_visibility_policies = user_topics.all_visibility_policies;
     const is_spectator = page_params.is_spectator;
-    const is_topic_empty = is_topic_definetly_empty(stream_id, topic_name);
+    const is_topic_empty = is_topic_definitely_empty(stream_id, topic_name);
     return {
         stream_name: sub.name,
         stream_id: sub.stream_id,
@@ -362,7 +362,7 @@ export function get_gear_menu_content_context(): GearMenuContext {
     };
 }
 
-function is_topic_definetly_empty(stream_id: number, topic: string): boolean {
+function is_topic_definitely_empty(stream_id: number, topic: string): boolean {
     const current_narrow_stream_id = narrow_state.stream_id();
     const current_narrow_topic = narrow_state.topic();
 
