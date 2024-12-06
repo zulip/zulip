@@ -64,9 +64,16 @@ export let update_presence_indicators = (): void => {
         const user_id = Number.parseInt($(this).attr("data-presence-indicator-user-id") ?? "", 10);
         assert(!Number.isNaN(user_id));
         const user_circle_class = buddy_data.get_user_circle_class(user_id);
+        const user_circle_class_with_icon = `${user_circle_class} zulip-icon-${user_circle_class}`;
         $(this)
-            .removeClass("user-circle-active user-circle-idle user-circle-offline")
-            .addClass(user_circle_class);
+            .removeClass(
+                `
+                user-circle-active zulip-icon-user-circle-active
+                user-circle-idle zulip-icon-user-circle-idle
+                user-circle-offline zulip-icon-user-circle-offline
+            `,
+            )
+            .addClass(user_circle_class_with_icon);
     });
 };
 
