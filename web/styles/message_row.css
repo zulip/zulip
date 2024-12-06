@@ -669,6 +669,18 @@
 
     .message-edit-textbox {
         position: relative;
+
+        .textarea-over-limit {
+            background-color: var(
+                --color-compose-message-content-background-over-limit
+            );
+        }
+
+        .textarea-approaching-limit {
+            background-color: var(
+                --color-compose-message-content-background-approaching-limit
+            );
+        }
     }
 }
 

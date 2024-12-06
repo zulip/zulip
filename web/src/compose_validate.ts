@@ -765,6 +765,8 @@ export function check_overflow_text($container: JQuery): number {
     const is_edit_container = $textarea.closest(".message_row").length > 0;
 
     if (text.length > max_length) {
+        $indicator.removeClass("textarea-approaching-limit");
+        $textarea.removeClass("textarea-approaching-limit");
         $indicator.addClass("textarea-over-limit");
         $textarea.addClass("textarea-over-limit");
         $indicator.html(
@@ -780,6 +782,8 @@ export function check_overflow_text($container: JQuery): number {
     } else if (remaining_characters <= 900) {
         $indicator.removeClass("textarea-over-limit");
         $textarea.removeClass("textarea-over-limit");
+        $indicator.addClass("textarea-approaching-limit");
+        $textarea.addClass("textarea-approaching-limit");
         $indicator.html(
             render_compose_limit_indicator({
                 remaining_characters,
@@ -793,6 +797,7 @@ export function check_overflow_text($container: JQuery): number {
     } else {
         $indicator.text("");
         $textarea.removeClass("textarea-over-limit");
+        $textarea.removeClass("textarea-approaching-limit");
 
         if (is_edit_container) {
             set_message_too_long_for_edit(false, $container);
