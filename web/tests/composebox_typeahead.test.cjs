@@ -793,19 +793,19 @@ test("content_typeahead_selected", ({override}) => {
     query = "#swed";
     ct.get_or_set_token_for_testing("swed");
     actual_value = ct.content_typeahead_selected(sweden_stream, query, input_element);
-    expected_value = "#**Sweden** ";
+    expected_value = "#**Sweden>";
     assert.equal(actual_value, expected_value);
 
     query = "Hello #swed";
     ct.get_or_set_token_for_testing("swed");
     actual_value = ct.content_typeahead_selected(sweden_stream, query, input_element);
-    expected_value = "Hello #**Sweden** ";
+    expected_value = "Hello #**Sweden>";
     assert.equal(actual_value, expected_value);
 
     query = "#**swed";
     ct.get_or_set_token_for_testing("swed");
     actual_value = ct.content_typeahead_selected(sweden_stream, query, input_element);
-    expected_value = "#**Sweden** ";
+    expected_value = "#**Sweden>";
     assert.equal(actual_value, expected_value);
 
     // topic_list
@@ -837,6 +837,18 @@ test("content_typeahead_selected", ({override}) => {
     expected_value = "Hello #**Sweden>testing** ";
     assert.equal(actual_value, expected_value);
 
+    query = "Hello #**Sweden>";
+    ct.get_or_set_token_for_testing("");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "Sweden",
+            type: "topic_list",
+        },
+        query,
+        input_element,
+    );
+    expected_value = "Hello #**Sweden** ";
+    assert.equal(actual_value, expected_value);
     // syntax
     ct.get_or_set_completing_for_tests("syntax");
 
@@ -1856,8 +1868,13 @@ test("begins_typeahead", ({override, override_rewire}) => {
     // includes "more ice"
     function typed_topics(topics) {
         return topics.map((topic) => ({
-            type: "topic_list",
+            is_stream_only: false,
+            stream_data: {
+                ...stream_data.get_sub_by_name("Sweden"),
+                rendered_description: "",
+            },
             topic,
+            type: "topic_list",
         }));
     }
     assert_typeahead_equals("#**Sweden>more ice", typed_topics(["more ice", "even more ice"]));
