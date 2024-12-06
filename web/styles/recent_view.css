@@ -160,7 +160,6 @@
 
     .clear_search_button {
         grid-area: clear-search;
-        right: 0;
         padding: 0;
     }
 
