@@ -141,7 +141,7 @@ run_test("empty_narrow_html", ({mock_template}) => {
     <h4 class="empty-feed-notice-title"> This is a title </h4>
     <div class="empty-feed-notice-description">
             Some common words were excluded from your search. <br/>You searched for:
-            <span>stream: new</span>
+            <span>channel: new</span>
             <span>topic: test</span>
                 <span>search</span>
                 <del>a</del>
@@ -166,7 +166,7 @@ run_test("empty_narrow_html", ({mock_template}) => {
     <h4 class="empty-feed-notice-title"> This is a title </h4>
     <div class="empty-feed-notice-description">
             You searched for:
-            <span>stream: hello world</span>
+            <span>channel: hello world</span>
                 <span>searchA</span>
     </div>
 </div>

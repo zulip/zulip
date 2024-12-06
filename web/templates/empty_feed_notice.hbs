@@ -4,7 +4,7 @@
         {{#if search_data}}
             {{#if search_data.has_stop_word}}{{t "Some common words were excluded from your search." }} <br/>{{/if}}{{t "You searched for:" }}
             {{#if search_data.stream_query}}
-            <span>stream: {{search_data.stream_query}}</span>
+            <span>channel: {{search_data.stream_query}}</span>
             {{/if}}
             {{#if search_data.topic_query}}
             <span>topic: {{search_data.topic_query}}</span>
