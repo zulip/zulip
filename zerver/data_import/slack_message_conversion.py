@@ -69,7 +69,7 @@ SLACK_STRIKETHROUGH_REGEX = r"""
                                 # Skip @ and \
                                 # Skip opening brackets & opening quote (\p{Pi}\p{Ps})
                                 (?![~`@\\\p{Pi}\p{Ps}])
-                                [\p{P}\p{Zs}\p{S}]|$
+                                (?=[\p{P}\p{Zs}\p{S}]|$)
                              )
                              """
 SLACK_ITALIC_REGEX = r"""
@@ -84,7 +84,7 @@ SLACK_ITALIC_REGEX = r"""
                       (\_)
                       (
                         (?![_`@\\\p{Pi}\p{Ps}])
-                        [\p{P}\p{Zs}\p{S}]|$
+                        (?=[\p{P}\p{Zs}\p{S}]|$)
                       )
                       """
 SLACK_BOLD_REGEX = r"""
@@ -99,7 +99,7 @@ SLACK_BOLD_REGEX = r"""
                     (\*)
                     (
                         (?![*`@\\\p{Pi}\p{Ps}])
-                        [\p{P}\p{Zs}\p{S}]|$
+                        (?=[\p{P}\p{Zs}\p{S}]|$)
                     )
                     """
 
@@ -174,7 +174,7 @@ def convert_markdown_syntax(text: str, pattern: str, zulip_keyword: str) -> str:
     """
 
     def replace_slack_format(match: regex.Match[str]) -> str:
-        return match.group(1) + zulip_keyword + match.group(3) + zulip_keyword + match.group(5)
+        return match.group(1) + zulip_keyword + match.group(3) + zulip_keyword
 
     return regex.sub(pattern, replace_slack_format, text, flags=re.VERBOSE | re.MULTILINE)
 

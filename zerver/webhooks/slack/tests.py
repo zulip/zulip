@@ -281,7 +281,7 @@ class SlackWebhookTests(WebhookTestCase):
         )
 
     def test_message_with_complex_formatted_mentions(self) -> None:
-        message_body = "@**John Doe** **#general** ~~***@**all*****~"
+        message_body = "@**John Doe** **#general** ~~***@**all*****~~"
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
         self.check_webhook(
             "message_with_complex_formatted_mentions",
