@@ -336,16 +336,16 @@
     }
 }
 
-#message-content-container:has(.new_message_textarea.over_limit),
-#message-content-container:has(.new_message_textarea.over_limit:focus),
-.edit-content-container:has(.message_edit_content.over_limit),
-.edit-content-container:has(.message_edit_content.over_limit:focus) {
+#message-content-container:has(.new_message_textarea.textarea-over-limit),
+#message-content-container:has(.new_message_textarea.textarea-over-limit:focus),
+.edit-content-container:has(.message_edit_content.textarea-over-limit),
+.edit-content-container:has(.message_edit_content.textarea-over-limit:focus) {
     box-shadow: 0 0 0 1pt
         var(--color-message-content-container-border-over-limit);
 }
 
-#message-content-container:has(.new_message_textarea.over_limit.flash),
-.edit-content-container:has(.message_edit_content.over_limit.flash) {
+#message-content-container:has(.new_message_textarea.textarea-over-limit.flash),
+.edit-content-container:has(.message_edit_content.textarea-over-limit.flash) {
     animation: message-limit-flash 0.5s ease-in-out 3;
 }
 
@@ -478,7 +478,7 @@
     margin-top: auto;
     padding: 3px 3px 3px 0;
 
-    &.over_limit {
+    &.textarea-over-limit {
         color: var(--color-limit-indicator-over-limit);
         font-weight: bold;
     }
