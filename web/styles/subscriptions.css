@@ -545,7 +545,6 @@ h4.user_group_setting_subsection_title {
 #clear_search_stream_name,
 #clear_search_group_name {
     grid-area: clear-search;
-    right: 0;
     padding: 0;
 }
 
