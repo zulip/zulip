@@ -290,7 +290,7 @@
                 color: inherit;
             }
 
-            .zulip-icon {
+            .zulip-icon:not(.user-circle) {
                 color: var(--color-left-sidebar-dm-partners-icon);
             }
         }
@@ -1492,18 +1492,10 @@ li.topic-list-item {
     }
 
     .user-circle {
-        width: var(--length-user-status-circle);
-        height: var(--length-user-status-circle);
-
-        @media screen and (resolution <= 1x) {
-            /* User circles appear to sag a bit on
-               low-resolution screens, so this fix
-               targets them without disrupting
-               line-height values that may become
-               important in multi-line DM groups, etc.
-               in the future. */
-            margin-top: -2.5px;
-        }
+        /* Tighten the line-height to match the icon's size... */
+        line-height: 1;
+        /* ...which is approximately 11px at 16px/1em. */
+        font-size: 0.6875em;
     }
 
     .unread_count {
