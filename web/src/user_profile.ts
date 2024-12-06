@@ -1312,10 +1312,8 @@ export function initialize(): void {
         const $input = $<HTMLInputElement>("#user-profile-streams-tab input.stream-search");
         if ($input.val()!.trim().length > 0) {
             $("#user-profile-streams-tab #clear_stream_search").show();
-            $input.css("margin-right", "-20px");
         } else {
             $("#user-profile-streams-tab #clear_stream_search").hide();
-            $input.css("margin-right", "0");
         }
     });
 
