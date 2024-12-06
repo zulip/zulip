@@ -1338,7 +1338,7 @@
     --color-background-widget-input: hsl(225deg 6% 10%);
     --color-background-widget-button: hsl(0deg 0% 0% / 20%);
     --color-background-navbar: hsl(0deg 0% 13%);
-    --color-text-sidebar-row: hsl(0deg 0% 100% / 75%);
+    --color-text-sidebar-row: hsl(0deg 0% 100% / 85%);
     --color-text-active-narrow-filter: hsl(0deg 0% 90%);
     --color-background-active-narrow-filter: color-mix(
         in srgb,
