@@ -264,7 +264,7 @@ export function quote_message(opts: {
             stream_id,
             private_message_recipient: people.pm_reply_to(message) ?? "",
         });
-        compose_recipient.open_compose_recipient_dropdown();
+        compose_recipient.toggle_compose_recipient_dropdown();
     } else {
         if ($textarea.attr("id") === "compose-textarea" && !compose_state.has_message_content()) {
             // The user has not started typing a message,

@@ -285,7 +285,7 @@ function get_options_for_recipient_widget(): Option[] {
     return options;
 }
 
-export function open_compose_recipient_dropdown(): void {
+export function toggle_compose_recipient_dropdown(): void {
     $("#compose_select_recipient_widget").trigger("click");
 }
 

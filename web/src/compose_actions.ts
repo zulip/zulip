@@ -334,7 +334,7 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
     } else {
         // Open stream selection dropdown if no stream is selected.
         compose_state.set_stream_id("");
-        compose_recipient.open_compose_recipient_dropdown();
+        compose_recipient.toggle_compose_recipient_dropdown();
     }
     compose_state.topic(opts.topic);
 
