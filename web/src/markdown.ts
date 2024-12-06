@@ -1,4 +1,4 @@
-import {isValid} from "date-fns";
+import {getUnixTime, isValid} from "date-fns";
 import katex from "katex";
 import _ from "lodash";
 import assert from "minimalistic-assert";
@@ -580,7 +580,7 @@ function handleTimestamp(time_string: string): string {
     }
 
     const escaped_time = _.escape(time_string);
-    if (!isValid(timeobject)) {
+    if (!isValid(timeobject) || getUnixTime(timeobject) < 0) {
         // Unsupported time format: rerender accordingly.
 
         // We do not show an error on these formats in local echo because
