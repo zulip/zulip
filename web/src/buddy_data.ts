@@ -56,11 +56,11 @@ export function get_user_circle_class(user_id: number): string {
 
     switch (status) {
         case "active":
-            return "user_circle_green";
+            return "user-circle-active";
         case "idle":
-            return "user_circle_idle";
+            return "user-circle-idle";
         default:
-            return "user_circle_empty";
+            return "user-circle-offline";
     }
 }
 

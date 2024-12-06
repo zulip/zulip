@@ -65,7 +65,7 @@ export let update_presence_indicators = (): void => {
         assert(!Number.isNaN(user_id));
         const user_circle_class = buddy_data.get_user_circle_class(user_id);
         $(this)
-            .removeClass("user_circle_empty user_circle_green user_circle_idle")
+            .removeClass("user-circle-active user-circle-idle user-circle-offline")
             .addClass(user_circle_class);
     });
 };

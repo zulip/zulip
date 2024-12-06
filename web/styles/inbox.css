@@ -256,7 +256,7 @@
                 }
             }
 
-            .user_circle {
+            .user-circle {
                 /* size of the user activity circle */
                 /* 6px at 15px/1em */
                 min-width: 0.4em;
@@ -295,7 +295,7 @@
                 }
 
                 .fake-collapse-button,
-                .inbox-topic-container .user_circle {
+                .inbox-topic-container .user-circle {
                     grid-area: match_topic_and_dm_start;
                 }
 

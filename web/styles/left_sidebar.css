@@ -1491,7 +1491,7 @@ li.topic-list-item {
         grid-area: action-heading;
     }
 
-    .user_circle {
+    .user-circle {
         width: var(--length-user-status-circle);
         height: var(--length-user-status-circle);
 
