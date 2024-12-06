@@ -96,6 +96,7 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             if (recipient_user_obj.is_bot) {
                 // We display the bot icon rather than a user circle for bots.
                 is_bot = true;
+                user_circle_class = "user_circle_empty";
             } else {
                 status_emoji_info = user_status.get_status_emoji(user_id);
             }
