@@ -900,32 +900,6 @@ export function get_candidates(
         return typeahead_helper.sort_slash_commands(matches_list, token);
     }
 
-    if (ALLOWED_MARKDOWN_FEATURES.stream && current_token.startsWith("#")) {
-        if (current_token.length === 1) {
-            return [];
-        }
-
-        current_token = current_token.slice(1);
-        if (current_token.startsWith("**")) {
-            current_token = current_token.slice(2);
-        }
-
-        // Don't autocomplete if there is a space following a '#'
-        if (current_token.startsWith(" ")) {
-            return [];
-        }
-
-        completing = "stream";
-        token = current_token;
-        const candidate_list: StreamPillData[] = stream_data.get_unsorted_subs().map((sub) => ({
-            ...sub,
-            type: "stream",
-        }));
-        const matcher = get_stream_matcher(token);
-        const matches = candidate_list.filter((item) => matcher(item));
-        return typeahead_helper.sort_streams(matches, token);
-    }
-
     if (ALLOWED_MARKDOWN_FEATURES.topic) {
         // Stream regex modified from marked.js
         // Matches '#**stream name** >' at the end of a split.
@@ -974,6 +948,33 @@ export function get_candidates(
             }
         }
     }
+
+    if (ALLOWED_MARKDOWN_FEATURES.stream && current_token.startsWith("#")) {
+        if (current_token.length === 1) {
+            return [];
+        }
+
+        current_token = current_token.slice(1);
+        if (current_token.startsWith("**")) {
+            current_token = current_token.slice(2);
+        }
+
+        // Don't autocomplete if there is a space following a '#'
+        if (current_token.startsWith(" ")) {
+            return [];
+        }
+
+        completing = "stream";
+        token = current_token;
+        const candidate_list: StreamPillData[] = stream_data.get_unsorted_subs().map((sub) => ({
+            ...sub,
+            type: "stream",
+        }));
+        const matcher = get_stream_matcher(token);
+        const matches = candidate_list.filter((item) => matcher(item));
+        return typeahead_helper.sort_streams(matches, token);
+    }
+
     if (ALLOWED_MARKDOWN_FEATURES.timestamp) {
         const time_jump_regex = /<time(:([^>]*?)>?)?$/;
         if (time_jump_regex.test(split[0])) {
