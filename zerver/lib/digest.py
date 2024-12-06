@@ -17,7 +17,7 @@ from zerver.context_processors import common_context
 from zerver.lib.email_notifications import build_message_list
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.message import get_last_message_id
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.url_encoding import stream_narrow_url
 from zerver.models import (
@@ -92,7 +92,7 @@ class DigestTopic:
 def queue_digest_user_ids(user_ids: list[int], cutoff: datetime) -> None:
     # Convert cutoff to epoch seconds for transit.
     event = {"user_ids": user_ids, "cutoff": cutoff.strftime("%s")}
-    queue_json_publish("digest_emails", event)
+    queue_json_publish_rollback_unsafe("digest_emails", event)
 
 
 def enqueue_emails(cutoff: datetime) -> None:

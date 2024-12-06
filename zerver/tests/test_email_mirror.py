@@ -1577,7 +1577,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
             "secret": settings.SHARED_SECRET,
         }
 
-        with mock_queue_publish("zerver.lib.email_mirror.queue_json_publish") as m:
+        with mock_queue_publish("zerver.lib.email_mirror.queue_json_publish_rollback_unsafe") as m:
             m.side_effect = check_queue_json_publish
             return self.client_post("/api/internal/email_mirror_message", post_data)
 

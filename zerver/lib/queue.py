@@ -434,7 +434,11 @@ def set_queue_client(queue_client: SimpleQueueClient | TornadoQueueClient) -> No
     thread_data.queue_client = queue_client
 
 
-def queue_json_publish(
+# One should generally use `queue_event_on_commit` unless there's a strong
+# reason to use `queue_json_publish_rollback_unsafe` directly, as it doesn't
+# wait for the db transaction (within which it gets called, if any) to commit
+# and sends event irrespective of commit or rollback.
+def queue_json_publish_rollback_unsafe(
     queue_name: str,
     event: dict[str, Any],
     processor: Callable[[Any], None] | None = None,
@@ -452,7 +456,7 @@ def queue_json_publish(
 
 
 def queue_event_on_commit(queue_name: str, event: dict[str, Any]) -> None:
-    transaction.on_commit(lambda: queue_json_publish(queue_name, event))
+    transaction.on_commit(lambda: queue_json_publish_rollback_unsafe(queue_name, event))
 
 
 def retry_event(
@@ -464,4 +468,4 @@ def retry_event(
     if event["failed_tries"] > MAX_REQUEST_RETRIES:
         failure_processor(event)
     else:
-        queue_json_publish(queue_name, event)
+        queue_json_publish_rollback_unsafe(queue_name, event)

@@ -14,7 +14,7 @@ from typing_extensions import override
 from urllib3.util import Retry
 
 from zerver.lib.partial import partial
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.models import Client, Realm, UserProfile
 from zerver.tornado.sharding import (
     get_realm_tornado_ports,
@@ -201,7 +201,7 @@ def send_event_rollback_unsafe(
             port_user_map[get_user_id_tornado_port(realm_ports, user_id)].append(user)
 
     for port, port_users in port_user_map.items():
-        queue_json_publish(
+        queue_json_publish_rollback_unsafe(
             notify_tornado_queue_name(port),
             dict(event=event, users=port_users),
             partial(send_notification_http, port),

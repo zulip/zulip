@@ -10,7 +10,7 @@ from zerver.lib.queue import (
     SimpleQueueClient,
     TornadoQueueClient,
     get_queue_client,
-    queue_json_publish,
+    queue_json_publish_rollback_unsafe,
 )
 from zerver.lib.test_classes import ZulipTestCase
 
@@ -43,7 +43,7 @@ class TestQueueImplementation(ZulipTestCase):
             output.append(events[0])
             queue_client.stop_consuming()
 
-        queue_json_publish("test_suite", {"event": "my_event"})
+        queue_json_publish_rollback_unsafe("test_suite", {"event": "my_event"})
 
         queue_client.start_json_consumer("test_suite", collect)
 
@@ -67,7 +67,7 @@ class TestQueueImplementation(ZulipTestCase):
                 raise Exception("Make me nack!")
             output.append(events[0])
 
-        queue_json_publish("test_suite", {"event": "my_event"})
+        queue_json_publish_rollback_unsafe("test_suite", {"event": "my_event"})
 
         try:
             queue_client.start_json_consumer("test_suite", collect)
@@ -97,7 +97,7 @@ class TestQueueImplementation(ZulipTestCase):
             mock.patch("zerver.lib.queue.SimpleQueueClient.publish", throw_connection_error_once),
             self.assertLogs("zulip.queue", level="WARN") as warn_logs,
         ):
-            queue_json_publish("test_suite", {"event": "my_event"})
+            queue_json_publish_rollback_unsafe("test_suite", {"event": "my_event"})
         self.assertEqual(
             warn_logs.output,
             ["WARNING:zulip.queue:Failed to send to rabbitmq, trying to reconnect and send again"],

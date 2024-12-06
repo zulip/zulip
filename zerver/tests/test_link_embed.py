@@ -14,7 +14,7 @@ from typing_extensions import override
 from zerver.actions.message_delete import do_delete_messages
 from zerver.lib.cache import cache_delete, cache_get, preview_url_cache_key
 from zerver.lib.camo import get_camo_url
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.url_preview.oembed import get_oembed_data, strip_cdata
@@ -457,9 +457,9 @@ class PreviewTestCase(ZulipTestCase):
             self.assertTrue(responses.assert_call_count(edited_url, 0))
 
             with self.settings(TEST_SUITE=False), self.assertLogs(level="INFO") as info_logs:
-                # Now proceed with the original queue_json_publish and call the
-                # up-to-date event for edited_url.
-                queue_json_publish(*args, **kwargs)
+                # Now proceed with the original queue_json_publish_rollback_unsafe
+                # and call the up-to-date event for edited_url.
+                queue_json_publish_rollback_unsafe(*args, **kwargs)
                 msg = Message.objects.select_related("sender").get(id=msg_id)
                 assert msg.rendered_content is not None
                 self.assertIn(

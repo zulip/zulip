@@ -25,7 +25,7 @@ from zerver.lib.email_mirror_helpers import (
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.message import normalize_body, truncate_content, truncate_topic
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
 from zerver.lib.streams import access_stream_for_send_message
@@ -540,7 +540,7 @@ def mirror_email_message(rcpt_to: str, msg_base64: str) -> dict[str, str]:
             "msg": f"5.1.1 Bad destination mailbox address: {e}",
         }
 
-    queue_json_publish(
+    queue_json_publish_rollback_unsafe(
         "email_mirror",
         {
             "rcpt_to": rcpt_to,

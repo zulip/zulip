@@ -133,7 +133,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             )
 
         with mock_queue_publish(
-            "zerver.tornado.event_queue.queue_json_publish", side_effect=fake_publish
+            "zerver.tornado.event_queue.queue_json_publish_rollback_unsafe",
+            side_effect=fake_publish,
         ) as m:
             maybe_enqueue_notifications(**enqueue_kwargs)
 

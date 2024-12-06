@@ -6,7 +6,7 @@ import orjson
 from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_json_publish_rollback_unsafe
 
 
 def error(*args: Any) -> None:
@@ -28,7 +28,7 @@ def enqueue_file(queue_name: str, f: IO[str]) -> None:
 
         # This is designed to use the `error` method rather than
         # the call_consume_in_tests flow.
-        queue_json_publish(queue_name, data, error)
+        queue_json_publish_rollback_unsafe(queue_name, data, error)
 
 
 class Command(ZulipBaseCommand):

@@ -41,13 +41,13 @@ class MaybeEnqueueNotificationsTest(ZulipTestCase):
         )
 
         with mock_queue_publish(
-            "zerver.tornado.event_queue.queue_json_publish"
+            "zerver.tornado.event_queue.queue_json_publish_rollback_unsafe"
         ) as mock_queue_json_publish:
             notified = maybe_enqueue_notifications(**params)
             mock_queue_json_publish.assert_not_called()
 
         with mock_queue_publish(
-            "zerver.tornado.event_queue.queue_json_publish"
+            "zerver.tornado.event_queue.queue_json_publish_rollback_unsafe"
         ) as mock_queue_json_publish:
             params["user_notifications_data"] = self.create_user_notifications_data_object(
                 user_id=1, dm_push_notify=True, dm_email_notify=True
@@ -63,7 +63,7 @@ class MaybeEnqueueNotificationsTest(ZulipTestCase):
             self.assertTrue(notified["push_notified"])
 
         with mock_queue_publish(
-            "zerver.tornado.event_queue.queue_json_publish"
+            "zerver.tornado.event_queue.queue_json_publish_rollback_unsafe"
         ) as mock_queue_json_publish:
             params = self.get_maybe_enqueue_notifications_parameters(
                 message_id=1,
