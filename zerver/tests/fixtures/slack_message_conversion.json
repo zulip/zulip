@@ -84,6 +84,21 @@
       "name": "italic_and_strike_conversion",
       "input": "_~italic~_ and ~_strike_~",
       "conversion_output": "*~~italic~~* and ~~*strike*~~"
+    },
+    {
+      "name": "new_line_test",
+      "input": "\n*abc*\n",
+      "conversion_output": "\n**abc**\n"
+    },
+    {
+      "name": "format_emoji_test",
+      "input": "*1️⃣ bold* some _1️⃣ italic_ word ~1️⃣ strike~",
+      "conversion_output": "**1️⃣ bold** some *1️⃣ italic* word ~~1️⃣ strike~~"
+    },
+    {
+      "name": "overlapping_capture_group_test",
+      "input": "*abc*\n*def*\n*ghi*\n*jkl*\n\n*ABC ABC*",
+      "conversion_output": "**abc**\n**def**\n**ghi**\n**jkl**\n\n**ABC ABC**"
     }
   ]
 }

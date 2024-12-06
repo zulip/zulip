@@ -7,6 +7,7 @@ from typing_extensions import override
 from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
     get_user_full_name,
+    replace_links,
 )
 from zerver.lib import mdiff
 from zerver.lib.test_classes import ZulipTestCase
@@ -110,6 +111,7 @@ class SlackMessageConversion(ZulipTestCase):
 
         message = "<http://journals.plos.org/plosone/article>"
         text, mentioned_users, has_link = convert_to_zulip_markdown(message, [], {}, slack_user_map)
+
         self.assertEqual(text, "http://journals.plos.org/plosone/article")
         self.assertEqual(has_link, True)
 
@@ -126,3 +128,7 @@ class SlackMessageConversion(ZulipTestCase):
         message = "random message"
         text, mentioned_users, has_link = convert_to_zulip_markdown(message, [], {}, slack_user_map)
         self.assertEqual(has_link, False)
+
+        message = "<http://journals.plos.org/plosone/article>\n<mailto:foo@foo.com>"
+        text = replace_links(message)
+        self.assertEqual(text, "http://journals.plos.org/plosone/article\nmailto:foo@foo.com")
