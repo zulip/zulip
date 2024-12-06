@@ -502,7 +502,7 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
             is_current_user: false,
             num_unread: 0,
             profile_picture: "/avatar/1",
-            user_circle_class: "user_circle_green",
+            user_circle_class: "user-circle-active",
             status_emoji_info: undefined,
             status_text: undefined,
             has_status_text: false,
@@ -548,14 +548,14 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
     peer_data.set_subscribers(rome_sub.stream_id, [alice.user_id]);
     activity_ui.redraw_user(alice.user_id);
     assert.ok($users_matching_view_appended.selector.includes('data-user-id="1"'));
-    assert.ok($users_matching_view_appended.selector.includes("user_circle_green"));
+    assert.ok($users_matching_view_appended.selector.includes("user-circle-active"));
 
     clear_buddy_list(buddy_list);
     buddy_list_add_other_user(alice.user_id, $alice_stub);
     peer_data.set_subscribers(rome_sub.stream_id, []);
     activity_ui.redraw_user(alice.user_id);
     assert.ok($other_users_appended.selector.includes('data-user-id="1"'));
-    assert.ok($other_users_appended.selector.includes("user_circle_green"));
+    assert.ok($other_users_appended.selector.includes("user-circle-active"));
 });
 
 test("insert_alice_then_fred", ({override, override_rewire, mock_template}) => {
@@ -570,11 +570,11 @@ test("insert_alice_then_fred", ({override, override_rewire, mock_template}) => {
 
     activity_ui.redraw_user(alice.user_id);
     assert.ok($other_users_appended.selector.includes('data-user-id="1"'));
-    assert.ok($other_users_appended.selector.includes("user_circle_green"));
+    assert.ok($other_users_appended.selector.includes("user-circle-active"));
 
     activity_ui.redraw_user(fred.user_id);
     assert.ok($other_users_appended.selector.includes('data-user-id="2"'));
-    assert.ok($other_users_appended.selector.includes("user_circle_green"));
+    assert.ok($other_users_appended.selector.includes("user-circle-active"));
 });
 
 test("insert_fred_then_alice_then_rename, both as users matching view", ({
@@ -598,7 +598,7 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({
 
     activity_ui.redraw_user(fred.user_id);
     assert.ok($users_matching_view_appended.selector.includes('data-user-id="2"'));
-    assert.ok($users_matching_view_appended.selector.includes("user_circle_green"));
+    assert.ok($users_matching_view_appended.selector.includes("user-circle-active"));
 
     let $inserted;
     $fred_stub.before = ($element) => {
@@ -612,7 +612,7 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({
 
     activity_ui.redraw_user(alice.user_id);
     assert.ok($inserted.selector.includes('data-user-id="1"'));
-    assert.ok($inserted.selector.includes("user_circle_green"));
+    assert.ok($inserted.selector.includes("user-circle-active"));
 
     // Next rename fred to Aaron.
     const fred_with_new_name = {
@@ -656,7 +656,7 @@ test("insert_fred_then_alice_then_rename, both as other users", ({
 
     activity_ui.redraw_user(fred.user_id);
     assert.ok($other_users_appended.selector.includes('data-user-id="2"'));
-    assert.ok($other_users_appended.selector.includes("user_circle_green"));
+    assert.ok($other_users_appended.selector.includes("user-circle-active"));
 
     let $inserted;
     $fred_stub.before = ($element) => {
@@ -670,7 +670,7 @@ test("insert_fred_then_alice_then_rename, both as other users", ({
 
     activity_ui.redraw_user(alice.user_id);
     assert.ok($inserted.selector.includes('data-user-id="1"'));
-    assert.ok($inserted.selector.includes("user_circle_green"));
+    assert.ok($inserted.selector.includes("user-circle-active"));
 
     // Next rename fred to Aaron.
     const fred_with_new_name = {
