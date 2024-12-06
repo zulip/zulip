@@ -263,6 +263,8 @@ export class Typeahead<ItemType extends string | object> {
     // after selecting an option, instead of the default call to lookup().
     hideAfterSelect: () => boolean;
     hideOnEmptyAfterBackspace: boolean;
+    // Used for adding a custom classname to the typeahead link.
+    getCustomItemClassname: ((item: ItemType) => string) | undefined;
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
@@ -304,7 +306,7 @@ export class Typeahead<ItemType extends string | object> {
         this.updateElementContent = options.updateElementContent ?? true;
         this.hideAfterSelect = options.hideAfterSelect ?? (() => true);
         this.hideOnEmptyAfterBackspace = options.hideOnEmptyAfterBackspace ?? false;
-
+        this.getCustomItemClassname = options.getCustomItemClassname;
         this.listen();
     }
 
@@ -547,6 +549,9 @@ export class Typeahead<ItemType extends string | object> {
             const $item_html = $i.find("a").html(item_html);
 
             const option_label_html = this.option_label(matching_items, item);
+            if (this.getCustomItemClassname) {
+                $item_html.addClass(this.getCustomItemClassname(item));
+            }
 
             if (option_label_html) {
                 $item_html
@@ -887,4 +892,5 @@ type TypeaheadOptions<ItemType> = {
     shouldHighlightFirstResult?: () => boolean;
     updateElementContent?: boolean;
     hideAfterSelect?: () => boolean;
+    getCustomItemClassname?: (item: ItemType) => string;
 };
