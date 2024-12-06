@@ -17,7 +17,7 @@ from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_export import notify_realm_export
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.push_notifications import clear_push_device_tokens
-from zerver.lib.queue import queue_json_publish, retry_event
+from zerver.lib.queue import queue_json_publish_rollback_unsafe, retry_event
 from zerver.lib.remote_server import (
     PushNotificationBouncerRetryLaterError,
     send_server_data_to_push_bouncer,
@@ -100,7 +100,7 @@ class DeferredWorker(QueueProcessingWorker):
                     # 30s, we re-push the task onto the tail of the
                     # queue, to allow other deferred work to complete;
                     # this task is extremely low priority.
-                    queue_json_publish("deferred_work", {**event, "min_id": min_id})
+                    queue_json_publish_rollback_unsafe("deferred_work", {**event, "min_id": min_id})
                     break
             logger.info(
                 "Marked %s messages as read for all users, stream_recipient_id %s",

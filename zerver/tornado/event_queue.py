@@ -27,7 +27,7 @@ from zerver.lib.message_cache import MessageDict
 from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
 from zerver.lib.narrow_predicate import build_narrow_predicate
 from zerver.lib.notification_data import UserMessageNotificationsData
-from zerver.lib.queue import queue_json_publish, retry_event
+from zerver.lib.queue import queue_json_publish_rollback_unsafe, retry_event
 from zerver.middleware import async_request_timer_restart
 from zerver.models import CustomProfileField
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
@@ -964,9 +964,11 @@ def maybe_enqueue_notifications(
                 shard_id = (
                     user_notifications_data.user_id % settings.MOBILE_NOTIFICATIONS_SHARDS + 1
                 )
-                queue_json_publish(f"missedmessage_mobile_notifications_shard{shard_id}", notice)
+                queue_json_publish_rollback_unsafe(
+                    f"missedmessage_mobile_notifications_shard{shard_id}", notice
+                )
             else:
-                queue_json_publish("missedmessage_mobile_notifications", notice)
+                queue_json_publish_rollback_unsafe("missedmessage_mobile_notifications", notice)
             notified["push_notified"] = True
 
     # Send missed_message emails if a direct message or a
@@ -980,7 +982,7 @@ def maybe_enqueue_notifications(
         )
         notice["mentioned_user_group_id"] = mentioned_user_group_id
         if not already_notified.get("email_notified"):
-            queue_json_publish("missedmessage_emails", notice, lambda notice: None)
+            queue_json_publish_rollback_unsafe("missedmessage_emails", notice, lambda notice: None)
             notified["email_notified"] = True
 
     return notified

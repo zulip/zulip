@@ -552,7 +552,8 @@ class WorkerTest(ZulipTestCase):
 
                 with (
                     mock_queue_publish(
-                        "zerver.lib.queue.queue_json_publish", side_effect=fake_publish
+                        "zerver.lib.queue.queue_json_publish_rollback_unsafe",
+                        side_effect=fake_publish,
                     ),
                     self.assertLogs(
                         "zerver.worker.missedmessage_mobile_notifications", "WARNING"
@@ -694,7 +695,9 @@ class WorkerTest(ZulipTestCase):
             worker.setup()
             with (
                 patch("zerver.lib.send_email.build_email", side_effect=EmailNotDeliveredError),
-                mock_queue_publish("zerver.lib.queue.queue_json_publish", side_effect=fake_publish),
+                mock_queue_publish(
+                    "zerver.lib.queue.queue_json_publish_rollback_unsafe", side_effect=fake_publish
+                ),
                 self.assertLogs(level="ERROR") as m,
             ):
                 worker.start()
