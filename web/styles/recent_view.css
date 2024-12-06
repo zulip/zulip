@@ -139,9 +139,10 @@
     }
 
     .search_group {
-        display: flex;
+        display: grid;
+        grid-template: "search-input clear-search" auto / minmax(0, 1fr) 30px;
         flex-grow: 1;
-        margin: 0 -27px 10px 0;
+        margin: 0 0 10px;
     }
 
     #recent_view_search:placeholder-shown + #recent_view_search_clear {
@@ -149,7 +150,8 @@
     }
 
     #recent_view_search {
-        flex-grow: 1;
+        grid-column: search-input-start / clear-search-end;
+        grid-row: search-input;
         padding-right: 20px;
         white-space: nowrap;
         text-overflow: ellipsis;
@@ -157,8 +159,9 @@
     }
 
     .clear_search_button {
-        /* Overrides app_components.css property. */
-        padding-top: 4px !important;
+        grid-area: clear-search;
+        right: 0;
+        padding: 0;
     }
 
     .button-recent-filters {
