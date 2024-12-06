@@ -9,7 +9,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from confirmation.models import one_click_unsubscribe_link
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.models import UserProfile
@@ -110,7 +110,7 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
             "from_address": FromAddress.NOREPLY,
             "context": context,
         }
-        queue_json_publish("email_senders", email_dict)
+        queue_json_publish_rollback_unsafe("email_senders", email_dict)
 
 
 @receiver(user_logged_out)

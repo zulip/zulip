@@ -9,7 +9,7 @@ from django.utils.timezone import now as timezone_now
 from analytics.models import RealmCount
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     HostRequestMock,
@@ -250,7 +250,7 @@ class RealmExportTest(ZulipTestCase):
             patch("zerver.lib.export.do_export_realm") as mock_export,
             self.assertLogs(level="INFO") as info_logs,
         ):
-            queue_json_publish(
+            queue_json_publish_rollback_unsafe(
                 "deferred_work",
                 {
                     "type": "realm_export",

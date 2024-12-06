@@ -3,7 +3,7 @@ from django.db import migrations
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_json_publish_rollback_unsafe
 
 
 def reupload_realm_emoji(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
@@ -34,7 +34,7 @@ def reupload_realm_emoji(apps: StateApps, schema_editor: BaseDatabaseSchemaEdito
             "type": "reupload_realm_emoji",
             "realm_id": realm_id,
         }
-        queue_json_publish("deferred_work", event)
+        queue_json_publish_rollback_unsafe("deferred_work", event)
 
 
 class Migration(migrations.Migration):
