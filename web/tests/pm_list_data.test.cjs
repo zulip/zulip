@@ -118,7 +118,7 @@ test("get_conversations", ({override}) => {
             recipients: "Me Myself",
             unread: 1,
             url: "#narrow/dm/103-Me-Myself",
-            user_circle_class: "user_circle_empty",
+            user_circle_class: "user-circle-offline",
             user_ids_string: "103",
             status_emoji_info: {
                 emoji_code: "20",
@@ -161,7 +161,7 @@ test("get_conversations", ({override}) => {
         is_active: true,
         url: "#narrow/dm/106-Iago",
         status_emoji_info: {emoji_code: "20"},
-        user_circle_class: "user_circle_empty",
+        user_circle_class: "user-circle-offline",
         is_group: false,
         is_bot: false,
     });
@@ -200,7 +200,7 @@ test("get_conversations bot", ({override}) => {
             is_active: false,
             url: "#narrow/dm/314-Outgoing-webhook",
             status_emoji_info: undefined,
-            user_circle_class: "user_circle_empty",
+            user_circle_class: "user-circle-offline",
             is_group: false,
             is_bot: true,
         },

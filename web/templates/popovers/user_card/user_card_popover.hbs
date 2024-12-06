@@ -3,7 +3,7 @@
         <div class="popover-menu-user-avatar-container">
             <img class="popover-menu-user-avatar{{#if user_is_guest}} guest-avatar{{/if}}" src="{{user_avatar}}" />
             {{#if (and is_active (not is_bot))}}
-                <div class="popover-menu-user-presence user_circle {{user_circle_class}} hidden-for-spectators" data-presence-indicator-user-id="{{user_id}}"></div>
+                <div class="popover-menu-user-presence user-circle {{user_circle_class}} hidden-for-spectators" data-presence-indicator-user-id="{{user_id}}"></div>
             {{/if}}
         </div>
         <div class="popover-menu-user-info">

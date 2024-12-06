@@ -1070,7 +1070,7 @@ ul.popover-group-menu-member-list {
         white-space: nowrap;
     }
 
-    .user_circle_empty {
+    .user-circle-offline {
         background-color: var(--color-background-popover-menu);
         border-color: hsl(0deg 0% 50%);
     }
@@ -1131,7 +1131,7 @@ ul.popover-group-menu-member-list {
         border-radius: 50%;
     }
 
-    .user_circle_empty {
+    .user-circle-offline {
         background-color: var(--color-background-popover-menu);
         border-color: hsl(0deg 0% 50%);
     }

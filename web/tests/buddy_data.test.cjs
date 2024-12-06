@@ -139,35 +139,35 @@ test("user_circle, level", ({override}) => {
     add_canned_users();
 
     set_presence(selma.user_id, "active");
-    assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user_circle_green");
+    assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user-circle-active");
     assert.equal(buddy_data.level(selma.user_id), 1);
 
     set_presence(selma.user_id, "idle");
-    assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user_circle_idle");
+    assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user-circle-idle");
     assert.equal(buddy_data.level(selma.user_id), 2);
 
     set_presence(selma.user_id, "offline");
-    assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user_circle_empty");
+    assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user-circle-offline");
     assert.equal(buddy_data.level(selma.user_id), 3);
 
     set_presence(me.user_id, "active");
-    assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_green");
+    assert.equal(buddy_data.get_user_circle_class(me.user_id), "user-circle-active");
     assert.equal(buddy_data.level(me.user_id), 0);
 
     override(user_settings, "presence_enabled", false);
-    assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_empty");
+    assert.equal(buddy_data.get_user_circle_class(me.user_id), "user-circle-offline");
     assert.equal(buddy_data.level(me.user_id), 0);
 
     override(user_settings, "presence_enabled", true);
-    assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_green");
+    assert.equal(buddy_data.get_user_circle_class(me.user_id), "user-circle-active");
     assert.equal(buddy_data.level(me.user_id), 0);
 
     set_presence(fred.user_id, "idle");
-    assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user_circle_idle");
+    assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user-circle-idle");
     assert.equal(buddy_data.level(fred.user_id), 2);
 
     set_presence(fred.user_id, undefined);
-    assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user_circle_empty");
+    assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user-circle-offline");
     assert.equal(buddy_data.level(fred.user_id), 3);
 });
 
@@ -633,7 +633,7 @@ test("get_items_for_users", ({override}) => {
             status_emoji_info,
             status_text: undefined,
             has_status_text: false,
-            user_circle_class: "user_circle_green",
+            user_circle_class: "user-circle-active",
             user_id: 1001,
             user_list_style,
             should_add_guest_user_indicator: false,
@@ -647,7 +647,7 @@ test("get_items_for_users", ({override}) => {
             status_emoji_info,
             status_text: undefined,
             has_status_text: false,
-            user_circle_class: "user_circle_empty",
+            user_circle_class: "user-circle-offline",
             user_id: 1002,
             user_list_style,
             should_add_guest_user_indicator: false,
@@ -661,7 +661,7 @@ test("get_items_for_users", ({override}) => {
             status_emoji_info,
             status_text: undefined,
             has_status_text: false,
-            user_circle_class: "user_circle_empty",
+            user_circle_class: "user-circle-offline",
             user_id: 1003,
             user_list_style,
             should_add_guest_user_indicator: false,
