@@ -1565,7 +1565,8 @@ def check_can_send_direct_message(
         user_ids = [recipient_user.id for recipient_user in recipient_users] + [sender.id]
         if not is_any_user_in_group(direct_message_permission_group, user_ids):
             is_nobody_group = (
-                direct_message_permission_group.named_user_group.name == SystemGroups.NOBODY
+                hasattr(direct_message_permission_group, "named_user_group")
+                and direct_message_permission_group.named_user_group.name == SystemGroups.NOBODY
             )
             raise DirectMessagePermissionError(is_nobody_group)
 
