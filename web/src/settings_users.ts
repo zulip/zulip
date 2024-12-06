@@ -371,7 +371,9 @@ function bot_info(bot_user_id: number): BotInfo {
 
 function get_last_active(user: User): string {
     const last_active_date = presence.last_active_date(user.user_id);
-
+    if (!last_active_date && presence_data_fetched) {
+        return timerender.render_now(new Date(user.date_joined)).time_str;
+    }
     if (!last_active_date) {
         return $t({defaultMessage: "Loading…"});
     }
