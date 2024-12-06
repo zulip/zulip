@@ -653,7 +653,7 @@ export function process_shift_tab_key() {
     }
 
     if ($("input#stream_message_recipient_topic").is(":focus")) {
-        compose_recipient.open_compose_recipient_dropdown();
+        compose_recipient.toggle_compose_recipient_dropdown();
         return true;
     }
 
