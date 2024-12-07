@@ -1392,7 +1392,8 @@ stream_delete_event = event_dict_type(
     required_keys=[
         ("type", Equals("stream")),
         ("op", Equals("delete")),
-        ("streams", ListType(DictType(basic_stream_fields))),
+        ("streams", ListType(DictType([("stream_id", int)]))),
+        ("stream_ids", ListType(int)),
     ]
 )
 check_stream_delete = make_checker(stream_delete_event)
