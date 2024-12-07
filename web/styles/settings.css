@@ -782,6 +782,10 @@ input[type="checkbox"] {
             margin-right: 5px;
         }
 
+        .move-handle.hide_icon {
+            visibility: hidden;
+        }
+
         .fa-ellipsis-v {
             color: hsl(0deg 0% 75%);
             position: relative;
