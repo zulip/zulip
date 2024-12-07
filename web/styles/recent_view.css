@@ -241,7 +241,7 @@
     }
 
     .flex_container .right_part {
-        margin-left: auto;
+        margin-left: auto; 
         display: inline-flex;
         align-items: center;
     }
@@ -398,11 +398,12 @@
 
     .recent-view-topic-header {
         width: 35%;
+        display: flex;
+        justify-content: space-between;
     }
 
     .recent-view-unread-header {
         width: 5%;
-
         .zulip-icon-unread {
             position: relative;
             top: 3px;
