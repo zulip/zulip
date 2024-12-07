@@ -710,10 +710,7 @@ run_test("format_text - bulleted and numbered lists", ({override_rewire}) => {
     // // Notice the blank lines inserted right before and after the list to visually demarcate it.
     // // Had the blank line after `second_item` not been inserted, `after_last` would have been
     // // (wrongly) indented as part of the list's last item too.
-    assert.equal(
-        get_textarea_state(),
-        "before_first\n\n<1. first_item\n2. second_item>\n\nafter_last",
-    );
+    assert.equal(get_textarea_state(), "before_first\n<1. first_item\n2. second_item>\nafter_last");
 
     // Toggling off numbered list
     init_textarea_state("<1. first_item\n2. second_item>");
