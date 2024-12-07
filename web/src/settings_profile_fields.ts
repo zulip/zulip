@@ -298,6 +298,7 @@ function add_choice_row(this: HTMLElement, e: JQuery.TriggeredEvent): void {
     // Display delete buttons for all existing choices before creating the new row,
     // which will not have the delete button so that there is at least one option present.
     $curr_choice_row.find("button.delete-choice").show();
+    $curr_choice_row.find("span.move-handle").removeClass("invisible");
     assert(e.delegateTarget instanceof HTMLElement);
     const choices_div = e.delegateTarget;
     create_choice_row($(choices_div));
