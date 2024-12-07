@@ -435,7 +435,10 @@ export function is_single_image(paste_html: string): boolean {
     );
 }
 
-export function paste_handler_converter(paste_html: string): string {
+export function paste_handler_converter(
+    paste_html: string,
+    $textarea?: JQuery<HTMLTextAreaElement>,
+): string {
     const copied_html_fragment = new DOMParser()
         .parseFromString(paste_html, "text/html")
         .querySelector("body");
@@ -566,6 +569,9 @@ export function paste_handler_converter(paste_html: string): string {
     // blocks too.
     // - For Zulip code blocks, we extract the language of the code block (if
     // any) correctly.
+    // - We don't do any conversion to code blocks if the user seems to already
+    // be trying to create a codeblock (i.e. the cursor in the composebox is
+    // following a "`").
     // Everything else works the same.
     turndownService.addRule("fencedCodeBlock", {
         filter(node, options) {
@@ -580,7 +586,7 @@ export function paste_handler_converter(paste_html: string): string {
             );
         },
 
-        replacement(_content, node, options) {
+        replacement(content, node, options) {
             assert(node instanceof HTMLElement);
             const codeElement = [...node.children].find((child) => child.nodeName === "CODE");
             assert(codeElement !== undefined);
@@ -590,6 +596,14 @@ export function paste_handler_converter(paste_html: string): string {
             // We convert single line code inside a code block to inline markdown code,
             // and the code for this is taken from upstream's `code` rule.
             if (!code.includes("\n")) {
+                // If the cursor is just after a backtick, then we don't add extra backticks.
+                if (
+                    $textarea &&
+                    $textarea.caret() !== 0 &&
+                    $textarea.val()?.at($textarea.caret() - 1) === "`"
+                ) {
+                    return content;
+                }
                 if (!code) {
                     return "";
                 }
@@ -808,7 +822,7 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
             event.preventDefault();
             event.stopPropagation();
             paste_html = maybe_transform_html(paste_html, paste_text);
-            const text = paste_handler_converter(paste_html);
+            const text = paste_handler_converter(paste_html, $textarea);
             if (trimmed_paste_text !== text) {
                 // Pasting formatted text is a two-step process: First
                 // we paste unformatted text, then overwrite it with
