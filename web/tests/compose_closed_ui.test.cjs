@@ -21,6 +21,10 @@ function MessageListView() {
 mock_esm("../src/message_list_view", {
     MessageListView,
 });
+mock_esm("../src/people.ts", {
+    maybe_get_user_by_id: noop,
+});
+
 const stream_data = zrequire("stream_data");
 // Code we're actually using/testing
 const compose_closed_ui = zrequire("compose_closed_ui");

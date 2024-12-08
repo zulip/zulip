@@ -7,6 +7,9 @@ const {run_test, noop} = require("./lib/test.cjs");
 
 const channel = mock_esm("../src/channel");
 const message_util = mock_esm("../src/message_util");
+mock_esm("../src/people.ts", {
+    maybe_get_user_by_id: noop,
+});
 
 const all_messages_data = zrequire("all_messages_data");
 const echo_state = zrequire("echo_state");
