@@ -653,3 +653,80 @@ run_test("should_display_profile_incomplete_alert", () => {
 
     assert.equal(timerender.should_display_profile_incomplete_alert(realm_date_created_secs), true);
 });
+
+run_test("canonicalize_time_zones", () => {
+    assert.equal(
+        timerender.browser_canonicalize_timezone("Asia/Calcutta"),
+        timerender.browser_canonicalize_timezone("Asia/Kolkata"),
+    );
+    assert.equal(
+        timerender.browser_canonicalize_timezone("Europe/Kiev"),
+        timerender.browser_canonicalize_timezone("Europe/Kyiv"),
+    );
+
+    assert.equal(timerender.browser_canonicalize_timezone("Invalid/Timezone"), "");
+
+    assert.equal(timerender.is_browser_timezone_same_as(timerender.browser_time_zone()), true);
+
+    // This just ensures that the function doesn't always return true
+    assert.equal(timerender.is_browser_timezone_same_as("Invalid/Timezone"), false);
+
+    function get_time_in_timezone(date, timezone) {
+        return Date.parse(date.toLocaleString("en-US", {timeZone: timezone}));
+    }
+
+    function get_offset_difference_at_date(tz1, tz2, reference_date) {
+        const date1 = get_time_in_timezone(reference_date, tz1);
+        const date2 = get_time_in_timezone(reference_date, tz2);
+        return date1 - date2;
+    }
+
+    // We should be able to tell timezones apart, even if they have the same offset.
+    // One of the two pairs below will have the same offset at any given time.
+    assert.notEqual(
+        timerender.browser_canonicalize_timezone("America/Phoenix"),
+        timerender.browser_canonicalize_timezone("America/Denver"),
+    );
+    assert.notEqual(
+        timerender.browser_canonicalize_timezone("America/Phoenix"),
+        timerender.browser_canonicalize_timezone("America/Los_Angeles"),
+    );
+
+    // The current time in America/Phoenix does equal the current time
+    // in one of the two other time zones
+    const now = new Date();
+    const now_phoenix = get_time_in_timezone(now, "America/Phoenix");
+    const now_denver = get_time_in_timezone(now, "America/Denver");
+    const now_la = get_time_in_timezone(now, "America/Los_Angeles");
+
+    // Both conditions cannot simultaneously be true since we know we can
+    // tell timezones apart and DST will not cease to be observed any time soon.
+    // So we can OR the two conditions.
+    assert.equal(now_denver === now_phoenix || now_la === now_phoenix, true);
+
+    const dst_date = new Date("Sat, 17 Jul 2024 11:05:12 GMT");
+    // The offset difference between America/Phoenix and America/Los_Angeles is 0
+    // when DST is in effect in America/Los_Angeles.
+    assert.equal(
+        get_offset_difference_at_date("America/Los_Angeles", "America/Phoenix", dst_date),
+        0,
+    );
+    // and similarly for Phoenix and Denver, the offset difference is -1 hour.
+    assert.equal(
+        get_offset_difference_at_date("America/Phoenix", "America/Denver", dst_date),
+        -3600000,
+    );
+
+    const non_dst_date = new Date("Sat, 17 Feb 2024 11:05:12 GMT");
+    // The offset difference between America/Phoenix and America/Los_Angeles is -1 hour
+    // when DST is not in effect in America/Los_Angeles.
+    assert.equal(
+        get_offset_difference_at_date("America/Los_Angeles", "America/Phoenix", non_dst_date),
+        -3600000,
+    );
+    // and similarly for Phoenix and Denver, the offset difference is 0.
+    assert.equal(
+        get_offset_difference_at_date("America/Phoenix", "America/Denver", non_dst_date),
+        0,
+    );
+});
