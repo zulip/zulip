@@ -125,6 +125,7 @@ const keydown_cmd_or_ctrl_mappings = {
     75: {name: "search_with_k", message_view_only: false}, // 'K'
     83: {name: "star_message", message_view_only: true}, // 'S'
     190: {name: "narrow_to_compose_target", message_view_only: true}, // '.'
+    222: {name: "open_saved_snippet_dropdown", message_view_only: true}, // '''
 };
 
 const keydown_alt_mappings = {
@@ -855,6 +856,16 @@ export function process_hotkey(e, hotkey) {
     if (event_name === "narrow_to_compose_target") {
         message_view.to_compose_target();
         return true;
+    }
+
+    if (event_name === "open_saved_snippet_dropdown" && compose_state.composing()) {
+        $("#send_later i").trigger("click");
+        // This timeout makes the saved snippet dropdown to appear at the intended
+        // position relative to the "Saved snippets" button in the `send_later`
+        // popover.
+        setTimeout(() => {
+            $("#saved_snippets_widget")[0].click();
+        });
     }
 
     // Process hotkeys specially when in an input, select, textarea, or send button
