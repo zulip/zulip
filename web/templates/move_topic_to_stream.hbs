@@ -16,12 +16,13 @@
         <input name="old_topic_name" type="hidden" value="{{topic_name}}" />
         <input name="current_stream_id" type="hidden" value="{{current_stream_id}}" />
         {{#if from_message_actions_popover}}
-        <select name="propagate_mode" class="message_edit_topic_propagate modal_select bootstrap-focus-style">
+        <select id="message_move_select_options" class="message_edit_topic_propagate modal_select bootstrap-focus-style">
             <option value="change_one" {{#if (eq message_placement "last")}}selected{{/if}}> {{t "Move only this message" }}</option>
             <option value="change_later" {{#if (eq message_placement "intermediate")}}selected{{/if}}> {{t "Move this and all following messages in this topic" }}</option>
             <option value="change_all" {{#if (eq message_placement "first")}}selected{{/if}}> {{t "Move all messages in this topic" }}</option>
         </select>
         {{/if}}
+        <p id="move_messages_count"></p>
         <div class="topic_move_breadcrumb_messages">
             <label class="checkbox">
                 <input class="send_notification_to_new_thread" name="send_notification_to_new_thread" type="checkbox" {{#if notify_new_thread}}checked="checked"{{/if}} />
