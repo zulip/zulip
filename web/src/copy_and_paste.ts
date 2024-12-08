@@ -5,6 +5,7 @@ import assert from "minimalistic-assert";
 import {insertTextIntoField} from "text-field-edit";
 import TurndownService from "turndown";
 
+import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as hash_util from "./hash_util.ts";
 import * as message_lists from "./message_lists.ts";
@@ -528,6 +529,9 @@ export function paste_handler_converter(paste_html: string): string {
     // blocks too.
     // - For Zulip code blocks, we extract the language of the code block (if
     // any) correctly.
+    // - We don't do any conversion to code blocks if the user seems to already
+    // be trying to create a codeblock (i.e. the last character of the composebox
+    // is "`").
     // Everything else works the same.
     turndownService.addRule("fencedCodeBlock", {
         filter(node, options) {
@@ -542,7 +546,10 @@ export function paste_handler_converter(paste_html: string): string {
             );
         },
 
-        replacement(_content, node, options) {
+        replacement(content, node, options) {
+            if (compose_state.message_content().at(-1) === "`") {
+                return content;
+            }
             assert(node instanceof HTMLElement);
             const codeElement = [...node.children].find((child) => child.nodeName === "CODE");
             assert(codeElement !== undefined);
