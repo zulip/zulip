@@ -78,6 +78,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_plan_type,
     do_deactivate_realm,
     do_set_push_notifications_enabled_end_timestamp,
+    do_set_realm_abuse_report_channel,
     do_set_realm_authentication_methods,
     do_set_realm_new_stream_announcements_stream,
     do_set_realm_property,
@@ -2418,6 +2419,22 @@ class NormalActionsTest(BaseAction):
                     acting_user=None,
                 )
             check_realm_update("events[0]", events[0], "zulip_update_announcements_stream_id")
+
+    def test_change_realm_abuse_report_channel(self) -> None:
+        channel = get_stream("Rome", self.user_profile.realm)
+
+        for abuse_report_channel, abuse_report_channel_id in (
+            (channel, channel.id),
+            (None, -1),
+        ):
+            with self.verify_action() as events:
+                do_set_realm_abuse_report_channel(
+                    self.user_profile.realm,
+                    abuse_report_channel,
+                    abuse_report_channel_id,
+                    acting_user=None,
+                )
+            check_realm_update("events[0]", events[0], "abuse_report_channel_id")
 
     def test_change_is_admin(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()

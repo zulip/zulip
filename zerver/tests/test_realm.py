@@ -800,6 +800,54 @@ class RealmTest(ZulipTestCase):
         do_deactivate_stream(zulip_update_announcements_stream, acting_user=None)
         self.assertIsNone(realm.get_zulip_update_announcements_stream())
 
+    def test_change_abuse_report_channel(self) -> None:
+        # We need an admin user.
+        self.login("iago")
+
+        disabled_abuse_report_channel_id = -1
+        req = dict(abuse_report_channel_id=orjson.dumps(disabled_abuse_report_channel_id).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.abuse_report_channel, None)
+
+        new_abuse_report_channel_id = Stream.objects.get(name="Denmark").id
+        req = dict(abuse_report_channel_id=orjson.dumps(new_abuse_report_channel_id).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        assert realm.abuse_report_channel is not None
+        self.assertEqual(realm.abuse_report_channel.id, new_abuse_report_channel_id)
+
+        # Test that admin can set the setting to an unsubscribed private stream as well.
+        new_abuse_report_channel_id = self.make_stream("private_stream", invite_only=True).id
+        req = dict(abuse_report_channel_id=orjson.dumps(new_abuse_report_channel_id).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        assert realm.abuse_report_channel is not None
+        self.assertEqual(realm.abuse_report_channel.id, new_abuse_report_channel_id)
+
+        invalid_abuse_report_channel_id = 4321
+        req = dict(abuse_report_channel_id=orjson.dumps(invalid_abuse_report_channel_id).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "Invalid channel ID")
+        realm = get_realm("zulip")
+        assert realm.abuse_report_channel is not None
+        self.assertNotEqual(realm.abuse_report_channel.id, invalid_abuse_report_channel_id)
+
+    def test_get_default_abuse_report_channel(self) -> None:
+        realm = get_realm("zulip")
+        verona = get_stream("verona", realm)
+        realm.abuse_report_channel = verona
+        realm.save(update_fields=["abuse_report_channel"])
+
+        abuse_report_channel = realm.get_abuse_report_channel()
+        assert abuse_report_channel is not None
+        self.assertEqual(abuse_report_channel, verona)
+        do_deactivate_stream(abuse_report_channel, acting_user=None)
+        self.assertIsNone(realm.get_abuse_report_channel())
+
     def test_change_realm_default_language(self) -> None:
         # we need an admin user.
         self.login("iago")
