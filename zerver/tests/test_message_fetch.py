@@ -4089,6 +4089,7 @@ class GetOldMessagesTest(ZulipTestCase):
             client_gravatar=False,
             can_access_sender=True,
             realm_host=get_realm("zulip").host,
+            is_incoming_1_to_1=False,
         )
         self.assertEqual(final_dict["content"], "<p>test content</p>")
 
@@ -4851,6 +4852,24 @@ WHERE user_profile_id = {hamlet_id} AND (content ILIKE '%jumping%' OR subject IL
             f'<p>How are you doing, <span class="user-mention" data-user-id="{othello.id}">'
             '@<span class="highlight">Othello</span>, the Moor of Venice</span>?</p>',
         )
+
+    def test_dm_recipient_id(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        self.login_user(hamlet)
+
+        outgoing_message_id = self.send_personal_message(hamlet, othello)
+        incoming_message_id = self.send_personal_message(othello, hamlet)
+
+        result = self.get_and_check_messages(dict(anchor="newest", num_before=2))
+        self.assert_length(result["messages"], 2)
+        self.assertEqual(result["messages"][0]["id"], outgoing_message_id)
+        self.assertEqual(result["messages"][0]["sender_id"], hamlet.id)
+        self.assertEqual(result["messages"][0]["recipient_id"], othello.recipient_id)
+        self.assertEqual(result["messages"][1]["id"], incoming_message_id)
+        self.assertEqual(result["messages"][1]["sender_id"], othello.id)
+        # Incoming DMs show the recipient_id that outgoing DMs would.
+        self.assertEqual(result["messages"][1]["recipient_id"], othello.recipient_id)
 
 
 class MessageHasKeywordsTest(ZulipTestCase):

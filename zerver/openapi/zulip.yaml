@@ -23510,6 +23510,11 @@ components:
             A unique ID for the set of users receiving the
             message (either a channel or group of users). Useful primarily
             for hashing.
+
+            **Changes**: Before Zulip 10.0 (feature level 327), `recipient_id`
+            was the same across all incoming 1:1 direct messages. Now, each
+            incoming message uniquely shares a `recipient_id` with outgoing
+            messages in the same conversation.
         sender_email:
           type: string
           description: |

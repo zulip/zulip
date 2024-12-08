@@ -171,17 +171,30 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(Message.objects.get(id=msg_id).topic_name(), "edited")
 
     def test_fetch_message_from_id(self) -> None:
-        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        self.login_user(hamlet)
+
         msg_id = self.send_personal_message(
-            from_user=self.example_user("hamlet"),
-            to_user=self.example_user("cordelia"),
-            content="Personal message",
+            from_user=hamlet, to_user=cordelia, content="Outgoing direct message"
         )
         result = self.client_get("/json/messages/" + str(msg_id))
         response_dict = self.assert_json_success(result)
-        self.assertEqual(response_dict["raw_content"], "Personal message")
+        self.assertEqual(response_dict["raw_content"], "Outgoing direct message")
         self.assertEqual(response_dict["message"]["id"], msg_id)
+        self.assertEqual(response_dict["message"]["recipient_id"], cordelia.recipient_id)
         self.assertEqual(response_dict["message"]["flags"], ["read"])
+
+        msg_id = self.send_personal_message(
+            from_user=cordelia, to_user=hamlet, content="Incoming direct message"
+        )
+        result = self.client_get("/json/messages/" + str(msg_id))
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["raw_content"], "Incoming direct message")
+        self.assertEqual(response_dict["message"]["id"], msg_id)
+        # Incoming DMs show the recipient_id that outgoing DMs would.
+        self.assertEqual(response_dict["message"]["recipient_id"], cordelia.recipient_id)
+        self.assertEqual(response_dict["message"]["flags"], [])
 
         # Send message to web-public stream where hamlet is not subscribed.
         # This will test case of user having no `UserMessage` but having access

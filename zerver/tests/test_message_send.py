@@ -1750,6 +1750,7 @@ class StreamMessagesTest(ZulipTestCase):
             apply_markdown=True,
             client_gravatar=False,
             realm=user_profile.realm,
+            user_recipient_id=None,
         )
         self.assertEqual(dct["display_recipient"], "Denmark")
 
