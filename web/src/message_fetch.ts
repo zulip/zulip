@@ -168,7 +168,7 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
 
     direct_message_group_data.process_loaded_messages(messages);
     stream_list.update_streams_sidebar();
-    stream_list.maybe_scroll_narrow_into_view();
+    stream_list.maybe_scroll_narrow_into_view(!first_messages_fetch);
 
     if (
         message_lists.current !== undefined &&

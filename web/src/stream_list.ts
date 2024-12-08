@@ -1091,9 +1091,9 @@ export function scroll_stream_into_view($stream_li: JQuery): void {
     scroll_util.scroll_element_into_container($stream_li, $container, stream_header_height);
 }
 
-export function maybe_scroll_narrow_into_view(): void {
+export function maybe_scroll_narrow_into_view(first_messages_fetch_done: boolean): void {
     // we don't want to interfere with user scrolling once the page loads
-    if (has_scrolled) {
+    if (has_scrolled && first_messages_fetch_done) {
         return;
     }
 
