@@ -1313,6 +1313,17 @@
         #c0070a 13%,
         transparent
     );
+
+    /* Message list navigation buttons */
+    --color-message-list-navigation-medium-attention-text: hsl(
+        229deg 9% 36% / 100%
+    );
+    --color-message-list-navigation-medium-attention-background-hover: hsl(
+        229deg 9% 36% / 7%
+    );
+    --color-message-list-navigation-medium-attention-background-active: hsl(
+        229deg 9% 36% / 11%
+    );
 }
 
 %dark-theme {
@@ -2066,6 +2077,17 @@
         in oklch,
         #f34c3e 17%,
         transparent
+    );
+
+    /* Message list navigation buttons */
+    --color-message-list-navigation-medium-attention-text: hsl(
+        229deg 10% 70% / 100%
+    );
+    --color-message-list-navigation-medium-attention-background-hover: hsl(
+        230deg 9% 60% / 14%
+    );
+    --color-message-list-navigation-medium-attention-background-active: hsl(
+        230deg 9% 60% / 18%
     );
 }
 
