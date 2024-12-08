@@ -1470,3 +1470,34 @@ button#register_auth_button_gitlab {
         padding: 0;
     }
 }
+
+#signup-button,
+#reset-button {
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+#reset-password-limit-indicator,
+#password-limit-indicator {
+    &:not(:empty) {
+        font-size: 16px;
+        color: var(--color-limit-indicator);
+        cursor: pointer;
+        height: 0;
+        margin-right: 5px;
+        z-index: 10;
+    }
+
+    &.over_limit {
+        color: var(--color-limit-indicator-over-limit);
+        font-weight: bold;
+    }
+}
+
+.password-label-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
