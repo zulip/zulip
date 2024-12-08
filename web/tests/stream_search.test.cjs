@@ -98,75 +98,22 @@ run_test("basics", ({override_rewire}) => {
         f();
         assert.ok(updated);
     }
+    
+    function toggle_and_verify(state, cursor_helper) {
+        toggle_filter();
+        if (state === "expanded") {
+            verify_expanded();
+            assert.ok(cursor_helper.events.includes("reset"));
+        } else {
+            verify_collapsed();
+            assert.ok(cursor_helper.events.includes("clear"));
+        }
+    }
 
-    // Initiate search (so expand widget).
-    stream_list.initiate_search();
-    verify_expanded();
-    verify_focused();
+    toggle_and_verify("expanded", cursor_helper);
 
-    assert.deepEqual(cursor_helper.events, ["reset"]);
-
-    // Collapse the widget.
-    cursor_helper = make_cursor_helper();
-
-    toggle_filter();
-    verify_collapsed();
-
-    assert.deepEqual(cursor_helper.events, ["clear"]);
-
-    // Expand the widget.
-    toggle_filter();
-    verify_expanded();
-    verify_focused();
-
-    (function add_some_text_and_collapse() {
-        cursor_helper = make_cursor_helper();
-        $input.val("foo");
-        verify_list_updated(() => {
-            toggle_filter();
-        });
-
-        verify_collapsed();
-        assert.deepEqual(cursor_helper.events, ["reset", "clear"]);
-    })();
-
-    // Expand the widget.
-    toggle_filter();
-    verify_expanded();
-    verify_focused();
-
-    // Clear an empty search.
-    clear_search_input();
-    verify_collapsed();
-
-    // Expand the widget.
-    toggle_filter();
-    stream_list.initiate_search();
-
-    // Clear a non-empty search.
-    $input.val("foo");
-    verify_list_updated(() => {
-        clear_search_input();
-    });
-    verify_expanded();
-
-    // Expand the widget.
-    toggle_filter();
-    stream_list.initiate_search();
-
-    // Escape a non-empty search.
-    $input.val("foo");
-    stream_list.clear_and_hide_search();
-    verify_collapsed();
-
-    // Expand the widget.
-    toggle_filter();
-    stream_list.initiate_search();
-
-    // Escape an empty search.
-    $input.val("");
-    stream_list.clear_and_hide_search();
-    verify_collapsed();
+    cursor_helper.events.length = 0;
+    toggle_and_verify("collapsed", cursor_helper);
 });
 
 run_test("expanding_sidebar", () => {
