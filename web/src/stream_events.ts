@@ -13,6 +13,7 @@ import * as dialog_widget from "./dialog_widget.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_view from "./message_view.ts";
 import * as message_view_header from "./message_view_header.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as overlays from "./overlays.ts";
@@ -112,7 +113,7 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             // modern is_muted events, which we handle below.
         },
         is_muted(value) {
-            stream_muting.update_is_muted(sub, value);
+            stream_muting.update_is_muted(sub, value, message_view.rerender_combined_feed);
             stream_list.refresh_muted_or_unmuted_stream(sub);
             recent_view_ui.complete_rerender();
         },

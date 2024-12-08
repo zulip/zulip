@@ -56,7 +56,7 @@ from zerver.lib.topic_sqlalchemy import (
     topic_match_sa,
 )
 from zerver.lib.types import Validator
-from zerver.lib.user_topics import exclude_topic_mutes
+from zerver.lib.user_topics import exclude_stream_and_topic_mutes
 from zerver.lib.validator import (
     check_bool,
     check_required_string,
@@ -1005,23 +1005,7 @@ def exclude_muting_conditions(
     except Stream.DoesNotExist:
         pass
 
-    # Channel-level muting only applies when looking at views that
-    # include multiple channels, since we do want users to be able to
-    # browser messages within a muted channel.
-    if channel_id is None:
-        rows = Subscription.objects.filter(
-            user_profile=user_profile,
-            active=True,
-            is_muted=True,
-            recipient__type=Recipient.STREAM,
-        ).values("recipient_id")
-        muted_recipient_ids = [row["recipient_id"] for row in rows]
-        if len(muted_recipient_ids) > 0:
-            # Only add the condition if we have muted channels to simplify/avoid warnings.
-            condition = not_(column("recipient_id", Integer).in_(muted_recipient_ids))
-            conditions.append(condition)
-
-    conditions = exclude_topic_mutes(conditions, user_profile, channel_id)
+    conditions = exclude_stream_and_topic_mutes(conditions, user_profile, channel_id)
 
     # Muted user logic for hiding messages is implemented entirely
     # client-side. This is by design, as it allows UI to hint that

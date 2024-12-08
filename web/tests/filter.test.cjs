@@ -997,15 +997,14 @@ test("predicate_basics", ({override}) => {
     assert.ok(predicate({type: "stream", topic: "foo", stream_id: 5}));
 
     const unknown_stream_id = new_stream_id();
-    override(user_topics, "is_topic_muted", () => false);
-    override(user_topics, "is_topic_unmuted_or_followed", () => false);
+    override(user_topics, "is_topic_visible_in_home", () => false);
     predicate = get_predicate([["in", "home"]]);
     assert.ok(!predicate({stream_id: unknown_stream_id, stream: "unknown"}));
     assert.ok(predicate({type: direct_message}));
 
     // Muted topic is not part of in-home.
     with_overrides(({override}) => {
-        override(user_topics, "is_topic_muted", () => true);
+        override(user_topics, "is_topic_visible_in_home", () => false);
         assert.ok(!predicate({stream_id: foo_stream_id, topic: "bar"}));
     });
 
@@ -1020,7 +1019,7 @@ test("predicate_basics", ({override}) => {
 
     // Muted stream but topic is unmuted or followed is part of in-home.
     with_overrides(({override}) => {
-        override(user_topics, "is_topic_unmuted_or_followed", () => true);
+        override(user_topics, "is_topic_visible_in_home", () => true);
         assert.ok(predicate({stream_id: muted_stream.stream_id, topic: "bar"}));
     });
 

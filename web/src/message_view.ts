@@ -347,7 +347,7 @@ type ShowMessageViewOpts = {
     trigger?: string;
     fetched_target_message?: boolean;
     then_select_id?: number;
-    then_select_offset?: number;
+    then_select_offset?: number | undefined;
     show_more_topics?: boolean;
 };
 
@@ -1408,4 +1408,15 @@ function handle_post_view_change(
     stream_list.handle_narrow_activated(filter, opts.change_hash, opts.show_more_topics);
     pm_list.handle_narrow_activated(filter);
     activity_ui.build_user_sidebar();
+}
+
+export function rerender_combined_feed(combined_feed_msg_list: MessageList): void {
+    // Remove cache to avoid repopulating from it.
+    message_list_data_cache.remove(combined_feed_msg_list.data.filter);
+    show(combined_feed_msg_list.data.filter.terms(), {
+        then_select_id: combined_feed_msg_list.selected_id(),
+        then_select_offset: browser_history.current_scroll_offset(),
+        trigger: "stream / topic visibility policy change",
+        force_rerender: true,
+    });
 }
