@@ -1,15 +1,15 @@
 <div id="alert-word-settings" class="settings-section" data-name="alert-words">
     <form id="alert_word_info_box">
         <p class="alert-word-settings-note">
-            {{t "Alert words allow you to be notified as if you were @-mentioned when certain words or phrases are used in Zulip. Alert words are not case sensitive."}}
+            {{t "Watched phrases allow you to be notified as if you were @-mentioned when certain words or phrases are used in Zulip. Watched phrases are not case sensitive."}}
         </p>
     </form>
     <button class="button rounded sea-green" id="open-add-alert-word-modal" type="button">
-        {{t 'Add alert word'}}
+        {{t 'Add watched phrase'}}
     </button>
 
     <div class="settings_panel_list_header">
-        <h3>{{t "Alert words"}}</h3>
+        <h3>{{t "Watched phrases"}}</h3>
     </div>
     <div class="alert" id="alert_word_status" role="alert">
         <button type="button" class="close close-alert-word-status" aria-label="{{t 'Close' }}">
@@ -24,7 +24,7 @@
                 <th class="actions">{{t "Actions" }}</th>
             </thead>
             <tbody id="alert-words-table" class="alert-words-table"
-              data-empty="{{t 'There are no current alert words.' }}"></tbody>
+              data-empty="{{t 'There are no current watched phrases.' }}"></tbody>
         </table>
     </div>
 </div>

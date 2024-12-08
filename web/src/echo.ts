@@ -73,7 +73,7 @@ type LocalEditRequest = Partial<{
     starred: boolean;
     historical: boolean;
     collapsed: boolean;
-    alerted: boolean;
+    watched: boolean;
     mentioned: boolean;
     mentioned_me_directly: boolean;
 }>;
@@ -403,7 +403,7 @@ export function edit_locally(message: Message, request: LocalEditRequest): Messa
             message.content = request.content;
             message.mentioned = request.mentioned ?? false;
             message.mentioned_me_directly = request.mentioned_me_directly ?? false;
-            message.alerted = request.alerted ?? false;
+            message.watched = request.watched ?? false;
         } else {
             // Otherwise, we Markdown-render the message; this resets
             // all flags, so we need to restore those flags that are
