@@ -5,6 +5,7 @@ import type * as tippy from "tippy.js";
 import render_announce_stream_checkbox from "../templates/stream_settings/announce_stream_checkbox.hbs";
 import render_stream_can_add_subscribers_group_label from "../templates/stream_settings/stream_can_add_subscribers_group_label.hbs";
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
+import render_stream_settings_archived_tip from "../templates/stream_settings/stream_settings_archived_tip.hbs";
 import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
 
 import * as hash_parser from "./hash_parser.ts";
@@ -141,7 +142,7 @@ export function initialize_cant_subscribe_popover(): void {
 }
 
 export function set_up_right_panel_section(sub: StreamSubscription): void {
-    if (sub.subscribed) {
+    if (sub.subscribed && !sub.is_archived) {
         stream_edit_toggler.toggler.enable_tab("personal");
         stream_edit_toggler.toggler.goto(stream_edit_toggler.select_tab);
     } else {
@@ -373,6 +374,9 @@ export function update_permissions_banner(sub: StreamSubscription): void {
 
     const rendered_tip = render_stream_settings_tip(sub);
     $settings.find(".stream-settings-tip-container").html(rendered_tip);
+
+    const rendered_archived_tip = render_stream_settings_archived_tip(sub);
+    $settings.find(".stream-settings-archived-tip-container").html(rendered_archived_tip);
 }
 
 export function update_notification_setting_checkbox(

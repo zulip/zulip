@@ -563,6 +563,10 @@ h4.user_group_setting_subsection_title {
     display: none;
 }
 
+#cannot-subscribe-tooltip-content {
+    line-height: 1.4em;
+}
+
 .user-groups-list,
 .streams-list {
     position: relative;
@@ -1237,6 +1241,10 @@ div.settings-radio-input-parent {
     box-shadow: none;
     margin: 0;
     height: inherit;
+}
+
+.stream-permissions .tip {
+    margin: 0 0 10px;
 }
 
 .group-setting-label {

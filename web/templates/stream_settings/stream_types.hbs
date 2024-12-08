@@ -3,6 +3,9 @@
         <div class="subsection-header">
             <h3 class="stream_setting_subsection_title">{{t "Channel permissions" }}
             </h3>
+            <div class="stream-settings-archived-tip-container">
+                {{> stream_settings_archived_tip .}}
+            </div>
             {{> ../settings/settings_save_discard_widget section_name="stream-permissions" }}
         </div>
         <div class="stream-permissions-warning-banner"></div>
