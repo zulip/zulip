@@ -596,6 +596,9 @@ export function filter_and_sort_mentions(
 }
 
 export function get_pm_people(query: string): (UserGroupPillData | UserPillData)[] {
+    if (query === "" && $("#private_message_recipient").siblings().length > 0) {
+        return [];
+    }
     const opts = {
         want_broadcast: false,
         filter_pills: true,
@@ -1375,6 +1378,7 @@ export function initialize({
     new Typeahead(private_message_typeahead_input, {
         source: get_pm_people,
         items: max_num_items,
+        helpOnEmptyStrings: true,
         dropup: true,
         highlighter_html(item: UserGroupPillData | UserPillData) {
             return typeahead_helper.render_person_or_user_group(item);
