@@ -487,12 +487,13 @@ def get_accounts_for_email(email: str) -> list[Account]:
         )
         .order_by("date_joined")
     )
+
     return [
         dict(
             realm_name=profile.realm.name,
             realm_id=profile.realm.id,
             full_name=profile.full_name,
-            avatar=avatar_url(profile),
+            avatar=avatar_url(profile, medium=True),
         )
         for profile in profiles
     ]
