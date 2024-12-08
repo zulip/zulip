@@ -600,7 +600,7 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
     );
 }
 
-export function can_post_messages_in_stream(stream: StreamSubscription): boolean {
+export let can_post_messages_in_stream = function (stream: StreamSubscription): boolean {
     if (stream.is_archived) {
         return false;
     }
@@ -644,6 +644,12 @@ export function can_post_messages_in_stream(stream: StreamSubscription): boolean
         return false;
     }
     return true;
+};
+
+export function rewire_can_post_messages_in_stream(
+    value: typeof can_post_messages_in_stream,
+): void {
+    can_post_messages_in_stream = value;
 }
 
 export function is_subscribed(stream_id: number): boolean {

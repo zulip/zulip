@@ -64,10 +64,17 @@ export function get_recipient_label(message?: ComposeClosedMessage): string {
 export let update_reply_button_state = (disable = false): void => {
     $(".compose_reply_button").attr("disabled", disable ? "disabled" : null);
     if (disable) {
-        $("#compose_buttons .compose-reply-button-wrapper").attr(
-            "data-reply-button-type",
-            "direct_disabled",
-        );
+        if (maybe_get_selected_message_stream_id() !== undefined) {
+            $("#compose_buttons .compose-reply-button-wrapper").attr(
+                "data-reply-button-type",
+                "stream_disabled",
+            );
+        } else {
+            $("#compose_buttons .compose-reply-button-wrapper").attr(
+                "data-reply-button-type",
+                "direct_disabled",
+            );
+        }
         return;
     }
     if (narrow_state.is_message_feed_visible()) {
@@ -85,6 +92,28 @@ export let update_reply_button_state = (disable = false): void => {
 
 export function rewire_update_reply_button_state(value: typeof update_reply_button_state): void {
     update_reply_button_state = value;
+}
+
+function maybe_get_selected_message_stream_id(): number | undefined {
+    if (message_lists.current?.visibly_empty()) {
+        return undefined;
+    }
+    const selected_message = message_lists.current?.selected_message();
+    if (!selected_message?.is_stream) {
+        return undefined;
+    }
+    return selected_message.stream_id;
+}
+
+function should_disable_compose_reply_button_for_stream(): boolean {
+    const stream_id = maybe_get_selected_message_stream_id();
+    if (stream_id !== undefined) {
+        const stream = stream_data.get_sub_by_id(stream_id);
+        if (stream && !stream_data.can_post_messages_in_stream(stream)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function update_buttons(disable_reply?: boolean): void {
@@ -110,12 +139,12 @@ export function update_buttons_for_private(): void {
 
 export function update_buttons_for_stream_views(): void {
     $("#new_conversation_button").attr("data-conversation-type", "stream");
-    update_buttons();
+    update_buttons(should_disable_compose_reply_button_for_stream());
 }
 
 export function update_buttons_for_non_specific_views(): void {
     $("#new_conversation_button").attr("data-conversation-type", "non-specific");
-    update_buttons();
+    update_buttons(should_disable_compose_reply_button_for_stream());
 }
 
 function set_reply_button_label(label: string): void {
@@ -145,6 +174,14 @@ export function initialize(): void {
             // open due to the combined feed view loading in the background,
             // so we only update if message feed is visible.
             update_reply_recipient_label();
+
+            // Disable compose reply button if the selected message is a stream
+            // message and the user is not allowed to post in the stream the message
+            // belongs to.
+            if (maybe_get_selected_message_stream_id() !== undefined) {
+                update_buttons_for_stream_views();
+                update_buttons_for_non_specific_views();
+            }
         }
     });
 
