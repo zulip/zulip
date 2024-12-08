@@ -282,6 +282,17 @@ export function rebuild($stream_li: JQuery, stream_id: number): void {
     active_widgets.set(stream_id, widget);
 }
 
+function scroll_zoomed_in_topic_into_view(): void {
+    const $selected_topic = $(".topic-list .topic-list-item.active-sub-filter");
+    if ($selected_topic.length === 0) {
+        // If we don't have a selected topic, scroll to top.
+        scroll_util.get_scroll_element($("#left_sidebar_scroll_container")).scrollTop(0);
+        return;
+    }
+    const $container = $("#left_sidebar_scroll_container");
+    scroll_util.scroll_element_into_container($selected_topic, $container);
+}
+
 // For zooming, we only do topic-list stuff here...let stream_list
 // handle hiding/showing the non-narrowed streams
 export function zoom_in(): void {
@@ -312,14 +323,19 @@ export function zoom_in(): void {
         }
 
         active_widget!.build();
+        if (zoomed) {
+            // It is fine to force scroll here even if user has scrolled to a different
+            // position since we just added some topics to the list which moved user
+            // to a different position anyway.
+            scroll_zoomed_in_topic_into_view();
+        }
     }
-
-    scroll_util.get_scroll_element($("#left_sidebar_scroll_container")).scrollTop(0);
 
     const spinner = true;
     active_widget.build(spinner);
 
     stream_topic_history_util.get_server_history(stream_id, on_success);
+    scroll_zoomed_in_topic_into_view();
 }
 
 export function get_topic_search_term(): string {
