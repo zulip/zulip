@@ -29,7 +29,7 @@ export function do_unread_count_updates(messages: Message[], expect_no_new_unrea
 export function add_messages(
     messages: Message[],
     msg_list: MessageList,
-    append_to_view_opts: {messages_are_new: boolean},
+    append_to_view_opts?: {messages_are_new: boolean},
 ): RenderInfo | undefined {
     if (!messages) {
         return undefined;

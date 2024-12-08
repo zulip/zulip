@@ -192,7 +192,7 @@ export class MessageList {
 
     add_messages(
         messages: Message[],
-        append_to_view_opts: {messages_are_new?: boolean},
+        append_to_view_opts: {messages_are_new?: boolean} = {},
     ): RenderInfo | undefined {
         // This adds all messages to our data, but only returns
         // the currently viewable ones.
@@ -608,7 +608,7 @@ export class MessageList {
         // We could avoid a rerender if we can provide that this
         // narrow cannot have contained messages to muted topics
         // either before or after the state change.  The right place
-        // to do this is in the message_events.js code path for
+        // to do this is in the message_events.ts code path for
         // processing topic edits, since that's the only place we'll
         // call this frequently anyway.
         //
