@@ -810,10 +810,12 @@ test("misc", ({override}) => {
     override(realm, "realm_email_changes_disabled", false);
     settings_account.update_email_change_display();
     assert.ok(!$("#change_email_button").prop("disabled"));
+    assert.ok(!$("label[for='change_email_button']").hasClass("cursor-text"));
 
     override(realm, "realm_email_changes_disabled", true);
     settings_account.update_email_change_display();
     assert.ok($("#change_email_button").prop("disabled"));
+    assert.ok($("label[for='change_email_button']").hasClass("cursor-text"));
 
     override(realm, "realm_avatar_changes_disabled", false);
     override(realm, "server_avatar_changes_disabled", false);
