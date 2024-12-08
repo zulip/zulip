@@ -75,6 +75,28 @@
                 top: -0.5px;
             }
         }
+
+        .recipient_bar_controls {
+            visibility: hidden;
+        }
+
+        /* When any of the actions are focused, don't hide them */
+        .recipient_bar_controls:focus-within {
+            visibility: visible;
+        }
+
+        /* Show the bar controls on hover and when the bar is sticky */
+        &:hover {
+            .recipient_bar_controls {
+                visibility: visible;
+            }
+        }
+
+        &.sticky_header {
+            .recipient_bar_controls {
+                visibility: visible;
+            }
+        }
     }
 }
 
