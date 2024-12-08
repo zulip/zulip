@@ -338,6 +338,7 @@ test("basics", () => {
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.is_conversation_view());
     assert.ok(!filter.is_conversation_view_with_near());
+    assert.ok(!filter.is_in_channel_topic_narrow());
 
     terms = [
         {operator: "dm", operand: "joe@example.com"},
@@ -364,6 +365,7 @@ test("basics", () => {
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.is_conversation_view());
     assert.ok(!filter.is_conversation_view_with_near());
+    assert.ok(!filter.is_in_channel_topic_narrow());
 
     terms = [
         {operator: "dm", operand: "joe@example.com,jack@example.com"},
@@ -450,6 +452,7 @@ test("basics", () => {
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.is_conversation_view());
     assert.ok(!filter.is_conversation_view_with_near());
+    assert.ok(filter.is_in_channel_topic_narrow());
 
     terms = [
         {operator: "channel", operand: foo_stream_id.toString()},
