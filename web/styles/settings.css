@@ -1659,6 +1659,10 @@ $option_title_width: 180px;
     margin-bottom: var(--margin-bottom-field-description);
 }
 
+.cursor-text {
+    cursor: text;
+}
+
 .profile-field-choices {
     display: inline-block;
 
