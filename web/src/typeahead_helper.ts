@@ -11,6 +11,7 @@ import * as buddy_data from "./buddy_data.ts";
 import * as compose_state from "./compose_state.ts";
 import type {LanguageSuggestion, SlashCommandSuggestion} from "./composebox_typeahead.ts";
 import type {InputPillContainer} from "./input_pill.ts";
+import {pm_ids_set} from "./narrow_state.ts";
 import * as people from "./people.ts";
 import type {PseudoMentionUser, User} from "./people.ts";
 import * as pm_conversations from "./pm_conversations.ts";
@@ -242,11 +243,13 @@ export function compare_users_for_streams(
     // 2. Users who have sent messages to the current topic over those who haven't sent to the current topic.
     // 3. Users who have sent messages to the stream over those who haven't sent to the stream.
     const result = recent_senders.compare_by_recency(user_a, user_b, stream_id, topic);
-    if (result !== 0) {
-        return result;
+    if (result > 0) {
+        return 1;
+    } else if (result < 0) {
+        return -1;
     }
 
-    // 4. Users have PMed with over users haven't PMed with.
+    // 4. Users have PMed with, over users haven't PMed with.
     const a_is_partner = pm_conversations.is_partner(user_a.user_id);
     const b_is_partner = pm_conversations.is_partner(user_b.user_id);
     if (a_is_partner && !b_is_partner) {
@@ -285,13 +288,61 @@ export function compare_users_for_pms(user_a: User, user_b: User): number {
         return 1;
     }
 
-    // 4. Users with shorter names over those with longer names.
-    if (user_a.full_name < user_b.full_name) {
+    // 4. Users with shorter names over those with longer names
+    if (user_a.full_name.length < user_b.full_name.length) {
         return -1;
-    } else if (user_a.full_name > user_b.full_name) {
+    } else if (user_a.full_name.length > user_b.full_name.length) {
         return 1;
     }
     return 0;
+}
+
+// The properties from which at least one should be satisfied by the user to be kept above wildcards.
+export function get_properties_to_satisy(
+    user: User,
+    stream_id?: number,
+    topic?: string,
+): boolean[] {
+    let properties_to_satisfy;
+    const user_pmed = pm_conversations.is_partner(user.user_id);
+
+    if (stream_id === undefined || topic === undefined) {
+        // PM conversations
+
+        // Wildcard gets higher priority over:
+        // Users who have not PMed with the current user.
+        properties_to_satisfy = [user_pmed];
+    } else {
+        // Stream conversations
+
+        // Wildcard gets higher priority over:
+        // The non-subscribers who have neither participated in the topic nor stream
+        // and also with whom the current user hasn't PMed.
+
+        const user_is_sub = stream_data.is_user_subscribed(stream_id, user.user_id);
+
+        // The max_id_for_stream_topic_sender() will be > 0 if the user have sent at least one message to the topic
+        const user_is_sender_to_current_topic =
+            recent_senders.max_id_for_stream_topic_sender({
+                stream_id,
+                topic,
+                sender_id: user.user_id,
+            }) > 0;
+
+        const user_is_sender_to_current_stream =
+            recent_senders.max_id_for_stream_sender({
+                stream_id,
+                sender_id: user.user_id,
+            }) > 0;
+
+        properties_to_satisfy = [
+            user_is_sub,
+            user_is_sender_to_current_topic,
+            user_is_sender_to_current_stream,
+            user_pmed,
+        ];
+    }
+    return properties_to_satisfy;
 }
 
 export function compare_people_for_streams(
@@ -306,56 +357,17 @@ export function compare_people_for_streams(
             return compare_users_for_streams(person_a.user, person_b.user, stream_id, topic);
         }
         // a is user, b is wildcard
-        const a_is_sub = stream_data.is_user_subscribed(stream_id, person_a.user.user_id);
-        const a_is_sender_to_current_topic =
-            recent_senders.max_id_for_stream_topic_sender({
-                stream_id,
-                topic,
-                sender_id: person_a.user.user_id,
-            }) > 0;
-        // The max_id_for_stream_topic_sender() will be > 0 if the user have sent atleast one message to the topic
-        const a_is_sender_to_current_stream =
-            recent_senders.max_id_for_stream_sender({
-                stream_id,
-                sender_id: person_a.user.user_id,
-            }) > 0;
-        const a_is_partner = pm_conversations.is_partner(person_a.user.user_id);
-
-        // Wildcard gets higher priority over (In Stream conversations):
-        // The non-subscribers who have neither participated in the topic nor stream
-        // and also with whom the current user hasn't PMed.
-        const properties_to_satisfy = [
-            a_is_sub,
-            a_is_sender_to_current_topic,
-            a_is_sender_to_current_stream,
-            a_is_partner,
-        ];
-        return compare_user_wildcard(properties_to_satisfy);
+        return compare_user_wildcard(
+            get_properties_to_satisy(person_a.user, stream_id, topic),
+            true,
+        );
     }
     if (person_b.type === "user") {
         // a is wildcard, b is user
-        const b_is_sub = stream_data.is_user_subscribed(stream_id, person_b.user.user_id);
-        const b_is_sender_to_current_topic =
-            recent_senders.max_id_for_stream_topic_sender({
-                stream_id,
-                topic,
-                sender_id: person_b.user.user_id,
-            }) > 0;
-        const b_is_sender_to_current_stream =
-            recent_senders.max_id_for_stream_sender({
-                stream_id,
-                sender_id: person_b.user.user_id,
-            }) > 0;
-        const b_is_partner = pm_conversations.is_partner(person_b.user.user_id);
-
-        const properties_to_satisfy = [
-            b_is_sub,
-            b_is_sender_to_current_topic,
-            b_is_sender_to_current_stream,
-            b_is_partner,
-        ];
-
-        return -compare_user_wildcard(properties_to_satisfy);
+        return -compare_user_wildcard(
+            get_properties_to_satisy(person_b.user, stream_id, topic),
+            true,
+        );
     }
 
     // Both a and b are wildcards
@@ -372,34 +384,32 @@ export function compare_people_for_pms(
             return compare_users_for_pms(person_a.user, person_b.user);
         }
         // a: user, b: wildcard
-
-        // Wildcard gets higher priority over (In PM conversations):
-        // Users who have not PMed with the current user.
-        const a_is_partner = pm_conversations.is_partner(person_a.user.user_id);
-        return compare_user_wildcard([a_is_partner]);
+        return compare_user_wildcard(get_properties_to_satisy(person_a.user), false);
     }
     if (person_b.type === "user") {
         // a: wildcard, b: user
-        const b_is_partner = pm_conversations.is_partner(person_b.user.user_id);
-        return -compare_user_wildcard([b_is_partner]);
+        return -compare_user_wildcard(get_properties_to_satisy(person_b.user), false);
     }
+
     // Both a and b are wildcards
     return person_a.user.idx - person_b.user.idx;
 }
 
 export function compare_user_wildcard(
     properties_to_satisfy: boolean[],
-    current_stream_id?: number,
+    view_is_stream: boolean,
 ): number {
     // Assumption for convenience: Assuming that the user is user_a and wildcard is b.
     // If the other way around is true, just change the sign (multiplying with -1)
 
-    // If compose state is private or viewing a PM conversation, put wildcards at the bottom
+    // If message type is private or not viewing a stream conversation, with being it a 1:1 DM, wildcards are put at the bottom
     const message_type = compose_state.get_message_type();
-    if (message_type === "private" || current_stream_id === undefined) {
+    const pm_members_count = pm_ids_set().size;
+    if ((message_type === "private" || !view_is_stream) && pm_members_count <= 1) {
         return -1;
     }
 
+    // Streams or Group DMs
     const atleast_one_satisifies = properties_to_satisfy.some(Boolean);
     if (atleast_one_satisifies) {
         return -1;

@@ -223,10 +223,7 @@ export function compare_by_recency(
     a_message_id = max_id_for_stream_sender({stream_id, sender_id: user_a.user_id});
     b_message_id = max_id_for_stream_sender({stream_id, sender_id: user_b.user_id});
 
-    if (a_message_id !== b_message_id) {
-        return b_message_id - a_message_id;
-    }
-    return 0;
+    return b_message_id - a_message_id;
 }
 
 export function get_topic_recent_senders(stream_id: number, topic: string): number[] {
