@@ -999,6 +999,10 @@ def channel_message_to_zerver_message(
                 topic_name = f"{thread_date} Slack thread {count}"
                 thread_map[thread_ts_str] = topic_name
 
+        # The topic name is empty string for DMs and GDMs.
+        if is_private:
+            topic_name = ""
+
         zulip_message = build_message(
             topic_name=topic_name,
             date_sent=get_timestamp_from_message(message),
