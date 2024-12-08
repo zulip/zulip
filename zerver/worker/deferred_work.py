@@ -15,6 +15,7 @@ from typing_extensions import override
 from zerver.actions.message_flags import do_mark_stream_messages_as_read
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_export import notify_realm_export
+from zerver.actions.realm_settings import scrub_deactivated_realm
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.push_notifications import clear_push_device_tokens
 from zerver.lib.queue import queue_json_publish_rollback_unsafe, retry_event
@@ -228,6 +229,13 @@ class DeferredWorker(QueueProcessingWorker):
             realm_id = event["realm_id"]
             logger.info("Updating push bouncer with metadata on behalf of realm %s", realm_id)
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        elif event["type"] == "scrub_deactivated_realm":
+            realms_to_scrub = Realm.objects.filter(
+                deactivated=True,
+                scheduled_deletion_date__lte=timezone_now(),
+            )
+            for realm in realms_to_scrub:
+                scrub_deactivated_realm(realm)
 
         end = time.time()
         logger.info(
