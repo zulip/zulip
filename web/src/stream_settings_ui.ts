@@ -434,6 +434,9 @@ function get_stream_id_buckets(
     for (const stream_id of stream_ids) {
         const sub = sub_store.get(stream_id);
         assert(sub !== undefined);
+        if (!settings_data.is_archived_channels_visible() && sub.is_archived) {
+            continue;
+        }
         const match_status = triage_stream(left_panel_params, sub);
 
         if (match_status === "name_match") {
