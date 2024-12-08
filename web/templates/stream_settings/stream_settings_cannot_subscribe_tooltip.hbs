@@ -1,0 +1,23 @@
+<template id="cannot-subscribe-tooltip-template">
+    <span>
+        {{#if is_archived}}
+            {{#if subscribed}}
+                {{#tr}}
+                    Cannot unsubscribe from archived channel <z-stream></z-stream>
+                    {{#*inline "z-stream"}}<span class="white-space-nowrap">{{> ../inline_decorated_stream_name stream=.}}</span>{{/inline}}
+                {{/tr}}
+            {{else}}
+                {{#tr}}
+                    Cannot subscribe to archived channel <z-stream></z-stream>
+                    {{#*inline "z-stream"}}<span class="white-space-nowrap">{{> ../inline_decorated_stream_name stream=.}}</span>{{/inline}}
+                {{/tr}}
+            {{/if}}
+        {{else}}
+            {{#tr}}
+                Cannot subscribe to private channel <z-stream></z-stream>
+                {{#*inline "z-stream"}}<span class="white-space-nowrap">{{> ../inline_decorated_stream_name stream=.}}</span>{{/inline}}
+            {{/tr}}
+        {{/if}}
+    </span>
+</template>
+

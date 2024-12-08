@@ -140,7 +140,7 @@ export function initialize_cant_subscribe_popover(): void {
 }
 
 export function set_up_right_panel_section(sub: StreamSubscription): void {
-    if (sub.subscribed) {
+    if (sub.subscribed && !sub.is_archived) {
         stream_edit_toggler.toggler.enable_tab("personal");
         stream_edit_toggler.toggler.goto(stream_edit_toggler.select_tab);
     } else {

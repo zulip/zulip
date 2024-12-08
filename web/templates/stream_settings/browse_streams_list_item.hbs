@@ -2,12 +2,21 @@
 <div class="stream-row" data-stream-id="{{stream_id}}" data-stream-name="{{name}}">
 
     {{#if subscribed}}
-        <div class="check checked sub_unsub_button tippy-zulip-tooltip" data-tooltip-template-id="unsubscribe-from-{{name}}-stream-tooltip-template">
+        <div class="check checked sub_unsub_button {{#if is_archived}}disabled{{/if}} tippy-zulip-tooltip" data-tooltip-template-id="{{#if is_archived}}cannot-unsubscribe-from-{{name}}-stream-tooltip-template{{else}}unsubscribe-from-{{name}}-stream-tooltip-template{{/if}}">
 
             <template id="unsubscribe-from-{{name}}-stream-tooltip-template">
                 <span>
                     {{#tr}}
                         Unsubscribe from <z-stream></z-stream>
+                        {{#*inline "z-stream"}}{{> ../inline_decorated_stream_name stream=this}}{{/inline}}
+                    {{/tr}}
+                </span>
+            </template>
+
+            <template id="cannot-unsubscribe-from-{{name}}-stream-tooltip-template">
+                <span>
+                    {{#tr}}
+                        Cannot unsubscribe from <z-stream></z-stream>
                         {{#*inline "z-stream"}}{{> ../inline_decorated_stream_name stream=this}}{{/inline}}
                     {{/tr}}
                 </span>
