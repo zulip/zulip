@@ -257,10 +257,11 @@
             }
 
             .user-circle {
-                /* size of the user activity circle */
-                /* 6px at 15px/1em */
-                min-width: 0.4em;
-                height: 0.4em;
+                /* TODO: Refactor inbox rows to use grid, to avoid the
+                   min-width here that holds the other rows to similar
+                   columns. */
+                min-width: 1em;
+                font-size: 0.5333em;
                 margin-right: 5px;
                 top: 0;
             }
