@@ -21,7 +21,7 @@
                     {{else if is_bot}}
                     <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
                     {{else}}
-                    <span class="{{user_circle_class}} user-circle" data-presence-indicator-user-id="{{user_ids_string}}"></span>
+                    <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle" data-presence-indicator-user-id="{{user_ids_string}}"></span>
                     {{/if}}
                 </span>
             </div>
