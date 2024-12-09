@@ -8,9 +8,9 @@
         </a>
         <div class="topic-markers-and-unreads change_visibility_policy" data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}">
             {{#if contains_unread_mention}}
-                <span class="unread_mention_info">
-                    @
-                </span>
+                <div class="unread_mention_info">
+                    <i class="zulip-icon zulip-icon-at-sign" aria-hidden="true"></i>
+                </div>
             {{else if is_followed}}
                 <i class="zulip-icon zulip-icon-follow visibility-policy-icon" role="button" aria-hidden="true" data-tippy-content="{{t 'You follow this topic.'}}"></i>
             {{/if}}
