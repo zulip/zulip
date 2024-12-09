@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 326  # Last bumped for updating fields in server_supported_p
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (305, 0)  # bumped 2024-11-27 to downgrade @uppy/tus
+PROVISION_VERSION = (306, 0)  # bumped 2024-12-03 to remove spectrum-colorpicker
