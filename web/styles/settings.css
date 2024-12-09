@@ -641,6 +641,17 @@ input[type="checkbox"] {
             font-weight: bold;
             word-break: break-all;
         }
+
+        .notification-table-header-container {
+            display: flex;
+            justify-content: center;
+
+            .at-sign-container {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
     }
 }
 

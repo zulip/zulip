@@ -17,8 +17,16 @@
                         {{> ../help_link_widget link="/help/mobile-notifications#enabling-push-notifications-for-self-hosted-servers" }}
                     </th>
                     <th rowspan="2" width="14%">{{t "Email"}}</th>
-                    <th rowspan="2" width="14%">@all
-                        <i class="fa fa-question-circle settings-info-icon tippy-zulip-tooltip" data-tippy-content="{{t 'Whether wildcard mentions like @all are treated as mentions for the purpose of notifications.' }}"></i>
+                    <th rowspan="2" width="14%">
+                        <div class="notification-table-header-container">
+                            <div class="at-sign-container">
+                                <i class="zulip-icon zulip-icon-at-sign" aria-label="{{t 'All'}}"></i>
+                                <span>all</span>
+                            </div>
+                            <div>
+                                <i class="fa fa-question-circle settings-info-icon tippy-zulip-tooltip" data-tippy-content="{{t 'Whether wildcard mentions like @all are treated as mentions for the purpose of notifications.' }}"></i>
+                            </div>
+                        </div>
                     </th>
                 </tr>
                 <tr>
