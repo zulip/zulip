@@ -1055,11 +1055,14 @@ ul.popover-group-menu-member-list {
 
     .popover-menu-user-presence {
         position: absolute;
-        width: 8px;
-        height: 8px;
+        /* Presence dot does not scale, because
+           the avatar itself does not scale. */
+        font-size: 8px;
+        line-height: 1;
         right: -1px;
         bottom: -1px;
-        border: solid 1px var(--color-background);
+        background-color: var(--color-background-popover-menu);
+        border: solid 1px var(--color-background-popover-menu);
         border-radius: 50%;
     }
 
@@ -1092,11 +1095,6 @@ ul.popover-group-menu-member-list {
         color: var(--color-text-item);
         text-overflow: ellipsis;
         white-space: nowrap;
-    }
-
-    .user-circle-offline {
-        background-color: var(--color-background-popover-menu);
-        border-color: hsl(0deg 0% 50%);
     }
 }
 
@@ -1145,19 +1143,17 @@ ul.popover-group-menu-member-list {
 
     .status-circle {
         position: absolute;
-        width: var(--length-user-status-circle);
-        height: var(--length-user-status-circle);
         top: unset;
         left: unset;
+        /* Presence dot does not scale, because
+           the avatar itself does not scale. */
+        font-size: var(--length-user-status-circle);
+        line-height: 1;
         right: -1px;
         bottom: -1px;
-        border: solid 1px var(--color-background);
-        border-radius: 50%;
-    }
-
-    .user-circle-offline {
         background-color: var(--color-background-popover-menu);
-        border-color: hsl(0deg 0% 50%);
+        border: solid 1px var(--color-background-popover-menu);
+        border-radius: 50%;
     }
 
     .text-area {
