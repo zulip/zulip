@@ -65,6 +65,7 @@ group_setting_type = UnionType(
 default_stream_fields = [
     ("is_archived", bool),
     ("can_administer_channel_group", group_setting_type),
+    ("can_send_message_group", group_setting_type),
     ("can_remove_subscribers_group", group_setting_type),
     ("creator_id", OptionalType(int)),
     ("date_created", int),
