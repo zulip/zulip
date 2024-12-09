@@ -370,14 +370,9 @@ ul.popover-group-menu-member-list {
 }
 
 .popover_user_presence {
-    width: var(--length-user-status-circle);
-    height: var(--length-user-status-circle);
-    margin: 0 5px;
-    display: inline-block;
-    float: initial;
-    position: relative;
-    top: 0;
-    flex-shrink: 0;
+    margin: 0 2px;
+    /* 11px at 16px/1em */
+    font-size: 0.6875em;
 }
 
 .user-status-icon-wrapper {
