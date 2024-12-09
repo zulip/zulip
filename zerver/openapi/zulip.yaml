@@ -10355,6 +10355,8 @@ paths:
                   $ref: "#/components/schemas/CanRemoveSubscribersGroup"
                 can_administer_channel_group:
                   $ref: "#/components/schemas/CanAdministerChannelGroup"
+                can_send_message_group:
+                  $ref: "#/components/schemas/CanSendMessageGroup"
               required:
                 - subscriptions
             encoding:
@@ -10379,6 +10381,8 @@ paths:
               can_remove_subscribers_group:
                 contentType: application/json
               can_administer_channel_group:
+                contentType: application/json
+              can_send_message_group:
                 contentType: application/json
       responses:
         "200":
@@ -14878,6 +14882,7 @@ paths:
                                 is_announcement_only: {}
                                 can_remove_subscribers_group: {}
                                 can_administer_channel_group: {}
+                                can_send_message_group: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -19758,6 +19763,7 @@ paths:
                                 is_announcement_only: {}
                                 can_remove_subscribers_group: {}
                                 can_administer_channel_group: {}
+                                can_send_message_group: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -20149,6 +20155,40 @@ paths:
                       "new": {"direct_members": [10], "direct_subgroups": [11]},
                       "old": 15,
                     }
+                can_send_message_group:
+                  description: |
+                    The set of users who have permission to post in this channel
+                    expressed as an [update to a group-setting value][update-group-setting].
+
+                    Note that a user who is a member of the specified user group must
+                    also [have access](/help/channel-permissions) to the channel in
+                    order to post in the channel.
+
+                    **Changes**: New in Zulip 10.0 (feature level 333). Previously
+                    `stream_post_policy` field used to control the permission to
+                    post in the channel.
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    new:
+                      allOf:
+                        - description: |
+                            The new [group-setting value](/api/group-setting-values) for who would
+                            have the permission to post in this channel.
+                        - $ref: "#/components/schemas/CanSendMessageGroup"
+                    old:
+                      allOf:
+                        - description: |
+                            The expected current [group-setting value](/api/group-setting-values)
+                            for who has the permission to post in this channel.
+                        - $ref: "#/components/schemas/CanSendMessageGroup"
+                  required:
+                    - new
+                  example:
+                    {
+                      "new": {"direct_members": [10], "direct_subgroups": [11]},
+                      "old": 15,
+                    }
             encoding:
               is_private:
                 contentType: application/json
@@ -20165,6 +20205,8 @@ paths:
               can_remove_subscribers_group:
                 contentType: application/json
               can_administer_channel_group:
+                contentType: application/json
+              can_send_message_group:
                 contentType: application/json
       responses:
         "200":
@@ -21892,6 +21934,7 @@ components:
             is_announcement_only: {}
             can_remove_subscribers_group: {}
             can_administer_channel_group: {}
+            can_send_message_group: {}
             stream_weekly_traffic:
               type: integer
               nullable: true
@@ -22064,6 +22107,8 @@ components:
           $ref: "#/components/schemas/CanRemoveSubscribersGroup"
         can_administer_channel_group:
           $ref: "#/components/schemas/CanAdministerChannelGroup"
+        can_send_message_group:
+          $ref: "#/components/schemas/CanSendMessageGroup"
     BasicBot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -23095,6 +23140,8 @@ components:
           $ref: "#/components/schemas/CanRemoveSubscribersGroup"
         can_administer_channel_group:
           $ref: "#/components/schemas/CanAdministerChannelGroup"
+        can_send_message_group:
+          $ref: "#/components/schemas/CanSendMessageGroup"
         is_archived:
           type: boolean
           description: |
@@ -24757,6 +24804,22 @@ components:
             **Changes**: New in Zulip 10.0 (feature level 325). Prior to this
             change, the permission to administer channels was limited to realm
             administrators.
+
+            [setting-values]: /api/group-setting-values
+    CanSendMessageGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to post in this channel.
+
+            Note that a user who is a member of the specified user group must
+            also [have access](/help/channel-permissions) to the channel in
+            order to post in the channel.
+
+            **Changes**: New in Zulip 10.0 (feature level 333). Previously
+            `stream_post_policy` field used to control the permission to
+            post in the channel.
 
             [setting-values]: /api/group-setting-values
     LinkifierPattern:
