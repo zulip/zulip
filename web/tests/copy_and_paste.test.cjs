@@ -2,12 +2,19 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace.cjs");
+const {JSDOM} = require("jsdom");
+
+const katex_tests = require("../../zerver/tests/fixtures/katex_test_cases.json");
+
+const {zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+
+const {window} = new JSDOM();
 
 const copy_and_paste = zrequire("copy_and_paste");
 const stream_data = zrequire("stream_data");
 
+set_global("document", {});
 stream_data.add_sub({
     stream_id: 4,
     name: "Rome",
@@ -116,6 +123,9 @@ run_test("paste_handler_converter", () => {
     assert.equal(copy_and_paste.paste_handler_converter(input), "The `JSDOM` constructor");
 
     // A python code block
+    global.document = window.document;
+    global.window = window;
+    global.Node = window.Node;
     input = `<meta http-equiv="content-type" content="text/html; charset=utf-8"><p>zulip code block in python</p><div class="codehilite zulip-code-block" data-code-language="Python"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="s2">"hello"</span><span class="p">)</span>\n<span class="nb">print</span><span class="p">(</span><span class="s2">"world"</span><span class="p">)</span></code></pre></div></meta>`;
     assert.equal(
         copy_and_paste.paste_handler_converter(input),
@@ -239,4 +249,22 @@ run_test("paste_handler_converter", () => {
 
     // Pasting from Excel using ^⇧V should paste formatted text.
     assert.equal(copy_and_paste.paste_handler_converter(input), "     \n\n$ 20.00\n\n$ 7.00");
+
+    // Math block tests
+    for (const math_block_test of katex_tests.math_block_tests) {
+        input = math_block_test.input;
+        assert.equal(
+            copy_and_paste.paste_handler_converter(input),
+            math_block_test.expected_output,
+        );
+    }
+
+    // Inline Math Expression tests
+    for (const inline_math_expression_test of katex_tests.inline_math_expression_tests) {
+        input = inline_math_expression_test.input;
+        assert.equal(
+            copy_and_paste.paste_handler_converter(input),
+            inline_math_expression_test.expected_output,
+        );
+    }
 });
