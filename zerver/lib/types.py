@@ -151,6 +151,7 @@ class RawStreamDict(TypedDict):
     """
 
     can_administer_channel_group_id: int
+    can_send_message_group_id: int
     can_remove_subscribers_group_id: int
     creator_id: int | None
     date_created: datetime
@@ -194,6 +195,7 @@ class SubscriptionStreamDict(TypedDict):
 
     audible_notifications: bool | None
     can_administer_channel_group: int | AnonymousSettingGroupDict
+    can_send_message_group: int | AnonymousSettingGroupDict
     can_remove_subscribers_group: int | AnonymousSettingGroupDict
     color: str
     creator_id: int | None
@@ -225,6 +227,7 @@ class SubscriptionStreamDict(TypedDict):
 class NeverSubscribedStreamDict(TypedDict):
     is_archived: bool
     can_administer_channel_group: int | AnonymousSettingGroupDict
+    can_send_message_group: int | AnonymousSettingGroupDict
     can_remove_subscribers_group: int | AnonymousSettingGroupDict
     creator_id: int | None
     date_created: int
@@ -252,6 +255,7 @@ class DefaultStreamDict(TypedDict):
 
     is_archived: bool
     can_administer_channel_group: int | AnonymousSettingGroupDict
+    can_send_message_group: int | AnonymousSettingGroupDict
     can_remove_subscribers_group: int | AnonymousSettingGroupDict
     creator_id: int | None
     date_created: int

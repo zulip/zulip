@@ -392,6 +392,7 @@ def send_subscription_add_events(
                 # Fields from Stream.API_FIELDS
                 is_archived=stream_dict["is_archived"],
                 can_administer_channel_group=stream_dict["can_administer_channel_group"],
+                can_send_message_group=stream_dict["can_send_message_group"],
                 can_remove_subscribers_group=stream_dict["can_remove_subscribers_group"],
                 creator_id=stream_dict["creator_id"],
                 date_created=stream_dict["date_created"],

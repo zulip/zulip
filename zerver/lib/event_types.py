@@ -773,6 +773,7 @@ class BasicStreamFields(BaseModel):
     is_archived: bool
     can_administer_channel_group: int | AnonymousSettingGroupDict
     can_remove_subscribers_group: int | AnonymousSettingGroupDict
+    can_send_message_group: int | AnonymousSettingGroupDict
     creator_id: int | None
     date_created: int
     description: str
@@ -835,6 +836,7 @@ class SingleSubscription(BaseModel):
     is_archived: bool
     can_administer_channel_group: int | AnonymousSettingGroupDict
     can_remove_subscribers_group: int | AnonymousSettingGroupDict
+    can_send_message_group: int | AnonymousSettingGroupDict
     creator_id: int | None
     date_created: int
     description: str
