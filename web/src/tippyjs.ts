@@ -9,7 +9,6 @@ import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
 import {$t} from "./i18n.ts";
 import * as people from "./people.ts";
-import * as popovers from "./popovers.ts";
 import * as settings_config from "./settings_config.ts";
 import * as stream_data from "./stream_data.ts";
 import * as ui_util from "./ui_util.ts";
@@ -638,10 +637,6 @@ export function initialize(): void {
             avoid problematic interactions with the main tooltips for
             those regions.
         */
-
-        onShow() {
-            popovers.hide_all();
-        },
 
         onHidden(instance) {
             instance.destroy();
