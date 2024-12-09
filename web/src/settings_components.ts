@@ -1565,7 +1565,7 @@ export const group_setting_name_schema = z.enum([
     "can_remove_members_group",
 ]);
 
-type GroupSettingName = z.infer<typeof group_setting_name_schema>;
+export type GroupSettingName = z.infer<typeof group_setting_name_schema>;
 
 export function create_group_setting_widget({
     $pill_container,
