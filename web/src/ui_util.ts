@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import render_unread_mention_indicator_icon_widget from "../templates/widgets/unread_mention_indicator_icon_widget.hbs";
+
 import * as blueslip from "./blueslip.ts";
 import * as hash_parser from "./hash_parser.ts";
 import * as keydown_util from "./keydown_util.ts";
@@ -142,15 +144,13 @@ export function update_unread_mention_info_in_dom(
     $unread_mention_info_elem: JQuery,
     stream_has_any_unread_mention_messages: boolean,
 ): void {
-    const $unread_mention_info_span = $unread_mention_info_elem.find(".unread_mention_info");
+    const $unread_mention_info_div = $unread_mention_info_elem.find(".unread_mention_info");
+    const $unread_mention_indicator = render_unread_mention_indicator_icon_widget();
     if (!stream_has_any_unread_mention_messages) {
-        $unread_mention_info_span.hide();
-        $unread_mention_info_span.text("");
+        $unread_mention_info_div.empty();
         return;
     }
-
-    $unread_mention_info_span.show();
-    $unread_mention_info_span.text("@");
+    $unread_mention_info_div.append($unread_mention_indicator);
 }
 
 /**

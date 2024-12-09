@@ -33,15 +33,18 @@
                         <div class="inbox-topic-name">
                             <a tabindex="-1" href="{{topic_url}}" {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}>{{topic_display_name}}</a>
                         </div>
-                        <span class="unread_mention_info tippy-zulip-tooltip
-                          {{#unless mention_in_unread}}hidden{{/unless}}"
-                          data-tippy-content="{{t 'You have unread mentions'}}">@</span>
-                        <div class="unread-count-focus-outline" tabindex="0" data-col-index="{{ column_indexes.UNREAD_COUNT }}">
-                            <span class="unread_count tippy-zulip-tooltip on_hover_topic_read"
-                              data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}"
-                              data-tippy-content="{{t 'Mark as read' }}" aria-label="{{t 'Mark as read' }}">
-                                {{unread_count}}
-                            </span>
+                        <div class="mention-and-unread-count-container">
+                            <div class="unread_mention_info tippy-zulip-tooltip
+                              {{#unless mention_in_unread}}hidden{{/unless}}"
+                              data-tippy-content="{{t 'You have mentions.'}}"><i class="zulip-icon zulip-icon-at-sign" aria-hidden="true"></i>
+                            </div>
+                            <div class="unread-count-focus-outline" tabindex="0" data-col-index="{{ column_indexes.UNREAD_COUNT }}">
+                                <span class="unread_count tippy-zulip-tooltip on_hover_topic_read"
+                                  data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}"
+                                  data-tippy-content="{{t 'Mark as read' }}" aria-label="{{t 'Mark as read' }}">
+                                    {{unread_count}}
+                                </span>
+                            </div>
                         </div>
                     {{/if}}
                 </div>

@@ -1289,6 +1289,7 @@ li.top_left_scheduled_messages {
     .unread_mention_info {
         /* Unset margin in favor of flex gap. */
         margin: 0;
+        display: flex;
     }
 
     .unread_count {
@@ -1296,6 +1297,12 @@ li.top_left_scheduled_messages {
            decouples .unread_count from the app-wide
            definition. */
         height: auto;
+    }
+}
+
+.topic-markers-and-unreads {
+    .unread_mention_info {
+        display: flex;
     }
 }
 
