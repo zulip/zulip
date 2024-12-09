@@ -1377,6 +1377,13 @@ ul.popover-group-menu-member-list {
     }
 }
 
+.color-picker-popover {
+    --popover-menu-max-width: calc(
+        var(--padding-color-swatch-list) * 2 + var(--size-color-swatch) * 6 +
+            var(--grid-gap-color-swatch) * 5
+    );
+}
+
 .personal-menu-clear-status {
     display: flex;
     align-items: center;

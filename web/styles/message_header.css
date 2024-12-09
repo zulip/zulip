@@ -30,7 +30,7 @@
             -1px -5px 0 5px var(--color-background),
             1px -5px 0 0 var(--color-background);
 
-        & a.message_label_clickable {
+        & .message_label_clickable {
             color: var(--color-text-message-header);
 
             &:hover {

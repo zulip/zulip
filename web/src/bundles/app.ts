@@ -58,6 +58,7 @@ import "../../styles/user_status.css";
 import "../../styles/widgets.css";
 import "../../styles/print.css";
 import "../../styles/inbox.css";
+import "../../styles/color_picker.css";
 
 // This should be last.
 import "../ui_init.js";

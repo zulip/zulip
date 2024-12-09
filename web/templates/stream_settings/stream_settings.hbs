@@ -120,10 +120,11 @@
                     </div>
                 {{/each}}
                 <div class="input-group">
-                    <label for="streamcolor" class="settings-field-label">{{t "Channel color" }}</label>
-                    <span class="sub_setting_control">
-                        <input stream_id="{{sub.stream_id}}" class="colorpicker" id="streamcolor" type="text" value="{{sub.color}}" tabindex="-1" />
-                    </span>
+                    <label class="settings-field-label">{{t "Channel color" }}</label>
+                    <button class="button small rounded stream-settings-color-selector choose_stream_color" data-stream-id="{{ sub.stream_id }}">
+                        <span class="stream-settings-color-preview" style="background: {{sub.color}};"></span>
+                        <span class="stream-settings-color-selector-label">{{t "Change color"}}</span>
+                    </button>
                 </div>
             </div>
             <div class="subsection-parent">

@@ -1215,6 +1215,19 @@ div.settings-radio-input-parent {
     width: fit-content;
 }
 
+.stream-settings-color-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+}
+
+.stream-settings-color-preview {
+    width: 33px;
+    height: 33px;
+    margin: -6px 0 -6px -10px;
+}
+
 @media (width < $lg_min) {
     .user-groups-container,
     .subscriptions-container {
