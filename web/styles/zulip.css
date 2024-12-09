@@ -689,11 +689,6 @@ strong {
     white-space: pre-wrap;
 }
 
-.sp-input {
-    width: calc(100% - 14px);
-    box-sizing: initial !important;
-}
-
 .logout {
     white-space: nowrap;
 }
