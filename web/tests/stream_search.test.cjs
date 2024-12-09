@@ -58,15 +58,14 @@ function toggle_filter() {
     stream_list.toggle_filter_displayed({preventDefault: noop});
 }
 
-run_test("basics", ({override_rewire}) => {
-    let cursor_helper;
+run_test("basics", () => {
     const $input = $(".stream-list-filter");
     const $section = $(".stream_search_section");
 
     expand_sidebar();
     $section.addClass("notdisplayed");
 
-    cursor_helper = make_cursor_helper();
+    const cursor_helper = make_cursor_helper();
 
     function verify_expanded() {
         assert.ok(!$section.hasClass("notdisplayed"));
