@@ -156,6 +156,29 @@
         overflow: hidden;
     }
 
+    #recent_view_search_clear {
+        grid-area: clear-search;
+        padding: 0;
+        background: none;
+        color: var(--color-text-clear-search-button);
+        display: grid;
+
+        &:hover {
+            color: var(--color-text-clear-search-button-hover);
+        }
+
+        &:focus,
+        &:focus-visible,
+        &:active {
+            box-shadow: none;
+            outline: none;
+        }
+
+        .zulip-icon-close {
+            align-self: center;
+        }
+    }
+
     .clear_search_button {
         /* Overrides app_components.css property. */
         padding-top: 4px !important;
