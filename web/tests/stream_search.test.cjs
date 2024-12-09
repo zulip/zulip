@@ -58,10 +58,6 @@ function toggle_filter() {
     stream_list.toggle_filter_displayed({preventDefault: noop});
 }
 
-function clear_search_input() {
-    stream_list.clear_search({stopPropagation: noop});
-}
-
 run_test("basics", ({override_rewire}) => {
     let cursor_helper;
     const $input = $(".stream-list-filter");
@@ -77,26 +73,11 @@ run_test("basics", ({override_rewire}) => {
         simulate_search_expanded();
     }
 
-    function verify_focused() {
-        assert.ok(stream_list.searching());
-        assert.ok($input.is_focused());
-    }
-
     function verify_collapsed() {
         assert.ok($section.hasClass("notdisplayed"));
         assert.ok(!$input.is_focused());
         assert.ok(!stream_list.searching());
         simulate_search_collapsed();
-    }
-
-    function verify_list_updated(f) {
-        let updated;
-        override_rewire(stream_list, "update_streams_sidebar", () => {
-            updated = true;
-        });
-
-        f();
-        assert.ok(updated);
     }
     
     function toggle_and_verify(state, cursor_helper) {
