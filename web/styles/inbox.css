@@ -18,6 +18,11 @@
             text-decoration: none;
         }
 
+        .mention-and-unread-count-container {
+            display: flex;
+            align-items: center;
+        }
+
         .unread_count {
             opacity: 1;
             outline: 0 solid var(--color-background-unread-counter);
@@ -351,7 +356,8 @@
             }
 
             .unread_mention_info {
-                grid-area: unread_mention_info;
+                grid-area: mention-and-unread-count-container;
+                display: flex;
                 margin-right: 0;
             }
 
