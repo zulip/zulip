@@ -448,6 +448,9 @@ export async function build_move_topic_to_stream_popover(
         // topic and thus submit button is disabled if stream is also
         // not changed.
         let is_disabled = false;
+        if (old_topic_name === "(no topic)" && new_topic_name === "") {
+            is_disabled = true;
+        }
         if (realm.realm_mandatory_topics && !new_topic_name?.trim()) {
             is_disabled = true;
         }
@@ -481,6 +484,9 @@ export async function build_move_topic_to_stream_popover(
             // new_topic_name can be undefined when the new topic input is disabled when
             // user does not have permission to edit topic.
             new_topic_name = new_topic_name.trim();
+        }
+        if (new_topic_name?.trim() === "") {
+            new_topic_name = "(no topic)";
         }
         if (old_topic_name === new_topic_name) {
             // We use `undefined` to tell the server that
