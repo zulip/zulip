@@ -405,6 +405,11 @@ export function process_escape_key(e) {
 function handle_popover_events(event_name) {
     const popover_menu_visible_instance = popover_menus.get_visible_instance();
 
+    if (popover_menus.is_stream_actions_popover_displayed()) {
+        stream_popover.stream_sidebar_menu_handle_keyboard(event_name);
+        return true;
+    }
+
     if (popover_menu_visible_instance) {
         popover_menus.sidebar_menu_instance_handle_keyboard(
             popover_menu_visible_instance,
@@ -425,11 +430,6 @@ function handle_popover_events(event_name) {
 
     if (user_card_popover.user_sidebar.is_open()) {
         user_card_popover.user_sidebar.handle_keyboard(event_name);
-        return true;
-    }
-
-    if (stream_popover.is_open()) {
-        stream_popover.stream_sidebar_menu_handle_keyboard(event_name);
         return true;
     }
 

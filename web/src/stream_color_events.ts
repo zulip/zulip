@@ -64,15 +64,9 @@ export function update_stream_color(sub: StreamSubscription, color: string): voi
         "background-color",
         color,
     );
-    // The swatch in the color picker.
-    stream_color.set_colorpicker_color(
-        $(
-            `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
-                stream_id,
-            )}'] .colorpicker`,
-        ),
-        color,
-    );
+    $(
+        `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(stream_id)}'] .stream-settings-color-preview`,
+    ).css("background-color", color);
     $(
         `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
             stream_id,
