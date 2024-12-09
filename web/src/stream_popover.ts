@@ -27,7 +27,6 @@ import * as popover_menus from "./popover_menus.ts";
 import {left_sidebar_tippy_options} from "./popover_menus.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
@@ -41,28 +40,23 @@ import * as util from "./util.ts";
 
 // In this module, we manage stream popovers
 // that pop up from the left sidebar.
-let stream_popover_instance: tippy.Instance | null = null;
 let stream_widget_value: number | undefined;
 let move_topic_to_stream_topic_typeahead: Typeahead<string> | undefined;
 
-function get_popover_menu_items(sidebar_elem: tippy.Instance | null): JQuery | undefined {
-    if (!sidebar_elem) {
-        blueslip.error("Trying to get menu items when action popover is closed.");
-        return undefined;
-    }
-
-    const $popover = $(sidebar_elem.popper);
-    if (!$popover) {
-        blueslip.error("Cannot find popover data for stream sidebar menu.");
-        return undefined;
-    }
-
-    return $("li:not(.divider):visible > a", $popover);
-}
-
 export function stream_sidebar_menu_handle_keyboard(key: string): void {
-    const items = get_popover_menu_items(stream_popover_instance);
-    popover_menus.popover_items_handle_keyboard(key, items);
+    if (popover_menus.is_color_picker_popover_displayed()) {
+        const $color_picker_popover_instance = popover_menus.get_color_picker_popover();
+        if (!$color_picker_popover_instance) {
+            return;
+        }
+        popover_menus.sidebar_menu_instance_handle_keyboard($color_picker_popover_instance, key);
+        return;
+    }
+    const $stream_actions_popover_instance = popover_menus.get_stream_actions_popover();
+    if (!$stream_actions_popover_instance) {
+        return;
+    }
+    popover_menus.sidebar_menu_instance_handle_keyboard($stream_actions_popover_instance, key);
 }
 
 export function elem_to_stream_id($elem: JQuery): number {
@@ -75,16 +69,10 @@ export function elem_to_stream_id($elem: JQuery): number {
     return stream_id;
 }
 
-export function is_open(): boolean {
-    return Boolean(stream_popover_instance);
-}
-
-export function hide_stream_popover(): void {
-    if (is_open()) {
-        ui_util.hide_left_sidebar_menu_icon();
-        stream_popover_instance!.destroy();
-        stream_popover_instance = null;
-    }
+export function hide_stream_popover(instance: tippy.Instance): void {
+    ui_util.hide_left_sidebar_menu_icon();
+    instance.destroy();
+    popover_menus.popover_instances.stream_actions_popover = null;
 }
 
 function stream_popover_sub(
@@ -104,7 +92,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
 
     // This will allow the user to close the popover by clicking
     // on the reference element if the popover is already open.
-    if (stream_popover_instance?.reference === elt) {
+    if (popover_menus.get_stream_actions_popover()?.reference === elt) {
         return;
     }
 
@@ -127,13 +115,13 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
         delay: [100, 0],
         ...left_sidebar_tippy_options,
         onCreate(instance) {
-            stream_popover_instance = instance;
             const $popover = $(instance.popper);
             $popover.addClass("stream-popover-root");
             instance.setContent(ui_util.parse_html(content));
         },
         onMount(instance) {
             const $popper = $(instance.popper);
+            popover_menus.popover_instances.stream_actions_popover = instance;
             ui_util.show_left_sidebar_menu_icon(elt);
 
             // Go to channel feed instead of first topic.
@@ -141,7 +129,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
                 e.preventDefault();
                 e.stopPropagation();
                 const sub = stream_popover_sub(e);
-                hide_stream_popover();
+                hide_stream_popover(instance);
                 message_view.show(
                     [
                         {
@@ -156,7 +144,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
             // Stream settings
             $popper.on("click", ".open_stream_settings", (e) => {
                 const sub = stream_popover_sub(e);
-                hide_stream_popover();
+                hide_stream_popover(instance);
 
                 // Admin can change any stream's name & description either stream is public or
                 // private, subscribed or unsubscribed.
@@ -172,7 +160,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
             // Pin/unpin
             $popper.on("click", ".pin_to_top", (e) => {
                 const sub = stream_popover_sub(e);
-                hide_stream_popover();
+                hide_stream_popover(instance);
                 stream_settings_ui.toggle_pin_to_top_stream(sub);
                 e.stopPropagation();
             });
@@ -180,7 +168,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
             // Mark all messages in stream as read
             $popper.on("click", ".mark_stream_as_read", (e) => {
                 const sub = stream_popover_sub(e);
-                hide_stream_popover();
+                hide_stream_popover(instance);
                 unread_ops.mark_stream_as_read(sub.stream_id);
                 e.stopPropagation();
             });
@@ -188,7 +176,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
             // Mute/unmute
             $popper.on("click", ".toggle_stream_muted", (e) => {
                 const sub = stream_popover_sub(e);
-                hide_stream_popover();
+                hide_stream_popover(instance);
                 stream_settings_api.set_stream_property(sub, {
                     property: "is_muted",
                     value: !sub.is_muted,
@@ -199,26 +187,9 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
             // Unsubscribe
             $popper.on("click", ".popover_sub_unsub_button", (e) => {
                 const sub = stream_popover_sub(e);
-                hide_stream_popover();
+                hide_stream_popover(instance);
                 stream_settings_components.sub_or_unsub(sub);
                 e.preventDefault();
-                e.stopPropagation();
-            });
-
-            // Choose a different color.
-            $popper.on("click", ".choose_stream_color", (e) => {
-                const $popover = $(instance.popper);
-                const $colorpicker = $popover.find(".colorpicker-container").find(".colorpicker");
-                $(".colorpicker-container").show();
-                $colorpicker.spectrum("destroy");
-                $colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options_full);
-                // In theory this should clean up the old color picker,
-                // but this seems a bit flaky -- the new colorpicker
-                // doesn't fire until you click a button, but the buttons
-                // have been hidden.  We work around this by just manually
-                // fixing it up here.
-                $colorpicker.parent().find(".sp-container").removeClass("sp-buttons-disabled");
-                $(e.currentTarget).hide();
                 e.stopPropagation();
             });
 
@@ -226,8 +197,18 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
                 popover_menus.hide_current_popover_if_visible(instance);
             });
         },
-        onHidden() {
-            hide_stream_popover();
+        onHide() {
+            const color_picker_popover = popover_menus.get_color_picker_popover();
+            if (!color_picker_popover) {
+                return undefined;
+            }
+            if ($(color_picker_popover.popper).is(":hover")) {
+                return false;
+            }
+            return undefined;
+        },
+        onHidden(instance) {
+            hide_stream_popover(instance);
         },
     });
 }
