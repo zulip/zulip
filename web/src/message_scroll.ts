@@ -5,13 +5,13 @@ import type * as tippy from "tippy.js";
 
 import * as compose_banner from "./compose_banner.ts";
 import * as message_fetch from "./message_fetch.ts";
+import * as message_list_navigation from "./message_list_navigation.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_scroll_state from "./message_scroll_state.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
-import * as unread_ui from "./unread_ui.ts";
 import {the} from "./util.ts";
 
 let hide_scroll_to_bottom_timer: ReturnType<typeof setTimeout> | undefined;
@@ -122,6 +122,17 @@ export function scroll_finished(): void {
             msg_list: message_lists.current,
         });
     }
+
+    // User is scrolling up
+    if (message_viewport.last_movement_direction < 0) {
+        const navigation_bar_bottom = $("#message-list-navigation").get_offset_to_window().bottom;
+        const visible_bottom = $("#compose").position().top;
+        // and the navigation bar is not completely in view
+        if (navigation_bar_bottom > visible_bottom) {
+            // then, focus on the currently selected message.
+            message_lists.current?.unfocus_navigation_bar();
+        }
+    }
 }
 
 let scroll_timer: ReturnType<typeof setTimeout> | undefined;
@@ -192,7 +203,7 @@ export function initialize(): void {
                 narrow_state.filter() !== undefined &&
                 message_lists.current === event.msg_list
             ) {
-                unread_ui.notify_messages_remain_unread();
+                message_list_navigation.update();
             }
         }
     });
