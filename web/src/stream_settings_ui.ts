@@ -873,7 +873,6 @@ export function launch(
             $overlay: $("#subscription_overlay"),
             on_close() {
                 browser_history.exit_overlay();
-                $(".colorpicker").spectrum("destroy");
             },
         });
         change_state(section, left_side_tab, right_side_tab);

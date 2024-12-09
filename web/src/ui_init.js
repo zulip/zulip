@@ -20,6 +20,7 @@ import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import * as channel from "./channel.ts";
 import * as click_handlers from "./click_handlers.ts";
+import * as color_picker_popover from "./color_picker_popover.ts";
 import * as common from "./common.ts";
 import * as compose from "./compose.js";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
@@ -568,6 +569,7 @@ export function initialize_everything(state_data) {
     sidebar_ui.initialize();
     user_profile.initialize();
     stream_popover.initialize();
+    color_picker_popover.initialize();
     add_stream_options_popover.initialize();
     click_handlers.initialize();
     scheduled_messages_overlay_ui.initialize();
