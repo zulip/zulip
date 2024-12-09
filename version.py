@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 334  # Last bumped for adding empty_topic_name client capabi
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (308, 0)  # bumped 2025-01-03 to upgrade @uppy/core and @uppy/tus
+PROVISION_VERSION = (309, 0)  # bumped 2024-01-07 to remove spectrum-colorpicker

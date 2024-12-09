@@ -29,18 +29,6 @@
     border-radius: 4px;
 }
 
-.sp-preview {
-    width: 20px;
-    border: none;
-    box-shadow: 0 0 1px hsl(0deg 0% 0%);
-}
-
-.sp-replacer {
-    margin-right: 12px;
-    border: none;
-    box-shadow: 0 0 2px hsl(0deg 0% 0% / 80%);
-}
-
 .stream-email .email-address {
     display: block;
     margin: auto;
@@ -1066,10 +1054,6 @@ h4.user_group_setting_subsection_title {
 
         &:last-of-type {
             border-bottom: none;
-        }
-
-        .sp-replacer {
-            box-shadow: none;
         }
 
         & input[type="radio"] {

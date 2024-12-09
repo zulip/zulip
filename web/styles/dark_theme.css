@@ -273,20 +273,6 @@
         }
     }
 
-    #stream-actions-menu-popover .sp-container {
-        background-color: transparent;
-
-        & button {
-            background-color: hsl(208deg 35% 11%);
-            border: 1px solid hsl(210deg 36% 4%);
-            color: hsl(236deg 31% 90%);
-        }
-
-        .sp-picker-container {
-            border-left: solid 1px hsl(210deg 36% 4%);
-        }
-    }
-
     .stream_header_colorblock.disabled {
         filter: brightness(50%);
     }
