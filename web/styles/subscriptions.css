@@ -549,8 +549,30 @@ h4.user_group_setting_subsection_title {
 
 #clear_search_stream_name,
 #clear_search_group_name {
-    right: 5px !important;
-    margin-left: -1px;
+    grid-area: clear-search;
+    padding: 0;
+    background: none;
+    color: var(--color-text-clear-search-button);
+    display: grid;
+
+    &:hover {
+        color: var(--color-text-clear-search-button-hover);
+    }
+
+    &:focus,
+    &:focus-visible,
+    &:active {
+        box-shadow: none;
+        outline: none;
+    }
+
+    .zulip-icon-close {
+        align-self: center;
+    }
+}
+
+#search_group_name:placeholder-shown + #clear_search_group_name {
+    visibility: hidden;
 }
 
 #search_stream_name:placeholder-shown + #clear_search_stream_name {
