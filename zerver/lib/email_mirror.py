@@ -422,22 +422,18 @@ def is_forwarded(subject: str) -> bool:
     return bool(re.match(reg, subject, flags=re.IGNORECASE))
 
 
+from datetime import datetime, timedelta
+
 def process_stream_message(to: str, message: EmailMessage) -> None:
     subject_header = message.get("Subject", "")
 
     subject = strip_from_subject(subject_header)
-    # We don't want to reject email messages with disallowed characters in the Subject,
-    # so we just remove them to make it a valid Zulip topic name.
     subject = "".join([char for char in subject if is_character_printable(char)])
-
-    # If the subject gets stripped to the empty string, we need to set some
-    # default value for the message topic. We can't use the usual
-    # "(no topic)" as that value is not permitted if the realm enforces
-    # that all messages must have a topic.
+    subject = subject[:60]
+    
     subject = subject or _("Email with no subject")
 
     stream, options = decode_stream_email_address(to)
-    # Don't remove quotations if message is forwarded, unless otherwise specified:
     if "include_quotes" not in options:
         options["include_quotes"] = is_forwarded(subject_header)
 
@@ -450,14 +446,28 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
             "Failed to process email to %s (%s): %s", stream.name, stream.realm.string_id, e
         )
         return
-
     body = construct_zulip_body(message, stream.realm, sender=user_profile, **options)
+
+    recipient = stream.recipient
+    one_week_ago = datetime.now() - timedelta(days=7)
+    recent_messages = Message.objects.filter(
+        recipient=recipient,
+        subject=subject,
+        date_sent__gte=one_week_ago,
+    )
+
+    if not recent_messages.exists():
+        
+        body = f"{subject_header}\n\n{body}"
+
+    
     send_zulip(user_profile, stream, subject, body)
     logger.info(
         "Successfully processed email to %s (%s)",
         stream.name,
         stream.realm.string_id,
     )
+
 
 
 def process_missed_message(to: str, message: EmailMessage) -> None:
