@@ -422,7 +422,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#change_email_button_container.disabled_setting_tooltip",
+        target: "#email_field_container.disabled_setting_tooltip",
         content: $t({defaultMessage: "Email address changes are disabled in this organization."}),
         appendTo: () => document.body,
         onHidden(instance) {
