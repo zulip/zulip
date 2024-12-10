@@ -534,8 +534,13 @@ function update_membership_status_text(group: UserGroup): void {
 export function show_settings_for(group: UserGroup): void {
     const html = render_user_group_settings({
         group,
-        // We get timestamp in seconds from the API but timerender needs milliseconds.
         date_created_string: timerender.get_localized_date_or_time_for_format(
+            // We get timestamp in seconds from the API but timerender
+            // needs milliseconds.
+            //
+            // Note that the 0 value will never be used in practice,
+            // because group.date_created is undefined precisely when
+            // group.creator_id is unset.
             new Date((group.date_created ?? 0) * 1000),
             "dayofyear_year",
         ),
