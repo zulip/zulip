@@ -33,6 +33,7 @@ const get_events_params = {};
 let event_queue_expired = false;
 
 function get_events_success(events) {
+    $(document).trigger(new $.Event("server_event.zulip", {events}));
     let messages = [];
     const update_message_events = [];
     const post_message_events = [];

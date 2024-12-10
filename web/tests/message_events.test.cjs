@@ -17,8 +17,15 @@ mock_esm("../src/message_parser", {
     message_has_image: noop,
     message_has_link: noop,
 });
-message_lists.current = {};
+message_lists.current = {
+    data: {
+        filter: {
+            can_apply_locally: () => true,
+        },
+    },
+};
 message_lists.all_rendered_message_lists = () => [message_lists.current];
+message_lists.non_rendered_data = () => [];
 
 const people = zrequire("people");
 const message_events = zrequire("message_events");
