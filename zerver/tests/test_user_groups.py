@@ -706,7 +706,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Frontend team",
         }
-        params[setting_name] = orjson.dumps(1111).decode()
+        params[setting_name] = orjson.dumps(123456).decode()
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "Invalid user group")
 
