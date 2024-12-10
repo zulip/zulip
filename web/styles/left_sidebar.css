@@ -446,6 +446,18 @@
 
     .subscribe-more-label {
         grid-area: row-text;
+        /* Because the label is run in small caps, we do a font-metrics-based
+           adjustment of its top margin to keep the text vertically aligned
+           with the square [+] icon (whose shape leaves absolutely no room
+           for error when it comes to centering). Going back to the font metrics
+           outlined in web/src/information_density.ts, we can offset against the
+           space reserved for descenders, and take half that value to pull the
+           text up: 400 / (400 + 1025) ~= 0.28; half of 0.28 is 0.14, so
+           `margin-top: -0.14em`. However, it looks as though a slight adjustment
+           to -0.12em produces a slightly more pleasing result, which makes sense
+           because mathematical centering and the perception of center don't
+           always match. */
+        margin-top: -0.12em;
         font-size: var(--font-size-sidebar-action-heading);
         font-weight: var(--font-weight-sidebar-action-heading);
         font-variant: var(--font-variant-sidebar-action-heading);
