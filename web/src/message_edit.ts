@@ -1073,10 +1073,11 @@ export function save_message_row_edit($row: JQuery): void {
     const $banner_container = compose_banner.get_compose_banner_container(
         $row.find(".message_edit_form textarea"),
     );
-    const stream_id = Number.parseInt(
-        rows.get_message_recipient_header($row).attr("data-stream-id")!,
-        10,
-    );
+    let stream_id: number | undefined;
+    const stream_id_data = rows.get_message_recipient_header($row).attr("data-stream-id");
+    if (stream_id_data !== undefined) {
+        stream_id = Number.parseInt(stream_id_data, 10);
+    }
     const msg_list = message_lists.current;
     let message_id = rows.id($row);
     let message = message_lists.current.get(message_id);
@@ -1095,7 +1096,7 @@ export function save_message_row_edit($row: JQuery): void {
     }
 
     const already_has_stream_wildcard_mention = message.stream_wildcard_mentioned;
-    if (!already_has_stream_wildcard_mention) {
+    if (stream_id !== undefined && !already_has_stream_wildcard_mention) {
         const stream_wildcard_mention = util.find_stream_wildcard_mentions(new_content ?? "");
         const is_stream_message_mentions_valid = compose_validate.validate_stream_message_mentions({
             stream_id,
