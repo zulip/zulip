@@ -7,7 +7,7 @@ const {run_test} = require("./lib/test.cjs");
 
 const {password_quality, password_warning} = zrequire("password_quality");
 
-function password_field(min_length, min_guesses) {
+function password_field(min_length, max_length, min_guesses) {
     const self = {};
 
     self.attr = (name) => {
@@ -16,6 +16,8 @@ function password_field(min_length, min_guesses) {
                 return min_length;
             case "data-min-guesses":
                 return min_guesses;
+            case "data-max-length":
+                return max_length;
             /* istanbul ignore next */
             default:
                 throw new Error(`Unknown attribute ${name}`);
@@ -60,7 +62,7 @@ run_test("basics w/progress bar", () => {
     assert.equal(warning, "translated: Password should be at least 10 characters long");
 
     password = "foo";
-    accepted = password_quality(password, $bar, password_field(2, 200));
+    accepted = password_quality(password, $bar, password_field(2, 200, 10));
     assert.ok(accepted);
     assert.equal($bar.w, "10.390277164940581%");
     assert.equal($bar.added_class, "bar-success");
@@ -73,4 +75,12 @@ run_test("basics w/progress bar", () => {
     assert.equal($bar.added_class, "bar-danger");
     warning = password_warning(password, password_field(6));
     assert.equal(warning, 'Repeated characters like "aaa" are easy to guess.');
+
+    // Test a password that's longer than the configured limit.
+    password = "hfHeo34FksdBChjeruShJ@sidfgusd";
+    accepted = password_quality(password, $bar, password_field(6, 20, 1e20));
+    assert.ok(!accepted);
+    assert.equal($bar.added_class, "bar-danger");
+    warning = password_warning(password, password_field(6, 20, 1e20));
+    assert.equal(warning, `translated: Maximum password length: 20 characters.`);
 });

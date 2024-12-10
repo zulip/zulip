@@ -478,6 +478,19 @@ export function set_up(): void {
                 );
                 return false;
             }
+
+            const max_length = realm.password_max_length;
+            if (new_password && new_password.toString().length > max_length) {
+                ui_report.error(
+                    $t_html(
+                        {defaultMessage: "Maximum password length: {max_length} characters"},
+                        {max_length},
+                    ),
+                    undefined,
+                    $("#dialog_error"),
+                );
+                return false;
+            }
             return true;
         }
 
