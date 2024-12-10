@@ -690,7 +690,7 @@ function validate_private_message(): boolean {
 
     if (compose_state.private_message_recipient().length === 0) {
         compose_banner.show_error_message(
-            $t({defaultMessage: "Please specify at least one valid recipient."}),
+            $t({defaultMessage: "Please specify a valid recipient."}),
             compose_banner.CLASSNAMES.missing_private_message_recipient,
             $banner_container,
             $("#private_message_recipient"),
@@ -806,6 +806,15 @@ export function validate_message_length($container: JQuery): boolean {
     if (text.length > realm.max_message_length) {
         $textarea.addClass("flash");
         setTimeout(() => $textarea.removeClass("flash"), 1500);
+
+        const $banner_container = $("#compose_banners");
+        compose_banner.show_error_message(
+            $t({defaultMessage: "Message length shouldn't be greater than 10000 characters."}),
+            compose_banner.CLASSNAMES.missing_private_message_recipient,
+            $banner_container,
+            $("#private_message_recipient"),
+        );
+
         return false;
     }
     return true;
@@ -813,11 +822,33 @@ export function validate_message_length($container: JQuery): boolean {
 
 export function validate(scheduling_message: boolean): boolean {
     const message_content = compose_state.message_content();
-    if (/^\s*$/.test(message_content)) {
-        $("textarea#compose-textarea").toggleClass("invalid", true);
+    // P1 and P2
+    if (
+        compose_state.get_message_type() !== "private" &&
+        !validate_stream_message(scheduling_message)
+    ) {
         return false;
     }
-
+    // P3
+    if (compose_state.get_message_type() === "private" && !validate_private_message()) {
+        return false;
+    }
+    // P4
+    if (/^\s*$/.test(message_content)) {
+        $("textarea#compose-textarea").toggleClass("invalid", true);
+        const $banner_container = $("#compose_banners");
+        compose_banner.show_error_message(
+            $t({defaultMessage: "Compose a message."}),
+            compose_banner.CLASSNAMES.missing_private_message_recipient,
+            $banner_container,
+            $("#private_message_recipient"),
+        );
+        return false;
+    }
+    // P5
+    if (!validate_message_length($("#send_message_form"))) {
+        return false;
+    }
     if ($("#zephyr-mirror-error").is(":visible")) {
         compose_banner.show_error_message(
             $t({
@@ -829,14 +860,7 @@ export function validate(scheduling_message: boolean): boolean {
         );
         return false;
     }
-    if (!validate_message_length($("#send_message_form"))) {
-        return false;
-    }
-
-    if (compose_state.get_message_type() === "private") {
-        return validate_private_message();
-    }
-    return validate_stream_message(scheduling_message);
+    return true;
 }
 
 export function convert_mentions_to_silent_in_direct_messages(
