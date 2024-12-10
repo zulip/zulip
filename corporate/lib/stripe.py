@@ -2579,7 +2579,7 @@ class BillingSession(ABC):
             ),
             "discount_percent": plan.discount,
             "is_self_hosted_billing": is_self_hosted_billing,
-            "is_server_on_legacy_plan": remote_server_legacy_plan_end_date is not None,
+            "complimentary_access_plan": remote_server_legacy_plan_end_date is not None,
             "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
             "legacy_remote_server_next_plan_name": legacy_remote_server_next_plan_name,
             "using_min_licenses_for_plan": using_min_licenses_for_plan,
