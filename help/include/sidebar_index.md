@@ -186,9 +186,10 @@
 * [GDPR compliance](/help/gdpr-compliance)
 
 ## Users
-* [Roles and permissions](/help/roles-and-permissions)
+* [Manage permissions](/help/roles-and-permissions)
 * [Invite new users](/help/invite-new-users)
 * [Restrict account creation](/help/restrict-account-creation)
+* [User roles](/help/change-a-users-role)
 * [Guest users](/help/guest-users)
 * [Manage a user](/help/manage-a-user)
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
@@ -196,7 +197,6 @@
 * [Configure default new user settings](/help/configure-default-new-user-settings)
 * [Configure organization language](/help/configure-organization-language)
 * [Manage user groups](/help/manage-user-groups)
-* [Change a user's role](/help/change-a-users-role)
 * [Change a user's name](/help/change-a-users-name)
 * [Manage a user's channel subscriptions](/help/manage-user-channel-subscriptions)
 * [Manage a user's group membership](/help/manage-user-group-membership)
