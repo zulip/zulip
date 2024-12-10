@@ -820,6 +820,8 @@ def ok_to_include_history(
     user_profile: UserProfile | None,
     is_web_public_query: bool,
 ) -> bool:
+    # NOTE: `load_local_messages` needs to be in sync with logic here.
+    #
     # There are occasions where we need to find Message rows that
     # have no corresponding UserMessage row, because the user is
     # reading a public channel that might include messages that
@@ -1376,6 +1378,8 @@ def fetch_messages(
     num_after: int,
     client_requested_message_ids: list[int] | None = None,
 ) -> FetchedMessages:
+    # NOTE: `load_local_messages` needs to be updated when modifying
+    # `need_user_message` logic here.
     include_history = ok_to_include_history(narrow, user_profile, is_web_public_query)
     if include_history:
         # The initial query in this case doesn't use `zerver_usermessage`,

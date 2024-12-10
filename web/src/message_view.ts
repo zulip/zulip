@@ -57,6 +57,7 @@ import type {NarrowTerm} from "./state_data.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
+import * as sub_store from "./sub_store.ts";
 import * as submessage from "./submessage.ts";
 import * as topic_generator from "./topic_generator.ts";
 import * as typing_events from "./typing_events.ts";
@@ -692,7 +693,42 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                 then_select_offset = opts.then_select_offset;
             }
 
-            {
+            if (select_immediately) {
+                // Verify that cached data is correct 5% of the time.
+                if (
+                    DEVELOPMENT ||
+                    Math.random() <
+                        message_fetch.consts.cached_data_verification_sampling_percent / 100
+                ) {
+                    message_fetch.verify_cached_data(msg_list.data);
+                }
+                // We can skip the initial fetch since we already have a
+                // message we can render and select and sufficient messages
+                // rendered in the view to provide context around the anchor.
+                //
+                // We don't populate message list from locally cached data
+                // if the stream / topic filter needs to be adjusted to
+                // avoid populating messages for the wrong topic.
+                assert(!filter.requires_adjustment_for_moved_with_target);
+                const has_found_newest = msg_list.data.fetch_status.has_found_newest();
+                const has_found_oldest = msg_list.data.fetch_status.has_found_oldest();
+                const has_complete_history = has_found_newest && has_found_oldest;
+                const has_enough_context =
+                    msg_list.num_items() >= message_fetch.consts.narrow_min_num_message_for_context;
+
+                // We don't need to fetch messages if we have enough context or
+                // complete message history since `scroll_finished`
+                // automatically fetch messages if user
+                // is near the end of rendered messages.
+                if (!has_complete_history && !has_enough_context) {
+                    message_fetch.fetch_more_if_required_for_current_msg_list(
+                        has_found_oldest,
+                        has_found_newest,
+                        true,
+                        true,
+                    );
+                }
+            } else {
                 let anchor;
 
                 // Either we're trying to center the narrow around a
@@ -913,8 +949,37 @@ function load_local_messages(msg_data: MessageListData, superset_data: MessageLi
 
     const in_msgs = superset_data.all_messages();
     msg_data.add_messages(in_msgs);
+    if (msg_data.visibly_empty()) {
+        return false;
+    }
 
-    return !msg_data.visibly_empty();
+    // We cannot rely on fetch status of data for which
+    // `zerver.lib.narrow.ok_to_include_history` is not `True` when
+    // populating narrow for which it is `True` since older
+    // messages might be filtered due to them not having `UserMessage`
+    // entries. See `zerver.lib.narrow.fetch_messages`.
+    let ok_to_copy_status = true;
+    if (!superset_data.filter.includes_history() && msg_data.filter.includes_history()) {
+        ok_to_copy_status = false;
+    }
+
+    if (!ok_to_copy_status && msg_data.filter.has_operator("channel")) {
+        // We can still rely on fetch status if the superset_data
+        // has the first message of the channel.
+        const channel_id_str = msg_data.filter.operands("channel")[0];
+        assert(channel_id_str !== undefined);
+        const channel_id = Number.parseInt(channel_id_str, 10);
+        const oldest_possible_msg_id = sub_store.get(channel_id)?.first_message_id;
+        if (oldest_possible_msg_id && superset_data.get(oldest_possible_msg_id)) {
+            ok_to_copy_status = true;
+        }
+    }
+
+    if (ok_to_copy_status) {
+        msg_data.fetch_status.copy_status(superset_data.fetch_status);
+    }
+
+    return true;
 }
 
 export function maybe_add_local_messages(opts: {
@@ -976,6 +1041,34 @@ export function maybe_add_local_messages(opts: {
             // whichever is first (i.e. basically the `found` logic
             // below), but the server doesn't support that query.
             id_info.final_select_id = id_info.target_id;
+        }
+
+        // If we have cached data for the same narrow, we can try to find the
+        // message we want to select locally.
+        if (superset_data.filter.equals(filter) && !load_local_messages(msg_data, superset_data)) {
+            return;
+        }
+
+        // Even for the `cannot_compute` case, we can render locally
+        // under specific conditions.
+        if (
+            // If we locally have the message user wants to select.
+            id_info.target_id &&
+            msg_data.get(id_info.target_id) &&
+            // We don't want to accidentally mark old unreads as read,
+            // so we only render if cannot mark messages read in this view
+            // which is commonly the case in this code path.
+            !filter.can_mark_messages_read()
+        ) {
+            id_info.local_select_id = id_info.target_id;
+        } else if (
+            id_info.target_id === undefined &&
+            // Our goal here is to select the first unread id. We can only do
+            // so if we have the complete data for the narrow.
+            msg_data.fetch_status.has_found_newest() &&
+            msg_data.fetch_status.has_found_oldest()
+        ) {
+            id_info.local_select_id = msg_data.first_unread_message_id();
         }
         // if we can't compute a next unread id, just return without
         // setting local_select_id, so that we go to the server.

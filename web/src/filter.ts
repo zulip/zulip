@@ -1482,6 +1482,11 @@ export class Filter {
         return this.has_operator("is") && !this.has_operand("is", "resolved");
     }
 
+    includes_history(): boolean {
+        // Similar to `zerver.lib.narrow.ok_to_include_history`.
+        return this.includes_full_stream_history() && !this.is_personal_filter();
+    }
+
     can_apply_locally(is_local_echo = false): boolean {
         // Since there can be multiple operators, each block should
         // just return false here.
