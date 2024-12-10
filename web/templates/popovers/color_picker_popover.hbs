@@ -1,0 +1,83 @@
+<div class="popover-menu color-picker-popover" data-simplebar data-simplebar-tab-index="-1">
+    <div class="message_header message_header_stream" data-stream-id="{{stream_id}}">
+        <div class="message-header-contents" style="background: {{recipient_bar_color}};">
+            <div class="message_label_clickable stream_label">
+                <span class="stream-privacy-modified-color-{{stream_id}} stream-privacy filter-icon"  style="color: {{stream_privacy_icon_color}}">
+                    {{> ../stream_privacy .}}
+                </span>
+                {{#if stream_name}}
+                <span class="message-header-stream-name">
+                    {{~stream_name~}}
+                </span>
+                {{else}}
+                &nbsp;
+                {{/if}}
+            </div>
+        </div>
+    </div>
+    <ul role="menu" class="popover-menu-list">
+        <div role="none" class="color-swatch-list">
+            {{#each stream_color_palette as |hex_color|}}
+                <span
+                  class="color-swatch-option"
+                  data-color="#{{hex_color}}"
+                  role="button"
+                  tabindex="0"
+                  ></span>
+            {{/each}}
+        </div>
+        <li role="separator" class="popover-menu-separator"></li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="custom-color-picker popover-menu-link" tabindex="0">
+                <i class="custom-color-option-icon" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Custom color"}}</span>
+                <input type="color" class="color-picker" tabindex="-1" />
+            </a>
+        </li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="apply-stream-color popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-check" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Apply"}}</span>
+            </a>
+        </li>
+    </ul>
+</div>
+
+<div class="popover-menu color-picker-popover" data-simplebar data-simplebar-tab-index="-1">
+    <div class="message_header message_header_stream" data-stream-id="{{stream_id}}">
+        <div class="message-header-contents" style="background: {{recipient_bar_color}};">
+            <div class="message_label_clickable stream_label">
+                <span class="stream-privacy-modified-color-{{stream_id}} stream-privacy filter-icon"  style="color: {{stream_privacy_icon_color}}">
+                    {{> ../stream_privacy .}}
+                </span>
+                {{#if stream_name}}
+                <span class="message-header-stream-name">
+                    {{~stream_name~}}
+                </span>
+                {{else}}
+                &nbsp;
+                {{/if}}
+            </div>
+        </div>
+    </div>
+    <ul role="menu" class="popover-menu-list">
+        <div role="none" class="color-swatch-list">
+            {{#each stream_color_palette as |hex_color|}}
+                <span
+                  class="color-swatch-option"
+                  data-color="#{{hex_color}}"
+                  role="button"
+                  tabindex="0"
+                  ></span>
+            {{/each}}
+        </div>
+        <li role="separator" class="popover-menu-separator"></li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="custom-color-picker popover-menu-link" tabindex="0">
+                <i class="custom-color-option-icon" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Custom color"}}</span>
+                <input type="color" class="color-picker" tabindex="-1" />
+            </a>
+        </li>
+    </ul>
+</div>
