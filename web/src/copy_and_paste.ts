@@ -472,6 +472,118 @@ export function paste_handler_converter(paste_html: string): string {
             return prefix + content + (node.nextSibling && !content.endsWith("\n") ? "\n" : "");
         },
     });
+    const processed_math_block_parents = new Set();
+    const processed_inline_math_block_parents = new Set();
+    turndownService.addRule("katex-math-block", {
+        filter(node: Node) {
+            if (!(node instanceof HTMLElement)) {
+                return false;
+            }
+            // We only need nodes whose parent contains the katex-display spans as immediate children or katex spans as immediate children
+            if (
+                node.classList.contains("katex-display") &&
+                !node.closest(".katex-display > .katex-display")
+            ) {
+                const returnval =
+                    node.querySelector('.katex-mathml annotation[encoding="application/x-tex"]') !==
+                    null;
+                return returnval;
+            }
+
+            return false;
+        },
+        replacement(_content: string, node: Node) {
+            assert(node instanceof HTMLElement);
+            let math_block_markdown = "```math\n";
+            if (node !== null) {
+                const parent = node.parentElement!;
+                if (processed_math_block_parents.has(parent)) {
+                    return "";
+                }
+                processed_math_block_parents.add(parent);
+                let consecutive_empty_display_count = 0;
+                for (const child of parent.children) {
+                    const annotation_element = child.querySelector(
+                        '.katex-mathml annotation[encoding="application/x-tex"]',
+                    );
+
+                    if (annotation_element?.textContent) {
+                        const katex_source = annotation_element.textContent.trim();
+                        math_block_markdown += katex_source + "\n\n";
+                        consecutive_empty_display_count = 0;
+                    } else {
+                        if (consecutive_empty_display_count === 0) {
+                            math_block_markdown += "\n\n\n";
+                        } else {
+                            math_block_markdown += "\n\n";
+                        }
+                        consecutive_empty_display_count += 1;
+                    }
+                }
+            }
+            math_block_markdown = math_block_markdown.slice(
+                0,
+                Math.max(0, math_block_markdown.length - 1),
+            ); // Don't add extra newline add the end
+            return (math_block_markdown += "```");
+        },
+    });
+
+    turndownService.addRule("katex-inline-math", {
+        filter(node) {
+            if (node.classList.contains("katex")) {
+                // Should explicitly be an inline expression
+                const parent = node.parentElement;
+                if (
+                    parent?.nodeName !== "P" &&
+                    node.querySelector(".katex-mathml annotation")?.textContent === null
+                ) {
+                    return false;
+                }
+                return true;
+            }
+            return false;
+        },
+        replacement(_content, node: Node) {
+            let parsed_inline_expression = "";
+            if (node !== null) {
+                const parent = node.parentElement!;
+                if (processed_inline_math_block_parents.has(parent)) {
+                    return "";
+                }
+                processed_inline_math_block_parents.add(parent);
+                let insideKatexBlock = false;
+                for (const child of parent.childNodes) {
+                    if (child instanceof HTMLElement && child.classList.contains("katex")) {
+                        // Encountering a KaTeX span; toggle the flag to indicate we are inside a block
+                        insideKatexBlock = !insideKatexBlock;
+                    }
+                    if (child.nodeType === 3) {
+                        // It is a text node between two katex spans
+                        if (insideKatexBlock) {
+                            parsed_inline_expression += child.textContent;
+                        }
+                        continue;
+                    }
+                    if (child instanceof HTMLElement) {
+                        if (child.nodeName === "BR") {
+                            parsed_inline_expression += "\n";
+                            continue;
+                        }
+                        const annotation_element = child.querySelector(".katex-mathml annotation");
+                        if (!annotation_element?.textContent) {
+                            // It is a text node that is not between two katex spans
+                            continue;
+                        }
+                        const katex_source = annotation_element.textContent.trim();
+                        parsed_inline_expression += `$$${katex_source}$$`;
+                    }
+                }
+            }
+            return parsed_inline_expression;
+        },
+    });
+
     turndownService.addRule("zulipImagePreview", {
         filter(node) {
             // select image previews in Zulip messages
