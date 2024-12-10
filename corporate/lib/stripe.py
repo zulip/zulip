@@ -1010,7 +1010,7 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def add_sponsorship_info_to_context(self, context: dict[str, Any]) -> None:
+    def add_org_type_data_to_sponsorship_context(self, context: dict[str, Any]) -> None:
         pass
 
     @abstractmethod
@@ -3419,7 +3419,7 @@ class BillingSession(ABC):
                     plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
                 )
 
-        self.add_sponsorship_info_to_context(context)
+        self.add_org_type_data_to_sponsorship_context(context)
         return context
 
     def request_sponsorship(self, form: SponsorshipRequestForm) -> None:
@@ -4202,7 +4202,7 @@ class RealmBillingSession(BillingSession):
         return self.realm.name
 
     @override
-    def add_sponsorship_info_to_context(self, context: dict[str, Any]) -> None:
+    def add_org_type_data_to_sponsorship_context(self, context: dict[str, Any]) -> None:
         context.update(
             realm_org_type=self.realm.org_type,
             sorted_org_types=sorted(
@@ -4646,7 +4646,7 @@ class RemoteRealmBillingSession(BillingSession):
         return self.remote_realm.host
 
     @override
-    def add_sponsorship_info_to_context(self, context: dict[str, Any]) -> None:
+    def add_org_type_data_to_sponsorship_context(self, context: dict[str, Any]) -> None:
         context.update(
             realm_org_type=self.remote_realm.org_type,
             sorted_org_types=sorted(
@@ -5095,7 +5095,9 @@ class RemoteServerBillingSession(BillingSession):
         return self.remote_server.hostname
 
     @override
-    def add_sponsorship_info_to_context(self, context: dict[str, Any]) -> None:  # nocoverage
+    def add_org_type_data_to_sponsorship_context(
+        self, context: dict[str, Any]
+    ) -> None:  # nocoverage
         context.update(
             realm_org_type=self.remote_server.org_type,
             sorted_org_types=sorted(
