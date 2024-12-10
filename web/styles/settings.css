@@ -435,6 +435,12 @@ input[type="checkbox"] {
     }
 }
 
+.preferences-settings-form {
+    .tab-picker {
+        width: 325px;
+    }
+}
+
 .information-density-settings {
     max-width: 325px;
 
