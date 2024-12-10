@@ -433,8 +433,11 @@
     .subscribe-more-link {
         display: grid;
         grid-template:
-            "plus-icon row-text" var(--line-height-sidebar-row-prominent)
-            / auto 1fr;
+            "plus-icon . row-text" var(--line-height-sidebar-row-prominent)
+            / var(--left-sidebar-icon-column-width) var(
+                --left-sidebar-icon-content-gap
+            )
+            minmax(0, 1fr);
         align-items: center;
         line-height: var(--line-height-sidebar-row-prominent);
         color: var(--color-text-sidebar-action-heading);
@@ -442,6 +445,7 @@
     }
 
     .subscribe-more-label {
+        grid-area: row-text;
         font-size: var(--font-size-sidebar-action-heading);
         font-weight: var(--font-weight-sidebar-action-heading);
         font-variant: var(--font-variant-sidebar-action-heading);
@@ -455,15 +459,6 @@
 #login-link-container,
 #subscribe-to-more-streams {
     text-decoration: none;
-
-    .subscribe-more-icon {
-        min-width: 19px;
-        text-align: center;
-
-        &::before {
-            padding-right: 3px;
-        }
-    }
 }
 
 #login-link-container {
