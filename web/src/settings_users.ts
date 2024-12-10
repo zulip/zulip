@@ -5,7 +5,6 @@ import type * as tippy from "tippy.js";
 import render_settings_user_list_row from "../templates/settings/settings_user_list_row.hbs";
 
 import {compute_active_status, post_presence_response_schema} from "./activity.ts";
-import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -150,12 +149,6 @@ export function update_view_on_reactivate(user_id: number): void {
     should_redraw_deactivated_users_list = true;
 }
 
-function failed_listing_users(): void {
-    loading.destroy_indicator($("#subs_page_loading_indicator"));
-    const user_id = people.my_current_user_id();
-    blueslip.error("Error while listing users for user_id", {user_id});
-}
-
 function add_value_to_filters(
     section: UserSettingsSection,
     key: "role_code" | "text_search",
@@ -250,11 +243,6 @@ function create_role_filter_dropdown(
 function populate_users(): void {
     const active_user_ids = people.get_realm_active_human_user_ids();
     const deactivated_user_ids = people.get_non_active_human_ids();
-
-    if (active_user_ids.length === 0 && deactivated_user_ids.length === 0) {
-        failed_listing_users();
-        return;
-    }
 
     if (!presence_data_fetched) {
         fetch_presence_user_setting({
