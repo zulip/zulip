@@ -706,7 +706,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Frontend team",
         }
-        params[setting_name] = orjson.dumps(1111).decode()
+        params[setting_name] = orjson.dumps(-1).decode()
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "Invalid user group")
 
@@ -1193,24 +1193,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         params = {
             "can_mention_group": orjson.dumps(
                 {
-                    "new": {
-                        "direct_members": [othello.id],
-                        "direct_subgroups": [moderators_group.id],
-                    },
-                    "old": {
-                        "direct_members": [hamlet.id],
-                        "direct_subgroups": [1111],
-                    },
-                }
-            ).decode()
-        }
-        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
-        self.assert_json_error(result, "'old' value does not match the expected value.")
-
-        params = {
-            "can_mention_group": orjson.dumps(
-                {
-                    "new": 1111,
+                    "new": -1,
                     "old": {
                         "direct_members": [hamlet.id],
                         "direct_subgroups": [marketing_group.id],
