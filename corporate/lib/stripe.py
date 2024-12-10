@@ -3415,9 +3415,7 @@ class BillingSession(ABC):
             plan = get_current_plan_by_customer(customer)
             if plan is not None:
                 context["plan_name"] = plan.name
-                context["is_server_on_legacy_plan"] = (
-                    plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
-                )
+                context["complimentary_access"] = plan.is_complimentary_access_plan()
 
         self.add_org_type_data_to_sponsorship_context(context)
         return context
