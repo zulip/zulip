@@ -43,7 +43,7 @@ const alert_regex_replacements = new Map<string, string>([
 export function process_message(message: Message): void {
     // Parsing for alert words is expensive, so we rely on the host
     // to tell us there any alert words to even look for.
-    if (!message.alerted) {
+    if (!message.watched) {
         return;
     }
 
@@ -89,7 +89,7 @@ export function notifies(message: Message): boolean {
     // alert words into a message, just because that can be annoying for
     // certain types of workflows where everybody on your team, including
     // yourself, sets up an alert word to effectively mention the team.
-    return !people.is_current_user(message.sender_email) && message.alerted;
+    return !people.is_current_user(message.sender_email) && message.watched;
 }
 
 export const initialize = (params: StateData["alert_words"]): void => {

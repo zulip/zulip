@@ -44,62 +44,62 @@ const regular_message = {
 const own_message = {
     sender_email: "tester@zulip.com",
     content: "<p>hey this message alertone</p>",
-    alerted: true,
+    watched: true,
 };
 const other_message = {
     sender_email: "another@zulip.com",
     content: "<p>another alertone message</p>",
-    alerted: true,
+    watched: true,
 };
 const caps_message = {
     sender_email: "another@zulip.com",
     content: "<p>another ALERTtwo message</p>",
-    alerted: true,
+    watched: true,
 };
 const alertwordboundary_message = {
     sender_email: "another@zulip.com",
     content: "<p>another alertthreemessage</p>",
-    alerted: false,
+    watched: false,
 };
 const multialert_message = {
     sender_email: "another@zulip.com",
     content: "<p>another emoji alertone and then alerttwo</p>",
-    alerted: true,
+    watched: true,
 };
 const unsafe_word_message = {
     sender_email: "another@zulip.com",
     content: "<p>gotta al*rt.*s all</p>",
-    alerted: true,
+    watched: true,
 };
 const alert_in_url_message = {
     sender_email: "another@zulip.com",
     content: "<p>http://www.google.com/alertone/me</p>",
-    alerted: true,
+    watched: true,
 };
 const question_word_message = {
     sender_email: "another@zulip.com",
     content: "<p>still alertone? me</p>",
-    alerted: true,
+    watched: true,
 };
 
 const typo_word_message = {
     sender_email: "another@zulip.com",
     content: "<p>alertones alerttwo alerttwo alertthreez</p>",
-    alerted: true,
+    watched: true,
 };
 
 const alert_domain_message = {
     sender_email: "another@zulip.com",
     content:
         '<p>now with link <a href="http://www.alerttwo.us/foo/bar" target="_blank" title="http://www.alerttwo.us/foo/bar">www.alerttwo.us/foo/bar</a></p>',
-    alerted: true,
+    watched: true,
 };
 // This test ensure we are not mucking up rendered HTML content.
 const message_with_emoji = {
     sender_email: "another@zulip.com",
     content:
         '<p>I <img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2764.png" title="heart"> emoji!</p>',
-    alerted: true,
+    watched: true,
 };
 
 run_test("notifications", () => {
@@ -188,7 +188,7 @@ run_test("munging", () => {
         {
             sender_email: "another@zulip.com",
             content: `<p>FD&amp;C &lt;3 &gt;8 5'11" 5&#39;11&quot;</p>`,
-            alerted: true,
+            watched: true,
         },
         `<p><span class='alert-word'>FD&amp;C</span> <span class='alert-word'>&lt;3</span> <span class='alert-word'>&gt;8</span> <span class='alert-word'>5'11"</span> <span class='alert-word'>5&#39;11&quot;</span></p>`,
     );

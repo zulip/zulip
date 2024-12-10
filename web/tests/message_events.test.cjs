@@ -134,7 +134,7 @@ run_test("update_messages", ({override}) => {
     assert.deepEqual(rendered_mgs, [
         {
             display_reply_to: undefined,
-            alerted: false,
+            watched: false,
             clean_reactions: new Map(),
             collapsed: false,
             content: "<b>new content</b>",

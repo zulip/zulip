@@ -82,7 +82,7 @@ type EchoedMessageData = {
     // These flags are rendering artifacts we'll want if the
     // edit fails and we need to revert to the original
     // rendering of the message.
-    alerted: boolean;
+    watched: boolean;
     mentioned: boolean;
     mentioned_me_directly: boolean;
 };
@@ -1144,7 +1144,7 @@ export function save_message_row_edit($row: JQuery): void {
             starred: message.starred,
             historical: message.historical,
             collapsed: message.collapsed,
-            alerted: message.alerted,
+            watched: message.watched,
             mentioned: message.mentioned,
             mentioned_me_directly: message.mentioned,
         });
@@ -1203,7 +1203,7 @@ export function save_message_row_edit($row: JQuery): void {
                         raw_content: echo_data.orig_raw_content,
                         mentioned: echo_data.mentioned,
                         mentioned_me_directly: echo_data.mentioned_me_directly,
-                        alerted: echo_data.alerted,
+                        watched: echo_data.watched,
                     });
 
                     $row = message_lists.current.get_row(message_id);
