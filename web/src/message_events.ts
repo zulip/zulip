@@ -1,6 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import * as activity from "./activity.ts";
 import * as alert_words from "./alert_words.ts";
@@ -13,6 +14,7 @@ import * as compose_validate from "./compose_validate.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
 import * as drafts from "./drafts.ts";
 import * as echo from "./echo.ts";
+import type {Filter} from "./filter.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_edit_history from "./message_edit_history.ts";
 import * as message_events_util from "./message_events_util.ts";
@@ -22,6 +24,7 @@ import * as message_lists from "./message_lists.ts";
 import * as message_notifications from "./message_notifications.ts";
 import * as message_parser from "./message_parser.ts";
 import * as message_store from "./message_store.ts";
+import {type Message, type RawMessage, raw_message_schema} from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as message_view from "./message_view.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -35,19 +38,19 @@ import {realm} from "./state_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
+import type {UpdateMessageEvent} from "./types.ts";
 import * as unread from "./unread.ts";
 import * as unread_ui from "./unread_ui.ts";
 import * as util from "./util.ts";
 
-function filter_has_term_type(filter, term_type) {
+function filter_has_term_type(filter: Filter, term_type: string): boolean {
     return (
-        filter !== undefined &&
-        (filter.sorted_term_types().includes(term_type) ||
-            filter.sorted_term_types().includes(`not-${term_type}`))
+        filter.sorted_term_types().includes(term_type) ||
+        filter.sorted_term_types().includes(`not-${term_type}`)
     );
 }
 
-export function discard_cached_lists_with_term_type(term_type) {
+export function discard_cached_lists_with_term_type(term_type: string): void {
     // Discards cached MessageList and MessageListData which have
     // `term_type` and `not-term_type`.
     assert(!term_type.includes("not-"));
@@ -75,18 +78,20 @@ export function discard_cached_lists_with_term_type(term_type) {
     }
 }
 
-export function update_current_view_for_topic_visibility() {
+export function update_current_view_for_topic_visibility(): boolean {
     // If we have rendered message list / cached data based on topic
     // visibility policy, we need to rerender it to reflect the changes. It
     // is easier to just load the narrow from scratch, instead of asking server
     // for relevant messages in the updated topic.
     const filter = message_lists.current?.data.filter;
-    if (filter_has_term_type(filter, "is-followed")) {
+    if (filter !== undefined && filter_has_term_type(filter, "is-followed")) {
         // Use `set_timeout to call after we update the topic
         // visibility policy locally.
         // Calling this outside `user_topics_ui` to avoid circular imports.
+        assert(message_lists.current !== undefined);
         const msg_list_id = message_lists.current.id;
         setTimeout(() => {
+            assert(message_lists.current !== undefined);
             if (message_lists.current.id !== msg_list_id) {
                 // Check if the message list is still the same.
                 return;
@@ -104,10 +109,10 @@ export function update_current_view_for_topic_visibility() {
 }
 
 export let update_views_filtered_on_message_property = (
-    message_ids,
-    property_term_type,
-    property_value,
-) => {
+    message_ids: number[],
+    property_term_type: string,
+    property_value: boolean,
+): void => {
     // NOTE: Call this function after updating the message property locally.
     assert(!property_term_type.includes("not-"));
 
@@ -143,8 +148,8 @@ export let update_views_filtered_on_message_property = (
         }
 
         // We need the message objects to determine if they match the filter.
-        const messages_to_fetch = [];
-        const messages = [];
+        const messages_to_fetch: number[] = [];
+        const messages: Message[] = [];
         for (const message_id of message_ids) {
             const message = message_store.get(message_id);
             if (message !== undefined) {
@@ -160,8 +165,12 @@ export let update_views_filtered_on_message_property = (
                     continue;
                 }
 
-                const first_id = msg_list.first().id;
-                const last_id = msg_list.last().id;
+                const first_message = msg_list.first();
+                assert(first_message !== undefined);
+                const first_id = first_message.id;
+                const last_message = msg_list.last();
+                assert(last_message !== undefined);
+                const last_id = last_message.id;
                 const has_found_newest = msg_list.data.fetch_status.has_found_newest();
                 const has_found_oldest = msg_list.data.fetch_status.has_found_oldest();
 
@@ -186,15 +195,16 @@ export let update_views_filtered_on_message_property = (
                     narrow: JSON.stringify(filter.terms()),
                 },
                 success(data) {
-                    const messages_to_add = [];
+                    const messages_to_add: Message[] = [];
                     const messages_to_remove = new Set(message_ids);
-                    for (const raw_message of data.messages) {
+                    for (const raw_message of z
+                        .object({messages: z.array(raw_message_schema)})
+                        .parse(data).messages) {
                         messages_to_remove.delete(raw_message.id);
-                        let message = message_store.get(raw_message.id);
-                        if (!message) {
-                            message = message_helper.process_new_message(raw_message);
-                        }
-                        messages_to_add.push(message);
+                        const message = message_store.get(raw_message.id);
+                        messages_to_add.push(
+                            message ?? message_helper.process_new_message(raw_message),
+                        );
                     }
                     msg_list.data.remove([...messages_to_remove]);
                     msg_list.data.add_messages(messages_to_add);
@@ -214,10 +224,15 @@ export let update_views_filtered_on_message_property = (
                 },
                 // eslint-disable-next-line no-loop-func
                 success(data) {
+                    const parsed_data = z
+                        .object({
+                            messages: z.array(raw_message_schema),
+                        })
+                        .parse(data);
                     // `messages_to_fetch` might already be cached locally when
                     // we reach here but `message_helper.process_new_message`
                     // already handles that case.
-                    for (const raw_message of data.messages) {
+                    for (const raw_message of parsed_data.messages) {
                         message_helper.process_new_message(raw_message);
                     }
                     update_views_filtered_on_message_property(
@@ -246,7 +261,7 @@ export let update_views_filtered_on_message_property = (
 
             // In most cases, we are only working to update a single message.
             if (messages.length === 1) {
-                const message = messages[0];
+                const message = messages[0]!;
                 if (filter.predicate()(message)) {
                     msg_list.add_messages(messages);
                 } else {
@@ -261,13 +276,19 @@ export let update_views_filtered_on_message_property = (
     }
 };
 
-export function rewire_update_views_filtered_on_message_property(value) {
+export function rewire_update_views_filtered_on_message_property(
+    value: typeof update_views_filtered_on_message_property,
+): void {
     update_views_filtered_on_message_property = value;
 }
 
-export function insert_new_messages(messages, sent_by_this_client, deliver_locally) {
-    messages = messages.map((message) =>
-        message_helper.process_new_message(message, deliver_locally),
+export function insert_new_messages(
+    raw_messages: RawMessage[],
+    sent_by_this_client: boolean,
+    deliver_locally: boolean,
+): Message[] {
+    const messages = raw_messages.map((raw_message) =>
+        message_helper.process_new_message(raw_message, deliver_locally),
     );
 
     const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
@@ -309,7 +330,7 @@ export function insert_new_messages(messages, sent_by_this_client, deliver_local
         // this message list is the currently visible message list.
         const is_currently_visible =
             narrow_state.is_message_feed_visible() && list === message_lists.current;
-        if (is_currently_visible && render_info && render_info.need_user_to_scroll) {
+        if (is_currently_visible && render_info?.need_user_to_scroll) {
             need_user_to_scroll = true;
         }
     }
@@ -343,7 +364,9 @@ export function insert_new_messages(messages, sent_by_this_client, deliver_local
     // tracking before we update the stream sidebar, to take advantage
     // of how stream_topic_history uses the echo data structures.
     if (deliver_locally) {
-        messages.map((message) => echo.track_local_message(message));
+        for (const message of messages) {
+            echo.track_local_message(message);
+        }
     }
 
     activity.set_received_new_messages(true);
@@ -354,8 +377,8 @@ export function insert_new_messages(messages, sent_by_this_client, deliver_local
     return messages;
 }
 
-export function update_messages(events) {
-    const messages_to_rerender = [];
+export function update_messages(events: UpdateMessageEvent[]): void {
+    const messages_to_rerender: Message[] = [];
     let changed_narrow = false;
     let refreshed_current_narrow = false;
     let changed_compose = false;
@@ -427,6 +450,7 @@ export function update_messages(events) {
             }
 
             if (unread.update_message_for_mention(anchor_message, any_message_content_edited)) {
+                assert(anchor_message.type === "stream");
                 const topic_key = recent_view_util.get_topic_key(
                     anchor_message.stream_id,
                     anchor_message.topic,
@@ -443,7 +467,8 @@ export function update_messages(events) {
         const old_stream_id = event.stream_id;
         // old_stream will be undefined if the message was moved from
         // a stream that the current user doesn't have access to.
-        const old_stream = sub_store.get(event.stream_id);
+        const old_stream =
+            event.stream_id === undefined ? undefined : sub_store.get(event.stream_id);
 
         // A topic or stream edit may affect multiple messages, listed in
         // event.message_ids. event.message_id is still the first message
@@ -462,24 +487,29 @@ export function update_messages(events) {
                 messages_to_rerender.push(anchor_message);
             }
         } else {
-            const going_forward_change = ["change_later", "change_all"].includes(
-                event.propagate_mode,
-            );
+            // We must be moving stream messages.
+            assert(old_stream_id !== undefined);
+            const orig_topic = util.get_edit_event_orig_topic(event);
+            assert(orig_topic !== undefined);
+
+            const going_forward_change =
+                event.propagate_mode !== undefined &&
+                ["change_later", "change_all"].includes(event.propagate_mode);
 
             const compose_stream_id = compose_state.stream_id();
-            const orig_topic = util.get_edit_event_orig_topic(event);
-
             const current_filter = narrow_state.filter();
             const current_selected_id = message_lists.current?.selected_id();
             const selection_changed_topic =
                 message_lists.current !== undefined &&
+                current_selected_id !== undefined &&
                 event.message_ids.includes(current_selected_id);
-            const event_messages = [];
+            const event_messages: (Message & {type: "stream"})[] = [];
             for (const message_id of event.message_ids) {
                 // We don't need to concern ourselves updating data structures
                 // for messages we don't have stored locally.
                 const message = message_store.get(message_id);
                 if (message !== undefined) {
+                    assert(message.type === "stream");
                     event_messages.push(message);
                 } else {
                     // If we don't have the message locally, we need to
@@ -521,7 +551,14 @@ export function update_messages(events) {
                      * history events. This logic ensures that all
                      * messages that were moved are displayed as such
                      * without a browser reload. */
-                    const edit_history_entry = {
+                    const edit_history_entry: {
+                        user_id: number | null;
+                        timestamp: number;
+                        stream?: number;
+                        prev_stream?: number;
+                        topic?: string;
+                        prev_topic?: string;
+                    } = {
                         user_id: event.user_id,
                         timestamp: event.edit_timestamp,
                     };
@@ -550,10 +587,13 @@ export function update_messages(events) {
                 // Now edit the attributes of our message object.
                 if (topic_edited) {
                     moved_message.topic = new_topic;
+                    assert(event.topic_links !== undefined);
                     moved_message.topic_links = event.topic_links;
                 }
                 if (stream_changed) {
-                    const new_stream_name = sub_store.get(new_stream_id).name;
+                    const new_stream = sub_store.get(new_stream_id);
+                    assert(new_stream !== undefined);
+                    const new_stream_name = new_stream.name;
                     moved_message.stream_id = new_stream_id;
                     moved_message.display_recipient = new_stream_name;
                 }
@@ -576,7 +616,7 @@ export function update_messages(events) {
                     stream_id: old_stream_id,
                     topic_name: orig_topic,
                     num_messages,
-                    max_removed_msg_id: event_messages[num_messages - 1].id,
+                    max_removed_msg_id: event_messages[num_messages - 1]!.id,
                 });
             }
 
@@ -596,9 +636,7 @@ export function update_messages(events) {
                 // Code further down takes care of the actual rerendering of
                 // messages within a narrow.
                 selection_changed_topic &&
-                current_filter &&
-                old_stream_id &&
-                current_filter.has_topic(old_stream_id, orig_topic)
+                current_filter?.has_topic(old_stream_id, orig_topic)
             ) {
                 let new_filter = current_filter;
                 if (new_filter && stream_changed) {
@@ -648,7 +686,9 @@ export function update_messages(events) {
                 let moved_message_stream_id_str = old_stream_id.toString();
                 let moved_message_topic = orig_topic;
                 if (stream_changed) {
-                    moved_message_stream_id_str = sub_store.get(new_stream_id).stream_id.toString();
+                    const new_stream = sub_store.get(new_stream_id);
+                    assert(new_stream !== undefined);
+                    moved_message_stream_id_str = new_stream.stream_id.toString();
                 }
 
                 if (topic_edited) {
@@ -722,21 +762,26 @@ export function update_messages(events) {
         }
 
         if (topic_edited || stream_changed) {
-            // if topic is changed
+            // We must be moving stream messages.
+            assert(old_stream_id !== undefined);
             let pre_edit_topic = util.get_edit_event_orig_topic(event);
-            let post_edit_topic = new_topic;
+            assert(pre_edit_topic !== undefined);
 
-            if (!topic_edited) {
+            let post_edit_topic: string;
+            if (topic_edited) {
+                assert(new_topic !== undefined);
+                post_edit_topic = new_topic;
+            } else {
                 if (anchor_message !== undefined) {
+                    assert(anchor_message.type === "stream");
                     pre_edit_topic = anchor_message.topic;
                 }
                 post_edit_topic = pre_edit_topic;
             }
 
             // new_stream_id is undefined if this is only a topic edit.
-            const post_edit_stream_id = new_stream_id || old_stream_id;
+            const post_edit_stream_id = new_stream_id ?? old_stream_id;
 
-            const args = [old_stream_id, pre_edit_topic, post_edit_topic, post_edit_stream_id];
             recent_senders.process_topic_edit({
                 message_ids: event.message_ids,
                 old_stream_id,
@@ -745,14 +790,20 @@ export function update_messages(events) {
                 new_topic: post_edit_topic,
             });
             unread.clear_and_populate_unread_mention_topics();
-            recent_view_ui.process_topic_edit(...args);
+            recent_view_ui.process_topic_edit(
+                old_stream_id,
+                pre_edit_topic,
+                post_edit_topic,
+                post_edit_stream_id,
+            );
         }
 
         // Rerender "Message edit history" if it was open to the edited message.
         if (
             anchor_message !== undefined &&
             $("#message-edit-history").parents(".micromodal").hasClass("modal--open") &&
-            anchor_message.id === Number.parseInt($("#message-history").attr("data-message-id"), 10)
+            anchor_message.id ===
+                Number.parseInt($("#message-history").attr("data-message-id")!, 10)
         ) {
             message_edit_history.fetch_and_render_message_history(anchor_message);
         }
@@ -815,7 +866,7 @@ export function update_messages(events) {
     pm_list.update_private_messages();
 }
 
-export function remove_messages(message_ids) {
+export function remove_messages(message_ids: number[]): void {
     // Update the rendered data first since it is most user visible.
     for (const list of message_lists.all_rendered_message_lists()) {
         list.remove_and_rerender(message_ids);
