@@ -3388,13 +3388,16 @@ class BillingSession(ABC):
 
     def get_sponsorship_request_context(self) -> dict[str, Any] | None:
         customer = self.get_customer()
+
+        if customer is not None and customer.sponsorship_pending and self.on_paid_plan():
+            # Redirects to billing page for paid plan, which
+            # includes pending sponsorship request information.
+            return None
+
         is_remotely_hosted = isinstance(
             self, RemoteRealmBillingSession | RemoteServerBillingSession
         )
-
-        plan_name = "Zulip Cloud Free"
-        if is_remotely_hosted:
-            plan_name = "Free"
+        plan_name = "Free" if is_remotely_hosted else "Zulip Cloud Free"
 
         context: dict[str, Any] = {
             "billing_base_url": self.billing_base_url,
@@ -3404,16 +3407,11 @@ class BillingSession(ABC):
             "org_name": self.org_name(),
         }
 
-        if customer is not None and customer.sponsorship_pending:
-            if self.on_paid_plan():
-                return None
-
-            context["is_sponsorship_pending"] = True
-
         if self.is_sponsored():
             context["is_sponsored"] = True
 
         if customer is not None:
+            context["is_sponsorship_pending"] = customer.sponsorship_pending
             plan = get_current_plan_by_customer(customer)
             if plan is not None:
                 context["plan_name"] = plan.name
