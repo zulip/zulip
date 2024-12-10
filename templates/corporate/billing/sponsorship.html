@@ -53,21 +53,13 @@
                     <label for="sponsored-org-current-plan" class="inline-block label-title">Your plan</label>
                     <div id="sponsored-org-current-plan" class="not-editable-realm-field">
                         {% if is_sponsored %}
-                        <a href="{{ billing_base_url }}/plans/">
-                        {{ sponsorship_plan_name }}
-                        </a>
+                        <a href="{{ billing_base_url }}/plans/">{{ sponsorship_plan_name }}</a>
                         {% elif free_trial %}
-                        <a href="{{ billing_base_url }}/plans/">
-                        {{ plan_name -}}
-                        </a> <i>(free trial)</i>
+                        <a href="{{ billing_base_url }}/plans/">{{ plan_name }}</a> <i>(free trial)</i>
                         {% elif is_server_on_legacy_plan %}
-                        <a href="{{ billing_base_url }}/plans/">
-                        {{ plan_name.replace(" (legacy plan)", "") -}}
-                        </a> <i>(legacy plan)</i>
+                        <a href="{{ billing_base_url }}/plans/">{{ plan_name.replace(" (legacy plan)", "") }}</a> <i>(legacy plan)</i>
                         {% else %}
-                        <a href="{{ billing_base_url }}/plans/">
-                        {{ plan_name }}
-                        </a>
+                        <a href="{{ billing_base_url }}/plans/">{{ plan_name }}</a>
                         {% endif %}
                     </div>
                 </div>
