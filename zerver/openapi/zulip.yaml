@@ -17600,6 +17600,16 @@ paths:
                           This Zulip server's configured minimum required length for passwords.
                           Necessary for password change UI to show whether the password
                           will be accepted.
+                      password_max_length:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          This Zulip server's configured maximum length for passwords.
+                          Necessary for password change UI to show whether the password
+                          will be accepted.
+
+                          **Changes**: New in Zulip 10.0 (feature level 338).
                       password_min_guesses:
                         type: integer
                         description: |
