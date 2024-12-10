@@ -3415,7 +3415,6 @@ class BillingSession(ABC):
             plan = get_current_plan_by_customer(customer)
             if plan is not None:
                 context["plan_name"] = plan.name
-                context["free_trial"] = plan.is_free_trial()
                 context["is_server_on_legacy_plan"] = (
                     plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
                 )
