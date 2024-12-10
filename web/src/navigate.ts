@@ -13,6 +13,16 @@ function go_to_row(msg_id: number): void {
 export function up(): void {
     assert(message_lists.current !== undefined);
     message_viewport.set_last_movement_direction(-1);
+
+    const $selected_message = message_lists.current.selected_row();
+    const viewport_info = message_viewport.message_viewport_info();
+    const message_top = $selected_message.get_offset_to_window().top;
+    // Message top is not visible.
+    if (message_top < viewport_info.visible_top) {
+        page_up();
+        return;
+    }
+
     const msg_id = message_lists.current.prev();
     if (msg_id === undefined) {
         return;
@@ -35,6 +45,15 @@ export function down(with_centering = false): void {
             unread_ops.process_visible();
         }
 
+        return;
+    }
+
+    const $selected_message = message_lists.current.selected_row();
+    const message_bottom = $selected_message.get_offset_to_window().bottom;
+    const viewport_info = message_viewport.message_viewport_info();
+    // Message bottom is not visible.
+    if (message_bottom > viewport_info.visible_bottom) {
+        page_down();
         return;
     }
 
