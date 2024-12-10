@@ -599,14 +599,16 @@ export function dispatch_normal_event(event) {
                     break;
                 case "delete":
                     for (const stream of event.streams) {
-                        const was_subscribed = sub_store.get(stream.stream_id).subscribed;
+                        const sub = sub_store.get(stream.stream_id);
+                        const is_subscribed = sub.subscribed;
+                        const could_unsubscribe = stream_data.can_unsubscribe_others(sub);
                         const is_narrowed_to_stream = narrow_state.is_for_stream_id(
                             stream.stream_id,
                         );
                         stream_data.delete_sub(stream.stream_id);
-                        stream_settings_ui.remove_stream(stream.stream_id);
+                        stream_settings_ui.update_settings_for_archived(sub, could_unsubscribe);
                         message_view_header.maybe_rerender_title_area_for_stream(stream);
-                        if (was_subscribed) {
+                        if (is_subscribed) {
                             stream_list.remove_sidebar_row(stream.stream_id);
                             if (stream.stream_id === compose_state.selected_recipient_id) {
                                 compose_state.set_selected_recipient_id("");

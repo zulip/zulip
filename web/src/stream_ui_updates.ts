@@ -140,7 +140,7 @@ export function initialize_cant_subscribe_popover(): void {
 }
 
 export function set_up_right_panel_section(sub: StreamSubscription): void {
-    if (sub.subscribed) {
+    if (sub.subscribed && !sub.is_archived) {
         stream_edit_toggler.toggler.enable_tab("personal");
         stream_edit_toggler.toggler.goto(stream_edit_toggler.select_tab);
     } else {
@@ -343,12 +343,13 @@ export function update_stream_privacy_icon_in_settings(sub: StreamSubscription):
 
     const $stream_settings = stream_settings_containers.get_edit_container(sub);
 
-    $stream_settings.find(".general_settings .large-icon").replaceWith(
+    $stream_settings.find(".stream_section[data-stream-section='general'] .large-icon").replaceWith(
         $(
             render_stream_privacy_icon({
                 invite_only: sub.invite_only,
                 color: sub.color,
                 is_web_public: sub.is_web_public,
+                is_archived: sub.is_archived,
             }),
         ),
     );
@@ -426,6 +427,10 @@ export function update_add_subscriptions_elements(sub: SettingsSubscription): vo
             tooltip_message = $t({
                 defaultMessage:
                     "You do not have permission to add other users to channels in this organization.",
+            });
+        } else if (sub.is_archived) {
+            tooltip_message = $t({
+                defaultMessage: "You cannot add users in an archived channel.",
             });
         } else {
             tooltip_message = $t({

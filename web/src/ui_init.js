@@ -124,6 +124,7 @@ import * as stream_edit_subscribers from "./stream_edit_subscribers.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
 import * as stream_popover from "./stream_popover.ts";
+import * as stream_settings_options_popover from "./stream_settings_options_popover.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
@@ -569,6 +570,7 @@ export function initialize_everything(state_data) {
     user_profile.initialize();
     stream_popover.initialize();
     add_stream_options_popover.initialize();
+    stream_settings_options_popover.initialize();
     click_handlers.initialize();
     scheduled_messages_overlay_ui.initialize();
     copy_and_paste.initialize();
