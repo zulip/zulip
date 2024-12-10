@@ -335,7 +335,7 @@ function handle_keydown(
             target_sel = `#${CSS.escape(target_id)}`;
         }
 
-        const on_topic = target_sel === "input#stream_message_recipient_topic";
+        const on_topic = target_sel === "#stream_message_recipient_topic";
         const on_pm = target_sel === "#private_message_recipient";
         const on_compose = target_sel === "#compose-textarea";
 
@@ -373,6 +373,10 @@ function handle_keydown(
                 handle_enter($("textarea#compose-textarea"), e);
             }
         } else if (on_topic || on_pm) {
+            // Prevent form submission when pressing Enter in the topic or recipient box
+            if (keydown_util.is_enter_event(e)) {
+                e.preventDefault(); // Prevent default Enter behavior
+            }
             // We are doing the focusing on keyup to not abort the typeahead.
             $nextFocus = $("textarea#compose-textarea");
         }
