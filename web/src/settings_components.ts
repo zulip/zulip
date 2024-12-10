@@ -1395,13 +1395,16 @@ function should_disable_save_button_for_group_settings(settings: string[]): bool
             );
         }
         assert(group_setting_config !== undefined);
-        if (group_setting_config.allow_nobody_group) {
-            continue;
-        }
 
         const pill_widget = get_group_setting_widget(setting_name);
         assert(pill_widget !== null);
+        if (pill_widget.is_pending()) {
+            return true;
+        }
 
+        if (group_setting_config.allow_nobody_group) {
+            continue;
+        }
         const setting_value = get_group_setting_widget_value(pill_widget);
         const nobody_group = user_groups.get_user_group_from_name("role:nobody")!;
         if (setting_value === nobody_group.id) {
@@ -1595,6 +1598,9 @@ export function create_group_setting_widget({
     if (group !== undefined) {
         set_group_setting_widget_value(pill_widget, group[setting_name]);
 
+        pill_widget.onTextInputHook(() => {
+            save_discard_group_widget_status_handler($("#group_permission_settings"), group);
+        });
         pill_widget.onPillCreate(() => {
             save_discard_group_widget_status_handler($("#group_permission_settings"), group);
         });
@@ -1668,6 +1674,12 @@ export function create_realm_group_setting_widget({
     const $save_discard_widget_container = $(`#id_realm_${CSS.escape(setting_name)}`).closest(
         ".settings-subsection-parent",
     );
+    pill_widget.onTextInputHook(() => {
+        if (pill_update_callback !== undefined) {
+            pill_update_callback();
+        }
+        save_discard_realm_settings_widget_status_handler($save_discard_widget_container);
+    });
     pill_widget.onPillCreate(() => {
         if (pill_update_callback !== undefined) {
             pill_update_callback();
@@ -1712,6 +1724,9 @@ export function create_stream_group_setting_widget({
         const $edit_container = stream_settings_containers.get_edit_container(sub);
         const $subsection = $edit_container.find(".advanced-configurations-container");
 
+        pill_widget.onTextInputHook(() => {
+            save_discard_stream_settings_widget_status_handler($subsection, sub);
+        });
         pill_widget.onPillCreate(() => {
             save_discard_stream_settings_widget_status_handler($subsection, sub);
         });
