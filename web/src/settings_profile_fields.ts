@@ -509,15 +509,18 @@ function open_edit_form_modal(this: HTMLElement): void {
         // Set initial value in edit form
         $profile_field_form.find("input[name=name]").val(field.name);
         $profile_field_form.find("input[name=hint]").val(field.hint);
+        const $edit_profile_field_choices_container = $profile_field_form.find(
+            ".edit_profile_field_choices_container",
+        );
 
-        $profile_field_form
-            .find(".edit_profile_field_choices_container")
-            .on("input", ".choice-row input", add_choice_row);
-        $profile_field_form
-            .find(".edit_profile_field_choices_container")
-            .on("click", "button.delete-choice", function (this: HTMLElement) {
+        $edit_profile_field_choices_container.on("input", ".choice-row input", add_choice_row);
+        $edit_profile_field_choices_container.on(
+            "click",
+            "button.delete-choice",
+            function (this: HTMLElement) {
                 delete_choice_row_for_edit(this, $profile_field_form, field);
-            });
+            },
+        );
 
         $("#edit-custom-profile-field-form-modal .dialog_submit_button").prop("disabled", true);
         // Setup onInput event listeners to disable/enable submit button,
@@ -741,11 +744,12 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
 
 function set_up_select_field(): void {
     const field_types = realm.custom_profile_field_types;
+    const $profile_field_choices = $("#profile_field_choices");
 
-    create_choice_row($("#profile_field_choices"));
+    create_choice_row($profile_field_choices);
 
     if (current_user.is_admin) {
-        const choice_list = util.the($("#profile_field_choices"));
+        const choice_list = util.the($profile_field_choices);
         SortableJS.create(choice_list, {
             onUpdate() {
                 // Do nothing on drag. We process the order on submission
@@ -774,8 +778,8 @@ function set_up_select_field(): void {
         },
     );
 
-    $("#profile_field_choices").on("input", ".choice-row input", add_choice_row);
-    $("#profile_field_choices").on("click", "button.delete-choice", function (this: HTMLElement) {
+    $profile_field_choices.on("input", ".choice-row input", add_choice_row);
+    $profile_field_choices.on("click", "button.delete-choice", function (this: HTMLElement) {
         delete_choice_row(this);
     });
 }
