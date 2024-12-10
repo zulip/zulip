@@ -30,7 +30,7 @@ import * as spectators from "./spectators.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
 import * as ui_report from "./ui_report.ts";
-import * as user_group_edit from "./user_group_edit.js";
+import * as user_group_edit from "./user_group_edit.ts";
 import * as user_profile from "./user_profile.ts";
 import {user_settings} from "./user_settings.ts";
 
