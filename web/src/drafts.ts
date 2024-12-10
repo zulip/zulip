@@ -1,4 +1,3 @@
-import {subDays} from "date-fns";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
@@ -143,6 +142,7 @@ export const draft_model = (function () {
             // directly upgrade from Zulip 6.0beta1 and earlier development branch where the bug was present,
             // since we expect bugged drafts will have either been run through
             // this code or else been deleted after 30 (DRAFT_LIFETIME) days.
+            // update: drafts won't be deleted after 30 days anymore.
             if (draft.topic === undefined) {
                 draft.topic = "";
             }
@@ -457,8 +457,6 @@ export function rewire_update_draft(value: typeof update_draft): void {
     update_draft = value;
 }
 
-export const DRAFT_LIFETIME = 30;
-
 export function current_recipient_data(): {
     stream_name: string | undefined;
     topic: string | undefined;
@@ -558,16 +556,6 @@ export function get_last_restorable_draft_based_on_compose_state():
         .findLast((draft) => !draft.is_sending_saving && draft.drafts_version >= 1);
 }
 
-export function remove_old_drafts(): void {
-    const old_date = subDays(new Date(), DRAFT_LIFETIME).getTime();
-    const drafts = draft_model.get();
-    for (const [id, draft] of Object.entries(drafts)) {
-        if (draft.updatedAt !== undefined && draft.updatedAt < old_date) {
-            draft_model.deleteDraft(id);
-        }
-    }
-}
-
 export type FormattedDraft =
     | {
           is_stream: true;
@@ -665,8 +653,6 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
 }
 
 export function initialize(): void {
-    remove_old_drafts();
-
     // It's possible that drafts will get still have
     // `is_sending_saving` set to true if the page was
     // refreshed in the middle of sending a message. We
