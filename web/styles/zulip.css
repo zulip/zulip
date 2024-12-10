@@ -936,12 +936,6 @@ div.focused-message-list {
     outline: none;
 }
 
-#move_topic_modal select {
-    width: auto;
-    margin-bottom: 10px;
-    max-width: 100%;
-}
-
 .topic_move_breadcrumb_messages {
     margin: 0 5px 5px 0;
     align-self: center;
