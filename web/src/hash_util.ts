@@ -7,6 +7,7 @@ import * as people from "./people.ts";
 import * as settings_data from "./settings_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import {get_latest_message_id_in_topic} from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as user_groups from "./user_groups.ts";
@@ -82,6 +83,22 @@ export function by_stream_url(stream_id: number): string {
 export function by_stream_topic_url(stream_id: number, topic: string): string {
     // Wrapper for web use of internal_url.by_stream_topic_url
     return internal_url.by_stream_topic_url(stream_id, topic, sub_store.maybe_get_stream_name);
+}
+
+export function by_channel_topic_permalink(stream_id: number, topic: string): string {
+    const channel_topic_url = internal_url.by_stream_topic_url(
+        stream_id,
+        topic,
+        sub_store.maybe_get_stream_name,
+    );
+    const latest_msg_in_topic = get_latest_message_id_in_topic(stream_id, topic);
+
+    if (latest_msg_in_topic === undefined) {
+        return channel_topic_url;
+    }
+
+    const topic_permalink = channel_topic_url + `/with/${latest_msg_in_topic}`;
+    return topic_permalink;
 }
 
 // Encodes a term list into the

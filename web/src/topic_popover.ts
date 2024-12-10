@@ -7,12 +7,12 @@ import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delet
 import render_left_sidebar_topic_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_actions_popover.hbs";
 
 import * as confirm_dialog from "./confirm_dialog.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
-import {realm} from "./state_data.ts";
 import * as stream_popover from "./stream_popover.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread_ops from "./unread_ops.ts";
@@ -26,20 +26,18 @@ function get_conversation(instance: tippy.Instance): {
 } {
     let stream_id;
     let topic_name;
-    let url;
 
     if (instance.reference.classList.contains("inbox-topic-menu")) {
         const $elt = $(instance.reference);
         stream_id = Number.parseInt($elt.attr("data-stream-id")!, 10);
         topic_name = $elt.attr("data-topic-name")!;
-        url = new URL($elt.attr("data-topic-url")!, realm.realm_url).href;
     } else {
         const $elt = $(instance.reference).closest(".topic-sidebar-menu-icon").expectOne();
         const $stream_li = $elt.closest(".narrow-filter").expectOne();
         topic_name = $elt.closest("li").expectOne().attr("data-topic-name")!;
-        url = util.the($elt.closest("li").find<HTMLAnchorElement>("a.sidebar-topic-name")).href;
         stream_id = stream_popover.elem_to_stream_id($stream_li);
     }
+    const url = hash_util.by_channel_topic_permalink(stream_id, topic_name);
 
     return {stream_id, topic_name, url};
 }
