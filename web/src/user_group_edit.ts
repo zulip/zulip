@@ -351,7 +351,7 @@ function update_display_checkmark_on_group_edit(group: UserGroup): void {
     }
 }
 
-function update_your_groups_list_if_needed(group_id: number): void {
+function update_your_groups_list_if_needed(): void {
     // update display of group-rows on left panel.
     // We need this update only if your-groups tab is active
     // and current user is among the affect users as in that
@@ -359,20 +359,15 @@ function update_your_groups_list_if_needed(group_id: number): void {
     // or remove the group-row on the left panel accordingly.
     const tab_key = get_active_data().$tabs.first().attr("data-tab-key");
     if (tab_key === "your-groups") {
-        if (user_groups.is_user_in_group(group_id, people.my_current_user_id())) {
-            // We add the group row to list if the current user
-            // is added to it. The whole list is redrawed to
-            // maintain the sorted order of groups.
-            redraw_user_group_list();
-        } else if (!settings_data.can_join_user_group(group_id)) {
-            // We remove the group row immediately only if the
-            // user cannot join the group again themselves.
-            const group_row = row_for_group_id(group_id);
-            if (group_row.length > 0) {
-                group_row.remove();
-                update_empty_left_panel_message();
-            }
-        }
+        // We add the group row to list if the current user
+        // is added to it. The whole list is redrawed to
+        // maintain the sorted order of groups.
+        //
+        // When the current user is removed from a group, the
+        // whole list is redrawn because this action can also
+        // affect the memberships of groups that have the
+        // updated group as their subgroup.
+        redraw_user_group_list();
     }
 }
 
@@ -413,7 +408,7 @@ export function handle_subgroup_edit_event(group_id: number, direct_subgroup_ids
     }
 
     if (current_user_in_any_subgroup) {
-        update_your_groups_list_if_needed(group_id);
+        update_your_groups_list_if_needed();
         update_display_checkmark_on_group_edit(group);
     }
 }
@@ -463,7 +458,7 @@ function update_settings_for_group_overlay(group_id: number, user_ids: number[])
     }
 
     if (user_ids.includes(people.my_current_user_id())) {
-        update_your_groups_list_if_needed(group_id);
+        update_your_groups_list_if_needed();
         update_display_checkmark_on_group_edit(group);
 
         // Membership status text can be updated even when user was
