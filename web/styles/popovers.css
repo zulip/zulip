@@ -308,7 +308,7 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
-    padding: 3px 10px;
+    padding: 3px var(--user-group-popover-horizontal-padding);
 }
 
 .popover-group-menu-name-container {
@@ -337,23 +337,41 @@ ul.popover-group-menu-member-list {
     flex-direction: column;
 
     .simplebar-content {
+        display: grid;
+        grid-template-columns:
+            var(--user-group-popover-horizontal-padding)
+            [group-member-icon-start] minmax(5px, auto)
+            [group-member-icon-end] var(--user-group-popover-icon-text-gap)
+            [group-member-name-start] 1fr [group-member-name-end] var(
+                --user-group-popover-horizontal-padding
+            );
         width: unset;
+    }
+
+    .popover-group-menu-member {
+        display: grid;
+        grid-template-columns: subgrid;
+        grid-column: 1 / -1;
+        align-items: center;
+    }
+
+    .popover-group-member-icon {
+        justify-self: center;
+        grid-column: group-member-icon-start / group-member-icon-end;
+    }
+
+    .popover-group-menu-member-name {
+        grid-column: group-member-name-start / group-member-name-end;
     }
 }
 
-.popover-group-menu-member,
 .popover-group-menu-placeholder {
-    display: flex;
-    align-items: center;
-    padding: 0 10px;
+    padding: 0 var(--user-group-popover-horizontal-padding);
+}
 
+.popover-group-menu-member {
     .zulip-icon-triple-users {
         color: var(--color-icon-purple);
-    }
-
-    .zulip-icon {
-        padding-left: 3px;
-        padding-right: 3px;
     }
 }
 

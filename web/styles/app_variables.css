@@ -468,6 +468,12 @@
     }
 
     /*
+    User group info popover elements and values.
+    */
+    --user-group-popover-horizontal-padding: 0.6666em; /* 10px at 15px/1em */
+    --user-group-popover-icon-text-gap: 0.3125em; /* 5px at 16px/1em */
+
+    /*
     Width to be reserved for document scrollbar when scrolling is disabled.
     Using `scrollbar-gutter` would be more appropriate but doesn't has wide
     support and doesn't work for `fixed` elements.
