@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 338**
+
+* [`POST /register`](/api/register-queue): Added `password_max_length`
+  field, which is the maximum allowed password length.
+
 **Feature level 337**
 
 * `POST /calls/bigbluebutton/create`: Added a `voice_only` parameter
