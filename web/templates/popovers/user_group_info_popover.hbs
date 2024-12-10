@@ -36,7 +36,7 @@
                             {{#if is_bot}}
                                 <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                             {{else}}
-                                <span class="user_circle {{user_circle_class}} popover_user_presence hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
+                                <span class="zulip-icon zulip-icon-user-status user_circle {{user_circle_class}} popover_user_presence hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
                             {{/if}}
                             <span class="popover-group-menu-member-name">{{full_name}}</span>
                         </li>

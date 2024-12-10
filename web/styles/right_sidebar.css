@@ -142,46 +142,44 @@ $user_status_emoji_width: 24px;
         &.highlighted_user {
             background-color: var(--color-buddy-list-highlighted-user);
             box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
-
-            .user_circle {
-                outline: 1px solid var(--color-buddy-list-highlighted-user);
-            }
         }
     }
 
     .user_circle {
-        width: var(--length-user-status-circle);
-        height: var(--length-user-status-circle);
         grid-area: starting-anchor-element;
         place-self: center center;
-
-        @media screen and (resolution <= 1x) {
-            /* User circles appear to sag a bit on
-               low-resolution screens, so this fix
-               targets them without disrupting
-               line-height values. */
-            margin-top: -2.5px;
-        }
     }
 
-    .user_sidebar_entry.with_avatar .user_circle {
-        display: inline-block;
-        position: absolute;
-        width: 0.5em;
-        height: 0.5em;
-        top: 1.7em;
-        left: 1.7em;
+    .user_sidebar_entry.with_avatar {
+        .user-profile-picture {
+            border-radius: 0;
 
-        &.user_circle_idle {
-            background: linear-gradient(
-                to bottom,
-                var(--color-background) 50%,
-                var(--color-user-circle-idle) 50%
-            );
+            img {
+                /* 6px (half of circle + stroke, rounded up to 12px) at 16px/1em
+                   Adjusts the bottom-right border radius to accommodate
+                   the dot. We round up to avoid subpixel portions of the
+                   profile image shining through. The border-radius is
+                   specified on the img here so that the dot itself does
+                   not get clipped. */
+                border-radius: 4px 4px 0.375em;
+            }
         }
 
-        &.user_circle_empty {
-            display: none;
+        .user_circle {
+            position: absolute;
+            /* 10px at 16px/1em */
+            font-size: 0.625em;
+            /* Pull top and left by half a pixel at 10px/1em
+               this seems necessary to correct for the subpixel
+               width of the stroke. */
+            bottom: 0.05em;
+            right: 0.05em;
+            /* 1.5px at 10px/1em */
+            -webkit-text-stroke: 0.15em var(--color-background);
+
+            &.user_circle_empty {
+                display: none;
+            }
         }
     }
 
