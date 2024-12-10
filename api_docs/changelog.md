@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 327**
+
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),
+  `PATCH /realm`: Added `abuse_report_channel_id` realm setting, which is the ID
+  of the channel to which moderation requests will be sent.
+
 **Feature level 326**
 
 * [`POST /register`](/api/register-queue): Removed `allow_owners_group`
