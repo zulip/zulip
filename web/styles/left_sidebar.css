@@ -436,8 +436,12 @@
             "plus-icon row-text" var(--line-height-sidebar-row-prominent)
             / auto 1fr;
         align-items: center;
+        line-height: var(--line-height-sidebar-row-prominent);
         color: var(--color-text-sidebar-action-heading);
         text-decoration: none;
+    }
+
+    .subscribe-more-label {
         font-size: var(--font-size-sidebar-action-heading);
         font-weight: var(--font-weight-sidebar-action-heading);
         font-variant: var(--font-variant-sidebar-action-heading);
