@@ -68,6 +68,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
                 get_user_profile_by_id(event["message"]["sender_id"]), self.user_profile
             ),
             realm_host=realm.host,
+            is_incoming_1_to_1=event["message"]["recipient_id"] == self.user_profile.recipient_id,
         )
 
         request_data = {

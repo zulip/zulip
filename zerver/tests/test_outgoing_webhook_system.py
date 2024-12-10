@@ -53,7 +53,9 @@ class DoRestCallTests(ZulipTestCase):
             "message": {
                 "display_recipient": "Verona",
                 "stream_id": 999,
+                "recipient_id": 1111,
                 "sender_id": bot_user.id,
+                "sender_recipient_id": bot_user.recipient_id,
                 "sender_email": bot_user.email,
                 "sender_realm_id": bot_user.realm.id,
                 "sender_realm_str": bot_user.realm.string_id,

@@ -235,6 +235,7 @@ def get_events_backend(
     if queue_id is None:
         new_queue_data = dict(
             user_profile_id=user_profile.id,
+            user_recipient_id=user_profile.recipient_id,
             realm_id=user_profile.realm_id,
             event_types=event_types,
             client_type_name=valid_user_client_name,
