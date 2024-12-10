@@ -1214,6 +1214,14 @@ li.top_left_scheduled_messages {
     display: none;
 }
 
+#clear_search_topic_button {
+    color: var(--color-text-clear-search-button);
+
+    &:hover {
+        color: var(--color-text-clear-search-button-hover);
+    }
+}
+
 .searching-for-more-topics img {
     height: 16px;
     grid-area: row-content;
@@ -1773,8 +1781,54 @@ li.topic-list-item {
         padding: 0;
     }
 
+    #clear_search_stream_button {
+        padding: 0;
+        background: none;
+        color: var(--color-text-clear-search-button);
+
+        &:hover {
+            color: var(--color-text-clear-search-button-hover);
+        }
+
+        &:focus,
+        &:focus-visible,
+        &:active {
+            box-shadow: none;
+            outline: none;
+        }
+
+        .zulip-icon-close {
+            align-self: center;
+        }
+    }
+
+    #clear-direct-messages-search-button {
+        padding: 0;
+        background: none;
+        color: var(--color-text-clear-search-button);
+
+        &:hover {
+            color: var(--color-text-clear-search-button-hover);
+        }
+
+        &:focus,
+        &:focus-visible,
+        &:active {
+            box-shadow: none;
+            outline: none;
+        }
+
+        .zulip-icon-close {
+            align-self: center;
+        }
+    }
+
     .direct-messages-list-filter:placeholder-shown
         + #clear-direct-messages-search-button {
+        display: none;
+    }
+
+    .stream-list-filter:placeholder-shown + #clear_search_stream_button {
         display: none;
     }
 }

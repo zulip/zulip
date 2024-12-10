@@ -625,13 +625,34 @@ ul.popover-group-menu-member-list {
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;
+            margin-bottom: 0;
+        }
+
+        .stream-search:placeholder-shown + #clear_stream_search {
+            visibility: hidden;
         }
 
         #clear_stream_search {
-            display: none;
-            padding: 5px 8px 5px 4px;
-            position: relative;
-            right: 0;
+            grid-area: clear-search;
+            padding: 0;
+            background: none;
+            color: var(--color-text-clear-search-button);
+            display: grid;
+
+            &:hover {
+                color: var(--color-text-clear-search-button-hover);
+            }
+
+            &:focus,
+            &:focus-visible,
+            &:active {
+                box-shadow: none;
+                outline: none;
+            }
+
+            .zulip-icon-close {
+                align-self: center;
+            }
         }
     }
 
