@@ -78,4 +78,17 @@ class zulip::postfix_localmail {
     source  => 'puppet:///modules/zulip/postfix/access',
     require => Package[postfix],
   }
+
+  file { "${zulip::common::supervisor_conf_dir}/postfix.conf":
+    ensure  => file,
+    require => [
+      Package[supervisor],
+      Package[postfix],
+    ],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    source  => 'puppet:///modules/zulip_ops/supervisor/conf.d/postfix.conf',
+    notify  => Service[$zulip::common::supervisor_service],
+  }
 }
