@@ -31,8 +31,14 @@ VAR_DIR_PATH = os.path.join(ZULIP_PATH, "var")
 
 CONTINUOUS_INTEGRATION = "GITHUB_ACTIONS" in os.environ
 
+# Define color codes
+RED = "\033[0;31m"
+YELLOW = "\033[0;33m"
+GREEN = "\033[0;32m"
+ENDC = "\033[0m"
+
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
-    print(FAIL + "Error: No Zulip Git repository present!" + ENDC)
+    print(f"{RED}Error: No Zulip Git repository present!{ENDC}")
     print("To set up the Zulip development environment, you should clone the code")
     print("from GitHub, rather than using a Zulip production release tarball.")
     sys.exit(1)
@@ -44,9 +50,7 @@ with open("/proc/meminfo") as meminfo:
     ram_size = meminfo.readlines()[0].strip().split(" ")[-2]
 ram_gb = float(ram_size) / 1024.0 / 1024.0
 if ram_gb < 1.5:
-    print(
-        f"You have insufficient RAM ({round(ram_gb, 2)} GB) to run the Zulip development environment."
-    )
+    print(f"{RED}You have insufficient RAM ({round(ram_gb, 2)} GB) to run the Zulip development environment.{ENDC}")
     print("We recommend at least 2 GB of RAM, and require at least 1.5 GB.")
     sys.exit(1)
 
@@ -61,14 +65,9 @@ try:
     )
     os.remove(os.path.join(VAR_DIR_PATH, "zulip-test-symlink"))
 except OSError:
-    print(
-        FAIL + "Error: Unable to create symlinks. "
-        "Make sure you have permission to create symbolic links." + ENDC
-    )
+    print(f"{RED}Error: Unable to create symlinks. Make sure you have permission to create symbolic links.{ENDC}")
     print("See this page for more information:")
-    print(
-        "  https://zulip.readthedocs.io/en/latest/development/setup-recommended.html#os-symlink-error"
-    )
+    print("  https://zulip.readthedocs.io/en/latest/development/setup-recommended.html#os-symlink-error")
     sys.exit(1)
 
 distro_info = parse_os_release()
