@@ -636,7 +636,7 @@ test_people("bot_custom_profile_data", () => {
     // http://localhost:9991/#organization/bot-list-admin
     // and then try to edit any of the bots.
     people.add_active_user(bot_botson);
-    assert.equal(people.get_custom_profile_data(bot_botson.user_id, 3), null);
+    assert.equal(people.get_custom_profile_data(bot_botson.user_id, 3), undefined);
 });
 
 test_people("user_timezone", ({override}) => {

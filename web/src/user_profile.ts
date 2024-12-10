@@ -397,7 +397,7 @@ export function get_custom_profile_field_data(
     const field_value = people.get_custom_profile_data(user.user_id, field.id);
     const field_type = field.type;
 
-    if (!field_value) {
+    if (field_value === undefined) {
         return undefined;
     }
     if (!field_value.value) {

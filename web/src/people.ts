@@ -1704,7 +1704,7 @@ export function my_current_user_id(): number {
     return my_user_id;
 }
 
-export function my_custom_profile_data(field_id: number): ProfileDatum | null | undefined {
+export function my_custom_profile_data(field_id: number): ProfileDatum | undefined {
     if (field_id === undefined) {
         blueslip.error("Undefined field id");
         return undefined;
@@ -1715,23 +1715,19 @@ export function my_custom_profile_data(field_id: number): ProfileDatum | null | 
 export function get_custom_profile_data(
     user_id: number,
     field_id: number,
-): ProfileDatum | null | undefined {
+): ProfileDatum | undefined {
     const person = get_by_user_id(user_id);
-    const profile_data = person.profile_data;
-    if (profile_data === undefined) {
-        return null;
-    }
-    return profile_data[field_id];
+    return person.profile_data?.[field_id];
 }
 
 export function get_custom_fields_by_type(
     user_id: number,
     field_type: number,
-): (ProfileDatum | undefined)[] | null {
+): (ProfileDatum | undefined)[] | undefined {
     const person = get_by_user_id(user_id);
     const profile_data = person.profile_data;
     if (profile_data === undefined) {
-        return null;
+        return undefined;
     }
     const filteredProfileData: (ProfileDatum | undefined)[] = [];
     for (const field of realm.custom_profile_fields) {
