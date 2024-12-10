@@ -261,7 +261,8 @@
     --left-sidebar-width: min(33.3333%, var(--left-sidebar-max-width));
     /* 40px (toggle icon) + 5px (gap) + 20px logo + 10px right margin */
     --left-sidebar-width-with-realm-icon-logo: 75px;
-    --right-sidebar-width: 250px;
+    --right-column-width: 250px;
+    --right-sidebar-width: calc(var(--right-column-width) - 10px);
     /* The width of the icon is reduced by 2px, to account for 2px
        of top and bottom margin needed for hover backgrounds to
        not touch the row outline. */

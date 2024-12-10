@@ -387,8 +387,8 @@ body.has-overlay-scrollbar {
 
 /* This applies to column-left both in navbar and app. */
 .column-right {
-    width: var(--right-sidebar-width);
-    max-width: var(--right-sidebar-width);
+    width: var(--right-column-width);
+    max-width: var(--right-column-width);
     position: absolute;
     right: 0;
     top: 0;
@@ -552,7 +552,7 @@ body.has-overlay-scrollbar {
 
     .column-right .right-sidebar {
         padding-left: 5px;
-        width: 240px;
+        width: var(--right-sidebar-width);
     }
 
     .column-middle {
@@ -563,7 +563,7 @@ body.has-overlay-scrollbar {
 
 .column-middle,
 #compose-content {
-    margin-right: var(--right-sidebar-width);
+    margin-right: var(--right-column-width);
     margin-left: calc(
         var(--left-sidebar-width) + var(--left-sidebar-padding-left)
     );
@@ -2046,7 +2046,7 @@ body:not(.hide-left-sidebar) {
     display: flex;
     /* Make the top navbar right column its full width,
        less 7px of space on the left and right. */
-    width: calc(var(--right-sidebar-width) - 7px - 7px);
+    width: calc(var(--right-column-width) - 7px - 7px);
     justify-content: flex-end;
     align-items: center;
 
