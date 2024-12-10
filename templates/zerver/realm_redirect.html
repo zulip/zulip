@@ -19,10 +19,10 @@
                     {{ csrf_input }}
                     <div class="input-box horizontal">
                         <div class="inline-block relative">
-                            <p id="realm_redirect_description">{{ _("Enter your organization's Zulip URL:") }}</p>
+                            <p id="realm_redirect_description">{{ _("Organization URL") }}</p>
                             <input
                               type="text" value="{% if form.subdomain.value() %}{{ form.subdomain.value() }}{% endif %}"
-                              placeholder="{{ _('your-organization-url') }}" autofocus id="realm_redirect_subdomain" name="subdomain"
+                              placeholder="{{ _('your-organization') }}" autofocus id="realm_redirect_subdomain" name="subdomain"
                               autocomplete="off" required/>
                             <span id="realm_redirect_external_host">.{{external_host}}</span>
                         </div>
@@ -33,11 +33,11 @@
                                 {% endfor %}
                             {% endif %}
                         </div>
-                        <button id="enter-realm-button" type="submit">{{ _('Next') }}</button>
-                        <p class="bottom-text">
+                        <p class="bottom-text left-text">
                             {{ _("Don't know your organization URL?") }}
                             <a target="_blank" rel="noopener noreferrer" href="/accounts/find/">{{ _("Find your organization.") }}</a>
                         </p>
+                        <button id="enter-realm-button" type="submit">{{ _('Next') }}</button>
                     </div>
                 </form>
             </div>
