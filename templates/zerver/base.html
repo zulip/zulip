@@ -49,7 +49,6 @@
         {% set _ = all_page_params.update(page_params|default({})) %}
         <div hidden id="page-params" data-params='{{ all_page_params|tojson }}'></div>
     </body>
-
 </html>
 
 {% set entrypoint = entrypoint|default("common") %}
