@@ -1,0 +1,49 @@
+{
+    "token": "CqCsBJmXoNSHaNCt3wGWYSEe",
+    "team_id": "T06NRA6HM3P",
+    "context_team_id": "T06NRA6HM3P",
+    "context_enterprise_id": null,
+    "api_app_id": "A0757RM31HN",
+    "event": {
+      "user": "U06NU4E26M9",
+      "type": "message",
+      "ts": "1719209506.817929",
+      "client_msg_id": "7cc3cc17-2fed-4356-b3c2-48106ab3a209",
+      "text": "Hello, this is a normal text message",
+      "team": "T06NRA6HM3P",
+      "blocks": [
+        {
+          "type": "rich_text",
+          "block_id": "Xh7lJ",
+          "elements": [
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "Hello, this is a normal text message"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "channel": "C06NRA6JLER",
+      "event_ts": "1719209506.817929",
+      "channel_type": "channel"
+    },
+    "type": "event_callback",
+    "event_id": "Ev079SP4TP1P",
+    "event_time": 1719209506,
+    "authorizations": [
+      {
+        "enterprise_id": null,
+        "team_id": "T06NRA6HM3P",
+        "user_id": "U074G5E1ANR",
+        "is_bot": true,
+        "is_enterprise_install": false
+      }
+    ],
+    "is_ext_shared_channel": false,
+    "event_context": "4-eyJldCI6Im1lc3NhZ2UiLCJ0aWQiOiJUMDZOUkE2SE0zUCIsImFpZCI6IkEwNzU3Uk0zMUhOIiwiY2lkIjoiQzA2TlJBNkpMRVIifQ"
+  }
