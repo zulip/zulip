@@ -314,40 +314,55 @@ function update_group_membership_button(group_id: number): void {
     }
 }
 
+function rerender_group_row(group: UserGroup): void {
+    const $row = row_for_group_id(group.id);
+
+    const item = group;
+
+    const current_user_id = people.my_current_user_id();
+    const is_member = user_groups.is_user_in_group(group.id, current_user_id);
+    const can_join = settings_data.can_join_user_group(item.id);
+    const can_leave = settings_data.can_leave_user_group(item.id);
+    const is_direct_member = user_groups.is_direct_member_of(current_user_id, item.id);
+    const associated_subgroups = user_groups.get_associated_subgroups(item, current_user_id);
+    const associated_subgroup_names = user_groups.format_group_list(associated_subgroups);
+    const item_render_data = {
+        ...item,
+        is_member,
+        can_join,
+        can_leave,
+        is_direct_member,
+        associated_subgroup_names,
+    };
+    const html = render_browse_user_groups_list_item(item_render_data);
+    const $new_row = $(html);
+
+    // TODO: Remove this if/when we just handle "active" when rendering templates.
+    if ($row.hasClass("active")) {
+        $new_row.addClass("active");
+    }
+
+    $row.replaceWith($new_row);
+}
+
 function update_display_checkmark_on_group_edit(group: UserGroup): void {
-    if (is_group_already_present(group)) {
-        const $row = row_for_group_id(group.id);
+    const tab_key = get_active_data().$tabs.first().attr("data-tab-key");
+    if (tab_key === "your-groups") {
+        // There is no need to do anything if "Your groups" tab is
+        // opened, because the whole list is already redrawn.
+        return;
+    }
 
-        const item = group;
-        const is_member = user_groups.is_user_in_group(group.id, people.my_current_user_id());
-        const can_join = settings_data.can_join_user_group(item.id);
-        const can_leave = settings_data.can_leave_user_group(item.id);
-        const is_direct_member = user_groups.is_direct_member_of(
-            people.my_current_user_id(),
-            item.id,
-        );
-        const associated_subgroups = user_groups.get_associated_subgroups(
-            item,
-            people.my_current_user_id(),
-        );
-        const associated_subgroup_names = user_groups.format_group_list(associated_subgroups);
-        const item_render_data = {
-            ...item,
-            is_member,
-            can_join,
-            can_leave,
-            is_direct_member,
-            associated_subgroup_names,
-        };
-        const html = render_browse_user_groups_list_item(item_render_data);
-        const $new_row = $(html);
+    rerender_group_row(group);
 
-        // TODO: Remove this if/when we just handle "active" when rendering templates.
-        if ($row.hasClass("active")) {
-            $new_row.addClass("active");
+    const current_user_id = people.my_current_user_id();
+    const supergroups_of_group = user_groups.get_supergroups_of_user_group(group.id);
+    for (const supergroup of supergroups_of_group) {
+        if (user_groups.is_direct_member_of(current_user_id, supergroup.id)) {
+            continue;
         }
 
-        $row.replaceWith($new_row);
+        rerender_group_row(supergroup);
     }
 }
 
