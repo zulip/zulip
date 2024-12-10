@@ -117,6 +117,7 @@ class HomeTest(ZulipTestCase):
         "onboarding_steps",
         "password_min_guesses",
         "password_min_length",
+        "password_max_length",
         "presences",
         "presence_last_update_id",
         "queue_id",
