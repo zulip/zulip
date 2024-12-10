@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json
+from typing_extensions import override
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
@@ -38,7 +39,21 @@ from zerver.models import UserProfile
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITHUB_EVENT")
 
 TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
-DISCUSSION_TEMPLATE = "{author} created [discussion #{discussion_id}]({url}) in {category}:\n\n~~~ quote\n### {title}\n{body}\n~~~"
+DISCUSSION_TEMPLATES = {
+    "created": "{sender} created [discussion #{discussion_number}]({url}) in {category}:\n\n~~~ quote\n### {title}\n{body}\n~~~",
+    "generic_action": "{sender} {action} [discussion #{discussion_number}{configured_title}]({url}).",
+    "deleted": "{sender} {action} discussion #{discussion_number}{configured_title}.",
+    "closed": "{sender} {action} [discussion #{discussion_number}{configured_title}]({url}) as {closed_reason}.",
+    "locked": "{sender} {action} [discussion #{discussion_number}{configured_title}]({url}{configured_title}){locked_reason}.",
+    "labeled": "{sender} added the {label} label to [discussion #{discussion_number}{configured_title}]({url}).",
+    "unlabeled": "{sender} removed the {label} label from [discussion #{discussion_number}{configured_title}]({url}).",
+    "category_changed": "{sender} changed the category of [discussion #{discussion_number}{configured_title}]({url}) from {old_category} to {category}.",
+    "transferred": "{sender} {action} discussion #{discussion_number}{configured_title} from {repository_name} to {new_repository_name} as [discussion #{new_discussion_number}]({url}).",
+    "answered": "{sender} marked [comment #{comment_id}]({answer_url}) as the answer:\n\n~~~ quote\n{answer_body}\n~~~",
+    "unanswered": "{sender} marked [comment #{comment_id}]({answer_url}) as not the answer.",
+    "edited_title": "{sender} edited the title of [discussion #{discussion_number}{configured_title}]({url}):\n\n~~~ quote\n### {title}\n~~~",
+    "edited_body": "{sender} edited [discussion #{discussion_number}{configured_title}]({url}):\n\n~~~ quote\n{body}\n~~~",
+}
 
 
 class Helper:
@@ -303,16 +318,81 @@ def get_push_commits_body(helper: Helper) -> str:
     )
 
 
+class LazyContext(dict[str, str | int]):
+    """Template rendering context for discussions."""
+
+    def __init__(self, payload: WildValue, include_title: bool) -> None:
+        super().__init__()
+        self.payload = payload
+        self.include_title = include_title
+        self.template_values: dict[str, Callable[[], str | int]] = {
+            "sender": lambda: get_sender_name(self.payload),
+            "author": lambda: self.payload["discussion"]["user"]["login"].tame(check_string),
+            "url": lambda: self.payload["discussion"]["html_url"].tame(check_string),
+            "action": lambda: self.payload["action"].tame(check_string),
+            "configured_title": lambda: f" {self.template_values['title']()}"
+            if self.include_title
+            else "",
+            "category": lambda: self.payload["discussion"]["category"]["name"].tame(check_string),
+            "title": lambda: self.payload["discussion"]["title"].tame(check_string),
+            "body": lambda: self.payload["discussion"]["body"].tame(check_string),
+            "repository_name": lambda: self.payload["repository"]["name"].tame(check_string),
+            "new_repository_name": lambda: self.payload["changes"]["new_repository"]["name"].tame(
+                check_string
+            ),
+            "discussion_number": lambda: self.payload["discussion"]["number"].tame(check_int),
+            "new_discussion_number": lambda: self.payload["changes"]["new_discussion"][
+                "number"
+            ].tame(check_int),
+            "label": lambda: self.payload["label"]["name"].tame(check_string),
+            "old_category": lambda: self.payload["changes"]["category"]["from"]["name"].tame(
+                check_string
+            ),
+            # locked_reason includes the " as " as prefix,
+            # because locked_reason could be null too, in which case,
+            # we drop this entire part from the message.
+            "locked_reason": lambda: f" as {self.payload['discussion']['active_lock_reason'].tame(check_string)}"
+            if self.payload["discussion"]["active_lock_reason"]
+            else "",
+            "closed_reason": lambda: self.payload["discussion"]["state_reason"].tame(check_string),
+            # answer_field is used to determine which payload field to use.
+            # It is either "answer" (for answered action)
+            # or "old_answer" (for unanswered action)
+            "answer_field": lambda: "old_answer"
+            if self.payload["action"].tame(check_string) == "unanswered"
+            else "answer",
+            "answer_url": lambda: self.payload[self.template_values["answer_field"]()][
+                "html_url"
+            ].tame(check_string),
+            "answer_body": lambda: self.payload[self.template_values["answer_field"]()][
+                "body"
+            ].tame(check_string),
+            "comment_id": lambda: self.payload[self.template_values["answer_field"]()]["id"].tame(
+                check_int
+            ),
+        }
+
+    @override
+    def __getitem__(self, key: str) -> str | int:
+        return self.template_values[key]()
+
+
 def get_discussion_body(helper: Helper) -> str:
     payload = helper.payload
-    return DISCUSSION_TEMPLATE.format(
-        author=get_sender_name(payload),
-        url=payload["discussion"]["html_url"].tame(check_string),
-        body=payload["discussion"]["body"].tame(check_string),
-        category=payload["discussion"]["category"]["name"].tame(check_string),
-        discussion_id=payload["discussion"]["number"].tame(check_int),
-        title=payload["discussion"]["title"].tame(check_string),
-    )
+    action = get_discussion_action(payload)
+    DISCUSSION_TEMPLATE = DISCUSSION_TEMPLATES[action]
+    context = LazyContext(payload, helper.include_title)
+    return DISCUSSION_TEMPLATE.format_map(context)
+
+
+def get_discussion_action(payload: WildValue) -> str:
+    action = payload["action"].tame(check_string)
+    if action in ("unlocked", "pinned", "unpinned", "reopened"):
+        action = "generic_action"
+    if action == "edited":
+        edited_field = "body" if "body" in payload["changes"] else "title"
+        action = f"edited_{edited_field}"
+    return action
 
 
 def get_discussion_comment_body(helper: Helper) -> str:

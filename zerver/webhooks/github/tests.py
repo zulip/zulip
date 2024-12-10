@@ -12,7 +12,9 @@ TOPIC_DEPLOYMENT = "public-repo / Deployment on production"
 TOPIC_ORGANIZATION = "baxterandthehackers organization"
 TOPIC_BRANCH = "public-repo / changes"
 TOPIC_WIKI = "public-repo / wiki pages"
-TOPIC_DISCUSSION = "testing-gh discussion #20: Lets discuss"
+TOPIC_DISCUSSION = "webhook-tester discussion #3: Tips for Writing Clear and ..."
+TOPIC_DISCUSSION_ANSWERS = "webhook-tester discussion #5: Understanding Project Direc..."
+TOPIC_DISCUSSION_COMMENT = "testing-gh discussion #20: Lets discuss"
 TOPIC_SPONSORS = "sponsors"
 
 
@@ -629,13 +631,80 @@ A temporary team so that I can get some webhook fixtures!
         )
         self.assertTrue(stack_info)
 
-    def test_discussion_msg(self) -> None:
-        expected_message = "sbansal1999 created [discussion #20](https://github.com/sbansal1999/testing-gh/discussions/20) in General:\n\n~~~ quote\n### Lets discuss\nSome random text about which no one cares.\r\n\n~~~"
-        self.check_webhook("discussion", TOPIC_DISCUSSION, expected_message)
+    def test_discussion_answered(self) -> None:
+        expected_message = "Niloth-p marked [comment #11460065](https://github.com/Niloth-p/webhook-tester/discussions/5#discussioncomment-11460065) as the answer:\n\n~~~ quote\nIf you're looking for a detailed explanation of the project structure, I'd recommend checking out our CONTRIBUTING.md file. It includes a breakdown of the different directories and files, as well as some guidelines for contributing to the project.\n~~~"
+        self.check_webhook("discussion__answered", TOPIC_DISCUSSION_ANSWERS, expected_message)
+
+    def test_discussion_category_changed(self) -> None:
+        expected_message = "Niloth-p changed the category of [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3) from General to Ideas."
+        self.check_webhook("discussion__category_changed", TOPIC_DISCUSSION, expected_message)
+
+    def test_discussion_category_changed_with_custom_topic_in_url(self) -> None:
+        self.url = self.build_webhook_url(topic="discussions")
+        expected_topic_name = "discussions"
+        expected_message = "Niloth-p changed the category of [discussion #3 Tips for Writing Clear and Concise Commit Messages](https://github.com/Niloth-p/webhook-tester/discussions/3) from General to Ideas."
+        self.check_webhook("discussion__category_changed", expected_topic_name, expected_message)
+
+    def test_discussion_created(self) -> None:
+        expected_message = "Niloth-p created [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3) in General:\n\n~~~ quote\n### Tips for Writing Clear and Concise Commit Messages\nWriting good commit messages is an art, but it's also an important part of maintaining a clear and understandable project history. What are some tips and tricks you've learned for writing clear and concise commit messages? Do you have any favorite templates or formats?\n~~~"
+        self.check_webhook("discussion__created", TOPIC_DISCUSSION, expected_message)
+
+    def test_discussion_closed(self) -> None:
+        expected_message = "Cordelia closed [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3) as resolved."
+        self.check_webhook("discussion__closed", TOPIC_DISCUSSION, expected_message)
+
+    def test_discussion_deleted(self) -> None:
+        expected_message = "Niloth-p deleted discussion #3."
+        self.check_webhook("discussion__deleted", TOPIC_DISCUSSION, expected_message)
+
+    def test_discussion_edited_title(self) -> None:
+        expected_topic = "webhook-tester discussion #3: Tips for Writing Good Commi..."
+        expected_message = "Niloth-p edited the title of [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3):\n\n~~~ quote\n### Tips for Writing Good Commit Messages\n~~~"
+        self.check_webhook("discussion__edited_title", expected_topic, expected_message)
+
+    def test_discussion_edited_body(self) -> None:
+        expected_message = "Niloth-p edited [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3):\n\n~~~ quote\nWriting good commit messages is an art, but it's also an important part of maintaining a clear and understandable project history. What are some tips and tricks you've learned for writing clear and concise commit messages? Do you have any favorite templates or formats?\r\nAny advice would be greatly appreciated!\n~~~"
+        self.check_webhook("discussion__edited_body", TOPIC_DISCUSSION, expected_message)
+
+    def test_discussion_labeled(self) -> None:
+        expected_message = "Niloth-p added the enhancement label to [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3)."
+        self.check_webhook("discussion__labeled", TOPIC_DISCUSSION, expected_message)
+
+    def test_discussion_locked(self) -> None:
+        expected_message = "Niloth-p locked [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3) as resolved."
+        self.check_webhook("discussion__locked", TOPIC_DISCUSSION, expected_message)
+
+    def test_discussion_pinned(self) -> None:
+        expected_message = "Niloth-p pinned [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3)."
+        self.check_webhook("discussion__pinned", TOPIC_DISCUSSION, expected_message)
+
+    def test_discussion_reopened(self) -> None:
+        expected_message = "Niloth-p reopened [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3)."
+        self.check_webhook("discussion__reopened", TOPIC_DISCUSSION, expected_message)
+
+    def test_discussion_transferred(self) -> None:
+        expected_message = "Niloth-p transferred discussion #3 from webhook-tester to another-webhook-tester as [discussion #1](https://github.com/Niloth-p/webhook-tester/discussions/3)."
+        self.check_webhook("discussion__transferred", TOPIC_DISCUSSION, expected_message)
+
+    def test_discussion_unlabeled(self) -> None:
+        expected_message = "Niloth-p removed the enhancement label from [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3)."
+        self.check_webhook("discussion__unlabeled", TOPIC_DISCUSSION, expected_message)
+
+    def test_discussion_unlocked(self) -> None:
+        expected_message = "Niloth-p unlocked [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3)."
+        self.check_webhook("discussion__unlocked", TOPIC_DISCUSSION, expected_message)
+
+    def test_discussion_unpinned(self) -> None:
+        expected_message = "Niloth-p unpinned [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3)."
+        self.check_webhook("discussion__unpinned", TOPIC_DISCUSSION, expected_message)
+
+    def test_discussion_unanswered(self) -> None:
+        expected_message = "Cordelia marked [comment #11460059](https://github.com/Niloth-p/webhook-tester/discussions/5#discussioncomment-11460059) as not the answer."
+        self.check_webhook("discussion__unanswered", TOPIC_DISCUSSION_ANSWERS, expected_message)
 
     def test_discussion_comment_msg(self) -> None:
         expected_message = "sbansal1999 [commented](https://github.com/sbansal1999/testing-gh/discussions/20#discussioncomment-6332416) on [discussion #20](https://github.com/sbansal1999/testing-gh/discussions/20):\n\n~~~ quote\nsome random comment\n~~~"
-        self.check_webhook("discussion_comment", TOPIC_DISCUSSION, expected_message)
+        self.check_webhook("discussion_comment", TOPIC_DISCUSSION_COMMENT, expected_message)
 
     def test_discussion_comment_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
@@ -645,7 +714,7 @@ A temporary team so that I can get some webhook fixtures!
 
     def test_discussion_comment_edited_msg(self) -> None:
         expected_message = "sbansal1999 edited a [comment](https://github.com/sbansal1999/testing-gh/discussions/20#discussioncomment-6332416) on [discussion #20](https://github.com/sbansal1999/testing-gh/discussions/20):\n\n~~~ quote\nsome random comment edited\n~~~"
-        self.check_webhook("discussion_comment__edited", TOPIC_DISCUSSION, expected_message)
+        self.check_webhook("discussion_comment__edited", TOPIC_DISCUSSION_COMMENT, expected_message)
 
     def test_comment_edited_unchanged_skipped(self) -> None:
         self.check_webhook(
