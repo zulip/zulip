@@ -321,7 +321,7 @@ test("update_info_from_event", () => {
 
     assert.deepEqual(presence.presence_info.get(alice.user_id), {
         status: "active",
-        last_active: 510,
+        last_active: 500,
     });
 
     info = {
