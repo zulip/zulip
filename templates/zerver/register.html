@@ -145,8 +145,8 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                 <div class="input-box password-div">
                     <input id="id_password" class="required" type="password" name="password" autocomplete="new-password"
                       value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
-                      maxlength="{{ MAX_PASSWORD_LENGTH }}"
                       data-min-length="{{password_min_length}}"
+                      data-max-length="{{ password_max_length }}"
                       data-min-guesses="{{password_min_guesses}}" required />
                     <label for="id_password" class="inline-block">{{ _('Password') }}</label>
                     <i class="fa fa-eye-slash password_visibility_toggle" role="button" tabindex="0"></i>
