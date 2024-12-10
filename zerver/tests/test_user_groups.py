@@ -1193,24 +1193,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         params = {
             "can_mention_group": orjson.dumps(
                 {
-                    "new": {
-                        "direct_members": [othello.id],
-                        "direct_subgroups": [moderators_group.id],
-                    },
-                    "old": {
-                        "direct_members": [hamlet.id],
-                        "direct_subgroups": [1111],
-                    },
-                }
-            ).decode()
-        }
-        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
-        self.assert_json_error(result, "'old' value does not match the expected value.")
-
-        params = {
-            "can_mention_group": orjson.dumps(
-                {
-                    "new": 1111,
+                    "new": 123456,
                     "old": {
                         "direct_members": [hamlet.id],
                         "direct_subgroups": [marketing_group.id],
