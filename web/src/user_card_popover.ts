@@ -46,6 +46,7 @@ import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
 import * as user_status_ui from "./user_status_ui.ts";
 import {the} from "./util.ts";
+import { website_presence } from "./activity.ts";
 
 let current_user_sidebar_user_id: number | undefined;
 
@@ -237,12 +238,12 @@ type UserCardPopoverData = {
     bot_owner?: User;
 };
 
-function get_user_card_popover_data(
+export async function get_user_card_popover_data(
     user: User,
     has_message_context: boolean,
     is_sender_popover: boolean,
     private_msg_class: string,
-): UserCardPopoverData {
+): Promise<UserCardPopoverData> {
     const is_me = people.is_my_user_id(user.user_id);
 
     let invisible_mode = false;
@@ -283,6 +284,9 @@ function get_user_card_popover_data(
     const can_send_private_message =
         user_can_send_direct_message(user_id_string) && is_active && !is_me;
 
+     // Fetch the user_last_seen_time_status asynchronously
+    const user_last_seen_time_status = await website_presence(user.user_id);
+
     const args: UserCardPopoverData = {
         invisible_mode,
         can_send_private_message,
@@ -299,7 +303,7 @@ function get_user_card_popover_data(
         user_email: user.delivery_email,
         user_full_name: user.full_name,
         user_id: user.user_id,
-        user_last_seen_time_status: buddy_data.user_last_seen_time_status(user.user_id),
+        user_last_seen_time_status,
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         status_content_available: Boolean(status_text ?? status_emoji_info),
@@ -331,7 +335,7 @@ function get_user_card_popover_data(
     return args;
 }
 
-function show_user_card_popover(
+async function show_user_card_popover(
     user: User,
     $popover_element: JQuery,
     is_sender_popover: boolean,
@@ -341,7 +345,7 @@ function show_user_card_popover(
     popover_placement: tippy.Placement,
     show_as_overlay = false,
     on_mount?: (instance: tippy.Instance) => void,
-): void {
+): Promise<void> {
     let popover_html;
     let args;
     if (user.is_inaccessible_user) {
@@ -354,7 +358,7 @@ function show_user_card_popover(
         };
         popover_html = render_user_card_popover_for_unknown_user(args);
     } else {
-        args = get_user_card_popover_data(
+        args = await get_user_card_popover_data(
             user,
             has_message_context,
             is_sender_popover,
