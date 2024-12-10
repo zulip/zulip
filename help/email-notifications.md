@@ -10,7 +10,7 @@ and mentions](/help/dm-mention-alert-notifications), as well as
 
 {settings_tab|notifications}
 
-1. Toggle the checkboxes for **Channels** and **DMs, mentions, and alerts**
+1. Toggle the checkboxes for **Channels** and **DMs and mentions**
    in the **Email** column of the **Notification triggers** table.
 
 {end_tabs}

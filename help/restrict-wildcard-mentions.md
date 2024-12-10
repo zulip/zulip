@@ -22,4 +22,4 @@ participants.
 
 ## Related articles
 
-* [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
+* [DMs and mentions](/help/dm-mention-alert-notifications)
