@@ -21,6 +21,7 @@ import type {Toggle} from "./components.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import * as group_permission_settings from "./group_permission_settings.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
@@ -29,7 +30,6 @@ import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_components from "./settings_components.ts";
-import {group_setting_name_schema} from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_org from "./settings_org.ts";
@@ -193,9 +193,7 @@ function show_membership_settings(group: UserGroup): void {
 }
 
 function show_general_settings(group: UserGroup): void {
-    const permission_settings = z
-        .array(group_setting_name_schema)
-        .parse(Object.keys(realm.server_supported_permission_settings.group));
+    const permission_settings = group_permission_settings.get_group_permission_settings();
     for (const setting_name of permission_settings) {
         settings_components.create_group_setting_widget({
             $pill_container: $(`#id_${CSS.escape(setting_name)}`),
