@@ -18,7 +18,8 @@ def update_zh_hant_tw_language(apps: StateApps, schema_editor: BaseDatabaseSchem
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("zerver", "0638_alter_stream_can_administer_channel_group"),
+        # The most recent 9.x migration, since this will be backported
+        ("zerver", "0622_backfill_imageattachment_again"),
     ]
 
     operations = [
