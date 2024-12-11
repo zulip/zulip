@@ -2,6 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import * as inbox_util from "./inbox_util.ts";
+import type {MessageList} from "./message_list.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -36,7 +37,12 @@ function should_add_topic_update_delay(visibility_policy: number): boolean {
 export function handle_topic_updates(
     user_topic_event: ServerUserTopic,
     refreshed_current_narrow = false,
+    rerender_combined_feed_callback?: (combined_feed_msg_list: MessageList) => void,
 ): void {
+    const was_topic_visible_in_home = user_topics.is_topic_visible_in_home(
+        user_topic_event.stream_id,
+        user_topic_event.topic_name,
+    );
     // Update the UI after changes in topic visibility policies.
     user_topics.set_user_topic(user_topic_event);
 
@@ -50,7 +56,23 @@ export function handle_topic_updates(
             );
 
             if (!refreshed_current_narrow) {
-                message_lists.current?.update_muting_and_rerender();
+                if (message_lists.current?.data.filter.is_in_home()) {
+                    const is_topic_visible_in_home = user_topics.is_topic_visible_in_home(
+                        user_topic_event.stream_id,
+                        user_topic_event.topic_name,
+                    );
+                    if (
+                        rerender_combined_feed_callback &&
+                        !was_topic_visible_in_home &&
+                        is_topic_visible_in_home
+                    ) {
+                        rerender_combined_feed_callback(message_lists.current);
+                    } else {
+                        message_lists.current.update_muting_and_rerender();
+                    }
+                } else {
+                    message_lists.current?.update_muting_and_rerender();
+                }
             }
         },
         should_add_topic_update_delay(user_topic_event.visibility_policy) ? 500 : 0,
@@ -64,7 +86,7 @@ export function handle_topic_updates(
         // Find the row with the specified stream_id and topic_name
         const $row = $('tr[data-stream-id="' + stream_id + '"][data-topic="' + topic_name + '"]');
 
-        if ($row.length) {
+        if ($row.length > 0) {
             // If the row exists, update the status only.
             // We don't call 'populate_list' in this case as it re-creates the panel (re-sorts by date updated +
             // removes topics with status set to 'Default for channel'), making it hard to review the changes
@@ -83,7 +105,19 @@ export function handle_topic_updates(
         // Defer updates for any background-rendered messages lists until the visible one has been updated.
         for (const list of message_lists.all_rendered_message_lists()) {
             if (message_lists.current !== list) {
-                list.update_muting_and_rerender();
+                if (list.data.filter.is_in_home()) {
+                    const is_topic_visible_in_home = user_topics.is_topic_visible_in_home(
+                        user_topic_event.stream_id,
+                        user_topic_event.topic_name,
+                    );
+                    if (!was_topic_visible_in_home && is_topic_visible_in_home) {
+                        message_lists.delete_message_list(list);
+                    } else {
+                        list.update_muting_and_rerender();
+                    }
+                } else {
+                    list.update_muting_and_rerender();
+                }
             }
         }
     }, 0);

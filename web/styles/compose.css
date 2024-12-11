@@ -329,8 +329,8 @@
 
     &:has(.new_message_textarea.invalid),
     &:has(.new_message_textarea.invalid:focus) {
-        border-color: hsl(3deg 57% 33%);
-        box-shadow: 0 0 2px hsl(3deg 57% 33%);
+        border-color: var(--color-invalid-input-border);
+        box-shadow: var(--color-invalid-input-box-shadow);
     }
 }
 

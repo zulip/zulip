@@ -22,6 +22,7 @@ INLINE_MIME_TYPES = [
     "image/jpeg",
     "image/png",
     "image/webp",
+    "text/plain",
     "video/mp4",
     "video/webm",
     # To avoid cross-site scripting attacks, DO NOT add types such

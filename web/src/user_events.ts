@@ -3,6 +3,7 @@
 // dependencies that existed when this code was in people.js.
 // (We should do bot updates here too.)
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as activity_ui from "./activity_ui.ts";
 import * as blueslip from "./blueslip.ts";
@@ -25,10 +26,34 @@ import * as settings_streams from "./settings_streams.ts";
 import * as settings_users from "./settings_users.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_events from "./stream_events.ts";
-import * as user_group_edit from "./user_group_edit.js";
+import * as user_group_edit from "./user_group_edit.ts";
 import * as user_profile from "./user_profile.ts";
 
-export const update_person = function update(person) {
+type UserUpdate = {user_id: number} & (
+    | {
+          avatar_source: string;
+          avatar_url: string | null;
+          avatar_url_medium: string | null;
+          avatar_version: number;
+      }
+    | {bot_owner_id: number}
+    | {
+          custom_profile_field: {
+              id: number;
+              value: string | null;
+              rendered_value?: string;
+          };
+      }
+    | {delivery_email: string | null}
+    | {new_email: string}
+    | {full_name: string}
+    | {is_billing_admin: boolean}
+    | {role: number}
+    | {email: string; timezone: string}
+    | {is_active: boolean}
+);
+
+export const update_person = function update(person: UserUpdate): void {
     const person_obj = people.maybe_get_user_by_id(person.user_id);
 
     if (!person_obj) {
@@ -36,7 +61,7 @@ export const update_person = function update(person) {
         return;
     }
 
-    if (Object.hasOwn(person, "new_email")) {
+    if ("new_email" in person) {
         const user_id = person.user_id;
         const new_email = person.new_email;
 
@@ -49,18 +74,19 @@ export const update_person = function update(person) {
         }
     }
 
-    if (Object.hasOwn(person, "delivery_email")) {
+    if ("delivery_email" in person) {
         const delivery_email = person.delivery_email;
         person_obj.delivery_email = delivery_email;
         user_profile.update_profile_modal_ui(person_obj, person);
         if (people.is_my_user_id(person.user_id)) {
+            assert(delivery_email !== null);
             settings_account.update_email(delivery_email);
             current_user.delivery_email = delivery_email;
             settings_account.hide_confirm_email_banner();
         }
     }
 
-    if (Object.hasOwn(person, "full_name")) {
+    if ("full_name" in person) {
         people.set_full_name(person_obj, person.full_name);
 
         settings_users.update_user_data(person.user_id, person);
@@ -74,7 +100,7 @@ export const update_person = function update(person) {
         }
     }
 
-    if (Object.hasOwn(person, "role")) {
+    if ("role" in person) {
         person_obj.role = person.role;
         person_obj.is_owner = person.role === settings_config.user_role_values.owner.code;
         person_obj.is_admin =
@@ -111,14 +137,14 @@ export const update_person = function update(person) {
         }
     }
 
-    if (Object.hasOwn(person, "is_billing_admin")) {
+    if ("is_billing_admin" in person) {
         person_obj.is_billing_admin = person.is_billing_admin;
         if (people.is_my_user_id(person.user_id)) {
             current_user.is_billing_admin = person_obj.is_billing_admin;
         }
     }
 
-    if (Object.hasOwn(person, "avatar_url")) {
+    if ("avatar_url" in person) {
         const url = person.avatar_url;
         person_obj.avatar_url = url;
         person_obj.avatar_version = person.avatar_version;
@@ -135,7 +161,7 @@ export const update_person = function update(person) {
         user_profile.update_profile_modal_ui(person_obj, person);
     }
 
-    if (Object.hasOwn(person, "custom_profile_field")) {
+    if ("custom_profile_field" in person) {
         people.set_custom_profile_field_data(person.user_id, person.custom_profile_field);
         user_profile.update_user_custom_profile_fields(person_obj);
         if (person.user_id === people.my_current_user_id()) {
@@ -148,7 +174,7 @@ export const update_person = function update(person) {
             )?.required;
             if (is_field_required) {
                 const $custom_user_field = $(
-                    `.profile-settings-form .custom_user_field[data-field-id="${CSS.escape(field_id)}"]`,
+                    `.profile-settings-form .custom_user_field[data-field-id="${CSS.escape(`${field_id}`)}"]`,
                 );
                 const $field = $custom_user_field.find(".settings-profile-user-field");
                 const $required_symbol = $custom_user_field.find(".required-symbol");
@@ -167,16 +193,17 @@ export const update_person = function update(person) {
         }
     }
 
-    if (Object.hasOwn(person, "timezone")) {
+    if ("timezone" in person) {
         person_obj.timezone = person.timezone;
     }
 
-    if (Object.hasOwn(person, "bot_owner_id")) {
+    if ("bot_owner_id" in person) {
+        assert(person_obj.is_bot);
         person_obj.bot_owner_id = person.bot_owner_id;
         user_profile.update_profile_modal_ui(person_obj, person);
     }
 
-    if (Object.hasOwn(person, "is_active")) {
+    if ("is_active" in person) {
         if (person.is_active) {
             people.add_active_user(person_obj);
             settings_users.update_view_on_reactivate(person.user_id);

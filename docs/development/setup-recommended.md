@@ -87,11 +87,17 @@ the internet.)
 - tested for Fedora 36
   :::
 
-::::
+:::{tab-item} Other Linux
+:sync: os-other-linux
 
-Other Linux distributions work great too, but we don't maintain
-documentation for installing Vagrant and Docker on those systems, so
-you'll need to find a separate guide and crib from these docs.
+- Any Linux distribution should work, if it supports Git, Vagrant and
+  Docker. We don't maintain documentation for installing Vagrant,
+  Docker, and other dependencies on those systems, so you'll want to
+  roughly follow the Ubuntu/Debian instructions, using upstream
+  documentation for installing dependencies.
+  :::
+
+::::
 
 ### Step 0: Set up Git & GitHub
 

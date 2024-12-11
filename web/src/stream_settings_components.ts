@@ -157,7 +157,7 @@ export function ajaxSubscribe(
                     already_subscribed: z.record(z.string(), z.array(z.string())),
                 })
                 .parse(xhr.responseJSON);
-            if (Object.keys(res.already_subscribed).length) {
+            if (Object.keys(res.already_subscribed).length > 0) {
                 // Display the canonical stream capitalization.
                 true_stream_name = res.already_subscribed[current_user.user_id]![0];
                 ui_report.success(

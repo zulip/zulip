@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
@@ -59,7 +60,7 @@ export class SettingsPanelMenu {
     hash_prefix: string;
     $curr_li: JQuery;
     current_tab: string;
-    current_user_settings_tab: string;
+    current_user_settings_tab: string | undefined;
     org_user_settings_toggler: Toggle;
 
     constructor(opts: {$main_elem: JQuery; hash_prefix: string}) {
@@ -176,13 +177,13 @@ export class SettingsPanelMenu {
         this.current_tab = tab;
     }
 
-    set_user_settings_tab(tab: string): void {
+    set_user_settings_tab(tab: string | undefined): void {
         this.current_user_settings_tab = tab;
     }
 
     activate_section_or_default(
-        section: string,
-        user_settings_tab: string,
+        section: string | undefined,
+        user_settings_tab?: string,
         activate_section_for_mobile = true,
     ): void {
         popovers.hide_all();
@@ -220,6 +221,7 @@ export class SettingsPanelMenu {
             browser_history.update_hash_internally_if_required(settings_section_hash);
         }
         if (section === "users" && this.org_user_settings_toggler !== undefined) {
+            assert(user_settings_tab !== undefined);
             this.show_org_user_settings_toggler();
             this.org_user_settings_toggler.goto(user_settings_tab);
         }

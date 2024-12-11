@@ -678,7 +678,7 @@ function compute_summary_chart_data(
             values.push(0);
         }
     }
-    if (data.size !== 0) {
+    if (data.size > 0) {
         labels[labels.length - 1] = "Other";
         for (const sum of data.values()) {
             values[labels.length - 1]! += sum;

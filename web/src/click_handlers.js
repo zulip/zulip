@@ -15,7 +15,7 @@ import * as compose_state from "./compose_state.ts";
 import {media_breakpoints_num} from "./css_variables.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as hash_util from "./hash_util.ts";
-import * as hashchange from "./hashchange.js";
+import * as hashchange from "./hashchange.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
@@ -834,7 +834,7 @@ export function initialize() {
             return;
         }
 
-        if (compose_state.composing() && !$(e.target).parents("#compose").length) {
+        if (compose_state.composing() && $(e.target).parents("#compose").length === 0) {
             if (
                 $(e.target).closest("a").length > 0 ||
                 $(e.target).closest(".copy_codeblock").length > 0
@@ -854,20 +854,20 @@ export function initialize() {
                 // the compose box; this means using the sidebar
                 // filters or search widgets won't unnecessarily close
                 // compose.
-                !$(e.target).closest("input").length &&
-                !$(e.target).closest(".todo-widget label.checkbox").length &&
-                !$(e.target).closest("textarea").length &&
-                !$(e.target).closest("select").length &&
+                $(e.target).closest("input").length === 0 &&
+                $(e.target).closest(".todo-widget label.checkbox").length === 0 &&
+                $(e.target).closest("textarea").length === 0 &&
+                $(e.target).closest("select").length === 0 &&
                 // Clicks inside an overlay, popover, custom
                 // modal, or backdrop of one of the above
                 // should not have any effect on the compose
                 // state.
-                !$(e.target).closest(".overlay").length &&
-                !$(e.target).closest(".micromodal").length &&
-                !$(e.target).closest("[data-tippy-root]").length &&
-                !$(e.target).closest(".typeahead").length &&
-                !$(e.target).closest(".flatpickr-calendar").length &&
-                $(e.target).closest("body").length
+                $(e.target).closest(".overlay").length === 0 &&
+                $(e.target).closest(".micromodal").length === 0 &&
+                $(e.target).closest("[data-tippy-root]").length === 0 &&
+                $(e.target).closest(".typeahead").length === 0 &&
+                $(e.target).closest(".flatpickr-calendar").length === 0 &&
+                $(e.target).closest("body").length > 0
             ) {
                 // Unfocus our compose area if we click out of it. Don't let exits out
                 // of overlays or selecting text (for copy+paste) trigger cancelling.

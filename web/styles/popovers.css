@@ -617,21 +617,30 @@ ul.popover-group-menu-member-list {
     .stream-list-top-section {
         display: flex;
         margin-top: 12px;
+        align-items: center;
+        margin-bottom: 5px;
+
+        .stream-search-container {
+            margin-left: auto;
+            display: grid;
+            grid-template:
+                "search-input clear-search" auto / minmax(0, 1fr)
+                30px;
+        }
 
         .stream-search {
-            margin-left: auto;
-            align-self: center;
+            grid-column: search-input-start / clear-search-end;
+            grid-row: search-input;
             padding-right: 20px;
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;
+            margin-bottom: 0;
         }
 
         #clear_stream_search {
             display: none;
-            padding: 5px 8px 5px 4px;
-            position: relative;
-            right: 0;
+            grid-area: clear-search;
         }
     }
 

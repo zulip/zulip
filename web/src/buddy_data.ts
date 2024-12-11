@@ -433,7 +433,7 @@ function get_filtered_user_id_list(
 
         // We want to always show PM recipients even if they're inactive.
         const pm_ids_set = narrow_state.pm_ids_set();
-        if (pm_ids_set.size) {
+        if (pm_ids_set.size > 0) {
             const base_user_id_set = new Set([...base_user_id_list, ...pm_ids_set]);
             base_user_id_list = [...base_user_id_set];
         }

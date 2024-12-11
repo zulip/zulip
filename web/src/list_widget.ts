@@ -40,7 +40,7 @@ type ListWidgetOpts<Key, Item = Key> = {
     name?: string;
     get_item: (key: Key) => Item;
     modifier_html: (item: Item, filter_value: string) => string;
-    init_sort?: string | SortingFunction<Item>;
+    init_sort?: string | string[] | SortingFunction<Item>;
     initially_descending_sort?: boolean;
     html_selector?: (item: Item) => JQuery;
     callback_after_render?: () => void;
@@ -70,7 +70,7 @@ export type ListWidget<Key, Item = Key> = BaseListWidget & {
     clear: () => void;
     set_filter_value: (value: string) => void;
     set_reverse_mode: (reverse_mode: boolean) => void;
-    set_sorting_function: (sorting_function: string | SortingFunction<Item>) => void;
+    set_sorting_function: (sorting_function: string | string[] | SortingFunction<Item>) => void;
     set_up_event_handlers: () => void;
     increase_rendered_offset: () => void;
     reduce_rendered_offset: () => void;
@@ -204,7 +204,7 @@ function is_scroll_position_for_render(scroll_container: HTMLElement): boolean {
 function get_column_count_for_table($table: JQuery): number {
     let column_count = 0;
     const $thead = $table.find("thead");
-    if ($thead.length) {
+    if ($thead.length > 0) {
         column_count = $thead.find("tr").children().length;
     }
     return column_count;
@@ -221,7 +221,7 @@ export function render_empty_list_message_if_needed(
         empty_list_message = empty_search_results_message;
     }
 
-    if (!empty_list_message || $container.children().length) {
+    if (!empty_list_message || $container.children().length > 0) {
         return;
     }
 
@@ -317,7 +317,7 @@ export function create<Key, Item = Key>(
                     const $list_item = $container.find(
                         `li[data-value="${CSS.escape(String(value))}"]`,
                     );
-                    if ($list_item.length) {
+                    if ($list_item.length > 0) {
                         const $link_elem = $list_item.find("a").expectOne();
                         $list_item.addClass("checked");
                         $link_elem.prepend($("<i>").addClass(["fa", "fa-check"]));
@@ -542,13 +542,13 @@ export function create<Key, Item = Key>(
                     $target_row.after($(rendered_row));
                 } else {
                     let $target_row = opts.html_selector!(meta.filtered_list[insert_index + 1]!);
-                    if ($target_row.length !== 0) {
+                    if ($target_row.length > 0) {
                         $target_row.before($(rendered_row));
                     } else if (insert_index > 0) {
                         // We don't have a row rendered after row we are trying to insert at.
                         // So, try looking for the row before current row.
                         $target_row = opts.html_selector!(meta.filtered_list[insert_index - 1]!);
-                        if ($target_row.length !== 0) {
+                        if ($target_row.length > 0) {
                             $target_row.after($(rendered_row));
                         }
                     }

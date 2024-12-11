@@ -204,7 +204,7 @@ $(() => {
     }
 
     function update_full_name_section(): void {
-        if ($("#source_realm_select").length && $("#source_realm_select").val() !== "") {
+        if ($("#source_realm_select").length > 0 && $("#source_realm_select").val() !== "") {
             $("#full_name_input_section").hide();
             $("#profile_info_section").show();
             const avatar_url = $($("#source_realm_select").prop("selectedOptions")).attr(

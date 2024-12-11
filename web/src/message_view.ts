@@ -340,14 +340,14 @@ export function try_rendering_locally_for_same_narrow(
     return true;
 }
 
-type ShowMessageViewOpts = {
+export type ShowMessageViewOpts = {
     force_rerender?: boolean;
     force_close?: boolean;
     change_hash?: boolean;
     trigger?: string;
     fetched_target_message?: boolean;
-    then_select_id?: number;
-    then_select_offset?: number;
+    then_select_id?: number | undefined;
+    then_select_offset?: number | undefined;
     show_more_topics?: boolean;
 };
 
@@ -423,7 +423,7 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
     // we need to check if the narrow is allowed for spectator here too.
     if (
         page_params.is_spectator &&
-        raw_terms.length &&
+        raw_terms.length > 0 &&
         // TODO: is:home is currently not permitted for spectators
         // because they can't mute things; maybe that's the wrong
         // policy?
@@ -440,11 +440,11 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
     const coming_from_inbox = inbox_util.is_visible();
 
     const opts = {
-        then_select_id: -1,
         change_hash: true,
         trigger: "unknown",
         show_more_topics: false,
         ...show_opts,
+        then_select_id: show_opts.then_select_id ?? -1,
     };
 
     const span_data = {
@@ -1408,4 +1408,15 @@ function handle_post_view_change(
     stream_list.handle_narrow_activated(filter, opts.change_hash, opts.show_more_topics);
     pm_list.handle_narrow_activated(filter);
     activity_ui.build_user_sidebar();
+}
+
+export function rerender_combined_feed(combined_feed_msg_list: MessageList): void {
+    // Remove cache to avoid repopulating from it.
+    message_list_data_cache.remove(combined_feed_msg_list.data.filter);
+    show(combined_feed_msg_list.data.filter.terms(), {
+        then_select_id: combined_feed_msg_list.selected_id(),
+        then_select_offset: browser_history.current_scroll_offset(),
+        trigger: "stream / topic visibility policy change",
+        force_rerender: true,
+    });
 }

@@ -11,7 +11,7 @@ let $window_stub;
 set_global("to_$", () => $window_stub);
 
 set_global("document", "document-stub");
-const history = set_global("history", {});
+const history = set_global("history", {state: null});
 
 const admin = mock_esm("../src/admin");
 const drafts_overlay_ui = mock_esm("../src/drafts_overlay_ui");

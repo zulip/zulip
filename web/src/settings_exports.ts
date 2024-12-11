@@ -132,7 +132,7 @@ export function populate_exports_table(exports: RealmExport[]): void {
     });
 
     const $spinner = $(".export_row .export_url_spinner");
-    if ($spinner.length) {
+    if ($spinner.length > 0) {
         loading.make_indicator($spinner);
     } else {
         loading.destroy_indicator($spinner);
@@ -423,7 +423,7 @@ function maybe_store_export_consent_data_and_return(export_consent: ExportConsen
 function update_start_export_modal_stats(): void {
     total_users_count = export_consents.size;
     users_consented_for_export_count = get_export_consents_having_consent_value(true).length;
-    if ($("#allow_private_data_export_stats").length) {
+    if ($("#allow_private_data_export_stats").length > 0) {
         $("#allow_private_data_export_stats").text(
             $t(
                 {

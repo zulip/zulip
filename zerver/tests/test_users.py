@@ -1471,7 +1471,7 @@ class UserProfileTest(ZulipTestCase):
             for account in accounts:
                 realm = user.realm
                 if (
-                    account["avatar"] == avatar_url(user)
+                    account["avatar"] == avatar_url(user, medium=True)
                     and account["full_name"] == user.full_name
                     and account["realm_name"] == realm.name
                     and account["realm_id"] == realm.id

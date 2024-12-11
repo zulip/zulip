@@ -285,7 +285,7 @@ export function build_page(): void {
     }
 }
 
-export function launch(section: string, user_settings_tab: string): void {
+export function launch(section: string, user_settings_tab: string | undefined): void {
     settings_sections.reset_sections();
 
     settings.open_settings_overlay();

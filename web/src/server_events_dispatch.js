@@ -25,9 +25,10 @@ import * as information_density from "./information_density.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as linkifiers from "./linkifiers.ts";
 import * as message_edit from "./message_edit.ts";
-import * as message_events from "./message_events.js";
+import * as message_events from "./message_events.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_live_update from "./message_live_update.ts";
+import * as message_view from "./message_view.ts";
 import * as message_view_header from "./message_view_header.ts";
 import * as muted_users_ui from "./muted_users_ui.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -85,8 +86,8 @@ import * as theme from "./theme.ts";
 import * as typing_events from "./typing_events.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as unread_ui from "./unread_ui.ts";
-import * as user_events from "./user_events.js";
-import * as user_group_edit from "./user_group_edit.js";
+import * as user_events from "./user_events.ts";
+import * as user_group_edit from "./user_group_edit.ts";
 import * as user_groups from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
@@ -156,7 +157,7 @@ export function dispatch_normal_event(event) {
             break;
 
         case "invites_changed":
-            if ($("#admin-invites-list").length) {
+            if ($("#admin-invites-list").length > 0) {
                 settings_invites.set_up(false);
             }
             break;
@@ -1028,6 +1029,7 @@ export function dispatch_normal_event(event) {
             user_topics_ui.handle_topic_updates(
                 event,
                 message_events.update_current_view_for_topic_visibility(),
+                message_view.rerender_combined_feed,
             );
             // Discard cached message lists if `event` topic was / is followed.
             if (

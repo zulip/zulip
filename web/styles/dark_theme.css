@@ -273,14 +273,6 @@
         }
     }
 
-    #message-content-container {
-        &:has(textarea.new_message_textarea.invalid),
-        &:has(textarea.new_message_textarea.invalid:focus) {
-            border-color: hsl(3deg 73% 74%);
-            box-shadow: 0 0 2px hsl(3deg 73% 74%);
-        }
-    }
-
     #stream-actions-menu-popover .sp-container {
         background-color: transparent;
 

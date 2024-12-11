@@ -12,6 +12,7 @@ import {$t} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import * as muted_users from "./muted_users.ts";
+import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
@@ -52,6 +53,7 @@ type TopicPopoverContext = {
     topic_name: string;
     topic_unmuted: boolean;
     is_spectator: boolean;
+    is_topic_empty: boolean;
     can_move_topic: boolean;
     can_rename_topic: boolean;
     is_realm_admin: boolean;
@@ -248,6 +250,7 @@ export function get_topic_popover_content_context({
     const visibility_policy = user_topics.get_topic_visibility_policy(sub.stream_id, topic_name);
     const all_visibility_policies = user_topics.all_visibility_policies;
     const is_spectator = page_params.is_spectator;
+    const is_topic_empty = is_topic_definitely_empty(stream_id, topic_name);
     return {
         stream_name: sub.name,
         stream_id: sub.stream_id,
@@ -255,6 +258,7 @@ export function get_topic_popover_content_context({
         topic_name,
         topic_unmuted,
         is_spectator,
+        is_topic_empty,
         can_move_topic,
         can_rename_topic,
         is_realm_admin: current_user.is_admin,
@@ -356,4 +360,30 @@ export function get_gear_menu_content_context(): GearMenuContext {
         user_color_scheme: user_settings.color_scheme,
         color_scheme_values: settings_config.color_scheme_values,
     };
+}
+
+function is_topic_definitely_empty(stream_id: number, topic: string): boolean {
+    const current_narrow_stream_id = narrow_state.stream_id();
+    const current_narrow_topic = narrow_state.topic();
+
+    if (
+        current_narrow_stream_id === undefined ||
+        current_narrow_topic === undefined ||
+        current_narrow_stream_id !== stream_id ||
+        current_narrow_topic !== topic
+    ) {
+        return false;
+    }
+
+    const is_current_message_list_empty = message_lists.current?.data.empty();
+    if (!is_current_message_list_empty) {
+        return false;
+    }
+
+    const is_oldest_message_found = message_lists.current?.data.fetch_status.has_found_oldest();
+    if (!is_oldest_message_found) {
+        return false;
+    }
+
+    return true;
 }

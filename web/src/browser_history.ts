@@ -8,7 +8,7 @@ import {user_settings} from "./user_settings.ts";
 
 export const state: {
     is_internal_change: boolean;
-    hash_before_overlay: string | null;
+    hash_before_overlay: string | null | undefined;
     old_hash: string;
     changing_hash: boolean;
     spectator_old_hash: string | null;
@@ -36,7 +36,7 @@ export function old_hash(): string {
     return state.old_hash;
 }
 
-export function set_hash_before_overlay(hash: string): void {
+export function set_hash_before_overlay(hash: string | undefined): void {
     state.hash_before_overlay = hash;
 }
 
@@ -167,6 +167,11 @@ export const state_data_schema = z.object({
 });
 
 type StateData = z.infer<typeof state_data_schema>;
+
+export function current_scroll_offset(): number | undefined {
+    const current_state = state_data_schema.nullable().parse(window.history.state);
+    return current_state?.narrow_offset;
+}
 
 export function update_current_history_state_data(new_data: StateData): void {
     const current_state = state_data_schema.nullable().parse(window.history.state);

@@ -471,12 +471,12 @@ export function update_empty_left_panel_message(): void {
         // this case here we are also checking DOM if there are streams
         // displayed in panel or not.
         has_streams =
-            stream_data.subscribed_subs().length ||
-            $("#channels_overlay_container .stream-row:not(.notdisplayed)").length;
+            stream_data.subscribed_subs().length > 0 ||
+            $("#channels_overlay_container .stream-row:not(.notdisplayed)").length > 0;
     } else if (stream_ui_updates.is_not_subscribed_stream_tab_active()) {
         has_streams =
-            stream_data.unsubscribed_subs().length ||
-            $("#channels_overlay_container .stream-row:not(.notdisplayed)").length;
+            stream_data.unsubscribed_subs().length > 0 ||
+            $("#channels_overlay_container .stream-row:not(.notdisplayed)").length > 0;
     } else {
         has_streams = stream_data.get_unsorted_subs().length;
     }

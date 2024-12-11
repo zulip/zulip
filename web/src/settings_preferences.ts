@@ -363,7 +363,7 @@ export async function report_emojiset_change(settings_panel: SettingsPanel): Pro
     await emojisets.select(settings_panel.settings_object.emojiset);
 
     const $spinner = $(settings_panel.container).find(".emoji-preferences-settings-status");
-    if ($spinner.length) {
+    if ($spinner.length > 0) {
         loading.destroy_indicator($spinner);
         ui_report.success(
             $t_html({defaultMessage: "Emoji set changed successfully!"}),
@@ -383,7 +383,7 @@ export function report_user_list_style_change(settings_panel: SettingsPanel): vo
     // implementation is wrong, though, in that it displays the UI
     // update in all active browser windows.
     const $spinner = $(settings_panel.container).find(".information-settings-status");
-    if ($spinner.length) {
+    if ($spinner.length > 0) {
         loading.destroy_indicator($spinner);
         ui_report.success(
             $t_html({defaultMessage: "User list style changed successfully!"}),

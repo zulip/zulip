@@ -79,54 +79,6 @@ def get_user_full_name(user: ZerverFieldsT) -> str:
         return user["name"]
 
 
-# Markdown mapping
-def convert_to_zulip_markdown(
-    text: str,
-    users: list[ZerverFieldsT],
-    added_channels: AddedChannelsT,
-    slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
-) -> tuple[str, list[int], bool]:
-    mentioned_users_id = []
-    text = convert_markdown_syntax(text, SLACK_BOLD_REGEX, "**")
-    text = convert_markdown_syntax(text, SLACK_STRIKETHROUGH_REGEX, "~~")
-    text = convert_markdown_syntax(text, SLACK_ITALIC_REGEX, "*")
-
-    # Map Slack's mention all: '<!everyone>' to '@**all** '
-    # Map Slack's mention all: '<!channel>' to '@**all** '
-    # Map Slack's mention all: '<!here>' to '@**all** '
-    # No regex for this as it can be present anywhere in the sentence
-    text = text.replace("<!everyone>", "@**all**")
-    text = text.replace("<!channel>", "@**all**")
-    text = text.replace("<!here>", "@**all**")
-
-    # Map Slack channel mention: '<#C5Z73A7RA|general>' to '#**general**'
-    for cname, ids in added_channels.items():
-        cid = ids[0]
-        text = text.replace(f"<#{cid}|{cname}>", "#**" + cname + "**")
-
-    tokens = text.split(" ")
-    for iterator in range(len(tokens)):
-        # Check user mentions and change mention format from
-        # '<@slack_id|short_name>' to '@**full_name**'
-        if re.findall(SLACK_USERMENTION_REGEX, tokens[iterator], re.VERBOSE):
-            tokens[iterator], user_id = get_user_mentions(
-                tokens[iterator], users, slack_user_id_to_zulip_user_id
-            )
-            if user_id is not None:
-                mentioned_users_id.append(user_id)
-
-    text = " ".join(tokens)
-
-    # Check and convert link format
-    text, has_link = convert_link_format(text)
-    # convert `<mailto:foo@foo.com>` to `mailto:foo@foo.com`
-    text, has_mailto_link = convert_mailto_format(text)
-
-    message_has_link = has_link or has_mailto_link
-
-    return text, mentioned_users_id, message_has_link
-
-
 def get_user_mentions(
     token: str, users: list[ZerverFieldsT], slack_user_id_to_zulip_user_id: SlackToZulipUserIDT
 ) -> tuple[str, int | None]:
@@ -144,27 +96,6 @@ def get_user_mentions(
             token = re.sub(SLACK_USERMENTION_REGEX, mention, token, flags=re.VERBOSE)
             return token, user_id
     return token, None
-
-
-# Map italic, bold and strikethrough Markdown
-def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
-    """
-    Returns:
-    1. For strikethrough formatting: This maps Slack's '~strike~' to Zulip's '~~strike~~'
-    2. For bold formatting: This maps Slack's '*bold*' to Zulip's '**bold**'
-    3. For italic formatting: This maps Slack's '_italic_' to Zulip's '*italic*'
-    """
-    for match in re.finditer(regex, text, re.VERBOSE):
-        converted_token = (
-            match.group(1)
-            + zulip_keyword
-            + match.group(3)
-            + match.group(4)
-            + zulip_keyword
-            + match.group(6)
-        )
-        text = text.replace(match.group(0), converted_token)
-    return text
 
 
 def convert_link_format(text: str) -> tuple[str, bool]:
@@ -197,6 +128,84 @@ def convert_mailto_format(text: str) -> tuple[str, bool]:
         has_link = True
         text = text.replace(match.group(0), match.group(1))
     return text, has_link
+
+
+# Map italic, bold and strikethrough Markdown
+def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
+    """
+    Returns:
+    1. For strikethrough formatting: This maps Slack's '~strike~' to Zulip's '~~strike~~'
+    2. For bold formatting: This maps Slack's '*bold*' to Zulip's '**bold**'
+    3. For italic formatting: This maps Slack's '_italic_' to Zulip's '*italic*'
+    """
+    for match in re.finditer(regex, text, re.VERBOSE):
+        converted_token = (
+            match.group(1)
+            + zulip_keyword
+            + match.group(3)
+            + match.group(4)
+            + zulip_keyword
+            + match.group(6)
+        )
+        text = text.replace(match.group(0), converted_token)
+    return text
+
+
+def convert_slack_workspace_mentions(text: str) -> str:
+    # Map Slack's '<!everyone>', '<!channel>' and '<!here>'
+    # mentions to Zulip's '@**all**' wildcard mention.
+    # No regex for these as they can be present anywhere
+    # in the sentence.
+    text = text.replace("<!everyone>", "@**all**")
+    text = text.replace("<!channel>", "@**all**")
+    text = text.replace("<!here>", "@**all**")
+    return text
+
+
+def convert_slack_formatting(text: str) -> str:
+    text = convert_markdown_syntax(text, SLACK_BOLD_REGEX, "**")
+    text = convert_markdown_syntax(text, SLACK_STRIKETHROUGH_REGEX, "~~")
+    text = convert_markdown_syntax(text, SLACK_ITALIC_REGEX, "*")
+    return text
+
+
+# Markdown mapping
+def convert_to_zulip_markdown(
+    text: str,
+    users: list[ZerverFieldsT],
+    added_channels: AddedChannelsT,
+    slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
+) -> tuple[str, list[int], bool]:
+    mentioned_users_id = []
+    text = convert_slack_formatting(text)
+    text = convert_slack_workspace_mentions(text)
+
+    # Map Slack channel mention: '<#C5Z73A7RA|general>' to '#**general**'
+    for cname, ids in added_channels.items():
+        cid = ids[0]
+        text = text.replace(f"<#{cid}|{cname}>", "#**" + cname + "**")
+
+    tokens = text.split(" ")
+    for iterator in range(len(tokens)):
+        # Check user mentions and change mention format from
+        # '<@slack_id|short_name>' to '@**full_name**'
+        if re.findall(SLACK_USERMENTION_REGEX, tokens[iterator], re.VERBOSE):
+            tokens[iterator], user_id = get_user_mentions(
+                tokens[iterator], users, slack_user_id_to_zulip_user_id
+            )
+            if user_id is not None:
+                mentioned_users_id.append(user_id)
+
+    text = " ".join(tokens)
+
+    # Check and convert link format
+    text, has_link = convert_link_format(text)
+    # convert `<mailto:foo@foo.com>` to `mailto:foo@foo.com`
+    text, has_mailto_link = convert_mailto_format(text)
+
+    message_has_link = has_link or has_mailto_link
+
+    return text, mentioned_users_id, message_has_link
 
 
 def render_block(block: WildValue) -> str:

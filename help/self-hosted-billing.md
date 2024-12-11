@@ -175,6 +175,9 @@ An organization is considered to be a new customer if:
 
 {!self-hosted-billing-log-in-step.md!}
 
+1. On the page listing Zulip's self-hosted plans, click the button at the bottom
+   of the plan you would like to purchase.
+
 {!pay-by-invoice-steps.md!}
 
 {end_tabs}
