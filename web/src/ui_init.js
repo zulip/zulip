@@ -19,7 +19,7 @@ import * as audible_notifications from "./audible_notifications.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import * as channel from "./channel.ts";
-import * as click_handlers from "./click_handlers.js";
+import * as click_handlers from "./click_handlers.ts";
 import * as common from "./common.ts";
 import * as compose from "./compose.js";
 import * as compose_closed_ui from "./compose_closed_ui.ts";

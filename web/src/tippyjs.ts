@@ -633,7 +633,7 @@ export function initialize(): void {
         /*
             Status emoji tooltips for most locations in the app. This
             basic tooltip logic is overridden by separate logic in
-            click_handlers.js for the left and right sidebars, to
+            click_handlers.ts for the left and right sidebars, to
             avoid problematic interactions with the main tooltips for
             those regions.
         */
