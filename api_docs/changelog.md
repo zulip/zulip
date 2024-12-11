@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 327**
+
+* [`GET /events`](/api/get-events): Added a new field `stream_ids` to replace
+  `streams` in stream delete event and label `streams` as deprecated.
+
 **Feature level 326**
 
 * [`POST /register`](/api/register-queue): Removed `allow_owners_group`
@@ -42,6 +47,7 @@ format used by the Zulip server that they are interacting with.
   which is a [group-setting value](/api/group-setting-values) describing the
   set of users with permissions to administer the channel in addition to realm
   admins.
+
 
 **Feature level 324**
 
