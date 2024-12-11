@@ -303,6 +303,10 @@ export function initialize(params) {
         get_events_failures = 0;
         restart_get_events({dont_block: true});
     });
+    $(".restart_get_events_button").on("click", () => {
+        restart_get_events({dont_block: true});
+    });
+
     get_events();
 }
 
