@@ -15,11 +15,14 @@ import * as people from "./people.ts";
 import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
 
+const read_receipts_polling_interval_ms = 60 * 1000;
 const read_receipts_api_response_schema = z.object({
     user_ids: z.array(z.number()),
 });
 
-export function fetch_read_receipts(message_id: number): void {
+let interval_id: number | null = null;
+
+function fetch_read_receipts(message_id: number): void {
     const message = message_store.get(message_id);
     assert(message !== undefined, "message is undefined");
 
@@ -30,72 +33,63 @@ export function fetch_read_receipts(message_id: number): void {
             }),
         );
         $("#read_receipts_modal .modal__content").addClass("compact");
-    } else {
-        loading.make_indicator($("#read_receipts_modal .loading_indicator"));
-        void channel.get({
-            url: `/json/messages/${message_id}/read_receipts`,
-            success(raw_data) {
-                const $modal = $("#read_receipts_modal").filter(
-                    "[data-message-id=" + message_id + "]",
-                );
-                // If the read receipts modal for the selected message ID is closed
-                // by the time we receive the response, return immediately.
-                if (!$modal.length) {
-                    return;
-                }
-                const data = read_receipts_api_response_schema.parse(raw_data);
-                const users = data.user_ids.map((id) => {
-                    const user = people.get_user_by_id_assert_valid(id);
-                    return user;
-                });
-                users.sort(people.compare_by_name);
-
-                const context = {
-                    users: users.map((user) => ({
-                        user_id: user.user_id,
-                        full_name: user.full_name,
-                        avatar_url: people.small_avatar_url_for_person(user),
-                    })),
-                };
-
-                loading.destroy_indicator($("#read_receipts_modal .loading_indicator"));
-                if (users.length === 0) {
-                    $("#read_receipts_modal .read_receipts_info").text(
-                        $t({defaultMessage: "No one has read this message yet."}),
-                    );
-                } else {
-                    $("#read_receipts_modal .read_receipts_info").html(
-                        $t_html(
-                            {
-                                defaultMessage:
-                                    "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}",
-                            },
-                            {
-                                num_of_people: users.length,
-                                "z-link": (content_html) =>
-                                    `<a href="/help/read-receipts" target="_blank" rel="noopener noreferrer">${content_html.join(
-                                        "",
-                                    )}</a>`,
-                            },
-                        ),
-                    );
-                    $("#read_receipts_modal .modal__container").addClass(
-                        "showing_read_receipts_list",
-                    );
-                    $("#read_receipts_modal .read_receipts_list").html(
-                        render_read_receipts(context),
-                    );
-                    new SimpleBar(util.the($("#read_receipts_modal .modal__content")), {
-                        tabIndex: -1,
-                    });
-                }
-            },
-            error(xhr) {
-                ui_report.error("", xhr, $("#read_receipts_error"));
-                loading.destroy_indicator($("#read_receipts_modal .loading_indicator"));
-            },
-        });
+        return;
     }
+
+    loading.make_indicator($("#read_receipts_modal .loading_indicator"));
+    void channel.get({
+        url: `/json/messages/${message_id}/read_receipts`,
+        success(raw_data) {
+            const $modal = $("#read_receipts_modal").filter(`[data-message-id=${message_id}]`);
+            if ($modal.length === 0) {
+                return;
+            }
+
+            const data = read_receipts_api_response_schema.parse(raw_data);
+            const users = data.user_ids.map((id) => people.get_user_by_id_assert_valid(id));
+            users.sort(people.compare_by_name);
+
+            const context = {
+                users: users.map((user) => ({
+                    user_id: user.user_id,
+                    full_name: user.full_name,
+                    avatar_url: people.small_avatar_url_for_person(user),
+                })),
+            };
+
+            loading.destroy_indicator($("#read_receipts_modal .loading_indicator"));
+            if (users.length === 0) {
+                $("#read_receipts_modal .read_receipts_info").text(
+                    $t({defaultMessage: "No one has read this message yet."}),
+                );
+            } else {
+                $("#read_receipts_modal .read_receipts_info").html(
+                    $t_html(
+                        {
+                            defaultMessage:
+                                "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}",
+                        },
+                        {
+                            num_of_people: users.length,
+                            "z-link": (content_html) =>
+                                `<a href="/help/read-receipts" target="_blank" rel="noopener noreferrer">${content_html.join(
+                                    "",
+                                )}</a>`,
+                        },
+                    ),
+                );
+                $("#read_receipts_modal .modal__container").addClass("showing_read_receipts_list");
+                $("#read_receipts_modal .read_receipts_list").html(render_read_receipts(context));
+                new SimpleBar(util.the($("#read_receipts_modal .modal__content")), {
+                    tabIndex: -1,
+                });
+            }
+        },
+        error(xhr) {
+            ui_report.error("", xhr, $("#read_receipts_error"));
+            loading.destroy_indicator($("#read_receipts_modal .loading_indicator"));
+        },
+    });
 }
 
 export function show_user_list(message_id: number): void {
@@ -104,6 +98,15 @@ export function show_user_list(message_id: number): void {
         autoremove: true,
         on_shown() {
             fetch_read_receipts(message_id);
+            interval_id = window.setInterval(() => {
+                fetch_read_receipts(message_id);
+            }, read_receipts_polling_interval_ms);
+        },
+        on_hidden() {
+            if (interval_id !== null) {
+                clearInterval(interval_id);
+                interval_id = null;
+            }
         },
     });
 }
