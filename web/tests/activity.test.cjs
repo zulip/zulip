@@ -376,7 +376,7 @@ test("handlers", ({override, override_rewire, mock_template}) => {
 
     (function test_click_handler() {
         init();
-        // We wire up the click handler in click_handlers.js,
+        // We wire up the click handler in click_handlers.ts,
         // so this just tests the called function.
         narrowed = false;
         activity_ui.narrow_for_user({$li: $alice_li});
