@@ -79,7 +79,7 @@ a {
 }
 
 a:hover,
-a:focus {
+a:focus-visible {
     color: var(--color-text-generic-link-interactive);
     text-decoration: underline;
 
@@ -583,12 +583,12 @@ label {
 }
 
 /* Bootstrap's focus outline uses -webkit-focus-ring-color which doesn't exist in Firefox */
-a:not(:active):focus,
-button:focus,
-label.checkbox input[type="checkbox"]:focus ~ .rendered-checkbox,
-i.fa:focus,
+a:not(:active):focus-visible,
+button:focus-visible,
+label.checkbox input[type="checkbox"]:focus-visible ~ .rendered-checkbox,
+i.fa:focus-visible,
 i.zulip-icon:focus-visible,
-[role="button"]:focus {
+[role="button"]:focus-visible {
     outline: 2px solid var(--color-outline-focus);
     /* TODO: change solid to auto once the Chromium bug #1105822 is fixed */
 }

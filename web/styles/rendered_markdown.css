@@ -713,7 +713,7 @@
         }
 
         &:hover,
-        &:focus {
+        &:focus-visible {
             color: var(--color-markdown-link-hover);
             text-decoration: underline;
 
