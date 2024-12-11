@@ -2,6 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import * as channel from "./channel.ts";
+import * as group_permission_settings from "./group_permission_settings.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
@@ -262,11 +263,11 @@ export function set_up_handlers(): void {
     // This will always be enabled when creating a user group.
     settings_components.enable_opening_typeahead_on_clicking_label($container);
 
-    const permission_settings = Object.keys(realm.server_supported_permission_settings.group);
+    const permission_settings = group_permission_settings.get_group_permission_settings();
     for (const setting_name of permission_settings) {
         const widget = settings_components.create_group_setting_widget({
             $pill_container: $(`#id_new_group_${CSS.escape(setting_name)}`),
-            setting_name: settings_components.group_setting_name_schema.parse(setting_name),
+            setting_name,
         });
         group_setting_widget_map.set(setting_name, widget);
     }
