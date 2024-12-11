@@ -232,8 +232,7 @@
             height: var(--compose-recipient-box-min-height);
 
             .conversation-arrow {
-                font-size: 16px;
-                line-height: 16px;
+                font-size: 1.1429em; /* 16px / 14px em */
                 border-radius: 50%;
                 padding: 2px;
                 margin: 0 3px;
