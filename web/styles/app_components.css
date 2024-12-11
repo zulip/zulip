@@ -600,6 +600,21 @@ input.settings_text_input {
     }
 }
 
+.user_status_icon_wrapper {
+    display: inline;
+    white-space: nowrap;
+}
+
+.user-status-microlayout {
+    display: inline-grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    .user-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
 /* We are mostly consistent in how we style
    unread counts, except for starred messages.
    This is the common section.
