@@ -48,6 +48,7 @@ from zerver.models.streams import (
     bulk_get_streams,
     get_realm_stream,
     get_stream,
+    get_stream_by_id_for_sending_message,
     get_stream_by_id_in_realm,
 )
 from zerver.models.users import active_non_guest_user_ids, active_user_ids, is_cross_realm_bot_email
@@ -316,25 +317,27 @@ def subscribed_to_stream(user_profile: UserProfile, stream_id: int) -> bool:
     ).exists()
 
 
-def check_stream_access_based_on_stream_post_policy(sender: UserProfile, stream: Stream) -> None:
-    if sender.is_realm_admin or is_cross_realm_bot_email(sender.delivery_email):
-        pass
-    elif stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS:
-        raise JsonableError(_("Only organization administrators can send to this channel."))
-    elif (
-        stream.stream_post_policy == Stream.STREAM_POST_POLICY_MODERATORS
-        and not sender.is_moderator
+def check_stream_access_based_on_can_send_message_group(
+    sender: UserProfile, stream: Stream
+) -> None:
+    if is_cross_realm_bot_email(sender.delivery_email):
+        return
+
+    can_send_message_group = stream.can_send_message_group
+    if hasattr(can_send_message_group, "named_user_group"):
+        if can_send_message_group.named_user_group.name == SystemGroups.EVERYONE:
+            return
+
+        if can_send_message_group.named_user_group.name == SystemGroups.NOBODY:
+            raise JsonableError(_("You do not have permission to post in this channel."))
+
+    if not user_has_permission_for_group_setting(
+        stream.can_send_message_group,
+        sender,
+        Stream.stream_permission_group_settings["can_send_message_group"],
+        direct_member_only=False,
     ):
-        raise JsonableError(
-            _("Only organization administrators and moderators can send to this channel.")
-        )
-    elif stream.stream_post_policy != Stream.STREAM_POST_POLICY_EVERYONE and sender.is_guest:
-        raise JsonableError(_("Guests cannot send to this channel."))
-    elif (
-        stream.stream_post_policy == Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS
-        and sender.is_provisional_member
-    ):
-        raise JsonableError(_("New members cannot send to this channel."))
+        raise JsonableError(_("You do not have permission to post in this channel."))
 
 
 def access_stream_for_send_message(
@@ -346,10 +349,10 @@ def access_stream_for_send_message(
     # Our caller is responsible for making sure that `stream` actually
     # matches the realm of the sender.
     try:
-        check_stream_access_based_on_stream_post_policy(sender, stream)
+        check_stream_access_based_on_can_send_message_group(sender, stream)
     except JsonableError as e:
         if sender.is_bot and sender.bot_owner is not None:
-            check_stream_access_based_on_stream_post_policy(sender.bot_owner, stream)
+            check_stream_access_based_on_can_send_message_group(sender.bot_owner, stream)
         else:
             raise JsonableError(e.msg)
 
@@ -533,6 +536,32 @@ def access_stream_by_id(
     error = _("Invalid channel ID")
     try:
         stream = get_stream_by_id_in_realm(stream_id, user_profile.realm)
+    except Stream.DoesNotExist:
+        raise JsonableError(error)
+
+    sub = access_stream_common(
+        user_profile,
+        stream,
+        error,
+        require_active=require_active,
+        allow_realm_admin=allow_realm_admin,
+    )
+    return (stream, sub)
+
+
+def access_stream_by_id_for_message(
+    user_profile: UserProfile,
+    stream_id: int,
+    require_active: bool = True,
+    allow_realm_admin: bool = False,
+) -> tuple[Stream, Subscription | None]:
+    """
+    Variant of access_stream_by_id that uses get_stream_by_id_for_sending_message
+    to ensure we do a select_related("can_send_message_group").
+    """
+    error = _("Invalid channel ID")
+    try:
+        stream = get_stream_by_id_for_sending_message(stream_id, user_profile.realm)
     except Stream.DoesNotExist:
         raise JsonableError(error)
 
