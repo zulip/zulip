@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 327**
+
+* [`GET /streams/{stream_id}/email_address`](/api/get-stream-email-address):
+  Added an optional `sender_id` parameter to specify the ID of a user or bot
+  which should appear as the sender when messages are sent to a channel using
+  the channel email address.
+
 **Feature level 326**
 
 * [`POST /register`](/api/register-queue): Removed `allow_owners_group`
