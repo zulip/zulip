@@ -15,7 +15,7 @@ import * as compose_state from "./compose_state.ts";
 import {media_breakpoints_num} from "./css_variables.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as hash_util from "./hash_util.ts";
-import * as hashchange from "./hashchange.js";
+import * as hashchange from "./hashchange.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";

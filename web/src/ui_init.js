@@ -46,7 +46,7 @@ import * as emojisets from "./emojisets.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as giphy from "./giphy.ts";
 import * as giphy_state from "./giphy_state.ts";
-import * as hashchange from "./hashchange.js";
+import * as hashchange from "./hashchange.ts";
 import * as hotkey from "./hotkey.js";
 import * as i18n from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
@@ -659,7 +659,7 @@ export function initialize_everything(state_data) {
         },
     });
 
-    // All overlays, and also activity_ui, must be initialized before hashchange.js
+    // All overlays, and also activity_ui, must be initialized before hashchange.ts
     hashchange.initialize();
 
     emoji_picker.initialize();
