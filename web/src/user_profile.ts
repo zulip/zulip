@@ -137,9 +137,9 @@ export function update_profile_modal_ui(
     user: User,
     new_data: {
         user_id?: number;
-        bot_owner_id?: string;
-        avatar_url?: string;
-        delivery_email?: string;
+        bot_owner_id?: number;
+        avatar_url?: string | null;
+        delivery_email?: string | null;
         role?: number;
         full_name?: string;
     },
@@ -166,7 +166,7 @@ export function update_profile_modal_ui(
         );
     }
     if (new_data.delivery_email !== undefined) {
-        $("#email").find(".value").text(new_data.delivery_email);
+        $("#email .value").text(new_data.delivery_email ?? "");
     }
     if (new_data.role !== undefined && !user.is_bot) {
         const user_type = settings_config.user_role_map.get(new_data.role);
@@ -397,7 +397,7 @@ export function get_custom_profile_field_data(
     const field_value = people.get_custom_profile_data(user.user_id, field.id);
     const field_type = field.type;
 
-    if (!field_value) {
+    if (field_value === undefined) {
         return undefined;
     }
     if (!field_value.value) {
