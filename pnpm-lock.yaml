@@ -17,6 +17,9 @@ patchedDependencies:
   svgicons2svgfont:
     hash: d4mkid5oxxg6zfe7zsae2cikn4
     path: patches/svgicons2svgfont.patch
+  textarea-caret@3.1.0:
+    hash: 4l2w4ru66ocl2j45eog5vet7ve
+    path: patches/textarea-caret@3.1.0.patch
   tippy.js@6.3.7:
     hash: mlbmk5pq4q6iuwarqu6solgeeq
     path: patches/tippy.js@6.3.7.patch
@@ -258,7 +261,7 @@ importers:
         version: 4.1.1
       textarea-caret:
         specifier: ^3.1.0
-        version: 3.1.0
+        version: 3.1.0(patch_hash=4l2w4ru66ocl2j45eog5vet7ve)
       tippy.js:
         specifier: ^6.3.7
         version: 6.3.7(patch_hash=mlbmk5pq4q6iuwarqu6solgeeq)
@@ -18586,7 +18589,7 @@ snapshots:
 
   text-hex@1.0.0: {}
 
-  textarea-caret@3.1.0: {}
+  textarea-caret@3.1.0(patch_hash=4l2w4ru66ocl2j45eog5vet7ve): {}
 
   thingies@1.21.0(tslib@2.8.1):
     dependencies:
