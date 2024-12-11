@@ -901,6 +901,11 @@ ul.popover-group-menu-member-list {
         margin: 0;
     }
 
+    .modal_select {
+        width: auto;
+        max-width: 100%;
+    }
+
     #move_topic_to_stream_widget_wrapper {
         display: flex;
         margin-bottom: 10px;
