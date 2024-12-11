@@ -20166,6 +20166,17 @@ paths:
                         description: |
                           An example JSON response for when invalid combination of channel permission
                           parameters are passed:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "A moderation request channel cannot be public.",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON response for when trying to set moderation request channel to
+                          be public:
   /streams/{stream_id}/email_address:
     get:
       operationId: get-stream-email-address

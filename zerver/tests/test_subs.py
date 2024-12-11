@@ -850,6 +850,16 @@ class StreamAdminTest(ZulipTestCase):
         }
         self.assertEqual(invite_only_log.extra_data, expected_extra_data)
 
+        private_stream = self.make_stream("private_stream", realm=realm, invite_only=True)
+        realm.moderation_request_channel = private_stream
+        realm.save()
+        params = {
+            "is_private": orjson.dumps(False).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{private_stream.id}", params)
+        self.assert_json_error(result, "Moderation request channel must be private.")
+        self.assertTrue(private_stream.invite_only)
+
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         params = {
             "is_private": orjson.dumps(False).decode(),
