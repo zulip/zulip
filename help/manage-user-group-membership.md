@@ -28,6 +28,6 @@
 * [Manage user groups](/help/user-groups)
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [Create user groups](/help/create-user-groups)
-* [Roles and permissions](/help/roles-and-permissions)
+* [User roles](/help/user-roles)
 
 [configure-invites]: /help/configure-who-can-invite-to-channels

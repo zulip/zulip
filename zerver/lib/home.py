@@ -75,7 +75,7 @@ def promote_sponsoring_zulip_in_realm(realm: Realm) -> bool:
 
 
 def get_billing_info(user_profile: UserProfile | None) -> BillingInfo:
-    # See https://zulip.com/help/roles-and-permissions for clarity.
+    # See https://zulip.com/help/user-roles for clarity.
     show_billing = False
     show_plans = False
     sponsorship_pending = False

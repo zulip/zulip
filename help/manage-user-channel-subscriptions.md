@@ -86,7 +86,7 @@ channel](/help/unsubscribe-from-a-channel).
 ## Related articles
 
 * [Channel permissions](/help/channel-permissions)
-* [Roles and permissions](/help/roles-and-permissions)
+* [User roles](/help/user-roles)
 * [Add or remove users from a channel](/help/add-or-remove-users-from-a-channel)
 * [Unsubscribe from a channel](/help/unsubscribe-from-a-channel)
 * [View channel subscribers](/help/view-channel-subscribers)

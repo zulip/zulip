@@ -19,7 +19,7 @@ their clients.
 
 Zulip Cloud organizations are generally hosted at `<subdomain>.zulipchat.com`,
 with the subdomain chosen when the organization was created. Organization
-[owners](/help/roles-and-permissions) can request to change the subdomain.
+[owners](/help/user-roles) can request to change the subdomain.
 
 {start_tabs}
 

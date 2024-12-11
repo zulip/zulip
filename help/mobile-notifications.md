@@ -147,7 +147,7 @@ To enable push notifications for your organization:
    Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html).
 
 1. For organizations with more than 10 users, an
-   [owner](/help/roles-and-permissions) or billing administrator needs to sign
+   [owner](/help/user-roles) or billing administrator needs to sign
    up for a [plan](https://zulip.com/plans/#self-hosted) for your organization.
 
 {end_tabs}

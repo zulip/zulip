@@ -13,7 +13,7 @@ Prior to inviting users to your organization, it is recommended that administrat
 
 When you invite users, you can:
 
-* Set the [role](/help/roles-and-permissions) that they will have when
+* Set the [role](/help/user-roles) that they will have when
   they join.
 
 * Configure which [channels](/help/introduction-to-channels) they will be
@@ -40,7 +40,7 @@ users** menu option if you have permission to invite users.
 
 1. Select when the invitations will expire.
 
-1. Select what [role](/help/roles-and-permissions) the users will join as.
+1. Select what [role](/help/user-roles) the users will join as.
 
 1. Configure which [channels](/help/introduction-to-channels) they will be subscribed
    to.
@@ -75,7 +75,7 @@ users** menu option if you have permission to invite users.
 
 1. Select when the invitation will expire.
 
-1. Select what [role](/help/roles-and-permissions) the users will join as.
+1. Select what [role](/help/user-roles) the users will join as.
 
 1. Configure which [channels](/help/introduction-to-channels) they will be subscribed
    to.
@@ -111,7 +111,7 @@ for invitations for the organization owners role.
 * [Set default channels for new users](/help/set-default-channels-for-new-users)
 * [Configure default new user settings](/help/configure-default-new-user-settings)
 * [Configure organization language for automated messages and invitation emails][org-lang]
-* [Roles and permissions](/help/roles-and-permissions)
+* [User roles](/help/user-roles)
 * [User groups](/help/user-groups)
 * [Joining a Zulip organization](/help/join-a-zulip-organization)
 

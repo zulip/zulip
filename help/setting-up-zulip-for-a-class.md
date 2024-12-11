@@ -138,7 +138,7 @@ A few settings to highlight:
 ### Roles and permissions
 
 Zulip offers [several levels of permissions based on user
-roles](/help/roles-and-permissions). Here are some recommendations for
+roles](/help/user-roles). Here are some recommendations for
 how to assign roles and permissions for a class.
 
 #### Recommended roles and permissions for a single-class Zulip organization
@@ -228,7 +228,7 @@ For most classes, the following channels are recommended:
 - **#announcements**: For general announcements about the class. When
   creating this channel, [restrict posting
   permissions](/help/channel-posting-policy) so that only course staff
-  ([administrators and moderators](/help/roles-and-permissions)) are
+  ([administrators and moderators](/help/user-roles)) are
   allowed to post.
 - **#staff (private)**: For discussions among course staff.
 - **#general**: For random topics, e.g., students forming study groups.

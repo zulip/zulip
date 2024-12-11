@@ -186,7 +186,7 @@
 * [GDPR compliance](/help/gdpr-compliance)
 
 ## Users
-* [Manage permissions](/help/roles-and-permissions)
+* [Manage permissions](/help/manage-permissions)
 * [Invite new users](/help/invite-new-users)
 * [Restrict account creation](/help/restrict-account-creation)
 * [User roles](/help/user-roles)

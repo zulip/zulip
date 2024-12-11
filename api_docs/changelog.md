@@ -1227,7 +1227,7 @@ No changes; feature level used for Zulip 8.0 release.
   now includes [web-public streams](/help/public-access-option) as well.
 * [`GET /events`](/api/get-events): Events for stream creation and deletion
   are now sent to clients when a user gains or loses access to any streams
-  due to a change in their [role](/help/roles-and-permissions).
+  due to a change in their [role](/help/user-roles).
 * [`GET /events`](/api/get-events): The `subscription` events for `op:
   "peer_add"` are now sent to clients when a user gains access to a stream
   due to a change in their role.

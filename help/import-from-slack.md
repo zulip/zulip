@@ -142,7 +142,7 @@ in mind about the import process:
   [customize their account settings](/help/getting-started-with-zulip).
 
 - Slack's user roles are mapped to Zulip's [user
-  roles](/help/roles-and-permissions) in the following way:
+  roles](/help/user-roles) in the following way:
 
 | Slack role              | Zulip role    |
 |-------------------------|---------------|

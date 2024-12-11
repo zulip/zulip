@@ -11,7 +11,7 @@ will automatically redirect to the new location of the message. [Muted
 topics](/help/mute-a-topic) are automatically migrated when a topic is renamed.
 
 Organizations can [configure](/help/restrict-moving-messages) which
-[roles](/help/roles-and-permissions) have permission to rename topics.
+[roles](/help/user-roles) have permission to rename topics.
 
 ## Rename a topic
 

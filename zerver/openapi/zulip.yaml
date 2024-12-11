@@ -489,7 +489,7 @@ paths:
                                     - type: object
                                       additionalProperties: false
                                       description: |
-                                        When the [role](/help/roles-and-permissions) of a user changes.
+                                        When the [role](/help/user-roles) of a user changes.
                                       properties:
                                         user_id:
                                           type: integer
@@ -839,7 +839,7 @@ paths:
 
                                 Prior to Zulip 8.0 (feature level 205), this event was not sent when
                                 a user gained access to a channel due to their [role
-                                changing](/help/roles-and-permissions).
+                                changing](/help/user-roles).
 
                                 Prior to Zulip 6.0 (feature level 134), this event was not sent when a
                                 private channel was made public.
@@ -1291,7 +1291,7 @@ paths:
 
                                 This event is also sent when a user gains access to a channel they
                                 previously [could not access](/help/channel-permissions), such as
-                                when their [role](/help/roles-and-permissions) changes, a
+                                when their [role](/help/user-roles) changes, a
                                 private channel is made public, or a guest user is subscribed
                                 to a public (or private) channel.
 
@@ -1364,7 +1364,7 @@ paths:
 
                                 This event is also sent when a user loses access to a channel they
                                 previously [could access](/help/channel-permissions) because they
-                                are unsubscribed from a private channel or their [role](/help/roles-and-permissions)
+                                are unsubscribed from a private channel or their [role](/help/user-roles)
                                 has changed.
 
                                 **Changes**: Prior to Zulip 8.0 (feature level 205), this event was
@@ -12850,7 +12850,7 @@ paths:
 
         Supports everything an administrator can do to edit details of another
         user's account, including editing full name,
-        [role](/help/roles-and-permissions), and [custom profile
+        [role](/help/user-roles), and [custom profile
         fields](/help/custom-profile-fields).
       parameters:
         - $ref: "#/components/parameters/UserId"
@@ -21073,7 +21073,7 @@ paths:
         !!! warn ""
 
             **Note**: This endpoint is only available to [members and
-            administrators](/help/roles-and-permissions); bots and guests
+            administrators](/help/user-roles); bots and guests
             cannot use this endpoint.
       requestBody:
         required: false
