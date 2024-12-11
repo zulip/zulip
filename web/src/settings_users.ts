@@ -492,6 +492,24 @@ function active_create_table(active_users: number[]): void {
     $("#admin_users_table").show();
 }
 
+function clear_search_text_for_users($tbody: JQuery, section: UserSettingsSection): void {
+    const $filter = $tbody.closest(".user-settings-section").find(".search");
+    if ($filter.val() !== "") {
+        set_text_search_value($tbody, "");
+        add_value_to_filters(section, "text_search", "");
+    }
+}
+
+function handle_clear_button_for_users($tbody: JQuery, section: UserSettingsSection): void {
+    const $container = $tbody.closest(".user-settings-section");
+    $container.on("click", ".clear_filter", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        clear_search_text_for_users($tbody, section);
+    });
+}
+
 export function handle_clear_button_for_bots(): void {
     $("#admin-bot-list").on("click", ".clear_filter", (e) => {
         e.stopPropagation();
@@ -735,6 +753,7 @@ function active_handle_events(): void {
     handle_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
+    handle_clear_button_for_users($tbody, active_section);
 }
 
 function deactivated_handle_events(): void {
@@ -744,6 +763,7 @@ function deactivated_handle_events(): void {
     handle_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
+    handle_clear_button_for_users($tbody, deactivated_section);
 }
 
 function bots_handle_events(): void {
