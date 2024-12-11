@@ -496,11 +496,7 @@ function message_to_conversation_unread_count(msg: Message): number {
     return unread.num_unread_for_topic(msg.stream_id, msg.topic);
 }
 
-export function get_pm_tooltip_data(user_ids_string: string): {
-    first_line: string;
-    second_line: string;
-    third_line?: string;
-} {
+export function get_pm_tooltip_data(user_ids_string: string): buddy_data.TitleData {
     const user_id = Number.parseInt(user_ids_string, 10);
     const person = people.get_by_user_id(user_id);
 
@@ -516,6 +512,7 @@ export function get_pm_tooltip_data(user_ids_string: string): {
             return {
                 first_line: person.full_name,
                 second_line: bot_owner_name,
+                third_line: "",
             };
         }
 

@@ -232,16 +232,15 @@ export function info_for(user_id: number): BuddyUserInfo {
     };
 }
 
-export function get_title_data(
-    user_ids_string: string,
-    is_group: boolean,
-): {
+export type TitleData = {
     first_line: string;
     second_line: string | undefined;
     third_line: string;
     show_you?: boolean;
     is_deactivated?: boolean;
-} {
+};
+
+export function get_title_data(user_ids_string: string, is_group: boolean): TitleData {
     if (is_group) {
         // For groups, just return a string with recipient names.
         return {
