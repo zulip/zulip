@@ -22269,7 +22269,7 @@ components:
             description: |
               The name of the validator function for the configuration
               option. Currently generated values are `check_bool` and
-              `check_str`.
+              `check_string`.
     CustomProfileField:
       type: object
       additionalProperties: false
