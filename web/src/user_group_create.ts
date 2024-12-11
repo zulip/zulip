@@ -242,6 +242,18 @@ export function set_up_handlers(): void {
             return;
         }
 
+        assert(user_group_create_members.pill_widget !== undefined);
+        assert(user_group_create_members.pill_widget !== null);
+        if (user_group_create_members.pill_widget.is_pending()) {
+            // We are not appending any value here, but instead this is
+            // a proxy to invoke the error state for a group widget
+            // that would usually get triggered on pressing enter.
+            user_group_create_members.pill_widget.appendValue(
+                user_group_create_members.pill_widget.getCurrentText()!,
+            );
+            return;
+        }
+
         create_user_group();
     });
 
