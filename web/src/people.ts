@@ -1664,7 +1664,7 @@ export function set_full_name(person_obj: User, new_full_name: string): void {
 
 export function set_custom_profile_field_data(
     user_id: number,
-    field: {id: number} & ProfileDatum,
+    field: {id: number; value: string | null; rendered_value?: string},
 ): void {
     if (field.id === undefined) {
         blueslip.error("Trying to set undefined field id");
@@ -1672,10 +1672,15 @@ export function set_custom_profile_field_data(
     }
     const person = get_by_user_id(user_id);
     assert(person.profile_data !== undefined);
-    person.profile_data[field.id] = {
-        value: field.value,
-        rendered_value: field.rendered_value,
-    };
+    if (field.value === null) {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        delete person.profile_data[field.id];
+    } else {
+        person.profile_data[field.id] = {
+            value: field.value,
+            rendered_value: field.rendered_value,
+        };
+    }
 }
 
 export function is_current_user(email?: string | null): boolean {
