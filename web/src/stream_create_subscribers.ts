@@ -12,7 +12,7 @@ import * as stream_create_subscribers_data from "./stream_create_subscribers_dat
 import type {CombinedPillContainer} from "./typeahead_helper.ts";
 import * as user_sort from "./user_sort.ts";
 
-let pill_widget: CombinedPillContainer;
+export let pill_widget: CombinedPillContainer;
 let all_users_list_widget: ListWidgetType<number, people.User>;
 
 export function get_principals(): number[] {
