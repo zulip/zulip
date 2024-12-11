@@ -15,7 +15,7 @@ sent](/help/view-messages-sent-by-a-user).
 - Their name.
 - Their email address, if you [have
   permission](/help/configure-email-visibility) to view it.
-- Their [role](/help/roles-and-permissions) in the organization.
+- Their [role](/help/user-roles) in the organization.
 - The custom profile fields
   [selected](/help/custom-profile-fields#display-custom-fields-on-user-card) by
   administrators to be featured on user cards.

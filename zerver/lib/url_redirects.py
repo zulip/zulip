@@ -126,6 +126,7 @@ HELP_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
     URLRedirect("/help/getting-your-organization-started-with-zulip", "/help/moving-to-zulip"),
     URLRedirect("/help/quote-and-reply", "/help/quote-or-forward-a-message"),
     URLRedirect("/help/change-a-users-role", "/help/user-roles"),
+    URLRedirect("/help/roles-and-permissions", "/help/user-roles"),
 ]
 
 LANDING_PAGE_REDIRECTS = [

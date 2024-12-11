@@ -35,7 +35,7 @@ At a high level:
   channel messages, like adding new subscribers or changing the channel
   privacy settings.
 
-* [Organization members and moderators](/help/roles-and-permissions)
+* [Organization members and moderators](/help/user-roles)
   cannot easily see which private channels exist, or interact with them
   in any way until they are added.  Given a channel name, they can
   figure out whether a channel with that name exists, but cannot see
@@ -123,7 +123,7 @@ for details.
 
 ## Related articles
 
-* [Roles and permissions](/help/roles-and-permissions)
+* [User roles](/help/user-roles)
 * [Channel sending policy](/help/channel-posting-policy)
 * [Web-public channels](/help/public-access-option)
 

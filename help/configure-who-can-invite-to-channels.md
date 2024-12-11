@@ -4,7 +4,7 @@
 
 By default, anyone other than guests can add other users to channels. However,
 you can restrict the ability to do so to specific
-[roles](/help/roles-and-permissions). You can also can configure who can remove
+[roles](/help/user-roles). You can also can configure who can remove
 other users from a public channel. For private channels, administrators must be
 subscribed to the channel to configure these settings.
 
@@ -40,4 +40,4 @@ subscribed to the channel to configure these settings.
 ## Related articles
 
 * [Add or remove users from a channel](/help/add-or-remove-users-from-a-channel)
-* [Roles and permissions](/help/roles-and-permissions)
+* [User roles](/help/user-roles)

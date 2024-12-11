@@ -2,7 +2,7 @@
 
 By default, all users other than guests can create channels. Administrators can
 [restrict the ability to create a channel](/help/configure-who-can-create-channels) to specific
-[roles](/help/roles-and-permissions).
+[roles](/help/user-roles).
 
 If you are an administrator setting up channels for the first time, check out our
 [guide to setting up channels for a new organization](/help/create-channels).

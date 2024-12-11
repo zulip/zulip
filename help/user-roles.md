@@ -15,7 +15,7 @@ You can also manage permissions with [custom user groups](/help/user-groups).
   owner's role.
 
 * **Moderator**: Can do anything that members can do, plus additional
-  permissions [configured](/help/roles-and-permissions#manage-permissions) by
+  permissions [configured](/help/manage-permissions) by
   your organization.
 
 * **Member**: This is the default role for most users. Members have access to
@@ -78,6 +78,6 @@ existing owner's role.
 
 * [Guest users](/help/guest-users)
 * [User groups](/help/user-groups)
-* [Roles and permissions](/help/roles-and-permissions#manage-permissions)
+* [Manage permissions](/help/manage-permissions)
 * [Manage a user](/help/manage-a-user)
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)

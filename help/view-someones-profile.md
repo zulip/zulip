@@ -12,7 +12,7 @@ A user's profile displays key information about the user.
 - Their email address, if you [have
   permission](/help/configure-email-visibility) to view it.
 - Their user ID.
-- Their [role](/help/roles-and-permissions) in the organization.
+- Their [role](/help/user-roles) in the organization.
 - The date they joined the organization.
 - Their current [local time](/help/change-your-timezone).
 - Their [availability](/help/status-and-availability#availability).

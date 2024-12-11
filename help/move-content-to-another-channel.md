@@ -2,7 +2,7 @@
 
 Zulip makes it possible to move messages, or an entire topic, to another channel.
 Organizations can [configure][configure-moving-permissions] which
-[roles](/help/roles-and-permissions) have permission to move messages between
+[roles](/help/user-roles) have permission to move messages between
 channels.
 
 [configure-moving-permissions]: /help/restrict-moving-messages#configure-who-can-move-messages-to-another-channel
