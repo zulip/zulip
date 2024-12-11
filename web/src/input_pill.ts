@@ -35,6 +35,7 @@ type InputPillCreateOptions<ItemType> = {
         all_pills: InputPill<ItemType>[],
         remove_pill: (pill: HTMLElement) => void,
     ) => void;
+    show_outline_on_invalid_input?: boolean;
 };
 
 export type InputPill<ItemType> = {
@@ -58,6 +59,7 @@ type InputPillStore<ItemType> = {
     createPillonPaste?: () => void;
     split_text_on_comma: boolean;
     convert_to_pill_on_enter: boolean;
+    show_outline_on_invalid_input: boolean;
 };
 
 // These are the functions that are exposed to other modules.
@@ -98,6 +100,7 @@ export function create<ItemType extends {type: string}>(
         convert_to_pill_on_enter: opts.convert_to_pill_on_enter ?? true,
         generate_pill_html: opts.generate_pill_html,
         on_pill_exit: opts.on_pill_exit,
+        show_outline_on_invalid_input: opts.show_outline_on_invalid_input ?? false,
     };
 
     // a dictionary of internal functions. Some of these are exposed as well,
@@ -133,12 +136,14 @@ export function create<ItemType extends {type: string}>(
         create_item(text: string) {
             const existing_items = funcs.items();
             const item = store.create_item_from_text(text, existing_items, store.pill_config);
-
             if (!item) {
                 store.$input.addClass("shake");
+
+                if (store.show_outline_on_invalid_input) {
+                    store.$parent.addClass("invalid");
+                }
                 return undefined;
             }
-
             return item;
         },
 
@@ -160,6 +165,15 @@ export function create<ItemType extends {type: string}>(
 
             store.pills.push(payload);
             store.$input.before(payload.$element);
+
+            if (store.show_outline_on_invalid_input && store.$parent.hasClass("invalid")) {
+                store.$parent.removeClass("invalid");
+            }
+
+            // If we check is_pending just after adding a pill, the
+            // text is still present until further input, so we
+            // manually clear it here.
+            this.clear_text();
 
             if (store.onPillCreate !== undefined) {
                 store.onPillCreate();
@@ -359,6 +373,13 @@ export function create<ItemType extends {type: string}>(
         // the hook receives the updated text content of the input unlike the "keydown"
         // event which does not have the updated text content.
         store.$parent.on("input", ".input", () => {
+            if (
+                store.show_outline_on_invalid_input &&
+                funcs.value(store.$input[0]!).length === 0 &&
+                store.$parent.hasClass("invalid")
+            ) {
+                store.$parent.removeClass("invalid");
+            }
             store.onTextInputHook?.();
         });
 

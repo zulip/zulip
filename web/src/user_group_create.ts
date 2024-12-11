@@ -108,7 +108,23 @@ $("body").on("click", ".settings-sticky-footer #user_group_go_to_members", (e) =
     const group_name = $<HTMLInputElement>("input#create_user_group_name").val()!.trim();
     const is_user_group_name_valid = user_group_name_error.validate_for_submit(group_name);
 
-    if (is_user_group_name_valid) {
+    let is_any_group_widget_pending = false;
+    const permission_settings = Object.keys(realm.server_supported_permission_settings.group);
+    for (const setting_name of permission_settings) {
+        const widget = group_setting_widget_map.get(setting_name);
+        assert(widget !== undefined);
+        assert(widget !== null);
+        if (widget.is_pending()) {
+            is_any_group_widget_pending = true;
+            // We are not appending any value here, but instead this is
+            // a proxy to invoke the error state for a group widget
+            // that would usually get triggered on clicking enter.
+            widget.appendValue(widget.getCurrentText()!);
+            break;
+        }
+    }
+
+    if (is_user_group_name_valid && !is_any_group_widget_pending) {
         user_group_components.show_user_group_settings_pane.create_user_group(
             "user_group_members_container",
             group_name,

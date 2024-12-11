@@ -686,6 +686,8 @@
     --color-background-animated-button: hsl(0deg 0% 90%);
     --color-animated-button-text: hsl(0deg 0% 0%);
     --color-background-animated-button-hover: hsl(240deg 96% 68%);
+    --color-invalid-input-border: hsl(3deg 57% 33%);
+    --color-invalid-input-box-shadow: 0 0 2px hsl(3deg 57% 33%);
 
     /* Recent view */
     --color-border-recent-view-row: hsl(0deg 0% 87%);
@@ -1443,6 +1445,8 @@
     --color-background-animated-button: hsl(211deg 29% 14%);
     --color-animated-button-text: hsl(0deg 0% 100%);
     --color-background-animated-button-hover: hsl(240deg 96% 68%);
+    --color-invalid-input-border: hsl(3deg 73% 74%);
+    --color-invalid-input-box-shadow: 0 0 2px hsl(3deg 73% 74%);
 
     /* Recent view */
     --color-border-recent-view-row: hsl(0deg 0% 0% / 20%);

@@ -177,6 +177,11 @@
             display: none;
         }
     }
+
+    &.invalid {
+        border-color: var(--color-invalid-input-border);
+        box-shadow: var(--color-invalid-input-box-shadow);
+    }
 }
 
 #compose-direct-recipient .pill-container {
