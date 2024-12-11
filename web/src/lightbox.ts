@@ -645,10 +645,6 @@ export function initialize(): void {
         open_video($video);
     });
 
-    $("#lightbox_overlay .download").on("click", function () {
-        this.blur();
-    });
-
     $("#lightbox_overlay").on("click", ".image-list .image", function (this: HTMLElement) {
         // Remove any video players so sound does not continue when
         // navigating away from a video that might be playing

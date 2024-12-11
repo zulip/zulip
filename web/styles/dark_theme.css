@@ -760,11 +760,11 @@
         }
     }
 
-    & a:not(:active):focus,
-    button:focus,
-    i.fa:focus,
-    i.zulip-icon:focus,
-    [role="button"]:focus {
+    & a:not(:active):focus-visible,
+    button:focus-visible,
+    i.fa:focus-visible,
+    i.zulip-icon:focus-visible,
+    [role="button"]:focus-visible {
         outline-color: hsl(0deg 0% 67%);
     }
 

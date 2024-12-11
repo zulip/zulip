@@ -38,7 +38,6 @@ import * as starred_messages_ui from "./starred_messages_ui.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_popover from "./stream_popover.ts";
 import * as topic_list from "./topic_list.ts";
-import * as ui_util from "./ui_util.ts";
 import {parse_html} from "./ui_util.ts";
 import * as util from "./util.ts";
 
@@ -349,11 +348,6 @@ export function initialize() {
         message_edit.end_message_row_edit($row);
         e.stopPropagation();
     });
-    $("body").on("click", "a", function () {
-        if (document.activeElement === this) {
-            ui_util.blur_active_element();
-        }
-    });
     $("body").on("click", ".message_edit_form .compose_upload_file", function (e) {
         e.preventDefault();
 
@@ -646,18 +640,6 @@ export function initialize() {
 
     // MISC
 
-    {
-        const sel = [
-            "#stream_filters",
-            "#left-sidebar-navigation-list",
-            "#buddy-list-users-matching-view",
-        ].join(", ");
-
-        $(sel).on("click", "a", function () {
-            this.blur();
-        });
-    }
-
     $("body").on("click", ".logout_button", () => {
         $("#logout_form").trigger("submit");
     });
@@ -785,27 +767,6 @@ export function initialize() {
         // `#direct-messages-section-header.zoom-in`.
         e.stopPropagation();
     });
-
-    // disable the draggability for left-sidebar components
-    $("#stream_filters, #left-sidebar-navigation-list").on("dragstart", (e) => {
-        e.target.blur();
-        return false;
-    });
-
-    // Chrome focuses an element when dragging it which can be confusing when
-    // users involuntarily drag something and we show them the focus outline.
-    $("body").on("dragstart", "a", (e) => e.target.blur());
-
-    // Don't focus links on middle click.
-    $("body").on("mouseup", "a", (e) => {
-        if (e.button === 1) {
-            // middle click
-            e.target.blur();
-        }
-    });
-
-    // Don't focus links on context menu.
-    $("body").on("contextmenu", "a", (e) => e.target.blur());
 
     $("body").on("click", ".language_selection_widget button", (e) => {
         e.preventDefault();
