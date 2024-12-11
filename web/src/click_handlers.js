@@ -28,7 +28,6 @@ import * as popover_menus from "./popover_menus.ts";
 import * as reactions from "./reactions.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as rows from "./rows.ts";
-import * as server_events from "./server_events.js";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_preferences from "./settings_preferences.ts";
 import * as settings_toggle from "./settings_toggle.ts";
@@ -660,10 +659,6 @@ export function initialize() {
 
     $("body").on("click", ".logout_button", () => {
         $("#logout_form").trigger("submit");
-    });
-
-    $(".restart_get_events_button").on("click", () => {
-        server_events.restart_get_events({dont_block: true});
     });
 
     $("#settings_page").on("click", ".collapse-settings-button", () => {
