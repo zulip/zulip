@@ -172,7 +172,8 @@
       "handlebars": "patches/handlebars.patch",
       "source-sans@3.46.0": "patches/source-sans@3.46.0.patch",
       "svgicons2svgfont": "patches/svgicons2svgfont.patch",
-      "tippy.js@6.3.7": "patches/tippy.js@6.3.7.patch"
+      "tippy.js@6.3.7": "patches/tippy.js@6.3.7.patch",
+      "textarea-caret@3.1.0": "patches/textarea-caret@3.1.0.patch"
     }
   },
   "nyc": {
