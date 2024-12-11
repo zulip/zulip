@@ -75,6 +75,7 @@ export function create({
         get_text_from_item: add_subscribers_pill.get_text_from_item,
         get_display_value_from_item: add_subscribers_pill.get_display_value_from_item,
         generate_pill_html: add_subscribers_pill.generate_pill_html,
+        show_outline_on_invalid_input: true,
     });
     function get_users(): User[] {
         const potential_members = get_potential_members();
@@ -113,6 +114,7 @@ export function create_without_add_button({
         get_text_from_item: add_subscribers_pill.get_text_from_item,
         get_display_value_from_item: add_subscribers_pill.get_display_value_from_item,
         generate_pill_html: add_subscribers_pill.generate_pill_html,
+        show_outline_on_invalid_input: true,
     });
     function get_users(): User[] {
         const potential_members = user_group_create_members_data.get_potential_members();
