@@ -37,7 +37,23 @@ import {user_settings} from "./user_settings.ts";
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 // or locally: docs/subsystems/hashchange-system.md
 
-function maybe_hide_recent_view() {
+export type JQueryHashChangeEvent<TDelegateTarget, TData, TCurrentTarget, TTarget> =
+    JQuery.EventBase<TDelegateTarget, TData, TCurrentTarget, TTarget> & {
+        type: "hashchanged";
+        originalEvent: HashChangeEvent;
+    };
+
+declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace JQuery {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+        interface TypeToTriggeredEventMap<TDelegateTarget, TData, TCurrentTarget, TTarget> {
+            hashchange: JQueryHashChangeEvent<TDelegateTarget, TData, TCurrentTarget, TTarget>;
+        }
+    }
+}
+
+function maybe_hide_recent_view(): boolean {
     if (recent_view_util.is_visible()) {
         recent_view_ui.hide();
         return true;
@@ -45,7 +61,7 @@ function maybe_hide_recent_view() {
     return false;
 }
 
-function maybe_hide_inbox() {
+function maybe_hide_inbox(): boolean {
     if (inbox_util.is_visible()) {
         inbox_ui.hide();
         return true;
@@ -53,26 +69,27 @@ function maybe_hide_inbox() {
     return false;
 }
 
-function show_all_message_view() {
+function show_all_message_view(): void {
     // Don't export this function outside of this module since
     // `change_hash` is false here which means it is should only
     // be called after hash is updated in the URL.
+    const current_state = browser_history.state_data_schema.nullable().parse(window.history.state);
     message_view.show([{operator: "in", operand: "home"}], {
         trigger: "hashchange",
         change_hash: false,
-        then_select_id: window.history.state?.narrow_pointer,
-        then_select_offset: window.history.state?.narrow_offset,
+        then_select_id: current_state?.narrow_pointer,
+        then_select_offset: current_state?.narrow_offset,
     });
 }
 
-function is_somebody_else_profile_open() {
+function is_somebody_else_profile_open(): boolean {
     return (
         user_profile.get_user_id_if_user_profile_modal_open() !== undefined &&
         user_profile.get_user_id_if_user_profile_modal_open() !== people.my_current_user_id()
     );
 }
 
-function handle_invalid_users_section_url(user_settings_tab) {
+function handle_invalid_users_section_url(user_settings_tab: string): string {
     const valid_user_settings_tab_values = new Set(["active", "deactivated", "invitations"]);
     if (!valid_user_settings_tab_values.has(user_settings_tab)) {
         const valid_users_section_url = "#organization/users/active";
@@ -82,7 +99,7 @@ function handle_invalid_users_section_url(user_settings_tab) {
     return user_settings_tab;
 }
 
-function get_user_settings_tab(section) {
+function get_user_settings_tab(section: string): string | undefined {
     if (section === "users") {
         const current_user_settings_tab = hash_parser.get_current_nth_hash_section(2);
         return handle_invalid_users_section_url(current_user_settings_tab);
@@ -90,7 +107,7 @@ function get_user_settings_tab(section) {
     return undefined;
 }
 
-export function set_hash_to_home_view(triggered_by_escape_key = false) {
+export function set_hash_to_home_view(triggered_by_escape_key = false): void {
     if (browser_history.is_current_hash_home_view()) {
         return;
     }
@@ -118,7 +135,7 @@ export function set_hash_to_home_view(triggered_by_escape_key = false) {
     hashchanged(false);
 }
 
-function show_home_view() {
+function show_home_view(): void {
     // This function should only be called from the hashchange
     // handlers, as it does not set the hash to "".
     //
@@ -153,7 +170,7 @@ function show_home_view() {
 }
 
 // Returns true if this function performed a narrow
-function do_hashchange_normal(from_reload, restore_selected_id) {
+function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean): boolean {
     message_viewport.stop_auto_scrolling();
 
     // NB: In Firefox, window.location.hash is URI-decoded.
@@ -184,7 +201,7 @@ function do_hashchange_normal(from_reload, restore_selected_id) {
                 show_home_view();
                 return false;
             }
-            const narrow_opts = {
+            const narrow_opts: message_view.ShowMessageViewOpts = {
                 change_hash: false, // already set
                 trigger: "hash change",
                 show_more_topics: false,
@@ -197,7 +214,9 @@ function do_hashchange_normal(from_reload, restore_selected_id) {
                 }
             }
 
-            const data_for_hash = window.history.state;
+            const data_for_hash = browser_history.state_data_schema
+                .nullable()
+                .parse(window.history.state);
             if (restore_selected_id && data_for_hash) {
                 narrow_opts.then_select_id = data_for_hash.narrow_pointer;
                 narrow_opts.then_select_offset = data_for_hash.narrow_offset;
@@ -251,7 +270,7 @@ function do_hashchange_normal(from_reload, restore_selected_id) {
         case "#settings":
         case "#about-zulip":
         case "#scheduled":
-            blueslip.error("overlay logic skipped for: " + hash);
+            blueslip.error("overlay logic skipped for: " + hash[0]);
             break;
         default:
             show_home_view();
@@ -259,7 +278,7 @@ function do_hashchange_normal(from_reload, restore_selected_id) {
     return false;
 }
 
-function do_hashchange_overlay(old_hash) {
+function do_hashchange_overlay(old_hash: string | undefined): void {
     if (old_hash === undefined) {
         // The user opened the app with an overlay hash; we need to
         // show the user's home view behind it.
@@ -486,9 +505,13 @@ function do_hashchange_overlay(old_hash) {
     }
 }
 
-function hashchanged(from_reload, e, restore_selected_id = true) {
+function hashchanged(
+    from_reload: boolean,
+    e?: JQuery.Event | HashChangeEvent,
+    restore_selected_id = true,
+): boolean | undefined {
     const current_hash = window.location.hash;
-    const old_hash = e && (e.oldURL ? new URL(e.oldURL).hash : browser_history.old_hash());
+    const old_hash = e && ("oldURL" in e ? new URL(e.oldURL).hash : browser_history.old_hash());
     const is_hash_web_public_compatible = browser_history.update_web_public_hash(current_hash);
 
     const was_internal_change = browser_history.save_old_hash();
@@ -528,7 +551,7 @@ function hashchanged(from_reload, e, restore_selected_id = true) {
     return ret;
 }
 
-export function initialize() {
+export function initialize(): void {
     // We don't want browser to restore the scroll
     // position of the new hash in the current hash.
     window.history.scrollRestoration = "manual";
@@ -538,8 +561,8 @@ export function initialize() {
     });
     hashchanged(true);
 
-    $("body").on("click", "a", (e) => {
-        const href = e.currentTarget.getAttribute("href");
+    $("body").on("click", "a", function (this: HTMLAnchorElement, e: JQuery.ClickEvent) {
+        const href = this.href;
         if (href === window.location.hash && href.includes("/near/")) {
             // The clicked on a link, perhaps a "said" reference, that
             // matches the current view. Such a click doesn't trigger

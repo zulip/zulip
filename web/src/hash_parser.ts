@@ -46,7 +46,7 @@ export function is_same_server_message_link(url: string): boolean {
     );
 }
 
-export function is_overlay_hash(hash: string): boolean {
+export function is_overlay_hash(hash: string | undefined): boolean {
     // Hash changes within this list are overlays and should not unnarrow (etc.)
     const overlay_list = [
         // In 2024, stream was renamed to channel in the Zulip API and UI.

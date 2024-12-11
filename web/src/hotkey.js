@@ -23,7 +23,7 @@ import * as feedback_widget from "./feedback_widget.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as giphy from "./giphy.ts";
 import * as hash_util from "./hash_util.ts";
-import * as hashchange from "./hashchange.js";
+import * as hashchange from "./hashchange.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as lightbox from "./lightbox.ts";
 import * as list_util from "./list_util.ts";

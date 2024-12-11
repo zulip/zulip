@@ -68,7 +68,7 @@ links:
     #invite
 
 When you click on the links there is a function
-called hashchanged() in web/src/hashchange.js
+called hashchanged() in web/src/hashchange.ts
 that gets invoked.  (We register this as a listener
 for the hashchange event.)  This function then
 launches the appropriate modal for each menu item.
