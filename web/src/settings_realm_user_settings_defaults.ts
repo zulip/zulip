@@ -42,7 +42,7 @@ export function update_page(property: string): void {
     }
 
     const $element = $(`#realm_${CSS.escape(property)}`);
-    if ($element.length) {
+    if ($element.length > 0) {
         const $subsection = $element.closest(".settings-subsection-parent");
         if ($subsection.find(".save-button-controls").hasClass("hide")) {
             settings_org.discard_realm_default_property_element_changes(util.the($element));

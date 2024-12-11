@@ -275,7 +275,7 @@ function format_dm(
     latest_msg_id: number,
 ): DirectMessageContext {
     const recipient_ids = people.user_ids_string_to_ids_array(user_ids_string);
-    if (!recipient_ids.length) {
+    if (recipient_ids.length === 0) {
         // Self DM
         recipient_ids.push(people.my_current_user_id());
     }
@@ -1459,7 +1459,7 @@ function move_focus_to_visible_area(): void {
     const $element_in_row = $(element_in_row);
 
     let $inbox_row = $element_in_row.closest(".inbox-row");
-    if (!$inbox_row.length) {
+    if ($inbox_row.length === 0) {
         $inbox_row = $element_in_row.closest(".inbox-header");
     }
 

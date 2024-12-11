@@ -245,7 +245,7 @@ export function set_up(settings_panel: SettingsPanel): void {
         e.preventDefault();
         e.stopPropagation();
         const $input_elem = $(e.currentTarget);
-        if ($input_elem.parents("#stream-specific-notify-table").length) {
+        if ($input_elem.parents("#stream-specific-notify-table").length > 0) {
             assert(e.currentTarget instanceof HTMLInputElement);
             stream_notification_setting_changed(e.currentTarget);
             return;

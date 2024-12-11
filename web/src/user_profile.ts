@@ -348,7 +348,7 @@ function render_user_stream_list(streams: StreamSubscription[], user: User): voi
                 return item?.name.toLocaleLowerCase().includes(value);
             },
             onupdate() {
-                if ($container.find(".empty-table-message").length) {
+                if ($container.find(".empty-table-message").length > 0) {
                     $container.parent().addClass("empty-list");
                 }
             },

@@ -79,7 +79,7 @@ export function uncollapse(message: Message): void {
 
     for (const list of message_lists.all_rendered_message_lists()) {
         const $rendered_row = list.get_row(message.id);
-        if ($rendered_row.length !== 0) {
+        if ($rendered_row.length > 0) {
             process_row($rendered_row);
         }
     }
@@ -105,7 +105,7 @@ export function collapse(message: Message): void {
 
     for (const list of message_lists.all_rendered_message_lists()) {
         const $rendered_row = list.get_row(message.id);
-        if ($rendered_row.length !== 0) {
+        if ($rendered_row.length > 0) {
             process_row($rendered_row);
         }
     }

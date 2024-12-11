@@ -196,7 +196,7 @@ function set_oldest_message_date(msg_list_data: MessageListData): void {
     // We might be loading messages in another narrow before the recent view
     // is shown, so we keep the state updated and update the banner only
     // once it's actually rendered.
-    if ($("#recent-view-content-tbody tr").length) {
+    if ($("#recent-view-content-tbody tr").length > 0) {
         update_load_more_banner();
     }
 }
@@ -1579,7 +1579,7 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
                 $current_focus_elem = $(post_tab_focus_elem);
             }
 
-            if ($(post_tab_focus_elem).parents("#recent-view-content-table").length) {
+            if ($(post_tab_focus_elem).parents("#recent-view-content-table").length > 0) {
                 $current_focus_elem = "table";
                 const topic_row_index = $(post_tab_focus_elem).closest("tr").index();
                 const col_index = $(post_tab_focus_elem)

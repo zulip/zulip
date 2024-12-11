@@ -507,10 +507,10 @@ export class Typeahead<ItemType extends string | object> {
 
         const items = this.source(this.query, this.input_element);
 
-        if (!items.length && this.shown) {
+        if (items.length === 0 && this.shown) {
             this.hide();
         }
-        return items.length ? this.process(items) : this;
+        return items.length > 0 ? this.process(items) : this;
     }
 
     process(items: ItemType[]): this {
@@ -518,7 +518,7 @@ export class Typeahead<ItemType extends string | object> {
 
         const final_items = this.sorter(matching_items, this.query);
 
-        if (!final_items.length) {
+        if (final_items.length === 0) {
             return this.shown ? this.hide() : this;
         }
         if (this.automated()) {
@@ -573,11 +573,11 @@ export class Typeahead<ItemType extends string | object> {
         // This lets there be a way to not have any item highlighted,
         // which can be important for e.g. letting the user press enter on
         // whatever's already in the search box.
-        if (!this.requireHighlight && $active.length && !$next.length) {
+        if (!this.requireHighlight && $active.length > 0 && $next.length === 0) {
             return;
         }
 
-        if (!$next.length) {
+        if ($next.length === 0) {
             $next = this.$menu.find("li").first();
         }
 
@@ -592,11 +592,11 @@ export class Typeahead<ItemType extends string | object> {
         // This lets there be a way to not have any item highlighted,
         // which can be important for e.g. letting the user press enter on
         // whatever's already in the search box.
-        if (!this.requireHighlight && $active.length && !$prev.length) {
+        if (!this.requireHighlight && $active.length > 0 && $prev.length === 0) {
             return;
         }
 
-        if (!$prev.length) {
+        if ($prev.length === 0) {
             $prev = this.$menu.find("li").last();
         }
 

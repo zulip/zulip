@@ -70,7 +70,7 @@ function item_click_callback(
 
     if (
         $(event.target).closest(".saved_snippets-dropdown-list-container .dropdown-list-delete")
-            .length
+            .length > 0
     ) {
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Delete saved snippet?"}),

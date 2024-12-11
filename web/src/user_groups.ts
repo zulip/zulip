@@ -520,7 +520,7 @@ export function check_system_user_group_allowed_for_setting(
         return false;
     }
 
-    if (allowed_system_groups.length && !allowed_system_groups.includes(group_name)) {
+    if (allowed_system_groups.length > 0 && !allowed_system_groups.includes(group_name)) {
         return false;
     }
 

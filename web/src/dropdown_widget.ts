@@ -354,7 +354,7 @@ export class DropdownWidget {
                             if (e.target === $search_input.get(0)) {
                                 // Select first item if in search input.
                                 first_item().trigger("click");
-                            } else if (list_items.length !== 0) {
+                            } else if (list_items.length > 0) {
                                 $(e.target).trigger("click");
                             }
                             e.stopPropagation();

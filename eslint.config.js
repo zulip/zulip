@@ -139,7 +139,6 @@ export default [
             "spaced-comment": ["error", "always", {markers: ["/"]}],
             strict: "error",
             "unicorn/consistent-function-scoping": "off",
-            "unicorn/explicit-length-check": "off",
             "unicorn/filename-case": "off",
             "unicorn/no-await-expression-member": "off",
             "unicorn/no-negated-condition": "off",

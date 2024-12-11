@@ -181,7 +181,7 @@ export function initialize(): void {
             if (event.msg_list.can_mark_messages_read()) {
                 unread_ops.notify_server_messages_read(messages, {from: "pointer"});
             } else if (
-                unread.get_unread_messages(messages).length !== 0 &&
+                unread.get_unread_messages(messages).length > 0 &&
                 // The below checks might seem redundant, but it's
                 // possible this logic, which runs after a delay, lost
                 // a race with switching to another view, like Recent

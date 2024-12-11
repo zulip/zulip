@@ -236,7 +236,7 @@ export function process_fenced_code(content: string): string {
 
     // Clean up all trailing blocks by letting them
     // insert closing fences
-    while (handler_stack.length !== 0) {
+    while (handler_stack.length > 0) {
         const handler = handler_stack.at(-1);
         handler!.done();
     }

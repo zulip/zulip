@@ -423,7 +423,7 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
     // we need to check if the narrow is allowed for spectator here too.
     if (
         page_params.is_spectator &&
-        raw_terms.length &&
+        raw_terms.length > 0 &&
         // TODO: is:home is currently not permitted for spectators
         // because they can't mute things; maybe that's the wrong
         // policy?

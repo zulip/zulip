@@ -560,7 +560,7 @@ function open_edit_form_modal(this: HTMLElement): void {
                 }
             }
 
-            if (Object.keys(deleted_values).length !== 0) {
+            if (Object.keys(deleted_values).length > 0) {
                 const edit_select_field_modal_callback = (): void => {
                     show_modal_for_deleting_options(field, deleted_values, update_profile_field);
                 };

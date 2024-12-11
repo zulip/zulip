@@ -99,7 +99,7 @@ function get_events_success(events) {
         }
     }
 
-    if (messages.length !== 0) {
+    if (messages.length > 0) {
         // Sort by ID, so that if we get multiple messages back from
         // the server out-of-order, we'll still end up with our
         // message lists in order.
@@ -129,7 +129,7 @@ function get_events_success(events) {
         }
     }
 
-    if (update_message_events.length !== 0) {
+    if (update_message_events.length > 0) {
         try {
             message_events.update_messages(update_message_events);
         } catch (error) {

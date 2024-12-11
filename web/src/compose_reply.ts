@@ -393,7 +393,7 @@ export function get_message_selection(selection = window.getSelection()): string
             range_common_ancestor.classList.contains("message_content")
         ) {
             html_to_convert = extract_range_html(range);
-        } else if ($(range_common_ancestor).parents(".message_content").length) {
+        } else if ($(range_common_ancestor).parents(".message_content").length > 0) {
             // We want to preserve the structure of the html with 2 levels of
             // ancestors (to retain code block / list formatting) in such a range.
             html_to_convert = extract_range_html(range, true);

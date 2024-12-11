@@ -7,7 +7,7 @@ function get_new_rand(old_random_int: number, max: number): number {
 }
 
 function get_random_item_from_array<T>(array: T[]): T {
-    assert(array.length >= 1);
+    assert(array.length > 0);
     return array[Math.floor(Math.random() * array.length)]!;
 }
 

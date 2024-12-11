@@ -15,7 +15,7 @@ import * as util from "./util.ts";
 
 export function build_reload_url(): string {
     let hash = window.location.hash;
-    if (hash.length !== 0 && hash.startsWith("#")) {
+    if (hash.startsWith("#")) {
         hash = hash.slice(1);
     }
     return "+oldhash=" + encodeURIComponent(hash);

@@ -399,7 +399,7 @@ export function create<ItemType extends {type: string}>(
                     const $prev = $pill.prev();
                     const $next = $pill.next();
                     funcs.removePill(util.the($pill), "backspace");
-                    if ($prev.length) {
+                    if ($prev.length > 0) {
                         $prev.trigger("focus");
                     } else {
                         $next.trigger("focus");

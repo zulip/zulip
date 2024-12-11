@@ -111,10 +111,8 @@ export function initialize() {
 
     function get_input_info(event) {
         const $edit_banners_container = $(event.target).closest(".edit_form_banners");
-        const is_edit_input = Boolean($edit_banners_container.length);
-        const $banner_container = $edit_banners_container.length
-            ? $edit_banners_container
-            : $("#compose_banners");
+        const is_edit_input = $edit_banners_container.length > 0;
+        const $banner_container = is_edit_input ? $edit_banners_container : $("#compose_banners");
         return {is_edit_input, $banner_container};
     }
 
