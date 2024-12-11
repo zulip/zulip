@@ -23,7 +23,7 @@ User groups offer a flexible way to manage permissions.
 
 ## Related articles
 
-* [Change a user's role](/help/change-a-users-role)
+* [Change a user's role](/help/user-roles#change-a-users-role)
 * [User groups](/help/user-groups)
 * [Channel permissions](/help/channel-permissions)
 * [Inviting new users](/help/invite-new-users)

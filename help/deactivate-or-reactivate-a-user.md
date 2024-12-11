@@ -112,7 +112,7 @@ bots will be deactivated until the user manually
 ## Related articles
 
 * [Mute a user](/help/mute-a-user)
-* [Change a user's role](/help/change-a-users-role)
+* [Change a user's role](/help/user-roles#change-a-users-role)
 * [Change a user's name](/help/change-a-users-name)
 * [Deactivate your account](/help/deactivate-your-account)
 * [Manage a user](/help/manage-a-user)

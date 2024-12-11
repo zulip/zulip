@@ -189,7 +189,7 @@
 * [Manage permissions](/help/roles-and-permissions)
 * [Invite new users](/help/invite-new-users)
 * [Restrict account creation](/help/restrict-account-creation)
-* [User roles](/help/change-a-users-role)
+* [User roles](/help/user-roles)
 * [Guest users](/help/guest-users)
 * [Manage a user](/help/manage-a-user)
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
