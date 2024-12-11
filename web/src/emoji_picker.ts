@@ -308,7 +308,7 @@ function toggle_reaction(emoji_name: string, event: JQuery.ClickEvent | JQuery.K
     // doesn't have a concept of toggling.
     // TODO: Ideally we never even get here in
     // that context, see #28464.
-    if ($("#set-user-status-modal").length) {
+    if ($("#set-user-status-modal").length > 0) {
         return;
     }
 

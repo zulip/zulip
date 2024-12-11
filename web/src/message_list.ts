@@ -514,7 +514,7 @@ export class MessageList {
     }
 
     show_edit_message($row: JQuery, $form: JQuery): void {
-        if ($row.find(".message_edit_form form").length !== 0) {
+        if ($row.find(".message_edit_form form").length > 0) {
             return;
         }
         $row.find(".messagebox-content").append($form);

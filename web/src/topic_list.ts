@@ -228,7 +228,7 @@ export class TopicListWidget {
 export function clear_topic_search(e: JQuery.Event): void {
     e.stopPropagation();
     const $input = $("#filter-topic-input");
-    if ($input.length) {
+    if ($input.length > 0) {
         $input.val("");
         $input.trigger("blur");
 

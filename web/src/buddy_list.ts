@@ -46,7 +46,7 @@ function get_total_human_subscriber_count(
     // might not show up in the buddy list.
     if (current_sub) {
         return peer_data.get_subscriber_count(current_sub.stream_id, false);
-    } else if (pm_ids_set.size) {
+    } else if (pm_ids_set.size > 0) {
         // The current user is only in the provided recipients list
         // for direct message conversations with oneself.
         const all_recipient_user_ids_set = pm_ids_set.union(new Set([current_user.user_id]));
@@ -69,7 +69,7 @@ function should_hide_headers(
     // If we aren't in a stream/DM view, then there's never "other"
     // users, so we don't show section headers and only show one
     // untitled section.
-    return !current_sub && !pm_ids_set.size;
+    return !current_sub && pm_ids_set.size === 0;
 }
 
 type BuddyListRenderData = {
@@ -365,7 +365,7 @@ export class BuddyList extends BuddyListConf {
         function add_or_update_empty_list_placeholder(selector: string, message: string): void {
             if (
                 $(selector).children().length === 0 ||
-                $(`${selector} .empty-list-message`).length
+                $(`${selector} .empty-list-message`).length > 0
             ) {
                 const empty_list_widget_html = render_empty_list_widget_for_list({
                     empty_list_message: message,
@@ -566,7 +566,7 @@ export class BuddyList extends BuddyListConf {
         }
 
         this.$participants_list = $(this.participants_list_selector);
-        if (participants.length) {
+        if (participants.length > 0) {
             // Remove the empty list message before adding users
             if ($(`${this.participants_list_selector} .empty-list-message`).length > 0) {
                 this.$participants_list.empty();
@@ -578,7 +578,7 @@ export class BuddyList extends BuddyListConf {
         }
 
         this.$users_matching_view_list = $(this.matching_view_list_selector);
-        if (subscribed_users.length) {
+        if (subscribed_users.length > 0) {
             // Remove the empty list message before adding users
             if ($(`${this.matching_view_list_selector} .empty-list-message`).length > 0) {
                 this.$users_matching_view_list.empty();
@@ -590,7 +590,7 @@ export class BuddyList extends BuddyListConf {
         }
 
         this.$other_users_list = $(this.other_user_list_selector);
-        if (other_users.length) {
+        if (other_users.length > 0) {
             // Remove the empty list message before adding users
             if ($(`${this.other_user_list_selector} .empty-list-message`).length > 0) {
                 this.$other_users_list.empty();
@@ -669,13 +669,13 @@ export class BuddyList extends BuddyListConf {
 
     // From `type List<Key>`, where the key is a user_id.
     first_key(): number | undefined {
-        if (this.participant_user_ids.length) {
+        if (this.participant_user_ids.length > 0) {
             return this.participant_user_ids[0];
         }
-        if (this.users_matching_view_ids.length) {
+        if (this.users_matching_view_ids.length > 0) {
             return this.users_matching_view_ids[0];
         }
-        if (this.other_user_ids.length) {
+        if (this.other_user_ids.length > 0) {
             return this.other_user_ids[0];
         }
         return undefined;

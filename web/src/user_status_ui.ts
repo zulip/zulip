@@ -107,7 +107,7 @@ export function clear_message(): void {
 }
 
 export function user_status_picker_open(): boolean {
-    return $("#set-user-status-modal").length !== 0;
+    return $("#set-user-status-modal").length > 0;
 }
 
 function emoji_status_fields_changed(
@@ -130,7 +130,7 @@ function emoji_status_fields_changed(
 
 function rebuild_status_emoji_selector_ui(selected_emoji_info: Partial<UserStatusEmojiInfo>): void {
     let selected_emoji = null;
-    if (selected_emoji_info && Object.keys(selected_emoji_info).length) {
+    if (selected_emoji_info && Object.keys(selected_emoji_info).length > 0) {
         selected_emoji = selected_emoji_info;
     }
     const rendered_status_emoji_selector = render_status_emoji_selector({selected_emoji});

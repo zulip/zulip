@@ -133,7 +133,7 @@ export function is_topic_editable(message: Message, edit_limit_seconds_buffer = 
 }
 
 function is_widget_message(message: Message): boolean {
-    if (message.submessages && message.submessages.length !== 0) {
+    if (message.submessages && message.submessages.length > 0) {
         return true;
     }
     return false;
@@ -657,7 +657,7 @@ export function start($row: JQuery, edit_box_open_callback?: () => void): void {
         return;
     }
 
-    if ($row.find(".message_edit_form form").length !== 0) {
+    if ($row.find(".message_edit_form form").length > 0) {
         return;
     }
 
@@ -929,8 +929,8 @@ export function end_message_row_edit($row: JQuery): void {
         message_lists.current.hide_edit_message($row);
         compose_call.abort_video_callbacks(message.id.toString());
     }
-    if ($row.find(".could-be-condensed").length !== 0) {
-        if ($row.find(".condensed").length !== 0) {
+    if ($row.find(".could-be-condensed").length > 0) {
+        if ($row.find(".condensed").length > 0) {
             condense.show_message_expander($row);
         } else {
             condense.show_message_condenser($row);
@@ -1180,7 +1180,7 @@ export function save_message_row_edit($row: JQuery): void {
             // class attached.
 
             const {detached_uploads} = detached_uploads_api_response_schema.parse(res);
-            if (detached_uploads.length) {
+            if (detached_uploads.length > 0) {
                 attachments_ui.suggest_delete_detached_attachments(detached_uploads);
             }
         },

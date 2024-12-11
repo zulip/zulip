@@ -787,7 +787,7 @@ export function sync_realm_settings(property: string): void {
             break;
     }
     const $element = $(`#id_realm_${CSS.escape(property)}`);
-    if ($element.length) {
+    if ($element.length > 0) {
         const $subsection = $element.closest(".settings-subsection-parent");
         if ($subsection.find(".save-button-controls").hasClass("hide")) {
             discard_realm_property_element_changes(util.the($element));

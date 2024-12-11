@@ -663,11 +663,11 @@ export let format_text = (
             // when the markdown is rendered.
 
             // Add blank line between text before and list if not already present.
-            if (before_lines.length && before_lines.at(-1) !== "\n") {
+            if (before_lines.length > 0 && before_lines.at(-1) !== "\n") {
                 before_lines += "\n";
             }
             // Add blank line between list and rest of text if not already present.
-            if (after_lines.length && after_lines.at(0) !== "\n") {
+            if (after_lines.length > 0 && after_lines.at(0) !== "\n") {
                 after_lines = "\n" + after_lines;
             }
         } else {
@@ -1223,7 +1223,7 @@ export function get_compose_click_target(element: HTMLElement): Element {
     const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
     if (
         compose_control_buttons_popover &&
-        $(compose_control_buttons_popover.popper).has(element).length
+        $(compose_control_buttons_popover.popper).has(element).length > 0
     ) {
         return compose_control_buttons_popover.reference;
     }

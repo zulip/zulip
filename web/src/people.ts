@@ -507,7 +507,7 @@ export function sorted_other_user_ids(user_ids: number[]): number[] {
 
     const other_user_ids = user_ids.filter((user_id) => !is_my_user_id(user_id));
 
-    if (other_user_ids.length >= 1) {
+    if (other_user_ids.length > 0) {
         user_ids = other_user_ids;
     } else {
         user_ids = [my_user_id];

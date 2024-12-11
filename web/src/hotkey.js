@@ -257,9 +257,9 @@ export let processing_text = () => {
         $focused_elt.is("input") ||
         $focused_elt.is("select") ||
         $focused_elt.is("textarea") ||
-        $focused_elt.parents(".pill-container").length >= 1 ||
+        $focused_elt.parents(".pill-container").length > 0 ||
         $focused_elt.attr("id") === "compose-send-button" ||
-        $focused_elt.parents(".dropdown-list-container").length >= 1
+        $focused_elt.parents(".dropdown-list-container").length > 0
     );
 };
 
@@ -360,7 +360,7 @@ export function process_escape_key(e) {
             }
 
             // Check for errors in compose box; close errors if they exist
-            if ($("main-view-banner").length) {
+            if ($("main-view-banner").length > 0) {
                 compose_banner.clear_all();
                 return true;
             }
@@ -813,7 +813,7 @@ export function process_hotkey(e, hotkey) {
         );
 
         if ($last_focused_compose_type_input.hasClass("message_edit_content")) {
-            if ($last_focused_compose_type_input.closest(".preview_mode").length) {
+            if ($last_focused_compose_type_input.closest(".preview_mode").length > 0) {
                 message_edit.clear_preview_area($last_focused_compose_type_input);
                 $last_focused_compose_type_input.trigger("focus");
             } else {

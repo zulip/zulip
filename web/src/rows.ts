@@ -14,7 +14,7 @@ export function next_visible($message_row: JQuery): JQuery {
         return $();
     }
     const $row = $message_row.next(".selectable_row");
-    if ($row.length !== 0) {
+    if ($row.length > 0) {
         return $row;
     }
     const $recipient_row = get_message_recipient_row($message_row);
@@ -30,7 +30,7 @@ export function prev_visible($message_row: JQuery): JQuery {
         return $();
     }
     const $row = $message_row.prev(".selectable_row");
-    if ($row.length !== 0) {
+    if ($row.length > 0) {
         return $row;
     }
     const $recipient_row = get_message_recipient_row($message_row);
@@ -75,7 +75,7 @@ export function visible_range(start_id: number, end_id: number): JQuery[] {
 }
 
 export function is_overlay_row($row: JQuery): boolean {
-    return $row.closest(".overlay-message-row").length >= 1;
+    return $row.closest(".overlay-message-row").length > 0;
 }
 
 export function id($message_row: JQuery): number {

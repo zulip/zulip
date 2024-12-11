@@ -128,7 +128,7 @@ function update_license_count(license_count: number): void {
 function restore_manual_license_count(): void {
     const $manual_license_count_input = $("#manual_license_count");
     // Only present on the manual license management page.
-    if ($manual_license_count_input.length) {
+    if ($manual_license_count_input.length > 0) {
         const ls_manual_license_count = ls.get("manual_license_count");
         if (typeof ls_manual_license_count === "number") {
             $manual_license_count_input.val(ls_manual_license_count);

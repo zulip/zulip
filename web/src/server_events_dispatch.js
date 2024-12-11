@@ -157,7 +157,7 @@ export function dispatch_normal_event(event) {
             break;
 
         case "invites_changed":
-            if ($("#admin-invites-list").length) {
+            if ($("#admin-invites-list").length > 0) {
                 settings_invites.set_up(false);
             }
             break;

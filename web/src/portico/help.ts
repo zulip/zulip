@@ -102,7 +102,7 @@ $(".hamburger").on("click", () => {
 });
 
 $(".markdown").on("click", () => {
-    if ($(".sidebar.show").length) {
+    if ($(".sidebar.show").length > 0) {
         $(".sidebar.show").toggleClass("show");
     }
 });

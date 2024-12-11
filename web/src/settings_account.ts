@@ -228,7 +228,7 @@ function update_user_custom_profile_fields(
 
 function update_user_type_field(field: PillUpdateField, pills: UserPillWidget): void {
     const user_ids = user_pill.get_user_ids(pills);
-    if (user_ids.length < 1) {
+    if (user_ids.length === 0) {
         update_user_custom_profile_fields([{id: field.id}], channel.del);
     } else {
         update_user_custom_profile_fields([{id: field.id, value: user_ids}], channel.patch);

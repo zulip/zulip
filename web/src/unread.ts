@@ -573,7 +573,7 @@ class UnreadTopicCounter {
             return false;
         }
 
-        return id_set.size !== 0;
+        return id_set.size > 0;
     }
 
     get_topics_with_unread_mentions(stream_id: number): Set<string> {

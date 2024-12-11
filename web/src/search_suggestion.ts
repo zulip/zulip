@@ -562,7 +562,7 @@ function get_term_subset_suggestions(terms: NarrowTerm[]): Suggestion[] {
     // For channel:a topic:b search:c, suggest:
     //  channel:a topic:b
     //  channel:a
-    if (terms.length < 1) {
+    if (terms.length === 0) {
         return [];
     }
 

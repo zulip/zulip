@@ -1418,7 +1418,7 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
     const time_limit_settings = [...$subsection_elem.find(".time-limit-setting")];
 
     let disable_save_button = false;
-    if (time_limit_settings.length) {
+    if (time_limit_settings.length > 0) {
         disable_save_button =
             should_disable_save_button_for_time_limit_settings(time_limit_settings);
     } else if ($subsection_elem.attr("id") === "org-other-settings") {
@@ -1448,7 +1448,7 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
         const group_settings = [...$subsection_elem.find(".pill-container")].map((elem) =>
             extract_property_name($(elem)),
         );
-        if (group_settings.length) {
+        if (group_settings.length > 0) {
             disable_save_button = should_disable_save_button_for_group_settings(group_settings);
         }
     }

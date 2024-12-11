@@ -231,7 +231,7 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
 
 export function show_stream_not_subscribed_error(sub: StreamSubscription): void {
     const $banner_container = $("#compose_banners");
-    if ($(`#compose_banners .${CSS.escape(CLASSNAMES.user_not_subscribed)}`).length) {
+    if ($(`#compose_banners .${CSS.escape(CLASSNAMES.user_not_subscribed)}`).length > 0) {
         return;
     }
     const new_row_html = render_compose_banner({

@@ -45,7 +45,7 @@ export function show_user_list(message_id: number): void {
                         );
                         // If the read receipts modal for the selected message ID is closed
                         // by the time we receive the response, return immediately.
-                        if (!$modal.length) {
+                        if ($modal.length === 0) {
                             return;
                         }
                         const data = read_receipts_api_response_schema.parse(raw_data);
