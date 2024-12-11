@@ -137,6 +137,7 @@ export function create({
         get_text_from_item,
         get_display_value_from_item,
         generate_pill_html,
+        show_outline_on_invalid_input: true,
     });
     function get_users(): User[] {
         const potential_subscribers = get_potential_subscribers();
@@ -167,6 +168,7 @@ export function create_without_add_button({
         get_text_from_item,
         get_display_value_from_item,
         generate_pill_html,
+        show_outline_on_invalid_input: true,
     });
     function get_users(): User[] {
         const potential_subscribers = get_potential_subscribers();
