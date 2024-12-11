@@ -888,10 +888,4 @@ export function initialize() {
     $(".settings-header.mobile .fa-chevron-left").on("click", () => {
         settings_panel_menu.mobile_deactivate_section();
     });
-
-    $("body").on("click", ".trigger-natural-click", (e) => {
-        // Jquery prevents default action on anchor for `trigger("click")`
-        // so we need to use click on element to trigger the default action.
-        e.currentTarget.click();
-    });
 }
