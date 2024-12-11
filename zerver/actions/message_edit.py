@@ -49,8 +49,9 @@ from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_i
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import (
     access_stream_by_id,
+    access_stream_by_id_for_message,
     can_access_stream_history,
-    check_stream_access_based_on_stream_post_policy,
+    check_stream_access_based_on_can_send_message_group,
 )
 from zerver.lib.string_validation import check_stream_topic
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -1354,8 +1355,10 @@ def check_update_message(
         if not user_profile.can_move_messages_between_streams():
             raise JsonableError(_("You don't have permission to move this message"))
 
-        new_stream = access_stream_by_id(user_profile, stream_id, require_active=True)[0]
-        check_stream_access_based_on_stream_post_policy(user_profile, new_stream)
+        new_stream = access_stream_by_id_for_message(user_profile, stream_id, require_active=True)[
+            0
+        ]
+        check_stream_access_based_on_can_send_message_group(user_profile, new_stream)
 
         if (
             user_profile.realm.move_messages_between_streams_limit_seconds is not None
