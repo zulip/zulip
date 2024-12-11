@@ -211,23 +211,22 @@ def bulk_create_streams(realm: Realm, stream_dict: dict[str, dict[str, Any]]) ->
             )
         creator = options.get("creator", None)
         if name.lower() not in existing_streams:
-            streams_to_create.append(
-                Stream(
-                    realm=realm,
-                    name=name,
-                    description=options["description"],
-                    rendered_description=render_stream_description(options["description"], realm),
-                    invite_only=options.get("invite_only", False),
-                    stream_post_policy=options.get(
-                        "stream_post_policy", Stream.STREAM_POST_POLICY_EVERYONE
-                    ),
-                    history_public_to_subscribers=options["history_public_to_subscribers"],
-                    is_web_public=options.get("is_web_public", False),
-                    is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
-                    creator=options.get("creator", None),
-                    **get_default_values_for_stream_permission_group_settings(realm, creator),
-                ),
+            stream = Stream(
+                realm=realm,
+                name=name,
+                description=options["description"],
+                rendered_description=render_stream_description(options["description"], realm),
+                invite_only=options.get("invite_only", False),
+                history_public_to_subscribers=options["history_public_to_subscribers"],
+                is_web_public=options.get("is_web_public", False),
+                is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
+                creator=options.get("creator", None),
+                **get_default_values_for_stream_permission_group_settings(realm, creator),
             )
+            if "can_send_message_group" in options:
+                stream.can_send_message_group = options["can_send_message_group"]
+
+            streams_to_create.append(stream)
     # Sort streams by name before creating them so that we can have a
     # reliable ordering of `stream_id` across different python versions.
     # This is required for test fixtures which contain `stream_id`. Prior

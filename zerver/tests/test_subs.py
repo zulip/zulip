@@ -38,7 +38,6 @@ from zerver.actions.streams import (
     deactivated_streams_by_old_name,
     do_change_stream_group_based_setting,
     do_change_stream_permission,
-    do_change_stream_post_policy,
     do_deactivate_stream,
     do_unarchive_stream,
 )
@@ -5248,53 +5247,39 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_peer_event["event"]["op"], "peer_add")
         self.assertEqual(add_peer_event["event"]["user_ids"], [self.example_user("iago").id])
 
-    def test_subscribe_to_stream_post_policy_admins_stream(self) -> None:
-        """
-        Members can subscribe to streams where only admins can post
-        """
-        member = self.example_user("AARON")
-        stream = self.make_stream("stream1")
-        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_ADMINS, acting_user=member)
-        result = self.common_subscribe_to_streams(member, ["stream1"])
+    def test_subscribing_to_stream_without_permission_to_post(self) -> None:
+        stream = self.make_stream("stream_name1")
+        realm = get_realm("zulip")
+
+        iago = self.example_user("iago")
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", admins_group, acting_user=iago
+        )
+
+        # Members can subscribe even when only admins can post.
+        member = self.example_user("hamlet")
+        result = self.common_subscribe_to_streams(member, ["stream_name1"])
         json = self.assert_json_success(result)
-        self.assertEqual(json["subscribed"], {str(member.id): ["stream1"]})
+        self.assertEqual(json["subscribed"], {str(member.id): ["stream_name1"]})
         self.assertEqual(json["already_subscribed"], {})
 
-    def test_subscribe_to_stream_post_policy_restrict_new_members_stream(self) -> None:
-        """
-        New members can subscribe to streams where they cannot post
-        """
-        new_member_email = self.nonreg_email("test")
-        self.register(new_member_email, "test")
-        new_member = self.nonreg_user("test")
-
-        do_set_realm_property(new_member.realm, "waiting_period_threshold", 10, acting_user=None)
-        self.assertTrue(new_member.is_provisional_member)
-
-        stream = self.make_stream("stream1")
-        do_change_stream_post_policy(
-            stream, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS, acting_user=new_member
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
-        result = self.common_subscribe_to_streams(new_member, ["stream1"])
-        json = self.assert_json_success(result)
-        self.assertEqual(json["subscribed"], {str(new_member.id): ["stream1"]})
-        self.assertEqual(json["already_subscribed"], {})
-
-    def test_subscribe_to_stream_post_policy_moderators_stream(self) -> None:
-        """
-        Members can subscribe to streams where only admins and moderators can post
-        """
-        member = self.example_user("AARON")
-        stream = self.make_stream("stream1")
-        # Make sure that we are testing this with full member which is just below the moderator
-        # in the role hierarchy.
-        self.assertFalse(member.is_provisional_member)
-        do_change_stream_post_policy(
-            stream, Stream.STREAM_POST_POLICY_MODERATORS, acting_user=member
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [self.example_user("cordelia")], [moderators_group]
         )
-        result = self.common_subscribe_to_streams(member, ["stream1"])
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", setting_group, acting_user=iago
+        )
+
+        member = self.example_user("othello")
+        result = self.common_subscribe_to_streams(member, ["stream_name1"])
         json = self.assert_json_success(result)
-        self.assertEqual(json["subscribed"], {str(member.id): ["stream1"]})
+        self.assertEqual(json["subscribed"], {str(member.id): ["stream_name1"]})
         self.assertEqual(json["already_subscribed"], {})
 
     def test_guest_user_subscribe(self) -> None:

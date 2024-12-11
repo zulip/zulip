@@ -7,9 +7,8 @@ from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
 )
-from zerver.actions.streams import do_change_stream_post_policy
+from zerver.actions.streams import do_change_stream_group_based_setting
 from zerver.actions.user_groups import check_add_user_group
-from zerver.actions.users import do_change_user_role
 from zerver.lib.message import has_message_access
 from zerver.lib.streams import check_update_all_streams_active_status
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
@@ -1029,9 +1028,9 @@ class MessageMoveStreamTest(ZulipTestCase):
             cordelia, test_stream_1, test_stream_2, expect_error_message=None
         )
 
-    def test_move_message_to_stream_based_on_stream_post_policy(self) -> None:
+    def test_move_message_to_stream_based_on_can_send_message_group(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
-            "othello", "old_stream_1", "new_stream_1", "test"
+            "othello", "old_stream", "new_stream", "test"
         )
         realm = user_profile.realm
 
@@ -1046,18 +1045,27 @@ class MessageMoveStreamTest(ZulipTestCase):
             acting_user=None,
         )
 
-        def check_move_message_to_stream(role: int, error_msg: str | None = None) -> None:
-            do_change_user_role(user_profile, role, acting_user=None)
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        polonius = self.example_user("polonius")
 
-            result = self.client_patch(
-                "/json/messages/" + str(msg_id),
+        def check_move_message_to_stream(
+            user: UserProfile,
+            expect_fail: bool = False,
+            error_msg: str = "You do not have permission to post in this channel.",
+        ) -> None:
+            result = self.api_patch(
+                user,
+                "/api/v1/messages/" + str(msg_id),
                 {
                     "stream_id": new_stream.id,
                     "propagate_mode": "change_all",
                 },
             )
 
-            if error_msg is not None:
+            if expect_fail:
                 self.assert_json_error(result, error_msg)
                 messages = get_topic_messages(user_profile, old_stream, "test")
                 self.assert_length(messages, 3)
@@ -1070,62 +1078,62 @@ class MessageMoveStreamTest(ZulipTestCase):
                 messages = get_topic_messages(user_profile, new_stream, "test")
                 self.assert_length(messages, 4)
 
-        # Check when stream_post_policy is STREAM_POST_POLICY_ADMINS.
-        do_change_stream_post_policy(
-            new_stream, Stream.STREAM_POST_POLICY_ADMINS, acting_user=user_profile
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
         )
-        error_msg = "Only organization administrators can send to this channel."
-        check_move_message_to_stream(UserProfile.ROLE_MODERATOR, error_msg)
-        check_move_message_to_stream(UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_stream_group_based_setting(new_stream, "can_send_message_group", nobody_group)
+
+        check_move_message_to_stream(desdemona, expect_fail=True)
+        check_move_message_to_stream(iago, expect_fail=True)
+
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(new_stream, "can_send_message_group", owners_group)
+
+        check_move_message_to_stream(iago, expect_fail=True)
+        check_move_message_to_stream(desdemona)
 
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
-            "othello", "old_stream_2", "new_stream_2", "test"
+            "othello", "old_stream", "new_stream", "test"
         )
 
-        # Check when stream_post_policy is STREAM_POST_POLICY_MODERATORS.
-        do_change_stream_post_policy(
-            new_stream, Stream.STREAM_POST_POLICY_MODERATORS, acting_user=user_profile
-        )
-        error_msg = "Only organization administrators and moderators can send to this channel."
-        check_move_message_to_stream(UserProfile.ROLE_MEMBER, error_msg)
-        check_move_message_to_stream(UserProfile.ROLE_MODERATOR)
-
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
-            "othello", "old_stream_3", "new_stream_3", "test"
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        do_change_stream_group_based_setting(
+            new_stream, "can_send_message_group", hamletcharacters_group
         )
 
-        # Check when stream_post_policy is STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS.
-        do_change_stream_post_policy(
-            new_stream, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS, acting_user=user_profile
-        )
-        error_msg = "New members cannot send to this channel."
-
-        do_set_realm_property(
-            user_profile.realm, "waiting_period_threshold", 100000, acting_user=None
-        )
-        check_move_message_to_stream(UserProfile.ROLE_MEMBER, error_msg)
-
-        do_set_realm_property(user_profile.realm, "waiting_period_threshold", 0, acting_user=None)
-        check_move_message_to_stream(UserProfile.ROLE_MEMBER)
+        check_move_message_to_stream(desdemona, expect_fail=True)
+        check_move_message_to_stream(iago, expect_fail=True)
+        check_move_message_to_stream(hamlet)
 
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
-            "othello", "old_stream_4", "new_stream_4", "test"
+            "othello", "old_stream", "new_stream", "test"
         )
 
-        # Check when stream_post_policy is STREAM_POST_POLICY_EVERYONE.
-        # In this case also, guest is not allowed as we do not allow guest to move
-        # messages between streams in any case, so stream_post_policy of new stream does
-        # not matter.
-        do_change_stream_post_policy(
-            new_stream, Stream.STREAM_POST_POLICY_EVERYONE, acting_user=user_profile
+        setting_group = self.create_or_update_anonymous_group_for_setting([othello], [owners_group])
+        do_change_stream_group_based_setting(new_stream, "can_send_message_group", setting_group)
+
+        check_move_message_to_stream(iago, expect_fail=True)
+        check_move_message_to_stream(hamlet, expect_fail=True)
+        check_move_message_to_stream(desdemona)
+
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "othello", "old_stream", "new_stream", "test"
         )
-        do_set_realm_property(
-            user_profile.realm, "waiting_period_threshold", 100000, acting_user=None
+        check_move_message_to_stream(othello)
+
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "polonius", "old_stream", "new_stream", "test"
         )
+        everyone_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(new_stream, "can_send_message_group", everyone_group)
         check_move_message_to_stream(
-            UserProfile.ROLE_GUEST, "You don't have permission to move this message"
+            polonius, expect_fail=True, error_msg="You don't have permission to move this message"
         )
-        check_move_message_to_stream(UserProfile.ROLE_MEMBER)
+        check_move_message_to_stream(hamlet)
 
     def test_move_message_to_stream_with_topic_editing_not_allowed(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
