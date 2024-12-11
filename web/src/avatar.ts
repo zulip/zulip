@@ -82,7 +82,7 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
         $("#user-avatar-source").hide();
     }
 
-    if (!settings_data.user_can_change_avatar) {
+    if (!settings_data.user_can_change_avatar()) {
         return;
     }
 
