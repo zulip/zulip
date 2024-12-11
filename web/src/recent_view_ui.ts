@@ -656,8 +656,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
                     status_emoji_info: user_status.get_status_emoji(user.id),
                 }),
             )
-            .sort()
-            .join(", ");
+            .sort();
         const recipient_id = last_msg.recipient_id;
         const pm_url = last_msg.pm_with_url;
         const is_group = last_msg.display_recipient.length > 2;
@@ -691,7 +690,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
 
         dm_context = {
             user_ids_string,
-            rendered_pm_with,
+            rendered_pm_with: util.format_array_as_list(rendered_pm_with, "long", "conjunction"),
             recipient_id,
             pm_url,
             is_group,

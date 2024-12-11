@@ -7,6 +7,11 @@ const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
+
 window.scrollTo = noop;
 const test_url = () => "https://www.example.com";
 
@@ -680,6 +685,7 @@ test("test_filter_pm", ({mock_template}) => {
     mock_template("user_with_status_icon.hbs", false, (data) => {
         assert.deepEqual(data, expected_user_with_icon[i]);
         i += 1;
+        return "<user_with_status_icon stub>";
     });
 
     mock_template("recent_view_row.hbs", true, (_data, html) => {
