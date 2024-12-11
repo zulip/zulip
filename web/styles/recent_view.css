@@ -78,6 +78,10 @@
         }
     }
 
+    .white-space-preserve-wrap {
+        word-break: break-word;
+    }
+
     .empty-table-message {
         background-color: var(--color-background);
         padding: 3em 1em;
@@ -450,14 +454,6 @@
     .recent_topic_name {
         width: 40%;
 
-        & a {
-            word-break: break-word;
-            /* No hyphes for word break since it caused hyphens to appear before
-                the ellipsis `longText-...` which is not desirable. Ellipsis appears due
-                to the line clamp applied below.
-            */
-        }
-
         .line_clamp {
             /* This -webkit-box display property is webkit-specific, but
                 it appears that line clamping works fine for this component
@@ -525,12 +521,6 @@
                 float: left;
                 position: unset;
             }
-        }
-
-        .user_status_icon_wrapper {
-            /* Keep status emoji with usernames,
-               and better vertically align the emoji. */
-            display: inline-flex;
         }
     }
 
