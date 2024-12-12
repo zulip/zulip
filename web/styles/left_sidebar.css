@@ -188,6 +188,8 @@
     z-index: 0;
     width: 100%;
 
+    height: calc(100vh - 290px);
+
     .direct-messages-container {
         margin-left: 0;
     }
