@@ -54,7 +54,7 @@ export function show_userlist_sidebar(): void {
         return;
     }
 
-    if (window.innerWidth >= media_breakpoints_num.xl) {
+    if (window.innerWidth >= media_breakpoints_num.rc) {
         $("body").removeClass("hide-right-sidebar");
         fix_invite_user_button_flicker();
         return;
