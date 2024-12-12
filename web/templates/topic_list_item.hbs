@@ -14,7 +14,7 @@
             {{else if is_followed}}
                 <i class="zulip-icon zulip-icon-follow visibility-policy-icon" role="button" aria-hidden="true" data-tippy-content="{{t 'You follow this topic.'}}"></i>
             {{/if}}
-            <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
+            <span class="unread_count normal-count {{#if is_zero}}zero_count{{/if}}">
                 {{unread}}
             </span>
         </div>
