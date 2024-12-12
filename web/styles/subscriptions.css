@@ -529,7 +529,9 @@ h4.user_group_setting_subsection_title {
 .group_name_search_section {
     padding: 8px 10px;
     display: grid;
-    grid-template: "search-input clear-search" auto / minmax(0, 1fr) 30px;
+    grid-template:
+        "search-input clear-search more-options" auto / minmax(0, 1fr)
+        30px;
     border-bottom: 1px solid var(--color-border-modal-bar);
 }
 
@@ -546,6 +548,12 @@ h4.user_group_setting_subsection_title {
 #clear_search_group_name {
     grid-area: clear-search;
     padding: 0;
+}
+
+#more_options_stream {
+    grid-area: more-options;
+    padding: 4px 0 0;
+    margin-left: 10px;
 }
 
 #search_stream_name:placeholder-shown + #clear_search_stream_name {

@@ -575,9 +575,7 @@ def gather_subscriptions_helper(
                 unsubscribed.append(stream_dict)
 
     if user_profile.can_access_public_streams():
-        never_subscribed_stream_ids = {
-            stream["id"] for stream in all_streams if not stream["deactivated"]
-        } - sub_unsub_stream_ids
+        never_subscribed_stream_ids = set(all_streams_map) - sub_unsub_stream_ids
     else:
         web_public_stream_ids = {stream["id"] for stream in all_streams if stream["is_web_public"]}
         never_subscribed_stream_ids = web_public_stream_ids - sub_unsub_stream_ids
