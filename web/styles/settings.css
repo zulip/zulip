@@ -1198,7 +1198,7 @@ label.preferences-radio-choice-label {
 }
 
 .emojiset_choices {
-    width: 350px;
+    width: 25em; /* 350px / 14px em */
 
     .emoji {
         height: 22px;
