@@ -517,11 +517,11 @@
                 opacity: 0.6;
             }
 
-            .user_circle {
+            .user-circle {
                 min-width: var(
                     --length-user-status-circle-recent-conversations
                 );
-                height: var(--length-user-status-circle-recent-conversations);
+                font-size: 0.625em;
                 float: left;
                 position: unset;
             }

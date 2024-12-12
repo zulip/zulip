@@ -369,16 +369,14 @@ ul.popover-group-menu-member-list {
     color: var(--color-text-popover-menu);
 }
 
-.user_profile_presence,
 .popover_user_presence {
-    width: var(--length-user-status-circle);
-    height: var(--length-user-status-circle);
-    margin: 0 5px;
-    display: inline-block;
-    float: initial;
-    position: relative;
-    top: 0;
-    flex-shrink: 0;
+    margin: 0 2px;
+    /* 11px at 16px/1em */
+    font-size: 0.6875em;
+}
+
+.user-status-icon-wrapper {
+    display: flex;
 }
 
 .user_profile_presence {
@@ -387,7 +385,8 @@ ul.popover-group-menu-member-list {
        here maintains the legacy design of keeping
        the user-circle smaller, despite the larger
        surrounding text and icons. */
-    font-size: var(--base-font-size-px);
+    font-size: calc(var(--base-font-size-px) * 0.6666);
+    line-height: 1;
 }
 
 .bot-owner-name {
@@ -436,11 +435,6 @@ ul.popover-group-menu-member-list {
 
     .modal__header {
         justify-content: center;
-    }
-
-    .user_profile_presence {
-        margin: 5px;
-        vertical-align: middle;
     }
 
     .modal__close {
@@ -506,12 +500,14 @@ ul.popover-group-menu-member-list {
 
     .user-profile-manage-own-edit-button,
     .user-profile-manage-others-edit-button {
+        display: flex;
         text-decoration: none;
         /* 15px at 22px/1em */
         font-size: 0.6818em;
     }
 
     .user-profile-manage-own-copy-link-button {
+        display: flex;
         /* 19px at 22px/1em */
         font-size: 0.8638em;
         text-decoration: none;
@@ -1036,11 +1032,14 @@ ul.popover-group-menu-member-list {
 
     .popover-menu-user-presence {
         position: absolute;
-        width: 8px;
-        height: 8px;
+        /* Presence dot does not scale, because
+           the avatar itself does not scale. */
+        font-size: 8px;
+        line-height: 1;
         right: -1px;
         bottom: -1px;
-        border: solid 1px var(--color-background);
+        background-color: var(--color-background-popover-menu);
+        border: solid 1px var(--color-background-popover-menu);
         border-radius: 50%;
     }
 
@@ -1073,11 +1072,6 @@ ul.popover-group-menu-member-list {
         color: var(--color-text-item);
         text-overflow: ellipsis;
         white-space: nowrap;
-    }
-
-    .user_circle_empty {
-        background-color: var(--color-background-popover-menu);
-        border-color: hsl(0deg 0% 50%);
     }
 }
 
@@ -1126,19 +1120,17 @@ ul.popover-group-menu-member-list {
 
     .status-circle {
         position: absolute;
-        width: var(--length-user-status-circle);
-        height: var(--length-user-status-circle);
         top: unset;
         left: unset;
+        /* Presence dot does not scale, because
+           the avatar itself does not scale. */
+        font-size: var(--length-user-status-circle);
+        line-height: 1;
         right: -1px;
         bottom: -1px;
-        border: solid 1px var(--color-background);
-        border-radius: 50%;
-    }
-
-    .user_circle_empty {
         background-color: var(--color-background-popover-menu);
-        border-color: hsl(0deg 0% 50%);
+        border: solid 1px var(--color-background-popover-menu);
+        border-radius: 50%;
     }
 
     .text-area {

@@ -6,7 +6,7 @@
     {{/if}}
 {{else if is_person}}
     {{#if user_circle_class}}
-    <span class="{{user_circle_class}} user_circle"></span>
+    <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle"></span>
     {{/if}}
     {{#if has_image}}
     <img class="typeahead-image" src="{{ img_src }}" />
