@@ -66,7 +66,7 @@ priority.
 ## Authentication
 
 - Zulip supports integrated single sign-on with Google, GitHub, SAML
-  (including Okta), AzureAD, and Active Directory/LDAP.  With Zulip
+  (including Okta), Entra ID (AzureAD), and Active Directory/LDAP.  With Zulip
   on-premise, we can support any of the 100+ authentication tools
   supported by
   [python-social-auth](https://python-social-auth.readthedocs.io/en/latest/backends/index.html#social-backends)
