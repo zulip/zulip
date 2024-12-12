@@ -605,41 +605,12 @@ export let can_post_messages_in_stream = function (stream: StreamSubscription): 
         return false;
     }
 
-    if (current_user.is_admin) {
-        return true;
-    }
-
-    if (stream.stream_post_policy === settings_config.stream_post_policy_values.admins.code) {
-        return false;
-    }
-
-    if (current_user.is_moderator) {
-        return true;
-    }
-
-    if (stream.stream_post_policy === settings_config.stream_post_policy_values.moderators.code) {
-        return false;
-    }
-
-    if (
-        current_user.is_guest &&
-        stream.stream_post_policy !== settings_config.stream_post_policy_values.everyone.code
-    ) {
-        return false;
-    }
-
-    const person = people.get_by_user_id(people.my_current_user_id());
-    const current_datetime = Date.now();
-    const person_date_joined = new Date(person.date_joined).getTime();
-    const days = (current_datetime - person_date_joined) / 1000 / 86400;
-    if (
-        stream.stream_post_policy ===
-            settings_config.stream_post_policy_values.non_new_members.code &&
-        days < realm.realm_waiting_period_threshold
-    ) {
-        return false;
-    }
-    return true;
+    const can_send_message_group = stream.can_send_message_group;
+    return settings_data.user_has_permission_for_group_setting(
+        can_send_message_group,
+        "can_send_message_group",
+        "stream",
+    );
 };
 
 export function rewire_can_post_messages_in_stream(

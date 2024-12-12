@@ -264,7 +264,6 @@ export function show_settings_for(node: HTMLElement): void {
         sub,
         notification_settings,
         other_settings,
-        stream_post_policy_values: settings_config.stream_post_policy_values,
         stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
         stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),
         check_default_stream: stream_data.is_default_stream_id(stream_id),
