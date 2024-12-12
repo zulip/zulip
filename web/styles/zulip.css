@@ -1548,7 +1548,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     }
 }
 
-@media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
+@media (width < $rc_min) or (height < $short_navbar_cutoff_height) {
     .default-sidebar-behaviour {
         &.spectator-view.default-sidebar-behaviour {
             #navbar-middle {
@@ -1671,7 +1671,7 @@ body:not(.hide-left-sidebar) {
     }
 }
 
-@media (width < $xl_min) {
+@media (width < $rc_min) {
     .default-sidebar-behaviour {
         @extend %hide-right-sidebar;
 
