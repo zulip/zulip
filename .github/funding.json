@@ -1,0 +1,70 @@
+{
+    "version": "v1.0.0",
+
+    // Required. The entity associated with the project, soliciting funds.
+    // This can be an individual, organisation, community etc.
+    "entity": {
+        "type": "organization",                     // Required. [individual, group, organisation, other]. Use the closest approximation.
+        "role": "steward",                     // Required. [owner, steward, maintainer, contributor, other]. Use the closest approximation.
+        "name": "Kandra Labs, Inc.",                     // Required. Name of the entity. Max len 250.
+        "email": "support@zulip.com",                    // Required. Max len 250.
+        "description": "Guiding the Zulip community in developing a world-class organized team chat product with apps for every major desktop and mobile platform requires leadership from a talented, dedicated team. We believe that the only sustainable model is for our core team to be compensated fairly for their time. We have thus founded a company (Kandra Labs) to steward and financially support Zulip’s development. We are growing our business sustainably, without venture capital funding. VCs are incentivized to push companies to gamble for explosive growth. Often, the result is that a company with a useful product burns rapidly through its resources and goes out of business. We have built Zulip as a sustainable business (also supported by SBIR grants from the US National Science Foundation), and are being thoughtful about our pace of spending. Funding our company without venture capital also allows us to live by our values, without investor pressure to compromise them when doing so might be “good business” or “what everyone does”.",              // Required. Information about the entity. Max len 2000.
+        "webpageUrl": {
+            "url": "https://zulip.com/values/",                  // Required. Webpage with information about the entity. Starts with https:// or http://. Max len 250.
+            "wellKnown": "https://zulip.com/.well-known/funding-manifest-urls"             // Optional. Required if the above url and the URL of the funding.json manifest do not have the same hostname. Starts with https:// or http://. Max len 250.
+
+        }
+    },
+
+    // Optional. One or more projects for which the funding is solicited.
+    "projects": [{
+        "guid": "zulip",                     // Required. A short unique ID for the project. Lowercase-alphanumeric-dashes only. eg: my-cool-project. Max len 32.
+        "name": "Zulip",                     // Required. Name of the project. Max len 250.
+        "description": "Zulip is an open-source team chat application designed for seamless remote and hybrid work. With conversations organized by topic, Zulip is ideal for both live and asynchronous communication. Zulip’s 100% open-source software is available as a cloud service or a self-hosted solution, and is used by thousands of organizations around the world. An important part of Zulip’s mission is ensuring that worthy organizations, from programming-language developers to research communities, are able to use Zulip whether or not they have funding. For this reason, we sponsor Zulip Cloud Standard for open source projects, non-profits, education, and academic research. This program has grown exponentially since its inception; today we are proud to fully sponsor Zulip hosting for several hundred organizations. Support from the community will help us continue to afford these programs as their popularity grows.        ",              // Required. Description of the project. Max len 2000.
+        "webpageUrl": {
+            "url": "https://zulip.com/",                  // Required. Webpage with information about the project. Starts with https:// or http://. Max len 250.
+            "wellKnown": "https://zulip.com/.well-known/funding-manifest-urls"             // Optional. Required if the above url and the URL of the funding.json manifest do not have the same hostname. Starts with https:// or http://. Max len 250.
+        },
+        "repositoryUrl": {
+            "url": "https://github.com/zulip"                  // Required. URL of the repository where the project's source code and other assets are available. Starts with https:// or http://. Max len 250.
+        },
+        "licenses": ["spdx:Apache-2.0"],                 // Required. The project's licenses (up to 5). For standard licenses, use the license ID from the SDPX index prefixed by "spdx:". eg: "spdx:GPL-3.0", "spdx:CC-BY-SA-4.0"
+        "tags": ["communication", "team-chat", "collaboration"]                      // Required. Up to 10 general tags describing the project. Lowercase-alphanumeric-dashes (max 32 chars). eg: ["programming", "developer-tools"]. For reference, see tags.txt
+    }],
+
+    // Required.
+    "funding": {
+        // Required. This describes one or more channels via which the entity can receive funds.
+        "channels": [
+            {
+                "guid": "github-sponsors",                 // Required. A short unique ID for the channel. Lowercase-alphanumeric-dashes only. eg: mybank, my-paypal. Max len 32.
+                "type": "github-sponsors",                 // Required. [bank, payment-provider, cheque, cash, other].
+                "address": "https://github.com/sponsors/zulip",              // Optional. A short unstructured textual representation of the payment address for the channel. eg: "Account: 12345 (branch: ABCX)", "mypaypal@domain.com", "https://payment-url.com", or a physical address for cheques. Max len 250.
+                "description": "Preferred channel for sponsoring Zulip."           // Optional. Any additional description or instructions for the payment channel. Max len 500.
+            },
+            {
+                "guid": "patreon",                 // Required. A short unique ID for the channel. Lowercase-alphanumeric-dashes only. eg: mybank, my-paypal. Max len 32.
+                "type": "patreon",                 // Required. [bank, payment-provider, cheque, cash, other].
+                "address": "https://patreon.com/zulip",              // Optional. A short unstructured textual representation of the payment address for the channel. eg: "Account: 12345 (branch: ABCX)", "mypaypal@domain.com", "https://payment-url.com", or a physical address for cheques. Max len 250.
+            },
+            {
+                "guid": "open-collective",                 // Required. A short unique ID for the channel. Lowercase-alphanumeric-dashes only. eg: mybank, my-paypal. Max len 32.
+                "type": "open-collective",                 // Required. [bank, payment-provider, cheque, cash, other].
+                "address": "https://opencollective.com/zulip",              // Optional. A short unstructured textual representation of the payment address for the channel. eg: "Account: 12345 (branch: ABCX)", "mypaypal@domain.com", "https://payment-url.com", or a physical address for cheques. Max len 250.
+            }
+        ],
+
+        // Required. One or more funding and payment plans.
+        "plans": [{
+            "guid": "github-sponsors",                 // Required. A short unique ID for the plan. Lowercase-alphanumeric-dashes only. eg: mybank, paypal. Max len 32.
+            "status": "active",               // Required. [active, inactive]. Indicates whether this plan is currently active or inactive.
+            "name": "Support Zulip",                 // Required. Name of the funding plan. eg: "Starter support plan", "Infra hosting", "Monthly funding plan".
+            "description": "Contribute to Zulip's development and free hosting for open source projects and other worthy organizations!",          // Optional. Any additional description or instructions for the funding plan.
+            "amount": 0,                // Required. The solicited amount for this plan. 0 is a wildcard that indicates "any amount".
+            "currency": "USD",             // Required. Three letter ISO 4217 currency code. eg: USD
+            "frequency": "monthly",            // Required. [one-time, weekly, fortnightly, monthly, yearly, other]
+            "channels": ["github-sponsors"]              // Required. One or more channel IDs defined in channels[] via which this plan can accept payments.
+        }]
+    }
+}
+
