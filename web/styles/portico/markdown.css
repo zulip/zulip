@@ -519,46 +519,48 @@
     }
 }
 
- /* If darkmode is preferred by OS */
- @media(prefers-color-scheme: dark){ 
-    .markdown{
-		background-color: #000; /* Dark background. */
-		color: #fff;
-        /*--color-copy-button-success:hsla(0, 7%, 9%, 0.651);*/
-	}
+/* If darkmode is preferred by OS */
+@media (prefers-color-scheme: dark) {
+    .markdown {
+        background-color: hsl(0deg 0% 0%); /* Dark background. */
+        color: hsl(0deg 0% 100%);
+    }
 
-    .help .markdown h1:target{
-        background-color:hsl(237.46deg 61.81% 47.29% / 25%);
+    .help .markdown h1:target {
+        background-color: hsl(237.46deg 61.81% 47.29% / 25%);
     }
 
     .header {
-        background-color: #000;
+        background-color: hsl(0deg 0% 0%);
     }
 
-    body{
-        background-color: #000;
-        color:#000;
+    body {
+        background-color: hsl(0deg 0% 0%);
+        color: hsl(0deg 0% 0%);
     }
 
-    .portico-wrap{
-        background-color: #000;
+    .portico-wrap {
+        background-color: hsl(0deg 0% 0%);
     }
 
-    .help{
-        background-color: #000;
+    .help {
+        background-color: hsl(0deg 0% 0%);
     }
 
-    .markdown .tip{
+    .markdown .tip {
         background-color: hsl(46deg 34.98% 39.19%);
         border: 1px solid hsl(0deg 0% 98.57%);
     }
 
-    .markdown .tip, .markdown .keyboard_tip {
+    .markdown .tip,
+    .markdown .keyboard_tip {
         background-color: hsl(46deg 34.98% 39.19%);
         border: 1px solid hsl(0deg 0% 98.57%);
     }
 
-    .markdown .warn, .markdown .tip, .markdown .keyboard_tip {
+    .markdown .warn,
+    .markdown .tip,
+    .markdown .keyboard_tip {
         position: relative;
         display: block;
         background-color: hsl(46deg 34.98% 39.19%);
@@ -568,29 +570,23 @@
         margin: 5px 0;
     }
 
-    .markdown .content{
-        background-color: hsl(0, 0%, 00%)
+    .markdown .content {
+        background-color: hsl(0deg 0% 00%);
     }
 
-	.markdown{
-		background-color: #000; /* Dark background. */
-		color: #fff;
-	}
+    .markdown a {
+        color: hsl(130deg 100% 50%); /* Links green neon to dark mode. */
+    }
 
-	.markdown a{
-		color: #39ff14; /* Links green neon to dark mode. */
-	}
+    .markdown h1,
+    .markdown h2,
+    .markdown h3 {
+        color: hsl(0deg 0% 100%); /* White letters. */
+    }
 
-	.markdown h1,
-	.markdown h2,
-	.markdown h3{
-		color: #ffffff; /* White letters. */
-	}
-
-	.markdown code,
-	.markdown pre{
-		background-color: #333; /* Codes with grey background. */
-		color: #e5e5e5; /* Grey light letters. */
-	}
-
+    .markdown code,
+    .markdown pre {
+        background-color: hsl(0deg 0% 20%); /* Codes with grey background. */
+        color: hsl(0deg 0% 90%); /* Grey light letters. */
+    }
 }
