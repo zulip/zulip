@@ -23,7 +23,6 @@ CircleCI with GitHub, BitBucket and GitLab.
 {!congrats.md!}
 
 ![](/static/images/integrations/circleci/001.png)
-![](/static/images/integrations/circleci/002.png)
 
 {!event-filtering-additional-feature.md!}
 
