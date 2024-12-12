@@ -253,6 +253,25 @@ DIRECT MESSAGES to [start a DM]({starting_a_new_direct_message_help_url}).
             message_links_help_url="/help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=11,
+        message="""
+- Zulip’s next-gen mobile app is now in public beta. If offers a sleek new
+  design and a faster, smoother experience. [Check out the announcement
+  post]({flutter_beta_blog_post}) for details and instructions on how to try the
+  beta!
+
+**Web and desktop updates**
+- There's a [new option]({user_list_style_help_url}) to show avatars in the
+  user list.
+- You can now conveniently [forward]({quote_or_forward_help_url}) a message to
+  another conversation from the message menu.
+""".format(
+            flutter_beta_blog_post="https://blog.zulip.com/2024/12/12/new-flutter-mobile-app-beta/",
+            user_list_style_help_url="/help/user-list#configure-user-list-style",
+            quote_or_forward_help_url="/help/quote-or-forward-a-message",
+        ),
+    ),
 ]
 
 
