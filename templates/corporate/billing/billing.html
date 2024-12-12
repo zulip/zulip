@@ -61,8 +61,8 @@
                     </div>
                 </div>
                 {% if complimentary_access_plan %}
-                <div class="input-box billing-page-field" id="legacy-server-push-notification-notice-wrapper">
-                    <div id="legacy-server-push-notification-notice" class="not-editable-realm-field">
+                <div class="input-box billing-page-field" id="complimentary-access-end-notice-wrapper">
+                    <div id="complimentary-access-end-notice" class="not-editable-realm-field">
                         <i>Your complimentary access to Zulip Basic ends on {{ complimentary_access_plan_end_date }}.</i>
                     </div>
                 </div>
@@ -353,8 +353,8 @@
                             </button>
                         </div>
                     {% elif complimentary_access_plan %}
-                        <div class="plan-toggle-action input-box billing-page-field" id="cancel-legacy-server-upgrade">
-                            <button class="cancel-legacy-server-upgrade-button plan-toggle-action-button">
+                        <div class="plan-toggle-action input-box billing-page-field" id="cancel-complimentary-access-upgrade">
+                            <button class="plan-toggle-action-button">
                                 <span class="billing-button-text">Cancel upgrade</span>
                                 <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
@@ -560,7 +560,7 @@
         </div>
     </div>
 </div>
-<div id="confirm-cancel-legacy-server-upgrade-modal" class="micromodal" aria-hidden="true">
+<div id="confirm-cancel-complimentary-access-upgrade-modal" class="micromodal" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
