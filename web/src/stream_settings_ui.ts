@@ -725,7 +725,6 @@ function setup_page(callback: () => void): void {
             is_owner: current_user.is_owner,
             stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
             stream_privacy_policy,
-            stream_post_policy_values: settings_config.stream_post_policy_values,
             check_default_stream: false,
             zulip_plan_is_not_limited: realm.zulip_plan_is_not_limited,
             org_level_message_retention_setting:

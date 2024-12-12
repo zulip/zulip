@@ -1165,41 +1165,47 @@ test("can_post_messages_in_stream", ({override}) => {
         is_muted: false,
         invite_only: true,
         history_public_to_subscribers: false,
-        stream_post_policy: settings_config.stream_post_policy_values.admins.code,
+        can_send_message_group: admins_group.id,
     };
-    override(current_user, "is_admin", false);
+    override(current_user, "user_id", test_user.user_id);
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
-    override(current_user, "is_admin", true);
+    override(current_user, "user_id", admin_user_id);
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
-    social.stream_post_policy = settings_config.stream_post_policy_values.moderators.code;
-    override(current_user, "is_moderator", false);
-    override(current_user, "is_admin", false);
-
-    assert.equal(stream_data.can_post_messages_in_stream(social), false);
-
-    override(current_user, "is_moderator", true);
+    social.can_send_message_group = everyone_group.id;
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
-    social.stream_post_policy = settings_config.stream_post_policy_values.non_new_members.code;
-    override(current_user, "is_moderator", false);
-    me.date_joined = new Date(Date.now());
-    override(realm, "realm_waiting_period_threshold", 10);
-    assert.equal(stream_data.can_post_messages_in_stream(social), false);
-
-    me.date_joined = new Date(Date.now() - 20 * 86400000);
+    override(current_user, "user_id", moderator_user_id);
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
-    override(current_user, "is_guest", true);
+    override(current_user, "user_id", test_user.user_id);
+    assert.equal(stream_data.can_post_messages_in_stream(social), true);
+
+    override(current_user, "user_id", me.user_id);
+    assert.equal(stream_data.can_post_messages_in_stream(social), true);
+
+    const anonymous_setting_group = {
+        direct_members: [test_user.user_id],
+        direct_subgroups: [admins_group.id],
+    };
+    social.can_send_message_group = anonymous_setting_group;
+    override(current_user, "user_id", moderator_user_id);
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
-    social.stream_post_policy = settings_config.stream_post_policy_values.everyone.code;
+    override(current_user, "user_id", me.user_id);
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
+
+    override(current_user, "user_id", test_user.user_id);
+    assert.equal(stream_data.can_post_messages_in_stream(social), true);
+
+    override(current_user, "user_id", admin_user_id);
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     page_params.is_spectator = true;
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
+    page_params.is_spectator = false;
     social.is_archived = true;
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 });

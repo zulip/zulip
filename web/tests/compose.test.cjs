@@ -47,6 +47,11 @@ const server_events = mock_esm("../src/server_events");
 const transmit = mock_esm("../src/transmit");
 const upload = mock_esm("../src/upload");
 const onboarding_steps = mock_esm("../src/onboarding_steps");
+mock_esm("../src/group_permission_settings", {
+    get_group_permission_setting_config: () => ({
+        allow_everyone_group: true,
+    }),
+});
 
 const compose_ui = zrequire("compose_ui");
 const compose_banner = zrequire("compose_banner");
@@ -120,6 +125,7 @@ const social = {
     stream_id: 101,
     name: "social",
     subscribed: true,
+    can_send_message_group: 2,
 };
 stream_data.add_sub(social);
 
@@ -133,7 +139,7 @@ const nobody = {
 const everyone = {
     name: "role:everyone",
     id: 2,
-    members: new Set([30]),
+    members: new Set([30, 101]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
 };

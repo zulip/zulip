@@ -1148,10 +1148,6 @@ div.settings-radio-input-parent {
         height: 30px;
     }
 
-    & select.stream_post_policy_setting {
-        margin-bottom: 10px;
-    }
-
     .dropdown-widget-button {
         /* Match the margin with other input groups around. */
         margin-bottom: 20px;

@@ -2,6 +2,9 @@
     <label class="group-setting-label">
         {{label}}
         {{#if label_parens_text}}(<i>{{label_parens_text}}</i>){{/if}}
+        {{#if help_link}}
+        {{> ../help_link_widget link=help_link }}
+        {{/if}}
     </label>
     <div class="pill-container person_picker prop-element" id="{{#if prefix}}{{prefix}}{{else}}id_{{/if}}{{setting_name}}" data-setting-widget-type="group-setting-type">
         <div class="input" contenteditable="true" data-placeholder="{{t 'Add roles, groups or users' }}">
