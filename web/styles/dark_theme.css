@@ -528,8 +528,7 @@
     .subscriber-list-box .subscriber_list_container .subscriber-list td,
     .member-list-box,
     .member-list-box .member_list_container .member-list td,
-    #subscription_overlay .settings-radio-input-parent,
-    #recent_view_table table td {
+    #subscription_overlay .settings-radio-input-parent {
         border-color: hsl(0deg 0% 0% / 20%);
     }
 
