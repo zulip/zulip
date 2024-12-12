@@ -41,6 +41,10 @@ export function clear_old_unreads_missing(): void {
     old_unreads_missing = false;
 }
 
+export function rewire_old_unreads_missing(value: boolean): void {
+    old_unreads_missing = value;
+}
+
 export const unread_mentions_counter = new Set<number>();
 export const direct_message_with_mention_count = new Set();
 const unread_messages = new Set<number>();
