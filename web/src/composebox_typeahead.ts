@@ -31,6 +31,7 @@ import * as stream_data from "./stream_data.ts";
 import type {StreamPillData} from "./stream_pill.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
+import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as topic_link_util from "./topic_link_util.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
@@ -461,6 +462,10 @@ export function tokenize_compose_str(s: string): string {
                 ) {
                     // return any string as long as its not ''.
                     return ">topic_jump";
+                } else if (s.slice(Math.max(0, i - 1), i) === "#" && i === s.length - 1) {
+                    // a shorter syntax for linking to current stream
+                    // (in stream messages)
+                    return "#>";
                 }
                 // maybe topic_list; let's let the stream_topic_regex decide later.
                 return ">topic_list";
@@ -902,12 +907,31 @@ export function get_candidates(
 
     if (ALLOWED_MARKDOWN_FEATURES.stream && current_token.startsWith("#")) {
         if (current_token.length === 1) {
+            completing = "stream";
+            token = current_token;
             return [];
         }
 
         current_token = current_token.slice(1);
         if (current_token.startsWith("**")) {
             current_token = current_token.slice(2);
+        }
+
+        if (current_token === ">") {
+            const stream_id = compose_state.stream_id();
+            if (stream_id === undefined) {
+                return [];
+            }
+            const stream = sub_store.get(stream_id);
+            if (!stream) {
+                return [];
+            }
+            return [
+                {
+                    ...stream,
+                    type: "stream",
+                },
+            ];
         }
 
         // Don't autocomplete if there is a space following a '#'

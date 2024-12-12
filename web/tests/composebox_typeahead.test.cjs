@@ -808,6 +808,12 @@ test("content_typeahead_selected", ({override}) => {
     expected_value = "#**Sweden** ";
     assert.equal(actual_value, expected_value);
 
+    query = "#>";
+    ct.get_or_set_token_for_testing("#>");
+    actual_value = ct.content_typeahead_selected(sweden_stream, query, input_element);
+    expected_value = "#**Sweden** ";
+    assert.equal(actual_value, expected_value);
+
     // topic_list
     ct.get_or_set_completing_for_tests("topic_list");
 
@@ -1920,6 +1926,8 @@ test("tokenizing", () => {
     assert.equal(ct.tokenize_compose_str("``` py"), "``` py");
     assert.equal(ct.tokenize_compose_str("foo``bar ~~~ py"), "");
     assert.equal(ct.tokenize_compose_str("foo ~~~why = why_not\n~~~"), "~~~");
+    assert.equal(ct.tokenize_compose_str("foo, #>"), "#>");
+    assert.equal(ct.tokenize_compose_str("foo, #> "), ">topic_list");
 
     // The following cases are kinda judgment calls...
     assert.equal(ct.tokenize_compose_str("foo @toomanycharactersisridiculoustocomplete"), "");
