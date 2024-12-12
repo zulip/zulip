@@ -906,16 +906,24 @@ ul.popover-group-menu-member-list {
         max-width: 100%;
     }
 
+    .modal__title {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+
+        .stream-privacy-type-icon {
+            padding-left: 3px;
+            padding-right: 5px;
+        }
+    }
+
     #move_topic_to_stream_widget_wrapper {
         display: flex;
-        margin-bottom: 10px;
 
         .dropdown-widget-button {
             outline: none;
             /* 24px at 16px/1em */
             line-height: 1.5em;
-            width: auto;
-            max-width: 206px;
+            width: 50%;
         }
 
         .dropdown_widget_value {
@@ -943,12 +951,23 @@ ul.popover-group-menu-member-list {
     }
 
     .move_messages_edit_topic {
-        margin-bottom: 10px;
+        margin-bottom: unset;
+        box-sizing: border-box;
+        width: 100%;
+        height: auto;
+    }
+
+    #message_move_select_options {
+        width: 100%;
+    }
+
+    #move_messages_count {
+        margin-top: -20px;
     }
 
     .topic_stream_edit_header {
         display: flex;
-        flex-wrap: wrap;
+        flex-flow: column wrap;
         justify-content: flex-start;
 
         #select_stream_id {

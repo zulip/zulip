@@ -346,6 +346,7 @@ export async function build_move_topic_to_stream_popover(
     message?: Message,
 ): Promise<void> {
     const current_stream_name = sub_store.get(current_stream_id)!.name;
+    const stream = sub_store.get(current_stream_id);
     const args: {
         topic_name: string;
         current_stream_id: number;
@@ -355,9 +356,11 @@ export async function build_move_topic_to_stream_popover(
         only_topic_edit: boolean;
         disable_topic_input?: boolean;
         message_placement?: "first" | "intermediate" | "last";
+        stream: sub_store.StreamSubscription | undefined;
     } = {
         topic_name,
         current_stream_id,
+        stream,
         notify_new_thread: message_edit.notify_new_thread_default,
         notify_old_thread: message_edit.notify_old_thread_default,
         from_message_actions_popover: message !== undefined,
@@ -375,13 +378,34 @@ export async function build_move_topic_to_stream_popover(
 
     let modal_heading;
     if (only_topic_edit) {
-        modal_heading = $t_html({defaultMessage: "Rename topic"});
+        modal_heading = $t_html(
+            {defaultMessage: "Rename topic <z-stream></z-stream> &gt; {topic_name}"},
+            {
+                topic_name,
+                "z-stream": () =>
+                    render_inline_decorated_stream_name({stream, show_colored_icon: true}),
+            },
+        );
     } else {
-        modal_heading = $t_html({defaultMessage: "Move topic"});
+        modal_heading = $t_html(
+            {defaultMessage: "Move topic from <z-stream></z-stream> &gt; {topic_name}"},
+            {
+                topic_name,
+                "z-stream": () =>
+                    render_inline_decorated_stream_name({stream, show_colored_icon: true}),
+            },
+        );
     }
 
     if (message !== undefined) {
-        modal_heading = $t_html({defaultMessage: "Move messages"});
+        modal_heading = $t_html(
+            {defaultMessage: "Move messages from <z-stream></z-stream> &gt; {topic_name}"},
+            {
+                topic_name,
+                "z-stream": () =>
+                    render_inline_decorated_stream_name({stream, show_colored_icon: true}),
+            },
+        );
         // We disable topic input only for modal is opened from the message actions
         // popover and not when moving the whole topic from left sidebar. This is
         // because topic editing permission depend on message and we do not have
