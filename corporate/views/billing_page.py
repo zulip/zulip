@@ -111,10 +111,11 @@ def remote_realm_billing_page(
 
     customer = billing_session.get_customer()
     if customer is not None and customer.sponsorship_pending:  # nocoverage
-        # Don't redirect to sponsorship page if the remote realm is on a paid plan or scheduled for an upgrade.
+        # Don't redirect to sponsorship page if the remote realm is on a paid plan or
+        # has scheduled an upgrade for their current complimentary access plan.
         if (
             not billing_session.on_paid_plan()
-            and billing_session.get_legacy_remote_server_next_plan_name(customer) is None
+            and billing_session.get_complimentary_access_next_plan_name(customer) is None
         ):
             return HttpResponseRedirect(
                 reverse("remote_realm_sponsorship_page", args=(realm_uuid,))
@@ -126,7 +127,7 @@ def remote_realm_billing_page(
         customer is None
         or get_current_plan_by_customer(customer) is None
         or (
-            billing_session.get_legacy_remote_server_next_plan_name(customer) is None
+            billing_session.get_complimentary_access_next_plan_name(customer) is None
             and billing_session.remote_realm.plan_type
             in [
                 RemoteRealm.PLAN_TYPE_SELF_MANAGED,
@@ -178,10 +179,11 @@ def remote_server_billing_page(
 
     customer = billing_session.get_customer()
     if customer is not None and customer.sponsorship_pending:
-        # Don't redirect to sponsorship page if the remote realm is on a paid plan or scheduled for an upgrade.
+        # Don't redirect to sponsorship page if the remote realm is on a paid plan or
+        # has scheduled an upgrade for their current complimentary access plan.
         if (
             not billing_session.on_paid_plan()
-            and billing_session.get_legacy_remote_server_next_plan_name(customer) is None
+            and billing_session.get_complimentary_access_next_plan_name(customer) is None
         ):
             return HttpResponseRedirect(
                 reverse(
@@ -196,7 +198,7 @@ def remote_server_billing_page(
         customer is None
         or get_current_plan_by_customer(customer) is None
         or (
-            billing_session.get_legacy_remote_server_next_plan_name(customer) is None
+            billing_session.get_complimentary_access_next_plan_name(customer) is None
             and billing_session.remote_server.plan_type
             in [
                 RemoteZulipServer.PLAN_TYPE_SELF_MANAGED,
