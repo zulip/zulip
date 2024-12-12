@@ -294,6 +294,20 @@ test("test_unread_logic", () => {
     assert.deepEqual(history, ["toPic1", "unread1", "topic2", "UNREAD2"]);
 });
 
+test("test_stream_has_topic", () => {
+    const stream_id = 77;
+
+    assert.equal(stream_topic_history.stream_has_topic(stream_id, "non_existant_topic"), false);
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 777,
+        topic_name: "new_topic",
+    });
+
+    assert.equal(stream_topic_history.stream_has_topic(stream_id, "new_topic"), true);
+});
+
 test("test_stream_has_topics", () => {
     const stream_id = 88;
 

@@ -76,6 +76,17 @@ export function is_complete_for_stream_id(stream_id: number): boolean {
     return in_cache;
 }
 
+export function stream_has_topic(stream_id: number, topic_name: string): boolean {
+    if (!stream_dict.has(stream_id)) {
+        return false;
+    }
+
+    const history = stream_dict.get(stream_id);
+    assert(history !== undefined);
+
+    return history.has_topic(topic_name);
+}
+
 export function stream_has_topics(stream_id: number): boolean {
     if (!stream_dict.has(stream_id)) {
         return false;
@@ -121,6 +132,10 @@ export class PerStreamHistory {
 
     constructor(stream_id: number) {
         this.stream_id = stream_id;
+    }
+
+    has_topic(topic_name: string): boolean {
+        return this.topics.has(topic_name);
     }
 
     has_topics(): boolean {
