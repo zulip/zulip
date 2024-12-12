@@ -1,5 +1,5 @@
 /* The height of the settings header (including tab switcher). */
-$settings_header_height: 45px;
+$settings_header_height: 3.2142em; /* 45px at 14px em */
 /* The width of the settings sidebar. */
 $settings_sidebar_width: 255px;
 
@@ -1311,7 +1311,7 @@ $option_title_width: 180px;
         .tab-container {
             box-sizing: border-box;
             height: $settings_header_height;
-            padding: 6px;
+            padding: 0.4285em; /* 6px at 14px em */
             background-color: var(--color-background-modal-bar);
             border-bottom: 1px solid var(--color-border-modal-bar);
 
@@ -1450,14 +1450,14 @@ $option_title_width: 180px;
             text-align: center;
             font-size: 1.1em;
             line-height: 1;
-            margin: 15px;
+            margin: 1.0714em; /* 15px at 14px em */
             text-transform: uppercase;
         }
 
         .exit {
             font-weight: 600;
             position: absolute;
-            top: 10px;
+            top: 0.7142em; /* 10px at 14px em */
             right: 10px;
             color: hsl(0deg 0% 67%);
             cursor: pointer;
@@ -1466,9 +1466,8 @@ $option_title_width: 180px;
         .exit-sign {
             float: right;
             position: relative;
-            top: 1px;
             margin-left: 3px;
-            font-size: 1.5rem;
+            font-size: 2em;
             line-height: 1;
             font-weight: 600;
             cursor: pointer;
