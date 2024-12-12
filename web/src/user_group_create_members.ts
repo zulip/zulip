@@ -15,7 +15,7 @@ import * as user_group_components from "./user_group_components.ts";
 import * as user_group_create_members_data from "./user_group_create_members_data.ts";
 import type {UserGroup} from "./user_groups.ts";
 
-let pill_widget: CombinedPillContainer;
+export let pill_widget: CombinedPillContainer;
 let all_users_list_widget: ListWidgetType<User | UserGroup, User | UserGroup>;
 
 export function get_principals(): number[] {
