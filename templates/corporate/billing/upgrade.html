@@ -113,10 +113,10 @@
                     </div>
                     {% endif %}
 
-                    {% if remote_server_legacy_plan_end_date %}
+                    {% if complimentary_access_plan_end_date %}
                     <div class="input-box upgrade-page-field">
                         <select name="remote_server_plan_start_date" id="remote-server-plan-start-date-select">
-                            <option value="billing_cycle_end_date">{{ remote_server_legacy_plan_end_date }}</option>
+                            <option value="billing_cycle_end_date">{{ complimentary_access_plan_end_date }}</option>
                             <option value="today">Today</option>
                         </select>
                         <label for="remote-server-plan-start-date-select">Plan start date</label>
@@ -134,7 +134,7 @@
                     <input type="hidden" name="license_management" value="automatic" />
                     {% endif %}
 
-                    {% if remote_server_legacy_plan_end_date %}
+                    {% if complimentary_access_plan_end_date %}
                         <div class="input-box upgrade-page-field" id="due-today-for-future-update-wrapper">
                             <label for="due-today-for-future-update" class="inline-block label-title">
                                 Due today
@@ -147,9 +147,9 @@
 
                     <div class="input-box upgrade-page-field">
                         <label for="due-today" class="inline-block label-title">
-                            {% if remote_server_legacy_plan_end_date %}
+                            {% if complimentary_access_plan_end_date %}
                             <span id="due-today-remote-server-title">
-                                Due {{ remote_server_legacy_plan_end_date }}
+                                Due {{ complimentary_access_plan_end_date }}
                             </span>
                             {% endif %}
                             <span id="due-today-title">
@@ -286,7 +286,7 @@
                     <div class="upgrade-button-container input-box upgrade-page-field" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
                         <button id="org-upgrade-button{% if is_demo_organization %} permanent-disabled{% endif %}" {% if not page_params.setup_payment_by_invoice and not payment_method %}disabled{% endif %}>
                             <span id="org-upgrade-button-text">
-                                {% if remote_server_legacy_plan_end_date %}
+                                {% if complimentary_access_plan_end_date %}
                                     <span id="org-future-upgrade-button-text-remote-server">
                                         Schedule upgrade to {{ plan }}
                                     </span>

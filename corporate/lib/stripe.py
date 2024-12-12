@@ -677,7 +677,7 @@ class UpgradePageContext(TypedDict):
     plan: str
     fixed_price_plan: bool
     pay_by_invoice_payments_page: str | None
-    remote_server_legacy_plan_end_date: str | None
+    complimentary_access_plan_end_date: str | None
     salt: str
     seat_count: int
     signed_seat_count: str
@@ -2780,7 +2780,7 @@ class BillingSession(ABC):
             "exempt_from_license_number_check": exempt_from_license_number_check,
             "free_trial_end_date": free_trial_end_date,
             "is_demo_organization": customer_specific_context["is_demo_organization"],
-            "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
+            "complimentary_access_plan_end_date": remote_server_legacy_plan_end_date,
             "manual_license_management": initial_upgrade_request.manual_license_management,
             "page_params": {
                 "page_type": "upgrade",
