@@ -1132,14 +1132,17 @@ textarea.new_message_textarea {
     }
 
     .enter_sends_major {
-        font-size: 15px;
+        /* 15px at 14px/1em */
+        font-size: 1.0714em;
     }
 
     .enter_sends_minor {
-        font-size: 12px;
+        /* 12px at 14px/1em */
+        font-size: 0.8571em;
 
         .popover-menu-hotkey-hint {
-            font-size: 12px;
+            /* 12px at 14px/1em */
+            font-size: 0.8571em;
             padding: 1px 4px;
         }
     }
