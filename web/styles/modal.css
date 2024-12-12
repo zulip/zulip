@@ -367,8 +367,12 @@
     }
 }
 
-.modal_select {
+#user-role-select,
+#bot-role-select {
     height: 30px;
+}
+
+.modal_select {
     width: 220px;
     padding: 0 25px 0 6px;
     color: hsl(0deg 0% 33%);
