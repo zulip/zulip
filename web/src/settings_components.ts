@@ -10,6 +10,7 @@ import * as blueslip from "./blueslip.ts";
 import * as compose_banner from "./compose_banner.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
+import type {GroupSettingName} from "./group_permission_settings.ts";
 import * as group_setting_pill from "./group_setting_pill.ts";
 import {$t} from "./i18n.ts";
 import {
@@ -1558,17 +1559,6 @@ export function set_group_setting_widget_value(
         }
     }
 }
-
-export const group_setting_name_schema = z.enum([
-    "can_add_members_group",
-    "can_join_group",
-    "can_leave_group",
-    "can_manage_group",
-    "can_mention_group",
-    "can_remove_members_group",
-]);
-
-export type GroupSettingName = z.infer<typeof group_setting_name_schema>;
 
 export function create_group_setting_widget({
     $pill_container,

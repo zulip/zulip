@@ -21,6 +21,7 @@ import type {Toggle} from "./components.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import * as group_permission_settings from "./group_permission_settings.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
@@ -29,7 +30,6 @@ import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_components from "./settings_components.ts";
-import {group_setting_name_schema} from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_org from "./settings_org.ts";
@@ -193,9 +193,7 @@ function show_membership_settings(group: UserGroup): void {
 }
 
 function show_general_settings(group: UserGroup): void {
-    const permission_settings = z
-        .array(group_setting_name_schema)
-        .parse(Object.keys(realm.server_supported_permission_settings.group));
+    const permission_settings = group_permission_settings.get_group_permission_settings();
     for (const setting_name of permission_settings) {
         settings_components.create_group_setting_widget({
             $pill_container: $(`#id_${CSS.escape(setting_name)}`),
@@ -314,44 +312,59 @@ function update_group_membership_button(group_id: number): void {
     }
 }
 
+function rerender_group_row(group: UserGroup): void {
+    const $row = row_for_group_id(group.id);
+
+    const item = group;
+
+    const current_user_id = people.my_current_user_id();
+    const is_member = user_groups.is_user_in_group(group.id, current_user_id);
+    const can_join = settings_data.can_join_user_group(item.id);
+    const can_leave = settings_data.can_leave_user_group(item.id);
+    const is_direct_member = user_groups.is_direct_member_of(current_user_id, item.id);
+    const associated_subgroups = user_groups.get_associated_subgroups(item, current_user_id);
+    const associated_subgroup_names = user_groups.format_group_list(associated_subgroups);
+    const item_render_data = {
+        ...item,
+        is_member,
+        can_join,
+        can_leave,
+        is_direct_member,
+        associated_subgroup_names,
+    };
+    const html = render_browse_user_groups_list_item(item_render_data);
+    const $new_row = $(html);
+
+    // TODO: Remove this if/when we just handle "active" when rendering templates.
+    if ($row.hasClass("active")) {
+        $new_row.addClass("active");
+    }
+
+    $row.replaceWith($new_row);
+}
+
 function update_display_checkmark_on_group_edit(group: UserGroup): void {
-    if (is_group_already_present(group)) {
-        const $row = row_for_group_id(group.id);
+    const tab_key = get_active_data().$tabs.first().attr("data-tab-key");
+    if (tab_key === "your-groups") {
+        // There is no need to do anything if "Your groups" tab is
+        // opened, because the whole list is already redrawn.
+        return;
+    }
 
-        const item = group;
-        const is_member = user_groups.is_user_in_group(group.id, people.my_current_user_id());
-        const can_join = settings_data.can_join_user_group(item.id);
-        const can_leave = settings_data.can_leave_user_group(item.id);
-        const is_direct_member = user_groups.is_direct_member_of(
-            people.my_current_user_id(),
-            item.id,
-        );
-        const associated_subgroups = user_groups.get_associated_subgroups(
-            item,
-            people.my_current_user_id(),
-        );
-        const associated_subgroup_names = user_groups.format_group_list(associated_subgroups);
-        const item_render_data = {
-            ...item,
-            is_member,
-            can_join,
-            can_leave,
-            is_direct_member,
-            associated_subgroup_names,
-        };
-        const html = render_browse_user_groups_list_item(item_render_data);
-        const $new_row = $(html);
+    rerender_group_row(group);
 
-        // TODO: Remove this if/when we just handle "active" when rendering templates.
-        if ($row.hasClass("active")) {
-            $new_row.addClass("active");
+    const current_user_id = people.my_current_user_id();
+    const supergroups_of_group = user_groups.get_supergroups_of_user_group(group.id);
+    for (const supergroup of supergroups_of_group) {
+        if (user_groups.is_direct_member_of(current_user_id, supergroup.id)) {
+            continue;
         }
 
-        $row.replaceWith($new_row);
+        rerender_group_row(supergroup);
     }
 }
 
-function update_your_groups_list_if_needed(group_id: number): void {
+function update_your_groups_list_if_needed(): void {
     // update display of group-rows on left panel.
     // We need this update only if your-groups tab is active
     // and current user is among the affect users as in that
@@ -359,20 +372,15 @@ function update_your_groups_list_if_needed(group_id: number): void {
     // or remove the group-row on the left panel accordingly.
     const tab_key = get_active_data().$tabs.first().attr("data-tab-key");
     if (tab_key === "your-groups") {
-        if (user_groups.is_user_in_group(group_id, people.my_current_user_id())) {
-            // We add the group row to list if the current user
-            // is added to it. The whole list is redrawed to
-            // maintain the sorted order of groups.
-            redraw_user_group_list();
-        } else if (!settings_data.can_join_user_group(group_id)) {
-            // We remove the group row immediately only if the
-            // user cannot join the group again themselves.
-            const group_row = row_for_group_id(group_id);
-            if (group_row.length > 0) {
-                group_row.remove();
-                update_empty_left_panel_message();
-            }
-        }
+        // We add the group row to list if the current user
+        // is added to it. The whole list is redrawed to
+        // maintain the sorted order of groups.
+        //
+        // When the current user is removed from a group, the
+        // whole list is redrawn because this action can also
+        // affect the memberships of groups that have the
+        // updated group as their subgroup.
+        redraw_user_group_list();
     }
 }
 
@@ -413,7 +421,7 @@ export function handle_subgroup_edit_event(group_id: number, direct_subgroup_ids
     }
 
     if (current_user_in_any_subgroup) {
-        update_your_groups_list_if_needed(group_id);
+        update_your_groups_list_if_needed();
         update_display_checkmark_on_group_edit(group);
     }
 }
@@ -463,7 +471,7 @@ function update_settings_for_group_overlay(group_id: number, user_ids: number[])
     }
 
     if (user_ids.includes(people.my_current_user_id())) {
-        update_your_groups_list_if_needed(group_id);
+        update_your_groups_list_if_needed();
         update_display_checkmark_on_group_edit(group);
 
         // Membership status text can be updated even when user was
