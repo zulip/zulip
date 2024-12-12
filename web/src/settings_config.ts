@@ -537,6 +537,9 @@ export const preferences_settings_labels = {
             defaultMessage: "Convert emoticons before sending (<code>:)</code> becomes 😃)",
         }),
     ),
+    web_suggest_update_timezone: $t({
+        defaultMessage: "Offer to update to my computer's time zone",
+    }),
     web_escape_navigates_to_home_view: $t({defaultMessage: "Escape key navigates to home view"}),
     web_font_size_px: $t({defaultMessage: "Message-area font size (px)"}),
     web_line_height_percent: $t({defaultMessage: "Message-area line height (%)"}),
