@@ -268,8 +268,7 @@ h4.user_group_setting_subsection_title {
 }
 
 .subscriptions-container .subscriptions-header .fa-chevron-left,
-.user-groups-container .user-groups-header .fa-chevron-left,
-#settings_overlay_container .settings-header.mobile .fa-chevron-left {
+.user-groups-container .user-groups-header .fa-chevron-left {
     position: relative;
     transform: translate(-50px, 0);
     opacity: 0;
@@ -364,7 +363,7 @@ h4.user_group_setting_subsection_title {
     }
 
     .exit-sign {
-        font-size: 1.5rem;
+        font-size: 1.5em;
         margin-right: 10px;
         font-weight: 600;
         cursor: pointer;
@@ -548,7 +547,7 @@ h4.user_group_setting_subsection_title {
     position: relative;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
-    height: calc(100% - 85px);
+    height: calc(100% - 6.0714em); /* 85px at 14px em */
     width: 100%;
 }
 

@@ -528,10 +528,10 @@
     --overlay-container-height: 95vh;
     --overlay-container-max-height: 1000px;
     /* .subscriptions-header and .settings-header */
-    --settings-overlay-header-height: 45px;
+    --settings-overlay-header-height: 3.2142em; /* 45px at 14px/em */
     /* .display-type and .list-toggler-container
        in subscriptions and user group settings overlays */
-    --settings-overlay-subheader-height: 44px;
+    --settings-overlay-subheader-height: 3.1428em; /* 44px at 14px/em */
     /* .settings-sticky-footer */
     --subscriptions-overlay-sticky-footer-height: 60px;
     /* Informational overlay */
