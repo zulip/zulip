@@ -11,6 +11,7 @@ import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
@@ -84,6 +85,8 @@ function sort_invitee(a: Invite, b: Invite): number {
     return util.strcmp(str1, str2);
 }
 
+let invite_list_widget: ListWidgetType<Invite, Invite>;
+
 function populate_invites(invites_data: {invites: Invite[]}): void {
     if (!meta.loaded) {
         return;
@@ -92,7 +95,7 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
     add_invited_as_text(invites_data.invites);
 
     const $invites_table = $("#admin_invites_table").expectOne();
-    ListWidget.create($invites_table, invites_data.invites, {
+    invite_list_widget = ListWidget.create($invites_table, invites_data.invites, {
         name: "admin_invites_list",
         get_item: ListWidget.default_get_item,
         modifier_html(item) {
@@ -315,6 +318,15 @@ export function on_load_success(
         });
 
         $(".dialog_submit_button").attr("data-invite-id", invite_id);
+    });
+
+    $("#admin-invites-list").on("click", ".clear_filter", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const $filter = $("#admin-invites-list").find(".search_container .search");
+        $filter.val("");
+        invite_list_widget.clear_text_filter();
     });
 }
 
