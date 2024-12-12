@@ -9,7 +9,7 @@ This page describes how to configure SAML authentication with several common pro
 
 * Okta
 * OneLogin
-* AzureAD
+* Entra ID (AzureAD)
 * Keycloak
 * Auth0
 
@@ -92,14 +92,14 @@ providers.
 
 {!upgrade-to-plus-if-needed.md!}
 
-1. From your AzureAD Dashboard, navigate to **Enterprise applications**,
+1. From your Entra ID Dashboard, navigate to **Enterprise applications**,
    click **New application**, followed by **Create your own application**.
 
-1. Enter a name (e.g., `Zulip Cloud`) for the new AzureAD application,
+1. Enter a name (e.g., `Zulip Cloud`) for the new Entra ID application,
    choose **Integrate any other application you don't find in the
    gallery (Non-gallery)**, and click **Create**.
 
-1. From your new AzureAD application's **Overview** page that opens, go to
+1. From your new Entra ID application's **Overview** page that opens, go to
    **Single sign-on**, and select **SAML**.
 
 1.  In the **Basic SAML Configuration** section, specify the following fields:
