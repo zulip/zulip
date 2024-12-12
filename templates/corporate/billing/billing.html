@@ -20,8 +20,8 @@
         {% endif %}
         {% if success_message %}
         <div class="alert alert-success billing-page-success" id="billing-success-message-top">
-            {% if legacy_remote_server_next_plan_name and "PLAN_NAME" in success_message %}
-            Your organization will be upgraded to {{ legacy_remote_server_next_plan_name }} on {{ remote_server_legacy_plan_end_date }}.
+            {% if complimentary_access_next_plan_name and "PLAN_NAME" in success_message %}
+            Your organization will be upgraded to {{ complimentary_access_next_plan_name }} on {{ complimentary_access_plan_end_date }}.
             {% else %}
             {{ success_message.replace("PLAN_NAME", plan_name) }}
             {% endif %}
@@ -63,7 +63,7 @@
                 {% if complimentary_access_plan %}
                 <div class="input-box billing-page-field" id="legacy-server-push-notification-notice-wrapper">
                     <div id="legacy-server-push-notification-notice" class="not-editable-realm-field">
-                        <i>Your complimentary access to Zulip Basic ends on {{ remote_server_legacy_plan_end_date }}.</i>
+                        <i>Your complimentary access to Zulip Basic ends on {{ complimentary_access_plan_end_date }}.</i>
                     </div>
                 </div>
                 {% endif %}
@@ -259,7 +259,7 @@
                             {% endif %}
                             {% if charge_automatically %}
                             {% if complimentary_access_plan %}
-                            Your plan will automatically upgrade to {{ legacy_remote_server_next_plan_name }} on {{ remote_server_legacy_plan_end_date }}.
+                            Your plan will automatically upgrade to {{ complimentary_access_next_plan_name }} on {{ complimentary_access_plan_end_date }}.
                             {% else %}
                             Your plan will automatically renew on <strong>{{ renewal_date }}</strong>.
                             {% endif %}
@@ -571,12 +571,12 @@
             </header>
             <main class="modal__content">
                 <p>
-                    Your organization will be not be upgraded to <strong>{{ legacy_remote_server_next_plan_name }}</strong>
-                    on {{ remote_server_legacy_plan_end_date }}. If your organization has more than
+                    Your organization will be not be upgraded to <strong>{{ complimentary_access_next_plan_name }}</strong>
+                    on {{ complimentary_access_plan_end_date }}. If your organization has more than
                     10 users at that time, you will lose access to the
                     <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">Mobile Push Notification Service</a>.
                     You will also not receive the <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">other benefits</a>
-                    of the {{ legacy_remote_server_next_plan_name }} plan. Are you sure you want to continue?
+                    of the {{ complimentary_access_next_plan_name }} plan. Are you sure you want to continue?
                 </p>
             </main>
             <footer class="modal__footer">
