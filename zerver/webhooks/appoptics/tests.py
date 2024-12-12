@@ -42,7 +42,7 @@ class AppOpticsHookTests(WebhookTestCase):
         )
 
     def test_three_conditions_alert_message(self) -> None:
-        expected_message = "Alert [alert_name](https://my.appoptics.com/alerts#/6294535) has triggered! [Reaction steps](http://www.use.water.pl):\n * Metric `collectd.interface.eth0.if_octets.tx`, absolute_value was above 4 by 300s, recorded at 2016-04-11 20:40:14 UTC.\n * Metric `collectd.load.load.longterm`, max was above 99, recorded at 2016-04-11 20:40:14 UTC.\n * Metric `system.swap.swap.cached`, average was absent  by 60s, recorded at 2016-04-11 20:40:14 UTC."
+        expected_message = "Alert [alert_name](https://my.appoptics.com/alerts#/6294535) has triggered! [Reaction steps](http://www.use.water.pl):\n * Metric `collectd.interface.eth0.if_octets.tx`, absolute_value was above 4 by 300s, recorded at 2024-12-12 23:25:19 UTC.\n * Metric `collectd.load.load.longterm`, max was above 99, recorded at 2024-12-12 23:20:00 UTC.\n * Metric `system.swap.swap.cached`, average was absent  by 60s, recorded at 2024-12-12 23:17:30 UTC."
         expected_topic_name = "Alert TooHighTemperature"
         self.check_webhook(
             "three_conditions_alert",
