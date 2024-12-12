@@ -1198,6 +1198,16 @@ run_test("user_settings", ({override}) => {
     override(user_settings, "web_navigate_to_sent_message", true);
     dispatch(event);
     assert_same(user_settings.web_navigate_to_sent_message, false);
+
+    {
+        const event = event_fixtures.user_settings_web_suggest_update_timezone;
+        dispatch(event);
+        assert.equal($("#automatically_offer_update_time_zone").prop("checked"), true);
+
+        event.value = false;
+        dispatch(event);
+        assert.equal($("#automatically_offer_update_time_zone").prop("checked"), false);
+    }
 });
 
 run_test("update_message (read)", ({override}) => {

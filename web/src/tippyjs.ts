@@ -812,4 +812,16 @@ export function initialize(): void {
             instance.destroy();
         },
     });
+
+    tippy.delegate("body", {
+        target: "#automatically_offer_update_time_zone_container",
+        content: $t({
+            defaultMessage:
+                "Zulip offers to update your time zone if it differs from your computer's.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 }

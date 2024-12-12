@@ -27,6 +27,7 @@ import * as settings_data from "./settings_data.ts";
 import * as settings_org from "./settings_org.ts";
 import * as settings_ui from "./settings_ui.ts";
 import {current_user, realm} from "./state_data.ts";
+import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 import * as ui_util from "./ui_util.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
@@ -832,9 +833,25 @@ export function set_up(): void {
     $<HTMLSelectElement>("select#user_timezone").on("change", function (e) {
         e.preventDefault();
         e.stopPropagation();
+        const chosen_timezone = timerender.browser_canonicalize_timezone(this.value);
+        const data = {
+            timezone: chosen_timezone,
+            web_suggest_update_timezone: chosen_timezone === timerender.display_time_zone,
+        };
 
-        const data = {timezone: this.value};
+        settings_ui.do_settings_change(
+            channel.patch,
+            "/json/settings",
+            data,
+            $(".timezone-setting-status").expectOne(),
+        );
+    });
 
+    $<HTMLInputElement>("#automatically_offer_update_time_zone").on("change", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const data = {web_suggest_update_timezone: this.checked};
         settings_ui.do_settings_change(
             channel.patch,
             "/json/settings",
