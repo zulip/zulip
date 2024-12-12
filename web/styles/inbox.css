@@ -257,12 +257,14 @@
             }
 
             .user_circle {
-                /* size of the user activity circle */
-                /* 6px at 15px/1em */
-                min-width: 0.4em;
-                height: 0.4em;
+                /* 8px at 16px/1em */
+                font-size: 0.5em;
+                /* TODO: Fix up inbox row layout so that
+                   this min-width value doesn't maintain
+                   lefthand alignment up and down the view. */
+                /* ~8.4px at 8px/1em */
+                min-width: 1.05em;
                 margin-right: 5px;
-                top: 0;
             }
 
             .zulip-icon-bot,

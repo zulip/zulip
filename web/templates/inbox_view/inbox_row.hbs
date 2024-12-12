@@ -14,7 +14,7 @@
                                 {{else if is_group}}
                                 <span class="zulip-icon zulip-icon-triple-users" aria-hidden="true"></span>
                                 {{else}}
-                                <span class="{{user_circle_class}} user_circle" data-presence-indicator-user-id="{{user_ids_string}}"></span>
+                                <span class="zulip-icon zulip-icon-user-status-tight {{user_circle_class}} user_circle" data-presence-indicator-user-id="{{user_ids_string}}"></span>
                                 {{/if}}
                                 <span class="recipients_name">{{{rendered_dm_with}}}</span>
                             </span>
@@ -26,7 +26,7 @@
                         </div>
                     {{else if is_topic}}
                         {{!-- Invisible user circle element for alignment of topic text with DM user name --}}
-                        <span class="user_circle_green user_circle invisible"></span>
+                        <span class="zulip-icon zulip-icon-user-status user_circle_green user_circle invisible"></span>
                         <div class="inbox-topic-name">
                             <a tabindex="-1" href="{{topic_url}}">{{topic_name}}</a>
                         </div>
