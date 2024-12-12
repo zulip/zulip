@@ -1320,7 +1320,9 @@ label.preferences-radio-choice-label {
         .tab-container {
             box-sizing: border-box;
             height: var(--settings-overlay-header-height);
-            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             background-color: var(--color-background-modal-bar);
             border-bottom: 1px solid var(--color-border-modal-bar);
 
@@ -1333,7 +1335,7 @@ label.preferences-radio-choice-label {
 
                     .ind-tab {
                         width: auto;
-                        min-width: 95px;
+                        min-width: 6.7857em; /* 95px at 14px em */
                     }
                 }
             }
@@ -1442,6 +1444,9 @@ label.preferences-radio-choice-label {
 
     .settings-header {
         padding-top: 1px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
         &.mobile {
             display: none;
@@ -1449,9 +1454,6 @@ label.preferences-radio-choice-label {
 
             .fa-chevron-left {
                 float: left;
-                position: relative;
-                top: 14px;
-                left: 10px;
             }
         }
 
@@ -1459,26 +1461,19 @@ label.preferences-radio-choice-label {
             text-align: center;
             font-size: 1.1em;
             line-height: 1;
-            margin: 15px;
             text-transform: uppercase;
         }
 
         .exit {
             font-weight: 600;
             position: absolute;
-            top: 10px;
             right: 10px;
             color: hsl(0deg 0% 67%);
             cursor: pointer;
         }
 
         .exit-sign {
-            float: right;
-            position: relative;
-            top: 1px;
-            margin-left: 3px;
-            font-size: 1.5rem;
-            line-height: 1;
+            font-size: 1.5em;
             font-weight: 600;
             cursor: pointer;
         }
@@ -1802,7 +1797,24 @@ label.preferences-radio-choice-label {
 
     #settings_page {
         .settings-header.mobile {
-            display: block;
+            display: flex;
+            justify-content: space-between;
+            height: var(--settings-overlay-header-height);
+
+            .fa-chevron-left {
+                transform: translate(-50px, 0);
+                opacity: 0;
+                color: hsl(0deg 0% 67%);
+                padding: 2px 10px;
+                cursor: pointer;
+                transition: none 0.3s ease;
+                transition-property: opacity, transform;
+            }
+
+            .exit {
+                position: static;
+                margin-right: 10px;
+            }
 
             &:not(.slide-left) .section {
                 /* When viewing the settings list we hide the active section. */
@@ -1832,8 +1844,10 @@ label.preferences-radio-choice-label {
             position: absolute;
             width: 100%;
             border: none;
-            /* 48px is the height of settings header and 45px is the height of tab-container */
-            height: calc(100% - 93px);
+            height: calc(
+                100% - var(--settings-overlay-header-height) -
+                    var(--settings-overlay-subheader-height)
+            );
 
             & li.active {
                 /* Don't highlight the active section in the settings list. */
