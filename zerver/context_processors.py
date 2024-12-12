@@ -195,6 +195,7 @@ def zulip_default_context(request: HttpRequest) -> dict[str, Any]:
         "support_email_html_tag": support_email_html_tag,
         "find_team_link_disabled": find_team_link_disabled,
         "password_min_length": settings.PASSWORD_MIN_LENGTH,
+        "password_max_length": settings.PASSWORD_MAX_LENGTH,
         "password_min_guesses": settings.PASSWORD_MIN_GUESSES,
         "zulip_version": ZULIP_VERSION,
         "user_is_authenticated": request.user.is_authenticated,

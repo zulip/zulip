@@ -471,6 +471,19 @@ export function set_up(): void {
                 );
                 return false;
             }
+
+            const max_length = realm.password_max_length;
+            if (new_password && new_password.toString().length > max_length) {
+                ui_report.error(
+                    $t_html(
+                        {defaultMessage: "Maximum password length: {max_length} characters"},
+                        {max_length},
+                    ),
+                    undefined,
+                    $("#dialog_error"),
+                );
+                return false;
+            }
             return true;
         }
 
@@ -478,6 +491,7 @@ export function set_up(): void {
             html_heading: $t_html({defaultMessage: "Change password"}),
             html_body: render_dialog_change_password({
                 password_min_length: realm.password_min_length,
+                password_max_length: realm.password_max_length,
                 password_min_guesses: realm.password_min_guesses,
             }),
             html_submit_button: $t_html({defaultMessage: "Change"}),
