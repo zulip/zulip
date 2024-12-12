@@ -1279,6 +1279,8 @@ def check_update_message(
         topic_name = topic_name.strip()
         if topic_name == message.topic_name():
             topic_name = None
+        if message.realm.mandatory_topics and topic_name == "(no topic)":
+            raise JsonableError(_("Topics are required in this organization"))
 
     validate_message_edit_payload(message, stream_id, topic_name, propagate_mode, content)
 
