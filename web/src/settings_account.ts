@@ -17,6 +17,7 @@ import type {PillUpdateField} from "./custom_profile_fields_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as loading from "./loading.ts";
 import * as modals from "./modals.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
@@ -79,11 +80,11 @@ export function update_email_change_display(): void {
     }
 
     if (!settings_data.user_can_change_email()) {
-        $("#change_email_button").prop("disabled", true);
-        $("#change_email_button_container").addClass("disabled_setting_tooltip");
+        $("#change_email_button").addClass("hide");
+        $("#email_field_container").addClass("disabled_setting_tooltip");
     } else {
-        $("#change_email_button").prop("disabled", false);
-        $("#change_email_button_container").removeClass("disabled_setting_tooltip");
+        $("#change_email_button").removeClass("hide");
+        $("#email_field_container").removeClass("disabled_setting_tooltip");
     }
 }
 
@@ -575,9 +576,28 @@ export function set_up(): void {
         const data = {
             email: $("#change_email_form").find<HTMLInputElement>("input[name='email']").val(),
         };
+        const $status_element = $("#email-change-status").expectOne();
 
-        const opts = {
-            success_continuation() {
+        $status_element.fadeTo(0, 1);
+        loading.make_indicator($status_element, {text: settings_ui.strings.saving});
+
+        void channel.patch({
+            url: "/json/settings",
+            data,
+            success() {
+                setTimeout(() => {
+                    ui_report.message(
+                        $t_html(
+                            {
+                                defaultMessage:
+                                    "Check your email (<b>{email}</b>) to confirm the new address.",
+                            },
+                            {email: data.email},
+                        ),
+                        $status_element,
+                        "inline-block",
+                    );
+                }, 500);
                 if (page_params.development_environment) {
                     const email_msg = render_settings_dev_env_email_access();
                     ui_report.success(
@@ -588,23 +608,12 @@ export function set_up(): void {
                 }
                 dialog_widget.close();
             },
-            error_continuation() {
+            error(xhr) {
+                loading.destroy_indicator($status_element);
+                ui_report.error(settings_ui.strings.failure_html, xhr, $change_email_error);
                 dialog_widget.hide_dialog_spinner();
             },
-            $error_msg_element: $change_email_error,
-            success_msg_html: $t_html(
-                {defaultMessage: "Check your email ({email}) to confirm the new address."},
-                {email: data.email},
-            ),
-            sticky: true,
-        };
-        settings_ui.do_settings_change(
-            channel.patch,
-            "/json/settings",
-            data,
-            $("#account-settings-status").expectOne(),
-            opts,
-        );
+        });
     }
 
     $("#change_email_button").on("click", (e) => {
