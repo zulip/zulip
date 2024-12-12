@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
@@ -24,10 +25,18 @@ $(() => {
         // was just reloaded due to a validation failure on the backend.
         password_quality($password_field.val()!, $("#pw_strength .bar"), $password_field);
 
+        const debounced_password_quality = _.debounce((password_value: string, $field: JQuery) => {
+            password_quality(password_value, $("#pw_strength .bar"), $field);
+        }, 300);
+
         $password_field.on("input", function () {
-            // Update the password strength bar even if we aren't validating
-            // the field yet.
-            password_quality($(this).val()!, $("#pw_strength .bar"), $(this));
+            const password_value = $(this).val()!;
+
+            if (password_value.length > 30) {
+                debounced_password_quality(password_value, $(this));
+            } else {
+                password_quality(password_value, $("#pw_strength .bar"), $(this));
+            }
         });
     }
 
