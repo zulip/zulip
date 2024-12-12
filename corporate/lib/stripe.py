@@ -1063,23 +1063,23 @@ class BillingSession(ABC):
         assert complimentary_access_plan.end_date is not None
         return complimentary_access_plan.end_date.strftime("%B %d, %Y")
 
-    def get_legacy_remote_server_next_plan(self, customer: Customer) -> CustomerPlan | None:
-        legacy_plan = self.get_remote_server_legacy_plan(
+    def get_complimentary_access_next_plan(self, customer: Customer) -> CustomerPlan | None:
+        complimentary_access_plan = self.get_remote_server_legacy_plan(
             customer, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
         )
-        if legacy_plan is None:
+        if complimentary_access_plan is None:
             return None
 
         # This also asserts that such a plan should exist.
-        assert legacy_plan.end_date is not None
+        assert complimentary_access_plan.end_date is not None
         return CustomerPlan.objects.get(
             customer=customer,
-            billing_cycle_anchor=legacy_plan.end_date,
+            billing_cycle_anchor=complimentary_access_plan.end_date,
             status=CustomerPlan.NEVER_STARTED,
         )
 
     def get_complimentary_access_next_plan_name(self, customer: Customer) -> str | None:
-        next_plan = self.get_legacy_remote_server_next_plan(customer)
+        next_plan = self.get_complimentary_access_next_plan(customer)
         if next_plan is None:
             return None
         return next_plan.name
@@ -1315,12 +1315,12 @@ class BillingSession(ABC):
         if plan is not None and plan.tier == customer.required_plan_tier:
             self.apply_discount_to_plan(plan, customer)
 
-        # If the customer has a next plan, apply discount to that plan as well.
-        # Make this a check on CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END status
-        # if we support this for other plans.
-        next_plan = self.get_legacy_remote_server_next_plan(customer)
-        if next_plan is not None and next_plan.tier == customer.required_plan_tier:
-            self.apply_discount_to_plan(next_plan, customer)
+        # If the customer is on a complimentary access plan and has scheduled
+        # an upgrade, apply discount to that plan if set to required_plan_tier.
+        if plan is not None and plan.is_complimentary_access_plan():
+            next_plan = self.get_complimentary_access_next_plan(customer)
+            if next_plan is not None and next_plan.tier == customer.required_plan_tier:
+                self.apply_discount_to_plan(next_plan, customer)
 
         self.write_to_audit_log(
             event_type=BillingSessionEventType.DISCOUNT_CHANGED,
@@ -1348,16 +1348,17 @@ class BillingSession(ABC):
             )
 
         plan = get_current_plan_by_customer(customer)
-        if plan is not None and plan.tier != CustomerPlan.TIER_SELF_HOSTED_LEGACY:
-            raise SupportRequestError(
-                f"Cannot set minimum licenses; active plan already exists for {self.billing_entity_display_name}."
-            )
-
-        next_plan = self.get_legacy_remote_server_next_plan(customer)
-        if next_plan is not None:
-            raise SupportRequestError(
-                f"Cannot set minimum licenses; upgrade to new plan already scheduled for {self.billing_entity_display_name}."
-            )
+        if plan is not None:
+            if plan.is_complimentary_access_plan():
+                next_plan = self.get_complimentary_access_next_plan(customer)
+                if next_plan is not None:
+                    raise SupportRequestError(
+                        f"Cannot set minimum licenses; upgrade to new plan already scheduled for {self.billing_entity_display_name}."
+                    )
+            else:
+                raise SupportRequestError(
+                    f"Cannot set minimum licenses; active plan already exists for {self.billing_entity_display_name}."
+                )
 
         previous_minimum_license_count = customer.minimum_licenses
         customer.minimum_licenses = new_minimum_license_count
