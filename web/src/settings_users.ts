@@ -1,11 +1,13 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
+import {z} from "zod";
 
 import render_settings_user_list_row from "../templates/settings/settings_user_list_row.hbs";
 
 import {compute_active_status, post_presence_response_schema} from "./activity.ts";
 import * as browser_history from "./browser_history.ts";
+import {user_last_seen_time_status} from "./buddy_data.ts";
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
@@ -74,6 +76,28 @@ const deactivated_section: UserSettingsSection = {
 const bots_section = {
     handle_events: bots_handle_events,
     create_table: bots_create_table,
+};
+
+const user_last_seen_response_schema = z.object({
+    result: z.string(),
+    msg: z.string().optional(),
+    presence: z
+        .object({
+            aggregated: z.object({
+                status: z.string(),
+                timestamp: z.number(),
+            }),
+            website: z.object({
+                status: z.string(),
+                timestamp: z.number(),
+            }),
+        })
+        .optional(),
+});
+
+export const aggregate_presence = {
+    status: "",
+    timestamp: 0,
 };
 
 function sort_bot_email(a: BotInfo, b: BotInfo): number {
@@ -795,3 +819,42 @@ export function fetch_presence_user_setting({render_table}: FetchPresenceUserSet
         },
     });
 }
+
+export async function website_presence(user_id: number): Promise<string> {
+    const last_active_date = presence.last_active_date(user_id);
+
+    if (last_active_date) {
+        return user_last_seen_time_status(user_id);
+    }
+
+    const result = await user_last_seen(user_id, () =>
+        timerender.last_seen_status_from_date(new Date(aggregate_presence.timestamp * 1000)),
+    );
+    return result;
+}
+
+export const user_last_seen = async (user_id: number, callback: () => string): Promise<string> => {
+    const url = `json/users/${user_id}/presence`;
+
+    return new Promise((resolve) => {
+        channel.get({
+            url,
+            success(data: unknown) {
+                const parsed_data = user_last_seen_response_schema.safeParse(data);
+
+                if (parsed_data.success) {
+                    const response = parsed_data.data;
+
+                    if (response.result === "success" && response.presence) {
+                        const {aggregated} = response.presence;
+
+                        aggregate_presence.status = aggregated.status;
+                        aggregate_presence.timestamp = aggregated.timestamp;
+
+                        resolve(callback());
+                    }
+                }
+            },
+        });
+    });
+};

@@ -34,6 +34,7 @@ import * as popover_menus from "./popover_menus.ts";
 import {hide_all} from "./popovers.ts";
 import * as rows from "./rows.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
+import {website_presence} from "./settings_users.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
@@ -175,8 +176,8 @@ function clipboard_enable(arg: HTMLElement | string): ClipboardJS {
 
 // Functions related to user card popover.
 
-export function toggle_user_card_popover(element: HTMLElement, user: User): void {
-    show_user_card_popover(
+export async function toggle_user_card_popover(element: HTMLElement, user: User): Promise<void> {
+    await show_user_card_popover(
         user,
         $(element),
         false,
@@ -187,8 +188,11 @@ export function toggle_user_card_popover(element: HTMLElement, user: User): void
     );
 }
 
-function toggle_user_card_popover_for_bot_owner(element: HTMLElement, user: User): void {
-    show_user_card_popover(
+async function toggle_user_card_popover_for_bot_owner(
+    element: HTMLElement,
+    user: User,
+): Promise<void> {
+    await show_user_card_popover(
         user,
         $(element),
         false,
@@ -237,12 +241,12 @@ type UserCardPopoverData = {
     bot_owner?: User;
 };
 
-function get_user_card_popover_data(
+export async function get_user_card_popover_data(
     user: User,
     has_message_context: boolean,
     is_sender_popover: boolean,
     private_msg_class: string,
-): UserCardPopoverData {
+): Promise<UserCardPopoverData> {
     const is_me = people.is_my_user_id(user.user_id);
 
     let invisible_mode = false;
@@ -283,6 +287,9 @@ function get_user_card_popover_data(
     const can_send_private_message =
         user_can_send_direct_message(user_id_string) && is_active && !is_me;
 
+    // Fetch the user_last_seen_time_status asynchronously
+    const user_last_seen_time_status = await website_presence(user.user_id);
+
     const args: UserCardPopoverData = {
         invisible_mode,
         can_send_private_message,
@@ -299,7 +306,7 @@ function get_user_card_popover_data(
         user_email: user.delivery_email,
         user_full_name: user.full_name,
         user_id: user.user_id,
-        user_last_seen_time_status: buddy_data.user_last_seen_time_status(user.user_id),
+        user_last_seen_time_status,
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         status_content_available: Boolean(status_text ?? status_emoji_info),
@@ -331,7 +338,7 @@ function get_user_card_popover_data(
     return args;
 }
 
-function show_user_card_popover(
+async function show_user_card_popover(
     user: User,
     $popover_element: JQuery,
     is_sender_popover: boolean,
@@ -341,7 +348,7 @@ function show_user_card_popover(
     popover_placement: tippy.Placement,
     show_as_overlay = false,
     on_mount?: (instance: tippy.Instance) => void,
-): void {
+): Promise<void> {
     let popover_html;
     let args;
     if (user.is_inaccessible_user) {
@@ -354,7 +361,7 @@ function show_user_card_popover(
         };
         popover_html = render_user_card_popover_for_unknown_user(args);
     } else {
-        args = get_user_card_popover_data(
+        args = await get_user_card_popover_data(
             user,
             has_message_context,
             is_sender_popover,
@@ -466,17 +473,17 @@ function load_medium_avatar(user: User, $elt: JQuery): void {
 // user is the user whose profile to show.
 // sender_id is the user id of the sender for the message we are
 // showing the popover from.
-function toggle_user_card_popover_for_message(
+async function toggle_user_card_popover_for_message(
     element: HTMLElement,
     user: User,
     sender_id: number,
     has_message_context: boolean,
     on_mount?: (instance: tippy.Instance) => void,
-): void {
+): Promise<void> {
     const $elt = $(element);
 
     const is_sender_popover = sender_id === user.user_id;
-    show_user_card_popover(
+    await show_user_card_popover(
         user,
         $elt,
         is_sender_popover,
@@ -504,12 +511,12 @@ export function unsaved_message_user_mention_event_handler(
     const user_id = Number.parseInt(id_string, 10);
     const user = people.get_by_user_id(user_id);
 
-    toggle_user_card_popover_for_message(this, user, current_user.user_id, false);
+    void toggle_user_card_popover_for_message(this, user, current_user.user_id, false);
 }
 
 // This function serves as the entry point for toggling
 // the user card popover via keyboard shortcut.
-export function toggle_sender_info(): void {
+export async function toggle_sender_info(): Promise<void> {
     if (message_user_card.is_open()) {
         // We need to call the hide method here because
         // the event wasn't triggered by the mouse.
@@ -530,7 +537,7 @@ export function toggle_sender_info(): void {
     const message = message_lists.current.get(rows.id($message));
     assert(message !== undefined);
     const user = people.get_by_user_id(message.sender_id);
-    toggle_user_card_popover_for_message(the($sender), user, message.sender_id, true, () => {
+    await toggle_user_card_popover_for_message(the($sender), user, message.sender_id, true, () => {
         if (!page_params.is_spectator) {
             focus_user_card_popover_item();
         }
@@ -563,7 +570,7 @@ function get_user_card_popover_for_message_items(): JQuery | undefined {
 
 // Functions related to the user card popover in the user sidebar.
 
-function toggle_sidebar_user_card_popover($target: JQuery): void {
+async function toggle_sidebar_user_card_popover($target: JQuery): Promise<void> {
     const user_id = elem_to_user_id($target);
     const user = people.get_by_user_id(user_id);
 
@@ -578,7 +585,7 @@ function toggle_sidebar_user_card_popover($target: JQuery): void {
         return;
     }
 
-    show_user_card_popover(
+    await show_user_card_popover(
         user,
         $target,
         false,
@@ -607,7 +614,7 @@ function register_click_handlers(): void {
             const message = message_lists.current.get(rows.id($row));
             assert(message !== undefined);
             const user = people.get_by_user_id(message.sender_id);
-            toggle_user_card_popover_for_message(this, user, message.sender_id, true);
+            void toggle_user_card_popover_for_message(this, user, message.sender_id, true);
         },
     );
 
@@ -640,7 +647,7 @@ function register_click_handlers(): void {
                 return;
             }
         }
-        toggle_user_card_popover_for_message(this, user, message.sender_id, true);
+        void toggle_user_card_popover_for_message(this, user, message.sender_id, true);
     });
 
     // Note: Message feeds and drafts have their own direct event listeners
@@ -777,9 +784,9 @@ function register_click_handlers(): void {
             const user = people.get_by_user_id(user_id);
             if ($(this).closest(".user-card-popover-bot-owner-field").length > 0) {
                 hide_all_user_card_popovers();
-                toggle_user_card_popover_for_bot_owner(this, user);
+                void toggle_user_card_popover_for_bot_owner(this, user);
             } else {
-                toggle_user_card_popover(this, user);
+                void toggle_user_card_popover(this, user);
             }
             e.stopPropagation();
             e.preventDefault();
@@ -826,14 +833,14 @@ function register_click_handlers(): void {
         e.stopPropagation();
         const $target = $(e.currentTarget).closest("li");
 
-        toggle_sidebar_user_card_popover($target);
+        void toggle_sidebar_user_card_popover($target);
     });
 
     $(".buddy-list-section").on("click", ".user-profile-picture", (e) => {
         e.stopPropagation();
         const $target = $(e.currentTarget).closest("li");
 
-        toggle_sidebar_user_card_popover($target);
+        void toggle_sidebar_user_card_popover($target);
     });
 
     $("body").on("click", ".sidebar-popover-mute-user", function (e) {
