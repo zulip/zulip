@@ -50,8 +50,11 @@ class PreregistrationRealm(models.Model):
         UserProfile, null=True, related_name="+", on_delete=models.SET_NULL
     )
 
+    IMPORT_FROM_CHOICES = [
+        ("none", "Don't import"),
+        ("slack", "Import from Slack"),
+    ]
     data_import_metadata = models.JSONField(default=dict, encoder=DjangoJSONEncoder)
-
 
 class PreregistrationUser(models.Model):
     # Data on a partially created user, before the completion of
