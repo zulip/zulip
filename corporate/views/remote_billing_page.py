@@ -336,12 +336,13 @@ def remote_realm_billing_finalize_login(
         RemoteRealm.PLAN_TYPE_SELF_MANAGED,
         RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY,
     ]:
-        # If they have a scheduled upgrade, redirect to billing page.
+        # If they have a scheduled upgrade while on a complimentary access plan,
+        # redirect to billing page.
         billing_session = RemoteRealmBillingSession(remote_realm)
         customer = billing_session.get_customer()
         if (
             customer is not None
-            and billing_session.get_legacy_remote_server_next_plan_name(customer) is not None
+            and billing_session.get_complimentary_access_next_plan_name(customer) is not None
         ):
             return HttpResponseRedirect(
                 reverse("remote_realm_billing_page", args=(remote_realm_uuid,))
@@ -784,12 +785,13 @@ def remote_billing_legacy_server_from_login_confirmation_link(
         RemoteZulipServer.PLAN_TYPE_SELF_MANAGED,
         RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY,
     ]:
-        # If they have a scheduled upgrade, redirect to billing page.
+        # If they have a scheduled upgrade while on a complimentary access plan,
+        # redirect to billing page.
         billing_session = RemoteServerBillingSession(remote_server)
         customer = billing_session.get_customer()
         if (
             customer is not None
-            and billing_session.get_legacy_remote_server_next_plan_name(customer) is not None
+            and billing_session.get_complimentary_access_next_plan_name(customer) is not None
         ):
             return HttpResponseRedirect(
                 reverse("remote_server_billing_page", args=(remote_server_uuid,))
