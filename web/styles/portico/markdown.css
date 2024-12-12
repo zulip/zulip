@@ -518,3 +518,79 @@
         }
     }
 }
+
+ /* If darkmode is preferred by OS */
+ @media(prefers-color-scheme: dark){ 
+    .markdown{
+		background-color: #000; /* Dark background. */
+		color: #fff;
+        /*--color-copy-button-success:hsla(0, 7%, 9%, 0.651);*/
+	}
+
+    .help .markdown h1:target{
+        background-color:hsl(237.46deg 61.81% 47.29% / 25%);
+    }
+
+    .header {
+        background-color: #000;
+    }
+
+    body{
+        background-color: #000;
+        color:#000;
+    }
+
+    .portico-wrap{
+        background-color: #000;
+    }
+
+    .help{
+        background-color: #000;
+    }
+
+    .markdown .tip{
+        background-color: hsl(46deg 34.98% 39.19%);
+        border: 1px solid hsl(0deg 0% 98.57%);
+    }
+
+    .markdown .tip, .markdown .keyboard_tip {
+        background-color: hsl(46deg 34.98% 39.19%);
+        border: 1px solid hsl(0deg 0% 98.57%);
+    }
+
+    .markdown .warn, .markdown .tip, .markdown .keyboard_tip {
+        position: relative;
+        display: block;
+        background-color: hsl(46deg 34.98% 39.19%);
+        border: 1px solid hsl(0deg 0% 98.57%);
+        border-radius: 4px;
+        padding: 10px;
+        margin: 5px 0;
+    }
+
+    .markdown .content{
+        background-color: hsl(0, 0%, 00%)
+    }
+
+	.markdown{
+		background-color: #000; /* Dark background. */
+		color: #fff;
+	}
+
+	.markdown a{
+		color: #39ff14; /* Links green neon to dark mode. */
+	}
+
+	.markdown h1,
+	.markdown h2,
+	.markdown h3{
+		color: #ffffff; /* White letters. */
+	}
+
+	.markdown code,
+	.markdown pre{
+		background-color: #333; /* Codes with grey background. */
+		color: #e5e5e5; /* Grey light letters. */
+	}
+
+}

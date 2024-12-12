@@ -1478,3 +1478,34 @@ label.label-title {
         text-decoration: underline;
     }
 }
+
+
+/* If darkmode is preferred by OS */
+@media(prefers-color-scheme: dark){ 
+    .help .markdown{
+        background-color: black;
+    }
+
+    .help .sidebar li{
+        list-style-type: none;
+        font-size: 0.95em;
+        font-weight: 400;
+        line-height: 1.7;
+        font-family: Comfortaa;
+    }
+
+    .table.table-striped{
+        background-color: hsl(0deg 4.09% 5.44%);
+        box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%);
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .table.table-striped th, .table.table-striped td{
+        background-color: hsl(0deg 5.04% 9.89%);
+    }
+
+    .table.table-striped tbody > tr:nth-child(odd) > td {
+        background-color:hsl(0deg 0% 8.02%);
+    }
+}
