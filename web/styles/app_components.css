@@ -492,8 +492,7 @@ input.settings_text_input {
     border-bottom: 0;
 }
 
-.edit-controls .fa-angle-right,
-.topic_stream_edit_header .fa-angle-right {
+.edit-controls .fa-angle-right {
     font-size: 0.9em;
     -webkit-text-stroke: 0.05em;
     position: relative;
