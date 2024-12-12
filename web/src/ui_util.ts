@@ -142,15 +142,15 @@ export function update_unread_mention_info_in_dom(
     $unread_mention_info_elem: JQuery,
     stream_has_any_unread_mention_messages: boolean,
 ): void {
-    const $unread_mention_info_span = $unread_mention_info_elem.find(".unread_mention_info");
+    const $unread_mention_info_div = $unread_mention_info_elem.find(".unread_mention_info");
     if (!stream_has_any_unread_mention_messages) {
-        $unread_mention_info_span.hide();
-        $unread_mention_info_span.text("");
+        $unread_mention_info_div.addClass("hide");
+        $unread_mention_info_div.removeClass("flex");
         return;
     }
 
-    $unread_mention_info_span.show();
-    $unread_mention_info_span.text("@");
+    $unread_mention_info_div.removeClass("hide");
+    $unread_mention_info_div.addClass("flex");
 }
 
 /**
