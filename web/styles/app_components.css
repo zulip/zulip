@@ -1118,6 +1118,16 @@ input.settings_text_input {
                 word-wrap: unset;
             }
 
+            .copy-overlay-message {
+                cursor: pointer;
+                color: var(--color-message-action-visible);
+
+                &:hover,
+                &:focus-visible {
+                    color: var(--color-message-action-interactive);
+                }
+            }
+
             .restore-overlay-message {
                 cursor: pointer;
                 color: hsl(170deg 48% 54%);
