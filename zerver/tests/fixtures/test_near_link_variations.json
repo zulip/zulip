@@ -1,0 +1,90 @@
+{
+    "valid":
+        [
+            {
+                "name": "channel_link",
+                "near_link": "http://testserver/#narrow/channel/13-Denmark",
+                "expected_output": "http://testserver/#narrow/channel/13-Denmark"
+            },
+            {
+                "name": "topic_link",
+                "near_link": "http://testserver/#narrow/channel/13-Denmark/topic/desktop",
+                "expected_output": "http://testserver/#narrow/channel/13-Denmark/topic/desktop"
+            },
+            {
+                "name": "channel_message_link",
+                "near_link": "http://testserver/#narrow/channel/13-Denmark/topic/desktop/near/555",
+                "expected_output": "http://testserver/#narrow/channel/13-Denmark/topic/desktop/near/555"
+            },
+            {
+                "name": "dm_link",
+                "near_link": "http://testserver/#narrow/dm/15-John",
+                "expected_output": "http://testserver/#narrow/dm/15-John"
+            },
+            {
+                "name": "near_dm_link",
+                "near_link": "http://testserver/#narrow/dm/15-John/near/19",
+                "expected_output": "http://testserver/#narrow/dm/15-John/near/19"
+            },
+            {
+                "name": "group_link",
+                "near_link": "http://testserver/#narrow/dm/15,12,13-group",
+                "expected_output": "http://testserver/#narrow/dm/15,12,13-group"
+            },
+            {
+                "name": "near_group_message_link",
+                "near_link": "http://testserver/#narrow/dm/15,12,13-group/near/19",
+                "expected_output": "http://testserver/#narrow/dm/15,12,13-group/near/19"
+            },
+            {
+                "name": "old_near_link_using_stream",
+                "near_link": "http://testserver/#narrow/stream/13-Denmark",
+                "expected_output": "http://testserver/#narrow/channel/13-Denmark"
+            },
+            {
+                "name": "relative_near_link",
+                "near_link": "/#narrow/channel/13-Denmark/topic/desktop/near/555",
+                "expected_output": "/#narrow/channel/13-Denmark/topic/desktop/near/555"
+            },
+            {
+                "name": "broken_relative_near_link",
+                "near_link": "#narrow/channel/13-Denmark/topic/desktop/near/555",
+                "expected_output": "/#narrow/channel/13-Denmark/topic/desktop/near/555"
+            }
+        ],
+    "invalid":
+        [
+            {
+                "name": "other_narrow_link",
+                "near_link": "http://testserver/#narrow/is/starred"
+            },
+            {
+                "name": "different_server_message_link",
+                "near_link": "https://fakechat.zulip.org/#narrow/dm/8,1848,2369-group/near/1717378"
+            },
+            {
+                "name": "empty_fragment",
+                "near_link": "http://testserver/#"
+            },
+            {
+                "name": "incomplete_near_link",
+                "near_link": "http://testserver/#narrow/channel/near/555"
+            },
+            {
+                "name": "recipient_not_encoded",
+                "near_link": "http://testserver/#narrow/channel/Denmark/near/555"
+            },
+            {
+                "name": "recipient_not_encoded_2",
+                "near_link": "http://testserver/#narrow/channel/This is not encoded properly/near/555"
+            },
+            {
+                "name": "broken_recipient_encoding",
+                "near_link": "http://testserver/#narrow/channel/asd-3-asd/near/555"
+            },
+            {
+                "name": "broken_recipient_encoding_2",
+                "near_link": "http://testserver/#narrow/dm/a,3,b-3d/near/555"
+            }
+        ]
+}
