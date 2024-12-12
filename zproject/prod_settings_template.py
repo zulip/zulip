@@ -86,6 +86,12 @@ EXTERNAL_HOST = "zulip.example.com"
 # EMAIL_USE_TLS = True
 # EMAIL_PORT = 587
 
+# If an SMTP connection has been open longer than this threshold, we will
+# close the old connection and reopen a new one. If the value is None, we
+# will never close the connection. If the value is 0, we will open and close
+# SMTP connections as needed.
+# EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES = 0
+
 ## The noreply address to be used as the sender for certain generated
 ## emails.  Messages sent to this address could contain sensitive user
 ## data and should not be delivered anywhere.  The default is
