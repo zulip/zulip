@@ -3,8 +3,6 @@
 
         {{#if is_group}}
         <span class="conversation-partners-icon zulip-icon zulip-icon-triple-users"></span>
-        {{else if is_bot}}
-        <span class="conversation-partners-icon zulip-icon zulip-icon-bot" aria-hidden="true"></span>
         {{else}}
         <span class="conversation-partners-icon zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle"></span>
         {{/if}}
@@ -12,6 +10,9 @@
         <a href="{{url}}" class="conversation-partners">
             <span class="conversation-partners-list">{{recipients}}</span>
             {{> status_emoji status_emoji_info}}
+            {{#if is_bot}}
+                <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
+            {{/if}}
         </a>
         <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
             {{unread}}
