@@ -1078,7 +1078,7 @@ class BillingSession(ABC):
             status=CustomerPlan.NEVER_STARTED,
         )
 
-    def get_legacy_remote_server_next_plan_name(self, customer: Customer) -> str | None:
+    def get_complimentary_access_next_plan_name(self, customer: Customer) -> str | None:
         next_plan = self.get_legacy_remote_server_next_plan(customer)
         if next_plan is None:
             return None
@@ -2550,7 +2550,7 @@ class BillingSession(ABC):
         complimentary_access_plan_end_date = self.get_formatted_complimentary_access_plan_end_date(
             customer, status=CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
         )
-        legacy_remote_server_next_plan_name = self.get_legacy_remote_server_next_plan_name(customer)
+        complimentary_access_next_plan_name = self.get_complimentary_access_next_plan_name(customer)
         context = {
             "plan_name": plan.name,
             "has_active_plan": True,
@@ -2581,7 +2581,7 @@ class BillingSession(ABC):
             "is_self_hosted_billing": is_self_hosted_billing,
             "complimentary_access_plan": complimentary_access_plan_end_date is not None,
             "complimentary_access_plan_end_date": complimentary_access_plan_end_date,
-            "complimentary_access_next_plan_name": legacy_remote_server_next_plan_name,
+            "complimentary_access_next_plan_name": complimentary_access_next_plan_name,
             "using_min_licenses_for_plan": using_min_licenses_for_plan,
             "min_licenses_for_plan": min_licenses_for_plan,
             "pre_discount_renewal_cents": cents_to_dollar_string(pre_discount_renewal_cents),
