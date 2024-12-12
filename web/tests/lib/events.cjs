@@ -1129,6 +1129,14 @@ exports.fixtures = {
         value: 2,
     },
 
+    user_settings_web_suggest_update_timezone: {
+        type: "user_settings",
+        op: "update",
+        property: "web_suggest_update_timezone",
+        value: true,
+        id: 1,
+    },
+
     user_status__set_status_emoji: {
         id: 1,
         type: "user_status",

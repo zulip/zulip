@@ -843,6 +843,19 @@ export function set_up(): void {
         );
     });
 
+    $<HTMLInputElement>("#automatically_offer_update_time_zone").on("change", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const data = {web_suggest_update_timezone: this.checked};
+        settings_ui.do_settings_change(
+            channel.patch,
+            "/json/settings",
+            data,
+            $(".timezone-setting-status").expectOne(),
+        );
+    });
+
     $("#privacy_settings_box").on("change", "input", function (this: HTMLInputElement, e) {
         e.preventDefault();
         e.stopPropagation();

@@ -793,6 +793,7 @@ export function dispatch_normal_event(event) {
                 "starred_message_counts",
                 "web_navigate_to_sent_message",
                 "enter_sends",
+                "web_suggest_update_timezone",
             ];
 
             const original_home_view = user_settings.web_home_view;
@@ -910,6 +911,9 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "web_escape_navigates_to_home_view") {
                 $("#go-to-home-view-hotkey-help").toggleClass("notdisplayed", !event.value);
+            }
+            if (event.property === "web_suggest_update_timezone") {
+                $("#automatically_offer_update_time_zone").prop("checked", event.value);
             }
             settings_preferences.update_page(event.property);
             break;
