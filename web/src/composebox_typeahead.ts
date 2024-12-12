@@ -79,9 +79,13 @@ export type LanguageSuggestion = {
     type: "syntax";
 };
 
-type TopicSuggestion = {
+export type TopicSuggestion = {
     topic: string;
     type: "topic_list";
+    // This will be used when we want to only render the stream as an option in the topic typeahead
+    // while having #**stream_name> as the token.
+    is_stream_only: boolean;
+    stream_data: StreamPillData;
 };
 
 type TimeJumpSuggestion = {
@@ -411,7 +415,7 @@ export function tokenize_compose_str(s: string): string {
     // after the first character.
     let i = s.length;
 
-    let min_i = s.length - 25;
+    let min_i = s.length - 40;
     if (min_i < 0) {
         min_i = 0;
     }
@@ -448,22 +452,6 @@ export function tokenize_compose_str(s: string): string {
                     return s.slice(i);
                 }
                 break;
-            case ">":
-                // topic_jump
-                //
-                // If you hit `>` immediately after completing the typeahead for mentioning a stream,
-                // this will reposition the user from.  If | is the cursor, implements:
-                //
-                // `#**stream name** >|` => `#**stream name>|`.
-                if (
-                    s.slice(Math.max(0, i - 2), i) === "**" ||
-                    s.slice(Math.max(0, i - 3), i) === "** "
-                ) {
-                    // return any string as long as its not ''.
-                    return ">topic_jump";
-                }
-                // maybe topic_list; let's let the stream_topic_regex decide later.
-                return ">topic_list";
         }
     }
 
@@ -900,32 +888,6 @@ export function get_candidates(
         return typeahead_helper.sort_slash_commands(matches_list, token);
     }
 
-    if (ALLOWED_MARKDOWN_FEATURES.stream && current_token.startsWith("#")) {
-        if (current_token.length === 1) {
-            return [];
-        }
-
-        current_token = current_token.slice(1);
-        if (current_token.startsWith("**")) {
-            current_token = current_token.slice(2);
-        }
-
-        // Don't autocomplete if there is a space following a '#'
-        if (current_token.startsWith(" ")) {
-            return [];
-        }
-
-        completing = "stream";
-        token = current_token;
-        const candidate_list: StreamPillData[] = stream_data.get_unsorted_subs().map((sub) => ({
-            ...sub,
-            type: "stream",
-        }));
-        const matcher = get_stream_matcher(token);
-        const matches = candidate_list.filter((item) => matcher(item));
-        return typeahead_helper.sort_streams(matches, token);
-    }
-
     if (ALLOWED_MARKDOWN_FEATURES.topic) {
         // Stream regex modified from marked.js
         // Matches '#**stream name** >' at the end of a split.
@@ -960,20 +922,65 @@ export function get_candidates(
                 }
 
                 const stream_id = stream_data.get_stream_id(stream_name);
-                const topic_list = topics_seen_for(stream_id);
+                // We always show topic suggestions after the user types a stream,
+                // and let them pick between just showing the stream (the first option, when nothing follows ">")
+                // or adding a topic.
+                const topic_list = current_token.endsWith(">")
+                    ? [stream_name, ...topics_seen_for(stream_id)]
+                    : topics_seen_for(stream_id);
+
                 if (should_show_custom_query(token, topic_list)) {
                     topic_list.push(token);
                 }
                 const matcher = get_topic_matcher(token);
                 const matches = topic_list.filter((item) => matcher(item));
-                const matches_list: TopicSuggestion[] = matches.map((topic) => ({
-                    topic,
-                    type: "topic_list",
-                }));
+                const matches_list: TopicSuggestion[] = matches.map((topic) => {
+                    const stream = stream_data.get_sub_by_name(stream_name);
+                    assert(stream !== undefined);
+                    const is_stream_only = topic === stream_name;
+
+                    return {
+                        topic,
+                        type: "topic_list",
+                        is_stream_only,
+                        stream_data: {
+                            ...stream,
+                            type: "stream",
+                            rendered_description: "",
+                        },
+                    };
+                });
                 return typeahead_helper.sorter(token, matches_list, (x) => x.topic);
             }
         }
     }
+
+    if (ALLOWED_MARKDOWN_FEATURES.stream && current_token.startsWith("#")) {
+        if (current_token.length === 1) {
+            return [];
+        }
+
+        current_token = current_token.slice(1);
+        if (current_token.startsWith("**")) {
+            current_token = current_token.slice(2);
+        }
+
+        // Don't autocomplete if there is a space following a '#'
+        if (current_token.startsWith(" ")) {
+            return [];
+        }
+
+        completing = "stream";
+        token = current_token;
+        const candidate_list: StreamPillData[] = stream_data.get_unsorted_subs().map((sub) => ({
+            ...sub,
+            type: "stream",
+        }));
+        const matcher = get_stream_matcher(token);
+        const matches = candidate_list.filter((item) => matcher(item));
+        return typeahead_helper.sort_streams(matches, token);
+    }
+
     if (ALLOWED_MARKDOWN_FEATURES.timestamp) {
         const time_jump_regex = /<time(:([^>]*?)>?)?$/;
         if (time_jump_regex.test(split[0])) {
@@ -1008,8 +1015,12 @@ export function content_highlighter_html(item: TypeaheadSuggestion): string | un
             return typeahead_helper.render_typeahead_item({primary: item.language});
         case "topic_jump":
             return typeahead_helper.render_typeahead_item({primary: item.message});
-        case "topic_list":
-            return typeahead_helper.render_typeahead_item({primary: item.topic});
+        case "topic_list": {
+            if (item.is_stream_only) {
+                return typeahead_helper.render_stream(item.stream_data);
+            }
+            return typeahead_helper.render_stream_topic(item);
+        }
         case "time_jump":
             return typeahead_helper.render_typeahead_item({primary: item.message});
         default:
@@ -1021,7 +1032,6 @@ export function content_typeahead_selected(
     item: TypeaheadSuggestion,
     query: string,
     input_element: TypeaheadInputElement,
-    event?: JQuery.ClickEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent,
 ): string {
     const pieces = split_at_cursor(query, input_element.$element);
     let beginning = pieces[0];
@@ -1114,24 +1124,16 @@ export function content_typeahead_selected(
             if (beginning.endsWith("#*")) {
                 beginning = beginning.slice(0, -2);
             }
-            if (event && event.key === ">") {
-                // Normally, one accepts typeahead with `Tab` or `Enter`, but when completing
-                // stream typeahead, we allow `>`, the delimiter for stream+topic mentions,
-                // as a completion that automatically sets up stream+topic typeahead for you.
 
-                // Even if the stream name produces a broken link, we'll go with the #** syntax
-                // here since we are dealing with it along with the topic name later.
-                beginning += "#**" + item.name + ">";
+            // for stream links, we use markdown link syntax if the #**stream** syntax
+            // will generate a broken url.
+            if (topic_link_util.will_produce_broken_stream_topic_link(item.name)) {
+                // use markdown link syntax
+                beginning += topic_link_util.get_fallback_markdown_link(item.name);
             } else {
-                // for stream links, we use markdown link syntax if the #**stream** syntax
-                // will generate a broken url.
-                if (topic_link_util.will_produce_broken_stream_topic_link(item.name)) {
-                    // use markdown link syntax
-                    beginning += topic_link_util.get_fallback_markdown_link(item.name);
-                } else {
-                    beginning += "#**" + item.name + "** ";
-                }
+                beginning += "#**" + item.name + ">";
             }
+
             compose_validate.warn_if_private_stream_is_linked(item, $textbox);
             break;
         case "syntax": {
@@ -1173,6 +1175,15 @@ export function content_typeahead_selected(
             // "beginning" contains all the text before the cursor, so we use lastIndexOf to
             // avoid any other stream+topic mentions in the message.
             const syntax_start_index = beginning.lastIndexOf("#**");
+            // Get the stream name, not including "#**" at the start or ">" at the end.
+            const topic_start_index = beginning.lastIndexOf(">");
+            const stream_name = beginning.slice(syntax_start_index + 3, topic_start_index);
+
+            if (item.topic === stream_name) {
+                // The user opted to select only the stream and not specify a topic.
+                beginning = beginning.slice(0, syntax_start_index) + "#**" + stream_name + "** ";
+                break;
+            }
             beginning =
                 beginning.slice(0, syntax_start_index) +
                 topic_link_util.get_stream_topic_link_syntax(
@@ -1275,9 +1286,6 @@ export function initialize_topic_edit_typeahead(
 function get_header_html(): string | false {
     let tip_text = "";
     switch (completing) {
-        case "stream":
-            tip_text = $t({defaultMessage: "Press > for list of topics"});
-            break;
         case "silent_mention":
             tip_text = $t({defaultMessage: "Silent mentions do not trigger notifications."});
             break;
@@ -1321,8 +1329,23 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
             updater: content_typeahead_selected,
             stopAdvance: true, // Do not advance to the next field on a Tab or Enter
             automated: compose_automated_selection,
+            option_label(_matching_items, item): string | false {
+                if (item.type === "topic_list" && item.is_stream_only) {
+                    return `<em>${$t({defaultMessage: "(link to channel)"})}</em>`;
+                }
+                return false;
+            },
             trigger_selection: compose_trigger_selection,
             header_html: get_header_html,
+            hideAfterSelect() {
+                // After selecting a stream, we immediately show topic options, so we don't want to hide the typeahead.
+                return completing !== "stream";
+            },
+            getCustomItemClassname(item) {
+                return item.type === "topic_list" && !item.is_stream_only
+                    ? "topic-typeahead-link"
+                    : "";
+            },
         }),
     );
 }
