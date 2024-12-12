@@ -40,6 +40,11 @@ function MessageListView() {
 mock_esm("../src/message_list_view", {
     MessageListView,
 });
+
+mock_esm("../src/people.ts", {
+    maybe_get_user_by_id: noop,
+});
+
 const {Filter} = zrequire("filter");
 const {set_current_user} = zrequire("state_data");
 

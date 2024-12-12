@@ -1010,7 +1010,7 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def add_sponsorship_info_to_context(self, context: dict[str, Any]) -> None:
+    def add_org_type_data_to_sponsorship_context(self, context: dict[str, Any]) -> None:
         pass
 
     @abstractmethod
@@ -2579,7 +2579,7 @@ class BillingSession(ABC):
             ),
             "discount_percent": plan.discount,
             "is_self_hosted_billing": is_self_hosted_billing,
-            "is_server_on_legacy_plan": remote_server_legacy_plan_end_date is not None,
+            "complimentary_access_plan": remote_server_legacy_plan_end_date is not None,
             "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
             "legacy_remote_server_next_plan_name": legacy_remote_server_next_plan_name,
             "using_min_licenses_for_plan": using_min_licenses_for_plan,
@@ -3388,13 +3388,16 @@ class BillingSession(ABC):
 
     def get_sponsorship_request_context(self) -> dict[str, Any] | None:
         customer = self.get_customer()
+
+        if customer is not None and customer.sponsorship_pending and self.on_paid_plan():
+            # Redirects to billing page for paid plan, which
+            # includes pending sponsorship request information.
+            return None
+
         is_remotely_hosted = isinstance(
             self, RemoteRealmBillingSession | RemoteServerBillingSession
         )
-
-        plan_name = "Zulip Cloud Free"
-        if is_remotely_hosted:
-            plan_name = "Free"
+        plan_name = "Free" if is_remotely_hosted else "Zulip Cloud Free"
 
         context: dict[str, Any] = {
             "billing_base_url": self.billing_base_url,
@@ -3404,25 +3407,17 @@ class BillingSession(ABC):
             "org_name": self.org_name(),
         }
 
-        if customer is not None and customer.sponsorship_pending:
-            if self.on_paid_plan():
-                return None
-
-            context["is_sponsorship_pending"] = True
-
         if self.is_sponsored():
             context["is_sponsored"] = True
 
         if customer is not None:
+            context["is_sponsorship_pending"] = customer.sponsorship_pending
             plan = get_current_plan_by_customer(customer)
             if plan is not None:
                 context["plan_name"] = plan.name
-                context["free_trial"] = plan.is_free_trial()
-                context["is_server_on_legacy_plan"] = (
-                    plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
-                )
+                context["complimentary_access"] = plan.is_complimentary_access_plan()
 
-        self.add_sponsorship_info_to_context(context)
+        self.add_org_type_data_to_sponsorship_context(context)
         return context
 
     def request_sponsorship(self, form: SponsorshipRequestForm) -> None:
@@ -4205,7 +4200,7 @@ class RealmBillingSession(BillingSession):
         return self.realm.name
 
     @override
-    def add_sponsorship_info_to_context(self, context: dict[str, Any]) -> None:
+    def add_org_type_data_to_sponsorship_context(self, context: dict[str, Any]) -> None:
         context.update(
             realm_org_type=self.realm.org_type,
             sorted_org_types=sorted(
@@ -4649,7 +4644,7 @@ class RemoteRealmBillingSession(BillingSession):
         return self.remote_realm.host
 
     @override
-    def add_sponsorship_info_to_context(self, context: dict[str, Any]) -> None:
+    def add_org_type_data_to_sponsorship_context(self, context: dict[str, Any]) -> None:
         context.update(
             realm_org_type=self.remote_realm.org_type,
             sorted_org_types=sorted(
@@ -5098,7 +5093,9 @@ class RemoteServerBillingSession(BillingSession):
         return self.remote_server.hostname
 
     @override
-    def add_sponsorship_info_to_context(self, context: dict[str, Any]) -> None:  # nocoverage
+    def add_org_type_data_to_sponsorship_context(
+        self, context: dict[str, Any]
+    ) -> None:  # nocoverage
         context.update(
             realm_org_type=self.remote_server.org_type,
             sorted_org_types=sorted(

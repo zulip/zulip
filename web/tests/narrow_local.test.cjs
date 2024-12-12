@@ -2,8 +2,12 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
+
+mock_esm("../src/people.ts", {
+    maybe_get_user_by_id: noop,
+});
 
 const all_messages_data = zrequire("../src/all_messages_data");
 
