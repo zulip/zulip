@@ -1053,15 +1053,15 @@ class BillingSession(ABC):
             status=status,
         ).first()
 
-    def get_formatted_remote_server_legacy_plan_end_date(
+    def get_formatted_complimentary_access_plan_end_date(
         self, customer: Customer | None, status: int = CustomerPlan.ACTIVE
     ) -> str | None:  # nocoverage
-        plan = self.get_remote_server_legacy_plan(customer, status)
-        if plan is None:
+        complimentary_access_plan = self.get_remote_server_legacy_plan(customer, status)
+        if complimentary_access_plan is None:
             return None
 
-        assert plan.end_date is not None
-        return plan.end_date.strftime("%B %d, %Y")
+        assert complimentary_access_plan.end_date is not None
+        return complimentary_access_plan.end_date.strftime("%B %d, %Y")
 
     def get_legacy_remote_server_next_plan(self, customer: Customer) -> CustomerPlan | None:
         legacy_plan = self.get_remote_server_legacy_plan(
@@ -2547,7 +2547,7 @@ class BillingSession(ABC):
         else:  # nocoverage
             raise BillingError(f"stripe_customer_id is None for {customer}")
 
-        remote_server_legacy_plan_end_date = self.get_formatted_remote_server_legacy_plan_end_date(
+        complimentary_access_plan_end_date = self.get_formatted_complimentary_access_plan_end_date(
             customer, status=CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
         )
         legacy_remote_server_next_plan_name = self.get_legacy_remote_server_next_plan_name(customer)
@@ -2579,8 +2579,8 @@ class BillingSession(ABC):
             ),
             "discount_percent": plan.discount,
             "is_self_hosted_billing": is_self_hosted_billing,
-            "complimentary_access_plan": remote_server_legacy_plan_end_date is not None,
-            "complimentary_access_plan_end_date": remote_server_legacy_plan_end_date,
+            "complimentary_access_plan": complimentary_access_plan_end_date is not None,
+            "complimentary_access_plan_end_date": complimentary_access_plan_end_date,
             "complimentary_access_next_plan_name": legacy_remote_server_next_plan_name,
             "using_min_licenses_for_plan": using_min_licenses_for_plan,
             "min_licenses_for_plan": min_licenses_for_plan,
@@ -2661,11 +2661,11 @@ class BillingSession(ABC):
         ]:
             return f"{self.billing_session_url}/sponsorship", None
 
-        remote_server_legacy_plan_end_date = self.get_formatted_remote_server_legacy_plan_end_date(
+        complimentary_access_plan_end_date = self.get_formatted_complimentary_access_plan_end_date(
             customer
         )
-        # Show upgrade page for remote servers on legacy plan.
-        if customer is not None and remote_server_legacy_plan_end_date is None:
+        # Show upgrade page for customers on a complimentary access plan.
+        if customer is not None and complimentary_access_plan_end_date is None:
             customer_plan = get_current_plan_by_customer(customer)
             if customer_plan is not None:
                 return f"{self.billing_session_url}/billing", None
@@ -2748,7 +2748,7 @@ class BillingSession(ABC):
         free_trial_end_date = None
         # Don't show free trial for remote servers on legacy plan.
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
-        if fixed_price is None and remote_server_legacy_plan_end_date is None:
+        if fixed_price is None and complimentary_access_plan_end_date is None:
             free_trial_days = get_free_trial_days(is_self_hosted_billing, tier)
             if self.customer_plan_exists():
                 # Free trial is not available for existing customers.
@@ -2780,7 +2780,7 @@ class BillingSession(ABC):
             "exempt_from_license_number_check": exempt_from_license_number_check,
             "free_trial_end_date": free_trial_end_date,
             "is_demo_organization": customer_specific_context["is_demo_organization"],
-            "complimentary_access_plan_end_date": remote_server_legacy_plan_end_date,
+            "complimentary_access_plan_end_date": complimentary_access_plan_end_date,
             "manual_license_management": initial_upgrade_request.manual_license_management,
             "page_params": {
                 "page_type": "upgrade",
