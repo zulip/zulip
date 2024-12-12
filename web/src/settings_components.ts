@@ -1507,6 +1507,7 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["can_mention_group", null],
     ["can_remove_members_group", null],
     ["can_remove_subscribers_group", null],
+    ["can_send_message_group", null],
     ["realm_can_add_custom_emoji_group", null],
     ["realm_can_create_groups", null],
     ["realm_can_create_public_channel_group", null],
