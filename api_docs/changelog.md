@@ -33,6 +33,13 @@ format used by the Zulip server that they are interacting with.
   [`PATCH /streams/{stream_id}`](/api/update-stream): Added `can_send_message_group`
   which is a [group-setting value](/api/group-setting-values) describing the
   set of users with permissions to post in the channel.
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): `stream_post_policy` field is
+  deprecated, having been replaced by `can_send_message_group`. Notably,
+  this backwards-compatible `stream_post_policy` value now contains the
+  superset of the true value that best approximates the actual permission
+  setting.
 
 **Feature level 332**
 

@@ -19,6 +19,7 @@ from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_str
 from zerver.lib.streams import (
     get_group_setting_value_dict_for_streams,
     get_setting_values_for_group_settings,
+    get_stream_post_policy_value_based_on_group_setting,
     get_web_public_streams_queryset,
     subscribed_to_stream,
 )
@@ -62,13 +63,15 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
         is_recently_active = stream.is_recently_active
         history_public_to_subscribers = stream.history_public_to_subscribers
         invite_only = stream.invite_only
-        is_announcement_only = stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS
         is_web_public = stream.is_web_public
         message_retention_days = stream.message_retention_days
         name = stream.name
         rendered_description = stream.rendered_description
         stream_id = stream.id
-        stream_post_policy = stream.stream_post_policy
+        stream_post_policy = get_stream_post_policy_value_based_on_group_setting(
+            stream.can_send_message_group
+        )
+        is_announcement_only = stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS
 
         # Add versions of the Subscription fields based on a simulated
         # new user subscription set.
@@ -506,21 +509,31 @@ def gather_subscriptions_helper(
     realm = user_profile.realm
     all_streams = get_all_streams(
         realm, include_archived_channels=include_archived_channels
-    ).values(
+    ).select_related("can_send_message_group", "can_send_message_group__named_user_group")
+
+    all_stream_dicts = all_streams.values(
         *Stream.API_FIELDS,
         # The realm_id and recipient_id are generally not needed in the API.
         "realm_id",
         "recipient_id",
     )
     recip_id_to_stream_id: dict[int, int] = {
-        stream["recipient_id"]: stream["id"] for stream in all_streams
+        stream["recipient_id"]: stream["id"] for stream in all_stream_dicts
     }
-    all_streams_map: dict[int, RawStreamDict] = {stream["id"]: stream for stream in all_streams}
+    all_streams_map: dict[int, RawStreamDict] = {
+        stream["id"]: stream for stream in all_stream_dicts
+    }
+
+    for stream in all_streams:
+        stream_post_policy = get_stream_post_policy_value_based_on_group_setting(
+            stream.can_send_message_group
+        )
+        all_streams_map[stream.id]["stream_post_policy"] = stream_post_policy
 
     setting_group_ids = set()
-    for stream in all_streams:
+    for stream_dict in all_stream_dicts:
         for setting_name in Stream.stream_permission_group_settings:
-            setting_group_ids.add(stream[setting_name + "_id"])
+            setting_group_ids.add(stream_dict[setting_name + "_id"])
 
     setting_groups_dict = get_setting_values_for_group_settings(list(setting_group_ids))
 
@@ -584,10 +597,12 @@ def gather_subscriptions_helper(
 
     if user_profile.can_access_public_streams():
         never_subscribed_stream_ids = {
-            stream["id"] for stream in all_streams if not stream["deactivated"]
+            stream["id"] for stream in all_stream_dicts if not stream["deactivated"]
         } - sub_unsub_stream_ids
     else:
-        web_public_stream_ids = {stream["id"] for stream in all_streams if stream["is_web_public"]}
+        web_public_stream_ids = {
+            stream["id"] for stream in all_stream_dicts if stream["is_web_public"]
+        }
         never_subscribed_stream_ids = web_public_stream_ids - sub_unsub_stream_ids
 
     never_subscribed_streams = [
@@ -614,7 +629,7 @@ def gather_subscriptions_helper(
         }
 
         subscriber_map = bulk_get_subscriber_user_ids(
-            all_streams,
+            all_stream_dicts,
             user_profile,
             subscribed_stream_ids,
         )
