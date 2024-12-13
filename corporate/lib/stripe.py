@@ -1039,24 +1039,29 @@ class BillingSession(ABC):
             return True
         return False
 
-    def get_remote_server_legacy_plan(
+    def get_complimentary_access_plan(
         self, customer: Customer | None, status: int = CustomerPlan.ACTIVE
     ) -> CustomerPlan | None:
-        # status = CustomerPlan.ACTIVE means that the legacy plan is not scheduled for an upgrade.
-        # status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END means that the legacy plan is scheduled for an upgrade.
         if customer is None:
             return None
 
+        plan_tier = CustomerPlan.TIER_SELF_HOSTED_LEGACY
+        if isinstance(self, RealmBillingSession):
+            # TODO implement a complimentary access plan/tier for Zulip Cloud.
+            return None
+
+        # status = CustomerPlan.ACTIVE means the plan is not scheduled for an upgrade.
+        # status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END means the plan is scheduled for an upgrade.
         return CustomerPlan.objects.filter(
             customer=customer,
-            tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+            tier=plan_tier,
             status=status,
         ).first()
 
     def get_formatted_complimentary_access_plan_end_date(
         self, customer: Customer | None, status: int = CustomerPlan.ACTIVE
     ) -> str | None:  # nocoverage
-        complimentary_access_plan = self.get_remote_server_legacy_plan(customer, status)
+        complimentary_access_plan = self.get_complimentary_access_plan(customer, status)
         if complimentary_access_plan is None:
             return None
 
@@ -1064,7 +1069,7 @@ class BillingSession(ABC):
         return complimentary_access_plan.end_date.strftime("%B %d, %Y")
 
     def get_complimentary_access_next_plan(self, customer: Customer) -> CustomerPlan | None:
-        complimentary_access_plan = self.get_remote_server_legacy_plan(
+        complimentary_access_plan = self.get_complimentary_access_plan(
             customer, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
         )
         if complimentary_access_plan is None:
@@ -2082,9 +2087,9 @@ class BillingSession(ABC):
             # Free trial is not available for existing customers.
             free_trial = False
 
-        remote_server_legacy_plan = self.get_remote_server_legacy_plan(customer)
+        complimentary_access_plan = self.get_complimentary_access_plan(customer)
         should_schedule_upgrade_for_legacy_remote_server = (
-            remote_server_legacy_plan is not None
+            complimentary_access_plan is not None
             and upgrade_request.remote_server_plan_start_date == "billing_cycle_end_date"
         )
         # Directly upgrade free trial orgs or invoice payment orgs to standard plan.
@@ -2096,7 +2101,7 @@ class BillingSession(ABC):
                 billing_schedule,
                 charge_automatically,
                 free_trial,
-                remote_server_legacy_plan,
+                complimentary_access_plan,
                 should_schedule_upgrade_for_legacy_remote_server,
             )
             data["organization_upgrade_successful"] = True
