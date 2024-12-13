@@ -1782,7 +1782,7 @@ class BillingSession(ABC):
         billing_schedule: int,
         charge_automatically: bool,
         free_trial: bool,
-        remote_server_legacy_plan: CustomerPlan | None = None,
+        complimentary_access_plan: CustomerPlan | None = None,
         should_schedule_upgrade_for_legacy_remote_server: bool = False,
         stripe_invoice_paid: bool = False,
     ) -> None:
@@ -1794,12 +1794,13 @@ class BillingSession(ABC):
         self.ensure_current_plan_is_upgradable(customer, plan_tier)
         billing_cycle_anchor = None
 
-        if remote_server_legacy_plan is not None:
-            # Legacy servers don't get an additional free trial.
+        if complimentary_access_plan is not None:
+            # Customers on a complimentary access plan don't get
+            # an additional free trial.
             free_trial = False
         if should_schedule_upgrade_for_legacy_remote_server:
-            assert remote_server_legacy_plan is not None
-            billing_cycle_anchor = remote_server_legacy_plan.end_date
+            assert complimentary_access_plan is not None
+            billing_cycle_anchor = complimentary_access_plan.end_date
 
         fixed_price_plan_offer = get_configured_fixed_price_plan_offer(customer, plan_tier)
         if fixed_price_plan_offer is not None:
@@ -1867,14 +1868,14 @@ class BillingSession(ABC):
 
             event_time = billing_cycle_anchor
             if should_schedule_upgrade_for_legacy_remote_server:
-                # In this code path, we are currently on a legacy plan
-                # and are scheduling an upgrade to a non-legacy plan
-                # that should occur when the legacy plan expires.
+                # In this code path, the customer is currently on a
+                # complimentary access plan and is scheduling an
+                # upgrade to a paid plan, which should occur when
+                # the complimentary access plan ends.
                 #
-                # We will create a new NEVER_STARTED plan for the
-                # customer, scheduled to start when the current one
-                # expires.
-                assert remote_server_legacy_plan is not None
+                # A new NEVER_STARTED plan for the customer is created,
+                # and scheduled to start when the current one ends.
+                assert complimentary_access_plan is not None
                 if charge_automatically:
                     # Ensure customers not paying via invoice have a default payment method set.
                     assert customer.stripe_customer_id is not None  # for mypy
@@ -1897,9 +1898,9 @@ class BillingSession(ABC):
                 event_time = timezone_now().replace(microsecond=0)
 
                 # Schedule switching to the new plan at plan end date.
-                assert remote_server_legacy_plan.end_date == billing_cycle_anchor
+                assert complimentary_access_plan.end_date == billing_cycle_anchor
                 last_ledger_entry = (
-                    LicenseLedger.objects.filter(plan=remote_server_legacy_plan)
+                    LicenseLedger.objects.filter(plan=complimentary_access_plan)
                     .order_by("-id")
                     .first()
                 )
@@ -1907,11 +1908,14 @@ class BillingSession(ABC):
                 assert last_ledger_entry is not None
                 last_ledger_entry.licenses_at_next_renewal = billable_licenses
                 last_ledger_entry.save(update_fields=["licenses_at_next_renewal"])
-                remote_server_legacy_plan.status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
-                remote_server_legacy_plan.save(update_fields=["status"])
-            elif remote_server_legacy_plan is not None:  # nocoverage
-                remote_server_legacy_plan.status = CustomerPlan.ENDED
-                remote_server_legacy_plan.save(update_fields=["status"])
+                complimentary_access_plan.status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+                complimentary_access_plan.save(update_fields=["status"])
+            elif complimentary_access_plan is not None:  # nocoverage
+                # In this code path, the customer is currently on a
+                # complimentary access plan, and has chosen to upgrade
+                # to a paid plan immediately.
+                complimentary_access_plan.status = CustomerPlan.ENDED
+                complimentary_access_plan.save(update_fields=["status"])
 
             if fixed_price_plan_offer is not None:
                 # Manual license management is not available for fixed price plan.
