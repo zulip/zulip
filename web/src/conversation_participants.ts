@@ -40,4 +40,12 @@ export class ConversationParticipants {
     // We don't support removal of a message due to deletion or message moves,
     // because we aren't tracking the set of message IDs for each participant,
     // so we currently just rebuild.
+
+    visible(): Set<number> {
+        return new Set(
+            [...this.humans].filter((user_id) =>
+                people.is_displayable_conversation_participant(user_id),
+            ),
+        );
+    }
 }
