@@ -3057,7 +3057,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21,
+            query_count=19,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3074,7 +3074,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21,
+            query_count=19,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -5105,7 +5105,7 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_sub = ["multi_user_stream"]
         with (
             self.capture_send_event_calls(expected_num_events=5) as events,
-            self.assert_database_query_count(41),
+            self.assert_database_query_count(42),
         ):
             self.common_subscribe_to_streams(
                 self.test_user,
@@ -5931,7 +5931,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(41):
+        with self.assert_database_query_count(42):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[0]],
@@ -5939,7 +5939,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(45):
+        with self.assert_database_query_count(46):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[1]],
@@ -5951,7 +5951,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(52):
+        with self.assert_database_query_count(53):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[2]],
@@ -6480,7 +6480,7 @@ class GetSubscribersTest(ZulipTestCase):
         for user in [cordelia, othello, polonius]:
             self.assert_user_got_subscription_notification(user, msg)
 
-        with self.assert_database_query_count(6):
+        with self.assert_database_query_count(7):
             subscribed_streams, _ = gather_subscriptions(
                 self.user_profile, include_subscribers=True
             )
@@ -6515,7 +6515,7 @@ class GetSubscribersTest(ZulipTestCase):
             acting_user=None,
         )
 
-        with self.assert_database_query_count(6):
+        with self.assert_database_query_count(7):
             subscribed_streams, _ = gather_subscriptions(
                 self.user_profile, include_subscribers=True
             )
@@ -6542,6 +6542,92 @@ class GetSubscribersTest(ZulipTestCase):
                 )
             else:
                 self.assertEqual(sub["can_remove_subscribers_group"], admins_group.id)
+
+    def test_stream_post_policy_values_in_subscription_objects(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        desdemona = self.example_user("desdemona")
+
+        streams = [f"stream_{i}" for i in range(6)]
+        for stream_name in streams:
+            self.make_stream(stream_name)
+
+        realm = hamlet.realm
+        self.common_subscribe_to_streams(
+            hamlet,
+            streams,
+            dict(principals=orjson.dumps([hamlet.id, cordelia.id]).decode()),
+        )
+
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        full_members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+        )
+
+        stream = get_stream("stream_1", realm)
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", admins_group, acting_user=desdemona
+        )
+
+        stream = get_stream("stream_2", realm)
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", members_group, acting_user=desdemona
+        )
+
+        stream = get_stream("stream_3", realm)
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", full_members_group, acting_user=desdemona
+        )
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        stream = get_stream("stream_4", realm)
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", hamletcharacters_group, acting_user=desdemona
+        )
+
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [cordelia], [admins_group]
+        )
+        stream = get_stream("stream_5", realm)
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", setting_group, acting_user=desdemona
+        )
+
+        with self.assert_database_query_count(7):
+            subscribed_streams, _ = gather_subscriptions(hamlet, include_subscribers=True)
+
+        [stream_1_sub] = [sub for sub in subscribed_streams if sub["name"] == "stream_1"]
+        self.assertEqual(stream_1_sub["can_send_message_group"], admins_group.id)
+        self.assertEqual(stream_1_sub["stream_post_policy"], Stream.STREAM_POST_POLICY_ADMINS)
+
+        [stream_2_sub] = [sub for sub in subscribed_streams if sub["name"] == "stream_2"]
+        self.assertEqual(stream_2_sub["can_send_message_group"], members_group.id)
+        self.assertEqual(stream_2_sub["stream_post_policy"], Stream.STREAM_POST_POLICY_EVERYONE)
+
+        [stream_3_sub] = [sub for sub in subscribed_streams if sub["name"] == "stream_3"]
+        self.assertEqual(stream_3_sub["can_send_message_group"], full_members_group.id)
+        self.assertEqual(
+            stream_3_sub["stream_post_policy"], Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS
+        )
+
+        [stream_4_sub] = [sub for sub in subscribed_streams if sub["name"] == "stream_4"]
+        self.assertEqual(stream_4_sub["can_send_message_group"], hamletcharacters_group.id)
+        self.assertEqual(stream_4_sub["stream_post_policy"], Stream.STREAM_POST_POLICY_EVERYONE)
+
+        [stream_5_sub] = [sub for sub in subscribed_streams if sub["name"] == "stream_5"]
+        self.assertEqual(
+            stream_5_sub["can_send_message_group"],
+            AnonymousSettingGroupDict(
+                direct_members=[cordelia.id],
+                direct_subgroups=[admins_group.id],
+            ),
+        )
+        self.assertEqual(stream_5_sub["stream_post_policy"], Stream.STREAM_POST_POLICY_EVERYONE)
 
     def test_never_subscribed_streams(self) -> None:
         """
@@ -6608,7 +6694,7 @@ class GetSubscribersTest(ZulipTestCase):
         create_private_streams()
 
         def get_never_subscribed() -> list[NeverSubscribedStreamDict]:
-            with self.assert_database_query_count(6):
+            with self.assert_database_query_count(7):
                 sub_data = gather_subscriptions_helper(self.user_profile)
                 self.verify_sub_fields(sub_data)
             never_subscribed = sub_data.never_subscribed
@@ -6805,7 +6891,7 @@ class GetSubscribersTest(ZulipTestCase):
             subdomain="zephyr",
         )
 
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(6):
             subscribed_streams, _ = gather_subscriptions(mit_user_profile, include_subscribers=True)
 
         self.assertGreaterEqual(len(subscribed_streams), 2)

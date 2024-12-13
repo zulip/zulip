@@ -42,6 +42,7 @@ from zerver.lib.streams import (
     get_group_setting_value_dict_for_streams,
     get_occupied_streams,
     get_stream_permission_policy_name,
+    get_stream_post_policy_value_based_on_group_setting,
     render_stream_description,
     send_stream_creation_event,
     stream_to_dict,
@@ -1607,14 +1608,6 @@ def do_change_stream_group_based_setting(
         old_setting_api_value = get_group_setting_value_for_api(old_user_group)
     new_setting_api_value = get_group_setting_value_for_api(user_group)
 
-    if not hasattr(old_user_group, "named_user_group") and hasattr(user_group, "named_user_group"):
-        # We delete the UserGroup which the setting was set to
-        # previously if it does not have any linked NamedUserGroup
-        # object, as it is not used anywhere else. A new UserGroup
-        # object would be created if the setting is later set to
-        # a combination of users and groups.
-        old_user_group.delete()
-
     RealmAuditLog.objects.create(
         realm=stream.realm,
         acting_user=acting_user,
@@ -1640,3 +1633,40 @@ def do_change_stream_group_based_setting(
         name=stream.name,
     )
     send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
+
+    if setting_name == "can_send_message_group":
+        old_stream_post_policy = get_stream_post_policy_value_based_on_group_setting(old_user_group)
+        stream_post_policy = get_stream_post_policy_value_based_on_group_setting(user_group)
+
+        if old_stream_post_policy != stream_post_policy:
+            event = dict(
+                op="update",
+                type="stream",
+                property="stream_post_policy",
+                value=stream_post_policy,
+                stream_id=stream.id,
+                name=stream.name,
+            )
+            send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
+
+            # Backwards-compatibility code: We removed the
+            # is_announcement_only property in early 2020, but we send a
+            # duplicate event for legacy mobile clients that might want the
+            # data.
+            event = dict(
+                op="update",
+                type="stream",
+                property="is_announcement_only",
+                value=stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
+                stream_id=stream.id,
+                name=stream.name,
+            )
+            send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
+
+    if not hasattr(old_user_group, "named_user_group") and hasattr(user_group, "named_user_group"):
+        # We delete the UserGroup which the setting was set to
+        # previously if it does not have any linked NamedUserGroup
+        # object, as it is not used anywhere else. A new UserGroup
+        # object would be created if the setting is later set to
+        # a combination of users and groups.
+        old_user_group.delete()

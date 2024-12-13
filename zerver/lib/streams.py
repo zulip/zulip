@@ -594,7 +594,7 @@ def get_web_public_streams_queryset(realm: Realm) -> QuerySet[Stream]:
         # these in the query.
         invite_only=False,
         history_public_to_subscribers=True,
-    )
+    ).select_related("can_send_message_group", "can_send_message_group__named_user_group")
 
 
 def check_stream_name_available(realm: Realm, name: str) -> None:
@@ -994,6 +994,18 @@ def get_occupied_streams(realm: Realm) -> QuerySet[Stream]:
     return occupied_streams
 
 
+def get_stream_post_policy_value_based_on_group_setting(setting_group: UserGroup) -> int:
+    if (
+        hasattr(setting_group, "named_user_group")
+        and setting_group.named_user_group.is_system_group
+    ):
+        group_name = setting_group.named_user_group.name
+        if group_name in Stream.SYSTEM_GROUPS_ENUM_MAP:
+            return Stream.SYSTEM_GROUPS_ENUM_MAP[group_name]
+
+    return Stream.STREAM_POST_POLICY_EVERYONE
+
+
 def stream_to_dict(
     stream: Stream,
     recent_traffic: dict[int, int] | None = None,
@@ -1025,6 +1037,10 @@ def stream_to_dict(
             stream.can_remove_subscribers_group
         )
 
+    stream_post_policy = get_stream_post_policy_value_based_on_group_setting(
+        stream.can_send_message_group
+    )
+
     return APIStreamDict(
         is_archived=stream.deactivated,
         can_administer_channel_group=can_administer_channel_group,
@@ -1042,8 +1058,8 @@ def stream_to_dict(
         name=stream.name,
         rendered_description=stream.rendered_description,
         stream_id=stream.id,
-        stream_post_policy=stream.stream_post_policy,
-        is_announcement_only=stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
+        stream_post_policy=stream_post_policy,
+        is_announcement_only=stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
         stream_weekly_traffic=stream_weekly_traffic,
     )
 
@@ -1071,13 +1087,17 @@ def get_streams_for_user(
     include_public = include_public and user_profile.can_access_public_streams()
 
     # Start out with all streams in the realm.
-    query = Stream.objects.filter(realm=user_profile.realm)
+    query = Stream.objects.select_related(
+        "can_send_message_group", "can_send_message_group__named_user_group"
+    ).filter(realm=user_profile.realm)
 
     if exclude_archived:
         query = query.filter(deactivated=False)
 
     if include_all_active:
-        streams = query.only(*Stream.API_FIELDS)
+        streams = query.only(
+            *Stream.API_FIELDS, "can_send_message_group", "can_send_message_group__named_user_group"
+        )
     else:
         # We construct a query as the or (|) of the various sources
         # this user requested streams from.
