@@ -3,13 +3,25 @@
         {{#if user_list_style.WITH_STATUS}}
             <span class="{{user_circle_class}} user_circle"></span>
             <a class="user-presence-link" href="{{href}}">
-                <div class="user-name-and-status-wrapper">
-                    <div class="user-name-and-status-emoji">
-                        {{> user_full_name .}}
-                        {{> status_emoji status_emoji_info}}
+                {{#if (and status_text status_emoji_info)}}
+                    <div class="user-name-and-status-wrapper">
+                        <div class="user-name">
+                            <span class="user-name">{{name}}</span>
+                        </div>
+                        <div class="status">
+                            {{> status_emoji status_emoji_info}}
+                            <span class="status-text">{{status_text}}</span>
+                        </div>
                     </div>
-                    <span class="status-text">{{status_text}}</span>
-                </div>
+                {{else}}
+                    <div class="user-name-and-status-wrapper">
+                        <div class="user-name-and-status-emoji">
+                            <span class="user-name">{{name}}</span>
+                            {{> status_emoji status_emoji_info}}
+                        </div>
+                        <span class="status-text">{{status_text}}</span>
+                    </div>
+                {{/if}}
             </a>
         {{else if user_list_style.WITH_AVATAR}}
             <div class="user-profile-picture avatar-preload-background">

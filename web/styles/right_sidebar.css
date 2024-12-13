@@ -284,6 +284,23 @@ $user_status_emoji_width: 24px;
         overflow: hidden;
         text-overflow: ellipsis;
     }
+
+    .status {
+        display: flex;
+        margin-top: -3px;
+        gap: 3px;
+
+        .status_emoji {
+            margin-right: 3px;
+            margin-left: 0;
+        }
+
+        .status-text {
+            margin-top: 0;
+            overflow-x: hidden;
+            text-overflow: ellipsis;
+        }
+    }
 }
 
 .user_sidebar_entry .selectable_sidebar_block {
