@@ -1564,18 +1564,11 @@ paths:
                                     emoji_name: {}
                                     reaction_type: {}
                                     user_id: {}
-                                    user: {}
                                   example:
                                     {
                                       "type": "reaction",
                                       "op": "add",
                                       "user_id": 10,
-                                      "user":
-                                        {
-                                          "user_id": 10,
-                                          "email": "user10@zulip.testserver",
-                                          "full_name": "King Hamlet",
-                                        },
                                       "message_id": 32,
                                       "emoji_name": "tada",
                                       "emoji_code": "1f389",
@@ -1610,18 +1603,11 @@ paths:
                                     emoji_name: {}
                                     reaction_type: {}
                                     user_id: {}
-                                    user: {}
                                   example:
                                     {
                                       "type": "reaction",
                                       "op": "remove",
                                       "user_id": 10,
-                                      "user":
-                                        {
-                                          "user_id": 10,
-                                          "email": "user10@zulip.testserver",
-                                          "full_name": "King Hamlet",
-                                        },
                                       "message_id": 52,
                                       "emoji_name": "tada",
                                       "emoji_code": "1f389",
@@ -23178,41 +23164,10 @@ components:
 
                 **Changes**: New in Zulip 3.0 (feature level 2). The `user`
                 object is deprecated and will be removed in the future.
-            user:
-              type: object
-              additionalProperties: false
-              deprecated: true
-              description: |
-                Dictionary with data on the user who added the
-                reaction, including the user ID as the `id`
-                field. Note that reactions data received from the
-                [events API](/api/get-events) has a slightly different
-                `user` dictionary format, with the user ID field
-                called `user_id` instead.
 
-                **Changes**: Deprecated and to be removed in a future release
-                once core clients have migrated to use the adjacent `user_id`
-                field, which was introduced in Zulip 3.0 (feature level 2).
-                Clients supporting older Zulip server versions should use
-                the user ID mentioned in the description above as they would
-                the `user_id` field.
-              properties:
-                id:
-                  type: integer
-                  description: |
-                    ID of the user.
-                email:
-                  type: string
-                  description: |
-                    Zulip API email of the user.
-                full_name:
-                  type: string
-                  description: |
-                    Full name of the user.
-                is_mirror_dummy:
-                  type: boolean
-                  description: |
-                    Whether the user is a mirror dummy.
+                In Zulip 10.0 (feature level 328), the deprecated `user` object
+                was removed which contained the following properties: `id`, `email`,
+                `full_name` and `is_mirror_dummy`.
     EmojiBase:
       type: object
       properties:
@@ -23258,38 +23213,10 @@ components:
 
                 **Changes**: New in Zulip 3.0 (feature level 2). The `user`
                 object is deprecated and will be removed in the future.
-            user:
-              type: object
-              additionalProperties: false
-              deprecated: true
-              description: |
-                Dictionary with data on the user who added the
-                reaction, including the user ID as the `user_id`
-                field.
 
-                **Changes**: Deprecated and to be removed in a future release
-                once core clients have migrated to use the adjacent `user_id`
-                field, which was introduced in Zulip 3.0 (feature level 2).
-                Clients supporting older Zulip server versions should use
-                the user ID mentioned in the description above as they would
-                the `user_id` field.
-              properties:
-                user_id:
-                  type: integer
-                  description: |
-                    ID of the user.
-                email:
-                  type: string
-                  description: |
-                    Zulip API email of the user.
-                full_name:
-                  type: string
-                  description: |
-                    Full name of the user.
-                is_mirror_dummy:
-                  type: boolean
-                  description: |
-                    Whether the user is a mirror dummy.
+                In Zulip 10.0 (feature level 328), the deprecated `user` object
+                was removed which contained the following properties: `user_id`,
+                `email`, `full_name` and `is_mirror_dummy`.
     MessagesEvent:
       allOf:
         - $ref: "#/components/schemas/MessagesBase"
