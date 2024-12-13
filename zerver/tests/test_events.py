@@ -99,7 +99,6 @@ from zerver.actions.streams import (
     do_change_stream_group_based_setting,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
-    do_change_stream_post_policy,
     do_change_subscription_property,
     do_deactivate_stream,
     do_rename_stream,
@@ -4541,14 +4540,6 @@ class SubscribeActionTest(BaseAction):
             )
 
         self.user_profile = self.example_user("hamlet")
-        # Update stream stream_post_policy property
-        with self.verify_action(include_subscribers=include_subscribers, num_events=3) as events:
-            do_change_stream_post_policy(
-                stream, Stream.STREAM_POST_POLICY_ADMINS, acting_user=self.example_user("hamlet")
-            )
-        check_stream_update("events[0]", events[0])
-        check_message("events[2]", events[2])
-
         with self.verify_action(include_subscribers=include_subscribers, num_events=2) as events:
             do_change_stream_message_retention_days(stream, self.example_user("hamlet"), -1)
         check_stream_update("events[0]", events[0])
@@ -4677,7 +4668,16 @@ class SubscribeActionTest(BaseAction):
             is_system_group=True,
             realm=self.user_profile.realm,
         )
-        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
+
+        num_events = 1
+        if setting_name == "can_send_message_group":
+            # Updating "can_send_message_group" also sends events
+            # for "stream_post_policy" and "is_announcement_value".
+            num_events = 3
+
+        with self.verify_action(
+            include_subscribers=include_subscribers, num_events=num_events
+        ) as events:
             do_change_stream_group_based_setting(
                 stream,
                 setting_name,
@@ -4687,11 +4687,22 @@ class SubscribeActionTest(BaseAction):
         check_stream_update("events[0]", events[0])
         self.assertEqual(events[0]["value"], moderators_group.id)
 
+        if setting_name == "can_send_message_group":
+            check_stream_update("events[1]", events[1])
+            self.assertEqual(events[1]["property"], "stream_post_policy")
+            self.assertEqual(events[1]["value"], Stream.STREAM_POST_POLICY_MODERATORS)
+
+            check_stream_update("events[2]", events[2])
+            self.assertEqual(events[2]["property"], "is_announcement_only")
+            self.assertFalse(events[2]["value"])
+
         setting_group = self.create_or_update_anonymous_group_for_setting(
             [self.user_profile],
             [moderators_group],
         )
-        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
+        with self.verify_action(
+            include_subscribers=include_subscribers, num_events=num_events
+        ) as events:
             do_change_stream_group_based_setting(
                 stream,
                 setting_name,
@@ -4705,6 +4716,15 @@ class SubscribeActionTest(BaseAction):
                 direct_members=[self.user_profile.id], direct_subgroups=[moderators_group.id]
             ),
         )
+
+        if setting_name == "can_send_message_group":
+            check_stream_update("events[1]", events[1])
+            self.assertEqual(events[1]["property"], "stream_post_policy")
+            self.assertEqual(events[1]["value"], Stream.STREAM_POST_POLICY_EVERYONE)
+
+            check_stream_update("events[2]", events[2])
+            self.assertEqual(events[2]["property"], "is_announcement_only")
+            self.assertFalse(events[2]["value"])
 
     def test_user_access_events_on_changing_subscriptions(self) -> None:
         self.set_up_db_for_testing_user_access()

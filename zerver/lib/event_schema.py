@@ -1447,6 +1447,9 @@ def check_stream_update(
     elif prop == "is_recently_active":
         assert extra_keys == set()
         assert isinstance(value, bool)
+    elif prop == "is_announcement_only":
+        assert extra_keys == set()
+        assert isinstance(value, bool)
     else:
         raise AssertionError(f"Unknown property: {prop}")
 

@@ -22038,18 +22038,29 @@ components:
             **Changes**: New in Zulip 2.1.0.
         stream_post_policy:
           type: integer
+          deprecated: true
           description: |
-            [Policy][permission-level] for which users can post messages to the channel.
+            A deprecated representation of a superset of the users who
+            have permission to post messages to the channel available
+            for backwards-compatibility. Clients should use
+            `can_send_message_group` instead.
+
+            It is an enum with the following possible values, corresponding
+            to roles/system groups:
 
             - 1 = Any user can post.
             - 2 = Only administrators can post.
             - 3 = Only [full members][calc-full-member] can post.
             - 4 = Only moderators can post.
 
-            **Changes**: New in Zulip 3.0 (feature level 1), replacing the previous
+            **Changes**: Deprecated in Zulip 10.0 (feature level 333) and
+            replaced by `can_send_message_group`, which supports finer
+            resolution of configurations, resulting in this property being
+            inaccurate following that transition.
+
+            New in Zulip 3.0 (feature level 1), replacing the previous
             `is_announcement_only` boolean.
 
-            [permission-level]: /api/roles-and-permissions#permission-levels
             [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
         message_retention_days:
           type: integer
@@ -23073,18 +23084,29 @@ components:
             The user's personal color for the channel.
         stream_post_policy:
           type: integer
+          deprecated: true
           description: |
-            [Policy][permission-level] for which users can post messages to the channel.
+            A deprecated representation of a superset of the users who
+            have permission to post messages to the channel available
+            for backwards-compatibility. Clients should use
+            `can_send_message_group` instead.
+
+            It is an enum with the following possible values, corresponding
+            to roles/system groups:
 
             - 1 = Any user can post.
             - 2 = Only administrators can post.
             - 3 = Only [full members][calc-full-member] can post.
             - 4 = Only moderators can post.
 
-            **Changes**: New in Zulip 3.0 (feature level 1), replacing the previous
+            **Changes**: Deprecated in Zulip 10.0 (feature level 333) and
+            replaced by `can_send_message_group`, which supports finer
+            resolution of configurations, resulting in this property being
+            inaccurate following that transition.
+
+            New in Zulip 3.0 (feature level 1), replacing the previous
             `is_announcement_only` boolean.
 
-            [permission-level]: /api/roles-and-permissions#permission-levels
             [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
         message_retention_days:
           type: integer
