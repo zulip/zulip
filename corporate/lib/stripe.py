@@ -1783,7 +1783,7 @@ class BillingSession(ABC):
         charge_automatically: bool,
         free_trial: bool,
         complimentary_access_plan: CustomerPlan | None = None,
-        should_schedule_upgrade_for_legacy_remote_server: bool = False,
+        upgrade_when_complimentary_access_plan_ends: bool = False,
         stripe_invoice_paid: bool = False,
     ) -> None:
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
@@ -1798,8 +1798,9 @@ class BillingSession(ABC):
             # Customers on a complimentary access plan don't get
             # an additional free trial.
             free_trial = False
-        if should_schedule_upgrade_for_legacy_remote_server:
+        if upgrade_when_complimentary_access_plan_ends:
             assert complimentary_access_plan is not None
+            assert complimentary_access_plan.end_date is not None
             billing_cycle_anchor = complimentary_access_plan.end_date
 
         fixed_price_plan_offer = get_configured_fixed_price_plan_offer(customer, plan_tier)
@@ -1818,7 +1819,7 @@ class BillingSession(ABC):
             free_trial,
             billing_cycle_anchor,
             is_self_hosted_billing,
-            should_schedule_upgrade_for_legacy_remote_server,
+            upgrade_when_complimentary_access_plan_ends,
         )
 
         # TODO: The correctness of this relies on user creation, deactivation, etc being
@@ -1867,7 +1868,7 @@ class BillingSession(ABC):
                         )
 
             event_time = billing_cycle_anchor
-            if should_schedule_upgrade_for_legacy_remote_server:
+            if upgrade_when_complimentary_access_plan_ends:
                 # In this code path, the customer is currently on a
                 # complimentary access plan and is scheduling an
                 # upgrade to a paid plan, which should occur when
@@ -1877,7 +1878,8 @@ class BillingSession(ABC):
                 # and scheduled to start when the current one ends.
                 assert complimentary_access_plan is not None
                 if charge_automatically:
-                    # Ensure customers not paying via invoice have a default payment method set.
+                    # Ensure customers not paying via invoice have
+                    # a default payment method set.
                     assert customer.stripe_customer_id is not None  # for mypy
                     stripe_customer = stripe_get_customer(customer.stripe_customer_id)
                     if not stripe_customer_has_credit_card_as_default_payment_method(
@@ -1888,8 +1890,8 @@ class BillingSession(ABC):
                             _("Please add a credit card to schedule upgrade."),
                         )
 
-                # Settings status > CustomerPLan.LIVE_STATUS_THRESHOLD makes sure we don't have
-                # to worry about this plan being used for any other purpose.
+                # Setting status > CustomerPLan.LIVE_STATUS_THRESHOLD makes sure we
+                # don't have to worry about this plan being used for any other purpose.
                 # NOTE: This is the 2nd plan for the customer.
                 plan_params["status"] = CustomerPlan.NEVER_STARTED
                 plan_params["invoicing_status"] = (
@@ -1897,14 +1899,15 @@ class BillingSession(ABC):
                 )
                 event_time = timezone_now().replace(microsecond=0)
 
-                # Schedule switching to the new plan at plan end date.
+                # Schedule switching to the new paid plan for the complimentary
+                # access plan's end date.
                 assert complimentary_access_plan.end_date == billing_cycle_anchor
                 last_ledger_entry = (
                     LicenseLedger.objects.filter(plan=complimentary_access_plan)
                     .order_by("-id")
                     .first()
                 )
-                # Update license_at_next_renewal as per new plan.
+                # Update license_at_next_renewal as per new paid plan.
                 assert last_ledger_entry is not None
                 last_ledger_entry.licenses_at_next_renewal = billable_licenses
                 last_ledger_entry.save(update_fields=["licenses_at_next_renewal"])
@@ -1913,7 +1916,7 @@ class BillingSession(ABC):
             elif complimentary_access_plan is not None:  # nocoverage
                 # In this code path, the customer is currently on a
                 # complimentary access plan, and has chosen to upgrade
-                # to a paid plan immediately.
+                # to a paid plan immediately, so we end the current plan.
                 complimentary_access_plan.status = CustomerPlan.ENDED
                 complimentary_access_plan.save(update_fields=["status"])
 
@@ -2000,7 +2003,7 @@ class BillingSession(ABC):
                         )
 
         if not stripe_invoice_paid and not (
-            free_trial or should_schedule_upgrade_for_legacy_remote_server
+            free_trial or upgrade_when_complimentary_access_plan_ends
         ):
             # We don't actually expect to ever reach here but this is just a safety net
             # in case any future changes make this possible.
@@ -2092,12 +2095,13 @@ class BillingSession(ABC):
             free_trial = False
 
         complimentary_access_plan = self.get_complimentary_access_plan(customer)
-        should_schedule_upgrade_for_legacy_remote_server = (
+        upgrade_when_complimentary_access_plan_ends = (
             complimentary_access_plan is not None
             and upgrade_request.remote_server_plan_start_date == "billing_cycle_end_date"
         )
-        # Directly upgrade free trial orgs or invoice payment orgs to standard plan.
-        if should_schedule_upgrade_for_legacy_remote_server or free_trial:
+        # Directly upgrade free trial orgs.
+        # Create NEVER_STARTED plan for complimentary access plans.
+        if upgrade_when_complimentary_access_plan_ends or free_trial:
             self.process_initial_upgrade(
                 upgrade_request.tier,
                 licenses,
@@ -2106,7 +2110,7 @@ class BillingSession(ABC):
                 charge_automatically,
                 free_trial,
                 complimentary_access_plan,
-                should_schedule_upgrade_for_legacy_remote_server,
+                upgrade_when_complimentary_access_plan_ends,
             )
             data["organization_upgrade_successful"] = True
         else:
@@ -5238,7 +5242,7 @@ def compute_plan_parameters(
     free_trial: bool = False,
     billing_cycle_anchor: datetime | None = None,
     is_self_hosted_billing: bool = False,
-    should_schedule_upgrade_for_legacy_remote_server: bool = False,
+    upgrade_when_complimentary_access_plan_ends: bool = False,
 ) -> tuple[datetime, datetime, datetime, int]:
     # Everything in Stripe is stored as timestamps with 1 second resolution,
     # so standardize on 1 second resolution.
@@ -5263,7 +5267,7 @@ def compute_plan_parameters(
             days=assert_is_not_none(get_free_trial_days(is_self_hosted_billing, tier))
         )
         next_invoice_date = period_end
-    if should_schedule_upgrade_for_legacy_remote_server:
+    if upgrade_when_complimentary_access_plan_ends:
         next_invoice_date = billing_cycle_anchor
     return billing_cycle_anchor, next_invoice_date, period_end, price_per_license
 
