@@ -8708,7 +8708,7 @@ paths:
       summary: Upload a file
       tags: ["messages"]
       description: |
-        Upload a single file and get the corresponding URL.
+        [Upload](/help/share-and-upload-files) a single file and get the corresponding URL.
 
         Initially, only you will be able to access the link. To share the
         uploaded file, you'll need to [send a message][send-message]
@@ -8716,26 +8716,29 @@ paths:
         can reshare it with other users by sending additional Zulip messages
         containing the link.
 
-        For uploading larger files, `/api/v1/tus` is an endpoint
-        implementing the [`tus`
-        protocol](https://tus.io/protocols/resumable-upload) for
-        resumable uploads. Clients which send authenticated
-        credentials (either via browser-based cookies, or API key via
-        `Authorization` header) may use this endpoint to create
-        uploads.
+        The maximum allowed file size is available in the `max_file_upload_size_mib`
+        field in the [`POST /register`](/api/register-queue) response. Note that
+        large files (25MB+) may fail to upload using this API endpoint due to
+        network-layer timeouts, depending on the quality of your connection to the
+        Zulip server.
+
+        For uploading larger files, `/api/v1/tus` is an endpoint implementing the
+        [`tus` resumable upload protocol](https://tus.io/protocols/resumable-upload),
+        which supports uploading arbitrarily large files limited only by the server's
+        `max_file_upload_size_mib` (Configured via `MAX_FILE_UPLOAD_SIZE` in
+        `/etc/zulip/settings.py`). Clients which send authenticated credentials
+        (either via browser-based cookies, or API key via `Authorization` header) may
+        use this endpoint to upload files.
+
+        **Changes**: The `api/v1/tus` endpoint supporting resumable uploads was
+        introduced in Zulip 10.0 (feature level 296). Previously,
+        `max_file_upload_size_mib` was typically 25MB.
 
         [uploaded-files]: /help/manage-your-uploaded-files
         [send-message]: /api/send-message
       x-parameter-description: |
         As described above, the file to upload must be provided in the
         request's body.
-
-        ## Maximum file size
-
-        The maximum file size for uploads can be configured by the
-        administrator of the Zulip server by setting `MAX_FILE_UPLOAD_SIZE`
-        in the [server's settings][1]. `MAX_FILE_UPLOAD_SIZE` defaults
-        to 100MB.
 
         [1]: https://zulip.readthedocs.io/en/latest/subsystems/settings.html#server-settings
       requestBody:
