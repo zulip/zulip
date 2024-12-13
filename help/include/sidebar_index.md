@@ -209,6 +209,7 @@
 * [Channel permissions](/help/channel-permissions)
 * [Public access option](/help/public-access-option)
 * [Channel posting policy](/help/channel-posting-policy)
+* [Configure who can administer a channel](/help/configure-who-can-administer-a-channel)
 * [Restrict channel creation](/help/configure-who-can-create-channels)
 * [Restrict who can subscribe others](/help/configure-who-can-invite-to-channels)
 * [Configure who can unsubscribe others](/help/configure-who-can-unsubscribe-others)
