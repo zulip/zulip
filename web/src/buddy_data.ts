@@ -460,10 +460,7 @@ export function get_conversation_participants(): Set<number> {
         return participant_ids_set;
     }
     for (const message of message_lists.current.all_messages()) {
-        if (
-            !people.is_valid_bot_user(message.sender_id) &&
-            people.is_person_active(message.sender_id)
-        ) {
+        if (people.is_displayable_conversation_participant(message.sender_id)) {
             participant_ids_set.add(message.sender_id);
         }
     }
