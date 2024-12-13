@@ -331,6 +331,10 @@
         );
     }
 
+    .recent_view_participant_avatar {
+        background-color: transparent;
+    }
+
     .recent_view_participant_overflow {
         line-height: 24px;
     }
