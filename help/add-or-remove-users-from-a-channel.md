@@ -10,8 +10,8 @@ including channels the admin is not subscribed to. They can also configure which
 [roles](/help/user-roles) have access to [add other users to a
 channel][add-users] or [remove other users from a channel][remove-users].
 
-[add-users]: /help/configure-who-can-invite-to-channels#configure-who-can-add-users
-[remove-users]: /help/configure-who-can-invite-to-channels#configure-who-can-remove-users
+[add-users]: /help/configure-who-can-invite-to-channels
+[remove-users]: /help/configure-who-can-unsubscribe-others
 
 ## Add users to a channel
 
