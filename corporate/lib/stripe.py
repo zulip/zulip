@@ -823,10 +823,9 @@ class BillingSession(ABC):
 
         assert customer.stripe_customer_id is not None
 
-        if return_to_billing_page:
+        if return_to_billing_page or tier is None:
             return_url = f"{self.billing_session_url}/billing/"
         else:
-            assert tier is not None
             base_return_url = f"{self.billing_session_url}/upgrade/"
             params = {
                 "manual_license_management": str(manual_license_management).lower(),
