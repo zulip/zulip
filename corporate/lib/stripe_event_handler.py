@@ -153,7 +153,7 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
             billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
             charge_automatically=False,
             free_trial=False,
-            remote_server_legacy_plan=complimentary_access_plan,
+            complimentary_access_plan=complimentary_access_plan,
             stripe_invoice_paid=True,
         )
     else:
@@ -183,7 +183,7 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
                 billing_schedule=billing_schedule,
                 charge_automatically=charge_automatically,
                 free_trial=False,
-                remote_server_legacy_plan=complimentary_access_plan,
+                complimentary_access_plan=complimentary_access_plan,
                 stripe_invoice_paid=True,
             )
             return
@@ -207,6 +207,6 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
             billing_schedule=billing_schedule,
             charge_automatically=charge_automatically,
             free_trial=False,
-            remote_server_legacy_plan=complimentary_access_plan,
+            complimentary_access_plan=complimentary_access_plan,
             stripe_invoice_paid=True,
         )
