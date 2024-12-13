@@ -1762,6 +1762,10 @@ export function sort_but_pin_current_user_on_top(users: User[]): void {
     }
 }
 
+export function is_displayable_conversation_participant(user_id: number): boolean {
+    return !is_valid_bot_user(user_id) && is_person_active(user_id);
+}
+
 export function initialize(my_user_id: number, params: StateData["people"]): void {
     for (const person of params.realm_users) {
         add_active_user(person);
