@@ -323,6 +323,10 @@
         background-color: hsl(0deg 0% 88%);
     }
 
+    .recent_view_participant_avatar {
+        background-color: transparent;
+    }
+
     .recent_view_participant_overflow {
         color: hsl(0deg 0% 0%);
         line-height: 24px;
