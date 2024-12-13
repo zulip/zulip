@@ -564,18 +564,6 @@ def check_presence(
     assert event_presence_value["status"] == status
 
 
-# Type for the legacy user field; the `user_id` field is intended to
-# replace this and we expect to remove this once clients have migrated
-# to support the modern API.
-reaction_legacy_user_type = DictType(
-    required_keys=[
-        ("email", str),
-        ("full_name", str),
-        ("user_id", int),
-    ]
-    # We should probably declare is_mirror_dummy as an optional field here.
-)
-
 reaction_add_event = event_dict_type(
     required_keys=[
         ("type", Equals("reaction")),
@@ -585,7 +573,6 @@ reaction_add_event = event_dict_type(
         ("emoji_code", str),
         ("reaction_type", EnumType(["unicode_emoji", "realm_emoji", "zulip_extra_emoji"])),
         ("user_id", int),
-        ("user", reaction_legacy_user_type),
     ]
 )
 check_reaction_add = make_checker(reaction_add_event)
@@ -600,7 +587,6 @@ reaction_remove_event = event_dict_type(
         ("emoji_code", str),
         ("reaction_type", EnumType(["unicode_emoji", "realm_emoji", "zulip_extra_emoji"])),
         ("user_id", int),
-        ("user", reaction_legacy_user_type),
     ]
 )
 check_reaction_remove = make_checker(reaction_remove_event)

@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 328**
+
+* [`GET /messages`](/api/get-messages), [`GET /events`](/api/get-events):
+  Removed deprecated `user` dictionary from the `reactions` objects returned
+  by the API, as the clients now use `user_id` field instead.
+
 **Feature level 327**
 
 * [`GET /messages`](/api/get-messages), [`GET

@@ -305,9 +305,6 @@ class MessageDictTest(ZulipTestCase):
         msg_dict = MessageDict.ids_to_dict([message.id])[0]
         self.assertEqual(msg_dict["reactions"][0]["emoji_name"], reaction.emoji_name)
         self.assertEqual(msg_dict["reactions"][0]["user_id"], sender.id)
-        self.assertEqual(msg_dict["reactions"][0]["user"]["id"], sender.id)
-        self.assertEqual(msg_dict["reactions"][0]["user"]["email"], sender.email)
-        self.assertEqual(msg_dict["reactions"][0]["user"]["full_name"], sender.full_name)
 
     def test_missing_anchor(self) -> None:
         self.login("hamlet")

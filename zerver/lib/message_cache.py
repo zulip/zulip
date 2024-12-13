@@ -25,8 +25,6 @@ class RawReactionRow(TypedDict):
     emoji_name: str
     message_id: int
     reaction_type: str
-    user_profile__email: str
-    user_profile__full_name: str
     user_profile_id: int
 
 
@@ -113,18 +111,6 @@ class ReactionDict:
             "emoji_name": row["emoji_name"],
             "emoji_code": row["emoji_code"],
             "reaction_type": row["reaction_type"],
-            # TODO: We plan to remove this redundant user dictionary once
-            # clients are updated to support accessing use user_id.  See
-            # https://github.com/zulip/zulip/pull/14711 for details.
-            #
-            # When we do that, we can likely update the `.values()` query to
-            # not fetch the extra user_profile__* fields from the database
-            # as a small performance optimization.
-            "user": {
-                "email": row["user_profile__email"],
-                "id": row["user_profile_id"],
-                "full_name": row["user_profile__full_name"],
-            },
             "user_id": row["user_profile_id"],
         }
 
