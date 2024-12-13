@@ -2,8 +2,6 @@
 
 {!web-public-channels-intro.md!}
 
-Web-public channels are indicated with a **globe** (<i class="zulip-icon zulip-icon-globe"></i>) icon.
-
 ## Enabling web-public channels in your organization
 
 Enabling web-public channels makes it possible to create web-public
