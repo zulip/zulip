@@ -233,6 +233,9 @@
 
             .conversation-arrow {
                 font-size: 1.1429em; /* 16px / 14px em */
+                /* Fix the line-height to the font size
+                   to maintain a circle that scales. */
+                line-height: 1;
                 border-radius: 50%;
                 padding: 2px;
                 margin: 0 3px;
