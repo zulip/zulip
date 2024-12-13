@@ -3057,7 +3057,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21,
+            query_count=19,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3074,7 +3074,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21,
+            query_count=19,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -5105,7 +5105,7 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_sub = ["multi_user_stream"]
         with (
             self.capture_send_event_calls(expected_num_events=5) as events,
-            self.assert_database_query_count(41),
+            self.assert_database_query_count(42),
         ):
             self.common_subscribe_to_streams(
                 self.test_user,
@@ -5931,7 +5931,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(41):
+        with self.assert_database_query_count(42):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[0]],
@@ -5939,7 +5939,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(45):
+        with self.assert_database_query_count(46):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[1]],
@@ -5951,7 +5951,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(52):
+        with self.assert_database_query_count(53):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[2]],
@@ -6480,7 +6480,7 @@ class GetSubscribersTest(ZulipTestCase):
         for user in [cordelia, othello, polonius]:
             self.assert_user_got_subscription_notification(user, msg)
 
-        with self.assert_database_query_count(6):
+        with self.assert_database_query_count(7):
             subscribed_streams, _ = gather_subscriptions(
                 self.user_profile, include_subscribers=True
             )
@@ -6515,7 +6515,7 @@ class GetSubscribersTest(ZulipTestCase):
             acting_user=None,
         )
 
-        with self.assert_database_query_count(6):
+        with self.assert_database_query_count(7):
             subscribed_streams, _ = gather_subscriptions(
                 self.user_profile, include_subscribers=True
             )
@@ -6608,7 +6608,7 @@ class GetSubscribersTest(ZulipTestCase):
         create_private_streams()
 
         def get_never_subscribed() -> list[NeverSubscribedStreamDict]:
-            with self.assert_database_query_count(6):
+            with self.assert_database_query_count(7):
                 sub_data = gather_subscriptions_helper(self.user_profile)
                 self.verify_sub_fields(sub_data)
             never_subscribed = sub_data.never_subscribed
@@ -6805,7 +6805,7 @@ class GetSubscribersTest(ZulipTestCase):
             subdomain="zephyr",
         )
 
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(6):
             subscribed_streams, _ = gather_subscriptions(mit_user_profile, include_subscribers=True)
 
         self.assertGreaterEqual(len(subscribed_streams), 2)
