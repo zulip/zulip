@@ -5,7 +5,7 @@
 !!! warn ""
 
       **Note**: The list of a user's **Subscribed channels** will be limited to
-      channels for which [you can see all subscribers](/help/channel-permissions).
+      [channels you can see](/help/channel-permissions).
 
 {start_tabs}
 
