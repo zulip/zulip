@@ -35,6 +35,7 @@ $(() => {
             if (password_value.length > 30) {
                 debounced_password_quality(password_value, $(this));
             } else {
+                debounced_password_quality.cancel();
                 password_quality(password_value, $("#pw_strength .bar"), $(this));
             }
         });
