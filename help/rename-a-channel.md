@@ -2,6 +2,9 @@
 
 {!admin-only.md!}
 
+A channel's name can be in any language, and can include spaces and other
+punctuation.
+
 {start_tabs}
 
 {tab|desktop-web}
