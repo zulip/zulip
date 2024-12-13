@@ -1025,6 +1025,10 @@ div.focused-message-list.is-conversation-view .recipient_row {
     text-overflow: ellipsis;
 }
 
+.top-navbar-container-allow-description-extension {
+    overflow: visible;
+}
+
 #streamlist-toggle {
     display: none;
     position: absolute;
