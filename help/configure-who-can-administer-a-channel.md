@@ -4,7 +4,9 @@
 
     Organization administrators can automatically administer all channels.
 
-If you have permission to administer a [public](/help/channel-permissions) or [web-public](/help/public-access-option) channel, you can:
+If you have permission to administer a
+[public](/help/channel-permissions#public-channels) or
+[web-public](/help/channel-permissions#web-public-channels) channel, you can:
 
 - See and modify the channel's [name](/help/rename-a-channel) and [description](/help/change-the-channel-description).
 - [Subscribe](/help/add-or-remove-users-from-a-channel#add-users-to-a-channel) and [unsubscribe](/help/add-or-remove-users-from-a-channel#remove-users-from-a-channel) users.
@@ -13,8 +15,9 @@ If you have permission to administer a [public](/help/channel-permissions) or [w
   protected history).
 - [Archive](/help/archive-a-channel) the channel.
 
-For [private](/help/channel-permissions) channels, you additionally need to be a
-subscriber in order to add subscribers or change channel permissions.
+For [private](/help/channel-permissions#private-channels) channels, you
+additionally need to be a subscriber in order to add subscribers or change
+channel permissions.
 
 ## Configure who can administer a channel
 

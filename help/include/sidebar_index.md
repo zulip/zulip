@@ -206,8 +206,10 @@
 
 ## Channel management
 * [Create a channel](/help/create-a-channel)
-* [Channel permissions](/help/channel-permissions)
+* [Private channels](/help/channel-permissions#private-channels)
+* [Public channels](/help/channel-permissions#public-channels)
 * [Public access option](/help/public-access-option)
+* [Channel permissions](/help/channel-permissions)
 * [Channel posting policy](/help/channel-posting-policy)
 * [Configure who can administer a channel](/help/configure-who-can-administer-a-channel)
 * [Restrict channel creation](/help/configure-who-can-create-channels)
