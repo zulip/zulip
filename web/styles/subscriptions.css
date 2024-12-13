@@ -59,26 +59,34 @@
     margin-right: 10px;
 }
 
+#add_new_user_group {
+    height: var(--settings-overlay-header-button-height);
+}
+
 .create_user_group_plus_button,
 .create_stream_plus_button {
-    font-size: 24px;
     font-weight: 400;
     position: relative;
-    top: 2px;
     border: 1px solid hsl(0deg 0% 80%);
     border-radius: 5px;
     background-color: hsl(0deg 0% 100%);
     color: hsl(0deg 0% 0%);
     margin: 0 0 0 5px;
-    height: 27px;
+    height: 100%;
+    width: var(--settings-overlay-header-button-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     &:hover {
         border: 1px solid hsl(0deg 0% 47%);
     }
 
     .create_button_plus_sign {
-        position: relative;
-        top: -5px;
+        line-height: 1em;
+        display: block;
+        font-size: 1.2em;
+        opacity: 0.8;
     }
 
     &:disabled {
@@ -422,6 +430,12 @@ h4.user_group_setting_subsection_title {
 
     .list-toggler-container .tab-switcher .ind-tab {
         width: auto;
+        display: flex;
+        padding: 0 10px;
+
+        .fa {
+            font-size: 1em;
+        }
     }
 
     .user-groups-header,
@@ -523,8 +537,7 @@ h4.user_group_setting_subsection_title {
             height: var(--settings-overlay-subheader-height);
 
             #add_new_subscription {
-                position: relative;
-                top: -2px;
+                height: var(--settings-overlay-header-button-height);
             }
         }
     }
@@ -874,6 +887,7 @@ h4.user_group_setting_subsection_title {
     .tab-switcher {
         display: flex;
         flex-wrap: nowrap;
+        height: var(--settings-overlay-header-button-height);
     }
 
     #user-group-creation,
@@ -989,6 +1003,7 @@ h4.user_group_setting_subsection_title {
                 padding: 3px 4px;
                 min-width: 80px;
                 width: auto;
+                display: flex;
             }
         }
 
