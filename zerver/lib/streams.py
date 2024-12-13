@@ -1258,15 +1258,14 @@ def get_subscribed_private_streams_for_user(user_profile: UserProfile) -> QueryS
 
 @transaction.atomic(durable=True)
 def update_stream_active_status_for_realm(realm: Realm, date_days_ago: datetime) -> int:
-    active_stream_ids = (
-        Message.objects.filter(
-            date_sent__gte=date_days_ago, recipient__type=Recipient.STREAM, realm=realm
-        )
-        .values_list("recipient__type_id", flat=True)
-        .distinct()
+    recent_messages_subquery = Message.objects.filter(
+        date_sent__gte=date_days_ago,
+        realm=realm,
+        recipient__type=Recipient.STREAM,
+        recipient__type_id=OuterRef("id"),
     )
-    streams_to_mark_inactive = Stream.objects.filter(is_recently_active=True, realm=realm).exclude(
-        id__in=active_stream_ids
+    streams_to_mark_inactive = Stream.objects.filter(
+        ~Exists(recent_messages_subquery), is_recently_active=True, realm=realm
     )
 
     # Send events to notify the users about the change in the stream's active status.
