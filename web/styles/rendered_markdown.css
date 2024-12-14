@@ -947,5 +947,6 @@
         vertical-align: middle;
         position: relative;
         top: -1px;
+        padding-left: 0.3em;
     }
 }
