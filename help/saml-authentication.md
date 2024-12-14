@@ -132,7 +132,7 @@ providers.
         * Certificate downloaded from **Certificate (Base64)**
      1. From the **Set up** section
         * **Login URL**
-        * **Azure AD Identifier**
+        * **Microsoft Entra Identifier**
      {!saml-login-button.md!}
 
 {tab|keycloak}

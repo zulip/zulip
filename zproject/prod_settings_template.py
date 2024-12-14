@@ -153,7 +153,7 @@ AUTHENTICATION_BACKENDS: tuple[str, ...] = (
     # "zproject.backends.GoogleAuthBackend",  # Google auth, setup below
     # "zproject.backends.GitHubAuthBackend",  # GitHub auth, setup below
     # "zproject.backends.GitLabAuthBackend",  # GitLab auth, setup below
-    # "zproject.backends.AzureADAuthBackend",  # Microsoft Azure Active Directory auth, setup below
+    # "zproject.backends.AzureADAuthBackend",  # Microsoft Entra ID (AzureAD) auth, setup below
     # "zproject.backends.AppleAuthBackend",  # Apple auth, setup below
     # "zproject.backends.SAMLAuthBackend",  # SAML, setup below
     # "zproject.backends.ZulipLDAPAuthBackend",  # LDAP, setup below
@@ -536,9 +536,9 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # SOCIAL_AUTH_APPLE_KEY = "<your Key ID>"
 
 ########
-## Azure Active Directory OAuth.
+## Microsoft Entra ID (AzureAD) OAuth.
 ##
-## To set up Microsoft Azure AD authentication, you'll need to do the following:
+## To set up Microsoft Entra ID authentication, you'll need to do the following:
 ##
 ## (1) Open "App registrations" at
 ## https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade
