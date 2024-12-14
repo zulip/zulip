@@ -4,11 +4,17 @@
             <span class="{{user_circle_class}} user_circle"></span>
             <a class="user-presence-link" href="{{href}}">
                 <div class="user-name-and-status-wrapper">
+                    {{#if status_text}}
+                    <div class="user-name-and-status-emoji">
+                        {{> user_full_name .}}
+                    </div>
+                    <span class="status-text"><span class="status-emoji">{{> status_emoji status_emoji_info}}</span> {{status_text}}</span>
+                    {{else}}
                     <div class="user-name-and-status-emoji">
                         {{> user_full_name .}}
                         {{> status_emoji status_emoji_info}}
                     </div>
-                    <span class="status-text">{{status_text}}</span>
+                    {{/if}}
                 </div>
             </a>
         {{else if user_list_style.WITH_AVATAR}}
@@ -18,11 +24,17 @@
             </div>
             <a class="user-presence-link" href="{{href}}">
                 <div class="user-name-and-status-wrapper">
+                    {{#if status_text}}
+                    <div class="user-name-and-status-emoji">
+                        {{> user_full_name .}}
+                    </div>
+                    <span class="status-text"><span class="status-emoji">{{> status_emoji status_emoji_info}}</span> {{status_text}}</span>
+                    {{else}}
                     <div class="user-name-and-status-emoji">
                         {{> user_full_name .}}
                         {{> status_emoji status_emoji_info}}
                     </div>
-                    <span class="status-text">{{status_text}}</span>
+                    {{/if}}
                 </div>
             </a>
         {{else}}
