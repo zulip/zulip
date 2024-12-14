@@ -12,7 +12,7 @@ your organization. The following options are available on all
 The following options are available for organizations on Zulip Cloud Standard,
 Zulip Cloud Plus, and all self-hosted Zulip servers:
 
-- Oauth2 with Azure Active Directory
+- Oauth2 with Microsoft Entra ID (AzureAD)
 
 The following options are available for organizations on Zulip Cloud Plus, and all self-hosted Zulip servers:
 
