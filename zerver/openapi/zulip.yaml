@@ -18538,7 +18538,7 @@ paths:
                             type: boolean
                           azuread:
                             description: |
-                              Whether the user can authenticate using their Azure Active Directory account.
+                              Whether the user can authenticate using their Microsoft Entra ID account.
                             type: boolean
                           gitlab:
                             description: |
