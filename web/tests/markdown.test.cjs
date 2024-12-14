@@ -593,7 +593,7 @@ test("marked", ({override}) => {
         {
             input: ":)",
             expected:
-                '<p><span aria-label="smile" class="emoji emoji-1f642" role="img" title="smile">:smile:</span></p>',
+                '<p><span aria-label="smile" class="emoji emoji-1f604" role="img" title="smile">:smile:</span></p>',
             translate_emoticons: true,
         },
         // Test HTML escaping in custom Zulip rules
