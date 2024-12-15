@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as channel from "./channel.ts";
 import {electron_bridge} from "./electron_bridge.ts";
@@ -8,9 +8,9 @@ import {page_params} from "./page_params.ts";
 import * as presence from "./presence.ts";
 import * as watchdog from "./watchdog.ts";
 
-export const post_presence_response_schema = z.object({
-    msg: z.string(),
-    result: z.string(),
+export const post_presence_response_schema = v.object({
+    msg: v.string(),
+    result: v.string(),
     // A bunch of these fields below are .optional() due to the fact
     // that we have two modes of querying the presence endpoint:
     // ping_only mode and a mode where we also fetch presence data
@@ -18,18 +18,18 @@ export const post_presence_response_schema = z.object({
     // For ping_only requests, these fields are not returned in the
     // response. If we're fetching presence data however, they should
     // all be present, and send_presence_to_server() will validate that.
-    server_timestamp: z.number().optional(),
-    zephyr_mirror_active: z.boolean().optional(),
-    presences: z
-        .record(
-            z.string(),
-            z.object({
-                active_timestamp: z.number(),
-                idle_timestamp: z.number(),
+    server_timestamp: v.optional(v.number()),
+    zephyr_mirror_active: v.optional(v.boolean()),
+    presences: v.optional(
+        v.record(
+            v.string(),
+            v.object({
+                active_timestamp: v.number(),
+                idle_timestamp: v.number(),
             }),
-        )
-        .optional(),
-    presence_last_update_id: z.number().optional(),
+        ),
+    ),
+    presence_last_update_id: v.optional(v.number()),
 });
 
 /* Keep in sync with views.py:update_active_status_backend() */
@@ -146,7 +146,7 @@ export let send_presence_to_server = (redraw?: () => void): void => {
             last_update_id: presence.presence_last_update_id,
         },
         success(response) {
-            const data = post_presence_response_schema.parse(response);
+            const data = v.parse(post_presence_response_schema, response);
 
             // Update Zephyr mirror activity warning
             if (data.zephyr_mirror_active === false) {

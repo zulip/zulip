@@ -1,8 +1,8 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
+import * as v from "valibot";
 import WinChan from "winchan";
-import {z} from "zod";
 
 import render_navbar_gear_menu_popover from "../templates/popovers/navbar/navbar_gear_menu_popover.hbs";
 
@@ -133,23 +133,23 @@ export function initialize(): void {
                         }
 
                         // https://github.com/davidben/webathena/blob/0be20d9b1d62c19b4f94f77e621bd8721e504446/app/scripts-src/request_ticket.js
-                        const response_schema = z.discriminatedUnion("status", [
-                            z.object({
-                                status: z.literal("OK"),
-                                session: z.unknown(),
+                        const response_schema = v.variant("status", [
+                            v.object({
+                                status: v.literal("OK"),
+                                session: v.unknown(),
                             }),
-                            z.object({
-                                status: z.literal("ERROR"),
-                                code: z.string(),
-                                message: z.string(),
+                            v.object({
+                                status: v.literal("ERROR"),
+                                code: v.string(),
+                                message: v.string(),
                             }),
-                            z.object({
-                                status: z.literal("DENIED"),
-                                code: z.string(),
-                                message: z.string(),
+                            v.object({
+                                status: v.literal("DENIED"),
+                                code: v.string(),
+                                message: v.string(),
                             }),
                         ]);
-                        const r = response_schema.parse(raw_response);
+                        const r = v.parse(response_schema, raw_response);
                         if (r.status !== "OK") {
                             blueslip.warn(`Webathena: ${r.status}: ${r.message}`);
                             return;

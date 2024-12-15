@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as channel from "./channel.ts";
 import * as compose_banner from "./compose_banner.ts";
@@ -27,8 +27,8 @@ What in the heck is a zcommand?
 
 */
 
-const data_schema = z.object({
-    msg: z.string(),
+const data_schema = v.object({
+    msg: v.string(),
 });
 
 export function send(opts: {command: string; on_success?: (data: unknown) => void}): void {
@@ -66,7 +66,7 @@ export function switch_to_light_theme(): void {
     send({
         command: "/light",
         on_success(raw_data) {
-            const data = data_schema.parse(raw_data);
+            const data = v.parse(data_schema, raw_data);
             requestAnimationFrame(() => {
                 theme.set_theme_and_update(settings_config.color_scheme_values.light.code);
             });
@@ -91,7 +91,7 @@ export function switch_to_dark_theme(): void {
     send({
         command: "/dark",
         on_success(raw_data) {
-            const data = data_schema.parse(raw_data);
+            const data = v.parse(data_schema, raw_data);
             requestAnimationFrame(() => {
                 theme.set_theme_and_update(settings_config.color_scheme_values.dark.code);
             });

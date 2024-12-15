@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as common from "./lib/common.ts";
 
@@ -37,9 +37,10 @@ async function realm_creation_tests(page: Page): Promise<void> {
     // Open the confirmation URL
     const page_content = await page.evaluate(() => document.querySelector("body")!.textContent);
     assert(page_content !== null);
-    const {confirmation_key} = z
-        .object({confirmation_key: z.string()})
-        .parse(JSON.parse(page_content));
+    const {confirmation_key} = v.parse(
+        v.object({confirmation_key: v.string()}),
+        JSON.parse(page_content),
+    );
     const confirmation_url = `http://${host}/accounts/do_confirm/${confirmation_key}`;
     await page.goto(confirmation_url);
 

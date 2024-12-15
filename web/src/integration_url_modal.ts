@@ -1,7 +1,7 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_generate_integration_url_config_checkbox_modal from "../templates/settings/generate_integration_url_config_checkbox_modal.hbs";
 import render_generate_integration_url_config_text_modal from "../templates/settings/generate_integration_url_config_text_modal.hbs";
@@ -23,13 +23,13 @@ type ConfigOption = {
     validator: string;
 };
 
-const config_option_schema = z.object({
-    key: z.string(),
-    label: z.string(),
-    validator: z.string(),
+const config_option_schema = v.object({
+    key: v.string(),
+    label: v.string(),
+    validator: v.string(),
 });
 
-const config_options_schema = z.array(config_option_schema);
+const config_options_schema = v.array(config_option_schema);
 
 export function show_generate_integration_url_modal(api_key: string): void {
     const default_url_message = $t_html({defaultMessage: "Integration URL will appear here."});
@@ -76,7 +76,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         });
 
         function render_config(config: ConfigOption[]): void {
-            const validated_config = config_options_schema.parse(config);
+            const validated_config = v.parse(config_options_schema, config);
             $config_container.empty();
 
             for (const option of validated_config) {

@@ -1,5 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import * as v from "valibot";
 
 import * as channel from "./channel.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -266,7 +267,7 @@ export function set_up_handlers(): void {
     for (const setting_name of permission_settings) {
         const widget = settings_components.create_group_setting_widget({
             $pill_container: $(`#id_new_group_${CSS.escape(setting_name)}`),
-            setting_name: settings_components.group_setting_name_schema.parse(setting_name),
+            setting_name: v.parse(settings_components.group_setting_name_schema, setting_name),
         });
         group_setting_widget_map.set(setting_name, widget);
     }

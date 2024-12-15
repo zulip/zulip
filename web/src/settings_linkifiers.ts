@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import SortableJS from "sortablejs";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_confirm_delete_linkifier from "../templates/confirm_dialog/confirm_delete_linkifier.hbs";
 import render_admin_linkifier_edit_form from "../templates/settings/admin_linkifier_edit_form.hbs";
@@ -67,12 +67,13 @@ function open_linkifier_edit_form(linkifier_id: number): void {
             },
             error_continuation(xhr: JQuery.jqXHR<unknown>) {
                 $change_linkifier_button.prop("disabled", false);
-                const parsed = z
-                    .object({errors: z.record(z.array(z.string()).optional())})
-                    .safeParse(xhr.responseJSON);
+                const parsed = v.safeParse(
+                    v.object({errors: v.record(v.string(), v.optional(v.array(v.string())))}),
+                    xhr.responseJSON,
+                );
                 if (parsed.success) {
                     handle_linkifier_api_error(
-                        parsed.data.errors,
+                        parsed.output.errors,
                         $pattern_status,
                         $template_status,
                         $dialog_error_element,
@@ -269,12 +270,13 @@ export function build_page(): void {
                 },
                 error(xhr) {
                     $add_linkifier_button.prop("disabled", false);
-                    const parsed = z
-                        .object({errors: z.record(z.array(z.string()).optional())})
-                        .safeParse(xhr.responseJSON);
+                    const parsed = v.safeParse(
+                        v.object({errors: v.record(v.string(), v.optional(v.array(v.string())))}),
+                        xhr.responseJSON,
+                    );
                     if (parsed.success) {
                         handle_linkifier_api_error(
-                            parsed.data.errors,
+                            parsed.output.errors,
                             $pattern_status,
                             $template_status,
                             $linkifier_status,
