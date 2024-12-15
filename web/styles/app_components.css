@@ -436,6 +436,33 @@ input.settings_text_input {
     }
 }
 
+/* This is new clear_search_button style, it'll replace all
+old_clear_search_button for consistency. */
+.clear_search_button {
+    grid-area: 1 / 2 / 2 / 3;
+    padding: 0;
+    background: none;
+    color: var(--color-icons-inbox);
+    opacity: 0.4;
+    display: grid;
+    border: none;
+
+    &:hover {
+        opacity: 1;
+    }
+
+    &:focus,
+    &:focus-visible,
+    &:active {
+        box-shadow: none;
+        outline: none;
+    }
+
+    .zulip-icon-close {
+        align-self: center;
+    }
+}
+
 .grey-box {
     margin: 0;
     padding: 5px 10px;
