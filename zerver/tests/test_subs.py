@@ -493,7 +493,6 @@ class TestCreateStreams(ZulipTestCase):
             "invite_only": "false",
             "announce": "true",
             "principals": orjson.dumps([iago.id, aaron.id, cordelia.id, hamlet.id]).decode(),
-            "stream_post_policy": "1",
         }
 
         response = self.client_post("/json/users/me/subscriptions", data)
@@ -2230,127 +2229,6 @@ class StreamAdminTest(ZulipTestCase):
             f"/json/streams/{stream.id}", {"description": "Test description"}
         )
         self.assert_json_error(result, "You do not have permission to administer this channel.")
-
-    def test_change_to_stream_post_policy_admins(self) -> None:
-        user_profile = self.example_user("hamlet")
-        self.login_user(user_profile)
-
-        self.subscribe(user_profile, "stream_name1")
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
-
-        stream_id = get_stream("stream_name1", user_profile.realm).id
-        result = self.client_patch(
-            f"/json/streams/{stream_id}", {"is_announcement_only": orjson.dumps(True).decode()}
-        )
-        self.assert_json_success(result)
-        stream = get_stream("stream_name1", user_profile.realm)
-        self.assertEqual(stream.stream_post_policy, Stream.STREAM_POST_POLICY_ADMINS)
-
-        messages = get_topic_messages(user_profile, stream, "channel events")
-        expected_notification = (
-            f"@_**{user_profile.full_name}|{user_profile.id}** changed the "
-            "[posting permissions](/help/channel-posting-policy) for this channel:\n\n"
-            "* **Old permissions**: All channel members can post.\n"
-            "* **New permissions**: Only organization administrators can post."
-        )
-        self.assertEqual(messages[-1].content, expected_notification)
-
-        realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
-            modified_stream=stream,
-        ).last()
-        assert realm_audit_log is not None
-        expected_extra_data = {
-            RealmAuditLog.OLD_VALUE: Stream.STREAM_POST_POLICY_EVERYONE,
-            RealmAuditLog.NEW_VALUE: Stream.STREAM_POST_POLICY_ADMINS,
-            "property": "stream_post_policy",
-        }
-        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
-
-    def test_change_stream_post_policy_requires_admin(self) -> None:
-        user_profile = self.example_user("hamlet")
-        self.login_user(user_profile)
-
-        self.make_stream("stream_name1")
-        stream = self.subscribe(user_profile, "stream_name1")
-
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-
-        do_set_realm_property(user_profile.realm, "waiting_period_threshold", 10, acting_user=None)
-
-        def test_non_admin(how_old: int, is_new: bool, policy: int) -> None:
-            user_profile.date_joined = timezone_now() - timedelta(days=how_old)
-            user_profile.save()
-            self.assertEqual(user_profile.is_provisional_member, is_new)
-            stream = get_stream("stream_name1", user_profile.realm)
-            self.assertFalse(is_user_in_group(stream.can_administer_channel_group, user_profile))
-            result = self.client_patch(
-                f"/json/streams/{stream.id}", {"stream_post_policy": orjson.dumps(policy).decode()}
-            )
-            self.assert_json_error(result, "You do not have permission to administer this channel.")
-
-        policies = [
-            Stream.STREAM_POST_POLICY_ADMINS,
-            Stream.STREAM_POST_POLICY_MODERATORS,
-            Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS,
-        ]
-
-        for policy in policies:
-            test_non_admin(how_old=15, is_new=False, policy=policy)
-            test_non_admin(how_old=5, is_new=True, policy=policy)
-
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
-
-        for policy in policies:
-            stream = get_stream("stream_name1", user_profile.realm)
-            old_post_policy = stream.stream_post_policy
-            result = self.client_patch(
-                f"/json/streams/{stream.id}", {"stream_post_policy": orjson.dumps(policy).decode()}
-            )
-            self.assert_json_success(result)
-            stream = get_stream("stream_name1", user_profile.realm)
-            self.assertEqual(stream.stream_post_policy, policy)
-
-            messages = get_topic_messages(user_profile, stream, "channel events")
-            expected_notification = (
-                f"@_**{user_profile.full_name}|{user_profile.id}** changed the "
-                "[posting permissions](/help/channel-posting-policy) for this channel:\n\n"
-                f"* **Old permissions**: {Stream.POST_POLICIES[old_post_policy]}.\n"
-                f"* **New permissions**: {Stream.POST_POLICIES[policy]}."
-            )
-
-            self.assertEqual(messages[-1].content, expected_notification)
-
-            realm_audit_log = RealmAuditLog.objects.filter(
-                event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
-                modified_stream=stream,
-            ).last()
-            assert realm_audit_log is not None
-            expected_extra_data = {
-                RealmAuditLog.OLD_VALUE: old_post_policy,
-                RealmAuditLog.NEW_VALUE: policy,
-                "property": "stream_post_policy",
-            }
-            self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
-
-        # Test non-admin should be able to change policy if they are
-        # part of can_administer_channel_group
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        user_profile_group = check_add_user_group(
-            user_profile.realm, "user_profile_group", [user_profile], acting_user=user_profile
-        )
-        do_change_stream_group_based_setting(
-            stream,
-            "can_administer_channel_group",
-            user_profile_group,
-            acting_user=None,
-        )
-        stream = get_stream("stream_name1", user_profile.realm)
-        old_post_policy = stream.stream_post_policy
-        result = self.client_patch(
-            f"/json/streams/{stream.id}", {"stream_post_policy": orjson.dumps(policies[0]).decode()}
-        )
-        self.assert_json_success(result)
 
     def test_change_stream_message_retention_days_notifications(self) -> None:
         user_profile = self.example_user("desdemona")

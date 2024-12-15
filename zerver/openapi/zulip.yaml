@@ -10214,13 +10214,16 @@ paths:
         Note that the ability to subscribe oneself and/or other users to a specified
         channel depends on the [channel's privacy settings](/help/channel-permissions).
 
-        **Changes**: Before Zulip 8.0 (feature level 208), if a user
-        specified by the [`principals`][principals-param] parameter was
-        a deactivated user, or did not exist, then an HTTP status code
-        of 403 was returned with `code: "UNAUTHORIZED_PRINCIPAL"` in the
-        error response. As of this feature level, an HTTP status code of
-        400 is returned with `code: "BAD_REQUEST"` in the error response
-        for these cases.
+        **Changes**: Removed `stream_post_policy` and `is_announcement_only`
+        parameters in Zulip 10.0 (feature level 333), as permission to post
+        in the channel is now controlled by `can_send_message_group`.
+
+        Before Zulip 8.0 (feature level 208), if a user specified by the
+        [`principals`][principals-param] parameter was a deactivated user,
+        or did not exist, then an HTTP status code of 403 was returned with
+        `code: "UNAUTHORIZED_PRINCIPAL"` in the error response. As of this
+        feature level, an HTTP status code of 400 is returned with
+        `code: "BAD_REQUEST"` in the error response for these cases.
 
         [principals-param]: /api/subscribe#parameter-principals
       x-curl-examples-parameters:
@@ -10347,8 +10350,6 @@ paths:
                   example: true
                 history_public_to_subscribers:
                   $ref: "#/components/schemas/HistoryPublicToSubscribers"
-                stream_post_policy:
-                  $ref: "#/components/schemas/ChannelPostPolicy"
                 message_retention_days:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 can_remove_subscribers_group:
@@ -10375,8 +10376,6 @@ paths:
               is_default_stream:
                 contentType: application/json
               history_public_to_subscribers:
-                contentType: application/json
-              stream_post_policy:
                 contentType: application/json
               can_remove_subscribers_group:
                 contentType: application/json
@@ -19970,6 +19969,10 @@ paths:
         Note that an organization administrator's ability to change a
         [private channel's permissions](/help/channel-permissions#private-channels)
         depends on them being subscribed to the channel.
+
+        **Changes**: Removed `stream_post_policy` and `is_announcement_only`
+        parameters in Zulip 10.0 (feature level 333), as permission to post
+        in the channel is now controlled by `can_send_message_group`.
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -20017,15 +20020,6 @@ paths:
                     Change whether the channel is a private channel.
                   type: boolean
                   example: true
-                is_announcement_only:
-                  deprecated: true
-                  description: |
-                    Whether the channel is limited to announcements.
-
-                    **Changes**: Deprecated in Zulip 3.0 (feature level 1). Clients
-                    should use `stream_post_policy` instead.
-                  type: boolean
-                  example: true
                 is_web_public:
                   description: |
                     Change whether the channel is a web-public channel.
@@ -20070,8 +20064,6 @@ paths:
                     could only be changed using the [dedicated API endpoint](/api/add-default-stream).
                   type: boolean
                   example: false
-                stream_post_policy:
-                  $ref: "#/components/schemas/ChannelPostPolicy"
                 message_retention_days:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 can_remove_subscribers_group:
@@ -20192,15 +20184,11 @@ paths:
             encoding:
               is_private:
                 contentType: application/json
-              is_announcement_only:
-                contentType: application/json
               is_web_public:
                 contentType: application/json
               history_public_to_subscribers:
                 contentType: application/json
               is_default_stream:
-                contentType: application/json
-              stream_post_policy:
                 contentType: application/json
               can_remove_subscribers_group:
                 contentType: application/json
@@ -24677,23 +24665,6 @@ components:
         throw an error.
       type: string
       example: Hello
-    ChannelPostPolicy:
-      description: |
-        [Policy][permission-level] for which users can post messages to the channel.
-
-        - 1 = Any user can post.
-        - 2 = Only administrators can post.
-        - 3 = Only [full members][calc-full-member] can post.
-        - 4 = Only moderators can post.
-
-        **Changes**: New in Zulip 3.0 (feature level 1), replacing the previous
-        `is_announcement_only` boolean.
-
-        [permission-level]: /api/roles-and-permissions#permission-levels
-        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
-      type: integer
-      default: 1
-      example: 2
     HistoryPublicToSubscribers:
       description: |
         Whether the channel's message history should be available to
