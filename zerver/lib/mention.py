@@ -324,3 +324,7 @@ def get_user_group_mention_display_name(user_group: NamedUserGroup) -> StrPromis
         return SystemGroups.GROUP_DISPLAY_NAME_MAP[user_group.name]
 
     return user_group.name
+
+
+def silent_mention_syntax_for_user_group(user_group: NamedUserGroup) -> str:
+    return f"@_*{user_group.name}*"
