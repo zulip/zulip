@@ -1034,7 +1034,10 @@ def get_api_key_fetch_authenticate_failure(return_data: dict[str, bool]) -> Json
     if return_data.get("password_reset_needed"):
         return PasswordResetRequiredError()
     if return_data.get("invalid_subdomain"):
-        raise InvalidSubdomainError
+        # We must not report invalid_subdomain here; that value is intended only for informing server logs,
+        # and should never be exposed to end users, since it would leak whether there exists
+        # an account in a different organization with the same email address.
+        return AuthenticationFailedError()
 
     return AuthenticationFailedError()
 
