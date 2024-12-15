@@ -1394,7 +1394,7 @@ function handle_post_view_change(
 
     if (filter.contains_only_private_messages()) {
         compose_closed_ui.update_buttons_for_private();
-    } else if (filter.is_conversation_view() || filter.includes_full_stream_history()) {
+    } else if (filter.includes_full_stream_history()) {
         compose_closed_ui.update_buttons_for_stream_views();
     } else {
         compose_closed_ui.update_buttons_for_non_specific_views();

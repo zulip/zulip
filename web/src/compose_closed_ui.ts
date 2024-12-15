@@ -137,14 +137,40 @@ export function update_buttons_for_private(): void {
     update_buttons(disable_reply);
 }
 
+function get_current_dm_recipient_ids_string(): string {
+    const selected_message = message_lists.current?.selected_message();
+    const recipient_id = selected_message?.display_recipient;
+
+    if (Array.isArray(recipient_id)) {
+        return recipient_id.map((recipient: {id: number}) => recipient.id).join(",");
+    }
+    return "";
+}
+
 export function update_buttons_for_stream_views(): void {
     $("#new_conversation_button").attr("data-conversation-type", "stream");
     update_buttons(should_disable_compose_reply_button_for_stream());
 }
 
 export function update_buttons_for_non_specific_views(): void {
-    $("#new_conversation_button").attr("data-conversation-type", "non-specific");
-    update_buttons(should_disable_compose_reply_button_for_stream());
+    let conversation_type = "non-specific";
+    let disable_reply = should_disable_compose_reply_button_for_stream();
+    const recipient_ids_string = get_current_dm_recipient_ids_string();
+
+    if (recipient_ids_string) {
+        if (!message_util.user_can_send_direct_message(recipient_ids_string)) {
+            disable_reply = true;
+        } else {
+            disable_reply = false;
+        }
+        conversation_type = "direct";
+    } else {
+        conversation_type = "stream";
+        disable_reply = should_disable_compose_reply_button_for_stream();
+    }
+
+    $("#new_conversation_button").attr("data-conversation-type", conversation_type);
+    update_buttons(disable_reply);
 }
 
 function set_reply_button_label(label: string): void {
@@ -180,6 +206,8 @@ export function initialize(): void {
             // belongs to.
             if (maybe_get_selected_message_stream_id() !== undefined) {
                 update_buttons_for_stream_views();
+                update_buttons_for_non_specific_views();
+            } else {
                 update_buttons_for_non_specific_views();
             }
         }
