@@ -253,6 +253,18 @@ def fix_stream_permission_group_settings(
     table = get_db_table(Stream)
     for stream in data[table]:
         for setting_name in Stream.stream_permission_group_settings:
+            if (
+                setting_name == "can_send_message_group"
+                and stream["stream_post_policy"] == Stream.STREAM_POST_POLICY_MODERATORS
+            ):
+                # This block is needed when importing data for Rocket.Chat.
+                # While converting the data into Zulip supported format,
+                # stream_post_policy for read-only Rocket.Chat channel is
+                # set to STREAM_POST_POLICY_MODERATORS and so we need to
+                # set the can_send_message_group setting accordingly.
+                stream[setting_name] = system_groups_name_dict[SystemGroups.MODERATORS]
+                continue
+
             stream[setting_name] = get_stream_permission_default_group(
                 setting_name, system_groups_name_dict
             )
