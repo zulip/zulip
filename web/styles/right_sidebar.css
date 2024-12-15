@@ -477,7 +477,7 @@ $user_status_emoji_width: 24px;
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;
-            /* Prevent text from colliding with #clear_search_button */
+            /* Prevent text from colliding with #old_clear_search_button */
             padding-right: 28px;
             height: var(--line-height-sidebar-row-prominent);
             box-sizing: border-box;

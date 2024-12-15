@@ -412,7 +412,7 @@ input.settings_text_input {
    should be replaced with a Zulip icon,
    and its formatting should have no extra
    space around its viewbox in SVG. */
-.clear_search_button {
+.old_clear_search_button {
     &:hover {
         color: var(--color-text-clear-search-button-hover);
     }

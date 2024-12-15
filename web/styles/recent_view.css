@@ -162,7 +162,7 @@
         overflow: hidden;
     }
 
-    .clear_search_button {
+    .old_clear_search_button {
         grid-area: clear-search;
         padding: 0;
     }

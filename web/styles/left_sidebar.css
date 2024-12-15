@@ -84,7 +84,7 @@
     .topic_search_section {
         margin: 3px 0;
 
-        .clear_search_button {
+        .old_clear_search_button {
             grid-area: clear-button;
             /* Override app-component positioning. */
             position: static;
@@ -1745,7 +1745,7 @@ li.topic-list-item {
         padding-right: 30px;
     }
 
-    .clear_search_button {
+    .old_clear_search_button {
         /* Use the border-box model so flex
            can do its thing despite whatever
            padding and border we specify. */
