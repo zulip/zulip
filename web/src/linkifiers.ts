@@ -18,6 +18,21 @@ export function get_linkifier_map(): LinkifierMap {
     return linkifier_map;
 }
 
+// Helper function to validate regex syntax
+function is_valid_regex(pattern: string): boolean {
+    try {
+        new RegExp(pattern);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+// Helper function to escape special characters in patterns
+function escape_special_characters(pattern: string): string {
+    return pattern.replaceAll(/([.*+?^${}()|[\]\\])/g, "\\$1");
+}
+
 function python_to_js_linkifier(
     pattern: string,
     url: string,
@@ -59,24 +74,20 @@ function python_to_js_linkifier(
 
         pattern = pattern.replace(inline_flag_re, "");
     }
-    // Ideally we should have been checking that linkifiers
-    // begin with certain characters but since there is no
-    // support for negative lookbehind in javascript, we check
-    // for this condition in `contains_backend_only_syntax()`
-    // function. If the condition is satisfied then the message
-    // is rendered locally, otherwise, we return false there and
-    // message is rendered on the backend which has proper support
-    // for negative lookbehind.
+
+    // Escape special characters in the pattern to avoid syntax issues
+    pattern = escape_special_characters(pattern);
+
+    // Ensure patterns end with (?!\w) for proper matching
     pattern = pattern + /(?!\w)/.source;
+
     let final_regex = null;
     try {
         final_regex = new RegExp(pattern, js_flags);
     } catch (error) {
-        // We have an error computing the generated regex syntax.
-        // We'll ignore this linkifier for now, but log this
-        // failure for debugging later.
+        // Log detailed error for debugging invalid regex patterns
         if (error instanceof SyntaxError) {
-            blueslip.error("python_to_js_linkifier failure!", {pattern}, error);
+            blueslip.error("python_to_js_linkifier failure!", { pattern, js_flags }, error.message);
         } else {
             // Don't swallow any other (unexpected) exceptions.
             /* istanbul ignore next */
@@ -91,6 +102,12 @@ export function update_linkifier_rules(linkifiers: Linkifier[]): void {
     linkifier_map.clear();
 
     for (const linkifier of linkifiers) {
+        // Validate the regex pattern before processing
+        if (!is_valid_regex(linkifier.pattern)) {
+            blueslip.warn("Skipping invalid linkifier pattern", { pattern: linkifier.pattern });
+            continue;
+        }
+
         const [regex, url_template, group_number_to_name] = python_to_js_linkifier(
             linkifier.pattern,
             linkifier.url_template,
