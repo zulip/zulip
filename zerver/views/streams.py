@@ -688,9 +688,19 @@ def add_subscriptions_backend(
     authorized_streams, unauthorized_streams = filter_stream_authorization(
         user_profile, existing_streams
     )
+    if (
+        len(unauthorized_streams) > 0
+        and authorization_errors_fatal
+        and unauthorized_streams[0].deactivated
+    ):
+        raise JsonableError(
+            _("Unable to access archived channel ({channel_name}).").format(
+                channel_name=unauthorized_streams[0].name,
+            )
+        )
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
         raise JsonableError(
-            _("Unable to access channel ({channel_name}).").format(
+            _("Unable to access private channel ({channel_name}).").format(
                 channel_name=unauthorized_streams[0].name,
             )
         )

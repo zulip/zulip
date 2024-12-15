@@ -424,7 +424,16 @@ function create_stream(): void {
         },
         error(xhr): void {
             const error_message = z.object({msg: z.string().optional()}).parse(xhr.responseJSON);
-            if (error_message?.msg?.includes("access")) {
+            if (error_message?.msg?.includes("archived")) {
+                stream_name_error.report_already_exists();
+                stream_name_error.select();
+                const message = $t_html({
+                    defaultMessage:
+                        "Error creating channel: An archived channel with this name already exists.",
+                });
+
+                ui_report.error(message, undefined, $(".stream_create_info"));
+            } else if (error_message?.msg?.includes("private")) {
                 // If we can't access the stream, we can safely
                 // assume it's a duplicate stream that we are not invited to.
                 //
@@ -437,7 +446,7 @@ function create_stream(): void {
                 stream_name_error.select();
                 const message = $t_html({
                     defaultMessage:
-                        "Error creating channel: A channel with this name already exists.",
+                        "Error creating channel: A private channel with this name already exists.",
                 });
 
                 ui_report.error(message, undefined, $(".stream_create_info"));
