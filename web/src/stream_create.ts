@@ -416,30 +416,21 @@ function create_stream(): void {
             // The rest of the work is done via the subscribe event we will get
         },
         error(xhr): void {
-            const error_message = z.object({msg: z.string().optional()}).parse(xhr.responseJSON);
-            if (error_message?.msg?.includes("access")) {
-                // If we can't access the stream, we can safely
-                // assume it's a duplicate stream that we are not invited to.
-                //
-                // BUG: This check should be using error codes, not
-                // parsing the error string, so it works correctly
-                // with i18n.  And likely we should be reporting the
-                // error text directly rather than turning it into
-                // "Error creating channel"?
-                stream_name_error.report_already_exists();
-                stream_name_error.select();
-                const message = $t_html({
-                    defaultMessage:
-                        "Error creating channel: A channel with this name already exists.",
-                });
-
-                ui_report.error(message, undefined, $(".stream_create_info"));
-            } else {
-                ui_report.error(
-                    $t_html({defaultMessage: "Error creating channel"}),
-                    xhr,
-                    $(".stream_create_info"),
-                );
+            if (xhr.responseJSON !== undefined) {
+                const {code} = z.object({code: z.string()}).parse(xhr.responseJSON);
+                if (code === "PERMISSION_DENIED") {
+                    const message = $t_html({
+                        defaultMessage:
+                            "Error creating channel: A channel with this name already exists.",
+                    });
+                    ui_report.error(message, undefined, $(".stream_create_info"));
+                } else {
+                    ui_report.error(
+                        $t_html({defaultMessage: "Error creating channel"}),
+                        xhr,
+                        $(".stream_create_info"),
+                    );
+                }
             }
             loading.destroy_indicator($("#stream_creating_indicator"));
         },

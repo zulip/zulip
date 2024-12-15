@@ -170,7 +170,7 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
         ],
         authorization_errors_fatal=True,
     )
-    assert_error_response(result)
+    assert_error_response(result, code="PERMISSION_DENIED")
     validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "400")
 
 

@@ -50,6 +50,7 @@ from zerver.decorator import (
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.exceptions import (
+    CannotAccessChannelError,
     CannotManageDefaultChannelError,
     JsonableError,
     OrganizationOwnerRequiredError,
@@ -676,11 +677,8 @@ def add_subscriptions_backend(
         user_profile, existing_streams
     )
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
-        raise JsonableError(
-            _("Unable to access channel ({channel_name}).").format(
-                channel_name=unauthorized_streams[0].name,
-            )
-        )
+        raise CannotAccessChannelError(unauthorized_streams[0].name)
+
     # Newly created streams are also authorized for the creator
     streams = authorized_streams + created_streams
 

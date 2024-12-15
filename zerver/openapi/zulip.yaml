@@ -10592,11 +10592,14 @@ paths:
                       {
                         "msg": "Unable to access channel (private).",
                         "result": "error",
-                        "code": "BAD_REQUEST",
+                        "code": "PERMISSION_DENIED",
                       }
                     description: |
                       An example JSON response for when the requesting user does not have
                       access to a private channel and `"authorization_errors_fatal": true`:
+
+                      **Changes**: In Zulip 10.0 (feature level 338), added the specific error code
+                      `PERMISSION_DENIED` for this, which was previously a more generic name of `BAD_REQUEST`.
     patch:
       operationId: update-subscriptions
       summary: Update subscriptions
