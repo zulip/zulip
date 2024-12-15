@@ -1,9 +1,9 @@
-import type {z} from "zod";
+import type * as v from "valibot";
 
 import {realm} from "./state_data.ts";
 import type {thumbnail_format_schema} from "./state_data.ts";
 
-type ThumbnailFormat = z.infer<typeof thumbnail_format_schema>;
+type ThumbnailFormat = v.InferOutput<typeof thumbnail_format_schema>;
 
 export const thumbnail_formats: ThumbnailFormat[] = [];
 

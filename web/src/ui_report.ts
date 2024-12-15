@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
@@ -73,9 +73,9 @@ export function generic_row_button_error(xhr: JQuery.jqXHR, $button: JQuery): vo
     if (
         xhr.status >= 400 &&
         xhr.status < 500 &&
-        (parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON)).success
+        (parsed = v.safeParse(v.object({msg: v.string()}), xhr.responseJSON)).success
     ) {
-        const $error = $("<p>").addClass("text-error").text(parsed.data.msg);
+        const $error = $("<p>").addClass("text-error").text(parsed.output.msg);
         $button.closest("td").empty().append($error);
     } else {
         $button.text($t({defaultMessage: "Failed!"}));

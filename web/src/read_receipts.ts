@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import SimpleBar from "simplebar";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_read_receipts from "../templates/read_receipts.hbs";
 import render_read_receipts_modal from "../templates/read_receipts_modal.hbs";
@@ -15,8 +15,8 @@ import * as people from "./people.ts";
 import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
 
-const read_receipts_api_response_schema = z.object({
-    user_ids: z.array(z.number()),
+const read_receipts_api_response_schema = v.object({
+    user_ids: v.array(v.number()),
 });
 
 export function show_user_list(message_id: number): void {
@@ -48,7 +48,7 @@ export function show_user_list(message_id: number): void {
                         if ($modal.length === 0) {
                             return;
                         }
-                        const data = read_receipts_api_response_schema.parse(raw_data);
+                        const data = v.parse(read_receipts_api_response_schema, raw_data);
                         const users = data.user_ids.map((id) => {
                             const user = people.get_user_by_id_assert_valid(id);
                             return user;

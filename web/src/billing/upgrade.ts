@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import * as v from "valibot";
 
 import {localstorage} from "../localstorage.ts";
 import * as portico_modals from "../portico/portico_modals.ts";
@@ -37,11 +37,11 @@ if (page_params.fixed_price !== null) {
 
 let current_license_count = page_params.seat_count;
 
-const upgrade_response_schema = z.object({
+const upgrade_response_schema = v.object({
     // Returned if we charged the user and need to verify.
-    stripe_invoice_id: z.string().optional(),
+    stripe_invoice_id: v.optional(v.string()),
     // Returned if we directly upgraded the org (for free trial or invoice payments).
-    organization_upgrade_successful: z.boolean().optional(),
+    organization_upgrade_successful: v.optional(v.boolean()),
 });
 
 function update_due_today(schedule: string): void {
@@ -60,7 +60,7 @@ function update_due_today(schedule: string): void {
     }
 
     $("#due-today .due-today-duration").text(num_months === 1 ? "1 month" : "12 months");
-    const schedule_typed = helpers.schedule_schema.parse(schedule);
+    const schedule_typed = v.parse(helpers.schedule_schema, schedule);
     const pre_flat_discount_price = prices[schedule_typed] * current_license_count;
     $("#pre-discount-renewal-cents").text(helpers.format_money(pre_flat_discount_price));
     const flat_discounted_months = Math.min(num_months, page_params.flat_discounted_months);
@@ -172,7 +172,7 @@ export const initialize = (): void => {
                     return;
                 }
 
-                const response_data = upgrade_response_schema.parse(response);
+                const response_data = v.parse(upgrade_response_schema, response);
                 if (response_data.stripe_invoice_id) {
                     window.location.replace(
                         `${page_params.billing_base_url}/billing/event_status/?stripe_invoice_id=${response_data.stripe_invoice_id}`,
@@ -188,9 +188,10 @@ export const initialize = (): void => {
                 $("#org-upgrade-button .upgrade-button-loader").hide();
                 // Add a generic help text for card errors.
                 if (
-                    z
-                        .object({error_description: z.literal("card error")})
-                        .safeParse(xhr.responseJSON).success
+                    v.safeParse(
+                        v.object({error_description: v.literal("card error")}),
+                        xhr.responseJSON,
+                    ).success
                 ) {
                     const error_text = $error_box.text();
                     $error_box.text(`${error_text} Please fix this issue or use a different card.`);
@@ -243,7 +244,7 @@ export const initialize = (): void => {
             [],
             "POST",
             (response) => {
-                const response_data = helpers.stripe_session_url_schema.parse(response);
+                const response_data = v.parse(helpers.stripe_session_url_schema, response);
                 window.location.replace(response_data.stripe_session_url);
             },
             () => {

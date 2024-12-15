@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
@@ -11,12 +11,12 @@ import * as narrow_state from "./narrow_state.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as util from "./util.ts";
 
-const msg_match_narrow_api_response_schema = z.object({
-    messages: z.record(
-        z.string(),
-        z.object({
-            match_content: z.string(),
-            match_subject: z.string(),
+const msg_match_narrow_api_response_schema = v.object({
+    messages: v.record(
+        v.string(),
+        v.object({
+            match_content: v.string(),
+            match_subject: v.string(),
         }),
     ),
 });
@@ -40,7 +40,7 @@ export function maybe_add_narrowed_messages(
         },
         timeout: 5000,
         success(raw_data) {
-            const data = msg_match_narrow_api_response_schema.parse(raw_data);
+            const data = v.parse(msg_match_narrow_api_response_schema, raw_data);
 
             if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {
                 // We unnarrowed or moved to Recent Conversations in the meantime.

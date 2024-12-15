@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import * as v from "valibot";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
@@ -67,7 +68,7 @@ function get_events_success(events) {
     const dispatch_event = function dispatch_event(event) {
         switch (event.type) {
             case "message": {
-                const msg = server_message_schema.parse(event.message);
+                const msg = v.parse(server_message_schema, event.message);
                 msg.flags = event.flags;
                 if (event.local_message_id) {
                     msg.local_id = event.local_message_id;

@@ -1,0 +1,37 @@
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index 31a520444c4767ef7ba1bd0bd336fd8c458d722a..bd76fea5d9c706f0677d79be9c6c452123a93439 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -3430,10 +3430,16 @@ type LastTupleItem<TTuple extends [unknown, ...unknown[]]> = TTuple[TTuple exten
+  * Converts union to intersection type.
+  */
+ type UnionToIntersect<TUnion> = (TUnion extends any ? (arg: TUnion) => void : never) extends (arg: infer Intersect) => void ? Intersect : never;
++/**
++ * Converts union to tuple type using an accumulator.
++ *
++ * For more information: {@link https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-5.html#tail-recursion-elimination-on-conditional-types}
++ */
++type UnionToTupleHelper<TUnion, TResult extends unknown[]> = UnionToIntersect<TUnion extends never ? never : () => TUnion> extends () => infer TLast ? UnionToTupleHelper<Exclude<TUnion, TLast>, [TLast, ...TResult]> : TResult;
+ /**
+  * Converts union to tuple type.
+  */
+-type UnionToTuple<TUnion> = UnionToIntersect<TUnion extends never ? never : () => TUnion> extends () => infer TLast ? [...UnionToTuple<Exclude<TUnion, TLast>>, TLast] : [];
++type UnionToTuple<TUnion> = UnionToTupleHelper<TUnion, []>;
+ /**
+  * Checks if a type is `any`.
+  */
+diff --git a/dist/index.js b/dist/index.js
+index 79d6061331c1ab04dd025fc3e3ffda55c6829758..7b211729d14c59e32854a1598e9b409e6f2ae251 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -235,10 +235,6 @@ function isValiError(error) {
+ 
+ // src/utils/ValiError/ValiError.ts
+ var ValiError = class extends Error {
+-  /**
+-   * The error issues.
+-   */
+-  issues;
+   /**
+    * Creates a Valibot error with useful information.
+    *

@@ -1,80 +1,79 @@
-import {z} from "zod";
+import * as v from "valibot";
 
-const display_recipient_users_schema = z.object({
-    id: z.number(),
-    email: z.string(),
-    full_name: z.string(),
+const display_recipient_users_schema = v.object({
+    id: v.number(),
+    email: v.string(),
+    full_name: v.string(),
 });
 
-export const message_edit_history_schema = z.array(
-    z.object({
-        prev_content: z.optional(z.string()),
-        prev_rendered_content: z.optional(z.string()),
-        prev_stream: z.optional(z.number()),
-        prev_topic: z.optional(z.string()),
-        stream: z.optional(z.number()),
-        timestamp: z.number(),
-        topic: z.optional(z.string()),
-        user_id: z.number().nullable(),
+export const message_edit_history_schema = v.array(
+    v.object({
+        prev_content: v.optional(v.string()),
+        prev_rendered_content: v.optional(v.string()),
+        prev_stream: v.optional(v.number()),
+        prev_topic: v.optional(v.string()),
+        stream: v.optional(v.number()),
+        timestamp: v.number(),
+        topic: v.optional(v.string()),
+        user_id: v.nullable(v.number()),
     }),
 );
 
-const message_reaction_schema = z.array(
-    z.object({
-        emoji_name: z.string(),
-        emoji_code: z.string(),
-        reaction_type: z.enum(["unicode_emoji", "realm_emoji", "zulip_extra_emoji"]),
-        user_id: z.number(),
+const message_reaction_schema = v.array(
+    v.object({
+        emoji_name: v.string(),
+        emoji_code: v.string(),
+        reaction_type: v.picklist(["unicode_emoji", "realm_emoji", "zulip_extra_emoji"]),
+        user_id: v.number(),
     }),
 );
 
-const submessage_schema = z.array(
-    z.object({
-        msg_type: z.string(),
-        content: z.string(),
-        message_id: z.number(),
-        sender_id: z.number(),
-        id: z.number(),
+const submessage_schema = v.array(
+    v.object({
+        msg_type: v.string(),
+        content: v.string(),
+        message_id: v.number(),
+        sender_id: v.number(),
+        id: v.number(),
     }),
 );
 
-export const server_message_schema = z
-    .object({
-        avatar_url: z.string().nullish(),
-        client: z.string(),
-        content: z.string(),
-        content_type: z.enum(["text/html", "text/x-markdown"]),
-        display_recipient: z.union([z.string(), z.array(display_recipient_users_schema)]),
-        edit_history: z.optional(message_edit_history_schema),
-        id: z.number(),
-        is_me_message: z.boolean(),
-        last_edit_timestamp: z.number().optional(),
+export const server_message_schema = v.intersect([
+    v.object({
+        avatar_url: v.nullish(v.string()),
+        client: v.string(),
+        content: v.string(),
+        content_type: v.picklist(["text/html", "text/x-markdown"]),
+        display_recipient: v.union([v.string(), v.array(display_recipient_users_schema)]),
+        edit_history: v.optional(message_edit_history_schema),
+        id: v.number(),
+        is_me_message: v.boolean(),
+        last_edit_timestamp: v.optional(v.number()),
         reactions: message_reaction_schema,
-        recipient_id: z.number(),
-        sender_email: z.string(),
-        sender_full_name: z.string(),
-        sender_id: z.number(),
-        sender_realm_str: z.string(),
+        recipient_id: v.number(),
+        sender_email: v.string(),
+        sender_full_name: v.string(),
+        sender_id: v.number(),
+        sender_realm_str: v.string(),
         submessages: submessage_schema,
-        timestamp: z.number(),
-    })
-    .and(
-        z.discriminatedUnion("type", [
-            z.object({
-                type: z.literal("stream"),
-                subject: z.string(),
-                stream_id: z.number(),
-                topic_links: z.array(
-                    z.object({
-                        text: z.string(),
-                        url: z.string(),
-                    }),
-                ),
-            }),
-            z.object({
-                type: z.literal("private"),
-                subject: z.literal(""),
-                topic_links: z.array(z.never()),
-            }),
-        ]),
-    );
+        timestamp: v.number(),
+    }),
+    v.variant("type", [
+        v.object({
+            type: v.literal("stream"),
+            subject: v.string(),
+            stream_id: v.number(),
+            topic_links: v.array(
+                v.object({
+                    text: v.string(),
+                    url: v.string(),
+                }),
+            ),
+        }),
+        v.object({
+            type: v.literal("private"),
+            subject: v.literal(""),
+            topic_links: v.array(v.never()),
+        }),
+    ]),
+]);

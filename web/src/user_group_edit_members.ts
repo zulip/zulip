@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_leave_user_group_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_user_group_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
@@ -364,15 +364,16 @@ function add_new_members({
     function invite_failure(xhr?: JQuery.jqXHR): void {
         let message = "Failed to add user!";
 
-        const parsed = z
-            .object({
-                result: z.literal("error"),
-                msg: z.string(),
-            })
-            .safeParse(xhr?.responseJSON);
+        const parsed = v.safeParse(
+            v.object({
+                result: v.literal("error"),
+                msg: v.string(),
+            }),
+            xhr?.responseJSON,
+        );
 
         if (parsed.success) {
-            message = parsed.data.msg;
+            message = parsed.output.msg;
         }
         show_user_group_membership_request_result({
             message,

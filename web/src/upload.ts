@@ -3,7 +3,7 @@ import {Uppy} from "@uppy/core";
 import Tus from "@uppy/tus";
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_upload_banner from "../templates/compose_banner/upload_banner.hbs";
 
@@ -459,8 +459,8 @@ export function setup_upload(config: Config): Uppy {
         let parsed;
         const message =
             response !== undefined &&
-            (parsed = z.object({msg: z.string()}).safeParse(response.body)).success
-                ? parsed.data.msg
+            (parsed = v.safeParse(v.object({msg: v.string()}), response.body)).success
+                ? parsed.output.msg
                 : undefined;
         // Hide the upload status banner on error so only the error banner shows
         hide_upload_banner(uppy, config, file.id);
