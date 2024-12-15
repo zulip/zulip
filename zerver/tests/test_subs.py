@@ -2731,6 +2731,119 @@ class StreamAdminTest(ZulipTestCase):
         for setting_name in Stream.stream_permission_group_settings:
             self.do_test_change_stream_permission_setting(setting_name)
 
+    def test_notification_on_changing_stream_posting_permission(self) -> None:
+        desdemona = self.example_user("desdemona")
+        realm = desdemona.realm
+        stream = self.subscribe(desdemona, "stream_name1")
+
+        everyone_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        self.login("desdemona")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"can_send_message_group": orjson.dumps({"new": moderators_group.id}).decode()},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", realm)
+        self.assertEqual(stream.can_send_message_group_id, moderators_group.id)
+
+        messages = get_topic_messages(desdemona, stream, "channel events")
+        expected_notification = (
+            f"@_**{desdemona.full_name}|{desdemona.id}** changed the "
+            "[posting permissions](/help/channel-posting-policy) for this channel:\n\n"
+            f"* **Old**: @_*{everyone_group.name}*\n"
+            f"* **New**: @_*{moderators_group.name}*"
+        )
+        self.assertEqual(messages[-1].content, expected_notification)
+
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+        )
+        hamlet = self.example_user("hamlet")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {
+                "can_send_message_group": orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [hamlet.id],
+                            "direct_subgroups": [owners_group.id, moderators_group.id],
+                        }
+                    }
+                ).decode()
+            },
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", realm)
+        self.assertCountEqual(
+            list(stream.can_send_message_group.direct_subgroups.all()),
+            [moderators_group, owners_group],
+        )
+        self.assertCountEqual(list(stream.can_send_message_group.direct_members.all()), [hamlet])
+
+        messages = get_topic_messages(desdemona, stream, "channel events")
+        expected_notification = (
+            f"@_**{desdemona.full_name}|{desdemona.id}** changed the "
+            "[posting permissions](/help/channel-posting-policy) for this channel:\n\n"
+            f"* **Old**: @_*{moderators_group.name}*\n"
+            f"* **New**: @_*{owners_group.name}*, @_*{moderators_group.name}*, @_**{hamlet.full_name}|{hamlet.id}**"
+        )
+        self.assertEqual(messages[-1].content, expected_notification)
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {
+                "can_send_message_group": orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [desdemona.id],
+                            "direct_subgroups": [hamletcharacters_group.id],
+                        }
+                    }
+                ).decode()
+            },
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", realm)
+        self.assertCountEqual(
+            list(stream.can_send_message_group.direct_subgroups.all()), [hamletcharacters_group]
+        )
+        self.assertCountEqual(list(stream.can_send_message_group.direct_members.all()), [desdemona])
+
+        messages = get_topic_messages(desdemona, stream, "channel events")
+        expected_notification = (
+            f"@_**{desdemona.full_name}|{desdemona.id}** changed the "
+            "[posting permissions](/help/channel-posting-policy) for this channel:\n\n"
+            f"* **Old**: @_*{owners_group.name}*, @_*{moderators_group.name}*, @_**{hamlet.full_name}|{hamlet.id}**\n"
+            f"* **New**: @_*{hamletcharacters_group.name}*, @_**{desdemona.full_name}|{desdemona.id}**"
+        )
+        self.assertEqual(messages[-1].content, expected_notification)
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"can_send_message_group": orjson.dumps({"new": nobody_group.id}).decode()},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", realm)
+        self.assertEqual(stream.can_send_message_group_id, nobody_group.id)
+
+        messages = get_topic_messages(desdemona, stream, "channel events")
+        expected_notification = (
+            f"@_**{desdemona.full_name}|{desdemona.id}** changed the "
+            "[posting permissions](/help/channel-posting-policy) for this channel:\n\n"
+            f"* **Old**: @_*{hamletcharacters_group.name}*, @_**{desdemona.full_name}|{desdemona.id}**\n"
+            f"* **New**: @_*{nobody_group.name}*"
+        )
+        self.assertEqual(messages[-1].content, expected_notification)
+
     def test_stream_message_retention_days_on_stream_creation(self) -> None:
         """
         Only admins can create streams with message_retention_days

@@ -293,7 +293,9 @@ class MessagePOSTTest(ZulipTestCase):
         nobody_group = NamedUserGroup.objects.get(
             name=SystemGroups.NOBODY, realm=realm, is_system_group=True
         )
-        do_change_stream_group_based_setting(stream, "can_send_message_group", nobody_group)
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", nobody_group, acting_user=iago
+        )
 
         self._send_and_verify_message(
             desdemona, stream_name, "You do not have permission to post in this channel."
@@ -314,7 +316,9 @@ class MessagePOSTTest(ZulipTestCase):
         owners_group = NamedUserGroup.objects.get(
             name=SystemGroups.OWNERS, realm=realm, is_system_group=True
         )
-        do_change_stream_group_based_setting(stream, "can_send_message_group", owners_group)
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", owners_group, acting_user=iago
+        )
 
         self._send_and_verify_message(
             iago, stream_name, "You do not have permission to post in this channel."
@@ -337,7 +341,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
         do_change_stream_group_based_setting(
-            stream, "can_send_message_group", hamletcharacters_group
+            stream, "can_send_message_group", hamletcharacters_group, acting_user=iago
         )
 
         self._send_and_verify_message(
@@ -367,7 +371,9 @@ class MessagePOSTTest(ZulipTestCase):
         self.assertEqual(self.get_last_message().content, "Test message by notification bot")
 
         setting_group = self.create_or_update_anonymous_group_for_setting([othello], [owners_group])
-        do_change_stream_group_based_setting(stream, "can_send_message_group", setting_group)
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", setting_group, acting_user=iago
+        )
 
         self._send_and_verify_message(
             iago, stream_name, "You do not have permission to post in this channel."
@@ -402,7 +408,9 @@ class MessagePOSTTest(ZulipTestCase):
         everyone_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
         )
-        do_change_stream_group_based_setting(stream, "can_send_message_group", everyone_group)
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", everyone_group, acting_user=iago
+        )
         self._send_and_verify_message(othello, stream_name)
         self._send_and_verify_message(othello_owned_bot, stream_name)
         self._send_and_verify_message(iago, stream_name)
@@ -1633,7 +1641,9 @@ class StreamMessagesTest(ZulipTestCase):
         members_group = NamedUserGroup.objects.get(
             name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
         )
-        do_change_stream_group_based_setting(stream, "can_send_message_group", members_group)
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", members_group, acting_user=self.example_user("iago")
+        )
         flush_per_request_caches()
 
         with self.assert_database_query_count(17):

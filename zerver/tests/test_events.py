@@ -4672,8 +4672,9 @@ class SubscribeActionTest(BaseAction):
         num_events = 1
         if setting_name == "can_send_message_group":
             # Updating "can_send_message_group" also sends events
-            # for "stream_post_policy" and "is_announcement_value".
-            num_events = 3
+            # for "stream_post_policy" and "is_announcement_value"
+            # and an event for notification message.
+            num_events = 4
 
         with self.verify_action(
             include_subscribers=include_subscribers, num_events=num_events
@@ -4695,6 +4696,8 @@ class SubscribeActionTest(BaseAction):
             check_stream_update("events[2]", events[2])
             self.assertEqual(events[2]["property"], "is_announcement_only")
             self.assertFalse(events[2]["value"])
+
+            check_message("events[3]", events[3])
 
         setting_group = self.create_or_update_anonymous_group_for_setting(
             [self.user_profile],
@@ -4725,6 +4728,8 @@ class SubscribeActionTest(BaseAction):
             check_stream_update("events[2]", events[2])
             self.assertEqual(events[2]["property"], "is_announcement_only")
             self.assertFalse(events[2]["value"])
+
+            check_message("events[3]", events[3])
 
     def test_user_access_events_on_changing_subscriptions(self) -> None:
         self.set_up_db_for_testing_user_access()
