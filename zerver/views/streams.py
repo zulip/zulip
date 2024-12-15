@@ -35,7 +35,6 @@ from zerver.actions.streams import (
     do_change_stream_group_based_setting,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
-    do_change_stream_post_policy,
     do_change_subscription_property,
     do_deactivate_stream,
     do_rename_stream,
@@ -83,7 +82,7 @@ from zerver.lib.topic import (
     messages_for_topic,
 )
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
-from zerver.lib.typed_endpoint_validators import check_color, check_int_in_validator
+from zerver.lib.typed_endpoint_validators import check_color
 from zerver.lib.types import AnonymousSettingGroupDict
 from zerver.lib.user_groups import (
     GroupSettingChangeRequest,
@@ -254,15 +253,7 @@ def update_stream_backend(
     description: Annotated[str, StringConstraints(max_length=Stream.MAX_DESCRIPTION_LENGTH)]
     | None = None,
     is_private: Json[bool] | None = None,
-    is_announcement_only: Json[bool] | None = None,
     is_default_stream: Json[bool] | None = None,
-    stream_post_policy: Json[
-        Annotated[
-            int,
-            check_int_in_validator(Stream.STREAM_POST_POLICY_TYPES),
-        ]
-    ]
-    | None = None,
     history_public_to_subscribers: Json[bool] | None = None,
     is_web_public: Json[bool] | None = None,
     new_name: str | None = None,
@@ -390,16 +381,6 @@ def update_stream_backend(
             # are only changing the casing of the stream name).
             check_stream_name_available(user_profile.realm, new_name)
         do_rename_stream(stream, new_name, user_profile)
-    if is_announcement_only is not None:
-        # is_announcement_only is a legacy way to specify
-        # stream_post_policy.  We can probably just delete this code,
-        # since we're not aware of clients that used it, but we're
-        # keeping it for backwards-compatibility for now.
-        stream_post_policy = Stream.STREAM_POST_POLICY_EVERYONE
-        if is_announcement_only:
-            stream_post_policy = Stream.STREAM_POST_POLICY_ADMINS
-    if stream_post_policy is not None:
-        do_change_stream_post_policy(stream, stream_post_policy, acting_user=user_profile)
 
     request_settings_dict = locals()
     for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
@@ -591,9 +572,6 @@ def add_subscriptions_backend(
     invite_only: Json[bool] = False,
     is_web_public: Json[bool] = False,
     is_default_stream: Json[bool] = False,
-    stream_post_policy: Json[
-        Annotated[int, check_int_in_validator(Stream.STREAM_POST_POLICY_TYPES)]
-    ] = Stream.STREAM_POST_POLICY_EVERYONE,
     history_public_to_subscribers: Json[bool] | None = None,
     message_retention_days: Json[str] | Json[int] = RETENTION_DEFAULT,
     can_administer_channel_group: Json[int | AnonymousSettingGroupDict] | None = None,
@@ -653,7 +631,6 @@ def add_subscriptions_backend(
 
         stream_dict_copy["invite_only"] = invite_only
         stream_dict_copy["is_web_public"] = is_web_public
-        stream_dict_copy["stream_post_policy"] = stream_post_policy
         stream_dict_copy["history_public_to_subscribers"] = history_public_to_subscribers
         stream_dict_copy["message_retention_days"] = parse_message_retention_days(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
