@@ -1398,10 +1398,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
             )
 
         stream = ensure_stream(realm, "support", acting_user=None)
+        desdemona = self.example_user("desdemona")
         self.login("desdemona")
         for setting_name in Stream.stream_permission_group_settings:
             do_change_stream_group_based_setting(
-                stream, setting_name, support_group, acting_user=None
+                stream, setting_name, support_group, acting_user=desdemona
             )
 
             result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
@@ -1429,7 +1430,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 [hamlet], [moderators_group, support_group]
             )
             do_change_stream_group_based_setting(
-                stream, setting_name, anonymous_setting_group, acting_user=None
+                stream, setting_name, anonymous_setting_group, acting_user=desdemona
             )
 
             result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
@@ -1452,14 +1453,14 @@ class UserGroupAPITestCase(UserGroupTestCase):
             support_group.deactivated = False
             support_group.save()
 
+            # Unarchive the stream for the next test
+            do_unarchive_stream(stream, "support", acting_user=None)
+
             # Reset the stream setting to one of the system group so this setting
             # does not interfere when testing for another setting.
             do_change_stream_group_based_setting(
-                stream, setting_name, moderators_group, acting_user=None
+                stream, setting_name, moderators_group, acting_user=desdemona
             )
-
-            # Unarchive the stream for the next test
-            do_unarchive_stream(stream, "support", acting_user=None)
 
         leadership_group = self.create_user_group_for_test(
             "leadership", acting_user=self.example_user("othello")

@@ -1081,7 +1081,9 @@ class MessageMoveStreamTest(ZulipTestCase):
         nobody_group = NamedUserGroup.objects.get(
             name=SystemGroups.NOBODY, realm=realm, is_system_group=True
         )
-        do_change_stream_group_based_setting(new_stream, "can_send_message_group", nobody_group)
+        do_change_stream_group_based_setting(
+            new_stream, "can_send_message_group", nobody_group, acting_user=desdemona
+        )
 
         check_move_message_to_stream(desdemona, expect_fail=True)
         check_move_message_to_stream(iago, expect_fail=True)
@@ -1089,7 +1091,9 @@ class MessageMoveStreamTest(ZulipTestCase):
         owners_group = NamedUserGroup.objects.get(
             name=SystemGroups.OWNERS, realm=realm, is_system_group=True
         )
-        do_change_stream_group_based_setting(new_stream, "can_send_message_group", owners_group)
+        do_change_stream_group_based_setting(
+            new_stream, "can_send_message_group", owners_group, acting_user=desdemona
+        )
 
         check_move_message_to_stream(iago, expect_fail=True)
         check_move_message_to_stream(desdemona)
@@ -1100,7 +1104,7 @@ class MessageMoveStreamTest(ZulipTestCase):
 
         hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
         do_change_stream_group_based_setting(
-            new_stream, "can_send_message_group", hamletcharacters_group
+            new_stream, "can_send_message_group", hamletcharacters_group, acting_user=desdemona
         )
 
         check_move_message_to_stream(desdemona, expect_fail=True)
@@ -1112,7 +1116,9 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
         setting_group = self.create_or_update_anonymous_group_for_setting([othello], [owners_group])
-        do_change_stream_group_based_setting(new_stream, "can_send_message_group", setting_group)
+        do_change_stream_group_based_setting(
+            new_stream, "can_send_message_group", setting_group, acting_user=desdemona
+        )
 
         check_move_message_to_stream(iago, expect_fail=True)
         check_move_message_to_stream(hamlet, expect_fail=True)
@@ -1129,7 +1135,9 @@ class MessageMoveStreamTest(ZulipTestCase):
         everyone_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
         )
-        do_change_stream_group_based_setting(new_stream, "can_send_message_group", everyone_group)
+        do_change_stream_group_based_setting(
+            new_stream, "can_send_message_group", everyone_group, acting_user=desdemona
+        )
         check_move_message_to_stream(
             polonius, expect_fail=True, error_msg="You don't have permission to move this message"
         )

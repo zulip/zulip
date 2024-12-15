@@ -312,6 +312,10 @@ def silent_mention_syntax_for_user(user_profile: UserProfile) -> str:
     return f"@_**{user_profile.full_name}|{user_profile.id}**"
 
 
+def silent_mention_syntax_for_user_group(user_group: NamedUserGroup) -> str:
+    return f"@_*{user_group.name}*"
+
+
 def get_user_group_mention_display_name(user_group: NamedUserGroup) -> StrPromise | str:
     if user_group.is_system_group:
         return SystemGroups.GROUP_DISPLAY_NAME_MAP[user_group.name]

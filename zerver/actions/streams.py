@@ -21,7 +21,7 @@ from zerver.lib.cache import (
     to_dict_cache_key_id,
 )
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.mention import silent_mention_syntax_for_user
+from zerver.lib.mention import silent_mention_syntax_for_user, silent_mention_syntax_for_user_group
 from zerver.lib.message import get_last_message_id
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.stream_color import pick_colors
@@ -72,7 +72,7 @@ from zerver.models import (
     UserGroup,
     UserProfile,
 )
-from zerver.models.groups import SystemGroups
+from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import active_non_guest_user_ids, active_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
@@ -1300,6 +1300,61 @@ def do_change_stream_permission(
     )
 
 
+def get_users_string_with_permission(setting_value: int | AnonymousSettingGroupDict) -> str:
+    if isinstance(setting_value, int):
+        setting_group = NamedUserGroup.objects.get(id=setting_value)
+        return silent_mention_syntax_for_user_group(setting_group)
+
+    # Sorting by ID generates a deterministic order with system groups
+    # first, which seems broadly reasonable.
+    groups_with_permission = NamedUserGroup.objects.filter(
+        id__in=setting_value.direct_subgroups
+    ).order_by("id")
+    group_name_syntax_list = [
+        silent_mention_syntax_for_user_group(group) for group in groups_with_permission
+    ]
+
+    # Sorting by ID generates a deterministic order with older users
+    # first, which seems broadly reasonable.
+    users_with_permission = UserProfile.objects.filter(
+        id__in=setting_value.direct_members
+    ).order_by("id")
+    user_name_syntax_list = [silent_mention_syntax_for_user(user) for user in users_with_permission]
+
+    return ", ".join(group_name_syntax_list + user_name_syntax_list)
+
+
+def send_stream_posting_permission_update_notification(
+    stream: Stream,
+    *,
+    old_setting_value: int | AnonymousSettingGroupDict,
+    new_setting_value: int | AnonymousSettingGroupDict,
+    acting_user: UserProfile,
+) -> None:
+    sender = get_system_bot(settings.NOTIFICATION_BOT, acting_user.realm_id)
+    user_mention = silent_mention_syntax_for_user(acting_user)
+
+    old_setting_description = get_users_string_with_permission(old_setting_value)
+    new_setting_description = get_users_string_with_permission(new_setting_value)
+
+    with override_language(stream.realm.default_language):
+        notification_string = _(
+            "{user} changed the [posting permissions]({help_link}) "
+            "for this channel:\n\n"
+            "* **Old**: {old_setting_description}\n"
+            "* **New**: {new_setting_description}\n"
+        )
+        notification_string = notification_string.format(
+            user=user_mention,
+            help_link="/help/channel-posting-policy",
+            old_setting_description=old_setting_description,
+            new_setting_description=new_setting_description,
+        )
+        internal_send_stream_message(
+            sender, stream, str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME), notification_string
+        )
+
+
 def send_change_stream_post_policy_notification(
     stream: Stream, *, old_post_policy: int, new_post_policy: int, acting_user: UserProfile
 ) -> None:
@@ -1662,6 +1717,14 @@ def do_change_stream_group_based_setting(
                 name=stream.name,
             )
             send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
+
+        assert acting_user is not None
+        send_stream_posting_permission_update_notification(
+            stream,
+            old_setting_value=old_setting_api_value,
+            new_setting_value=new_setting_api_value,
+            acting_user=acting_user,
+        )
 
     if not hasattr(old_user_group, "named_user_group") and hasattr(user_group, "named_user_group"):
         # We delete the UserGroup which the setting was set to
