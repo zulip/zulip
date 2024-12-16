@@ -1524,7 +1524,7 @@
     --color-border-compose-new-message-button: hsl(0deg 0% 0% / 60%);
     --color-border-compose-new-message-button-hover: hsl(0deg 0% 0% / 60%);
     --color-border-compose-new-message-button-active: hsl(0deg 0% 0% / 60%);
-    --color-background-popover: hsl(212deg 32% 14%);
+    --color-background-popover: hsl(0deg 0% 17%);
     --color-limit-indicator: hsl(38deg 100% 70%);
     --color-limit-indicator-over-limit: hsl(3deg 80% 60%);
     --color-narrow-to-compose-recipients-background: hsl(227deg 80% 60% / 25%);

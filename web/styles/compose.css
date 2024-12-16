@@ -1270,8 +1270,8 @@ textarea.new_message_textarea {
         margin: 0 5px;
         /* Coordinate with the value of
            --compose-formatting-buttons-row-height */
-        /* 22px at 14px/1em */
-        height: 1.5714em;
+        /* 16px at 14px/1em */
+        height: 1.1429em;
         width: 1.5px;
         /* Prevent dividers from growing or shrinking. */
         flex: 0 0 auto;
