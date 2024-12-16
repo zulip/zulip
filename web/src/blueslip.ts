@@ -54,7 +54,10 @@ export function get_log(): string[] {
     return logger.get_log();
 }
 
-function build_arg_list(msg: string, more_info?: unknown): [string, string?, unknown?] {
+function build_arg_list(
+    msg: string,
+    more_info?: Record<string, unknown>,
+): [string, string?, unknown?] {
     const args: [string, string?, unknown?] = [msg];
     if (more_info !== undefined) {
         args.push("\nAdditional information: ", more_info);
@@ -62,22 +65,22 @@ function build_arg_list(msg: string, more_info?: unknown): [string, string?, unk
     return args;
 }
 
-export function debug(msg: string, more_info?: unknown): void {
+export function debug(msg: string, more_info?: Record<string, unknown>): void {
     const args = build_arg_list(msg, more_info);
     logger.debug(...args);
 }
 
-export function log(msg: string, more_info?: unknown): void {
+export function log(msg: string, more_info?: Record<string, unknown>): void {
     const args = build_arg_list(msg, more_info);
     logger.log(...args);
 }
 
-export function info(msg: string, more_info?: unknown): void {
+export function info(msg: string, more_info?: Record<string, unknown>): void {
     const args = build_arg_list(msg, more_info);
     logger.info(...args);
 }
 
-export function warn(msg: string, more_info?: unknown): void {
+export function warn(msg: string, more_info?: Record<string, unknown>): void {
     const args = build_arg_list(msg, more_info);
     logger.warn(...args);
     if (DEVELOPMENT) {
@@ -85,7 +88,11 @@ export function warn(msg: string, more_info?: unknown): void {
     }
 }
 
-export function error(msg: string, more_info?: object, original_error?: unknown): void {
+export function error(
+    msg: string,
+    more_info?: Record<string, unknown>,
+    original_error?: unknown,
+): void {
     // Log the Sentry error before the console warning, so we don't
     // end up with a doubled message in the Sentry logs.
     Sentry.setContext("more_info", more_info ?? null);
