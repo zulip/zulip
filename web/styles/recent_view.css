@@ -522,6 +522,19 @@
                 position: unset;
             }
         }
+
+        .recent-view-dm-group {
+            /* We don't display status emoji in group DMs,
+               so prepare an ordinary inline layout... */
+            .user-status-microlayout {
+                display: inline;
+                white-space: collapse;
+            }
+            /* ...and hide the status emoji. */
+            .status-emoji {
+                display: none;
+            }
+        }
     }
 
     .stream-privacy .zulip-icon {
