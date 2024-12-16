@@ -354,3 +354,177 @@
         );
     }
 }
+
+.icon-button {
+    /* This class should always be used with an icon-button-* class
+       defining the color scheme of the button, defined below. */
+    display: flex;
+    font-size: var(--base-font-size-px);
+    background-color: transparent; /* Override button default background color */
+    padding: 0.375em;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+}
+
+.icon-button-neutral {
+    color: var(--color-text-neutral-icon-button);
+
+    &:hover {
+        color: var(--color-text-neutral-icon-button-hover);
+    }
+
+    &:active {
+        color: var(--color-text-neutral-icon-button-active);
+    }
+
+    &.icon-button-square {
+        &:hover {
+            background-color: var(
+                --color-background-neutral-icon-button-square-hover
+            );
+        }
+
+        &:active {
+            color: var(--color-text-neutral-icon-button-square-active);
+            background-color: var(
+                --color-background-neutral-icon-button-square-active
+            );
+        }
+    }
+}
+
+.icon-button-brand {
+    color: var(--color-text-brand-icon-button);
+
+    &:hover {
+        color: var(--color-text-brand-icon-button-hover);
+    }
+
+    &:active {
+        color: var(--color-text-brand-icon-button-active);
+    }
+
+    &.icon-button-square {
+        &:hover {
+            background-color: var(
+                --color-background-brand-icon-button-square-hover
+            );
+        }
+
+        &:active {
+            color: var(--color-text-brand-icon-button-square-active);
+            background-color: var(
+                --color-background-brand-icon-button-square-active
+            );
+        }
+    }
+}
+
+.icon-button-info {
+    color: var(--color-text-info-icon-button);
+
+    &:hover {
+        color: var(--color-text-info-icon-button-hover);
+    }
+
+    &:active {
+        color: var(--color-text-info-icon-button-active);
+    }
+
+    &.icon-button-square {
+        &:hover {
+            background-color: var(
+                --color-background-info-icon-button-square-hover
+            );
+        }
+
+        &:active {
+            color: var(--color-text-info-icon-button-square-active);
+            background-color: var(
+                --color-background-info-icon-button-square-active
+            );
+        }
+    }
+}
+
+.icon-button-success {
+    color: var(--color-text-success-icon-button);
+
+    &:hover {
+        color: var(--color-text-success-icon-button-hover);
+    }
+
+    &:active {
+        color: var(--color-text-success-icon-button-active);
+    }
+
+    &.icon-button-square {
+        &:hover {
+            background-color: var(
+                --color-background-success-icon-button-square-hover
+            );
+        }
+
+        &:active {
+            color: var(--color-text-success-icon-button-square-active);
+            background-color: var(
+                --color-background-success-icon-button-square-active
+            );
+        }
+    }
+}
+
+.icon-button-warning {
+    color: var(--color-text-warning-icon-button);
+
+    &:hover {
+        color: var(--color-text-warning-icon-button-hover);
+    }
+
+    &:active {
+        color: var(--color-text-warning-icon-button-active);
+    }
+
+    &.icon-button-square {
+        &:hover {
+            background-color: var(
+                --color-background-warning-icon-button-square-hover
+            );
+        }
+
+        &:active {
+            color: var(--color-text-warning-icon-button-square-active);
+            background-color: var(
+                --color-background-warning-icon-button-square-active
+            );
+        }
+    }
+}
+
+.icon-button-danger {
+    color: var(--color-text-danger-icon-button);
+
+    &:hover {
+        color: var(--color-text-danger-icon-button-hover);
+    }
+
+    &:active {
+        color: var(--color-text-danger-icon-button-active);
+    }
+
+    &.icon-button-square {
+        &:hover {
+            background-color: var(
+                --color-background-danger-icon-button-square-hover
+            );
+        }
+
+        &:active {
+            color: var(--color-text-danger-icon-button-square-active);
+            background-color: var(
+                --color-background-danger-icon-button-square-active
+            );
+        }
+    }
+}

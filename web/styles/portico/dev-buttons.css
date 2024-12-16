@@ -17,28 +17,6 @@ body {
     background-color: var(--color-background);
 }
 
-.design-testing-header {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    padding: 15px;
-    background-color: hsl(0deg 0% 100%);
-    box-shadow: 0 0 4px hsla(0deg 0% 0% / 10%);
-
-    & .header__title {
-        color: hsl(0deg 0% 27%);
-        text-align: center;
-        font-size: 1.4em;
-        font-weight: 300;
-    }
-
-    & .header__link {
-        text-decoration: none;
-        color: hsl(0deg 0% 27%);
-        font-weight: 600;
-    }
-}
-
 .design-testing-wrapper {
     display: flex;
     flex-flow: column;
@@ -106,8 +84,44 @@ body {
     font-weight: 600;
 }
 
-.action-button-group {
+.dev-buttons-grid {
+    display: grid;
+    grid-template-areas: "dev-buttons-variant-name dev-action-buttons-group dev-icon-buttons-group";
+    grid-template-columns: repeat(3, max-content);
+    gap: 15px 30px;
+}
+
+.dev-buttons-variant-group {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+    place-items: center start;
+}
+
+.dev-buttons-variant-label {
+    grid-area: dev-buttons-variant-name;
+}
+
+.dev-action-buttons-group,
+.dev-action-buttons-label {
+    grid-area: dev-action-buttons-group;
+}
+
+.dev-icon-buttons-group,
+.dev-icon-buttons-label {
+    grid-area: dev-icon-buttons-group;
+}
+
+.dev-action-buttons-group,
+.dev-icon-buttons-group {
     display: flex;
     flex-flow: row wrap;
-    gap: 10px;
+    gap: 15px;
+}
+
+.dev-buttons-variant-label,
+.dev-action-buttons-label,
+.dev-icon-buttons-label {
+    font-size: 1.1em;
+    font-weight: 500;
 }

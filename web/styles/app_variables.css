@@ -1325,6 +1325,146 @@
         #c0070a 13%,
         transparent
     );
+
+    /* Icon buttons */
+    /* Icon buttons -- Neutral Variant */
+    --color-text-neutral-icon-button: color-mix(
+        in oklch,
+        hsl(229deg 9% 36%) 70%,
+        transparent
+    );
+    --color-text-neutral-icon-button-hover: hsl(229deg 9% 36%);
+    --color-text-neutral-icon-button-active: color-mix(
+        in oklch,
+        hsl(229deg 9% 36%) 70%,
+        transparent
+    );
+    --color-text-neutral-icon-button-square-active: hsl(229deg 9% 36%);
+    --color-background-neutral-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(229deg 9% 36%) 7%,
+        transparent
+    );
+    --color-background-neutral-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(229deg 9% 36%) 11%,
+        transparent
+    );
+    /* Icon buttons -- Brand Variant */
+    --color-text-brand-icon-button: color-mix(
+        in oklch,
+        hsl(255deg 54% 50%) 70%,
+        transparent
+    );
+    --color-text-brand-icon-button-hover: hsl(255deg 54% 50%);
+    --color-text-brand-icon-button-active: color-mix(
+        in oklch,
+        hsl(255deg 54% 50%) 70%,
+        transparent
+    );
+    --color-text-brand-icon-button-square-active: hsl(255deg 54% 50%);
+    --color-background-brand-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(264deg 100% 22%) 5%,
+        transparent
+    );
+    --color-background-brand-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(264deg 100% 22%) 10%,
+        transparent
+    );
+    /* Icon buttons -- Info Variant */
+    --color-text-info-icon-button: color-mix(
+        in oklch,
+        hsl(227deg 70% 46%) 70%,
+        transparent
+    );
+    --color-text-info-icon-button-hover: hsl(227deg 70% 46%);
+    --color-text-info-icon-button-active: color-mix(
+        in oklch,
+        hsl(227deg 70% 46%) 70%,
+        transparent
+    );
+    --color-text-info-icon-button-square-active: hsl(227deg 70% 46%);
+    --color-background-info-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(241deg 95% 25%) 5%,
+        transparent
+    );
+    --color-background-info-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(241deg 95% 25%) 9%,
+        transparent
+    );
+    /* Icon buttons -- Success Variant */
+    --color-text-success-icon-button: color-mix(
+        in oklch,
+        hsl(146deg 90% 27%) 70%,
+        transparent
+    );
+    --color-text-success-icon-button-hover: hsl(146deg 90% 27%);
+    --color-text-success-icon-button-active: color-mix(
+        in oklch,
+        hsl(146deg 90% 27%) 70%,
+        transparent
+    );
+    --color-text-success-icon-button-square-active: hsl(146deg 90% 27%);
+    --color-background-success-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(144deg 84% 22%) 8%,
+        transparent
+    );
+    --color-background-success-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(144deg 84% 22%) 12%,
+        transparent
+    );
+    /* Icon buttons -- Warning Variant */
+    --color-text-warning-icon-button: color-mix(
+        in oklch,
+        hsl(37deg 94% 34%) 70%,
+        transparent
+    );
+    --color-text-warning-icon-button-hover: hsl(37deg 94% 34%);
+    --color-text-warning-icon-button-active: color-mix(
+        in oklch,
+        hsl(37deg 94% 34%) 70%,
+        transparent
+    );
+    --color-text-warning-icon-button-square-active: hsl(37deg 94% 34%);
+    --color-background-warning-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(37deg 94% 34%) 10%,
+        transparent
+    );
+    --color-background-warning-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(37deg 94% 34%) 14%,
+        transparent
+    );
+    /* Icon buttons -- Danger Variant */
+    --color-text-danger-icon-button: color-mix(
+        in oklch,
+        hsl(359deg 93% 39%) 70%,
+        transparent
+    );
+    --color-text-danger-icon-button-hover: hsl(359deg 93% 39%);
+    --color-text-danger-icon-button-active: color-mix(
+        in oklch,
+        hsl(359deg 93% 39%) 70%,
+        transparent
+    );
+    --color-text-danger-icon-button-square-active: hsl(359deg 93% 39%);
+    --color-background-danger-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(359deg 93% 39%) 9%,
+        transparent
+    );
+    --color-background-danger-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(359deg 93% 39%) 13%,
+        transparent
+    );
 }
 
 %dark-theme {
@@ -2088,6 +2228,151 @@
     --color-background-danger-borderless-action-button-active: color-mix(
         in oklch,
         #f34c3e 17%,
+        transparent
+    );
+
+    /* Icon buttons */
+    /* Icon buttons -- Neutral Variant */
+    --color-text-neutral-icon-button: color-mix(
+        in oklch,
+        hsl(229deg 10% 70%) 70%,
+        transparent
+    );
+    --color-text-neutral-icon-button-hover: hsl(229deg 10% 70%);
+    --color-text-neutral-icon-button-active: color-mix(
+        in oklch,
+        hsl(229deg 10% 70%) 70%,
+        transparent
+    );
+    --color-background-neutral-icon-button-active: color-mix(
+        in oklch,
+        hsl(229deg 10% 70%) 70%,
+        transparent
+    );
+    --color-text-neutral-icon-button-square-active: hsl(229deg 10% 70%);
+    --color-background-neutral-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(230deg 9% 60%) 14%,
+        transparent
+    );
+    --color-background-neutral-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(230deg 9% 60%) 18%,
+        transparent
+    );
+    /* Icon buttons -- Brand Variant */
+    --color-text-brand-icon-button: color-mix(
+        in oklch,
+        hsl(246deg 96 79%) 70%,
+        transparent
+    );
+    --color-text-brand-icon-button-hover: hsl(246deg 96% 79%);
+    --color-text-brand-icon-button-active: color-mix(
+        in oklch,
+        hsl(246deg 96% 79%) 70%,
+        transparent
+    );
+    --color-text-brand-icon-button-square-active: hsl(246deg 96% 79%);
+    --color-background-brand-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(251deg 100% 72%) 14%,
+        transparent
+    );
+    --color-background-brand-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(251deg 100% 72%) 18%,
+        transparent
+    );
+    /* Icon buttons -- Info Variant */
+    --color-text-info-icon-button: color-mix(
+        in oklch,
+        hsl(222deg 97% 75%) 70%,
+        transparent
+    );
+    --color-text-info-icon-button-hover: hsl(222deg 97% 75%);
+    --color-text-info-icon-button-active: color-mix(
+        in oklch,
+        hsl(222deg 97% 75%) 70%,
+        transparent
+    );
+    --color-text-info-icon-button-square-active: hsl(222deg 97% 75%);
+    --color-background-info-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(224deg 98% 65%) 12%,
+        transparent
+    );
+    --color-background-info-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(224deg 98% 65%) 17%,
+        transparent
+    );
+    /* Icon buttons -- Success Variant */
+    --color-text-success-icon-button: color-mix(
+        in oklch,
+        hsl(136deg 47% 55%) 70%,
+        transparent
+    );
+    --color-text-success-icon-button-hover: hsl(136deg 47% 55%);
+    --color-text-success-icon-button-active: color-mix(
+        in oklch,
+        hsl(136deg 47% 55%) 70%,
+        transparent
+    );
+    --color-text-success-icon-button-square-active: hsl(136deg 47% 55%);
+    --color-background-success-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(139deg 54% 40%) 12%,
+        transparent
+    );
+    --color-background-success-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(139deg 54% 40%) 17%,
+        transparent
+    );
+    /* Icon buttons -- Warning Variant */
+    --color-text-warning-icon-button: color-mix(
+        in oklch,
+        hsl(41deg 98% 46%) 70%,
+        transparent
+    );
+    --color-text-warning-icon-button-hover: hsl(41deg 98% 46%);
+    --color-text-warning-icon-button-active: color-mix(
+        in oklch,
+        hsl(41deg 98% 46%) 70%,
+        transparent
+    );
+    --color-text-warning-icon-button-square-active: hsl(41deg 98% 46%);
+    --color-background-warning-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(39deg 88% 42%) 12%,
+        transparent
+    );
+    --color-background-warning-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(39deg 88% 42%) 17%,
+        transparent
+    );
+    /* Icon buttons -- Danger Variant */
+    --color-text-danger-icon-button: color-mix(
+        in oklch,
+        hsl(7deg 100% 74%) 70%,
+        transparent
+    );
+    --color-text-danger-icon-button-hover: hsl(7deg 100% 74%);
+    --color-text-danger-icon-button-active: color-mix(
+        in oklch,
+        hsl(7deg 100% 74%) 70%,
+        transparent
+    );
+    --color-text-danger-icon-button-square-active: hsl(7deg 100% 74%);
+    --color-background-danger-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(5deg 88% 60%) 12%,
+        transparent
+    );
+    --color-background-danger-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(5deg 88% 60%) 17%,
         transparent
     );
 }
