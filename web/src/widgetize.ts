@@ -66,7 +66,7 @@ export function activate(in_opts: WidgetOptions): void {
         if (widget_type === "tictactoe") {
             return; // don't warn for deleted legacy widget
         }
-        blueslip.warn("unknown widget_type", widget_type);
+        blueslip.warn("unknown widget_type", {widget_type});
         return;
     }
 

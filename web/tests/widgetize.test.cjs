@@ -140,7 +140,7 @@ test("activate", ({override}) => {
     assert.ok(!is_widget_elem_inserted);
     assert.ok(!is_widget_activated);
     assert.ok(!is_event_handled);
-    assert.equal(blueslip.get_test_logs("warn")[0].more_info, "invalid_widget");
+    assert.deepEqual(blueslip.get_test_logs("warn")[0].more_info, {widget_type: "invalid_widget"});
 
     opts.widget_type = "tictactoe";
 
