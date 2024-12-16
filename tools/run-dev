@@ -19,11 +19,13 @@ from tools.lib import sanity_check
 sanity_check.check_venv(__file__)
 
 import aiohttp
+import aiohttp.web_fileresponse
 from aiohttp import hdrs, web
 from aiohttp.http_exceptions import BadStatusLine
 
 from scripts.lib.zulip_tools import CYAN, ENDC
 from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
+from zerver.lib.mime_types import EXTRA_MIME_TYPES
 from zerver.lib.partial import partial
 
 if "posix" in os.name and os.geteuid() == 0:
@@ -123,6 +125,9 @@ tornado_port = base_port + 2
 webpack_port = base_port + 3
 help_center_port = base_port + 4
 tusd_port = base_port + 5
+
+for mime_type, extension in EXTRA_MIME_TYPES:
+    aiohttp.web_fileresponse.CONTENT_TYPES.add_type(mime_type, extension)
 
 os.chdir(os.path.join(os.path.dirname(__file__), ".."))
 
