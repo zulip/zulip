@@ -414,7 +414,7 @@ export function is_valid_url(url: string, require_absolute = false): boolean {
         // provide a base element with an absolute URL, JavaScript ignores the base element.
         new URL(url, base_url);
     } catch (error) {
-        blueslip.log(`Invalid URL: ${url}.`, error);
+        blueslip.log(`Invalid URL: ${url}.`, {error});
         return false;
     }
     return true;
