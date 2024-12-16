@@ -9,3 +9,7 @@
 .user-circle-offline {
     color: var(--color-user-circle-offline);
 }
+
+.user-circle-deactivated {
+    color: var(--color-user-circle-deactivated);
+}
