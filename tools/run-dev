@@ -22,6 +22,7 @@ import aiohttp
 from aiohttp import hdrs, web
 from aiohttp.http_exceptions import BadStatusLine
 
+from scripts.lib.zulip_tools import CYAN, ENDC
 from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
 from zerver.lib.partial import partial
 
@@ -115,8 +116,6 @@ os.environ["DJANGO_SETTINGS_MODULE"] = settings_module
 
 if options.behind_https_proxy:
     os.environ["BEHIND_HTTPS_PROXY"] = "1"
-
-from scripts.lib.zulip_tools import CYAN, ENDC
 
 proxy_port = base_port
 django_port = base_port + 1
