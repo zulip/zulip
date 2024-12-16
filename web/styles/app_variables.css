@@ -662,6 +662,7 @@
         hsl(240deg 10% 50%) 70%,
         hsl(0deg 0% 94%)
     );
+    --color-background-deactivated-user-circle: hsl(0deg 0% 100%);
     --color-background-unread-counter-dot: hsl(240deg 30% 40%);
     --color-border-unread-counter: var(--color-background-unread-counter);
     --color-border-unread-counter-popover-menu: inherit;
@@ -881,6 +882,7 @@
     --color-user-circle-active: hsl(106deg 74% 44%);
     --color-user-circle-idle: hsl(29deg 84% 51%);
     --color-user-circle-offline: hsl(0deg 0% 50%);
+    --color-user-circle-deactivated: hsl(0deg 0% 50%);
     /* hsl(229deg 9% 36%) corresponds to --grey-600.
        We use the hsl() equivalent directly since postcss-color-mix-function
        cannot dynamically resolve var() arguments. */
@@ -1410,6 +1412,7 @@
         hsl(240deg 10% 50%) 35%,
         hsl(0deg 0% 11%)
     );
+    --color-background-deactivated-user-circle: hsl(0deg 0% 0%);
     --color-background-unread-counter-dot: hsl(240deg 35% 68%);
     --color-background-unread-counter-prominent: hsl(240deg 18.37% 34.42%);
     --color-background-unread-counter-normal: hsl(240deg 10% 50% / 35%);

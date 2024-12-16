@@ -59,6 +59,8 @@ export function get_user_circle_class(user_id: number): string {
             return "user-circle-active";
         case "idle":
             return "user-circle-idle";
+        case "deactivated":
+            return "user-circle-deactivated";
         default:
             return "user-circle-offline";
     }
@@ -77,6 +79,8 @@ export function level(user_id: number): number {
             return 1;
         case "idle":
             return 2;
+        case "deactivated":
+            return 4;
         default:
             return 3;
     }
