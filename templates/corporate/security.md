@@ -34,11 +34,14 @@ priority.
 
 ## Configurable access control policies
 
-- Zulip supports direct messages (to one or more individuals), private
-  channels with any number of subscribers, as well as public channels
-  available to all organization members.  We also support guest accounts,
-  which only have access to a fixed set of channels, and announcement
-  channels, where only organization owners and administrators can post.
+- Zulip supports [direct messages](/help/direct-messages) (to one or more
+  individuals), [private channels](/help/channel-permissions#private-channels)
+  with any number of subscribers, as well as [public
+  channels](/help/channel-permissions#public-channels) available to all
+  organization members.  We also support [guest accounts](/help/guest-users),
+  which only have access to a fixed set of channels, and [announcement
+  channels](/help/channel-posting-policy), where only organization owners and
+  administrators can post.
 - By default, users can maintain their own names and email addresses, but
   Zulip also supports
   [restricting changes](/help/restrict-name-and-email-changes) and
