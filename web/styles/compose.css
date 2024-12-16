@@ -1267,14 +1267,15 @@ textarea.new_message_textarea {
     }
 
     .divider {
-        color: hsl(0deg 0% 75%);
-        /* 20px at 14px/1em */
-        font-size: 1.4286em;
-        margin: 0 3px;
+        margin: 0 5px;
         /* Coordinate with the value of
            --compose-formatting-buttons-row-height */
-        /* 28px at 20px/1em */
-        height: 1.4em;
+        /* 22px at 14px/1em */
+        height: 1.5714em;
+        width: 1.5px;
+        /* Prevent dividers from growing or shrinking. */
+        flex: 0 0 auto;
+        background-color: var(--color-compose-formatting-button-divider);
 
         @media (width < 400px) {
             /* Remove at mobile widths to make more space

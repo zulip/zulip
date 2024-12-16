@@ -399,10 +399,6 @@
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
-    .compose-control-buttons-container .divider {
-        color: hsl(236deg 33% 90% / 25%);
-    }
-
     .compose_control_button:hover {
         color: inherit;
     }
