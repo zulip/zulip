@@ -229,14 +229,7 @@ export class DropdownWidget {
 
     setup(): void {
         this.init();
-        const delegate_container = this.$events_container.get(0);
-        if (delegate_container === undefined) {
-            blueslip.error(
-                "Cannot initialize dropdown. `$events_container` empty.",
-                this.$events_container,
-            );
-            return;
-        }
+        const delegate_container = util.the(this.$events_container);
 
         if (this.disable_for_spectators && page_params.is_spectator) {
             return;
