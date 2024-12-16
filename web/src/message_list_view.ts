@@ -65,6 +65,7 @@ export type MessageContainer = {
     msg: Message;
     sender_is_bot: boolean;
     sender_is_guest: boolean;
+    sender_is_deactivated: boolean;
     should_add_guest_indicator_for_sender: boolean;
     small_avatar_url: string;
     status_message: string | false;
@@ -662,6 +663,7 @@ export class MessageListView {
         small_avatar_url: string;
         sender_is_bot: boolean;
         sender_is_guest: boolean;
+        sender_is_deactivated: boolean;
         should_add_guest_indicator_for_sender: boolean;
         is_hidden: boolean;
         mention_classname: string | undefined;
@@ -743,6 +745,7 @@ export class MessageListView {
 
         const sender_is_bot = people.sender_is_bot(message);
         const sender_is_guest = people.sender_is_guest(message);
+        const sender_is_deactivated = people.sender_is_deactivated(message);
         const should_add_guest_indicator_for_sender = people.should_add_guest_user_indicator(
             message.sender_id,
         );
@@ -760,6 +763,7 @@ export class MessageListView {
             small_avatar_url,
             sender_is_bot,
             sender_is_guest,
+            sender_is_deactivated,
             should_add_guest_indicator_for_sender,
             is_hidden,
             mention_classname,

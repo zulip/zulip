@@ -1555,6 +1555,7 @@
     --color-user-circle-active: hsl(106deg 74% 44%);
     --color-user-circle-idle: hsl(29deg 84% 51%);
     --color-user-circle-offline: hsl(0deg 0% 50%);
+    --color-user-circle-deactivated: hsl(0deg 0% 50%);
     --color-copy-button: light-dark(
         /* hsl(229deg 9% 36%) corresponds to --grey-600.
            We use the hsl() equivalent directly since postcss-color-mix-function
