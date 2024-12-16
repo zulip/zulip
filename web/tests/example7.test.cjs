@@ -58,6 +58,9 @@ const desktop_notifications = mock_esm("../src/desktop_notifications");
 const message_lists = mock_esm("../src/message_lists");
 const message_viewport = mock_esm("../src/message_viewport");
 const unread_ui = mock_esm("../src/unread_ui");
+mock_esm("../src/message_list_navigation", {
+    update: noop,
+});
 
 message_lists.current = {view: {}};
 message_lists.all_rendered_message_lists = () => [message_lists.current];
@@ -109,7 +112,6 @@ run_test("unread_ops", ({override}) => {
     override(message_lists.current.view, "show_message_as_read", noop);
     override(desktop_notifications, "close_notification", noop);
     override(unread_ui, "update_unread_counts", noop);
-    override(unread_ui, "notify_messages_remain_unread", noop);
 
     // Set up a way to capture the options passed in to channel.post.
     let channel_post_opts;

@@ -15,6 +15,7 @@ import * as message_helper from "./message_helper.ts";
 import type {MessageList} from "./message_list.ts";
 import type {MessageListData} from "./message_list_data.ts";
 import * as message_list_data_cache from "./message_list_data_cache.ts";
+import * as message_list_navigation from "./message_list_navigation.ts";
 import * as message_lists from "./message_lists.ts";
 import {raw_message_schema} from "./message_store.ts";
 import * as message_util from "./message_util.ts";
@@ -170,6 +171,7 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
     direct_message_group_data.process_loaded_messages(messages);
     stream_list.update_streams_sidebar();
     stream_list.maybe_scroll_narrow_into_view(!first_messages_fetch);
+    message_list_navigation.update();
 
     if (
         message_lists.current !== undefined &&

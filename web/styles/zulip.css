@@ -2111,3 +2111,69 @@ body:not(.hide-left-sidebar) {
         border: 1px solid var(--color-border-personal-menu-avatar);
     }
 }
+
+#message-list-navigation {
+    display: flex;
+    grid-area: message_list_navigation;
+    height: min-content;
+    justify-content: flex-end;
+    margin: 5px;
+    /* 18px at 16px/1em */
+    font-size: 1.125em;
+}
+
+#message-list-navigation-buttons-wrapper {
+    display: inline;
+}
+
+.message-list-navigation-button {
+    display: inline-block;
+    line-height: 0;
+    border: none;
+    border-radius: 4px;
+    color: var(--color-message-list-navigation-medium-attention-text);
+    background: transparent;
+    width: var(--header-height);
+    height: var(--header-height);
+
+    .zulip-icon {
+        color: var(--color-navbar-icon);
+    }
+
+    &:hover {
+        background: var(
+            --color-message-list-navigation-medium-attention-background-hover
+        );
+    }
+
+    &:active {
+        background: var(
+            --color-message-list-navigation-medium-attention-background-active
+        );
+    }
+
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        outline: 1px solid var(--color-outline-focus);
+    }
+}
+
+#message-list-navigation-next-unread-conversation {
+    float: right;
+}
+
+#message-list-footer {
+    display: grid;
+    grid-template: "scheduled_message_indicator message_list_navigation" auto "typing_notifications message_list_navigation" auto / auto auto;
+}
+
+#scheduled_message_indicator {
+    grid-area: scheduled_message_indicator;
+}
+
+#typing_notifications {
+    grid-area: typing_notifications;
+}

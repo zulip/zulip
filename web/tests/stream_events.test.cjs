@@ -32,6 +32,9 @@ const message_view_header = mock_esm("../src/message_view_header", {
 mock_esm("../src/recent_view_ui", {
     complete_rerender() {},
 });
+mock_esm("../src/message_list_navigation", {
+    update() {},
+});
 mock_esm("../src/settings_notifications", {
     update_page() {},
     user_settings_panel: "stub", // Not used, but can't be undefined
@@ -453,7 +456,6 @@ test("mark_unsubscribed (render_title_area)", ({override}) => {
     override(stream_list, "remove_sidebar_row", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
     override(unread_ui, "update_unread_counts", noop);
-    override(unread_ui, "hide_unread_banner", noop);
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
     override(buddy_list, "populate", noop);
 

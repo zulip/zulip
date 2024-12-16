@@ -91,7 +91,6 @@ mock_esm("../src/left_sidebar_navigation_area", {
 });
 const typing_events = mock_esm("../src/typing_events");
 const unread_ops = mock_esm("../src/unread_ops");
-const unread_ui = mock_esm("../src/unread_ui");
 const user_events = mock_esm("../src/user_events");
 const user_groups = mock_esm("../src/user_groups");
 const user_group_edit = mock_esm("../src/user_group_edit");
@@ -117,10 +116,13 @@ message_lists.update_recipient_bar_background_color = noop;
 message_lists.current = {
     get_row: noop,
     rerender_view: noop,
+    has_unread_messages: () => false,
     data: {
         get_messages_sent_by_user: () => [],
         filter: new Filter([]),
     },
+    visibly_empty: () => false,
+    show_navigation_bar: noop,
 };
 const cached_message_list = {
     get_row: noop,
@@ -983,8 +985,7 @@ run_test("user_settings", ({override}) => {
     assert_same(toggled, ["high-contrast"]);
 
     event = event_fixtures.user_settings__web_mark_read_on_scroll_policy;
-    override(user_settings, "web_mark_read_on_scroll_policy", 3);
-    override(unread_ui, "update_unread_banner", noop);
+    user_settings.web_mark_read_on_scroll_policy = 3;
     dispatch(event);
     assert_same(user_settings.web_mark_read_on_scroll_policy, 1);
 

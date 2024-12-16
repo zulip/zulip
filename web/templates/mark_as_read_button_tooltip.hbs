@@ -1,0 +1,12 @@
+<div>
+    <div>
+        {{t 'Mark as read'}}
+    </div>
+    <div>
+        {{#if cannot_read_due_to_settings}}
+            <i>{{t 'Messages are not automatically marked as read according to your settings.'}}</i>
+        {{else}}
+            <i>{{t 'To preserve your reading state, this view does not mark messages as read.'}}</i>
+        {{/if}}
+    </div>
+</div>

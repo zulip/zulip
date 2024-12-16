@@ -13,6 +13,7 @@ import * as dialog_widget from "./dialog_widget.ts";
 import {$t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as message_flags from "./message_flags.ts";
+import * as message_list_navigation from "./message_list_navigation.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import * as message_store from "./message_store.ts";
@@ -535,7 +536,7 @@ export function process_unread_messages_event({
         !message_lists.current.can_mark_messages_read() &&
         message_lists.current.has_unread_messages()
     ) {
-        unread_ui.notify_messages_remain_unread();
+        message_list_navigation.update();
     }
 
     unread_ui.update_unread_counts();
@@ -591,7 +592,7 @@ function process_scrolled_to_bottom(): void {
     // automatically, we display a banner offering to let you mark
     // them as read manually, only if there are unreads present.
     if (message_lists.current.has_unread_messages()) {
-        unread_ui.notify_messages_remain_unread();
+        message_list_navigation.update();
     }
 }
 
