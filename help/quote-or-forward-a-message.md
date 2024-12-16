@@ -30,7 +30,7 @@ to avoid unnecessarily mentioning someone twice.
 
 !!! keyboard_tip ""
 
-    You can also use <kbd>></kbd> to quote to the
+    You can also use <kbd>&gt;</kbd> to quote to the
     selected message.
 
 {tab|mobile}
@@ -68,7 +68,7 @@ to avoid unnecessarily mentioning someone twice.
 
 !!! keyboard_tip ""
 
-    You can also use <kbd><</kbd> to forward the selected message.
+    You can also use <kbd>&lt;</kbd> to forward the selected message.
 
 {tab|mobile}
 
