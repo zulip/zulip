@@ -1,7 +1,7 @@
 {
     "version": "v1.0.0",
     "entity": {
-        "type": "organization",
+        "type": "organisation",
         "role": "steward",
         "name": "Kandra Labs, Inc.",
         "email": "support@zulip.com",
