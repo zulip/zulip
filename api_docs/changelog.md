@@ -20,6 +20,25 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 355**
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  An event with `type: "navigation_views"` is sent to the current user when a navigation view
+  is created, updated, or removed.
+
+* [`GET /navigation_views`](/api/get-navigation-views): Added a new endpoint for
+  fetching all navigation views of the user.
+
+* [`POST /navigation_views`](/api/add-navigation-view): Added a new endpoint for
+  creating a new navigation view.
+
+* [`PATCH /navigation_views/{fragment}`](/api/edit-navigation-view): Added a new endpoint for
+  editing the details of a navigation view.
+
+* [`DELETE /navigation_views/{fragment}`](/api/remove-navigation-view): Added a new endpoint for
+  removing a navigation view.
+
+
 **Feature level 353**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),

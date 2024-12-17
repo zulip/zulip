@@ -35,6 +35,9 @@ from zerver.lib.event_types import (
     EventMessage,
     EventMutedTopics,
     EventMutedUsers,
+    EventNavigationViewsAdd,
+    EventNavigationViewsRemove,
+    EventNavigationViewsUpdate,
     EventOnboardingSteps,
     EventPresence,
     EventReactionAdd,
@@ -129,7 +132,8 @@ def make_checker(base_model: type[BaseEvent]) -> Callable[[str, dict[str, object
         try:
             validate_with_model(event, base_model)
         except Exception as e:  # nocoverage
-            print(f"""
+            print(
+                f"""
 FAILURE:
 
 The event below fails the check to make sure it has the
@@ -146,7 +150,8 @@ changes that you have made:
 A traceback should follow to help you debug this problem.
 
 Here is the event:
-""")
+"""
+            )
 
             PrettyPrinter(indent=4).pprint(event)
             raise e
@@ -171,6 +176,9 @@ check_message = make_checker(EventMessage)
 check_muted_topics = make_checker(EventMutedTopics)
 check_muted_users = make_checker(EventMutedUsers)
 check_onboarding_steps = make_checker(EventOnboardingSteps)
+check_navigation_view_add = make_checker(EventNavigationViewsAdd)
+check_navigation_view_remove = make_checker(EventNavigationViewsRemove)
+check_navigation_view_update = make_checker(EventNavigationViewsUpdate)
 check_reaction_add = make_checker(EventReactionAdd)
 check_reaction_remove = make_checker(EventReactionRemove)
 check_realm_bot_delete = make_checker(EventRealmBotDelete)
