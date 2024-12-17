@@ -9,6 +9,8 @@ You will also find interactive graphs that provide a detailed breakdown of
 your organization's number of active users, messages sent, messages received,
 and how these statistics have changed over time.
 
+
+
 ## View organization statistics
 
 {start_tabs}
