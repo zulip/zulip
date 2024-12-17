@@ -121,6 +121,9 @@ def validate_message_edit_payload(
     if propagate_mode != "change_one" and topic_name is None and stream_id is None:
         raise JsonableError(_("Invalid propagate_mode without topic edit"))
 
+    if message.realm.mandatory_topics and topic_name in ("(no topic)", ""):
+        raise JsonableError(_("Topics are required in this organization."))
+
     if topic_name in {
         RESOLVED_TOPIC_PREFIX.strip(),
         f"{RESOLVED_TOPIC_PREFIX}{Message.EMPTY_TOPIC_FALLBACK_NAME}",
