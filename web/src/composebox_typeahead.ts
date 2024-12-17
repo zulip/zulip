@@ -641,8 +641,6 @@ export function get_person_suggestions(
     query: string,
     opts: PersonSuggestionOpts,
 ): (UserOrMentionPillData | UserGroupPillData)[] {
-    query = typeahead.clean_query_lowercase(query);
-
     function filter_persons(all_persons: User[]): UserOrMentionPillData[] {
         let persons;
 
