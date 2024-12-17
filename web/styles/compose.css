@@ -488,6 +488,79 @@
     margin: 0 1px;
 }
 
+.compose-scrolling-buttons-container {
+    display: grid;
+    /* The scroller buttons are set to a 48px width that does not scale;
+       the idea being that that's a generous target area, and that it
+       would be better not to consume more space at larger font sizes
+       under narrower screen sizes. */
+    grid-template-columns:
+        [scroller-backward-start buttons-start] 48px [scroller-backward-end] minmax(
+            0,
+            1fr
+        )
+        [scroller-forward-start] 48px [scroller-forward-end buttons-end];
+    grid-template-rows: auto;
+}
+
+.compose-scrollable-buttons {
+    grid-area: buttons;
+    overflow-x: scroll;
+    scrollbar-width: none;
+}
+
+.formatting-control-scroller-button {
+    z-index: 5;
+    display: flex;
+    align-items: center;
+
+    border-radius: 0;
+    border: 0;
+
+    color: var(--color-compose-scroll-icon);
+    background: transparent;
+}
+
+.formatting-scroller-backward {
+    grid-area: scroller-backward;
+    justify-content: flex-start;
+    border-radius: 0 0 0 3px;
+    background: var(--color-compose-background-scroll-backward);
+
+    &:hover {
+        background: var(--color-compose-background-scroll-backward-hover);
+    }
+
+    &:active {
+        background: var(--color-compose-background-scroll-backward-active);
+
+        .zulip-icon {
+            /* Subtly shift arrow in scroll direction. */
+            margin-left: -2px;
+        }
+    }
+}
+
+.formatting-scroller-forward {
+    grid-area: scroller-forward;
+    justify-content: flex-end;
+    border-radius: 0 0 3px;
+    background: var(--color-compose-background-scroll-forward);
+
+    &:hover {
+        background: var(--color-compose-background-scroll-forward-hover);
+    }
+
+    &:active {
+        background: var(--color-compose-background-scroll-forward-active);
+
+        .zulip-icon {
+            /* Subtly shift arrow in scroll direction. */
+            margin-right: -2px;
+        }
+    }
+}
+
 .message-limit-indicator:not(:empty) {
     font-size: 12px;
     color: var(--color-limit-indicator);
