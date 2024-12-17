@@ -11,8 +11,7 @@ from django_stubs_ext import StrPromise
 from typing_extensions import override
 
 from zerver.lib.cache import flush_stream
-from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import DefaultStreamDict, GroupPermissionSetting
+from zerver.lib.types import GroupPermissionSetting
 from zerver.models.groups import SystemGroups, UserGroup
 from zerver.models.realms import Realm
 from zerver.models.recipients import Recipient
@@ -201,27 +200,6 @@ class Stream(models.Model):
         "can_remove_subscribers_group_id",
         "is_recently_active",
     ]
-
-    def to_dict(self) -> DefaultStreamDict:
-        return DefaultStreamDict(
-            is_archived=self.deactivated,
-            can_administer_channel_group=self.can_administer_channel_group_id,
-            can_remove_subscribers_group=self.can_remove_subscribers_group_id,
-            creator_id=self.creator_id,
-            date_created=datetime_to_timestamp(self.date_created),
-            description=self.description,
-            first_message_id=self.first_message_id,
-            history_public_to_subscribers=self.history_public_to_subscribers,
-            invite_only=self.invite_only,
-            is_web_public=self.is_web_public,
-            message_retention_days=self.message_retention_days,
-            name=self.name,
-            rendered_description=self.rendered_description,
-            stream_id=self.id,
-            stream_post_policy=self.stream_post_policy,
-            is_announcement_only=self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
-            is_recently_active=self.is_recently_active,
-        )
 
 
 post_save.connect(flush_stream, sender=Stream)

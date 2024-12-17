@@ -32,7 +32,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.users import change_user_is_active, do_change_user_role, do_deactivate_user
 from zerver.decorator import do_two_factor_login
 from zerver.forms import HomepageForm, check_subdomain_available
-from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
+from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.i18n import get_default_language_for_new_user
 from zerver.lib.initial_password import initial_password
@@ -3995,9 +3995,7 @@ class UserSignUpTest(ZulipTestCase):
         stream_name = "Rome"
         realm = get_realm("zulip")
         stream = get_stream(stream_name, realm)
-        default_stream_names = {
-            stream["name"] for stream in get_default_streams_for_realm_as_dicts(realm.id)
-        }
+        default_stream_names = {stream.name for stream in get_slim_realm_default_streams(realm.id)}
         self.assertNotIn(stream_name, default_stream_names)
 
         # Invite user.
