@@ -512,6 +512,53 @@ export const custom_time_unit_values = {
     },
 };
 
+export const realm_deletion_in_values = {
+    immediately: {
+        value: 0,
+        description: $t({defaultMessage: "Immediately"}),
+        default: false,
+    },
+    fourteen_days: {
+        value: 14 * 24 * 60,
+        description: $t({defaultMessage: "14 days"}),
+        default: true,
+    },
+    thirty_days: {
+        value: 30 * 24 * 60,
+        description: $t({defaultMessage: "30 days"}),
+        default: false,
+    },
+    ninty_days: {
+        value: 90 * 24 * 60,
+        description: $t({defaultMessage: "90 days"}),
+        default: false,
+    },
+    one_year: {
+        value: 365 * 24 * 60,
+        description: $t({defaultMessage: "1 year"}),
+        default: false,
+    },
+    two_years: {
+        value: 365 * 24 * 60 * 2,
+        description: $t({defaultMessage: "2 years"}),
+        default: false,
+    },
+    never: {
+        // Ideally we'd just store `null`, not the string `"null"`, but
+        // .val() will read null back as `""`.  Custom logic in
+        // do_deactivate_realm converts this back to `null`
+        // before sending to the server.
+        value: "null",
+        description: $t({defaultMessage: "Never"}),
+        default: false,
+    },
+    custom: {
+        value: "custom",
+        description: $t({defaultMessage: "Custom"}),
+        default: false,
+    },
+};
+
 const user_role_array = Object.values(user_role_values);
 export const user_role_map = new Map(user_role_array.map((role) => [role.code, role.description]));
 

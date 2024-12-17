@@ -1,3 +1,4 @@
+import datetime
 import logging
 import zoneinfo
 from email.headerregistry import Address
@@ -16,6 +17,7 @@ from zerver.actions.user_groups import update_users_in_full_members_system_group
 from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
+from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.send_email import FromAddress, send_email, send_email_to_admins
 from zerver.lib.sessions import delete_realm_user_sessions
@@ -517,6 +519,7 @@ def do_deactivate_realm(
     *,
     acting_user: UserProfile | None,
     deactivation_reason: RealmDeactivationReasonType,
+    deletion_delay_days: int | None = None,
     email_owners: bool,
 ) -> None:
     """
@@ -533,7 +536,13 @@ def do_deactivate_realm(
 
     with transaction.atomic(durable=True):
         realm.deactivated = True
-        realm.save(update_fields=["deactivated"])
+        if deletion_delay_days is None:
+            realm.save(update_fields=["deactivated"])
+        else:
+            realm.scheduled_deletion_date = timezone_now() + datetime.timedelta(
+                days=deletion_delay_days
+            )
+            realm.save(update_fields=["scheduled_deletion_date", "deactivated"])
 
         if settings.BILLING_ENABLED:
             billing_session = RealmBillingSession(user=acting_user, realm=realm)
@@ -566,6 +575,13 @@ def do_deactivate_realm(
         event = dict(type="realm", op="deactivated", realm_id=realm.id)
         send_event_on_commit(realm, event, active_user_ids(realm.id))
 
+        if deletion_delay_days == 0:
+            event = {
+                "type": "scrub_deactivated_realm",
+                "realm_id": realm.id,
+            }
+            queue_json_publish_rollback_unsafe("deferred_work", event)
+
     # Don't deactivate the users, as that would lose a lot of state if
     # the realm needs to be reactivated, but do delete their sessions
     # so they get bumped to the login screen, where they'll get a
@@ -590,8 +606,9 @@ def do_reactivate_realm(realm: Realm) -> None:
         return
 
     realm.deactivated = False
+    realm.scheduled_deletion_date = None
     with transaction.atomic(durable=True):
-        realm.save(update_fields=["deactivated"])
+        realm.save(update_fields=["deactivated", "scheduled_deletion_date"])
 
         event_time = timezone_now()
         RealmAuditLog.objects.create(
@@ -636,6 +653,7 @@ def do_delete_all_realm_attachments(realm: Realm, *, batch_size: int = 1000) -> 
         obj_class._default_manager.filter(realm=realm).delete()
 
 
+@transaction.atomic(durable=True)
 def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
     if settings.BILLING_ENABLED:
         from corporate.lib.stripe import RealmBillingSession
@@ -691,6 +709,20 @@ def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
         acting_user=acting_user,
         event_type=AuditLogEventType.REALM_SCRUBBED,
     )
+    realm.scheduled_deletion_date = None
+    realm.save()
+
+
+def scrub_deactivated_realm(realm_to_scrub: Realm) -> None:
+    if (
+        realm_to_scrub.scheduled_deletion_date is not None
+        and realm_to_scrub.scheduled_deletion_date <= timezone_now()
+    ):
+        assert (
+            realm_to_scrub.deactivated
+        ), "Non-deactivated realm unexpectedly scheduled for deletion."
+        do_scrub_realm(realm_to_scrub, acting_user=None)
+        logging.info("Scrubbed realm %s", realm_to_scrub.id)
 
 
 @transaction.atomic(durable=True)
