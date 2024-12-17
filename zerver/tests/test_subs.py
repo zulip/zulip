@@ -54,7 +54,7 @@ from zerver.lib.attachments import (
 )
 from zerver.lib.default_streams import (
     get_default_stream_ids_for_realm,
-    get_default_streams_for_realm_as_dicts,
+    get_slim_realm_default_streams,
 )
 from zerver.lib.email_mirror_helpers import encode_email_address_helper
 from zerver.lib.exceptions import JsonableError
@@ -3443,8 +3443,8 @@ class StreamAdminTest(ZulipTestCase):
 
 class DefaultStreamTest(ZulipTestCase):
     def get_default_stream_names(self, realm: Realm) -> set[str]:
-        streams = get_default_streams_for_realm_as_dicts(realm.id)
-        return {s["name"] for s in streams}
+        streams = get_slim_realm_default_streams(realm.id)
+        return {s.name for s in streams}
 
     def test_query_count(self) -> None:
         DefaultStream.objects.all().delete()
@@ -3456,13 +3456,6 @@ class DefaultStreamTest(ZulipTestCase):
             stream = ensure_stream(realm, f"stream {i}", acting_user=None)
             new_stream_ids.add(stream.id)
             do_add_default_stream(stream)
-
-        with queries_captured() as queries:
-            default_streams = get_default_streams_for_realm_as_dicts(realm.id)
-
-        self.assert_length(queries, 1)
-        self.assert_length(default_streams, 5)
-        self.assertEqual({dct["stream_id"] for dct in default_streams}, new_stream_ids)
 
         with queries_captured() as queries:
             default_stream_ids = get_default_stream_ids_for_realm(realm.id)
