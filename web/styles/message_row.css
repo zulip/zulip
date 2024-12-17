@@ -742,8 +742,6 @@ of the base style defined for a read-only textarea in dark mode. */
 }
 
 .message-edit-feature-group {
-    display: flex;
-    align-items: baseline;
     border-radius: 0 0 3px 3px;
     background-color: var(--color-message-formatting-controls-container);
     /* margin on either side to let the border of

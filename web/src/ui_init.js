@@ -266,8 +266,12 @@ export function initialize_kitchen_sink_stuff() {
 
     // Ignore wheel events in the compose area which weren't already handled above.
     $("#compose").on("wheel", (e) => {
-        // Except for the compose banners, which still need scroll events.
-        if ($(e.target).closest("#compose_banners").length > 0) {
+        // Except for the compose banners or formatting buttons,
+        // which still need scroll events.
+        if (
+            $(e.target).closest("#compose_banners, #message-formatting-controls-container").length >
+            0
+        ) {
             return;
         }
         e.stopPropagation();
