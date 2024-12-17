@@ -72,6 +72,7 @@ from zerver.models import (
     Message,
     MutedUser,
     NamedUserGroup,
+    NavigationView,
     OnboardingStep,
     OnboardingUserMessage,
     Reaction,
@@ -171,6 +172,7 @@ ID_MAP: dict[str, dict[int, int]] = {
     "onboardingusermessage": {},
     "savedsnippet": {},
     "channelfolder": {},
+    "navigationview": {},
 }
 
 id_map_to_list: dict[str, dict[int, list[int]]] = {
@@ -1549,6 +1551,11 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         re_map_foreign_keys(data, "zerver_alertword", "realm", related_table="realm")
         update_model_ids(AlertWord, data, "alertword")
         bulk_import_model(data, AlertWord)
+
+    if "zerver_navigationview" in data:
+        re_map_foreign_keys(data, "zerver_navigationview", "user", related_table="user_profile")
+        update_model_ids(NavigationView, data, "navigationview")
+        bulk_import_model(data, NavigationView)
 
     if "zerver_savedsnippet" in data:
         fix_datetime_fields(data, "zerver_savedsnippet")

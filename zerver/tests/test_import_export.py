@@ -26,6 +26,7 @@ from zerver.actions.custom_profile_fields import (
     try_add_realm_custom_profile_field,
 )
 from zerver.actions.muted_users import do_mute_user
+from zerver.actions.navigation_views import do_add_navigation_view
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.reactions import check_add_reaction
 from zerver.actions.realm_emoji import check_add_realm_emoji
@@ -84,6 +85,7 @@ from zerver.models import (
     Message,
     MutedUser,
     NamedUserGroup,
+    NavigationView,
     OnboardingStep,
     OnboardingUserMessage,
     Reaction,
@@ -1580,6 +1582,17 @@ class RealmImportExportTest(ExportFile):
             reaction_type=Reaction.REALM_EMOJI,
         )
 
+        do_add_navigation_view(
+            hamlet,
+            "inbox",
+            True,
+        )
+        do_add_navigation_view(
+            hamlet,
+            "recent",
+            False,
+        )
+
         user_status = UserStatus.objects.order_by("id").last()
         assert user_status
 
@@ -2098,6 +2111,14 @@ class RealmImportExportTest(ExportFile):
                 )
             )
             return onboarding_steps
+
+        @getter
+        def get_navigation_views(r: Realm) -> set[str]:
+            user_id = get_user_id(r, "King Hamlet")
+            navigation_views = set(
+                NavigationView.objects.filter(user_id=user_id).values_list("fragment", flat=True)
+            )
+            return navigation_views
 
         # test muted topics
         @getter
@@ -3028,6 +3049,14 @@ class SingleUserExportTest(ExportFile):
         @checker
         def zerver_muteduser(records: list[Record]) -> None:
             self.assertEqual(records[-1]["muted_user"], othello.id)
+
+        do_add_navigation_view(hamlet, "inbox", True)
+        do_add_navigation_view(cordelia, "recent", False)
+
+        @checker
+        def zerver_navigationview(records: list[Record]) -> None:
+            self.assertEqual(records[-1]["fragment"], "recent")
+            self.assertEqual(records[-1]["is_pinned"], False)
 
         smile_message_id = self.send_stream_message(hamlet, "Denmark")
 

@@ -67,6 +67,11 @@ from zerver.actions.message_edit import (
 )
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
+from zerver.actions.navigation_views import (
+    do_add_navigation_view,
+    do_remove_navigation_view,
+    do_update_navigation_view,
+)
 from zerver.actions.onboarding_steps import do_mark_onboarding_step_as_read
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.reactions import do_add_reaction, do_remove_reaction
@@ -178,6 +183,9 @@ from zerver.lib.event_schema import (
     check_message,
     check_muted_topics,
     check_muted_users,
+    check_navigation_view_add,
+    check_navigation_view_remove,
+    check_navigation_view_update,
     check_onboarding_steps,
     check_presence,
     check_reaction_add,
@@ -1757,6 +1765,29 @@ class NormalActionsTest(BaseAction):
             do_update_user_custom_profile_data_if_changed(hamlet, [field])
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
+
+    def test_navigation_views_events(self) -> None:
+        with self.verify_action() as events:
+            navigation_view = do_add_navigation_view(
+                self.user_profile, fragment="inbox", is_pinned=True, name=None
+            )
+        check_navigation_view_add("events[0]", events[0])
+        self.assertEqual(events[0]["navigation_view"]["fragment"], "inbox")
+        self.assertEqual(events[0]["navigation_view"]["is_pinned"], True)
+        self.assertIsNone(events[0]["navigation_view"]["name"])
+
+        with self.verify_action() as events:
+            do_update_navigation_view(
+                self.user_profile, navigation_view, is_pinned=False, name=None
+            )
+        check_navigation_view_update("events[0]", events[0])
+        self.assertEqual(events[0]["fragment"], "inbox")
+        self.assertEqual(events[0]["data"]["is_pinned"], False)
+
+        with self.verify_action() as events:
+            do_remove_navigation_view(self.user_profile, navigation_view)
+        check_navigation_view_remove("events[0]", events[0])
+        self.assertEqual(events[0]["fragment"], "inbox")
 
     def test_presence_events(self) -> None:
         with self.verify_action(slim_presence=False) as events:

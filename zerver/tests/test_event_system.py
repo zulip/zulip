@@ -1241,7 +1241,7 @@ class FetchQueriesTest(ZulipTestCase):
         self.login_user(user)
 
         with (
-            self.assert_database_query_count(45),
+            self.assert_database_query_count(46),
             mock.patch("zerver.lib.events.always_want") as want_mock,
         ):
             fetch_initial_state_data(user, realm=user.realm)
@@ -1256,6 +1256,7 @@ class FetchQueriesTest(ZulipTestCase):
             message=1,
             muted_topics=1,
             muted_users=1,
+            navigation_views=1,
             onboarding_steps=1,
             presence=1,
             # 2 of the 3 queries here are a single query that is used

@@ -25,6 +25,11 @@ from zerver.actions.create_user import (
     do_create_user,
     do_reactivate_user,
 )
+from zerver.actions.navigation_views import (
+    do_add_navigation_view,
+    do_remove_navigation_view,
+    do_update_navigation_view,
+)
 from zerver.actions.realm_domains import (
     do_add_realm_domain,
     do_change_realm_domain,
@@ -1689,3 +1694,92 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertIsNone(audit_log_entries[0].modified_user)
         self.assertIsNone(audit_log_entries[0].modified_user_group)
         self.assertEqual(audit_log_entries[0].modified_channel_folder, channel_folder)
+
+    def test_navigation_view_entries(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        now = timezone_now()
+        navigation_view = do_add_navigation_view(
+            hamlet,
+            "inbox",
+            True,
+            "Inbox",
+        )
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=hamlet,
+            realm=hamlet.realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.NAVIGATION_VIEW_CREATED,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertEqual(audit_log_entries[0].modified_user, hamlet)
+        self.assertEqual(audit_log_entries[0].extra_data, {"fragment": "inbox"})
+
+        now = timezone_now()
+        do_update_navigation_view(
+            hamlet,
+            navigation_view,
+            False,
+        )
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=hamlet,
+            realm=hamlet.realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.NAVIGATION_VIEW_UPDATED,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertEqual(audit_log_entries[0].modified_user, hamlet)
+        self.assertEqual(
+            audit_log_entries[0].extra_data,
+            {
+                "fragment": "inbox",
+                RealmAuditLog.OLD_VALUE: True,
+                RealmAuditLog.NEW_VALUE: False,
+                "property": "is_pinned",
+            },
+        )
+
+        now = timezone_now()
+        do_update_navigation_view(hamlet, navigation_view, True, "Inbox view")
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=hamlet,
+            realm=hamlet.realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.NAVIGATION_VIEW_UPDATED,
+        )
+        self.assert_length(audit_log_entries, 2)
+        self.assertEqual(audit_log_entries[0].modified_user, hamlet)
+        self.assertEqual(audit_log_entries[1].modified_user, hamlet)
+        self.assertEqual(
+            audit_log_entries[0].extra_data,
+            {
+                "fragment": "inbox",
+                RealmAuditLog.OLD_VALUE: "Inbox",
+                RealmAuditLog.NEW_VALUE: "Inbox view",
+                "property": "name",
+            },
+        )
+        self.assertEqual(
+            audit_log_entries[1].extra_data,
+            {
+                "fragment": "inbox",
+                RealmAuditLog.OLD_VALUE: False,
+                RealmAuditLog.NEW_VALUE: True,
+                "property": "is_pinned",
+            },
+        )
+
+        now = timezone_now()
+        do_remove_navigation_view(
+            hamlet,
+            navigation_view,
+        )
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=hamlet,
+            realm=hamlet.realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.NAVIGATION_VIEW_DELETED,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertEqual(audit_log_entries[0].modified_user, hamlet)
+        self.assertEqual(audit_log_entries[0].extra_data, {"fragment": "inbox"})

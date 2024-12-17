@@ -1160,6 +1160,74 @@ def remove_attachment(client: Client, attachment_id: int) -> None:
     validate_against_openapi_schema(result, "/attachments/{attachment_id}", "delete", "200")
 
 
+@openapi_test_function("/navigation_views:get")
+def get_navigation_views(client: Client) -> None:
+    # {code_example|start}
+    # Get all navigation views for the user
+    result = client.call_endpoint(
+        url="navigation_views",
+        method="GET",
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/navigation_views", "get", "200")
+
+
+@openapi_test_function("/navigation_views:post")
+def add_navigation_views(client: Client) -> None:
+    # {code_example|start}
+    # Add a navigation view
+    request = {
+        "fragment": "narrow/is/alerted",
+        "is_pinned": True,
+        "name": "Alert Word",
+    }
+    result = client.call_endpoint(
+        url="navigation_views",
+        method="POST",
+        request=request,
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/navigation_views", "post", "200")
+
+
+@openapi_test_function("/navigation_views/{fragment}:patch")
+def update_navigation_views(client: Client) -> None:
+    # Fetch navigation views for updating
+    result = client.call_endpoint(url="navigation_views", method="GET")
+    fragment = result["navigation_views"][0]["fragment"]
+    # {code_example|start}
+    # Update a navigation view's location
+    request = {
+        "is_pinned": True,
+    }
+    result = client.call_endpoint(
+        url=f"navigation_views/{fragment}",
+        method="PATCH",
+        request=request,
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/navigation_views/{fragment}", "patch", "200")
+
+
+@openapi_test_function("/navigation_views/{fragment}:delete")
+def remove_navigation_views(client: Client) -> None:
+    # Fetch navigation views for deletion
+    result = client.call_endpoint(url="navigation_views", method="GET")
+    fragment = result["navigation_views"][0]["fragment"]
+    # {code_example|start}
+    # Remove a navigation views
+    result = client.call_endpoint(
+        url=f"navigation_views/{fragment}",
+        method="DELETE",
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/navigation_views/{fragment}", "delete", "200")
+
+
 @openapi_test_function("/saved_snippets:post")
 def create_saved_snippet(client: Client) -> None:
     # {code_example|start}
@@ -1901,6 +1969,10 @@ def test_users(client: Client, owner_client: Client) -> None:
     remove_user_mute(client)
     get_alert_words(client)
     add_alert_words(client)
+    add_navigation_views(client)
+    get_navigation_views(client)
+    update_navigation_views(client)
+    remove_navigation_views(client)
     create_saved_snippet(client)
     # Calling this again to pass the curl examples tests as the
     # `delete-saved-snippet` endpoint is called before `edit-saved-snippet`

@@ -283,6 +283,36 @@ class EventOnboardingSteps(BaseEvent):
     onboarding_steps: list[OnboardingSteps]
 
 
+class NavigationViewFields(BaseModel):
+    fragment: str
+    is_pinned: bool
+    name: str | None
+
+
+class EventNavigationViewsAdd(BaseEvent):
+    type: Literal["navigation_view"]
+    op: Literal["add"]
+    navigation_view: NavigationViewFields
+
+
+class EventNavigationViewsRemove(BaseEvent):
+    type: Literal["navigation_view"]
+    op: Literal["remove"]
+    fragment: str
+
+
+class NavigationViewFieldsForUpdate(BaseModel):
+    is_pinned: bool | None = None
+    name: str | None = None
+
+
+class EventNavigationViewsUpdate(BaseEvent):
+    type: Literal["navigation_view"]
+    op: Literal["update"]
+    fragment: str
+    data: NavigationViewFieldsForUpdate
+
+
 class Presence(BaseModel):
     status: Literal["active", "idle"]
     timestamp: int

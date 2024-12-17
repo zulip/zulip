@@ -59,6 +59,7 @@ from zerver.models import (
     Message,
     MutedUser,
     NamedUserGroup,
+    NavigationView,
     OnboardingStep,
     OnboardingUserMessage,
     Reaction,
@@ -166,6 +167,7 @@ ALL_ZULIP_TABLES = {
     "zerver_multiuseinvite_streams",
     "zerver_multiuseinvite_groups",
     "zerver_namedusergroup",
+    "zerver_navigationview",
     "zerver_onboardingstep",
     "zerver_onboardingusermessage",
     "zerver_preregistrationrealm",
@@ -1173,6 +1175,14 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
         model=MutedUser,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
+        limit_to_consenting_users=True,
+    )
+
+    Config(
+        table="zerver_navigationview",
+        model=NavigationView,
+        normal_parent=user_profile_config,
+        include_rows="user_id__in",
         limit_to_consenting_users=True,
     )
 

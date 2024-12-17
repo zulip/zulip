@@ -5520,6 +5520,110 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event containing details of a newly configured navigation view.
+
+                                **Changes**: New in Zulip 11.0 (feature level 390).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - navigation_view
+                                op:
+                                  type: string
+                                  enum:
+                                    - add
+                                navigation_view:
+                                  $ref: "#/components/schemas/NavigationView"
+                              example:
+                                {
+                                  "type": "navigation_view",
+                                  "op": "add",
+                                  "navigation_view":
+                                    {
+                                      "fragment": "narrow/is/alerted",
+                                      "is_pinned": true,
+                                      "name": "Alert Words",
+                                    },
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event containing details of an update to an existing navigation view.
+
+                                **Changes**: New in Zulip 11.0 (feature level 390).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - navigation_view
+                                op:
+                                  type: string
+                                  enum:
+                                    - update
+                                fragment:
+                                  type: string
+                                  description: |
+                                    The unique URL hash of the navigation view being updated.
+                                data:
+                                  type: object
+                                  additionalProperties: false
+                                  description: |
+                                    A dictionary containing the updated properties of the navigation view.
+                                  properties:
+                                    name:
+                                      type: string
+                                      nullable: true
+                                      description: |
+                                        The user-facing name for custom navigation views. Omit this field for built-in views.
+                                    is_pinned:
+                                      type: boolean
+                                      nullable: true
+                                      description: |
+                                        Determines whether the view is pinned (true) or hidden in the menu (false).
+                              example:
+                                {
+                                  "type": "navigation_view",
+                                  "op": "update",
+                                  "fragment": "narrow/is/alerted",
+                                  "data": {"is_pinned": false},
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event containing the fragment of a deleted navigation view.
+
+                                **Changes**: New in Zulip 11.0 (feature level 390).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - navigation_view
+                                op:
+                                  type: string
+                                  enum:
+                                    - remove
+                                fragment:
+                                  type: string
+                                  description: |
+                                    The unique URL hash of the navigation view that was just deleted.
+                              example:
+                                {
+                                  "type": "navigation_view",
+                                  "op": "remove",
+                                  "fragment": "narrow/is/mentioned",
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event containing details of a newly created saved snippet.
 
                                 **Changes**: New in Zulip 10.0 (feature level 297).
@@ -6455,6 +6559,217 @@ paths:
                         "code": "BAD_REQUEST",
                         "result": "error",
                         "msg": "Draft does not exist",
+                      }
+  /navigation_views:
+    get:
+      operationId: get-navigation-views
+      tags: ["navigation_views"]
+      summary: Get all navigation views
+      description: |
+        Fetch all configured custom navigation views for the current user.
+
+        **Changes**: New in Zulip 11.0 (feature level 390).
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      navigation_views:
+                        type: array
+                        description: |
+                          An array of dictionaries containing the user's navigation views.
+                        items:
+                          $ref: "#/components/schemas/NavigationView"
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "navigation_views":
+                          [
+                            {
+                              "fragment": "narrow/is/alerted",
+                              "is_pinned": false,
+                              "name": "Alert Words",
+                            },
+                          ],
+                      }
+    post:
+      operationId: add-navigation-view
+      tags: ["navigation_views"]
+      summary: Add a navigation view
+      description: |
+        Adds a new custom left sidebar navigation view configuration
+        for the current user.
+
+        This can be used both to configure built-in navigation views,
+        or to add new navigation views.
+
+        **Changes**: New in Zulip 11.0 (feature level 390).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/NavigationView"
+      responses:
+        "200":
+          description: Request succeeded.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - type: object
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                    example: {"result": "success", "msg": ""}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                invalid_parameters:
+                  value:
+                    code: "BAD_REQUEST"
+                    msg: "fragment cannot be blank"
+                    result: "error"
+  /navigation_views/{fragment}:
+    patch:
+      operationId: edit-navigation-view
+      tags: ["navigation_views"]
+      summary: Update the navigation view
+      description: |
+        Update the details of an existing configured navigation view,
+        such as its name or whether it's pinned.
+
+        **Changes**: New in Zulip 11.0 (feature level 390).
+      parameters:
+        - name: fragment
+          in: path
+          required: true
+          schema:
+            type: string
+          description: |
+            The unique URL hash of the navigation view to be updated.
+
+            This also serves as the identifier for the navigation view.
+          example: "narrow/is/alerted"
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                is_pinned:
+                  type: boolean
+                  description: |
+                    Determines whether the view is pinned (true) or hidden in
+                    the menu (false).
+                  example: true
+                name:
+                  type: string
+                  description: |
+                    The user-facing name for custom navigation views. Omit this
+                    field for built-in views.
+                  example: "Watched Phrases"
+              anyOf:
+                - required:
+                    - is_pinned
+                - required:
+                    - name
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                    example: {"result": "success", "msg": ""}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Built-in views cannot have a custom name",
+                        "result": "error",
+                      }
+                description: |
+                  A typical failed JSON response for invalid parameters.
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      A typical failed JSON response when no navigation view
+                      exists with the provided fragment:
+                    example:
+                      {
+                        "code": "NOT_FOUND",
+                        "result": "error",
+                        "msg": "Navigation view does not exist.",
+                      }
+    delete:
+      operationId: remove-navigation-view
+      tags: ["navigation_views"]
+      summary: Remove a navigation view
+      description: |
+        Remove a navigation view.
+
+        **Changes**: New in Zulip 11.0 (feature level 390).
+      parameters:
+        - name: fragment
+          in: path
+          schema:
+            type: string
+          description: |
+            The unique URL hash of the navigation view to be removed.
+
+            This also serves as the identifier for the navigation view.
+          example: "narrow/is/alerted"
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      A typical failed JSON response for when no navigation
+                      view exists with the provided fragment:
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "result": "error",
+                        "msg": "Navigation view does not exist.",
                       }
   /saved_snippets:
     get:
@@ -15782,6 +16097,16 @@ paths:
                                 The list of users other than the current user in the direct message
                                 conversation. This will be an empty list for direct messages sent to
                                 oneself.
+                      navigation_views:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/NavigationView"
+                        description: |
+                          Present if `navigation_views` is present in `fetch_event_types`.
+                          An array of dictionaries containing data on all of the current user's
+                          navigation views.
+
+                          **Changes**: New in Zulip 11.0 (feature level 390).
                       saved_snippets:
                         type: array
                         items:
@@ -25489,6 +25814,46 @@ components:
         - to
         - topic
         - content
+    NavigationView:
+      type: object
+      description: |
+        Represents a user's personal configuration for a specific
+        navigation view (displayed most visibly at the top of the web
+        application's left sidebar).
+
+        Navigation views can be either an override to the default
+        behavior of a built-in view, or a custom view.
+
+        **Changes**: New in Zulip 11.0 (feature level 390).
+      additionalProperties: false
+      required:
+        - fragment
+        - is_pinned
+      properties:
+        fragment:
+          type: string
+          description: |
+            A unique identifier for the view, used to determine navigation
+            behavior when clicked.
+
+            Clients should use this value to navigate to the corresponding URL hash.
+          example: "narrow/is/alerted"
+        is_pinned:
+          type: boolean
+          description: |
+            Determines whether the view appears directly in the sidebar or
+            is hidden in the "More Views" menu.
+
+            - `true` - Pinned and visible in the sidebar.
+            - `false` - Hidden and accessible via the "More Views" menu.
+          example: true
+        name:
+          type: string
+          nullable: true
+          description: |
+            The user-facing name for custom navigation views. Omit this
+            field for built-in views.
+          example: "Alert Words"
     SavedSnippet:
       type: object
       description: |
