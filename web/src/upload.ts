@@ -125,8 +125,20 @@ export function edit_config(row: number): Config {
     };
 }
 
-export let hide_upload_banner = (uppy: Uppy, config: Config, file_id: string): void => {
-    config.upload_banner(file_id).remove();
+export let hide_upload_banner = (
+    uppy: Uppy,
+    config: Config,
+    file_id: string,
+    delay = 0,
+): void => {
+    if (delay > 0) {
+        setTimeout(() => {
+            config.upload_banner(file_id).remove();
+        }, delay);
+    } else {
+        config.upload_banner(file_id).remove();
+    }
+
     if (uppy.getFiles().length === 0) {
         if (config.mode === "compose") {
             compose_validate.set_upload_in_progress(false);
@@ -414,9 +426,7 @@ export function setup_upload(config: Config): Uppy {
         uppy.removeFile(file.id);
         // Hide upload status after waiting 100ms after the 1s transition to 100%
         // so that the user can see the progress bar at 100%.
-        setTimeout(() => {
-            hide_upload_banner(uppy, config, file.id);
-        }, 1100);
+        hide_upload_banner(uppy, config, file.id, 1100);
     });
 
     uppy.on("info-visible", () => {
