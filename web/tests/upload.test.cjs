@@ -491,13 +491,17 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     const on_upload_success_callback = callbacks["upload-success"];
     const file = {
         name: "copenhagen.png",
-        id: "123",
-        tus: {
-            uploadUrl:
-                "https://localhost/api/v1/tus/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png+something",
+    };
+    let response = {
+        body: {
+            xhr: {
+                responseText: JSON.stringify({
+                    url: "/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png",
+                    filename: "copenhagen.png",
+                }),
+            },
         },
     };
-    let response = {}; // -- https://github.com/transloadit/uppy/issues/5444
 
     let compose_ui_replace_syntax_called = false;
     override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, $textarea) => {
@@ -573,10 +577,20 @@ test("uppy_events", ({override_rewire, mock_template}) => {
             msg: "Response message",
         },
     };
+    mock_template("compose_banner/upload_banner.hbs", false, (data) => {
+        assert.equal(data.banner_type, "error");
+        assert.equal(data.banner_text, "Response message");
+        return "<banner-stub>";
+    });
     on_upload_error_callback(file, null, response);
     assert.ok(compose_ui_replace_syntax_called);
 
     compose_ui_replace_syntax_called = false;
+    mock_template("compose_banner/upload_banner.hbs", false, (data) => {
+        assert.equal(data.banner_type, "error");
+        assert.equal(data.banner_text, "translated: An unknown error occurred.");
+        return "<banner-stub>";
+    });
     on_upload_error_callback(file, null, undefined);
     assert.ok(compose_ui_replace_syntax_called);
 
