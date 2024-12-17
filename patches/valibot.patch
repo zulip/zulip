@@ -1,0 +1,15 @@
+diff --git a/dist/index.js b/dist/index.js
+index 79d6061331c1ab04dd025fc3e3ffda55c6829758..7b211729d14c59e32854a1598e9b409e6f2ae251 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -235,10 +235,6 @@ function isValiError(error) {
+ 
+ // src/utils/ValiError/ValiError.ts
+ var ValiError = class extends Error {
+-  /**
+-   * The error issues.
+-   */
+-  issues;
+   /**
+    * Creates a Valibot error with useful information.
+    *

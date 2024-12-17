@@ -1,4 +1,4 @@
-import type {z} from "zod";
+import type * as v from "valibot";
 
 import * as blueslip from "./blueslip.ts";
 import {FoldDict} from "./fold_dict.ts";
@@ -1059,8 +1059,8 @@ export function get_msg_ids_for_starred(): number[] {
     return [];
 }
 
-type UnreadDirectMessageInfo = z.infer<typeof unread_direct_message_info_schema>;
-type UnreadDirectMessageGroupInfo = z.infer<typeof unread_direct_message_group_info_schema>;
+type UnreadDirectMessageInfo = v.InferOutput<typeof unread_direct_message_info_schema>;
+type UnreadDirectMessageGroupInfo = v.InferOutput<typeof unread_direct_message_group_info_schema>;
 
 export function initialize(params: StateData["unread"]): void {
     const unread_msgs = params.unread_msgs;

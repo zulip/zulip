@@ -1,6 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
-import {z} from "zod";
+import * as v from "valibot";
 
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
@@ -19,7 +19,7 @@ let prior_dom: vdom.Tag<PMNode> | undefined;
 // left corner of the app.  This was split out from stream_list.ts.
 
 const ls_key = "left_sidebar_direct_messages_collapsed_state";
-const ls_schema = z.boolean().default(false);
+const ls_schema = v.optional(v.boolean(), false);
 const ls = localstorage();
 let private_messages_collapsed = false;
 
@@ -237,7 +237,7 @@ export function clear_search(force_rerender = false): void {
 
 export function initialize(): void {
     // Restore collapsed status.
-    private_messages_collapsed = ls_schema.parse(ls.get(ls_key));
+    private_messages_collapsed = v.parse(ls_schema, ls.get(ls_key));
     if (private_messages_collapsed) {
         close();
     } else {

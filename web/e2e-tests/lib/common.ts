@@ -10,14 +10,15 @@ import type {Browser, ConsoleMessage, ConsoleMessageLocation, ElementHandle, Pag
 import puppeteer from "puppeteer";
 import StackFrame from "stackframe";
 import StackTraceGPS from "stacktrace-gps";
-import {z} from "zod";
+import * as v from "valibot";
 
 const root_dir = url.fileURLToPath(new URL("../../..", import.meta.url));
 const puppeteer_dir = path.join(root_dir, "var/puppeteer");
 
-export const test_credentials = z
-    .object({default_user: z.object({username: z.string(), password: z.string()})})
-    .parse(JSON.parse(fs.readFileSync(path.join(puppeteer_dir, "test_credentials.json"), "utf8")));
+export const test_credentials = v.parse(
+    v.object({default_user: v.object({username: v.string(), password: v.string()})}),
+    JSON.parse(fs.readFileSync(path.join(puppeteer_dir, "test_credentials.json"), "utf8")),
+);
 
 type Message = Record<string, string | boolean> & {
     recipient?: string;

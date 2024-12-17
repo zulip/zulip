@@ -1,7 +1,7 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_add_new_bot_form from "../templates/settings/add_new_bot_form.hbs";
 import render_bot_avatar_row from "../templates/settings/bot_avatar_row.hbs";
@@ -451,18 +451,19 @@ export function set_up(): void {
         void channel.post({
             url: "/json/bots/" + encodeURIComponent(bot_id) + "/api_key/regenerate",
             success(raw_data) {
-                const data = z
-                    .object({
-                        api_key: z.string(),
-                    })
-                    .parse(raw_data);
+                const data = v.parse(
+                    v.object({
+                        api_key: v.string(),
+                    }),
+                    raw_data,
+                );
                 $row.find(".bot-card-api-key").find(".value").text(data.api_key);
                 $row.find(".bot-card-api-key-error").hide();
             },
             error(xhr) {
-                const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
-                if (parsed.success && parsed.data.msg) {
-                    $row.find(".bot-card-api-key-error").text(parsed.data.msg).show();
+                const parsed = v.safeParse(v.object({msg: v.string()}), xhr.responseJSON);
+                if (parsed.success && parsed.output.msg) {
+                    $row.find(".bot-card-api-key-error").text(parsed.output.msg).show();
                 }
             },
         });

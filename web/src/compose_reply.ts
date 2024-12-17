@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as fenced_code from "../shared/src/fenced_code.ts";
 
@@ -322,7 +322,7 @@ export function quote_message(opts: {
     void channel.get({
         url: "/json/messages/" + message_id,
         success(raw_data) {
-            const data = z.object({raw_content: z.string()}).parse(raw_data);
+            const data = v.parse(v.object({raw_content: v.string()}), raw_data);
             replace_content(message, data.raw_content);
         },
     });

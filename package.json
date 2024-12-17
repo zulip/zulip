@@ -85,12 +85,12 @@
     "turndown": "^7.0.0",
     "url-loader": "^4.1.1",
     "url-template": "^3.1.1",
+    "valibot": "1.0.0-beta.9",
     "webfonts-loader": "^8.0.0",
     "webpack": "^5.61.0",
     "webpack-bundle-tracker": "^3.0.1",
     "webpack-cli": "^5.0.1",
-    "winchan": "^0.2.1",
-    "zod": "^3.21.4"
+    "winchan": "^0.2.1"
   },
   "devDependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.19.6",
@@ -173,7 +173,8 @@
       "source-sans@3.46.0": "patches/source-sans@3.46.0.patch",
       "svgicons2svgfont": "patches/svgicons2svgfont.patch",
       "tippy.js@6.3.7": "patches/tippy.js@6.3.7.patch",
-      "textarea-caret@3.1.0": "patches/textarea-caret@3.1.0.patch"
+      "textarea-caret@3.1.0": "patches/textarea-caret@3.1.0.patch",
+      "valibot": "patches/valibot.patch"
     }
   },
   "nyc": {
