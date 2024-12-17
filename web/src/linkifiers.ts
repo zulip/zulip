@@ -18,6 +18,22 @@ export function get_linkifier_map(): LinkifierMap {
     return linkifier_map;
 }
 
+// Helper function to validate regex syntax
+function is_valid_regex(pattern: string): boolean {
+    try {
+        new RegExp(pattern);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+// Helper function to escape special characters in patterns
+function escape_special_characters(pattern: string): string {
+    return pattern.replaceAll(/([.*+?^${}()|[\]\\])/g, "\\$1");
+}
+
+
 function python_to_js_linkifier(
     pattern: string,
     url: string,
@@ -67,6 +83,7 @@ function python_to_js_linkifier(
     // is rendered locally, otherwise, we return false there and
     // message is rendered on the backend which has proper support
     // for negative lookbehind.
+    pattern = escape_special_characters(pattern);
     pattern = pattern + /(?!\w)/.source;
     let final_regex = null;
     try {
@@ -76,7 +93,7 @@ function python_to_js_linkifier(
         // We'll ignore this linkifier for now, but log this
         // failure for debugging later.
         if (error instanceof SyntaxError) {
-            blueslip.error("python_to_js_linkifier failure!", {pattern}, error);
+            blueslip.error("python_to_js_linkifier failure!", {pattern, js_flags}, error.message);
         } else {
             // Don't swallow any other (unexpected) exceptions.
             /* istanbul ignore next */
@@ -91,6 +108,14 @@ export function update_linkifier_rules(linkifiers: Linkifier[]): void {
     linkifier_map.clear();
 
     for (const linkifier of linkifiers) {
+        // Validate the regex pattern before processing
+        if (!is_valid_regex(linkifier.pattern)) {
+            blueslip.warn("Skipping invalid linkifier pattern", {
+                pattern: linkifier.pattern,
+            });
+            continue;
+        }
+        
         const [regex, url_template, group_number_to_name] = python_to_js_linkifier(
             linkifier.pattern,
             linkifier.url_template,
