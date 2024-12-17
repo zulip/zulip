@@ -215,7 +215,7 @@ $("body").on("click", ".settings-sticky-footer #stream_creation_go_to_subscriber
             is_any_stream_group_widget_pending = true;
             // We are not appending any value here, but instead this is
             // a proxy to invoke the error state for a group widget
-            // that would usually get triggered on clicking enter.
+            // that would usually get triggered on pressing enter.
             widget.appendValue(widget.getCurrentText()!);
             break;
         }
