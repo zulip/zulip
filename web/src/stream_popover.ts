@@ -27,6 +27,7 @@ import * as popover_menus from "./popover_menus.ts";
 import {left_sidebar_tippy_options} from "./popover_menus.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
+import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
@@ -452,7 +453,10 @@ export async function build_move_topic_to_stream_popover(
     }
 
     function update_submit_button_disabled_state(select_stream_id: number): void {
-        const {current_stream_id, new_topic_name, old_topic_name} = get_params_from_form();
+        const params = get_params_from_form();
+        const current_stream_id = params.current_stream_id;
+        const new_topic_name = params.new_topic_name?.trim();
+        const old_topic_name = params.old_topic_name.trim();
 
         // Unlike most topic comparisons in Zulip, we intentionally do
         // a case-sensitive comparison, since adjusting the
@@ -461,9 +465,21 @@ export async function build_move_topic_to_stream_popover(
         // disabled in case when user does not have permission to edit
         // topic and thus submit button is disabled if stream is also
         // not changed.
-        util.the($<HTMLButtonElement>("#move_topic_modal button.dialog_submit_button")).disabled =
+        let is_disabled = false;
+        if (
+            realm.realm_mandatory_topics &&
+            (new_topic_name === "" || new_topic_name === "(no topic)")
+        ) {
+            is_disabled = true;
+        }
+        if (
             Number.parseInt(current_stream_id, 10) === select_stream_id &&
-            (new_topic_name === undefined || new_topic_name.trim() === old_topic_name.trim());
+            (new_topic_name === undefined || new_topic_name === old_topic_name)
+        ) {
+            is_disabled = true;
+        }
+        util.the($<HTMLButtonElement>("#move_topic_modal button.dialog_submit_button")).disabled =
+            is_disabled;
     }
 
     function move_topic(): void {
