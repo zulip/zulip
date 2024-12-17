@@ -742,6 +742,14 @@ Next, read the following to learn more about developing for Zulip:
 
 ::::{tab-set}
 
+:::{tab-item} Windows (WSL)
+
+```{include} setup/wsl-troubleshoot.md
+
+```
+
+:::
+
 :::{tab-item} Windows (VM)
 
 ```{include} setup/winvm-troubleshoot.md
