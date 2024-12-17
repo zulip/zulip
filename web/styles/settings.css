@@ -1447,6 +1447,13 @@ label.preferences-radio-choice-label {
                 /* TODO: Check with Vlad about highlight
                    colors such as this. */
                 background-color: var(--color-active-row-modal);
+                outline: none !important;
+            }
+
+            &:focus-visible {
+                border-radius: 4px;
+                outline: 1px solid var(--color-outline-focus);
+                outline-offset: -2px;
             }
 
             .sidebar-item-icon {
