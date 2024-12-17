@@ -500,11 +500,21 @@ test_ui("focus_user_filter", () => {
     initialize_stream_data();
     stream_list.build_stream_list();
 
-    const e = {
+    let e = {
         stopPropagation() {},
     };
     const click_handler = $(".stream-list-filter").get_on_handler("click");
     click_handler(e);
+
+    e = {
+        type: "keydown",
+        key: "ArrowDown",
+        shiftKey: false,
+        preventDefault() {},
+        stopPropagation() {},
+    };
+    const keydown_handler = $(".stream-list-filter").get_on_handler("keydown");
+    keydown_handler(e);
 });
 
 test_ui("sort_streams", ({mock_template}) => {
