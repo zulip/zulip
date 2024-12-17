@@ -398,6 +398,8 @@ export const realm_schema = z.object({
     server_emoji_data_url: z.string(),
     server_inline_image_preview: z.boolean(),
     server_inline_url_embed_preview: z.boolean(),
+    server_max_deactivated_realm_deletion_days: z.nullable(z.number()),
+    server_min_deactivated_realm_deletion_days: z.nullable(z.number()),
     server_jitsi_server_url: z.nullable(z.string()),
     server_name_changes_disabled: z.boolean(),
     server_needs_upgrade: z.boolean(),

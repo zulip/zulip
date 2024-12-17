@@ -1,6 +1,7 @@
 from collections.abc import Mapping
 from typing import Annotated, Any, Literal
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
@@ -34,11 +35,7 @@ from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import access_stream_by_id
-from zerver.lib.typed_endpoint import (
-    ApiParamConfig,
-    typed_endpoint,
-    typed_endpoint_without_parameters,
-)
+from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_int_in_validator, check_string_in_validator
 from zerver.lib.user_groups import (
     GroupSettingChangeRequest,
@@ -498,11 +495,38 @@ def update_realm(
 
 
 @require_realm_owner
-@typed_endpoint_without_parameters
-def deactivate_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
+@typed_endpoint
+def deactivate_realm(
+    request: HttpRequest, user: UserProfile, *, deletion_delay_days: Json[int | None] = None
+) -> HttpResponse:
+    if settings.MAX_DEACTIVATED_REALM_DELETION_DAYS is not None and (
+        deletion_delay_days is None
+        or deletion_delay_days > settings.MAX_DEACTIVATED_REALM_DELETION_DAYS
+    ):
+        raise JsonableError(
+            _("Data deletion time must be at most {max_allowed_days} days in the future.").format(
+                max_allowed_days=settings.MAX_DEACTIVATED_REALM_DELETION_DAYS,
+            )
+        )
+
+    if (
+        settings.MIN_DEACTIVATED_REALM_DELETION_DAYS is not None
+        and deletion_delay_days is not None
+        and deletion_delay_days < settings.MIN_DEACTIVATED_REALM_DELETION_DAYS
+    ):
+        raise JsonableError(
+            _("Data deletion time must be at least {min_allowed_days} days in the future.").format(
+                min_allowed_days=settings.MIN_DEACTIVATED_REALM_DELETION_DAYS,
+            )
+        )
+
     realm = user.realm
     do_deactivate_realm(
-        realm, acting_user=user, deactivation_reason="owner_request", email_owners=True
+        realm,
+        acting_user=user,
+        deactivation_reason="owner_request",
+        email_owners=True,
+        deletion_delay_days=deletion_delay_days,
     )
     return json_success(request)
 
