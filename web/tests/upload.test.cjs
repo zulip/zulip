@@ -471,6 +471,9 @@ test("uppy_events", ({override_rewire, mock_template}) => {
                 callbacks[event_name] = callback;
             },
             removeFile() {},
+            getFiles() {
+                return [];
+            },
             getState: () => ({
                 info: [
                     {
