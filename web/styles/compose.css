@@ -1234,7 +1234,7 @@ textarea.new_message_textarea {
     .compose_control_menu {
         padding: 0 1px;
         /* 18px at 14px/1em */
-        font-size: 1.2957em;
+        font-size: 1.2857em;
         /* Coordinate with the value of
            --compose-formatting-buttons-row-height */
         /* 28px at 18px/1em */
