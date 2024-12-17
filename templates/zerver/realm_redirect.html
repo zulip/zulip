@@ -26,6 +26,10 @@
                               autocomplete="off" required/>
                             <span id="realm_redirect_external_host">.{{external_host}}</span>
                         </div>
+                        <p class="bottom-text">
+                            {{ _("Don't know your organization URL?") }}
+                            <a target="_blank" rel="noopener noreferrer" href="/accounts/find/">{{ _("Find your organization.") }}</a>
+                        </p>
                         <div id="errors">
                             {% if form.subdomain.errors %}
                                 {% for error in form.subdomain.errors %}
@@ -34,19 +38,15 @@
                             {% endif %}
                         </div>
                         <button id="enter-realm-button" type="submit">{{ _('Next') }}</button>
-                        <p class="bottom-text">
-                            {{ _("Don't know your organization URL?") }}
-                            <a target="_blank" rel="noopener noreferrer" href="/accounts/find/">{{ _("Find your organization.") }}</a>
-                        </p>
                     </div>
                 </form>
             </div>
         </div>
 
         <div class="bottom-text">
-            {% trans org_creation_link="/new/" %}
-            <a target="_blank" rel="noopener noreferrer" href="{{ org_creation_link }}">Create a new organization</a> if you don't have one yet.
-            {% endtrans %}
+            <p>
+                {{ _("Need to get your group started on Zulip?") }} <a target="_blank" rel="noopener noreferrer" href="/new/">{{ _("Create a new organization.") }}</a>
+            </p>
         </div>
     </div>
 

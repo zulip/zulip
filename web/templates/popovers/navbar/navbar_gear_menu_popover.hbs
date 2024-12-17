@@ -103,7 +103,7 @@
             </div>
         </li>
         <li role="none" class="link-item popover-menu-list-item only-visible-for-spectators">
-            <a role="menuitem" tabindex="0" class="change-language-spectator popover-menu-link">
+            <a role="menuitem" href="/plans/" tabindex="0" class="change-language-spectator popover-menu-link">
                 <i class="popover-menu-icon zulip-icon zulip-icon-f-globe" aria-hidden="true"></i>
                 <span class="popover-menu-label">{{t 'Select language' }}</span>
             </a>
@@ -167,7 +167,7 @@
         {{/if}}
         {{#if (or can_invite_users_by_email can_create_multiuse_invite)}}
         <li role="none" class="link-item popover-menu-list-item">
-            <a role="menuitem" tabindex="0" class="invite-user-link popover-menu-link">
+            <a role="menuitem" href="/plans/" tabindex="0" class="invite-user-link popover-menu-link">
                 <i class="popover-menu-icon zulip-icon zulip-icon-user-plus" aria-hidden="true"></i>
                 <span class="popover-menu-label">{{t 'Invite users' }}</span>
             </a>

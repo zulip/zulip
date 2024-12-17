@@ -31,10 +31,11 @@ html {
 }
 
 .bottom-text {
-    text-align: center;
-    margin-top: 20px;
+    text-align: left;
+    margin-top: 10px;
     font-weight: 400;
     font-size: 0.9em;
+    color: hsl(0deg 0% 50%);
 
     & a {
         color: hsl(164deg 100% 23%);
@@ -43,6 +44,10 @@ html {
             text-decoration: none;
             color: hsl(156deg 62% 61%);
         }
+    }
+
+    & p {
+        text-align: center;
     }
 }
 
@@ -74,6 +79,10 @@ html {
 
 .grey {
     color: hsl(0deg 0% 67%);
+}
+
+.find-account-page-container #find_account i {
+    font-size: 0.8em;
 }
 
 .app-main {
@@ -128,10 +137,6 @@ html {
     &.find-account-page-container {
         width: 500px;
         font-weight: 400;
-    }
-
-    .find-account-form-tip {
-        font-size: 0.8em;
     }
 
     &.goto-account-page-container {
@@ -209,7 +214,8 @@ html {
 
         transition:
             color 0.3s ease,
-            border-color 0.3s ease;
+            background-color 0.3s ease,
+            box-shadow 0.3s ease;
 
         &:hover {
             color: hsl(156deg 62% 61%);
@@ -268,10 +274,19 @@ html {
     }
 }
 
+.find-account-page-container h3,
+.forgot-password-container h3 {
+    margin-top: 0;
+
+    font-weight: 300;
+    font-size: 2em;
+}
+
 .forgot-password-container {
     width: 503px;
 
-    & form {
+    & h3,
+    form {
         margin-bottom: 0;
     }
 }
@@ -419,8 +434,10 @@ html {
         border: none;
         border-radius: 4px;
 
-        transition: none 0.3s ease;
-        transition-property: background-color, outline;
+        transition:
+            background-color 0.3s ease,
+            color 0.3s ease,
+            opacity 0.3s ease;
 
         &:hover {
             background-color: hsl(213deg 33% 31%);
@@ -547,7 +564,7 @@ html {
             }
 
             &:focus {
-                border-color: hsl(0deg 0% 53%);
+                border: 1px solid hsl(0deg 0% 53%);
                 outline: 0;
             }
         }
@@ -563,8 +580,10 @@ html {
 
             margin-top: 1px;
 
-            transition: none 0.3s ease;
-            transition-property: color, font-size, font-weight, transform; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+            transition:
+                background-color 0.3s ease,
+                color 0.3s ease,
+                opacity 0.3s ease;
         }
 
         &.moving-label {
@@ -1195,7 +1214,7 @@ button#register_auth_button_gitlab {
 
 .goto-account-page {
     #realm_redirect_subdomain {
-        text-align: right;
+        text-align: left;
         position: relative;
         padding-right: 10px;
     }
@@ -1208,8 +1227,11 @@ button#register_auth_button_gitlab {
     }
 
     #realm_redirect_description {
-        top: 15px;
+        top: 28px;
+        font-weight: 600;
+        font-size: 18px;
         position: relative;
+        text-align: left;
     }
 
     #enter-realm-button {
