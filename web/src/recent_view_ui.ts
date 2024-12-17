@@ -1374,7 +1374,7 @@ export function show(): void {
         const html_body = render_introduce_zulip_view_modal({
             zulip_view: "recent_conversations",
             current_home_view_and_escape_navigation_enabled:
-                user_settings.web_home_view === "recent_topics" &&
+                user_settings.web_home_view === "recent" &&
                 user_settings.web_escape_navigates_to_home_view,
         });
         dialog_widget.launch({
@@ -1762,8 +1762,8 @@ function load_filters(): void {
         // A user may have a stored filter and can log out
         // to see web public view. This ensures no filters are
         // selected for spectators.
-        const recent_topics = filter_schema.parse(ls.get(ls_key));
-        filters = new Set(recent_topics);
+        const recent = filter_schema.parse(ls.get(ls_key));
+        filters = new Set(recent);
         const filter_data = filter_schema.parse(ls.get(ls_dropdown_key));
         dropdown_filters = new Set(filter_data);
     }

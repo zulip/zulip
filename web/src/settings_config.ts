@@ -131,8 +131,8 @@ export const web_home_view_values = {
         code: "inbox",
         description: $t({defaultMessage: "Inbox"}),
     },
-    recent_topics: {
-        code: "recent_topics",
+    recent: {
+        code: "recent",
         description: $t({defaultMessage: "Recent conversations"}),
     },
     all_messages: {

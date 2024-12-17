@@ -212,7 +212,7 @@ export function get_view_rows_by_view_name(view: string): JQuery {
         return $(".top_left_all_messages");
     }
 
-    if (view === settings_config.web_home_view_values.recent_topics.code) {
+    if (view === settings_config.web_home_view_values.recent.code) {
         return $(".top_left_recent_view");
     }
 

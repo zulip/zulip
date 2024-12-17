@@ -142,7 +142,7 @@ function show_home_view(): void {
     // We only allow the primary recommended options for home views
     // rendered without a hash.
     switch (user_settings.web_home_view) {
-        case "recent_topics": {
+        case "recent": {
             maybe_hide_inbox();
             recent_view_ui.show();
             break;
@@ -228,17 +228,6 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
         case "":
         case "#":
             show_home_view();
-            break;
-        case "#recent_topics":
-            // The URL for Recent Conversations was changed from
-            // #recent_topics to #recent in 2022. Because pre-change
-            // Welcome Bot messages included links to this URL, we
-            // need to support the "#recent_topics" hash as an alias
-            // for #recent permanently. We show the view and then
-            // replace the current URL hash in a way designed to hide
-            // this detail in the browser's forward/back session history.
-            recent_view_ui.show();
-            window.location.replace("#recent");
             break;
         case "#recent":
             maybe_hide_inbox();
