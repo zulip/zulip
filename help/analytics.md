@@ -9,6 +9,10 @@ You will also find interactive graphs that provide a detailed breakdown of
 your organization's number of active users, messages sent, messages received,
 and how these statistics have changed over time.
 
+!!! warn ""
+
+    **Note**: Users who have invisible mode enabled will be included in aggregate usage statistics.
+
 ## View organization statistics
 
 {start_tabs}
