@@ -471,6 +471,7 @@ export function get_conversation_participants(): Set<number> {
         message_lists.current.all_messages(),
     ).visible();
     if (!_.isEqual(participant_ids_set, conversation_participants)) {
+        /* istanbul ignore next */
         blueslip.error("Participants calculations disagree", {
             participant_ids_set,
             conversation_participants,
