@@ -154,6 +154,7 @@ Zulip.
 
 With this setting, your "Last active" time displayed to other users in
 the UI will be frozen as the approximate time you enabled this setting.
+Your activity will still be included in your organization's [statistics](/help/analytics).
 
 !!! tip ""
 

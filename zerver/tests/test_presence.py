@@ -996,23 +996,30 @@ class GetRealmStatusesTest(ZulipTestCase):
         othello.save(update_fields=["presence_enabled"])
         hamlet.save(update_fields=["presence_enabled"])
 
+        # Verify the initial UserActivityInterval state is as expected.
+        self.assertEqual(UserActivityInterval.objects.filter(user_profile=othello).count(), 0)
+
         result = self.api_post(
             othello,
             "/api/v1/users/me/presence",
-            dict(status="active"),
+            # Include new_user_input=true to test the UserActivityInterval update
+            # codepath.
+            dict(status="active", new_user_input="true"),
             HTTP_USER_AGENT="ZulipAndroid/1.0",
         )
-
         result = self.api_post(
             hamlet,
             "/api/v1/users/me/presence",
             dict(status="idle"),
             HTTP_USER_AGENT="ZulipDesktop/1.0",
         )
+
         json = self.assert_json_success(result)
 
         # Othello's presence status is disabled so it won't be reported.
         self.assertEqual(set(json["presences"].keys()), {hamlet.email})
+        # However, UserActivit Interval still gets updated.
+        self.assertEqual(UserActivityInterval.objects.filter(user_profile=othello).count(), 1)
 
         result = self.api_post(
             hamlet,

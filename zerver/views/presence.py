@@ -164,10 +164,10 @@ def update_active_status_backend(
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
         raise JsonableError(_("Invalid status: {status}").format(status=status))
-    elif user_profile.presence_enabled:
-        client = RequestNotes.get_notes(request).client
-        assert client is not None
-        update_user_presence(user_profile, client, timezone_now(), status_val, new_user_input)
+
+    client = RequestNotes.get_notes(request).client
+    assert client is not None
+    update_user_presence(user_profile, client, timezone_now(), status_val, new_user_input)
 
     if ping_only:
         ret: dict[str, Any] = {}
