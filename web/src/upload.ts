@@ -281,6 +281,7 @@ export function setup_upload(config: Config): Uppy {
             },
             pluralize: (_n) => 0,
         },
+        onBeforeFileAdded: () => true, // Allow duplicate file uploads
     });
     uppy.use(Tus, {
         // https://uppy.io/docs/tus/#options
@@ -416,9 +417,6 @@ export function setup_upload(config: Config): Uppy {
 
         compose_ui.autosize_textarea($text_area);
 
-        // The uploaded files should be removed since uppy doesn't allow files in the store
-        // to be re-uploaded again.
-        uppy.removeFile(file.id);
         // Hide upload status after waiting 500ms after the 1s transition to 100%
         // so that the user can see the progress bar at 100%.
         hide_upload_banner(uppy, config, file.id, 1500);
