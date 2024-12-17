@@ -42,6 +42,13 @@
 * [Edit a saved snippet](/api/edit-saved-snippet)
 * [Delete a saved snippet](/api/delete-saved-snippet)
 
+#### Navigation views
+
+* [Get all navigation views](/api/get-navigation-views)
+* [Add a navigation view](/api/add-navigation-view)
+* [Update the navigation view](/api/edit-navigation-view)
+* [Remove a navigation view](/api/remove-navigation-view)
+
 #### Channels
 
 * [Get subscribed channels](/api/get-subscriptions)
