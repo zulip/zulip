@@ -1,6 +1,6 @@
 import type {Meta, UppyFile} from "@uppy/core";
 import {Uppy} from "@uppy/core";
-import Tus from "@uppy/tus";
+import Tus, {type TusBody} from "@uppy/tus";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
@@ -20,8 +20,8 @@ import * as rows from "./rows.ts";
 import {realm} from "./state_data.ts";
 
 let drag_drop_img: HTMLElement | null = null;
-let compose_upload_object: Uppy;
-const upload_objects_by_message_edit_row = new Map<number, Uppy>();
+let compose_upload_object: Uppy<Meta, TusBody>;
+const upload_objects_by_message_edit_row = new Map<number, Uppy<Meta, TusBody>>();
 
 export function compose_upload_cancel(): void {
     compose_upload_object.cancelAll();
@@ -32,7 +32,7 @@ export function feature_check(): XMLHttpRequestUpload {
     return window.XMLHttpRequest && new window.XMLHttpRequest().upload;
 }
 
-export function get_translated_status(file: File | UppyFile<Meta, Record<string, never>>): string {
+export function get_translated_status(file: File | UppyFile<Meta, TusBody>): string {
     const status = $t({defaultMessage: "Uploading {filename}…"}, {filename: file.name});
     return "[" + status + "]()";
 }
@@ -126,7 +126,7 @@ export function edit_config(row: number): Config {
 }
 
 export let hide_upload_banner = (
-    uppy: Uppy,
+    uppy: Uppy<Meta, TusBody>,
     config: Config,
     file_id: string,
     delay = 0,
@@ -188,7 +188,11 @@ export function show_error_message(
     }
 }
 
-export let upload_files = (uppy: Uppy, config: Config, files: File[] | FileList): void => {
+export let upload_files = (
+    uppy: Uppy<Meta, TusBody>,
+    config: Config,
+    files: File[] | FileList,
+): void => {
     if (files.length === 0) {
         return;
     }
@@ -266,8 +270,13 @@ export function rewire_upload_files(value: typeof upload_files): void {
     upload_files = value;
 }
 
-export function setup_upload(config: Config): Uppy {
-    const uppy = new Uppy({
+const zulip_upload_response_schema = z.object({
+    url: z.string(),
+    filename: z.string(),
+});
+
+export function setup_upload(config: Config): Uppy<Meta, TusBody> {
+    const uppy = new Uppy<Meta, TusBody>({
         debug: false,
         autoProceed: true,
         restrictions: {
@@ -396,17 +405,21 @@ export function setup_upload(config: Config): Uppy {
         upload_files(uppy, config, files);
     });
 
-    uppy.on("upload-success", (file, _response) => {
+    uppy.on("upload-success", (file, response) => {
         assert(file !== undefined);
-        // TODO: Because of https://github.com/transloadit/uppy/issues/5444 we can't get the actual
-        // response with the URL and filename, so we hack it together.
-        const filename = file.name!;
-        // With the S3 backend, the path_id we chose has a multipart-id appended with a '+'; since
-        // our path-ids cannot contain '+', we strip any suffix starting with '+'.
-        const url = new URL(file.tus!.uploadUrl!.replace(/\+.*/, "")).pathname.replace(
-            "/api/v1/tus/",
-            "/user_uploads/",
-        );
+        let upload_response;
+        try {
+            upload_response = zulip_upload_response_schema.parse(
+                JSON.parse(response.body!.xhr.responseText),
+            );
+        } catch {
+            blueslip.warn("Invalid JSON response from tus server", {
+                body: response.body!.xhr.responseText,
+            });
+            return;
+        }
+        const filename = upload_response.filename;
+        const url = upload_response.url;
 
         const filtered_filename = filename.replaceAll("[", "").replaceAll("]", "");
         const syntax_to_insert = "[" + filtered_filename + "](" + url + ")";
