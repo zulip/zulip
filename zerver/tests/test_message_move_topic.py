@@ -15,7 +15,10 @@ from zerver.actions.message_edit import (
     maybe_send_resolve_topic_notifications,
 )
 from zerver.actions.reactions import do_add_reaction
-from zerver.actions.realm_settings import do_change_realm_permission_group_setting
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_set_realm_property,
+)
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.message import truncate_topic
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
@@ -108,6 +111,63 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         self.check_topic(msg_id, "")
+
+    def test_topic_required_in_mandatory_topic_realm(self) -> None:
+        admin_user = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        realm = admin_user.realm
+        self.login_user(admin_user)
+
+        stream = self.make_stream("new_stream")
+        self.subscribe(admin_user, stream.name)
+        self.subscribe(hamlet, stream.name)
+
+        original_topic_name = "topic 1"
+        message_id = self.send_stream_message(
+            hamlet,
+            stream.name,
+            topic_name=original_topic_name,
+        )
+
+        # Verify with mandatory_topics=True:
+        # * A topic can't be moved to an empty topic
+        # * A topic can be moved to a non-empty topic
+        do_set_realm_property(realm, "mandatory_topics", True, acting_user=admin_user)
+
+        for topic_name in ["(no topic)", ""]:
+            result = self.client_patch(
+                f"/json/messages/{message_id}",
+                {
+                    "topic": topic_name,
+                },
+            )
+            self.assert_json_error(result, "Topics are required in this organization.")
+            self.check_topic(message_id, topic_name=original_topic_name)
+
+        new_topic_name = "new valid topic"
+        result = self.client_patch(
+            f"/json/messages/{message_id}",
+            {
+                "topic": new_topic_name,
+            },
+        )
+        self.assert_json_success(result)
+        self.check_topic(message_id, new_topic_name)
+
+        # Verify with mandatory_topics=False:
+        # * A topic can be moved to an empty topic
+        # * A topic can be moved to a non-empty topic
+        do_set_realm_property(realm, "mandatory_topics", False, acting_user=admin_user)
+
+        for topic_name in ["(no topic)", "", "non-empty topic"]:
+            result = self.client_patch(
+                f"/json/messages/{message_id}",
+                {
+                    "topic": topic_name,
+                },
+            )
+            self.assert_json_success(result)
+            self.check_topic(message_id, topic_name)
 
     def test_edit_message_invalid_topic(self) -> None:
         self.login("hamlet")
