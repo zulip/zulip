@@ -36,6 +36,13 @@
 * [Create a saved snippet](/api/create-saved-snippet)
 * [Delete a saved snippet](/api/delete-saved-snippet)
 
+#### Pinned views
+
+* [Get all pinned views](/api/get-pinned-views)
+* [Add a pinned view](/api/add-pinned-view)
+* [Update the pinned view](/api/edit-pinned-view)
+* [Remove a pinned view](/api/remove-pinned-view)
+
 #### Channels
 
 * [Get subscribed channels](/api/get-subscriptions)
