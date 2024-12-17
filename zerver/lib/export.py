@@ -162,6 +162,7 @@ ALL_ZULIP_TABLES = {
     "zerver_namedusergroup",
     "zerver_onboardingstep",
     "zerver_onboardingusermessage",
+    "zerver_pinnedview",
     "zerver_preregistrationrealm",
     "zerver_preregistrationuser",
     "zerver_preregistrationuser_streams",

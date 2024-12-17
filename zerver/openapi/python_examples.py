@@ -1143,6 +1143,74 @@ def remove_attachment(client: Client, attachment_id: int) -> None:
     validate_against_openapi_schema(result, "/attachments/{attachment_id}", "delete", "200")
 
 
+@openapi_test_function("/pinned_views:get")
+def get_pinned_views(client: Client) -> None:
+    # {code_example|start}
+    # Get all pinned views for the user
+    result = client.call_endpoint(
+        url="pinned_views",
+        method="GET",
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/pinned_views", "get", "200")
+
+
+@openapi_test_function("/pinned_views:post")
+def add_pinned_views(client: Client) -> None:
+    # {code_example|start}
+    # Add a pinned view
+    request = {
+        "url_hash": "narrow/is/alerted",
+        "is_pinned": True,
+        "name": "Alert Word",
+    }
+    result = client.call_endpoint(
+        url="pinned_views",
+        method="POST",
+        request=request,
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/pinned_views", "post", "200")
+
+
+@openapi_test_function("/pinned_views/{url_hash}:patch")
+def update_pinned_views(client: Client) -> None:
+    # Fetch pinned views for updating
+    result = client.call_endpoint(url="pinned_views", method="GET")
+    url_hash = result["pinned_views"][0]["url_hash"]
+    # {code_example|start}
+    # Update a pinned view's location
+    request = {
+        "is_pinned": True,
+    }
+    result = client.call_endpoint(
+        url=f"pinned_views/{url_hash}",
+        method="PATCH",
+        request=request,
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/pinned_views/{url_hash}", "patch", "200")
+
+
+@openapi_test_function("/pinned_views/{url_hash}:delete")
+def remove_pinned_views(client: Client) -> None:
+    # Fetch pinned views for deletion
+    result = client.call_endpoint(url="pinned_views", method="GET")
+    url_hash = result["pinned_views"][0]["url_hash"]
+    # {code_example|start}
+    # Remove a pinned views
+    result = client.call_endpoint(
+        url=f"pinned_views/{url_hash}",
+        method="DELETE",
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/pinned_views/{url_hash}", "delete", "200")
+
+
 @openapi_test_function("/saved_snippets:post")
 def create_saved_snippet(client: Client) -> None:
     # {code_example|start}
@@ -1814,6 +1882,10 @@ def test_users(client: Client, owner_client: Client) -> None:
     remove_user_mute(client)
     get_alert_words(client)
     add_alert_words(client)
+    add_pinned_views(client)
+    get_pinned_views(client)
+    update_pinned_views(client)
+    remove_pinned_views(client)
     create_saved_snippet(client)
     get_saved_snippets(client)
     delete_saved_snippet(client)

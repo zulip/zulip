@@ -86,6 +86,12 @@ from zerver.views.message_flags import (
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
 from zerver.views.muted_users import mute_user, unmute_user
 from zerver.views.onboarding_steps import mark_onboarding_step_as_read
+from zerver.views.pinned_views import (
+    add_pinned_view,
+    get_pinned_views,
+    remove_pinned_view,
+    update_pinned_view,
+)
 from zerver.views.presence import (
     get_presence_backend,
     get_status_backend,
@@ -342,6 +348,9 @@ v1_api_and_json_patterns = [
     # Endpoints for syncing drafts.
     rest_path("drafts", GET=fetch_drafts, POST=create_drafts),
     rest_path("drafts/<int:draft_id>", PATCH=edit_draft, DELETE=delete_draft),
+    # pinned_views -> zerver.views.pinned_views
+    rest_path("pinned_views", GET=get_pinned_views, POST=add_pinned_view),
+    rest_path("pinned_views/<path:url_hash>", PATCH=update_pinned_view, DELETE=remove_pinned_view),
     # saved_snippets -> zerver.views.saved_snippets
     rest_path("saved_snippets", GET=get_saved_snippets, POST=create_saved_snippet),
     rest_path("saved_snippets/<int:saved_snippet_id>", DELETE=delete_saved_snippet),
