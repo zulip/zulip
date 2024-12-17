@@ -1189,6 +1189,9 @@ textarea.new_message_textarea {
     .compose_control_button {
         /* 22px at 14px/1em */
         font-size: 1.5714em;
+        /* Constrain icon fonts to a perfect
+           box (22px at 14px/1em) */
+        line-height: 1;
         /* Coordinate with the value of
            --compose-formatting-buttons-row-height */
         /* 28px at 22px/1em */
@@ -1235,6 +1238,9 @@ textarea.new_message_textarea {
         padding: 0 1px;
         /* 18px at 14px/1em */
         font-size: 1.2857em;
+        /* Constrain icon font to a perfect
+           box (18px at 14px/1em) */
+        line-height: 1;
         /* Coordinate with the value of
            --compose-formatting-buttons-row-height */
         /* 28px at 18px/1em */
