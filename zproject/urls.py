@@ -92,6 +92,12 @@ from zerver.views.message_report import report_message_backend
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
 from zerver.views.message_summary import get_messages_summary
 from zerver.views.muted_users import mute_user, unmute_user
+from zerver.views.navigation_views import (
+    add_navigation_view,
+    get_navigation_views,
+    remove_navigation_view,
+    update_navigation_view,
+)
 from zerver.views.onboarding_steps import mark_onboarding_step_as_read
 from zerver.views.presence import (
     get_presence_backend,
@@ -358,6 +364,13 @@ v1_api_and_json_patterns = [
     # Endpoints for syncing drafts.
     rest_path("drafts", GET=fetch_drafts, POST=create_drafts),
     rest_path("drafts/<int:draft_id>", PATCH=edit_draft, DELETE=delete_draft),
+    # navigation_views -> zerver.views.navigation_views
+    rest_path("navigation_views", GET=get_navigation_views, POST=add_navigation_view),
+    rest_path(
+        "navigation_views/<path:fragment>",
+        PATCH=update_navigation_view,
+        DELETE=remove_navigation_view,
+    ),
     # saved_snippets -> zerver.views.saved_snippets
     rest_path("saved_snippets", GET=get_saved_snippets, POST=create_saved_snippet),
     rest_path(

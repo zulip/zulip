@@ -46,6 +46,7 @@ from zerver.lib.message import (
 from zerver.lib.muted_users import get_user_mutes
 from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm, read_stop_words
 from zerver.lib.narrow_predicate import check_narrow_for_events
+from zerver.lib.navigation_views import get_navigation_views_for_user
 from zerver.lib.onboarding_steps import get_next_onboarding_steps
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
 from zerver.lib.realm_icon import realm_icon_url
@@ -300,6 +301,12 @@ def fetch_initial_state_data(
             state["saved_snippets"] = []
         else:
             state["saved_snippets"] = do_get_saved_snippets(user_profile)
+
+    if want("navigation_views"):
+        if user_profile is None:
+            state["navigation_views"] = []
+        else:
+            state["navigation_views"] = get_navigation_views_for_user(user_profile)
 
     if want("drafts"):
         if user_profile is None:
@@ -1008,6 +1015,20 @@ def apply_event(
             for idx, saved_snippet in enumerate(state["saved_snippets"]):
                 if saved_snippet["id"] == event["saved_snippet"]["id"]:
                     state["saved_snippets"][idx] = event["saved_snippet"]
+                    break
+
+    elif event["type"] == "navigation_view":
+        if event["op"] == "add":
+            state["navigation_views"].append(event["navigation_view"])
+        elif event["op"] == "update":
+            for navigation_view in state["navigation_views"]:
+                if navigation_view["fragment"] == event["fragment"]:
+                    navigation_view.update(event["data"])
+                    break
+        elif event["op"] == "remove":
+            for idx, navigation_view in enumerate(state["navigation_views"]):
+                if navigation_view["fragment"] == event["fragment"]:
+                    del state["navigation_views"][idx]
                     break
 
     elif event["type"] == "drafts":
