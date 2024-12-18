@@ -496,6 +496,12 @@ export async function build_move_topic_to_stream_popover(
             // user does not have permission to edit topic.
             new_topic_name = new_topic_name.trim();
         }
+        // For mandatory topics being false, we allow users to leave the topic name empty.
+        // In such cases, the client sets the topic name to "(no topic)" by default before
+        // sending the request to the server. The server currently rejects empty topic names.
+        if (new_topic_name?.trim() === "") {
+            new_topic_name = "(no topic)";
+        }
         if (old_topic_name === new_topic_name) {
             // We use `undefined` to tell the server that
             // there has been no change in the topic name.
