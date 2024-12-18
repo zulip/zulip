@@ -195,3 +195,6 @@ django-stubs-ext
 # Structured data representation with parsing.
 pydantic
 annotated_types
+
+# For requesting LLM API endpoints.
+litellm

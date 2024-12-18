@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 330  # Last bumped for updating default streams data.
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (305, 0)  # bumped 2024-11-27 to downgrade @uppy/tus
+PROVISION_VERSION = (305, 1)  # bumped 2024-12-18 to add litellm
