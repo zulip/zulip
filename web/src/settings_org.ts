@@ -683,6 +683,7 @@ export function discard_realm_default_property_element_changes(elem: HTMLElement
             );
             settings_components.set_input_element_value($elem, property_value);
             break;
+        case "color_scheme":
         case "emojiset":
         case "user_list_style":
             // Because this widget has a radio button structure, it
