@@ -25,7 +25,6 @@ import * as message_notifications from "./message_notifications.ts";
 import * as message_parser from "./message_parser.ts";
 import * as message_store from "./message_store.ts";
 import {type Message, type RawMessage, raw_message_schema} from "./message_store.ts";
-import * as message_util from "./message_util.ts";
 import * as message_view from "./message_view.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as pm_list from "./pm_list.ts";
@@ -313,11 +312,7 @@ export function insert_new_messages(
                 continue;
             }
 
-            message_events_util.maybe_add_narrowed_messages(
-                messages,
-                list,
-                message_util.add_new_messages,
-            );
+            message_events_util.maybe_add_narrowed_messages(messages, list);
             continue;
         }
 
@@ -739,11 +734,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                     // simply updated.
                     list.remove_and_rerender(event_msg_ids);
                     // For filters that cannot be processed locally, ask server.
-                    message_events_util.maybe_add_narrowed_messages(
-                        event_messages,
-                        list,
-                        message_util.add_messages,
-                    );
+                    message_events_util.maybe_add_narrowed_messages(event_messages, list);
                 }
             }
         }

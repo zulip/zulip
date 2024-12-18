@@ -1,7 +1,6 @@
 import assert from "minimalistic-assert";
 
 import {all_messages_data} from "./all_messages_data.ts";
-import type {MessageList, RenderInfo} from "./message_list.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
@@ -25,34 +24,6 @@ export function do_unread_count_updates(messages: Message[], expect_no_new_unrea
     }
 }
 
-export function add_messages(
-    messages: Message[],
-    msg_list: MessageList,
-    append_to_view_opts?: {messages_are_new: boolean},
-): RenderInfo | undefined {
-    if (!messages) {
-        return undefined;
-    }
-
-    const render_info = msg_list.add_messages(messages, append_to_view_opts);
-
-    return render_info;
-}
-
-export function add_new_messages(
-    messages: Message[],
-    msg_list: MessageList,
-): RenderInfo | undefined {
-    if (!msg_list.data.fetch_status.has_found_newest()) {
-        // We don't render newly received messages for the message list,
-        // if we haven't found the latest messages to be displayed in the
-        // narrow. Otherwise the new message would be rendered just after
-        // the previously fetched messages when that's inaccurate.
-        msg_list.data.fetch_status.update_expected_max_message_id(messages);
-        return undefined;
-    }
-    return add_messages(messages, msg_list, {messages_are_new: true});
-}
 export function get_count_of_messages_in_topic_sent_after_current_message(
     stream_id: number,
     topic: string,
