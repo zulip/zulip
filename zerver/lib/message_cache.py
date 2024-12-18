@@ -237,7 +237,7 @@ class MessageDict:
         else:
             obj["content_type"] = "text/x-markdown"
 
-        if is_incoming_1_to_1:
+        if is_incoming_1_to_1 and "sender_recipient_id" in obj:
             # For an incoming 1:1 DM, the recipient’s own recipient_id is
             # useless to the recipient themselves. Substitute the sender’s
             # recipient_id, so the recipient can use recipient_id as documented
@@ -250,7 +250,7 @@ class MessageDict:
 
         if not keep_rendered_content:
             del obj["rendered_content"]
-        del obj["sender_recipient_id"]
+        obj.pop("sender_recipient_id")
         del obj["sender_realm_id"]
         del obj["sender_avatar_source"]
         del obj["sender_delivery_email"]
