@@ -8,13 +8,11 @@ from django.utils.translation import gettext as _
 from zerver.actions.message_send import send_rate_limited_pm_notification_to_bot_owner
 from zerver.data_import.slack import check_token_access, get_slack_api_data
 from zerver.data_import.slack_message_conversion import (
-    SLACK_BOLD_REGEX,
-    SLACK_ITALIC_REGEX,
-    SLACK_STRIKETHROUGH_REGEX,
     SLACK_USERMENTION_REGEX,
     convert_link_format,
     convert_mailto_format,
-    convert_markdown_syntax,
+    convert_slack_formatting,
+    convert_slack_workspace_mentions,
 )
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventTypeError
@@ -94,22 +92,6 @@ def convert_to_zulip_markdown(text: str, slack_app_token: str) -> str:
     text = convert_slack_formatting(text)
     text = convert_slack_workspace_mentions(text)
     text = convert_slack_user_and_channel_mentions(text, slack_app_token)
-    return text
-
-
-def convert_slack_formatting(text: str) -> str:
-    text = convert_markdown_syntax(text, SLACK_BOLD_REGEX, "**")
-    text = convert_markdown_syntax(text, SLACK_STRIKETHROUGH_REGEX, "~~")
-    text = convert_markdown_syntax(text, SLACK_ITALIC_REGEX, "*")
-    return text
-
-
-def convert_slack_workspace_mentions(text: str) -> str:
-    # Map Slack's <!everyone>, <!channel> and <!here> mentions to @**all**.
-    # No regex for this as it can be present anywhere in the sentence.
-    text = text.replace("<!everyone>", "@**all**")
-    text = text.replace("<!channel>", "@**all**")
-    text = text.replace("<!here>", "@**all**")
     return text
 
 
