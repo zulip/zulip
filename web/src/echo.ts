@@ -558,7 +558,6 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
                 message_events_util.maybe_add_narrowed_messages(
                     msgs_to_rerender_or_add_to_narrow,
                     msg_list,
-                    message_util.add_new_messages,
                 );
             } else {
                 // In theory, we could just rerender messages where there were
