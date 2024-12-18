@@ -322,7 +322,7 @@ export function insert_new_messages(
         }
 
         // Update the message list's rendering for the newly arrived messages.
-        const render_info = message_util.add_new_messages(messages, list);
+        const render_info = list.add_messages(messages);
 
         // The render_info.need_user_to_scroll calculation, which
         // looks at message feed scroll positions to see whether the
@@ -341,7 +341,7 @@ export function insert_new_messages(
             // but it is not worth doing so for every new message.
             message_list_data_cache.remove(msg_list_data.filter);
         } else {
-            message_util.add_new_messages_data(messages, msg_list_data);
+            msg_list_data.add_messages(messages);
         }
     }
 
