@@ -183,7 +183,6 @@ def create_stream_if_needed(
     *,
     invite_only: bool = False,
     is_web_public: bool = False,
-    stream_post_policy: int = Stream.STREAM_POST_POLICY_EVERYONE,
     history_public_to_subscribers: bool | None = None,
     stream_description: str = "",
     message_retention_days: int | None = None,
@@ -226,7 +225,6 @@ def create_stream_if_needed(
             description=stream_description,
             invite_only=invite_only,
             is_web_public=is_web_public,
-            stream_post_policy=stream_post_policy,
             history_public_to_subscribers=history_public_to_subscribers,
             is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
             message_retention_days=message_retention_days,
@@ -287,9 +285,6 @@ def create_streams_if_needed(
             stream_dict["name"],
             invite_only=invite_only,
             is_web_public=stream_dict.get("is_web_public", False),
-            stream_post_policy=stream_dict.get(
-                "stream_post_policy", Stream.STREAM_POST_POLICY_EVERYONE
-            ),
             history_public_to_subscribers=stream_dict.get("history_public_to_subscribers"),
             stream_description=stream_dict.get("description", ""),
             message_retention_days=stream_dict.get("message_retention_days", None),
