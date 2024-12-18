@@ -379,7 +379,7 @@ export async function build_move_topic_to_stream_popover(
     let modal_heading;
     if (only_topic_edit) {
         modal_heading = $t_html(
-            {defaultMessage: "Rename topic <z-stream></z-stream> &gt; {topic_name}"},
+            {defaultMessage: "Rename <z-stream></z-stream> &gt; {topic_name}"},
             {
                 topic_name,
                 "z-stream": () =>
@@ -388,7 +388,7 @@ export async function build_move_topic_to_stream_popover(
         );
     } else {
         modal_heading = $t_html(
-            {defaultMessage: "Move topic from <z-stream></z-stream> &gt; {topic_name}"},
+            {defaultMessage: "Move <z-stream></z-stream> &gt; {topic_name}"},
             {
                 topic_name,
                 "z-stream": () =>
