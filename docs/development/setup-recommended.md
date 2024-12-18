@@ -664,7 +664,7 @@ close your terminal window(s).
 
 On Windows with WSL 2, to resume developing you just need to open a new Git
 BASH window. Then change into your `zulip` folder and verify the Python
-environment was properly activated (you will see `(zulip-py3-venv)`). If the
+environment was properly activated (you should see `(zulip-py3-venv)`). If the
 `(zulip-py3-venv)` part is missing, run:
 
 ```console
