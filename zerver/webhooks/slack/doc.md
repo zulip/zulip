@@ -35,8 +35,8 @@ See also the [Zulip Slack incoming webhook integration][1].
    & Permissions** menu, and scroll down to the **Scopes** section.
 
 1. Make sure **Bot Token Scopes** includes `channels:read`,
-   `channels:history`, `users:read`, `emoji:read`, `team:read`,
-   `users:read`, and `users:read.email`.
+   `channels:history`, `emoji:read`, `team:read`, `users:read`, and
+   `users:read.email`.
 
     !!! tip ""
 
