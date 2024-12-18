@@ -24,7 +24,6 @@ const waiting_for_server_request_ids = new Set<string>();
 type ReactionEvent = {
     message_id: number;
     user_id: number;
-    local_id: string;
     reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
     emoji_name: string;
     emoji_code: string;
@@ -66,7 +65,6 @@ function create_reaction(
     return {
         message_id,
         user_id: current_user.user_id,
-        local_id: get_local_reaction_id(rendering_details),
         reaction_type: rendering_details.reaction_type,
         emoji_name: rendering_details.emoji_name,
         emoji_code: rendering_details.emoji_code,
