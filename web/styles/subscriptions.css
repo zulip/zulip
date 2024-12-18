@@ -917,7 +917,7 @@ h4.user_group_setting_subsection_title {
     .group-header,
     .stream-header {
         white-space: nowrap;
-        padding-top: 10px;
+        padding-top: 5px;
         display: flex;
         align-items: center;
 
@@ -927,7 +927,6 @@ h4.user_group_setting_subsection_title {
             font-size: 1.5em;
             font-weight: 600;
             margin-left: -3px;
-            margin-top: -5px;
             white-space: nowrap;
             max-width: 90%;
             flex: auto;
@@ -954,10 +953,8 @@ h4.user_group_setting_subsection_title {
         }
 
         .large-icon {
-            display: inline-block;
-            vertical-align: top;
+            display: flex;
             margin-right: 8px;
-            margin-top: -5px;
 
             &.hash::after {
                 top: -1px;
