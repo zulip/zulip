@@ -253,7 +253,12 @@ class TestMiscStuff(ZulipTestCase):
         expected_fields = fix_expected_fields_for_stream_group_settings(expected_fields)
 
         stream_dict_fields = set(APIStreamDict.__annotations__.keys())
-        computed_fields = {"is_announcement_only", "is_default", "stream_weekly_traffic"}
+        computed_fields = {
+            "is_announcement_only",
+            "is_default",
+            "stream_post_policy",
+            "stream_weekly_traffic",
+        }
 
         self.assertEqual(stream_dict_fields - computed_fields, expected_fields)
 
@@ -309,7 +314,6 @@ class TestCreateStreams(ZulipTestCase):
                     "name": stream_name,
                     "description": stream_description,
                     "invite_only": True,
-                    "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS,
                     "message_retention_days": -1,
                     "can_remove_subscribers_group": moderators_system_group,
                 }
@@ -328,7 +332,6 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(actual_stream_descriptions, set(stream_descriptions))
         for stream in new_streams:
             self.assertTrue(stream.invite_only)
-            self.assertTrue(stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS)
             self.assertTrue(stream.message_retention_days == -1)
             self.assertEqual(stream.can_remove_subscribers_group.id, moderators_system_group.id)
             # Streams created where acting_user is None have no creator
@@ -742,7 +745,6 @@ class TestCreateStreams(ZulipTestCase):
                     description="No description",
                     invite_only=True,
                     is_web_public=True,
-                    stream_post_policy=Stream.STREAM_POST_POLICY_ADMINS,
                 )
             ],
             acting_user=hamlet,
@@ -6321,6 +6323,7 @@ class GetSubscribersTest(ZulipTestCase):
             "is_announcement_only",
             "in_home_view",
             "stream_id",
+            "stream_post_policy",
             "stream_weekly_traffic",
             "subscribers",
         }
@@ -6337,6 +6340,7 @@ class GetSubscribersTest(ZulipTestCase):
             "is_archived",
             "is_announcement_only",
             "stream_id",
+            "stream_post_policy",
             "stream_weekly_traffic",
             "subscribers",
         }
