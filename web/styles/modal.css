@@ -57,6 +57,19 @@
     }
 }
 
+.modal__title:has(.stream-or-topic-reference) {
+    /* Reduce the font weight of headings that
+       include stream or topic references (e.g.,
+       topic move/rename modals). */
+    font-weight: 450;
+
+    .stream-or-topic-reference {
+        /* Make the stream or topic references
+           more prominent. */
+        font-weight: 600;
+    }
+}
+
 .user-profile-name-heading {
     max-width: 80%;
     display: flex;
