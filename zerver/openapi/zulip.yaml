@@ -7531,8 +7531,26 @@ paths:
                           type: integer
                         description: |
                           An array with the IDs of the modified messages.
+                      ignored_because_not_subscribed:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          Only present if the flag is `read` and the operation is `remove`.
+
+                          Zulip has an invariant that all unread messages must be in channels
+                          the user is subscribed to. This field will contain a list of the
+                          channels whose messages were skipped to mark as unread because the
+                          user is not subscribed to them.
+
+                          **Changes**: New in Zulip 10.0 (feature level 331).
                     example:
-                      {"msg": "", "messages": [4, 18, 15], "result": "success"}
+                      {
+                        "msg": "",
+                        "messages": [4, 18, 15],
+                        "ignored_because_not_subscribed": [12, 13, 9],
+                        "result": "success",
+                      }
   /messages/flags/narrow:
     post:
       operationId: update-message-flags-for-narrow
@@ -7727,6 +7745,19 @@ paths:
                           bulk update to decide whether to issue
                           another request anchored at
                           `last_processed_id`).
+                      ignored_because_not_subscribed:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          Only present if the flag is `read` and the operation is `remove`.
+
+                          Zulip has an invariant that all unread messages must be in channels
+                          the user is subscribed to. This field will contain a list of the
+                          channels whose messages were skipped to mark as unread because the
+                          user is not subscribed to them.
+
+                          **Changes**: New in Zulip 10.0 (feature level 331).
                     example:
                       {
                         "result": "success",
@@ -7737,6 +7768,7 @@ paths:
                         "last_processed_id": 55,
                         "found_oldest": false,
                         "found_newest": true,
+                        "ignored_because_not_subscribed": [12, 13, 9],
                       }
   /messages/render:
     post:
