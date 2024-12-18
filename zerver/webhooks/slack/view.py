@@ -5,6 +5,7 @@ from django.http import HttpRequest
 from django.http.response import HttpResponse
 from django.utils.translation import gettext as _
 
+from zerver.actions.message_send import send_rate_limited_pm_notification_to_bot_owner
 from zerver.data_import.slack import check_token_access, get_slack_api_data
 from zerver.data_import.slack_message_conversion import (
     SLACK_BOLD_REGEX,
@@ -169,6 +170,29 @@ def is_retry_call_from_slack(request: HttpRequest) -> bool:
     return "X-Slack-Retry-Num" in request.headers
 
 
+SLACK_INTEGRATION_TOKEN_SCOPES = {
+    "channels:read",
+    "channels:history",
+    "users:read",
+    "emoji:read",
+    "team:read",
+    "users:read.email",
+}
+
+INVALID_SLACK_TOKEN_MESSAGE = """
+Hi there! It looks like you're trying to set up a Slack webhook
+integration. There seems to be an issue with the Slack app token
+you've included in the URL (if any). Please check the error message
+below to see if you're missing anything:
+
+Error: {error_message}
+
+Feel free to reach out to the [Zulip development community]
+(https://chat.zulip.org/#narrow/channel/127-integrations) if you need
+further help!
+"""
+
+
 @webhook_view("Slack", notify_bot_owner_on_invalid_json=False)
 @typed_endpoint
 def api_slack_webhook(
@@ -211,7 +235,19 @@ def api_slack_webhook(
     # Handle initial URL verification handshake for Slack Events API.
     if is_challenge_handshake(payload):
         challenge = payload.get("challenge").tame(check_string)
-        check_token_access(slack_app_token)
+        try:
+            if slack_app_token == "":
+                raise ValueError("slack_app_token is missing.")
+            check_token_access(slack_app_token, SLACK_INTEGRATION_TOKEN_SCOPES)
+        except (ValueError, Exception) as e:
+            send_rate_limited_pm_notification_to_bot_owner(
+                user_profile,
+                user_profile.realm,
+                INVALID_SLACK_TOKEN_MESSAGE.format(error_message=e),
+            )
+            # Return json success here as to not trigger retry calls
+            # from Slack.
+            return json_success(request)
         check_send_webhook_message(
             request,
             user_profile,

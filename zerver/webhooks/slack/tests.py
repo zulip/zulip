@@ -4,6 +4,7 @@ from unittest.mock import patch
 from typing_extensions import override
 
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.webhooks.slack.view import INVALID_SLACK_TOKEN_MESSAGE
 
 EXPECTED_TOPIC = "Message from Slack"
 
@@ -310,6 +311,46 @@ class SlackWebhookTests(WebhookTestCase):
             )
         self.assertFalse(m.called)
         self.assert_json_success(result)
+
+    def test_missing_api_token_scope(self) -> None:
+        error_message = "Slack token is missing the following required scopes: ['users:read', 'users:read.email']"
+        user_facing_error_message = INVALID_SLACK_TOKEN_MESSAGE.format(error_message=error_message)
+        # We tested how `check_token_access` may raise these errors in
+        # `test_slack_importer.py`. So, for simplicitys sake the function
+        # is directly mocked here to raise the ValueError we expect.
+        with (
+            patch("zerver.webhooks.slack.view.check_token_access") as e,
+            patch("zerver.webhooks.slack.view.send_rate_limited_pm_notification_to_bot_owner") as s,
+        ):
+            e.side_effect = ValueError(error_message)
+            self.check_webhook(
+                "challenge_handshake_payload",
+                expect_noop=True,
+                content_type="application/json",
+            )
+
+        s.assert_called_once()
+        _, _, actual_error_message = s.call_args[0]
+
+        self.assertEqual(actual_error_message, user_facing_error_message)
+
+    def test_missing_slack_api_token(self) -> None:
+        error_message = "slack_app_token is missing."
+        self.url = self.build_webhook_url(slack_app_token="")
+        user_facing_error_message = INVALID_SLACK_TOKEN_MESSAGE.format(error_message=error_message)
+        with (
+            patch("zerver.webhooks.slack.view.send_rate_limited_pm_notification_to_bot_owner") as s,
+        ):
+            self.check_webhook(
+                "challenge_handshake_payload",
+                expect_noop=True,
+                content_type="application/json",
+            )
+
+        s.assert_called_once()
+        _, _, actual_error_message = s.call_args[0]
+
+        self.assertEqual(actual_error_message, user_facing_error_message)
 
 
 class SlackLegacyWebhookTests(WebhookTestCase):
