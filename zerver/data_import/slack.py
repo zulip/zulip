@@ -1481,6 +1481,9 @@ def do_convert_zipfile(
         rm_tree(slack_data_dir)
 
 
+SLACK_IMPORT_TOKEN_SCOPES = {"emoji:read", "users:read", "users:read.email", "team:read"}
+
+
 def do_convert_directory(
     slack_data_dir: str,
     output_dir: str,
@@ -1488,7 +1491,7 @@ def do_convert_directory(
     threads: int = 6,
     convert_slack_threads: bool = False,
 ) -> None:
-    check_token_access(token)
+    check_token_access(token, SLACK_IMPORT_TOKEN_SCOPES)
 
     os.makedirs(output_dir, exist_ok=True)
     if os.listdir(output_dir):
@@ -1583,12 +1586,12 @@ def get_data_file(path: str) -> Any:
         return data
 
 
-def check_token_access(token: str) -> None:
+def check_token_access(token: str, required_scopes: set[str]) -> None:
     if token.startswith("xoxp-"):
         logging.info("This is a Slack user token, which grants all rights the user has!")
     elif token.startswith("xoxb-"):
         data = requests.get(
-            "https://slack.com/api/team.info", headers={"Authorization": f"Bearer {token}"}
+            "https://slack.com/api/api.test", headers={"Authorization": f"Bearer {token}"}
         )
         if data.status_code != 200:
             raise ValueError(
@@ -1599,7 +1602,6 @@ def check_token_access(token: str) -> None:
             if error != "missing_scope":
                 raise ValueError(f"Invalid Slack token: {token}, {error}")
         has_scopes = set(data.headers.get("x-oauth-scopes", "").split(","))
-        required_scopes = {"emoji:read", "users:read", "users:read.email", "team:read"}
         missing_scopes = required_scopes - has_scopes
         if missing_scopes:
             raise ValueError(

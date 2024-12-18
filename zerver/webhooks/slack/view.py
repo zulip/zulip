@@ -211,6 +211,7 @@ def api_slack_webhook(
     # Handle initial URL verification handshake for Slack Events API.
     if is_challenge_handshake(payload):
         challenge = payload.get("challenge").tame(check_string)
+        check_token_access(slack_app_token)
         check_send_webhook_message(
             request,
             user_profile,
@@ -238,8 +239,6 @@ def api_slack_webhook(
 
     if event_type != "message":
         raise UnsupportedWebhookEventTypeError(event_type)
-
-    check_token_access(slack_app_token)
 
     raw_files = event_dict.get("files")
     files = convert_raw_file_data(raw_files) if raw_files else []
