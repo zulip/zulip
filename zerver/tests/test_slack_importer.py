@@ -23,6 +23,7 @@ from zerver.data_import.import_util import (
 )
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack import (
+    SLACK_IMPORT_TOKEN_SCOPES,
     AddedChannelsT,
     AddedMPIMsT,
     DMMembersT,
@@ -66,6 +67,7 @@ def request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], byt
         "https://slack.com/api/users.info",
         "https://slack.com/api/team.info",
         "https://slack.com/api/bots.info",
+        "https://slack.com/api/api.test",
     ]
     for endpoint in endpoints:
         if request.url and endpoint in request.url:
@@ -120,6 +122,8 @@ def request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], byt
             return (200, {}, orjson.dumps({"ok": False, "error": "bot_not_found"}))
         return (200, {}, orjson.dumps({"ok": True, "bot": bot_info}))
 
+    if request.url and "https://slack.com/api/api.test" in request.url:
+        return (200, {}, orjson.dumps({"ok": True}))
     # Else, https://slack.com/api/team.info
     team_not_found: tuple[int, dict[str, str], bytes] = (
         200,
@@ -177,6 +181,11 @@ class SlackImporter(ZulipTestCase):
         with self.assertRaises(Exception) as invalid:
             get_slack_api_data(slack_bots_info_url, "XXXYYYZZZ", token=token)
         self.assertEqual(invalid.exception.args, ("Error accessing Slack API: bot_not_found",))
+
+        # Api test
+        api_test_info_url = "https://slack.com/api/api.test"
+        responses.add_callback(responses.GET, api_test_info_url, callback=request_callback)
+        self.assertTrue(get_slack_api_data(api_test_info_url, "ok", token=token))
 
         # Team info
         slack_team_info_url = "https://slack.com/api/team.info"
@@ -260,12 +269,12 @@ class SlackImporter(ZulipTestCase):
                 raise Exception("Unknown token mock")
 
         responses.add_callback(
-            responses.GET, "https://slack.com/api/team.info", callback=token_request_callback
+            responses.GET, "https://slack.com/api/api.test", callback=token_request_callback
         )
 
-        def exception_for(token: str) -> str:
+        def exception_for(token: str, required_scopes: set[str] = SLACK_IMPORT_TOKEN_SCOPES) -> str:
             with self.assertRaises(Exception) as invalid:
-                check_token_access(token)
+                check_token_access(token, required_scopes)
             return invalid.exception.args[0]
 
         self.assertEqual(
@@ -292,7 +301,7 @@ class SlackImporter(ZulipTestCase):
             "Slack token is missing the following required scopes: ['team:read', 'users:read', 'users:read.email']",
         )
 
-        check_token_access("xoxb-valid-token")
+        check_token_access("xoxb-valid-token", required_scopes=SLACK_IMPORT_TOKEN_SCOPES)
 
     def test_get_owner(self) -> None:
         user_data = [
