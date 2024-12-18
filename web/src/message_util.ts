@@ -2,7 +2,6 @@ import assert from "minimalistic-assert";
 
 import {all_messages_data} from "./all_messages_data.ts";
 import type {MessageList, RenderInfo} from "./message_list.ts";
-import type {MessageListData} from "./message_list_data.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
@@ -40,13 +39,6 @@ export function add_messages(
     return render_info;
 }
 
-export function add_old_messages(
-    messages: Message[],
-    msg_list: MessageList,
-): RenderInfo | undefined {
-    return add_messages(messages, msg_list, {messages_are_new: false});
-}
-
 export function add_new_messages(
     messages: Message[],
     msg_list: MessageList,
@@ -61,29 +53,6 @@ export function add_new_messages(
     }
     return add_messages(messages, msg_list, {messages_are_new: true});
 }
-
-export function add_new_messages_data(
-    messages: Message[],
-    msg_list_data: MessageListData,
-):
-    | {
-          top_messages: Message[];
-          bottom_messages: Message[];
-          interior_messages: Message[];
-      }
-    | undefined {
-    if (!msg_list_data.fetch_status.has_found_newest()) {
-        const filtered_msgs = msg_list_data.valid_non_duplicated_messages(messages);
-        // The reasoning in add_new_messages applies here as well;
-        // we're trying to maintain a data structure that's a
-        // contiguous range of message history, so we can't append a
-        // new message that might not be adjacent to that range.
-        msg_list_data.fetch_status.update_expected_max_message_id(filtered_msgs);
-        return undefined;
-    }
-    return msg_list_data.add_messages(messages);
-}
-
 export function get_count_of_messages_in_topic_sent_after_current_message(
     stream_id: number,
     topic: string,

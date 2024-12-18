@@ -66,36 +66,40 @@ run_test("reply_label", () => {
         stream_id: 2,
     };
     stream_data.add_sub(stream_two);
-    list.add_messages([
-        {
-            id: 0,
-            stream_id: stream_one.stream_id,
-            topic: "first_topic",
-        },
-        {
-            id: 1,
-            stream_id: stream_one.stream_id,
-            topic: "second_topic",
-        },
-        {
-            id: 2,
-            stream_id: stream_two.stream_id,
-            topic: "third_topic",
-        },
-        {
-            id: 3,
-            stream_id: stream_two.stream_id,
-            topic: "second_topic",
-        },
-        {
-            id: 4,
-            display_reply_to: "some user",
-        },
-        {
-            id: 5,
-            display_reply_to: "some user, other user",
-        },
-    ]);
+    list.add_messages(
+        [
+            {
+                id: 0,
+                stream_id: stream_one.stream_id,
+                topic: "first_topic",
+            },
+            {
+                id: 1,
+                stream_id: stream_one.stream_id,
+                topic: "second_topic",
+            },
+            {
+                id: 2,
+                stream_id: stream_two.stream_id,
+                topic: "third_topic",
+            },
+            {
+                id: 3,
+                stream_id: stream_two.stream_id,
+                topic: "second_topic",
+            },
+            {
+                id: 4,
+                display_reply_to: "some user",
+            },
+            {
+                id: 5,
+                display_reply_to: "some user, other user",
+            },
+        ],
+        {},
+        true,
+    );
 
     const expected_labels = [
         "#first_stream > first_topic",

@@ -295,7 +295,10 @@ export class MessageListData {
         return this._items.some((message) => message.unread);
     }
 
-    add_messages(messages: Message[]): {
+    add_messages(
+        messages: Message[],
+        ignore_found_newest = false,
+    ): {
         top_messages: Message[];
         bottom_messages: Message[];
         interior_messages: Message[];
@@ -330,6 +333,13 @@ export class MessageListData {
 
         if (top_messages.length > 0) {
             top_messages = this.prepend(top_messages);
+        }
+
+        if (!ignore_found_newest && !this.fetch_status.has_found_newest()) {
+            // Don't add messages at the bottom if we haven't found
+            // the latest message to avoid non-contiguous message history.
+            this.fetch_status.update_expected_max_message_id(bottom_messages);
+            bottom_messages = [];
         }
 
         if (bottom_messages.length > 0) {

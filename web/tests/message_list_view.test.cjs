@@ -778,7 +778,7 @@ test("render_windows", ({mock_template}) => {
         list.view.clear_table = noop;
         list.clear();
 
-        list.add_messages(messages, {});
+        list.add_messages(messages, {}, true);
     }
 
     function verify_no_move_range(start, end) {

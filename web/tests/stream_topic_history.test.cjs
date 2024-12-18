@@ -389,7 +389,7 @@ test("all_topics_in_cache", ({override}) => {
     assert.equal(stream_topic_history.all_topics_in_cache(sub), false);
 
     all_messages_data.all_messages_data.clear();
-    all_messages_data.all_messages_data.add_messages(messages);
+    all_messages_data.all_messages_data.add_messages(messages, true);
 
     let has_found_newest = false;
 
