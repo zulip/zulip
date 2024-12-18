@@ -912,7 +912,8 @@ function load_local_messages(msg_data: MessageListData, superset_data: MessageLi
     // one message the user will expect to see in the new narrow.
 
     const in_msgs = superset_data.all_messages();
-    msg_data.add_messages(in_msgs);
+    const ignore_found_newest = true;
+    msg_data.add_messages(in_msgs, ignore_found_newest);
 
     return !msg_data.visibly_empty();
 }

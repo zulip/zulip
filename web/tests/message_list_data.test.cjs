@@ -53,7 +53,7 @@ run_test("basics", () => {
     assert_contents(mld, [15, 25, 35, 45]);
 
     const new_msgs = make_msgs([10, 20, 30, 40, 50, 60, 70]);
-    const info = mld.add_messages(new_msgs);
+    const info = mld.add_messages(new_msgs, true);
 
     assert.deepEqual(info, {
         top_messages: make_msgs([10]),
@@ -103,7 +103,7 @@ run_test("basics", () => {
         {id: 9, sender_id: 11, type: "private", to_user_ids: "9"},
         ...msgs_sent_by_6,
     ];
-    mld.add_messages(msgs_with_sender_ids);
+    mld.add_messages(msgs_with_sender_ids, true);
     assert.deepEqual(mld.get_messages_sent_by_user(6), msgs_sent_by_6);
 
     mld.clear();
@@ -111,7 +111,7 @@ run_test("basics", () => {
     assert.equal(mld.closest_id(99), -1);
     assert.equal(mld.get_last_message_sent_by_me(), undefined);
 
-    mld.add_messages(make_msgs([120, 125.01, 130, 140]));
+    mld.add_messages(make_msgs([120, 125.01, 130, 140]), true);
     assert_contents(mld, [120, 125.01, 130, 140]);
     mld.set_selected_id(125.01);
     assert.equal(mld.selected_id(), 125.01);
@@ -270,7 +270,7 @@ run_test("muting", () => {
         {id: 8, type: "stream", stream_id: 1, topic: "whatever"},
     ];
 
-    const orig_info = mld.add_messages(orig_messages);
+    const orig_info = mld.add_messages(orig_messages, true);
     assert.deepEqual(orig_info, {
         top_messages: [],
         interior_messages: [],
@@ -293,7 +293,7 @@ run_test("muting", () => {
         {id: 10, type: "stream", stream_id: 1, topic: "whatever"},
     ];
 
-    const more_info = mld.add_messages(more_messages);
+    const more_info = mld.add_messages(more_messages, true);
 
     assert_msg_ids(mld._all_items, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     assert_msg_ids(mld._items, [2, 4, 6, 8, 10]);
