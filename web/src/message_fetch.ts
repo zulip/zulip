@@ -229,9 +229,11 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
         !opts.msg_list.should_preserve_current_rendered_state() &&
         opts.msg_list !== message_lists.current
     ) {
-        // We unnarrowed before receiving new messages so
-        // don't bother processing the newly arrived messages.
-        return;
+        // We changed narrow before receiving new messages but
+        // since the message list data is cached, we just
+        // update the cached data and don't update the msg list.
+        opts.msg_list_data = opts.msg_list.data;
+        opts.msg_list = undefined;
     }
     if (!data) {
         // The server occasionally returns no data during a
