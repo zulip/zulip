@@ -6,7 +6,9 @@
                     <i class="popover-menu-icon zulip-icon zulip-icon-triple-users" aria-hidden="true"></i>
                     <span class="popover-group-menu-name">{{group_name}}</span>
                 </div>
-                <div class="popover-group-menu-description">{{group_description}}</div>
+                {{#if group_description}}
+                    <div class="popover-group-menu-description">{{group_description}}</div>
+                {{/if}}
             </div>
         </li>
         {{#if (or members.length subgroups.length)}}
@@ -36,7 +38,7 @@
                             {{#if is_bot}}
                                 <i class="popover-group-member-icon zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                             {{else}}
-                                <span class="user-circle zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} popover-group-menu-user-presence hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
+                                <span class="popover-group-member-icon user-circle zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} popover-group-menu-user-presence hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
                             {{/if}}
                             <span class="popover-group-menu-member-name">{{full_name}}</span>
                         </li>
