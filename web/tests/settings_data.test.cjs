@@ -4,8 +4,10 @@ const assert = require("node:assert/strict");
 
 const {mock_esm, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
+const {localstorage} = zrequire("localstorage");
 const settings_data = zrequire("settings_data");
 const settings_config = zrequire("settings_config");
 const {set_current_user, set_realm} = zrequire("state_data");
@@ -691,4 +693,21 @@ run_test("guests_can_access_all_other_users", () => {
     user_groups.initialize({realm_user_groups: [members, everyone]});
     realm.realm_can_access_all_users_group = everyone.id;
     assert.ok(settings_data.guests_can_access_all_other_users());
+});
+
+run_test("is_archived_channels_visible", () => {
+    const ls = localstorage();
+    const ls_key = "stream_settings_archived_channels_visibility";
+
+    assert.equal(ls.get(ls_key), undefined);
+    assert.equal(settings_data.is_archived_channels_visible(), false);
+
+    settings_data.toggle_archived_channels();
+    assert.equal(ls.get(ls_key), "hide");
+    assert.equal(settings_data.is_archived_channels_visible(), false);
+
+    $("#stream-settings-archived-channels-label-container").addClass("hiding-archived-channels");
+    settings_data.toggle_archived_channels();
+    assert.equal(ls.get(ls_key), "show");
+    assert.equal(settings_data.is_archived_channels_visible(), true);
 });

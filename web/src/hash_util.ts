@@ -230,9 +230,11 @@ export function validate_channels_settings_hash(hash: string): string {
         //    not be in sub_store).
         //
         // In all these cases we redirect the user to 'subscribed' tab.
+        const redirect_archived_channel =
+            sub && sub.is_archived && !settings_data.is_archived_channels_visible();
         if (
             sub === undefined ||
-            sub.is_archived ||
+            redirect_archived_channel ||
             (page_params.is_guest && !stream_data.is_subscribed(stream_id))
         ) {
             return channels_settings_section_url();

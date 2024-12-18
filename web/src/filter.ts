@@ -1285,6 +1285,10 @@ export class Filter {
                     icon = "question-circle-o";
                     break;
                 }
+                if (sub.is_archived) {
+                    zulip_icon = "archive";
+                    break;
+                }
                 if (sub.invite_only) {
                     zulip_icon = "lock";
                     break;

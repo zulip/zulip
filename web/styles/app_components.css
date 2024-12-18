@@ -436,6 +436,21 @@ input.settings_text_input {
     }
 }
 
+.more_options_button {
+    &:hover {
+        color: var(--color-text-clear-search-button-hover);
+    }
+
+    background: none;
+    border: none;
+    text-align: center;
+    color: var(--color-text-clear-search-button);
+    text-shadow: none;
+    outline: none !important;
+    box-shadow: none;
+    z-index: 5;
+}
+
 .grey-box {
     margin: 0;
     padding: 5px 10px;
@@ -981,6 +996,7 @@ input.settings_text_input {
     width: 12px;
 
     &.zulip-icon-globe,
+    &.zulip-icon-archive,
     &.zulip-icon-hashtag {
         font-size: 0.75em;
     }

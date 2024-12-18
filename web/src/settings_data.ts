@@ -1,6 +1,8 @@
+import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import * as group_permission_settings from "./group_permission_settings.ts";
+import {localstorage} from "./localstorage.ts";
 import {page_params} from "./page_params.ts";
 import * as settings_config from "./settings_config.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -8,10 +10,21 @@ import type {GroupSettingValue} from "./state_data.ts";
 import * as user_groups from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 
+const ls_key = "stream_settings_archived_channels_visibility";
+const ls = localstorage();
+const STATES = {
+    SHOW: "show",
+    HIDE: "hide",
+};
 let user_join_date: Date;
+
 export function initialize(current_user_join_date: Date): void {
     // We keep the `user_join_date` as the present day's date if the user is a spectator
     user_join_date = current_user_join_date;
+}
+
+function save_state(ls_key: string, state: string): void {
+    ls.set(ls_key, state);
 }
 
 /*
@@ -396,4 +409,26 @@ export function guests_can_access_all_other_users(): boolean {
         realm.realm_can_access_all_users_group,
     );
     return everyone_group.name === "role:everyone";
+}
+
+export function is_archived_channels_visible(): boolean {
+    const ls_archived_channels_data = ls.get(ls_key);
+    let archived_channels_visible = false;
+    if (ls_archived_channels_data === STATES.SHOW) {
+        archived_channels_visible = true;
+    }
+
+    return archived_channels_visible;
+}
+
+export function toggle_archived_channels(): void {
+    const $archived_channels_label_container = $(
+        "#stream-settings-archived-channels-label-container",
+    );
+
+    if ($archived_channels_label_container.hasClass("hiding-archived-channels")) {
+        save_state(ls_key, STATES.SHOW);
+    } else {
+        save_state(ls_key, STATES.HIDE);
+    }
 }

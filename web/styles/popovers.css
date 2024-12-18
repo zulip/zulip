@@ -294,6 +294,20 @@
     }
 }
 
+#stream-settings-archived-channels-label-container {
+    &.hiding-archived-channels {
+        .archived-channels-hide-label {
+            display: none;
+        }
+    }
+
+    &.showing-archived-channels {
+        .archived-channels-show-label {
+            display: none;
+        }
+    }
+}
+
 #topic-actions-menu-popover {
     .popover-topic-name {
         font-weight: 600;
