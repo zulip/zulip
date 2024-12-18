@@ -136,9 +136,6 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
                 other_values.rendered_description,
             );
         },
-        email_address(value) {
-            sub.email_address = value;
-        },
         pin_to_top(value) {
             update_stream_setting(sub, value, "pin_to_top");
             stream_list.refresh_pinned_or_unpinned_stream(sub);
