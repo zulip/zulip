@@ -2,8 +2,8 @@
 
 {!admin-only.md!}
 
-A channel's name can be in any language, and can include spaces and other
-punctuation.
+A channel's name can be in any language, and can include spaces, punctuation,
+and Unicode emoji.
 
 {start_tabs}
 
