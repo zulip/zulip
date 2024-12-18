@@ -978,7 +978,7 @@ h4.user_group_setting_subsection_title {
 
     .group-description-wrapper,
     .stream-description {
-        word-break: break-all;
+        hyphens: auto;
         margin-bottom: 5px;
 
         .no-description {
