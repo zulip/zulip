@@ -226,7 +226,7 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
 
     if (
         opts.msg_list &&
-        !opts.msg_list.is_combined_feed_view &&
+        !opts.msg_list.should_preserve_current_rendered_state() &&
         opts.msg_list !== message_lists.current
     ) {
         // We unnarrowed before receiving new messages so
