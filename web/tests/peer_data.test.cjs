@@ -142,9 +142,6 @@ test("subscribers", () => {
     peer_data.add_subscriber(stream_id, brutus.user_id);
     assert.ok(stream_data.is_user_subscribed(stream_id, brutus.user_id));
     assert.equal(peer_data.get_subscriber_count(stream_id), 1);
-    const sub_email = "Rome:214125235@zulipdev.com:9991";
-    stream_data.update_stream_email_address(sub, sub_email);
-    assert.equal(sub.email_address, sub_email);
 
     // verify that adding an already-added subscriber is a noop
     peer_data.add_subscriber(stream_id, brutus.user_id);

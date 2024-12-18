@@ -62,7 +62,6 @@ export const stream_properties_schema = stream_specific_notification_settings_sc
 
 // This is the raw data we get from the server for a subscription.
 export const api_stream_subscription_schema = stream_schema.merge(stream_properties_schema).extend({
-    email_address: z.string().optional(),
     stream_weekly_traffic: z.number().nullable(),
     subscribers: z.array(z.number()).optional(),
 });
