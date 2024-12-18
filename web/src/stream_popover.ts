@@ -5,6 +5,7 @@ import type * as tippy from "tippy.js";
 import {z} from "zod";
 
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
+import render_inline_stream_or_topic_reference from "../templates/inline_stream_or_topic_reference.hbs";
 import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
 import render_left_sidebar_stream_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_stream_actions_popover.hbs";
 
@@ -379,31 +380,40 @@ export async function build_move_topic_to_stream_popover(
     let modal_heading;
     if (only_topic_edit) {
         modal_heading = $t_html(
-            {defaultMessage: "Rename <z-stream></z-stream> &gt; {topic_name}"},
+            {defaultMessage: "Rename <z-stream-or-topic></z-stream-or-topic>"},
             {
-                topic_name,
-                "z-stream": () =>
-                    render_inline_decorated_stream_name({stream, show_colored_icon: true}),
+                "z-stream-or-topic": () =>
+                    render_inline_stream_or_topic_reference({
+                        topic_name,
+                        stream,
+                        show_colored_icon: true,
+                    }),
             },
         );
     } else {
         modal_heading = $t_html(
-            {defaultMessage: "Move <z-stream></z-stream> &gt; {topic_name}"},
+            {defaultMessage: "Move <z-stream-or-topic></z-stream-or-topic>"},
             {
-                topic_name,
-                "z-stream": () =>
-                    render_inline_decorated_stream_name({stream, show_colored_icon: true}),
+                "z-stream-or-topic": () =>
+                    render_inline_stream_or_topic_reference({
+                        topic_name,
+                        stream,
+                        show_colored_icon: true,
+                    }),
             },
         );
     }
 
     if (message !== undefined) {
         modal_heading = $t_html(
-            {defaultMessage: "Move messages from <z-stream></z-stream> &gt; {topic_name}"},
+            {defaultMessage: "Move messages from <z-stream-or-topic></z-stream-or-topic>"},
             {
-                topic_name,
-                "z-stream": () =>
-                    render_inline_decorated_stream_name({stream, show_colored_icon: true}),
+                "z-stream-or-topic": () =>
+                    render_inline_stream_or_topic_reference({
+                        stream,
+                        topic_name,
+                        show_colored_icon: true,
+                    }),
             },
         );
         // We disable topic input only for modal is opened from the message actions
