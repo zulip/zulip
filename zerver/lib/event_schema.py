@@ -323,6 +323,41 @@ drafts_remove_event = event_dict_type(
 )
 check_draft_remove = make_checker(drafts_remove_event)
 
+pinned_view_fields = DictType(
+    required_keys=[
+        ("url_hash", str),
+        ("is_pinned", bool),
+        ("name", OptionalType(str)),
+    ]
+)
+
+pinned_view_add_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("pinned_views")),
+        ("op", Equals("add")),
+        ("pinned_view", pinned_view_fields),
+    ]
+)
+check_pinned_view_add = make_checker(pinned_view_add_event)
+
+pinned_view_update_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("pinned_views")),
+        ("op", Equals("update")),
+        ("pinned_view", pinned_view_fields),
+    ]
+)
+check_pinned_view_update = make_checker(pinned_view_update_event)
+
+pinned_view_remove_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("pinned_views")),
+        ("op", Equals("remove")),
+        ("url_hash", str),
+    ]
+)
+check_pinned_view_remove = make_checker(pinned_view_remove_event)
+
 saved_snippet_fields = DictType(
     required_keys=[
         ("id", int),

@@ -12,6 +12,7 @@ from typing_extensions import NotRequired, TypedDict
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.default_streams import default_stream_groups_to_dicts_sorted
+from zerver.actions.pinned_views import do_get_pinned_views
 from zerver.actions.realm_settings import get_realm_authentication_methods_for_page_params_api
 from zerver.actions.saved_snippets import do_get_saved_snippets
 from zerver.actions.users import get_owned_bot_dicts
@@ -212,6 +213,12 @@ def fetch_initial_state_data(
             state["saved_snippets"] = []
         else:
             state["saved_snippets"] = do_get_saved_snippets(user_profile)
+
+    if want("pinned_views"):
+        if user_profile is None:
+            state["pinned_views"] = []
+        else:
+            state["pinned_views"] = do_get_pinned_views(user_profile)
 
     if want("drafts"):
         if user_profile is None:
@@ -892,7 +899,19 @@ def apply_event(
                 if saved_snippet["id"] == event["saved_snippet_id"]:
                     del state["saved_snippets"][idx]
                     break
-
+    elif event["type"] == "pinned_views":
+        if event["op"] == "add":
+            state["pinned_views"].append(event["pinned_view"])
+        elif event["op"] == "update":
+            for pinned_view in state["pinned_views"]:
+                if pinned_view["url_hash"] == event["pinned_view"]["url_hash"]:
+                    pinned_view.update(event["pinned_view"])
+                    break
+        elif event["op"] == "remove":
+            for idx, pinned_view in enumerate(state["pinned_views"]):
+                if pinned_view["url_hash"] == event["url_hash"]:
+                    del state["pinned_views"][idx]
+                    break
     elif event["type"] == "drafts":
         if event["op"] == "add":
             state["drafts"].extend(event["drafts"])
