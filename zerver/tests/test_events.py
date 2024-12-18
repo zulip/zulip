@@ -306,6 +306,7 @@ class BaseAction(ZulipTestCase):
         client_is_old: bool = False,
         include_deactivated_groups: bool = False,
         archived_channels: bool = False,
+        allow_empty_topic_name: bool = True,
     ) -> Iterator[list[dict[str, Any]]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -384,7 +385,9 @@ class BaseAction(ZulipTestCase):
         validate_against_openapi_schema(content, "/events", "get", "200")
         self.assert_length(events, num_events)
         initial_state = copy.deepcopy(hybrid_state)
-        post_process_state(self.user_profile, initial_state, notification_settings_null)
+        post_process_state(
+            self.user_profile, initial_state, notification_settings_null, allow_empty_topic_name
+        )
         before = orjson.dumps(initial_state)
         apply_events(
             self.user_profile,
@@ -399,7 +402,9 @@ class BaseAction(ZulipTestCase):
             include_deactivated_groups=include_deactivated_groups,
             archived_channels=archived_channels,
         )
-        post_process_state(self.user_profile, hybrid_state, notification_settings_null)
+        post_process_state(
+            self.user_profile, hybrid_state, notification_settings_null, allow_empty_topic_name
+        )
         after = orjson.dumps(hybrid_state)
 
         if state_change_expected:
@@ -430,7 +435,9 @@ class BaseAction(ZulipTestCase):
             include_deactivated_groups=include_deactivated_groups,
             archived_channels=archived_channels,
         )
-        post_process_state(self.user_profile, normal_state, notification_settings_null)
+        post_process_state(
+            self.user_profile, normal_state, notification_settings_null, allow_empty_topic_name
+        )
         self.match_states(hybrid_state, normal_state, events)
 
     def match_states(

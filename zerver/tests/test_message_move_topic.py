@@ -93,19 +93,6 @@ class MessageMoveTopicTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid propagate_mode without topic edit")
         self.check_topic(id1, topic_name="topic1")
 
-    def test_edit_message_no_topic(self) -> None:
-        self.login("hamlet")
-        msg_id = self.send_stream_message(
-            self.example_user("hamlet"), "Denmark", topic_name="editing", content="before edit"
-        )
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id),
-            {
-                "topic": " ",
-            },
-        )
-        self.assert_json_error(result, "Topic can't be empty!")
-
     def test_edit_message_invalid_topic(self) -> None:
         self.login("hamlet")
         msg_id = self.send_stream_message(

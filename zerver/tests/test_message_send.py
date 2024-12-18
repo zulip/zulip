@@ -891,22 +891,6 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Message must not be empty")
 
-    def test_empty_string_topic(self) -> None:
-        """
-        Sending a message that has empty string topic should fail
-        """
-        self.login("hamlet")
-        result = self.client_post(
-            "/json/messages",
-            {
-                "type": "channel",
-                "to": "Verona",
-                "content": "Test message",
-                "topic": "",
-            },
-        )
-        self.assert_json_error(result, "Topic can't be empty!")
-
     def test_missing_topic(self) -> None:
         """
         Sending a message without topic should fail
@@ -1749,6 +1733,7 @@ class StreamMessagesTest(ZulipTestCase):
             [dct],
             apply_markdown=True,
             client_gravatar=False,
+            allow_empty_topic_name=True,
             realm=user_profile.realm,
             user_recipient_id=None,
         )
@@ -3358,7 +3343,7 @@ class CheckMessageTest(ZulipTestCase):
         sender = self.example_user("iago")
         client = make_client(name="test suite")
         stream = get_stream("Denmark", realm)
-        topic_name = "(no topic)"
+        topic_name = ""
         message_content = "whatever"
         addressee = Addressee.for_stream(stream, topic_name)
 

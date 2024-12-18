@@ -20,6 +20,39 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 331**
+
+* [`POST /register`](/api/register-queue): Added `empty_topic_name`
+  [client capability](/api/register-queue#parameter-client_capabilities)
+  to allow client to specify whether it supports empty string as a topic name
+  in `register` response or events involving topic names.
+  Clients that don't support this client capability receive `"general chat"`
+  as the topic name replacing `""`.
+
+* [`GET /events`](/api/get-events): For clients that don't support
+  the `empty_topic_name` [client capability](/api/register-queue#parameter-client_capabilities),
+  the `subject` field in the `message` event type, `topic` field in
+  the `delete_message` event type, `orig_subject` and `subject` fields
+  in the `update_message` event type, `topic_name` field in the `user_topic`
+  event type, `topic` field in the `typing` event type, `topic` field in the
+  `update_message_flags` event type when removing `read` flag will have
+  the value `"general chat"` replacing `""` for channel messages.
+
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): Added `allow_empty_topic_name`
+  boolean parameter to decide whether the topic names in the fetched messages
+  can be empty strings.
+
+* [`GET /messages/{message_id}/history`](/api/get-message-history):
+  Added `allow_empty_topic_name` boolean parameter to decide whether the
+  topic names in the fetched message history objects can be empty strings.
+
+* [`POST /register`](/api/register-queue): For clients that don't support
+  the `empty_topic_name` [client capability](/api/register-queue#parameter-client_capabilities),
+  the `topic` field in the `unread_msgs` object and `topic_name` field
+  in the `user_topics` objects will have the value `"general chat"`
+  replacing `""` for channel messages.
+
 **Feature level 330**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
