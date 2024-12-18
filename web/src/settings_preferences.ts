@@ -219,7 +219,11 @@ export function set_up(settings_panel: SettingsPanel): void {
     $container
         .find(".setting_demote_inactive_streams")
         .val(settings_object.demote_inactive_streams);
-    $container.find(".setting_color_scheme").val(settings_object.color_scheme);
+    $container
+        .find(
+            `.setting_color_scheme[value='${CSS.escape(settings_object.color_scheme.toString())}']`,
+        )
+        .prop("checked", true);
     $container.find(".setting_web_home_view").val(settings_object.web_home_view);
     $container
         .find(".setting_twenty_four_hour_time")
@@ -300,6 +304,39 @@ export function set_up(settings_panel: SettingsPanel): void {
             change_display_setting(data, $status_element, success_continuation);
         },
     );
+
+    $container.find(".setting_color_scheme").on("change", function () {
+        const $input_elem = $(this);
+        const new_theme_code = $input_elem.val();
+        assert(new_theme_code !== undefined);
+        const data = {color_scheme: new_theme_code};
+
+        const $status_element = $input_elem
+            .closest(".subsection-parent")
+            .find(".alert-notification");
+
+        const opts: RequestOpts = {
+            error_continuation() {
+                setTimeout(() => {
+                    const prev_theme_code = user_settings.color_scheme;
+                    $input_elem
+                        .parent()
+                        .find(
+                            `.setting_color_scheme[value='${CSS.escape(prev_theme_code.toString())}']`,
+                        )
+                        .prop("checked", true);
+                }, 500);
+            },
+        };
+
+        settings_ui.do_settings_change(
+            channel.patch,
+            "/json/settings",
+            data,
+            $status_element,
+            opts,
+        );
+    });
 
     $container.find(".setting_emojiset_choice").on("click", function () {
         const data = {emojiset: $(this).val()};
