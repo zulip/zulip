@@ -125,12 +125,7 @@ export function edit_config(row: number): Config {
     };
 }
 
-export let hide_upload_banner = (
-    uppy: Uppy,
-    config: Config,
-    file_id: string,
-    delay = 0,
-): void => {
+export let hide_upload_banner = (uppy: Uppy, config: Config, file_id: string, delay = 0): void => {
     if (delay > 0) {
         setTimeout(() => {
             config.upload_banner(file_id).remove();
@@ -424,9 +419,9 @@ export function setup_upload(config: Config): Uppy {
         // The uploaded files should be removed since uppy doesn't allow files in the store
         // to be re-uploaded again.
         uppy.removeFile(file.id);
-        // Hide upload status after waiting 100ms after the 1s transition to 100%
+        // Hide upload status after waiting 500ms after the 1s transition to 100%
         // so that the user can see the progress bar at 100%.
-        hide_upload_banner(uppy, config, file.id, 1100);
+        hide_upload_banner(uppy, config, file.id, 1500);
     });
 
     uppy.on("info-visible", () => {
