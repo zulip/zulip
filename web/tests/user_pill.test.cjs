@@ -41,6 +41,7 @@ const isaac_item = {
     user_id: isaac.user_id,
     deactivated: false,
     img_src: `/avatar/${isaac.user_id}`,
+    is_bot: undefined,
     status_emoji_info: undefined,
     should_add_guest_user_indicator: false,
 };
@@ -54,6 +55,7 @@ const inaccessible_user_item = {
     user_id: inaccessible_user_id,
     deactivated: false,
     img_src: `/avatar/${inaccessible_user_id}`,
+    is_bot: false,
     status_emoji_info: undefined,
     should_add_guest_user_indicator: false,
 };
