@@ -22,7 +22,7 @@ Get notifications about Zendesk tickets in Zulip!
     * **Method**: POST
     * **Attribute Name**: message
     * **Username**: your bot's user name, e.g., `zendesk-bot@yourdomain.com`
-    * **Password**: your bot's API key
+    * **Password**: your bot's [API key](/api/api-keys#get-a-bots-api-key)
 
 1. Select **Test Target**, and click **Submit**. A test message should
    appear Zulip. Save the target by selecting **Create target**, and

@@ -6,8 +6,8 @@
 
 1.  Next, open `integrations/nagios/zuliprc.example` in your favorite
     editor, and change the following lines to specify the email address
-    and API key for your Nagios bot, saving it to `/etc/nagios4/zuliprc`
-    on your Nagios server:
+    and [API key](/api/api-keys#get-a-bots-api-key) for your Nagios bot,
+    saving it to `/etc/nagios4/zuliprc` on your Nagios server:
 
     ```
     [api]

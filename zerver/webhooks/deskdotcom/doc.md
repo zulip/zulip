@@ -18,7 +18,7 @@
      * **Authentication Method**: Basic Auth
      * **URL**: `{{ api_url }}/v1/external/deskdotcom`
      * **User name**: your bot's user name, e.g., `desk-bot@yourdomain.com`
-     * **Password**: your bot's API key
+     * **Password**: your bot's [API key](/api/api-keys#get-a-bots-api-key)
 
     ![](/static/images/integrations/desk/002.png)
 

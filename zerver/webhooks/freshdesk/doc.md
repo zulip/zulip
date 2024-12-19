@@ -41,7 +41,7 @@ integration!
 1. Toggle the **Requires Authentication** checkbox.
 
 1. Set **Username** to the email of the bot [created above][create-bot],
-   and set **Password** to the bot's API key.
+   and set **Password** to the bot's [API key](/api/api-keys#get-a-bots-api-key).
 
 1. Set **Encoding** to **JSON**, and select the **Advanced** option.
    Copy and paste the following JSON into the **Content** box:
@@ -101,7 +101,7 @@ integration!
 1. Toggle the **Requires Authentication** checkbox.
 
 1. Set **Username** to the email of the bot [created above][create-bot],
-   and set **Password** to the bot's API key.
+   and set **Password** to the bot's [API key](/api/api-keys#get-a-bots-api-key).
 
 1. Set **Encoding** to **JSON** and select the **Advanced** option.
    Copy and paste the following JSON into the **Content** box:
