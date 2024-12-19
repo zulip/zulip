@@ -80,6 +80,12 @@
             </select>
         </div>
 
+        {{> settings_checkbox
+          setting_name="automatically_follow_topics_where_mentioned"
+          is_checked=(lookup settings_object "automatically_follow_topics_where_mentioned")
+          label=(lookup settings_label "automatically_follow_topics_where_mentioned")
+          prefix=prefix}}
+
         <div class="input-group">
             <label for="{{prefix}}automatically_unmute_topics_in_muted_streams_policy" class="settings-field-label">
                 {{ settings_label.automatically_unmute_topics_in_muted_streams_policy }}
@@ -90,12 +96,6 @@
                 {{> dropdown_options_widget option_values=automatically_unmute_topics_in_muted_streams_policy_values}}
             </select>
         </div>
-
-        {{> settings_checkbox
-          setting_name="automatically_follow_topics_where_mentioned"
-          is_checked=(lookup settings_object "automatically_follow_topics_where_mentioned")
-          label=(lookup settings_label "automatically_follow_topics_where_mentioned")
-          prefix=prefix}}
     </div>
 
     <div class="desktop_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
