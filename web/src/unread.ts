@@ -1,3 +1,4 @@
+import assert from "minimalistic-assert";
 import type {z} from "zod";
 
 import * as blueslip from "./blueslip.ts";
@@ -59,6 +60,7 @@ export type StreamCountInfo = {
     muted_count: number;
     followed_count: number;
     stream_is_muted: boolean;
+    msg_ids?: number[];
 };
 
 type DirectMessageCountInfo = {
@@ -206,6 +208,7 @@ type UnreadStreamCounts = {
     stream_unread_messages: number;
     followed_topic_unread_messages: number;
     stream_count: Map<number, StreamCountInfo>;
+    msg_ids: number[];
 };
 
 type UnreadTopicCounts = {
@@ -316,10 +319,11 @@ class UnreadTopicCounter {
         };
     }
 
-    get_counts(update_first_unmuted_message_id = false): UnreadStreamCounts {
+    get_counts(update_first_unmuted_message_id = false, with_msg_ids = false): UnreadStreamCounts {
         let stream_unread_messages = 0;
         let followed_topic_unread_messages = 0;
         const stream_counts_by_id = new Map<number, StreamCountInfo>(); // hash by stream_id -> count
+        let msg_ids: number[] = [];
         for (const stream_id of this.bucketer.keys()) {
             // We track unread counts for streams that may be currently
             // unsubscribed.  Since users may re-subscribe, we don't
@@ -336,16 +340,23 @@ class UnreadTopicCounter {
             const stream_count_info = this.get_stream_count_info(
                 stream_id,
                 update_first_unmuted_message_id,
+                with_msg_ids,
             );
             stream_counts_by_id.set(stream_id, stream_count_info);
             stream_unread_messages += stream_count_info.unmuted_count;
             followed_topic_unread_messages += stream_count_info.followed_count;
+
+            if (with_msg_ids) {
+                assert(stream_count_info.msg_ids !== undefined);
+                msg_ids = [...msg_ids, ...stream_count_info.msg_ids];
+            }
         }
 
         return {
             stream_unread_messages,
             followed_topic_unread_messages,
             stream_count: stream_counts_by_id,
+            msg_ids,
         };
     }
 
@@ -393,6 +404,7 @@ class UnreadTopicCounter {
     get_stream_count_info(
         stream_id: number,
         update_first_unmuted_message_id = false,
+        with_msg_ids = false,
     ): StreamCountInfo {
         const per_stream_bucketer = this.bucketer.get(stream_id);
 
@@ -409,6 +421,7 @@ class UnreadTopicCounter {
         let unmuted_count = 0;
         let muted_count = 0;
         let followed_count = 0;
+        let msg_ids: number[] = [];
         for (const [topic, msgs] of per_stream_bucketer) {
             const topic_count = msgs.size;
 
@@ -418,6 +431,7 @@ class UnreadTopicCounter {
 
             if (user_topics.is_topic_unmuted_or_followed(stream_id, topic)) {
                 unmuted_count += topic_count;
+                msg_ids = [...msg_ids, ...msgs];
                 if (update_first_unmuted_message_id) {
                     first_unread_unmuted_message_id = Math.min(
                         first_unread_unmuted_message_id,
@@ -429,6 +443,7 @@ class UnreadTopicCounter {
             } else if (sub?.is_muted) {
                 muted_count += topic_count;
             } else {
+                msg_ids = [...msg_ids, ...msgs];
                 unmuted_count += topic_count;
                 if (update_first_unmuted_message_id) {
                     first_unread_unmuted_message_id = Math.min(
@@ -438,12 +453,16 @@ class UnreadTopicCounter {
                 }
             }
         }
-        const stream_count = {
+        const stream_count: StreamCountInfo = {
             unmuted_count,
             muted_count,
             followed_count,
             stream_is_muted: sub?.is_muted ?? false,
         };
+
+        if (with_msg_ids) {
+            stream_count.msg_ids = msg_ids;
+        }
         return stream_count;
     }
 
@@ -898,17 +917,21 @@ export type FullUnreadCountsData = {
     streams_with_unmuted_mentions: number[];
     pm_count: Map<string, number>;
     home_unread_messages: number;
+    home_stream_msg_ids: number[];
 };
 
 // Return a data structure with various counts.  This function should be
 // pretty cheap, even if you don't care about all the counts, and you
 // should strive to keep it free of side effects on globals or DOM.
-export function get_counts(): FullUnreadCountsData {
+export function get_counts(with_msg_ids = false): FullUnreadCountsData {
     const update_first_unmuted_message_id = true;
     // Reset the first_unread_unmuted_message_id, to ensure it is always capture the
     // minimum of current unread messages between topics and DMs.
     first_unread_unmuted_message_id = Number.POSITIVE_INFINITY;
-    const topic_res = unread_topic_counter.get_counts(update_first_unmuted_message_id);
+    const topic_res = unread_topic_counter.get_counts(
+        update_first_unmuted_message_id,
+        with_msg_ids,
+    );
     const pm_res = unread_direct_message_counter.get_counts(update_first_unmuted_message_id);
 
     return {
@@ -926,6 +949,7 @@ export function get_counts(): FullUnreadCountsData {
         ],
         pm_count: pm_res.pm_dict,
         home_unread_messages: topic_res.stream_unread_messages + pm_res.total_count,
+        home_stream_msg_ids: topic_res.msg_ids,
     };
 }
 
