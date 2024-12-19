@@ -311,7 +311,7 @@ def send_message_moved_breadcrumbs(
             )
 
 
-def get_mentions_for_message_updates(message_id: int) -> set[int]:
+def get_mentions_for_message_updates(message: Message) -> set[int]:
     # We exclude UserMessage.flags.historical rows since those
     # users did not receive the message originally, and thus
     # probably are not relevant for reprocessed alert_words,
@@ -319,7 +319,7 @@ def get_mentions_for_message_updates(message_id: int) -> set[int]:
     # decision we change in the future.
     mentioned_user_ids = (
         UserMessage.objects.filter(
-            message=message_id,
+            message=message.id,
             flags=~UserMessage.flags.historical,
         )
         .filter(
@@ -332,7 +332,10 @@ def get_mentions_for_message_updates(message_id: int) -> set[int]:
         )
         .values_list("user_profile_id", flat=True)
     )
-    return set(mentioned_user_ids)
+
+    user_ids_having_message_access = event_recipient_ids_for_action_on_messages([message])
+
+    return set(mentioned_user_ids) & user_ids_having_message_access
 
 
 def update_user_message_flags(
@@ -1319,7 +1322,7 @@ def check_update_message(
             content=content,
             message_sender=message.sender,
         )
-        prior_mention_user_ids = get_mentions_for_message_updates(message.id)
+        prior_mention_user_ids = get_mentions_for_message_updates(message)
 
         # We render the message using the current user's realm; since
         # the cross-realm bots never edit messages, this should be

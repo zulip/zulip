@@ -694,8 +694,9 @@ class EditMessageTest(ZulipTestCase):
         msg_id = self.send_stream_message(
             hamlet, "Denmark", content="@**Cordelia, Lear's daughter**"
         )
+        message = Message.objects.get(id=msg_id)
 
-        mention_user_ids = get_mentions_for_message_updates(msg_id)
+        mention_user_ids = get_mentions_for_message_updates(message)
         self.assertEqual(mention_user_ids, {cordelia.id})
 
     def test_edit_cases(self) -> None:
