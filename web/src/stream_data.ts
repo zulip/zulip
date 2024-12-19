@@ -17,6 +17,7 @@ import {current_user, realm} from "./state_data.ts";
 import type {APIStream, StreamPermissionGroupSetting, StreamTopicsPolicy} from "./stream_types.ts";
 import * as sub_store from "./sub_store.ts";
 import type {
+    ApiStream,
     ApiStreamSubscription,
     NeverSubscribedStream,
     StreamSpecificNotificationSettings,
@@ -1038,7 +1039,7 @@ export async function maybe_fetch_is_user_subscribed(
     );
 }
 
-export function create_streams(streams: APIStream[]): void {
+export function create_streams(streams: ApiStream[]): void {
     for (const stream of streams) {
         // We handle subscriber stuff in other events.
 

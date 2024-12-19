@@ -2,7 +2,7 @@
 #
 # Validates that 3 data sources agree about the structure of Zulip's events API:
 #
-# * Node fixtures for the server_events_dispatch.js tests.
+# * Node fixtures for the server_events_dispatch.ts tests.
 # * OpenAPI definitions in zerver/openapi/zulip.yaml
 # * The schemas defined in zerver/lib/events_schema.py used for the
 #   Zulip server's test suite.
