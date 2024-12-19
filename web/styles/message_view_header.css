@@ -119,4 +119,22 @@
             vertical-align: middle;
         }
     }
+
+    .narrow_description_extended {
+        word-wrap: break-word;
+        hyphens: auto;
+        overflow: visible;
+        white-space: normal;
+        text-overflow: unset;
+        min-height: auto;
+        background-color: var(--color-background-navbar);
+        border-radius: 5px;
+    }
+}
+
+/* Media Queries */
+@media only screen and (width <= 620px) {
+    .narrow_description_extended {
+        padding-top: 10px !important;
+    }
 }
