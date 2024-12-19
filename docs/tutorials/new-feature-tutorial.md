@@ -48,7 +48,7 @@ organization in Zulip). The following files are involved in the process:
   the structure of the admin permissions page (checkboxes for each organization
   permission setting).
 - `web/src/settings_org.ts`: handles organization setting form submission.
-- `web/src/server_events_dispatch.js`: handles events coming from the server
+- `web/src/server_events_dispatch.ts`: handles events coming from the server
   (ex: pushing an organization change to other open browsers and updating
   the application's state).
 
@@ -125,7 +125,7 @@ Realm setting, in `test_realm.py`).
 **JavaScript/TypeScript:** Zulip's JavaScript and TypeScript sources are
 located in the directory `web/src/`. The exact files you may need to change
 depend on your feature. If you've added a new event that is sent to clients,
-be sure to add a handler for it in `web/src/server_events_dispatch.js`.
+be sure to add a handler for it in `web/src/server_events_dispatch.ts`.
 
 **CSS:** The primary CSS file is `web/styles/zulip.css`. If your new
 feature requires UI changes, you may need to add additional CSS to this
@@ -600,7 +600,7 @@ manually handle such situations in a couple key functions:
   `realm_waiting_period_threshold_custom_input` is only shown for with
   the right state of `realm_waiting_period_threshold`.
 
-Finally, update `server_events_dispatch.js` to handle related events coming from
+Finally, update `server_events_dispatch.ts` to handle related events coming from
 the server. There is an object, `realm_settings`, in the function
 `dispatch_normal_event`. The keys in this object are setting names and the
 values are the UI updating functions to run when an event has occurred.
@@ -612,11 +612,11 @@ backend, so no UI updates are required.).
 
 However, if you had written a function to update the UI after a given
 setting has changed, your function should be referenced in the
-`realm_settings` of `server_events_dispatch.js`. See for example
+`realm_settings` of `server_events_dispatch.ts`. See for example
 `settings_emoji.update_custom_emoji_ui`.
 
 ```diff
- // web/src/server_events_dispatch.js
+ // web/src/server_events_dispatch.ts
 
  function dispatch_normal_event(event) {
      switch (event.type) {
