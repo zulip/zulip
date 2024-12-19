@@ -11,7 +11,7 @@ import * as reload from "./reload.ts";
 import * as reload_state from "./reload_state.ts";
 import * as sent_messages from "./sent_messages.ts";
 import {server_event_schema} from "./server_event_types.ts";
-import * as server_events_dispatch from "./server_events_dispatch.js";
+import * as server_events_dispatch from "./server_events_dispatch.ts";
 import * as ui_report from "./ui_report.ts";
 import * as watchdog from "./watchdog.ts";
 

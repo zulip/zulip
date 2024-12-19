@@ -213,7 +213,7 @@ export function set_info(
         // Note: In contrast with all other state updates received
         // from the server, presence data is updated via a
         // polling process rather than the events system
-        // (server_events_dispatch.js).
+        // (server_events_dispatch.ts).
         //
         // This means that if we're coming back from being offline and
         // new users were created in the meantime, we may see user IDs
