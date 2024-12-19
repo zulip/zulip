@@ -383,6 +383,10 @@ export const user_role_values = {
         code: 100,
         description: $t({defaultMessage: "Owner"}),
     },
+    deleted_user: {
+        code: 0,
+        description: $t({defaultMessage: "Deactivated or spammer"}),
+    },
 };
 
 export const all_org_type_values = {

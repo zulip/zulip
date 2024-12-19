@@ -1403,6 +1403,32 @@ export function delete_topic(stream_id: number, topic_name: string, failures = 0
     });
 }
 
+export function delete_all_messages_for_user(user_id: number): void {
+    for (const list of message_lists.all_rendered_message_lists()) {
+        const messages = list.data.get_messages_sent_by_user(user_id);
+        if (messages.length === 0) {
+            continue;
+        }
+        for (const message of messages) {
+            delete_message(message.id);
+        }
+    }
+}
+
+export function delete_public_messages_for_user(user_id: number): void {
+    for (const list of message_lists.all_rendered_message_lists()) {
+        const messages = list.data.get_messages_sent_by_user(user_id);
+        if (messages.length === 0) {
+            continue;
+        }
+        for (const message of messages) {
+            if (!message.is_private) {
+                delete_message(message.id);
+            }
+        }
+    }
+}
+
 export function restore_edit_state_after_message_view_change(): void {
     assert(message_lists.current !== undefined);
     for (const [idx, $content] of currently_editing_messages) {

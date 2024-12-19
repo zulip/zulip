@@ -12,6 +12,7 @@ import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t_html} from "./i18n.ts";
+import * as message_edit from "./message_edit.ts";
 import * as people from "./people.ts";
 import {invite_schema} from "./settings_invites.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -79,6 +80,26 @@ export function confirm_deactivation(
                 });
             }
 
+            function set_spammer_field_visibility(dialog_widget_id: string): void {
+                const $modal = $(`#${CSS.escape(dialog_widget_id)}`);
+                const $spammer_checkbox = $modal.find(".spammer");
+                const $spammer_field = $modal.find(".spammer-field"); // Updated class name
+
+                $spammer_field.hide();
+                $spammer_checkbox.on("change", () => {
+                    if ($spammer_checkbox.is(":checked")) {
+                        $spammer_field.show();
+                    } else {
+                        $spammer_field.hide();
+                    }
+                });
+            }
+
+            function set_field_visibility(dialog_widget_id: string): void {
+                set_email_field_visibility(dialog_widget_id);
+                set_spammer_field_visibility(dialog_widget_id);
+            }
+
             dialog_widget.launch({
                 html_heading: $t_html(
                     {defaultMessage: "Deactivate {name}?"},
@@ -89,7 +110,7 @@ export function confirm_deactivation(
                 html_submit_button: $t_html({defaultMessage: "Deactivate"}),
                 id: "deactivate-user-modal",
                 on_click: handle_confirm,
-                post_render: set_email_field_visibility,
+                post_render: set_field_visibility,
                 loading_spinner,
                 focus_submit_on_open: true,
             });
@@ -113,6 +134,18 @@ export function confirm_bot_deactivation(
         on_click: handle_confirm,
         loading_spinner,
     });
+}
+
+export function spammer_messages_delete_action(user_id: number): void {
+    const selected_option = $(".spammer-message-action-dropdown").val();
+
+    if (selected_option === "delete-all") {
+        message_edit.delete_all_messages_for_user(user_id);
+    } else if (selected_option === "delete-public") {
+        message_edit.delete_public_messages_for_user(user_id);
+    } else {
+        return;
+    }
 }
 
 export function confirm_reactivation(

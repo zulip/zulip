@@ -287,6 +287,16 @@
     }
 }
 
+.spammer-field {
+    margin-top: 10px;
+
+    .delete-message-handling {
+        .mssage-action {
+            margin-left: 5px;
+        }
+    }
+}
+
 @keyframes mmfadeIn {
     from {
         opacity: 0;
