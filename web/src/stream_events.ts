@@ -150,9 +150,6 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             });
             compose_recipient.on_compose_select_recipient_update();
         },
-        stream_post_policy(value) {
-            stream_settings_ui.update_stream_post_policy(sub, value);
-        },
         message_retention_days(value) {
             stream_settings_ui.update_message_retention_setting(sub, value);
         },
