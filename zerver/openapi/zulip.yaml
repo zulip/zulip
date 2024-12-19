@@ -17679,6 +17679,21 @@ paths:
                           primarily relevant to clients containing UI for changing it.
 
                           **Changes**: New in Zulip 9.0 (feature level 242).
+                      realm_empty_topic_display_name:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Clients declaring the `empty_topic_name` client capability
+                          should use the value of `realm_empty_topic_display_name` to
+                          determine how to display the empty string topic.
+
+                          Clients not declaring the `empty_topic_name` client capability
+                          receive `realm_empty_topic_display_name` value as the topic name
+                          replacing empty string.
+
+                          **Changes**: New in Zulip 10.0 (feature level 334). Previously,
+                          the empty string was not a valid topic name.
                       realm_user_settings_defaults:
                         type: object
                         additionalProperties: false
