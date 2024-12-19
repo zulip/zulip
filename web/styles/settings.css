@@ -2029,6 +2029,42 @@ label.preferences-radio-choice-label {
         margin-right: auto;
     }
 
+    & .search_container {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        position: relative;
+        height: 30px;
+
+        & input.search {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            padding-right: 24px;
+        }
+
+        & .clear_filter {
+            position: absolute;
+            right: 6px;
+            padding: 0;
+            background: none;
+            color: var(--color-text-clear-search-button);
+            border: none;
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &:hover {
+                color: var(--color-text-clear-search-button-hover);
+            }
+        }
+
+        input.search:placeholder-shown + .clear_filter {
+            display: none;
+        }
+    }
+
     & input.search {
         /* Without explicitly mentioning the height, it used be just a little
         bit short of 20px, since we need to maintain the same height with
