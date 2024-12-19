@@ -153,7 +153,7 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
     // messages not tracked in unread.ts during this fetching process.
     message_util.do_unread_count_updates(messages, true);
 
-    const ignore_found_newest = true;
+    const is_contiguous_history = true;
     if (messages.length > 0) {
         if (opts.msg_list) {
             if (opts.validate_filter_topic_post_fetch) {
@@ -161,9 +161,9 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
             }
             // Since this adds messages to the MessageList and renders MessageListView,
             // we don't need to call it if msg_list was not defined by the caller.
-            opts.msg_list.add_messages(messages, {}, ignore_found_newest);
+            opts.msg_list.add_messages(messages, {}, is_contiguous_history);
         } else {
-            opts.msg_list_data.add_messages(messages, ignore_found_newest);
+            opts.msg_list_data.add_messages(messages, is_contiguous_history);
         }
     }
 

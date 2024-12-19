@@ -193,11 +193,11 @@ export class MessageList {
     add_messages(
         messages: Message[],
         append_to_view_opts: {messages_are_new?: boolean} = {},
-        ignore_found_newest = false,
+        is_contiguous_history = false,
     ): RenderInfo | undefined {
         // This adds all messages to our data, but only returns
         // the currently viewable ones.
-        const info = this.data.add_messages(messages, ignore_found_newest);
+        const info = this.data.add_messages(messages, is_contiguous_history);
 
         const top_messages = info.top_messages;
         const bottom_messages = info.bottom_messages;
