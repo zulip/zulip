@@ -10,6 +10,11 @@ function max_id_for_messages(messages: (Message | RawMessage)[]): number {
 }
 
 export class FetchStatus {
+    // Add a delay before showing the spinning loading indicator
+    // so that quick calls to server don't add visible slowness to the app.
+    SHOW_LOADING_INDICATOR_DELAY = 300;
+    _show_loading_older_indicator_timer: undefined | ReturnType<typeof setTimeout> = undefined;
+    _show_loading_newer_indicator_timer: undefined | ReturnType<typeof setTimeout> = undefined;
     // The FetchStatus object tracks the state of a
     // message_list_data object, whether rendered in the DOM or not,
     // and is the source of truth for whether the message_list_data
@@ -33,7 +38,10 @@ export class FetchStatus {
     start_older_batch(opts: {update_loading_indicator: boolean}): void {
         this._loading_older = true;
         if (opts.update_loading_indicator) {
-            message_feed_loading.show_loading_older();
+            this._show_loading_older_indicator_timer = setTimeout(
+                message_feed_loading.show_loading_older,
+                this.SHOW_LOADING_INDICATOR_DELAY,
+            );
         }
     }
 
@@ -46,6 +54,7 @@ export class FetchStatus {
         this._found_oldest = opts.found_oldest;
         this._history_limited = opts.history_limited;
         if (opts.update_loading_indicator) {
+            clearTimeout(this._show_loading_older_indicator_timer);
             message_feed_loading.hide_loading_older();
         }
     }
@@ -65,7 +74,10 @@ export class FetchStatus {
     start_newer_batch(opts: {update_loading_indicator: boolean}): void {
         this._loading_newer = true;
         if (opts.update_loading_indicator) {
-            message_feed_loading.show_loading_newer();
+            this._show_loading_newer_indicator_timer = setTimeout(
+                message_feed_loading.show_loading_newer,
+                this.SHOW_LOADING_INDICATOR_DELAY,
+            );
         }
     }
 
@@ -79,6 +91,7 @@ export class FetchStatus {
         this._loading_newer = false;
         this._found_newest = opts.found_newest;
         if (opts.update_loading_indicator) {
+            clearTimeout(this._show_loading_newer_indicator_timer);
             message_feed_loading.hide_loading_newer();
         }
         if (this._found_newest && this._expected_max_message_id > found_max_message_id) {
