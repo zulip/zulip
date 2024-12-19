@@ -493,7 +493,10 @@ message_event = event_dict_type(
         ("type", Equals("message")),
         ("flags", ListType(str)),
         ("message", DictType(message_fields)),
-    ]
+    ],
+    optional_keys=[
+        ("local_message_id", str),
+    ],
 )
 check_message = make_checker(message_event)
 
