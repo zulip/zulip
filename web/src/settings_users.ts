@@ -13,6 +13,7 @@ import {$t} from "./i18n.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
+import {update_avatar} from "./message_live_update.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
@@ -622,6 +623,11 @@ function handle_deactivation($tbody: JQuery): void {
                 data = {
                     deactivation_notification_comment: $(".email_field_textarea").val(),
                 };
+            }
+            if ($(".spammer").is(":checked")) {
+                user_deactivation_ui.spammer_messages_delete_action(user_id);
+                update_user_data(user_id, {full_name: "Deleted user", role: 0});
+                update_avatar(user_id, "default-default-avatar.svg");
             }
 
             if (user_id === current_user.user_id) {
