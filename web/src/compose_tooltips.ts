@@ -6,17 +6,20 @@ import * as tippy from "tippy.js";
 import render_drafts_tooltip from "../templates/drafts_tooltip.hbs";
 import render_narrow_to_compose_recipients_tooltip from "../templates/narrow_to_compose_recipients_tooltip.hbs";
 
+import * as compose_banner from "./compose_banner.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
 import {pick_empty_narrow_banner} from "./narrow_banner.ts";
 import * as narrow_state from "./narrow_state.ts";
+import * as onboarding_steps from "./onboarding_steps.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {realm} from "./state_data.ts";
 import {EXTRA_LONG_HOVER_DELAY, INSTANT_HOVER_DELAY, LONG_HOVER_DELAY} from "./tippyjs.ts";
 import {parse_html} from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
+import {the} from "./util.ts";
 
 export function initialize(): void {
     tippy.delegate("body", {
@@ -288,4 +291,71 @@ export function hide_compose_control_button_tooltips($row: JQuery): void {
     ).each(function (this: tippy.ReferenceElement) {
         this._tippy?.hide();
     });
+}
+
+export function show_go_to_conversation_button_intro_tooltip(): void {
+    const $go_to_conversation_button = $(".conversation-arrow");
+    const element: tippy.ReferenceElement = the($go_to_conversation_button);
+
+    const tippy_instance =
+        element._tippy ??
+        tippy.default(element, {
+            hideOnClick: false,
+            trigger: "manual",
+            appendTo: document.body,
+        });
+    tippy_instance.setContent(
+        parse_html($("#compose_go_to_conversation_button_tootltip_template").html()),
+    );
+
+    tippy_instance.show();
+}
+
+export let can_show_go_to_conversation_button_intro_tooltip = (): boolean => {
+    // The tooltip is shown only if:
+    // The tooltip hasn't been shown before.
+    // The user has confirmed a topic recipient change to a topic that is not the current view.
+    // The "Go to conversation" button is active.
+    // There are no compose banners currently visible.
+    // The user hasn't clicked the button (which dismisses the tooltip).
+
+    // This helps in updating tooltip when switching between topics.
+    hide_go_to_conversation_button_intro_tooltip();
+
+    if (
+        !onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_go_to_conversation_button_tooltip")
+    ) {
+        return false;
+    }
+
+    const faded_messages_exist = $(".focused-message-list .recipient_row").hasClass("message-fade");
+    if (!faded_messages_exist) {
+        return false;
+    }
+
+    const $go_to_conversation_button = $(".conversation-arrow");
+    if (!$go_to_conversation_button.hasClass("narrow_to_compose_recipients")) {
+        return false;
+    }
+
+    const is_any_compose_banner_visible = compose_banner.is_any_banner_visible();
+    if (is_any_compose_banner_visible) {
+        return false;
+    }
+
+    return true;
+};
+
+export let hide_go_to_conversation_button_intro_tooltip = (): void => {
+    const element: tippy.ReferenceElement = the($(".conversation-arrow"));
+    const instance = element._tippy;
+    if (instance?.state.isVisible) {
+        instance.destroy();
+    }
+};
+
+export function rewire_can_show_go_to_conversation_button_intro_tooltip(
+    value: typeof can_show_go_to_conversation_button_intro_tooltip,
+): void {
+    can_show_go_to_conversation_button_intro_tooltip = value;
 }
