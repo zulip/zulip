@@ -1,6 +1,7 @@
 import logging
 import time
 from abc import ABC, abstractmethod
+from ipaddress import IPv6Address
 from typing import Optional, cast
 
 import orjson
@@ -138,8 +139,9 @@ class RateLimitedUser(RateLimitedObject):
 
 
 class RateLimitedIPAddr(RateLimitedObject):
-    def __init__(self, ip_addr: str, domain: str = "api_by_ip") -> None:
+    def __init__(self, ip_addr: str, domain: str = "api_by_ip", ipv6_prefix: int = 64) -> None:
         self.ip_addr = ip_addr
+        self.ipv6_prefix = ipv6_prefix
         self.domain = domain
         if settings.RUNNING_INSIDE_TORNADO and domain in settings.RATE_LIMITING_DOMAINS_FOR_TORNADO:
             backend: type[RateLimiterBackend] | None = TornadoInMemoryRateLimiterBackend
@@ -149,8 +151,15 @@ class RateLimitedIPAddr(RateLimitedObject):
 
     @override
     def key(self) -> str:
+        # ipv6, we use the prefix as the key.
+        if ":" in self.ip_addr:
+            ip_addr_key = get_ipv6_prefix_in_hex(self.ip_addr, prefix=self.ipv6_prefix)
+
+        else:
+            ip_addr_key = self.ip_addr
+
         # The angle brackets are important since IPv6 addresses contain :.
-        return f"{type(self).__name__}:<{self.ip_addr}>:{self.domain}"
+        return f"{type(self).__name__}:<{ip_addr_key}>:{self.domain}"
 
     @override
     def rules(self) -> list[tuple[int, int]]:
@@ -601,6 +610,23 @@ def rate_limit_request_by_ip(request: HttpRequest, domain: str) -> None:
         # service doesn't silently remove this functionality.
         logger.warning("Failed to fetch TOR exit node list: %s", err)
     RateLimitedIPAddr(ip_addr, domain=domain).rate_limit_request(request)
+
+
+def get_ipv6_prefix_in_hex(ipv6: str, prefix: int) -> str:
+    """Return the hex representation of the /prefix block of ipv6,
+    which acts as the bucket key for this ipv6.
+
+    examples:
+
+    2001:0db8:ce1:12::8a2e:0370 /64 -> 2001:0db8:ce1:12
+
+    2001:0db8:0::8a2e:0370 /64 -> 2001:0db8:0000:0000
+
+    2001:0db8:0::8a2e:0370 /48 -> 2001:0db8:0000
+    """
+    # Since prefix represents the number of bits:
+    # 1 hex char = 4 bits, then No.hex chars = No.bits / 4
+    return IPv6Address(ipv6).__format__("x")[: prefix // 4]
 
 
 def should_rate_limit(request: HttpRequest) -> bool:
