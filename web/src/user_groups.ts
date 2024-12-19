@@ -158,9 +158,6 @@ export function get_realm_user_groups(include_deactivated = false): UserGroup[] 
     });
 }
 
-// This is only used for testing currently, but would be used in
-// future when we use system groups more and probably show them
-// in the UI as well.
 export function get_all_realm_user_groups(include_deactivated = false): UserGroup[] {
     const user_groups = [...user_group_by_id_dict.values()].sort((a, b) => a.id - b.id);
     return user_groups.filter((group) => include_deactivated || !group.deactivated);
