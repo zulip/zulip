@@ -293,6 +293,13 @@ test("last_active_date", () => {
     assert.deepEqual(presence.last_active_date(alice.user_id), new Date(500 * 1000));
 });
 
+test("map_status", () => {
+    assert.equal(presence.map_status("active"), "active");
+    assert.equal(presence.map_status("idle"), "idle");
+    assert.equal(presence.map_status("offline"), "offline");
+    assert.equal(presence.map_status("invisible"), "offline");
+});
+
 test("update_info_from_event", () => {
     let info;
 
