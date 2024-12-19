@@ -428,9 +428,8 @@ muted_topics_event = event_dict_type(
 )
 check_muted_topics = make_checker(muted_topics_event)
 
-user_topic_event = DictType(
+user_topic_event = event_dict_type(
     required_keys=[
-        ("id", int),
         ("type", Equals("user_topic")),
         ("stream_id", int),
         ("topic_name", str),
