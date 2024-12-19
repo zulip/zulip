@@ -106,6 +106,44 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Topic can't be empty!")
 
+    def test_topic_required_in_mandatory_topic_realm(self) -> None:
+        self.login("iago")
+        admin_user = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        realm = admin_user.realm
+        realm.mandatory_topics = True
+        realm.save()
+        stream = self.make_stream("new_stream")
+
+        self.subscribe(admin_user, stream.name)
+        self.subscribe(hamlet, stream.name)
+
+        original_topic_name = "valid topic"
+        message_id = self.send_stream_message(
+            hamlet,
+            stream.name,
+            topic_name=original_topic_name,
+        )
+
+        result = self.client_patch(
+            f"/json/messages/{message_id}",
+            {
+                "topic": "(no topic)",
+            },
+        )
+        self.assert_json_error(result, "Topics are required in this organization.")
+        self.check_topic(message_id, topic_name=original_topic_name)
+
+        new_topic_name = "new valid topic"
+        result = self.client_patch(
+            f"/json/messages/{message_id}",
+            {
+                "topic": new_topic_name,
+            },
+        )
+        self.assert_json_success(result)
+        self.check_topic(message_id, topic_name=new_topic_name)
+
     def test_edit_message_invalid_topic(self) -> None:
         self.login("hamlet")
         msg_id = self.send_stream_message(
