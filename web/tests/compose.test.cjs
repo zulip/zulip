@@ -37,6 +37,7 @@ const compose_actions = mock_esm("../src/compose_actions", {
 const compose_fade = mock_esm("../src/compose_fade");
 const compose_notifications = mock_esm("../src/compose_notifications");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
+const compose_tooltips = zrequire("compose_tooltips");
 const loading = mock_esm("../src/loading");
 const markdown = mock_esm("../src/markdown");
 const narrow_state = mock_esm("../src/narrow_state");
@@ -666,6 +667,7 @@ test_ui("on_events", ({override, override_rewire}) => {
     initialize_handlers({override});
 
     override(rendered_markdown, "update_elements", noop);
+    override_rewire(compose_tooltips, "can_show_go_to_conversation_button_intro_tooltip", noop);
 
     (function test_attach_files_compose_clicked() {
         const handler = $("#compose").get_on_handler("click", ".compose_upload_file");
