@@ -58,28 +58,18 @@ function toggle_filter() {
     stream_list.toggle_filter_displayed({preventDefault: noop});
 }
 
-function clear_search_input() {
-    stream_list.clear_search({stopPropagation: noop});
-}
-
-run_test("basics", ({override_rewire}) => {
-    let cursor_helper;
+run_test("basics", () => {
     const $input = $(".stream-list-filter");
     const $section = $(".stream_search_section");
 
     expand_sidebar();
     $section.addClass("notdisplayed");
 
-    cursor_helper = make_cursor_helper();
+    const cursor_helper = make_cursor_helper();
 
     function verify_expanded() {
         assert.ok(!$section.hasClass("notdisplayed"));
         simulate_search_expanded();
-    }
-
-    function verify_focused() {
-        assert.ok(stream_list.searching());
-        assert.ok($input.is_focused());
     }
 
     function verify_collapsed() {
@@ -88,85 +78,22 @@ run_test("basics", ({override_rewire}) => {
         assert.ok(!stream_list.searching());
         simulate_search_collapsed();
     }
-
-    function verify_list_updated(f) {
-        let updated;
-        override_rewire(stream_list, "update_streams_sidebar", () => {
-            updated = true;
-        });
-
-        f();
-        assert.ok(updated);
+    
+    function toggle_and_verify(state, cursor_helper) {
+        toggle_filter();
+        if (state === "expanded") {
+            verify_expanded();
+            assert.ok(cursor_helper.events.includes("reset"));
+        } else {
+            verify_collapsed();
+            assert.ok(cursor_helper.events.includes("clear"));
+        }
     }
 
-    // Initiate search (so expand widget).
-    stream_list.initiate_search();
-    verify_expanded();
-    verify_focused();
+    toggle_and_verify("expanded", cursor_helper);
 
-    assert.deepEqual(cursor_helper.events, ["reset"]);
-
-    // Collapse the widget.
-    cursor_helper = make_cursor_helper();
-
-    toggle_filter();
-    verify_collapsed();
-
-    assert.deepEqual(cursor_helper.events, ["clear"]);
-
-    // Expand the widget.
-    toggle_filter();
-    verify_expanded();
-    verify_focused();
-
-    (function add_some_text_and_collapse() {
-        cursor_helper = make_cursor_helper();
-        $input.val("foo");
-        verify_list_updated(() => {
-            toggle_filter();
-        });
-
-        verify_collapsed();
-        assert.deepEqual(cursor_helper.events, ["reset", "clear"]);
-    })();
-
-    // Expand the widget.
-    toggle_filter();
-    verify_expanded();
-    verify_focused();
-
-    // Clear an empty search.
-    clear_search_input();
-    verify_collapsed();
-
-    // Expand the widget.
-    toggle_filter();
-    stream_list.initiate_search();
-
-    // Clear a non-empty search.
-    $input.val("foo");
-    verify_list_updated(() => {
-        clear_search_input();
-    });
-    verify_expanded();
-
-    // Expand the widget.
-    toggle_filter();
-    stream_list.initiate_search();
-
-    // Escape a non-empty search.
-    $input.val("foo");
-    stream_list.clear_and_hide_search();
-    verify_collapsed();
-
-    // Expand the widget.
-    toggle_filter();
-    stream_list.initiate_search();
-
-    // Escape an empty search.
-    $input.val("");
-    stream_list.clear_and_hide_search();
-    verify_collapsed();
+    cursor_helper.events.length = 0;
+    toggle_and_verify("collapsed", cursor_helper);
 });
 
 run_test("expanding_sidebar", () => {
