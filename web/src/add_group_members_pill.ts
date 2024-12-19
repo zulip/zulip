@@ -121,6 +121,11 @@ export function create_without_add_button({
         return user_pill.filter_taken_users(potential_members, pill_widget);
     }
 
+    function get_user_groups(): UserGroup[] {
+        const potential_subgroups = user_group_create_members_data.get_potential_subgroups();
+        return user_group_pill.filter_taken_groups(potential_subgroups, pill_widget);
+    }
+
     pill_widget.onPillCreate(() => {
         onPillCreateAction(get_pill_user_ids(pill_widget), get_pill_group_ids(pill_widget));
     });
@@ -128,7 +133,12 @@ export function create_without_add_button({
         onPillRemoveAction(get_pill_user_ids(pill_widget), get_pill_group_ids(pill_widget));
     });
 
-    add_subscribers_pill.set_up_pill_typeahead({pill_widget, $pill_container, get_users});
+    add_subscribers_pill.set_up_pill_typeahead({
+        pill_widget,
+        $pill_container,
+        get_users,
+        get_user_groups,
+    });
 
     return pill_widget;
 }
