@@ -58,7 +58,7 @@
                     </span>
                     {{~!-- squash whitespace --~}}
                     <span class="left-sidebar-navigation-label">{{t 'Inbox' }}</span>
-                    <span class="unread_count"></span>
+                    <span class="unread_count normal-count"></span>
                 </a>
                 <span class="arrow sidebar-menu-icon inbox-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
             </li>
@@ -69,7 +69,7 @@
                     </span>
                     {{~!-- squash whitespace --~}}
                     <span class="left-sidebar-navigation-label">{{t 'Recent conversations' }}</span>
-                    <span class="unread_count"></span>
+                    <span class="unread_count normal-count"></span>
                 </a>
                 <span class="arrow sidebar-menu-icon recent-view-sidebar-menu-icon hidden-for-spectators">
                     <i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i>
@@ -82,7 +82,7 @@
                     </span>
                     {{~!-- squash whitespace --~}}
                     <span class="left-sidebar-navigation-label">{{t 'Combined feed' }}</span>
-                    <span class="unread_count"></span>
+                    <span class="unread_count normal-count"></span>
                 </a>
                 <span class="arrow sidebar-menu-icon all-messages-sidebar-menu-icon hidden-for-spectators">
                     <i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i>
@@ -186,7 +186,7 @@
                     </span>
                 </div>
                 <div class="heading-markers-and-unreads">
-                    <span class="unread_count"></span>
+                    <span class="unread_count quiet-count"></span>
                     <span class="masked_unread_count">
                         <i class="zulip-icon zulip-icon-masked-unread"></i>
                     </span>
@@ -200,7 +200,7 @@
                 </div>
             </div>
             <div id="topics_header">
-                <a class="show-all-streams" tabindex="0">{{t 'Back to channels' }}</a> <span class="unread_count"></span>
+                <a class="show-all-streams" tabindex="0">{{t 'Back to channels' }}</a> <span class="unread_count quiet-count"></span>
             </div>
             <div id="stream-filters-container">
                 <ul id="stream_filters" class="filters"></ul>
