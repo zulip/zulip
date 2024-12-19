@@ -1,6 +1,6 @@
 import {realm} from "./state_data.ts";
 
-export const zoom_token_callbacks = new Map();
+export const zoom_token_callbacks = new Map<string, () => void>();
 export const video_call_xhrs = new Map<string, JQuery.jqXHR<unknown>>();
 
 export function get_jitsi_server_url(): string | null {
