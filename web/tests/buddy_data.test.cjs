@@ -146,6 +146,10 @@ test("user_circle, level", ({override}) => {
     assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user-circle-idle");
     assert.equal(buddy_data.level(selma.user_id), 2);
 
+    set_presence(selma.user_id, "deactivated");
+    assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user-circle-deactivated");
+    assert.equal(buddy_data.level(selma.user_id), 4);
+
     set_presence(selma.user_id, "offline");
     assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user-circle-offline");
     assert.equal(buddy_data.level(selma.user_id), 3);
@@ -165,6 +169,10 @@ test("user_circle, level", ({override}) => {
     set_presence(fred.user_id, "idle");
     assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user-circle-idle");
     assert.equal(buddy_data.level(fred.user_id), 2);
+
+    set_presence(fred.user_id, "deactivated");
+    assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user-circle-deactivated");
+    assert.equal(buddy_data.level(fred.user_id), 4);
 
     set_presence(fred.user_id, undefined);
     assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user-circle-offline");
@@ -559,6 +567,7 @@ test("compare_function", () => {
 
 test("user_last_seen_time_status", ({override}) => {
     page_params.presence_history_limit_days_for_web_app = 365;
+    people.add_active_user(old_user);
     set_presence(selma.user_id, "active");
     set_presence(me.user_id, "active");
 
