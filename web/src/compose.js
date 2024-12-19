@@ -60,23 +60,18 @@ export function show_preview_area() {
 
     const $compose_textarea = $("textarea#compose-textarea");
     const content = $compose_textarea.val();
-    const edit_height = $compose_textarea.height();
 
     $("#compose .markdown_preview").hide();
     $("#compose .undo_markdown_preview").show();
     $("#compose .undo_markdown_preview").trigger("focus");
 
     const $preview_message_area = $("#compose .preview_message_area");
-    // Set the preview area to the edit height to keep from
-    // having the preview jog the size of the compose box.
-    $preview_message_area.css({height: edit_height + "px"});
-    $preview_message_area.show();
-
     compose_ui.render_and_show_preview(
         $("#compose .markdown_preview_spinner"),
         $("#compose .preview_content"),
         content,
     );
+    $preview_message_area.show();
 }
 
 export function create_message_object(message_content = compose_state.message_content()) {

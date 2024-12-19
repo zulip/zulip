@@ -1648,7 +1648,6 @@ export function is_message_oldest_or_newest(
 export function show_preview_area($element: JQuery): void {
     const $row = rows.get_closest_row($element);
     const $msg_edit_content = $row.find<HTMLTextAreaElement>("textarea.message_edit_content");
-    const edit_height = $msg_edit_content.height();
     const content = $msg_edit_content.val();
     assert(content !== undefined);
 
@@ -1661,16 +1660,12 @@ export function show_preview_area($element: JQuery): void {
     $row.find(".markdown_preview").hide();
     $row.find(".undo_markdown_preview").show();
     const $preview_message_area = $row.find(".preview_message_area");
-    // Set the preview area to the edit height to keep from
-    // having the preview jog the size of the message-edit box.
-    $preview_message_area.css({height: edit_height + "px"});
-    $preview_message_area.show();
-
     compose_ui.render_and_show_preview(
         $row.find(".markdown_preview_spinner"),
         $row.find(".preview_content"),
         content,
     );
+    $preview_message_area.show();
 }
 
 export function clear_preview_area($element: JQuery): void {
