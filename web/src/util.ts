@@ -499,9 +499,15 @@ export function check_time_input(input_value: string, keep_number_as_float = fal
     return Number.parseInt(input_value, 10);
 }
 
-export function validate_custom_time_input(time_input: number): boolean {
-    if (Number.isNaN(time_input) || time_input < 0) {
-        return false;
+export function validate_custom_time_input(time_input: number, can_be_zero = true): boolean {
+    if (can_be_zero) {
+        if (Number.isNaN(time_input) || time_input < 0) {
+            return false;
+        }
+    } else {
+        if (Number.isNaN(time_input) || time_input <= 0) {
+            return false;
+        }
     }
     return true;
 }
