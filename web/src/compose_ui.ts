@@ -658,14 +658,10 @@ export let format_text = (
                 .split("\n")
                 .map((line, i) => mark(line, i))
                 .join("\n");
-            // We always ensure a blank line before and after the list, as we want
+            // We always ensure a blank line after the list, as we want
             // a clean separation between the list and the rest of the text, especially
             // when the markdown is rendered.
 
-            // Add blank line between text before and list if not already present.
-            if (before_lines.length > 0 && before_lines.at(-1) !== "\n") {
-                before_lines += "\n";
-            }
             // Add blank line between list and rest of text if not already present.
             if (after_lines.length > 0 && after_lines.at(0) !== "\n") {
                 after_lines = "\n" + after_lines;
