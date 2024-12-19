@@ -11,7 +11,7 @@ import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import type {GroupSettingValue, StateData} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
-import type {StreamPermissionGroupSetting, StreamPostPolicy} from "./stream_types.ts";
+import type {StreamPermissionGroupSetting} from "./stream_types.ts";
 import * as sub_store from "./sub_store.ts";
 import type {
     ApiStreamSubscription,
@@ -391,13 +391,6 @@ export function get_invite_stream_data(): StreamSubscription[] {
 
 export function get_colors(): string[] {
     return subscribed_subs().map((sub) => sub.color);
-}
-
-export function update_stream_post_policy(
-    sub: StreamSubscription,
-    stream_post_policy: StreamPostPolicy,
-): void {
-    sub.stream_post_policy = stream_post_policy;
 }
 
 export function update_stream_privacy(

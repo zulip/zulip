@@ -47,7 +47,6 @@ const {buddy_list} = zrequire("buddy_list");
 const narrow_state = zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-const settings_config = zrequire("settings_config");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_create = zrequire("stream_create");
 const stream_data = zrequire("stream_data");
@@ -249,21 +248,6 @@ test("update_property", ({override}) => {
             history_public_to_subscribers: true,
             is_web_public: false,
         });
-    }
-
-    // Test stream stream_post_policy change event
-    {
-        const stub = make_stub();
-        override(stream_settings_ui, "update_stream_post_policy", stub.f);
-        stream_events.update_property(
-            stream_id,
-            "stream_post_policy",
-            settings_config.stream_post_policy_values.admins.code,
-        );
-        assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("sub", "val");
-        assert.equal(args.sub.stream_id, stream_id);
-        assert.equal(args.val, settings_config.stream_post_policy_values.admins.code);
     }
 
     // Test stream message_retention_days change event

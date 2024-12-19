@@ -4,7 +4,6 @@ import {page_params} from "./base_page_params.ts";
 import {$t, $t_html} from "./i18n.ts";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults.ts";
 import {realm} from "./state_data.ts";
-import {StreamPostPolicy} from "./stream_types.ts";
 import type {StreamSpecificNotificationSettings} from "./sub_store.ts";
 import type {
     FollowedTopicNotificationSettings,
@@ -1057,29 +1056,6 @@ export const stream_privacy_policy_values = {
         }),
     },
 };
-
-export const stream_post_policy_values = {
-    // These strings should match the strings in the
-    // Stream.POST_POLICIES object in zerver/models/streams.py.
-    everyone: {
-        code: StreamPostPolicy.EVERYONE,
-        description: $t({defaultMessage: "Everyone"}),
-    },
-    non_new_members: {
-        code: StreamPostPolicy.RESTRICT_NEW_MEMBERS,
-        description: $t({defaultMessage: "Admins, moderators and full members"}),
-    },
-    moderators: {
-        code: StreamPostPolicy.MODERATORS,
-        description: $t({
-            defaultMessage: "Admins and moderators",
-        }),
-    },
-    admins: {
-        code: StreamPostPolicy.ADMINS,
-        description: $t({defaultMessage: "Admins only"}),
-    },
-} as const;
 
 export const export_type_values = {
     export_public: {
