@@ -112,6 +112,51 @@ def check_last_owner(user_profile: UserProfile) -> bool:
     owners = set(user_profile.realm.get_human_owner_users())
     return user_profile.is_realm_owner and not user_profile.is_bot and len(owners) == 1
 
+def assign_bot_role_based_on_owner(bot: UserProfile, owner: UserProfile):
+    if owner.is_realm_owner or owner.is_admin:
+        bot.role = UserProfile.ROLE_MEMBER  # Full member role
+    else:
+        bot.role = UserProfile.ROLE_NEW_MEMBER  # New member role
+    bot.save()
+
+def create_bot(
+    owner: UserProfile,
+    full_name: str,
+    short_name: str,
+    bot_type: int,
+    **kwargs,
+) -> UserProfile:
+    bot = UserProfile.objects.create(
+        realm=owner.realm,
+        full_name=full_name,
+        short_name=short_name,
+        bot_type=bot_type,
+        is_bot=True,
+        role=UserProfile.ROLE_MEMBER,  # Default role, will be updated
+        **kwargs,
+    )
+    assign_bot_role_based_on_owner(bot, owner)
+    return bot
+
+def transfer_bot_ownership(bot: UserProfile, new_owner: UserProfile):
+    bot.owner = new_owner
+    assign_bot_role_based_on_owner(bot, new_owner)
+    bot.save()
+
+def reactivate_user_backend(
+    request: HttpRequest, user_profile: UserProfile, user_id: int
+) -> HttpResponse:
+    target = access_user_by_id(
+        user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=True
+    )
+    if target.is_bot:
+        assert target.bot_type is not None
+        check_bot_creation_policy(user_profile, target.bot_type)
+        check_bot_name_available(user_profile.realm_id, target.full_name, is_activation=True)
+        assign_bot_role_based_on_owner(target, target.owner)  # Update role
+    do_reactivate_user(target, acting_user=user_profile)
+    return json_success(request)
+
 
 @typed_endpoint
 def deactivate_user_backend(
