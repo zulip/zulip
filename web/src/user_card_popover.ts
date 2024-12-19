@@ -32,6 +32,7 @@ import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {hide_all} from "./popovers.ts";
+import * as presence from "./presence.ts";
 import * as rows from "./rows.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
@@ -46,8 +47,6 @@ import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
 import * as user_status_ui from "./user_status_ui.ts";
 import {the} from "./util.ts";
-
-let current_user_sidebar_user_id: number | undefined;
 
 export function confirm_mute_user(user_id: number): void {
     function on_click(): void {
@@ -135,7 +134,6 @@ function get_popover_classname(
 
 user_sidebar.hide = function () {
     PopoverMenu.prototype.hide.call(this);
-    current_user_sidebar_user_id = undefined;
 };
 
 const user_card_popovers = {
@@ -176,6 +174,7 @@ function clipboard_enable(arg: HTMLElement | string): ClipboardJS {
 // Functions related to user card popover.
 
 export function toggle_user_card_popover(element: HTMLElement, user: User): void {
+    hide_all();
     show_user_card_popover(
         user,
         $(element),
@@ -299,7 +298,7 @@ function get_user_card_popover_data(
         user_email: user.delivery_email,
         user_full_name: user.full_name,
         user_id: user.user_id,
-        user_last_seen_time_status: buddy_data.user_last_seen_time_status(user.user_id),
+        user_last_seen_time_status: buddy_data.fetch_presence_for_user(user.user_id),
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         status_content_available: Boolean(status_text ?? status_emoji_info),
@@ -476,6 +475,7 @@ function toggle_user_card_popover_for_message(
     const $elt = $(element);
 
     const is_sender_popover = sender_id === user.user_id;
+    hide_all();
     show_user_card_popover(
         user,
         $elt,
@@ -503,7 +503,12 @@ export function unsaved_message_user_mention_event_handler(
 
     const user_id = Number.parseInt(id_string, 10);
     const user = people.get_by_user_id(user_id);
-
+    const last_active = presence.last_active_date(user_id);
+    if (!last_active) {
+        presence.fetch_user_last_seen_status(user_id, () => {
+            toggle_user_card_popover_for_message(this, user, current_user.user_id, false);
+        });
+    }
     toggle_user_card_popover_for_message(this, user, current_user.user_id, false);
 }
 
@@ -530,6 +535,22 @@ export function toggle_sender_info(): void {
     const message = message_lists.current.get(rows.id($message));
     assert(message !== undefined);
     const user = people.get_by_user_id(message.sender_id);
+    const last_active = presence.last_active_date(message.sender_id);
+    if (!last_active) {
+        presence.fetch_user_last_seen_status(message.sender_id, () => {
+            toggle_user_card_popover_for_message(
+                the($sender),
+                user,
+                message.sender_id,
+                true,
+                () => {
+                    if (!page_params.is_spectator) {
+                        focus_user_card_popover_item();
+                    }
+                },
+            );
+        });
+    }
     toggle_user_card_popover_for_message(the($sender), user, message.sender_id, true, () => {
         if (!page_params.is_spectator) {
             focus_user_card_popover_item();
@@ -567,17 +588,8 @@ function toggle_sidebar_user_card_popover($target: JQuery): void {
     const user_id = elem_to_user_id($target);
     const user = people.get_by_user_id(user_id);
 
-    // Hiding popovers may mutate current_user_sidebar_user_id.
-    const previous_user_sidebar_id = current_user_sidebar_user_id;
-
     // Hide popovers
     hide_all();
-
-    if (previous_user_sidebar_id === user_id) {
-        // If the popover is already shown, clicking again should toggle it.
-        return;
-    }
-
     show_user_card_popover(
         user,
         $target,
@@ -592,8 +604,6 @@ function toggle_sidebar_user_card_popover($target: JQuery): void {
             $(instance.popper).find(".tippy-box").addClass("show-when-reference-hidden");
         },
     );
-
-    current_user_sidebar_user_id = user.user_id;
 }
 
 function register_click_handlers(): void {
@@ -607,6 +617,13 @@ function register_click_handlers(): void {
             const message = message_lists.current.get(rows.id($row));
             assert(message !== undefined);
             const user = people.get_by_user_id(message.sender_id);
+            const user_id = user.user_id;
+            const last_active = presence.last_active_date(user_id);
+            if (!last_active) {
+                presence.fetch_user_last_seen_status(user_id, () => {
+                    toggle_user_card_popover_for_message(this, user, message.sender_id, true);
+                });
+            }
             toggle_user_card_popover_for_message(this, user, message.sender_id, true);
         },
     );
@@ -639,6 +656,13 @@ function register_click_handlers(): void {
                 // without user ID are rare and old.
                 return;
             }
+        }
+        const user_id = user.user_id;
+        const last_active = presence.last_active_date(user_id);
+        if (!last_active) {
+            presence.fetch_user_last_seen_status(user_id, () => {
+                toggle_user_card_popover_for_message(this, user, message.sender_id, true);
+            });
         }
         toggle_user_card_popover_for_message(this, user, message.sender_id, true);
     });
@@ -825,14 +849,28 @@ function register_click_handlers(): void {
     $(".buddy-list-section").on("click", ".user-list-sidebar-menu-icon", (e) => {
         e.stopPropagation();
         const $target = $(e.currentTarget).closest("li");
-
+        const user_id = elem_to_user_id($target);
+        const last_active = presence.last_active_date(user_id);
+        if (!last_active) {
+            presence.fetch_user_last_seen_status(user_id, () => {
+                const $target = $(e.currentTarget).closest("li");
+                toggle_sidebar_user_card_popover($target);
+            });
+        }
         toggle_sidebar_user_card_popover($target);
     });
 
     $(".buddy-list-section").on("click", ".user-profile-picture", (e) => {
         e.stopPropagation();
         const $target = $(e.currentTarget).closest("li");
-
+        const user_id = elem_to_user_id($target);
+        const last_active = presence.last_active_date(user_id);
+        if (!last_active) {
+            presence.fetch_user_last_seen_status(user_id, () => {
+                const $target = $(e.currentTarget).closest("li");
+                toggle_sidebar_user_card_popover($target);
+            });
+        }
         toggle_sidebar_user_card_popover($target);
     });
 

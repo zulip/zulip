@@ -1,5 +1,6 @@
-import type {z} from "zod";
+import {z} from "zod";
 
+import * as channel from "./channel.ts";
 import * as people from "./people.ts";
 import type {StateData, presence_schema} from "./state_data.ts";
 import {realm} from "./state_data.ts";
@@ -22,6 +23,23 @@ export type PresenceInfoFromEvent = {
         pushable: boolean;
     };
 };
+
+const user_last_seen_response_schema = z.object({
+    result: z.string(),
+    msg: z.string().optional(),
+    presence: z
+        .object({
+            aggregated: z.object({
+                status: z.string(),
+                timestamp: z.number(),
+            }),
+            website: z.object({
+                status: z.string(),
+                timestamp: z.number(),
+            }),
+        })
+        .optional(),
+});
 
 // This module just manages data.  See activity.js for
 // the UI of our buddy list.
@@ -303,6 +321,48 @@ export function last_active_date(user_id: number): Date | undefined {
 
     return new Date(info.last_active * 1000);
 }
+
+export function map_status(status: string): "active" | "idle" | "offline" {
+    switch (status) {
+        case "active":
+        case "idle":
+        case "offline":
+            return status;
+        default:
+            return "offline";
+    }
+}
+
+export const fetch_user_last_seen_status = (user_id: number, callback: () => void): void => {
+    const url = `json/users/${user_id}/presence`;
+
+    channel.get({
+        url,
+        success(data: unknown) {
+            const parsed_data = user_last_seen_response_schema.safeParse(data);
+
+            if (parsed_data.success) {
+                const response = parsed_data.data;
+
+                if (response.result === "success" && response.presence) {
+                    const {aggregated} = response.presence;
+                    presence_info.set(user_id, {
+                        status: map_status(aggregated.status),
+                        last_active: aggregated.timestamp,
+                    });
+                } else {
+                    // fallback logic for users who haven't generated any presence data
+                    const user = people.get_by_user_id(user_id);
+                    presence_info.set(user_id, {
+                        status: "offline",
+                        last_active: new Date(user.date_joined).getTime() / 1000,
+                    });
+                }
+            }
+            callback();
+        },
+    });
+};
 
 export function initialize(params: StateData["presence"]): void {
     set_info(params.presences, params.server_timestamp, params.presence_last_update_id);
