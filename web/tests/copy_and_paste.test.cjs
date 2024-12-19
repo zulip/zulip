@@ -2,6 +2,8 @@
 
 const assert = require("node:assert/strict");
 
+const {JSDOM} = require("jsdom");
+
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -81,6 +83,44 @@ run_test("try_stream_topic_syntax_text", () => {
         const expected = test_case[1] ?? null;
         assert.equal(result, expected, "Failed for url: " + test_case[0]);
     }
+});
+
+run_test("latex_math_conversion", () => {
+    const {window} = new JSDOM(`<!DOCTYPE html><html><body></body></html>`);
+    global.document = window.document;
+    global.Element = window.Element;
+    // Test case for inline LaTeX math
+    let input = `
+            <span class="katex-mathml">
+                <annotation encoding="application/x-tex">$$x^2 + y^2 = z^2$$</annotation>
+            </span>`;
+    assert.equal(copy_and_paste.paste_handler_converter(input), "$$x^2 + y^2 = z^2$$");
+
+    // Test case for multiline LaTeX math
+    input = `
+        <span class="katex-display">
+            <span class="katex-mathml">
+                <annotation encoding="application/x-tex">\\begin{align}
+x + y &= z \\\\
+a + b &= c
+\\end{align}</annotation>
+            </span>
+        </span>`;
+    assert.equal(
+        copy_and_paste.paste_handler_converter(input),
+        "\\begin{align} x + y &= z \\\\ a + b &= c \\end{align}",
+    );
+
+    // Test case where no math content exists
+    input = `<div><p>No math here</p></div>`;
+    assert.equal(copy_and_paste.paste_handler_converter(input), "No math here");
+
+    // Test case where closest display exists but no annotation
+    input = `
+        <span class="katex-display">
+            <span class="katex-mathml"></span>
+        </span`;
+    assert.equal(copy_and_paste.paste_handler_converter(input), "");
 });
 
 run_test("maybe_transform_html", () => {
