@@ -1378,6 +1378,7 @@ export function initialize({
     new Typeahead(private_message_typeahead_input, {
         source: get_pm_people,
         items: max_num_items,
+        helpOnEmptyStrings: true,
         dropup: true,
         highlighter_html(item: UserGroupPillData | UserPillData) {
             return typeahead_helper.render_person_or_user_group(item);
