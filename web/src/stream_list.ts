@@ -788,14 +788,18 @@ export function handle_message_view_deactivated(): void {
 }
 
 function focus_stream_filter(e: JQuery.ClickEvent): void {
-    stream_cursor.reset();
+    stream_cursor.clear();
     e.stopPropagation();
 }
 
 function actually_update_streams_for_search(): void {
     update_streams_sidebar();
     resize.resize_page_components();
-    stream_cursor.reset();
+    if (get_search_term()) {
+        stream_cursor.reset();
+    } else {
+        stream_cursor.clear();
+    }
 }
 
 const update_streams_for_search = _.throttle(actually_update_streams_for_search, 50);
@@ -1056,7 +1060,7 @@ export function initiate_search(): void {
     }
     $filter.trigger("focus");
 
-    stream_cursor.reset();
+    stream_cursor.clear();
 }
 
 export function clear_and_hide_search(): void {

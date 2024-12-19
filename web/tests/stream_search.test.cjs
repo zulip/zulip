@@ -30,9 +30,6 @@ function make_cursor_helper() {
     const events = [];
 
     stream_list.rewire_stream_cursor({
-        reset() {
-            events.push("reset");
-        },
         clear() {
             events.push("clear");
         },
@@ -104,7 +101,7 @@ run_test("basics", ({override_rewire}) => {
     verify_expanded();
     verify_focused();
 
-    assert.deepEqual(cursor_helper.events, ["reset"]);
+    assert.deepEqual(cursor_helper.events, ["clear"]);
 
     // Collapse the widget.
     cursor_helper = make_cursor_helper();
@@ -127,7 +124,7 @@ run_test("basics", ({override_rewire}) => {
         });
 
         verify_collapsed();
-        assert.deepEqual(cursor_helper.events, ["reset", "clear"]);
+        assert.deepEqual(cursor_helper.events, ["clear", "clear"]);
     })();
 
     // Expand the widget.
