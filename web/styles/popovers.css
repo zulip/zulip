@@ -918,8 +918,8 @@ ul.popover-group-menu-member-list {
     }
 
     .modal__title {
-        white-space: nowrap;
-        text-overflow: ellipsis;
+        /* Grid defined in modal.css */
+        grid-area: heading;
 
         .stream-privacy-type-icon {
             padding-left: 3px;
