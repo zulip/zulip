@@ -55,7 +55,7 @@ function candidate_ids() {
     return narrow_state._possible_unread_message_ids();
 }
 
-run_test("get_unread_ids", () => {
+run_test("get_unread_ids", ({override_rewire}) => {
     unread.declare_bankruptcy();
     message_lists.set_current(undefined);
 
@@ -135,6 +135,13 @@ run_test("get_unread_ids", () => {
         flavor: "found",
         msg_id: stream_msg.id,
     });
+    // Check if we have old unreads missing, we always return
+    // status as cannot compute.
+    override_rewire(unread, "old_unreads_missing", true);
+    assert_unread_info({
+        flavor: "cannot_compute",
+    });
+    override_rewire(unread, "old_unreads_missing", false);
 
     terms = [
         {operator: "stream", operand: bogus_stream_id},
