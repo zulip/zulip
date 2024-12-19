@@ -238,6 +238,13 @@ const custom_profile_field_types_schema = z.object({
 
 export type CustomProfileFieldTypes = z.infer<typeof custom_profile_field_types_schema>;
 
+export const realm_playground_schema = z.object({
+    id: z.number(),
+    name: z.string(),
+    pygments_language: z.string(),
+    url_template: z.string(),
+});
+
 export const realm_linkifier_schema = z.object({
     pattern: z.string(),
     url_template: z.string(),
@@ -373,14 +380,7 @@ export const realm_schema = z.object({
     realm_org_type: z.number(),
     realm_password_auth_enabled: z.boolean(),
     realm_plan_type: z.number(),
-    realm_playgrounds: z.array(
-        z.object({
-            id: z.number(),
-            name: z.string(),
-            pygments_language: z.string(),
-            url_template: z.string(),
-        }),
-    ),
+    realm_playgrounds: z.array(realm_playground_schema),
     realm_presence_disabled: z.boolean(),
     realm_push_notifications_enabled: z.boolean(),
     realm_push_notifications_enabled_end_timestamp: z.number().nullable(),
