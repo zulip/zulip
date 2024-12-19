@@ -325,6 +325,11 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
         clear_box();
     }
 
+    // Set the recipients with a space after each comma, so it looks nice.
+    compose_state.private_message_recipient(
+        opts.private_message_recipient.replaceAll(/,\s*/g, ", "),
+    );
+
     if (opts.message_type === "private") {
         compose_state.set_compose_recipient_id(compose_state.DIRECT_MESSAGE_ID);
         compose_recipient.on_compose_select_recipient_update();
@@ -348,11 +353,6 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
         compose_recipient.toggle_compose_recipient_dropdown();
     }
     compose_state.topic(opts.topic);
-
-    // Set the recipients with a space after each comma, so it looks nice.
-    compose_state.private_message_recipient(
-        opts.private_message_recipient.replaceAll(/,\s*/g, ", "),
-    );
 
     // If we're not explicitly opening a different draft, restore the last
     // saved draft (if it exists).
