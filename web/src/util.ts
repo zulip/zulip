@@ -421,11 +421,11 @@ export function is_valid_url(url: string, require_absolute = false): boolean {
 }
 
 // Formats an array of strings as a Internationalized list using the specified language.
-export function format_array_as_list(
+export let format_array_as_list = (
     array: string[],
     style: Intl.ListFormatStyle,
     type: Intl.ListFormatType,
-): string {
+): string => {
     // If Intl.ListFormat is not supported
     if (Intl.ListFormat === undefined) {
         return array.join(", ");
@@ -436,6 +436,10 @@ export function format_array_as_list(
 
     // Return the formatted string.
     return list_formatter.format(array);
+};
+
+export function rewire_format_array_as_list(value: typeof format_array_as_list): void {
+    format_array_as_list = value;
 }
 
 export function format_array_as_list_with_highlighted_elements(

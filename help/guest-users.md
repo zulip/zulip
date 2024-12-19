@@ -42,6 +42,20 @@ pricing](/help/zulip-cloud-billing#temporary-users-and-guests) for guest users.
 
 {end_tabs}
 
+## Configure warning for direct messages to guest users
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{settings_tab|organization-permissions}
+
+1. Under **Guests**, toggle **Display a warning when composing a direct message with guest user recipients**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
 ## Configure whether guests can see all other users
 
 {!cloud-plus-only.md!}
