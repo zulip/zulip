@@ -160,7 +160,10 @@ function get_num_unread(user_id: number): number {
     return unread.num_unread_for_user_ids_string(user_id.toString());
 }
 
-export function user_last_seen_time_status(user_id: number): string {
+export function user_last_seen_time_status(
+    user_id: number,
+    missing_data_callback?: (user_id: number) => void,
+): string {
     const status = presence.get_status(user_id);
     if (status === "active") {
         return $t({defaultMessage: "Active now"});
@@ -182,6 +185,11 @@ export function user_last_seen_time_status(user_id: number): string {
         // history on a user. This can happen when users are deactivated,
         // or when the user's last activity is older than what we fetch.
         assert(page_params.presence_history_limit_days_for_web_app === 365);
+
+        if (missing_data_callback !== undefined) {
+            missing_data_callback(user_id);
+            return "";
+        }
         return $t({defaultMessage: "Not active in the last year"});
     }
     return timerender.last_seen_status_from_date(last_active_date);

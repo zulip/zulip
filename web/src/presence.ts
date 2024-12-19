@@ -25,6 +25,21 @@ export const presence_info_from_event_schema = z.object({
 });
 export type PresenceInfoFromEvent = z.output<typeof presence_info_from_event_schema>;
 
+export const user_last_seen_response_schema = z.object({
+    result: z.string(),
+    msg: z.string().optional(),
+    presence: z
+        .object({
+            /* We ignore the keys other than aggregated, since they just contain
+               duplicate data. */
+            aggregated: z.object({
+                status: z.enum(["active", "idle", "offline"]),
+                timestamp: z.number(),
+            }),
+        })
+        .optional(),
+});
+
 // This module just manages data.  See activity.js for
 // the UI of our buddy list.
 
