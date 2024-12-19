@@ -1,8 +1,9 @@
+// You won't find every click handler here, but it's a good place to start!
+
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
-
-// You won't find every click handler here, but it's a good place to start!
+import {z} from "zod";
 
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
@@ -15,7 +16,7 @@ import * as compose_state from "./compose_state.ts";
 import {media_breakpoints_num} from "./css_variables.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as hash_util from "./hash_util.ts";
-import * as hashchange from "./hashchange.js";
+import * as hashchange from "./hashchange.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
@@ -28,7 +29,6 @@ import * as popover_menus from "./popover_menus.ts";
 import * as reactions from "./reactions.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as rows from "./rows.ts";
-import * as server_events from "./server_events.js";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_preferences from "./settings_preferences.ts";
 import * as settings_toggle from "./settings_toggle.ts";
@@ -42,12 +42,12 @@ import * as ui_util from "./ui_util.ts";
 import {parse_html} from "./ui_util.ts";
 import * as util from "./util.ts";
 
-export function initialize() {
+export function initialize(): void {
     // MESSAGE CLICKING
 
-    function initialize_long_tap() {
+    function initialize_long_tap(): void {
         const MS_DELAY = 750;
-        const meta = {
+        const meta: {touchdown: boolean; current_target: number | undefined; invalid?: boolean} = {
             touchdown: false,
             current_target: undefined,
         };
@@ -70,7 +70,7 @@ export function initialize() {
                 // Later we check whether after MS_DELAY the user is still
                 // long touching the same message as it can be possible that
                 // user touched another message within MS_DELAY period.
-                if (meta.touchdown === true && !meta.invalid && id === meta.current_target) {
+                if (meta.touchdown && !meta.invalid && id === meta.current_target) {
                     $(this).trigger("longtap");
                 }
             }, MS_DELAY);
@@ -96,7 +96,7 @@ export function initialize() {
         initialize_long_tap();
     }
 
-    function is_clickable_message_element($target) {
+    function is_clickable_message_element($target: JQuery<Element>): boolean {
         // This function defines all the elements within a message
         // body that have UI behavior other than starting a reply.
 
@@ -159,7 +159,8 @@ export function initialize() {
         return false;
     }
 
-    const select_message_function = function (e) {
+    const select_message_function = function (this: HTMLElement, e: JQuery.TriggeredEvent): void {
+        assert(e.target instanceof Element);
         if (is_clickable_message_element($(e.target))) {
             // If this click came from a hyperlink, don't trigger the
             // reply action.  The simple way of doing this is simply
@@ -173,7 +174,7 @@ export function initialize() {
             return;
         }
 
-        if (document.getSelection().type === "Range") {
+        if (document.getSelection()?.type === "Range") {
             // Drags on the message (to copy message text) shouldn't trigger a reply.
             return;
         }
@@ -200,7 +201,7 @@ export function initialize() {
                 // This might happen for locally echoed messages, for example.
                 return;
             }
-            window.location = hash_util.by_conversation_and_time_url(message);
+            window.location.href = hash_util.by_conversation_and_time_url(message);
             return;
         }
 
@@ -217,7 +218,7 @@ export function initialize() {
         $("#main_div").on("click", ".messagebox", select_message_function);
         // on the other hand, on mobile it should be done with a long tap.
     } else {
-        $("#main_div").on("longtap", ".messagebox", function (e) {
+        $("#main_div").on("longtap", ".messagebox", function (this: HTMLElement, e) {
             const sel = window.getSelection();
             // if one matches, remove the current selections.
             // after a longtap that is valid, there should be no text selected.
@@ -243,10 +244,11 @@ export function initialize() {
 
         const message_id = rows.id($(this).closest(".message_row"));
         const message = message_store.get(message_id);
+        assert(message !== undefined);
         starred_messages_ui.toggle_starred_and_update_server(message);
     });
 
-    $("#main_div").on("click", ".message_reaction", function (e) {
+    $("#main_div").on("click", ".message_reaction", function (this: HTMLElement, e) {
         e.stopPropagation();
 
         if (page_params.is_spectator) {
@@ -255,7 +257,7 @@ export function initialize() {
         }
 
         emoji_picker.hide_emoji_popover();
-        const local_id = $(this).attr("data-reaction-id");
+        const local_id = $(this).attr("data-reaction-id")!;
         const message_id = rows.get_message_id(this);
         reactions.process_reaction_click(message_id, local_id);
         $(".tooltip").remove();
@@ -269,16 +271,16 @@ export function initialize() {
         e.preventDefault();
     });
 
-    $("#main_div").on("click", "a.stream", function (e) {
+    $("#main_div").on("click", "a.stream", function (this: HTMLAnchorElement, e) {
         e.preventDefault();
         // Note that we may have an href here, but we trust the stream id more,
         // so we re-encode the hash.
-        const stream_id = Number.parseInt($(this).attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt($(this).attr("data-stream-id")!, 10);
         if (stream_id) {
             browser_history.go_to_location(hash_util.by_stream_url(stream_id));
             return;
         }
-        window.location.href = $(this).attr("href");
+        window.location.href = this.href;
     });
 
     $("body").on("click", "#scroll-to-bottom-button-clickable-area", (e) => {
@@ -311,7 +313,8 @@ export function initialize() {
         const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
         const message_id = rows.id($row);
         const message = message_lists.current.get(message_id);
-        stream_popover.build_move_topic_to_stream_popover(
+        assert(message?.type === "stream");
+        void stream_popover.build_move_topic_to_stream_popover(
             message.stream_id,
             message.topic,
             false,
@@ -358,28 +361,36 @@ export function initialize() {
         e.preventDefault();
 
         const row_id = rows.id($(this).closest(".message_row"));
-        $(`#edit_form_${CSS.escape(row_id)} .file_input`).trigger("click");
+        $(`#edit_form_${CSS.escape(`${row_id}`)} .file_input`).trigger("click");
     });
-    $("body").on("focus", ".message_edit_form .message_edit_content", (e) => {
-        compose_state.set_last_focused_compose_type_input(e.target);
+    $("body").on(
+        "focus",
+        ".message_edit_form textarea.message_edit_content",
+        function (this: HTMLTextAreaElement, _event) {
+            compose_state.set_last_focused_compose_type_input(this);
+        },
+    );
+
+    $("body").on("click", ".message_edit_form .markdown_preview", function (this: HTMLElement, e) {
+        e.preventDefault();
+        message_edit.show_preview_area($(this));
     });
 
-    $("body").on("click", ".message_edit_form .markdown_preview", (e) => {
-        e.preventDefault();
-        message_edit.show_preview_area($(e.target));
-    });
-
-    $("body").on("click", ".message_edit_form .undo_markdown_preview", (e) => {
-        e.preventDefault();
-        message_edit.clear_preview_area($(e.target));
-    });
+    $("body").on(
+        "click",
+        ".message_edit_form .undo_markdown_preview",
+        function (this: HTMLElement, e) {
+            e.preventDefault();
+            message_edit.clear_preview_area($(this));
+        },
+    );
 
     // RESOLVED TOPICS
     $("body").on("click", ".message_header .on_hover_topic_resolve", (e) => {
         e.stopPropagation();
         const $recipient_row = $(e.target).closest(".recipient_row");
         const message_id = rows.id_for_recipient_row($recipient_row);
-        const topic_name = $(e.target).attr("data-topic-name");
+        const topic_name = $(e.target).attr("data-topic-name")!;
         message_edit.toggle_resolve_topic(message_id, topic_name, false, $recipient_row);
     });
 
@@ -387,35 +398,39 @@ export function initialize() {
         e.stopPropagation();
         const $recipient_row = $(e.target).closest(".recipient_row");
         const message_id = rows.id_for_recipient_row($recipient_row);
-        const topic_name = $(e.target).attr("data-topic-name");
+        const topic_name = $(e.target).attr("data-topic-name")!;
         message_edit.toggle_resolve_topic(message_id, topic_name, false, $recipient_row);
     });
 
     // RECIPIENT BARS
 
-    function get_row_id_for_narrowing(narrow_link_elem) {
+    function get_row_id_for_narrowing(narrow_link_elem: HTMLElement): number {
         const $group = rows.get_closest_group(narrow_link_elem);
         const msg_id = rows.id_for_recipient_row($group);
 
         assert(message_lists.current !== undefined);
-        const nearest = message_lists.current.get(msg_id);
+        const nearest = message_lists.current.get(msg_id)!;
         const selected = message_lists.current.selected_message();
-        if (util.same_recipient(nearest, selected)) {
+        if (selected !== undefined && util.same_recipient(nearest, selected)) {
             return selected.id;
         }
         return nearest.id;
     }
 
-    $("#message_feed_container").on("click", ".narrows_by_recipient", function (e) {
-        if (e.metaKey || e.ctrlKey || e.shiftKey) {
-            return;
-        }
-        e.preventDefault();
-        const row_id = get_row_id_for_narrowing(this);
-        message_view.narrow_by_recipient(row_id, {trigger: "message header"});
-    });
+    $("#message_feed_container").on(
+        "click",
+        ".narrows_by_recipient",
+        function (this: HTMLElement, e) {
+            if (e.metaKey || e.ctrlKey || e.shiftKey) {
+                return;
+            }
+            e.preventDefault();
+            const row_id = get_row_id_for_narrowing(this);
+            message_view.narrow_by_recipient(row_id, {trigger: "message header"});
+        },
+    );
 
-    $("#message_feed_container").on("click", ".narrows_by_topic", function (e) {
+    $("#message_feed_container").on("click", ".narrows_by_topic", function (this: HTMLElement, e) {
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
@@ -456,22 +471,25 @@ export function initialize() {
 
     // Doesn't show tooltip on touch devices.
     function do_render_buddy_list_tooltip(
-        $elem,
-        title_data,
-        get_target_node,
-        check_reference_removed,
+        $elem: JQuery,
+        title_data: buddy_data.TitleData,
+        get_target_node?: (tippy_instance: tippy.Instance) => HTMLElement,
+        check_reference_removed?: (
+            mutation: MutationRecord,
+            tippy_instance: tippy.Instance,
+        ) => boolean,
         subtree = false,
-        parent_element_to_append = null,
+        parent_element_to_append: HTMLElement | null = null,
         is_custom_observer_needed = true,
-    ) {
-        let placement = "left";
-        let observer;
+    ): void {
+        let placement: tippy.Placement = "left";
+        let observer: MutationObserver;
         if (window.innerWidth < media_breakpoints_num.md) {
             // On small devices display tooltips based on available space.
             // This will default to "bottom" placement for this tooltip.
             placement = "auto";
         }
-        tippy.default($elem[0], {
+        tippy.default(util.the($elem), {
             // Quickly display and hide right sidebar tooltips
             // so that they don't stick and overlap with
             // each other.
@@ -495,12 +513,14 @@ export function initialize() {
                 if (!is_custom_observer_needed) {
                     return;
                 }
+                assert(get_target_node !== undefined);
+                assert(check_reference_removed !== undefined);
                 // We cannot use MutationObserver directly on the reference element because
                 // it will be removed and we need to attach it on an element which will remain in the DOM.
                 const target_node = get_target_node(instance);
                 // We only need to know if any of the `li` elements were removed.
                 const config = {attributes: false, childList: true, subtree};
-                const callback = function (mutationsList) {
+                const callback: MutationCallback = function (mutationsList) {
                     for (const mutation of mutationsList) {
                         // Hide instance if reference is in the removed node list.
                         if (check_reference_removed(mutation, instance)) {
@@ -511,7 +531,7 @@ export function initialize() {
                 observer = new MutationObserver(callback);
                 observer.observe(target_node, config);
             },
-            appendTo: () => parent_element_to_append || document.body,
+            appendTo: () => parent_element_to_append ?? document.body,
         });
     }
 
@@ -520,15 +540,18 @@ export function initialize() {
         e.stopPropagation();
         const user_id_string = $(e.currentTarget)
             .closest(".user_sidebar_entry")
-            .attr("data-user-id");
+            .attr("data-user-id")!;
         const title_data = buddy_data.get_title_data(user_id_string, false);
 
         // `target_node` is the `ul` element since it stays in DOM even after updates.
-        function get_target_node() {
-            return $(e.target).parents(".buddy-list-section")[0];
+        function get_target_node(): HTMLElement {
+            return util.the($(e.target).parents(".buddy-list-section"));
         }
 
-        function check_reference_removed(mutation, instance) {
+        function check_reference_removed(
+            mutation: MutationRecord,
+            instance: tippy.Instance,
+        ): boolean {
             return Array.prototype.includes.call(
                 mutation.removedNodes,
                 instance.reference.parentElement,
@@ -547,8 +570,9 @@ export function initialize() {
         */
         $(".user_sidebar_entry .status-emoji-name").off("mouseenter").off("mouseleave");
         $(".user_sidebar_entry .status-emoji-name").on("mouseenter", () => {
-            const instance = $elem[0]._tippy;
-            if (instance && instance.state.isVisible) {
+            const element: tippy.ReferenceElement = util.the($elem);
+            const instance = element._tippy;
+            if (instance?.state.isVisible) {
                 instance.destroy();
             }
         });
@@ -563,22 +587,25 @@ export function initialize() {
     });
 
     // DIRECT MESSAGE LIST TOOLTIPS (not displayed on touch devices)
-    $("body").on("mouseenter", ".dm-user-status", (e) => {
+    $("body").on("mouseenter", ".dm-user-status", function (this: HTMLElement, e) {
         e.stopPropagation();
-        const $elem = $(e.currentTarget);
-        const user_ids_string = $elem.attr("data-user-ids-string");
+        const $elem = $(this);
+        const user_ids_string = $elem.attr("data-user-ids-string")!;
         // This converts from 'true' in the DOM to true.
-        const is_group = JSON.parse($elem.attr("data-is-group"));
+        const is_group = z.boolean().parse(JSON.parse($elem.attr("data-is-group")!));
 
         const title_data = buddy_data.get_title_data(user_ids_string, is_group);
 
         // Since anything inside `#left_sidebar_scroll_container` can be replaced, it is our target node here.
-        function get_target_node() {
-            return document.querySelector("#left_sidebar_scroll_container");
+        function get_target_node(): HTMLElement {
+            return document.querySelector("#left_sidebar_scroll_container")!;
         }
 
         // Whole list is just replaced, so we need to check for that.
-        function check_reference_removed(mutation, instance) {
+        function check_reference_removed(
+            mutation: MutationRecord,
+            instance: tippy.Instance,
+        ): boolean {
             return Array.prototype.includes.call(
                 mutation.removedNodes,
                 $(instance.reference).parents(".dm-list")[0],
@@ -601,8 +628,9 @@ export function initialize() {
         */
         $(".dm-user-status .status-emoji-name").off("mouseenter").off("mouseleave");
         $(".dm-user-status .status-emoji-name").on("mouseenter", () => {
-            const instance = $elem[0]._tippy;
-            if (instance && instance.state.isVisible) {
+            const element: tippy.ReferenceElement = util.the($elem);
+            const instance = element._tippy;
+            if (instance?.state.isVisible) {
                 instance.destroy();
             }
         });
@@ -617,10 +645,9 @@ export function initialize() {
     });
 
     // Left sidebar channel rows
-    $("body").on("click", ".channel-new-topic-button", (e) => {
+    $("body").on("click", ".channel-new-topic-button", function (this: HTMLElement, e) {
         e.stopPropagation();
-        const elem = e.currentTarget;
-        const stream_id = Number.parseInt(elem.dataset.streamId, 10);
+        const stream_id = Number.parseInt(this.dataset.streamId!, 10);
         compose_actions.start({
             message_type: "stream",
             stream_id,
@@ -631,18 +658,29 @@ export function initialize() {
     });
 
     // Recent conversations direct messages (Not displayed on small widths)
-    $("body").on("mouseenter", ".recent_topic_stream .pm_status_icon", (e) => {
-        e.stopPropagation();
-        const $elem = $(e.currentTarget);
-        const user_ids_string = $elem.attr("data-user-ids-string");
-        // Don't show tooltip for group direct messages.
-        if (!user_ids_string || user_ids_string.split(",").length !== 1) {
-            return;
-        }
-        const title_data = recent_view_ui.get_pm_tooltip_data(user_ids_string);
-        const noop = () => {};
-        do_render_buddy_list_tooltip($elem, title_data, noop, noop, false, undefined, false);
-    });
+    $("body").on(
+        "mouseenter",
+        ".recent_topic_stream .pm_status_icon",
+        function (this: HTMLElement, e) {
+            e.stopPropagation();
+            const $elem = $(this);
+            const user_ids_string = $elem.attr("data-user-ids-string");
+            // Don't show tooltip for group direct messages.
+            if (!user_ids_string || user_ids_string.split(",").length !== 1) {
+                return;
+            }
+            const title_data = recent_view_ui.get_pm_tooltip_data(user_ids_string);
+            do_render_buddy_list_tooltip(
+                $elem,
+                title_data,
+                undefined,
+                undefined,
+                false,
+                undefined,
+                false,
+            );
+        },
+    );
 
     // MISC
 
@@ -653,17 +691,13 @@ export function initialize() {
             "#buddy-list-users-matching-view",
         ].join(", ");
 
-        $(sel).on("click", "a", function () {
+        $(sel).on("click", "a", function (this: HTMLElement) {
             this.blur();
         });
     }
 
     $("body").on("click", ".logout_button", () => {
         $("#logout_form").trigger("submit");
-    });
-
-    $(".restart_get_events_button").on("click", () => {
-        server_events.restart_get_events({dont_block: true});
     });
 
     $("#settings_page").on("click", ".collapse-settings-button", () => {
@@ -692,11 +726,11 @@ export function initialize() {
     });
 
     $("body").on("click", "[data-overlay-trigger]", function () {
-        const target = $(this).attr("data-overlay-trigger");
+        const target = $(this).attr("data-overlay-trigger")!;
         browser_history.go_to_location(target);
     });
 
-    function handle_compose_click(e) {
+    function handle_compose_click(e: JQuery.ClickEvent): void {
         const $target = $(e.target);
         // Emoji clicks should be handled by their own click handler in emoji_picker.js
         if ($target.is(".emoji_map, img.emoji, .drag, .compose_gif_icon, .compose_control_menu")) {
@@ -729,9 +763,13 @@ export function initialize() {
         compose_actions.cancel();
     });
 
-    $("body").on("focus", "#compose-textarea", (e) => {
-        compose_state.set_last_focused_compose_type_input(e.target);
-    });
+    $("body").on(
+        "focus",
+        "textarea#compose-textarea",
+        function (this: HTMLTextAreaElement, _event: JQuery.Event) {
+            compose_state.set_last_focused_compose_type_input(this);
+        },
+    );
 
     // LEFT SIDEBAR
 
@@ -794,18 +832,22 @@ export function initialize() {
 
     // Chrome focuses an element when dragging it which can be confusing when
     // users involuntarily drag something and we show them the focus outline.
-    $("body").on("dragstart", "a", (e) => e.target.blur());
+    $("body").on("dragstart", "a", function (this: HTMLElement) {
+        this.blur();
+    });
 
     // Don't focus links on middle click.
-    $("body").on("mouseup", "a", (e) => {
+    $("body").on("mouseup", "a", function (this: HTMLElement, e) {
         if (e.button === 1) {
             // middle click
-            e.target.blur();
+            this.blur();
         }
     });
 
     // Don't focus links on context menu.
-    $("body").on("contextmenu", "a", (e) => e.target.blur());
+    $("body").on("contextmenu", "a", function (this: HTMLElement) {
+        this.blur();
+    });
 
     $("body").on("click", ".language_selection_widget button", (e) => {
         e.preventDefault();
@@ -834,7 +876,7 @@ export function initialize() {
             return;
         }
 
-        if (compose_state.composing() && !$(e.target).parents("#compose").length) {
+        if (compose_state.composing() && $(e.target).parents("#compose").length === 0) {
             if (
                 $(e.target).closest("a").length > 0 ||
                 $(e.target).closest(".copy_codeblock").length > 0
@@ -849,25 +891,25 @@ export function initialize() {
                 $("textarea#compose-textarea").trigger("focus");
                 return;
             } else if (
-                !window.getSelection().toString() &&
+                !window.getSelection()?.toString() &&
                 // Clicking any input or text area should not close
                 // the compose box; this means using the sidebar
                 // filters or search widgets won't unnecessarily close
                 // compose.
-                !$(e.target).closest("input").length &&
-                !$(e.target).closest(".todo-widget label.checkbox").length &&
-                !$(e.target).closest("textarea").length &&
-                !$(e.target).closest("select").length &&
+                $(e.target).closest("input").length === 0 &&
+                $(e.target).closest(".todo-widget label.checkbox").length === 0 &&
+                $(e.target).closest("textarea").length === 0 &&
+                $(e.target).closest("select").length === 0 &&
                 // Clicks inside an overlay, popover, custom
                 // modal, or backdrop of one of the above
                 // should not have any effect on the compose
                 // state.
-                !$(e.target).closest(".overlay").length &&
-                !$(e.target).closest(".micromodal").length &&
-                !$(e.target).closest("[data-tippy-root]").length &&
-                !$(e.target).closest(".typeahead").length &&
-                !$(e.target).closest(".flatpickr-calendar").length &&
-                $(e.target).closest("body").length
+                $(e.target).closest(".overlay").length === 0 &&
+                $(e.target).closest(".micromodal").length === 0 &&
+                $(e.target).closest("[data-tippy-root]").length === 0 &&
+                $(e.target).closest(".typeahead").length === 0 &&
+                $(e.target).closest(".flatpickr-calendar").length === 0 &&
+                $(e.target).closest("body").length > 0
             ) {
                 // Unfocus our compose area if we click out of it. Don't let exits out
                 // of overlays or selecting text (for copy+paste) trigger cancelling.
@@ -887,11 +929,5 @@ export function initialize() {
 
     $(".settings-header.mobile .fa-chevron-left").on("click", () => {
         settings_panel_menu.mobile_deactivate_section();
-    });
-
-    $("body").on("click", ".trigger-natural-click", (e) => {
-        // Jquery prevents default action on anchor for `trigger("click")`
-        // so we need to use click on element to trigger the default action.
-        e.currentTarget.click();
     });
 }

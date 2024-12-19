@@ -472,7 +472,7 @@ export function show_from_selected_message(): void {
         }
     }
 
-    if ($media.length !== 0) {
+    if ($media.length > 0) {
         const open_media = build_open_media_function(undefined);
         // Since this function is only called from the "show_lightbox"
         // hotkey, we don't have a selected image to load. Therefore,
@@ -496,10 +496,10 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Pa
 
     // if wrapped in the .youtube-video class, it will be length = 1, and therefore
     // cast to true.
-    const is_youtube_video = Boolean($media.closest(".youtube-video").length);
-    const is_vimeo_video = Boolean($media.closest(".vimeo-video").length);
-    const is_embed_video = Boolean($media.closest(".embed-video").length);
-    const is_inline_video = Boolean($media.closest(".message_inline_video").length);
+    const is_youtube_video = $media.closest(".youtube-video").length > 0;
+    const is_vimeo_video = $media.closest(".vimeo-video").length > 0;
+    const is_embed_video = $media.closest(".embed-video").length > 0;
+    const is_inline_video = $media.closest(".message_inline_video").length > 0;
 
     // check if media is descendent of #compose .preview_content
     const is_compose_preview_media = $media.closest("#compose .preview_content").length === 1;

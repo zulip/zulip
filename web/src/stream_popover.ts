@@ -5,6 +5,7 @@ import type * as tippy from "tippy.js";
 import {z} from "zod";
 
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
+import render_inline_stream_or_topic_reference from "../templates/inline_stream_or_topic_reference.hbs";
 import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
 import render_left_sidebar_stream_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_stream_actions_popover.hbs";
 
@@ -19,6 +20,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
+import * as message_util from "./message_util.ts";
 import * as message_view from "./message_view.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -345,6 +347,7 @@ export async function build_move_topic_to_stream_popover(
     message?: Message,
 ): Promise<void> {
     const current_stream_name = sub_store.get(current_stream_id)!.name;
+    const stream = sub_store.get(current_stream_id);
     const args: {
         topic_name: string;
         current_stream_id: number;
@@ -354,9 +357,11 @@ export async function build_move_topic_to_stream_popover(
         only_topic_edit: boolean;
         disable_topic_input?: boolean;
         message_placement?: "first" | "intermediate" | "last";
+        stream: sub_store.StreamSubscription | undefined;
     } = {
         topic_name,
         current_stream_id,
+        stream,
         notify_new_thread: message_edit.notify_new_thread_default,
         notify_old_thread: message_edit.notify_old_thread_default,
         from_message_actions_popover: message !== undefined,
@@ -374,13 +379,43 @@ export async function build_move_topic_to_stream_popover(
 
     let modal_heading;
     if (only_topic_edit) {
-        modal_heading = $t_html({defaultMessage: "Rename topic"});
+        modal_heading = $t_html(
+            {defaultMessage: "Rename <z-stream-or-topic></z-stream-or-topic>"},
+            {
+                "z-stream-or-topic": () =>
+                    render_inline_stream_or_topic_reference({
+                        topic_name,
+                        stream,
+                        show_colored_icon: true,
+                    }),
+            },
+        );
     } else {
-        modal_heading = $t_html({defaultMessage: "Move topic"});
+        modal_heading = $t_html(
+            {defaultMessage: "Move <z-stream-or-topic></z-stream-or-topic>"},
+            {
+                "z-stream-or-topic": () =>
+                    render_inline_stream_or_topic_reference({
+                        topic_name,
+                        stream,
+                        show_colored_icon: true,
+                    }),
+            },
+        );
     }
 
     if (message !== undefined) {
-        modal_heading = $t_html({defaultMessage: "Move messages"});
+        modal_heading = $t_html(
+            {defaultMessage: "Move messages from <z-stream-or-topic></z-stream-or-topic>"},
+            {
+                "z-stream-or-topic": () =>
+                    render_inline_stream_or_topic_reference({
+                        stream,
+                        topic_name,
+                        show_colored_icon: true,
+                    }),
+            },
+        );
         // We disable topic input only for modal is opened from the message actions
         // popover and not when moving the whole topic from left sidebar. This is
         // because topic editing permission depend on message and we do not have
@@ -586,6 +621,74 @@ export async function build_move_topic_to_stream_popover(
         $("#move_topic_form .move_messages_edit_topic").trigger("focus");
     }
 
+    // The following logic is correct only when
+    // both message_lists.current.data.fetch_status.has_found_newest
+    // and message_lists.current.data.fetch_status.has_found_oldest are true;
+    // otherwise, we cannot be certain of the correct count.
+    function get_count_of_messages_to_be_moved(
+        selected_option: string,
+        message_id?: number,
+    ): number {
+        if (selected_option === "change_one") {
+            return 1;
+        }
+        if (selected_option === "change_later" && message_id !== undefined) {
+            return message_util.get_count_of_messages_in_topic_sent_after_current_message(
+                current_stream_id,
+                topic_name,
+                message_id,
+            );
+        }
+        return message_util.get_messages_in_topic(current_stream_id, topic_name).length;
+    }
+
+    function update_move_messages_count_text(selected_option: string, message_id?: number): void {
+        const message_move_count = get_count_of_messages_to_be_moved(selected_option, message_id);
+        const is_topic_narrowed = narrow_state.narrowed_by_topic_reply();
+        const is_stream_narrowed = narrow_state.narrowed_by_stream_reply();
+        const is_same_stream = narrow_state.stream_id() === current_stream_id;
+        const is_same_topic = narrow_state.topic() === topic_name;
+
+        const can_have_exact_count_in_narrow =
+            (is_stream_narrowed && is_same_stream) ||
+            (is_topic_narrowed && is_same_stream && is_same_topic);
+        let exact_message_count = false;
+        if (selected_option === "change_one") {
+            exact_message_count = true;
+        } else if (can_have_exact_count_in_narrow) {
+            const has_found_newest = message_lists.current?.data.fetch_status.has_found_newest();
+            const has_found_oldest = message_lists.current?.data.fetch_status.has_found_oldest();
+
+            if (selected_option === "change_later" && has_found_newest) {
+                exact_message_count = true;
+            }
+            if (selected_option === "change_all" && has_found_newest && has_found_oldest) {
+                exact_message_count = true;
+            }
+        }
+
+        let message_text;
+        if (exact_message_count) {
+            message_text = $t(
+                {
+                    defaultMessage:
+                        "{count, plural, one {# message} other {# messages}} will be moved.",
+                },
+                {count: message_move_count},
+            );
+        } else {
+            message_text = $t(
+                {
+                    defaultMessage:
+                        "At least {count, plural, one {# message} other {# messages}} will be moved.",
+                },
+                {count: message_move_count},
+            );
+        }
+
+        $("#move_messages_count").text(message_text);
+    }
+
     function move_topic_post_render(): void {
         $("#move_topic_modal .dialog_submit_button").prop("disabled", true);
 
@@ -635,6 +738,18 @@ export async function build_move_topic_to_stream_popover(
         $("#move_topic_modal .move_messages_edit_topic").on("input", () => {
             update_submit_button_disabled_state(current_stream_id);
         });
+
+        if (!args.from_message_actions_popover) {
+            update_move_messages_count_text("change_all");
+        } else {
+            let selected_option = String($("#message_move_select_options").val());
+            update_move_messages_count_text(selected_option, message?.id);
+
+            $("#message_move_select_options").on("change", function () {
+                selected_option = String($(this).val());
+                update_move_messages_count_text(selected_option, message?.id);
+            });
+        }
     }
 
     function focus_on_move_modal_render(): void {

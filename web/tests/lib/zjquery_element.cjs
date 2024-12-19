@@ -224,7 +224,7 @@ function FakeElement(selector, opts) {
             return $self;
         },
         text(...args) {
-            if (args.length !== 0) {
+            if (args.length > 0) {
                 if (args[0] !== undefined) {
                     text = args[0].toString();
                 }

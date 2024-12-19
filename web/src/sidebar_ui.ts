@@ -184,23 +184,23 @@ export function initialize(): void {
             const $elt = $(e.target);
             // Since sidebar toggle buttons have their own click handlers, don't handle them here.
             if (
-                $elt.closest(".left-sidebar-toggle-button").length ||
-                $elt.closest("#userlist-toggle-button").length
+                $elt.closest(".left-sidebar-toggle-button").length > 0 ||
+                $elt.closest("#userlist-toggle-button").length > 0
             ) {
                 return;
             }
 
             // Overrides for certain elements that should not close the sidebars.
-            if ($elt.closest(".no-auto-hide-sidebar-overlays").length) {
+            if ($elt.closest(".no-auto-hide-sidebar-overlays").length > 0) {
                 return;
             }
 
             if (
                 left_sidebar_expanded_as_overlay &&
-                !$elt.closest(".no-auto-hide-left-sidebar-overlay").length
+                $elt.closest(".no-auto-hide-left-sidebar-overlay").length === 0
             ) {
                 const $left_column = $(".app-main .column-left");
-                const click_outside_left_sidebar = !$elt.closest($left_column).length;
+                const click_outside_left_sidebar = $elt.closest($left_column).length === 0;
                 if (click_outside_left_sidebar) {
                     hide_streamlist_sidebar();
                 }
@@ -208,10 +208,10 @@ export function initialize(): void {
 
             if (
                 right_sidebar_expanded_as_overlay &&
-                !$elt.closest(".no-auto-hide-right-sidebar-overlay").length
+                $elt.closest(".no-auto-hide-right-sidebar-overlay").length === 0
             ) {
                 const $right_column = $(".app-main .column-right");
-                const click_outside_right_sidebar = !$elt.closest($right_column).length;
+                const click_outside_right_sidebar = $elt.closest($right_column).length === 0;
 
                 if (click_outside_right_sidebar) {
                     hide_userlist_sidebar();
@@ -257,7 +257,7 @@ export function initialize_right_sidebar(): void {
 
     $("#buddy-list-users-matching-view").on("mouseenter", ".user_sidebar_entry", (e) => {
         const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status-emoji");
-        if ($status_emoji.length) {
+        if ($status_emoji.length > 0) {
             const animated_url = $status_emoji.attr("data-animated-url");
             if (animated_url) {
                 $status_emoji.attr("src", animated_url);
@@ -267,7 +267,7 @@ export function initialize_right_sidebar(): void {
 
     $("#buddy-list-users-matching-view").on("mouseleave", ".user_sidebar_entry", (e) => {
         const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status-emoji");
-        if ($status_emoji.length) {
+        if ($status_emoji.length > 0) {
             const still_url = $status_emoji.attr("data-still-url");
             if (still_url) {
                 $status_emoji.attr("src", still_url);

@@ -489,7 +489,7 @@ paths:
                                     - type: object
                                       additionalProperties: false
                                       description: |
-                                        When the [role](/help/roles-and-permissions) of a user changes.
+                                        When the [role](/help/user-roles) of a user changes.
                                       properties:
                                         user_id:
                                           type: integer
@@ -839,7 +839,7 @@ paths:
 
                                 Prior to Zulip 8.0 (feature level 205), this event was not sent when
                                 a user gained access to a channel due to their [role
-                                changing](/help/roles-and-permissions).
+                                changing](/help/user-roles).
 
                                 Prior to Zulip 6.0 (feature level 134), this event was not sent when a
                                 private channel was made public.
@@ -1291,7 +1291,7 @@ paths:
 
                                 This event is also sent when a user gains access to a channel they
                                 previously [could not access](/help/channel-permissions), such as
-                                when their [role](/help/roles-and-permissions) changes, a
+                                when their [role](/help/user-roles) changes, a
                                 private channel is made public, or a guest user is subscribed
                                 to a public (or private) channel.
 
@@ -1364,7 +1364,7 @@ paths:
 
                                 This event is also sent when a user loses access to a channel they
                                 previously [could access](/help/channel-permissions) because they
-                                are unsubscribed from a private channel or their [role](/help/roles-and-permissions)
+                                are unsubscribed from a private channel or their [role](/help/user-roles)
                                 has changed.
 
                                 **Changes**: Prior to Zulip 8.0 (feature level 205), this event was
@@ -1564,18 +1564,11 @@ paths:
                                     emoji_name: {}
                                     reaction_type: {}
                                     user_id: {}
-                                    user: {}
                                   example:
                                     {
                                       "type": "reaction",
                                       "op": "add",
                                       "user_id": 10,
-                                      "user":
-                                        {
-                                          "user_id": 10,
-                                          "email": "user10@zulip.testserver",
-                                          "full_name": "King Hamlet",
-                                        },
                                       "message_id": 32,
                                       "emoji_name": "tada",
                                       "emoji_code": "1f389",
@@ -1610,18 +1603,11 @@ paths:
                                     emoji_name: {}
                                     reaction_type: {}
                                     user_id: {}
-                                    user: {}
                                   example:
                                     {
                                       "type": "reaction",
                                       "op": "remove",
                                       "user_id": 10,
-                                      "user":
-                                        {
-                                          "user_id": 10,
-                                          "email": "user10@zulip.testserver",
-                                          "full_name": "King Hamlet",
-                                        },
                                       "message_id": 52,
                                       "emoji_name": "tada",
                                       "emoji_code": "1f389",
@@ -2021,63 +2007,7 @@ paths:
                                         "name": "group1",
                                         "id": 2,
                                         "description": "New description",
-                                        "streams":
-                                          [
-                                            {
-                                              "name": "Scotland",
-                                              "stream_id": 3,
-                                              "is_archived": false,
-                                              "description": "Located in the United Kingdom",
-                                              "rendered_description": "<p>Located in the United Kingdom</p>",
-                                              "date_created": 1691057093,
-                                              "creator_id": 8,
-                                              "invite_only": false,
-                                              "is_web_public": false,
-                                              "stream_post_policy": 1,
-                                              "history_public_to_subscribers": true,
-                                              "first_message_id": 1,
-                                              "is_recently_active": true,
-                                              "message_retention_days": null,
-                                              "is_announcement_only": false,
-                                              "can_remove_subscribers_group": 2,
-                                            },
-                                            {
-                                              "name": "Denmark",
-                                              "stream_id": 1,
-                                              "is_archived": false,
-                                              "description": "A Scandinavian country",
-                                              "rendered_description": "<p>A Scandinavian country</p>",
-                                              "date_created": 1691057093,
-                                              "creator_id": null,
-                                              "invite_only": false,
-                                              "is_web_public": false,
-                                              "stream_post_policy": 1,
-                                              "is_recently_active": true,
-                                              "history_public_to_subscribers": true,
-                                              "first_message_id": 4,
-                                              "message_retention_days": null,
-                                              "is_announcement_only": false,
-                                              "can_remove_subscribers_group": 2,
-                                            },
-                                            {
-                                              "name": "Verona",
-                                              "stream_id": 5,
-                                              "is_archived": false,
-                                              "description": "A city in Italy",
-                                              "rendered_description": "<p>A city in Italy</p>",
-                                              "date_created": 1691057093,
-                                              "creator_id": 9,
-                                              "invite_only": false,
-                                              "is_web_public": false,
-                                              "stream_post_policy": 1,
-                                              "history_public_to_subscribers": true,
-                                              "first_message_id": 6,
-                                              "is_recently_active": true,
-                                              "message_retention_days": null,
-                                              "is_announcement_only": false,
-                                              "can_remove_subscribers_group": 2,
-                                            },
-                                          ],
+                                        "streams": [3, 1, 5],
                                       },
                                     ],
                                   "id": 0,
@@ -2099,34 +2029,19 @@ paths:
                                 default_streams:
                                   type: array
                                   description: |
-                                    An array of dictionaries where each dictionary
-                                    contains details about a single default channel.
+                                    An array of IDs of all the [default channels](/help/set-default-streams-for-new-users)
+                                    in the organization.
+
+                                    **Changes**: Before Zulip 10.0 (feature level 330),
+                                    we sent array of dictionaries where each dictionary
+                                    contained details about a single default stream for
+                                    the Zulip organization.
                                   items:
-                                    $ref: "#/components/schemas/DefaultChannel"
+                                    type: integer
                               example:
                                 {
                                   "type": "default_streams",
-                                  "default_streams":
-                                    [
-                                      {
-                                        "name": "Scotland",
-                                        "stream_id": 3,
-                                        "is_archived": false,
-                                        "description": "Located in the United Kingdom",
-                                        "rendered_description": "<p>Located in the United Kingdom</p>",
-                                        "date_created": 1691057093,
-                                        "creator_id": 8,
-                                        "invite_only": false,
-                                        "is_web_public": false,
-                                        "stream_post_policy": 1,
-                                        "history_public_to_subscribers": true,
-                                        "first_message_id": 1,
-                                        "is_recently_active": true,
-                                        "message_retention_days": null,
-                                        "is_announcement_only": false,
-                                        "can_remove_subscribers_group": 2,
-                                      },
-                                    ],
+                                  "default_streams": [2, 3],
                                   "id": 0,
                                 }
                             - type: object
@@ -4855,6 +4770,21 @@ paths:
 
                                         **Changes**: Before Zulip 6.0 (feature level 138), no limit was
                                         represented using the special value `0`.
+                                    moderation_request_channel_id:
+                                      type: integer
+                                      description: |
+                                        The ID of the private channel to which messages flagged by users for
+                                        moderation are sent. Moderators can use this channel to review and
+                                        act on reported content.
+
+                                        Will be `-1` if moderation requests are disabled.
+
+                                        Clients should check whether moderation requests are disabled to
+                                        determine whether to present a "report message" feature in their UI
+                                        within a given organization.
+
+                                        **Changes**: New in Zulip 10.0 (feature level 331). Previously,
+                                        no "report message" features existed in Zulip.
                                     move_messages_within_stream_limit_seconds:
                                       type: integer
                                       nullable: true
@@ -8722,7 +8652,7 @@ paths:
       summary: Upload a file
       tags: ["messages"]
       description: |
-        Upload a single file and get the corresponding URL.
+        [Upload](/help/share-and-upload-files) a single file and get the corresponding URL.
 
         Initially, only you will be able to access the link. To share the
         uploaded file, you'll need to [send a message][send-message]
@@ -8730,26 +8660,29 @@ paths:
         can reshare it with other users by sending additional Zulip messages
         containing the link.
 
-        For uploading larger files, `/api/v1/tus` is an endpoint
-        implementing the [`tus`
-        protocol](https://tus.io/protocols/resumable-upload) for
-        resumable uploads. Clients which send authenticated
-        credentials (either via browser-based cookies, or API key via
-        `Authorization` header) may use this endpoint to create
-        uploads.
+        The maximum allowed file size is available in the `max_file_upload_size_mib`
+        field in the [`POST /register`](/api/register-queue) response. Note that
+        large files (25MB+) may fail to upload using this API endpoint due to
+        network-layer timeouts, depending on the quality of your connection to the
+        Zulip server.
+
+        For uploading larger files, `/api/v1/tus` is an endpoint implementing the
+        [`tus` resumable upload protocol](https://tus.io/protocols/resumable-upload),
+        which supports uploading arbitrarily large files limited only by the server's
+        `max_file_upload_size_mib` (Configured via `MAX_FILE_UPLOAD_SIZE` in
+        `/etc/zulip/settings.py`). Clients which send authenticated credentials
+        (either via browser-based cookies, or API key via `Authorization` header) may
+        use this endpoint to upload files.
+
+        **Changes**: The `api/v1/tus` endpoint supporting resumable uploads was
+        introduced in Zulip 10.0 (feature level 296). Previously,
+        `max_file_upload_size_mib` was typically 25MB.
 
         [uploaded-files]: /help/manage-your-uploaded-files
         [send-message]: /api/send-message
       x-parameter-description: |
         As described above, the file to upload must be provided in the
         request's body.
-
-        ## Maximum file size
-
-        The maximum file size for uploads can be configured by the
-        administrator of the Zulip server by setting `MAX_FILE_UPLOAD_SIZE`
-        in the [server's settings][1]. `MAX_FILE_UPLOAD_SIZE` defaults
-        to 100MB.
 
         [1]: https://zulip.readthedocs.io/en/latest/subsystems/settings.html#server-settings
       requestBody:
@@ -11877,6 +11810,14 @@ paths:
                     only options to disable sending typing notifications.
                   type: boolean
                   example: true
+                web_suggest_update_timezone:
+                  description: |
+                    Whether the user should be shown an alert offering to update their profile time zone
+                    to the time zone of the browser in case they differ.
+
+                    **Changes**: New in Zulip 10.0 (feature level 329).
+                  type: boolean
+                  example: true
                 fluid_layout_width:
                   description: |
                     Whether to use the [maximum available screen width](/help/enable-full-width-display)
@@ -12367,6 +12308,8 @@ paths:
                 contentType: application/json
               receives_typing_notifications:
                 contentType: application/json
+              web_suggest_update_timezone:
+                contentType: application/json
               fluid_layout_width:
                 contentType: application/json
               high_contrast_mode:
@@ -12850,7 +12793,7 @@ paths:
 
         Supports everything an administrator can do to edit details of another
         user's account, including editing full name,
-        [role](/help/roles-and-permissions), and [custom profile
+        [role](/help/user-roles), and [custom profile
         fields](/help/custom-profile-fields).
       parameters:
         - $ref: "#/components/parameters/UserId"
@@ -15105,13 +15048,16 @@ paths:
                       realm_default_streams:
                         type: array
                         items:
-                          $ref: "#/components/schemas/DefaultChannel"
+                          type: integer
                         description: |
                           Present if `default_streams` is present in `fetch_event_types`.
 
-                          An array of dictionaries where each dictionary contains details
-                          about a single [default channel](/help/set-default-channels-for-new-users)
-                          for the Zulip organization.
+                          An array of IDs of all the [default channels](/help/set-default-streams-for-new-users)
+                          in the organization.
+
+                          **Changes**: Before Zulip 10.0 (feature level 330), we sent
+                          array of dictionaries where each dictionary contained details
+                          about a single default stream for the Zulip organization.
                       realm_default_stream_groups:
                         type: array
                         items:
@@ -15211,6 +15157,13 @@ paths:
 
                               **Changes**: New in Zulip 9.0 (feature level 253). Previously, there were
                               only options to disable sending typing notifications.
+                          web_suggest_update_timezone:
+                            type: boolean
+                            description: |
+                              Whether the user should be shown an alert offering to update their profile time zone
+                              to the time zone of the browser in case they differ.
+
+                              **Changes**: New in Zulip 10.0 (feature level 329).
                           fluid_layout_width:
                             type: boolean
                             description: |
@@ -16319,6 +16272,13 @@ paths:
 
                           **Changes**: New in Zulip 9.0 (feature level 253). Previously, there were
                           only options to disable sending typing notifications.
+                      web_suggest_update_timezone:
+                        type: boolean
+                        description: |
+                          Whether the user should be shown an alert offering to update their profile time zone
+                          to the time zone of the browser in case they differ.
+
+                          **Changes**: New in Zulip 10.0 (feature level 329).
                       enter_sends:
                         deprecated: true
                         type: boolean
@@ -17624,6 +17584,21 @@ paths:
                           **Changes**: New in Zulip 5.0 (feature level 74). Previously,
                           this was hardcoded to 90 seconds, and clients should use that as a fallback
                           value when interacting with servers where this field is not present.
+                      realm_moderation_request_channel_id:
+                        type: integer
+                        description: |
+                          The ID of the private channel to which messages flagged by users for
+                          moderation are sent. Moderators can use this channel to review and
+                          act on reported content.
+
+                          Will be `-1` if moderation requests are disabled.
+
+                          Clients should check whether moderation requests are disabled to
+                          determine whether to present a "report message" feature in their UI
+                          within a given organization.
+
+                          **Changes**: New in Zulip 10.0 (feature level 331). Previously,
+                          no "report message" feature existed in Zulip.
                       realm_new_stream_announcements_stream_id:
                         type: integer
                         description: |
@@ -17735,6 +17710,13 @@ paths:
 
                               **Changes**: New in Zulip 9.0 (feature level 253). Previously, there were
                               only options to disable sending typing notifications.
+                          web_suggest_update_timezone:
+                            type: boolean
+                            description: |
+                              Whether the user should be shown an alert offering to update their profile time zone
+                              to the time zone of the browser in case they differ.
+
+                              **Changes**: New in Zulip 10.0 (feature level 329).
                           fluid_layout_width:
                             type: boolean
                             description: |
@@ -18518,7 +18500,7 @@ paths:
                             type: boolean
                           azuread:
                             description: |
-                              Whether the user can authenticate using their Azure Active Directory account.
+                              Whether the user can authenticate using their Microsoft Entra ID account.
                             type: boolean
                           gitlab:
                             description: |
@@ -18889,6 +18871,14 @@ paths:
                     **Changes**: New in Zulip 9.0 (feature level 253). Previously, there were only
                     options to disable sending typing notifications.
                   type: boolean
+                  example: true
+                web_suggest_update_timezone:
+                  type: boolean
+                  description: |
+                    Whether the user should be shown an alert offering to update their profile time zone
+                    to the time zone of the browser in case they differ.
+
+                    **Changes**: New in Zulip 10.0 (feature level 329).
                   example: true
                 fluid_layout_width:
                   description: |
@@ -19480,6 +19470,8 @@ paths:
               starred_message_counts:
                 contentType: application/json
               receives_typing_notifications:
+                contentType: application/json
+              web_suggest_update_timezone:
                 contentType: application/json
               fluid_layout_width:
                 contentType: application/json
@@ -20174,6 +20166,17 @@ paths:
                         description: |
                           An example JSON response for when invalid combination of channel permission
                           parameters are passed:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "A moderation request channel cannot be public.",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON response for when trying to set moderation request channel to
+                          be public:
   /streams/{stream_id}/email_address:
     get:
       operationId: get-stream-email-address
@@ -21073,7 +21076,7 @@ paths:
         !!! warn ""
 
             **Note**: This endpoint is only available to [members and
-            administrators](/help/roles-and-permissions); bots and guests
+            administrators](/help/user-roles); bots and guests
             cannot use this endpoint.
       requestBody:
         required: false
@@ -21898,48 +21901,6 @@ components:
             - is_announcement_only
             - can_remove_subscribers_group
             - stream_weekly_traffic
-    DefaultChannel:
-      allOf:
-        - $ref: "#/components/schemas/BasicChannelBase"
-        - additionalProperties: false
-          properties:
-            stream_id: {}
-            name: {}
-            is_archived: {}
-            description: {}
-            date_created: {}
-            creator_id:
-              nullable: true
-            invite_only: {}
-            rendered_description: {}
-            is_web_public: {}
-            stream_post_policy: {}
-            message_retention_days:
-              nullable: true
-            history_public_to_subscribers: {}
-            first_message_id:
-              nullable: true
-            is_recently_active: {}
-            is_announcement_only: {}
-            can_remove_subscribers_group: {}
-            can_administer_channel_group: {}
-          required:
-            - stream_id
-            - name
-            - is_archived
-            - description
-            - date_created
-            - creator_id
-            - invite_only
-            - rendered_description
-            - is_web_public
-            - stream_post_policy
-            - message_retention_days
-            - history_public_to_subscribers
-            - first_message_id
-            - is_recently_active
-            - is_announcement_only
-            - can_remove_subscribers_group
     BasicChannelBase:
       type: object
       description: |
@@ -22269,7 +22230,7 @@ components:
             description: |
               The name of the validator function for the configuration
               option. Currently generated values are `check_bool` and
-              `check_str`.
+              `check_string`.
     CustomProfileField:
       type: object
       additionalProperties: false
@@ -23142,10 +23103,13 @@ components:
         streams:
           type: array
           description: |
-            Array containing details about the channels
-            in the default channel group.
+            An array of IDs of all the channels in the default stream group.
+
+            **Changes**: Before Zulip 10.0 (feature level 330), we sent array
+            of dictionaries where each dictionary contained details about a
+            single stream in the default stream group.
           items:
-            $ref: "#/components/schemas/DefaultChannel"
+            type: integer
     EmailAddressVisibility:
       type: integer
       description: |
@@ -23178,41 +23142,10 @@ components:
 
                 **Changes**: New in Zulip 3.0 (feature level 2). The `user`
                 object is deprecated and will be removed in the future.
-            user:
-              type: object
-              additionalProperties: false
-              deprecated: true
-              description: |
-                Dictionary with data on the user who added the
-                reaction, including the user ID as the `id`
-                field. Note that reactions data received from the
-                [events API](/api/get-events) has a slightly different
-                `user` dictionary format, with the user ID field
-                called `user_id` instead.
 
-                **Changes**: Deprecated and to be removed in a future release
-                once core clients have migrated to use the adjacent `user_id`
-                field, which was introduced in Zulip 3.0 (feature level 2).
-                Clients supporting older Zulip server versions should use
-                the user ID mentioned in the description above as they would
-                the `user_id` field.
-              properties:
-                id:
-                  type: integer
-                  description: |
-                    ID of the user.
-                email:
-                  type: string
-                  description: |
-                    Zulip API email of the user.
-                full_name:
-                  type: string
-                  description: |
-                    Full name of the user.
-                is_mirror_dummy:
-                  type: boolean
-                  description: |
-                    Whether the user is a mirror dummy.
+                In Zulip 10.0 (feature level 328), the deprecated `user` object
+                was removed which contained the following properties: `id`, `email`,
+                `full_name` and `is_mirror_dummy`.
     EmojiBase:
       type: object
       properties:
@@ -23258,38 +23191,10 @@ components:
 
                 **Changes**: New in Zulip 3.0 (feature level 2). The `user`
                 object is deprecated and will be removed in the future.
-            user:
-              type: object
-              additionalProperties: false
-              deprecated: true
-              description: |
-                Dictionary with data on the user who added the
-                reaction, including the user ID as the `user_id`
-                field.
 
-                **Changes**: Deprecated and to be removed in a future release
-                once core clients have migrated to use the adjacent `user_id`
-                field, which was introduced in Zulip 3.0 (feature level 2).
-                Clients supporting older Zulip server versions should use
-                the user ID mentioned in the description above as they would
-                the `user_id` field.
-              properties:
-                user_id:
-                  type: integer
-                  description: |
-                    ID of the user.
-                email:
-                  type: string
-                  description: |
-                    Zulip API email of the user.
-                full_name:
-                  type: string
-                  description: |
-                    Full name of the user.
-                is_mirror_dummy:
-                  type: boolean
-                  description: |
-                    Whether the user is a mirror dummy.
+                In Zulip 10.0 (feature level 328), the deprecated `user` object
+                was removed which contained the following properties: `user_id`,
+                `email`, `full_name` and `is_mirror_dummy`.
     MessagesEvent:
       allOf:
         - $ref: "#/components/schemas/MessagesBase"
@@ -23510,6 +23415,11 @@ components:
             A unique ID for the set of users receiving the
             message (either a channel or group of users). Useful primarily
             for hashing.
+
+            **Changes**: Before Zulip 10.0 (feature level 327), `recipient_id`
+            was the same across all incoming 1:1 direct messages. Now, each
+            incoming message uniquely shares a `recipient_id` with outgoing
+            messages in the same conversation.
         sender_email:
           type: string
           description: |

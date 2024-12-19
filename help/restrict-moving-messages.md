@@ -2,7 +2,7 @@
 
 {!admin-only.md!}
 
-Zulip lets you configure which [roles](/help/roles-and-permissions) can edit
+Zulip lets you configure which [roles](/help/user-roles) can edit
 message topics and move topics between channels. In general, allowing all
 organization members to edit message topics is highly recommended because:
 
@@ -85,4 +85,4 @@ Permissions for moving messages between channels can be configured separately.
 * [Move content to another channel](/help/move-content-to-another-channel)
 * [Restrict message editing and
   deletion](/help/restrict-message-editing-and-deletion)
-* [Roles and permissions](/help/roles-and-permissions)
+* [User roles](/help/user-roles)

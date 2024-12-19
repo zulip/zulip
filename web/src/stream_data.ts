@@ -600,7 +600,7 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
     );
 }
 
-export function can_post_messages_in_stream(stream: StreamSubscription): boolean {
+export let can_post_messages_in_stream = function (stream: StreamSubscription): boolean {
     if (stream.is_archived) {
         return false;
     }
@@ -644,6 +644,12 @@ export function can_post_messages_in_stream(stream: StreamSubscription): boolean
         return false;
     }
     return true;
+};
+
+export function rewire_can_post_messages_in_stream(
+    value: typeof can_post_messages_in_stream,
+): void {
+    can_post_messages_in_stream = value;
 }
 
 export function is_subscribed(stream_id: number): boolean {
@@ -692,11 +698,11 @@ export function is_web_public_by_stream_id(stream_id: number): boolean {
     return sub.is_web_public;
 }
 
-export function set_realm_default_streams(realm_default_streams: Stream[]): void {
+export function set_realm_default_streams(realm_default_streams: number[]): void {
     default_stream_ids.clear();
 
-    for (const stream of realm_default_streams) {
-        default_stream_ids.add(stream.stream_id);
+    for (const stream_id of realm_default_streams) {
+        default_stream_ids.add(stream_id);
     }
 }
 

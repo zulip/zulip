@@ -33,4 +33,4 @@ and many more.
 
 ## Related articles
 
-- [Roles and permissions](/help/roles-and-permissions)
+- [User roles](/help/user-roles)

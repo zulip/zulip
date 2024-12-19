@@ -559,7 +559,7 @@ export function initialize(): void {
             // A message edit box is open; drop there.
             const row_id = rows.get_message_id($last_drag_drop_edit_container[0]);
             const $drag_drop_container = edit_config(row_id).drag_drop_container();
-            if (!$drag_drop_container.closest("html").length) {
+            if ($drag_drop_container.closest("html").length === 0) {
                 return;
             }
             const edit_upload_object = upload_objects_by_message_edit_row.get(row_id);

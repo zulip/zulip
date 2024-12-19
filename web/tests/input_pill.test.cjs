@@ -60,6 +60,7 @@ run_test("basics", ({mock_template}) => {
     };
 
     widget.appendValidatedData(item);
+    assert.ok(!widget.is_pending());
     assert.ok(inserted_before);
 
     assert.deepEqual(widget.items(), [item]);

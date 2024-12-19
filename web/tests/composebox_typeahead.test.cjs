@@ -1190,7 +1190,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 ct.get_or_set_token_for_testing("othello");
                 actual_value = options.highlighter_html(othello_item);
                 expected_value =
-                    `    <span class="user_circle_empty user_circle"></span>\n` +
+                    `    <span class="zulip-icon zulip-icon-user-circle-offline user-circle-offline user-circle"></span>\n` +
                     `    <img class="typeahead-image" src="/avatar/${othello.user_id}" />\n` +
                     '<div class="typeahead-text-container">\n' +
                     '    <strong class="typeahead-strong-section">Othello, the Moor of Venice</strong>    <span class="autocomplete_secondary">othello@zulip.com</span>' +
@@ -1922,7 +1922,8 @@ test("tokenizing", () => {
     assert.equal(ct.tokenize_compose_str("foo ~~~why = why_not\n~~~"), "~~~");
 
     // The following cases are kinda judgment calls...
-    assert.equal(ct.tokenize_compose_str("foo @toomanycharactersisridiculoustocomplete"), "");
+    // max scanning limit is 40 characters until chars like @, # , / are found
+    assert.equal(ct.tokenize_compose_str("foo @toomanycharactersistooridiculoustocomplete"), "");
     assert.equal(ct.tokenize_compose_str("foo #bar@foo"), "#bar@foo");
 });
 

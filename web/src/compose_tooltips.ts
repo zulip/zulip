@@ -52,6 +52,14 @@ export function initialize(): void {
                     instance.setContent(pick_empty_narrow_banner().title);
                     return;
                 }
+                case "stream_disabled": {
+                    instance.setContent(
+                        parse_html(
+                            $("#compose_disable_stream_reply_button_tooltip_template").html(),
+                        ),
+                    );
+                    return;
+                }
                 case "selected_message": {
                     instance.setContent(
                         parse_html($("#compose_reply_message_button_tooltip_template").html()),
@@ -74,13 +82,19 @@ export function initialize(): void {
                 }
             }
         },
+        onTrigger(instance, event) {
+            assert(event.currentTarget instanceof HTMLElement);
+            if ($(event.currentTarget).attr("data-reply-button-type") === "stream_disabled") {
+                instance.setProps({delay: INSTANT_HOVER_DELAY});
+            }
+        },
         onHidden(instance) {
             instance.destroy();
         },
     });
 
     tippy.delegate("body", {
-        target: "#new_conversation_button",
+        target: "#compose_buttons .compose_new_conversation_button",
         delay: EXTRA_LONG_HOVER_DELAY,
         // Only show on mouseenter since for spectators, clicking on these
         // buttons opens login modal, and Micromodal returns focus to the
@@ -88,12 +102,20 @@ export function initialize(): void {
         trigger: "mouseenter",
         appendTo: () => document.body,
         onShow(instance) {
-            const $elem = $(instance.reference);
-            const conversation_type = $elem.attr("data-conversation-type");
+            const $new_conversation_button = $("#new_conversation_button");
+            const conversation_type = $new_conversation_button.attr("data-conversation-type");
             if (conversation_type === "stream") {
-                instance.setContent(
-                    parse_html($("#new_topic_message_button_tooltip_template").html()),
-                );
+                if ($new_conversation_button.prop("disabled")) {
+                    instance.setContent(
+                        parse_html(
+                            $("#compose_disable_stream_reply_button_tooltip_template").html(),
+                        ),
+                    );
+                } else {
+                    instance.setContent(
+                        parse_html($("#new_topic_message_button_tooltip_template").html()),
+                    );
+                }
                 return undefined;
             }
             // Use new_stream_message_button_tooltip_template when the

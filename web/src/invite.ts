@@ -294,7 +294,7 @@ function valid_to(): string {
 }
 
 function set_streams_to_join_list_visibility(): void {
-    const realm_has_default_streams = stream_data.get_default_stream_ids().length !== 0;
+    const realm_has_default_streams = stream_data.get_default_stream_ids().length > 0;
     const hide_streams_list =
         realm_has_default_streams &&
         util.the($<HTMLInputElement>("input#invite_select_default_streams")).checked;
@@ -387,7 +387,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         invite_as_options: settings_config.user_role_values,
         expires_in_options: settings_config.expires_in_values,
         time_choices: settings_config.custom_time_unit_values,
-        show_select_default_streams_option: stream_data.get_default_stream_ids().length !== 0,
+        show_select_default_streams_option: stream_data.get_default_stream_ids().length > 0,
         user_has_email_set: !settings_data.user_email_not_configured(),
         can_subscribe_other_users: settings_data.user_can_subscribe_other_users(),
     });

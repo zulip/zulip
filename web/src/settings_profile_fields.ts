@@ -94,7 +94,7 @@ function delete_profile_field(this: HTMLElement, e: JQuery.ClickEvent): void {
 
     for (const user_id of active_user_ids) {
         const user_profile_data = people.get_custom_profile_data(user_id, profile_field_id);
-        if (user_profile_data) {
+        if (user_profile_data !== undefined) {
             users_using_deleting_profile_field += 1;
         }
     }
@@ -327,7 +327,7 @@ function show_modal_for_deleting_options(
     let users_count_with_deleted_option_selected = 0;
     for (const user_id of active_user_ids) {
         const field_value = people.get_custom_profile_data(user_id, field.id);
-        if (field_value && deleted_values[field_value.value]) {
+        if (field_value !== undefined && deleted_values[field_value.value]) {
             users_count_with_deleted_option_selected += 1;
         }
     }
@@ -560,7 +560,7 @@ function open_edit_form_modal(this: HTMLElement): void {
                 }
             }
 
-            if (Object.keys(deleted_values).length !== 0) {
+            if (Object.keys(deleted_values).length > 0) {
                 const edit_select_field_modal_callback = (): void => {
                     show_modal_for_deleting_options(field, deleted_values, update_profile_field);
                 };

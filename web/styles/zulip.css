@@ -936,12 +936,6 @@ div.focused-message-list {
     outline: none;
 }
 
-#move_topic_modal select {
-    width: auto;
-    margin-bottom: 10px;
-    max-width: 100%;
-}
-
 .topic_move_breadcrumb_messages {
     margin: 0 5px 5px 0;
     align-self: center;
@@ -971,7 +965,7 @@ div.focused-message-list {
 .message_length_controller {
     .message_length_toggle {
         width: 100%;
-        height: 24px;
+        height: 1.714em; /* 24px / 14px em */
         margin-bottom: var(--message-box-markdown-aligned-vertical-space);
         color: var(--color-text-show-more-less-button);
         background-color: var(--color-show-more-less-button-background);

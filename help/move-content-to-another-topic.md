@@ -12,7 +12,7 @@ topics](/help/mute-a-topic) are automatically migrated when an entire
 topic is moved.
 
 Organizations can [configure](/help/restrict-moving-messages) which
-[roles](/help/roles-and-permissions) have permission to modify topics.
+[roles](/help/user-roles) have permission to modify topics.
 
 ## Move messages to another topic
 

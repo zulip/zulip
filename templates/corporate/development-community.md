@@ -85,7 +85,7 @@ This section describes popular public channels on chat.zulip.org. Kick
 off the discussion by starting a [new topic](/help/introduction-to-topics)
 in the appropriate channel! Don’t stress too much about picking the
 right place if you’re not sure; anyone in the community can edit a
-topic name, and [moderators](/help/roles-and-permissions) can [move a
+topic name, and [moderators](/help/user-roles) can [move a
 topic to a different channel](/help/move-content-to-another-channel).
 
 ## Channels for everyone

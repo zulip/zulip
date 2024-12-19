@@ -332,6 +332,12 @@ export function is_subgroup_of_target_group(target_group_id: number, subgroup_id
     return recursive_subgroup_ids.has(subgroup_id);
 }
 
+export function get_supergroups_of_user_group(group_id: number): UserGroup[] {
+    return get_realm_user_groups().filter((user_group) =>
+        is_subgroup_of_target_group(user_group.id, group_id),
+    );
+}
+
 export function get_recursive_group_members(target_user_group: UserGroup): Set<number> {
     const members = new Set(target_user_group.members);
     const subgroup_ids = get_recursive_subgroups(target_user_group);
@@ -520,7 +526,7 @@ export function check_system_user_group_allowed_for_setting(
         return false;
     }
 
-    if (allowed_system_groups.length && !allowed_system_groups.includes(group_name)) {
+    if (allowed_system_groups.length > 0 && !allowed_system_groups.includes(group_name)) {
         return false;
     }
 

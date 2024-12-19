@@ -3,7 +3,7 @@ import {z} from "zod";
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as compose_notifications from "./compose_notifications.ts";
-import type {MessageList, RenderInfo} from "./message_list.ts";
+import type {MessageList} from "./message_list.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
@@ -24,7 +24,6 @@ const msg_match_narrow_api_response_schema = z.object({
 export function maybe_add_narrowed_messages(
     messages: Message[],
     msg_list: MessageList,
-    callback: (messages: Message[], msg_list: MessageList) => RenderInfo | undefined,
     attempt = 1,
 ): void {
     const ids: number[] = [];
@@ -83,7 +82,7 @@ export function maybe_add_narrowed_messages(
             // Remove the elsewhere_messages from the message list since
             // they don't match the filter as per data from server.
             msg_list.remove_and_rerender(elsewhere_messages.map((msg) => msg.id));
-            callback(new_messages, msg_list);
+            msg_list.add_messages(new_messages);
             unread_ops.process_visible();
             compose_notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
@@ -112,7 +111,7 @@ export function maybe_add_narrowed_messages(
                 if (msg_list === message_lists.current) {
                     // Don't actually try again if we un-narrowed
                     // while waiting
-                    maybe_add_narrowed_messages(messages, msg_list, callback, attempt + 1);
+                    maybe_add_narrowed_messages(messages, msg_list, attempt + 1);
                 }
             }, delay);
         },

@@ -76,9 +76,6 @@ EXEMPT_OPENAPI_NAMES = [
     "realm_user_add_event",
     # OpenAPI is incomplete
     "realm_update_dict_event",
-    # is_mirror_dummy
-    "reaction_add_event",
-    "reaction_remove_event",
 ]
 
 # This is a list of events still documented in the OpenAPI that

@@ -12,7 +12,7 @@
         {% if is_sponsorship_pending %}
         <div class="alert alert-success billing-page-success" id="billing-sponsorship-pending-message-top">
             This organization has requested sponsorship for a
-            {% if sponsorship_plan_name == "Business" %}
+            {% if is_self_hosted_billing and sponsorship_plan_name != "Community" %}
             discounted
             {% endif %}
             <a href="{{ billing_base_url }}/plans/">{{ sponsorship_plan_name }}</a> plan.<br/><a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
@@ -20,8 +20,8 @@
         {% endif %}
         {% if success_message %}
         <div class="alert alert-success billing-page-success" id="billing-success-message-top">
-            {% if legacy_remote_server_next_plan_name and "PLAN_NAME" in success_message %}
-            Your organization will be upgraded to {{ legacy_remote_server_next_plan_name }} on {{ remote_server_legacy_plan_end_date }}.
+            {% if complimentary_access_next_plan_name and "PLAN_NAME" in success_message %}
+            Your organization will be upgraded to {{ complimentary_access_next_plan_name }} on {{ complimentary_access_plan_end_date }}.
             {% else %}
             {{ success_message.replace("PLAN_NAME", plan_name) }}
             {% endif %}
@@ -48,11 +48,11 @@
                         <a href="{{ billing_base_url }}/plans/">
                             {{ plan_name }} <i>(free trial)</i>
                         </a>
-                        {% elif is_server_on_legacy_plan %}
+                        {% elif complimentary_access_plan %}
                         <a href="{{ billing_base_url }}/plans/">
-                        {{ plan_name.replace(" (legacy plan)", "") -}}
+                        Zulip Basic
                         </a>
-                        <i>(legacy plan)</i>
+                        <i>(complimentary access)</i>
                         {% else %}
                         <a href="{{ billing_base_url }}/plans/">
                         {{ plan_name }}
@@ -60,10 +60,10 @@
                         {% endif %}
                     </div>
                 </div>
-                {% if is_server_on_legacy_plan %}
-                <div class="input-box billing-page-field" id="legacy-server-push-notification-notice-wrapper">
-                    <div id="legacy-server-push-notification-notice" class="not-editable-realm-field">
-                        <i>This is a legacy plan that ends on {{ remote_server_legacy_plan_end_date }}.</i>
+                {% if complimentary_access_plan %}
+                <div class="input-box billing-page-field" id="complimentary-access-end-notice-wrapper">
+                    <div id="complimentary-access-end-notice" class="not-editable-realm-field">
+                        <i>Your complimentary access to Zulip Basic ends on {{ complimentary_access_plan_end_date }}.</i>
                     </div>
                 </div>
                 {% endif %}
@@ -74,7 +74,7 @@
                   {%if switch_to_monthly_at_end_of_cycle %}data-switch-to-monthly-eoc="true"{% endif %}
                   {%if switch_to_annual_at_end_of_cycle %}data-switch-to-annual-eoc="true"{% endif %}>
                     <label for="org-billing-frequency">Billing frequency</label>
-                    {% if downgrade_at_end_of_free_trial or downgrade_at_end_of_cycle or is_server_on_legacy_plan or fixed_price_plan or (free_trial and not charge_automatically) %}
+                    {% if downgrade_at_end_of_free_trial or downgrade_at_end_of_cycle or complimentary_access_plan or fixed_price_plan or (free_trial and not charge_automatically) %}
                     <div class="not-editable-realm-field">
                         {{ billing_frequency }}
                     </div>
@@ -106,7 +106,7 @@
                     </button>
                     <div id="org-billing-frequency-change-error" class="alert alert-danger billing-page-error"></div>
                 </div>
-                {% if is_server_on_legacy_plan or fixed_price_plan %}
+                {% if complimentary_access_plan or fixed_price_plan %}
                 {% elif automanage_licenses %}
                 <div class="input-box billing-page-field">
                     <label for="automatic-license-count" class="inline-block label-title">
@@ -258,8 +258,8 @@
                             This is a fixed-price plan.
                             {% endif %}
                             {% if charge_automatically %}
-                            {% if is_server_on_legacy_plan %}
-                            Your plan will automatically upgrade to {{ legacy_remote_server_next_plan_name }} on {{ remote_server_legacy_plan_end_date }}.
+                            {% if complimentary_access_plan %}
+                            Your plan will automatically upgrade to {{ complimentary_access_next_plan_name }} on {{ complimentary_access_plan_end_date }}.
                             {% else %}
                             Your plan will automatically renew on <strong>{{ renewal_date }}</strong>.
                             {% endif %}
@@ -352,9 +352,9 @@
                                 <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
                         </div>
-                    {% elif is_server_on_legacy_plan %}
-                        <div class="plan-toggle-action input-box billing-page-field" id="cancel-legacy-server-upgrade">
-                            <button class="cancel-legacy-server-upgrade-button plan-toggle-action-button">
+                    {% elif complimentary_access_plan %}
+                        <div class="plan-toggle-action input-box billing-page-field" id="cancel-complimentary-access-upgrade">
+                            <button class="plan-toggle-action-button">
                                 <span class="billing-button-text">Cancel upgrade</span>
                                 <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
@@ -373,7 +373,7 @@
                     <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL }}" />
                     {% elif downgrade_at_end_of_free_trial %}
                     <input name="status" type="hidden" value="{{ CustomerPlan.FREE_TRIAL }}" />
-                    {% elif downgrade_at_end_of_cycle or is_server_on_legacy_plan %}
+                    {% elif downgrade_at_end_of_cycle or complimentary_access_plan %}
                     <input name="status" type="hidden" value="{{ CustomerPlan.ACTIVE }}" />
                     {% else %}
                     <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE }}" />
@@ -560,7 +560,7 @@
         </div>
     </div>
 </div>
-<div id="confirm-cancel-legacy-server-upgrade-modal" class="micromodal" aria-hidden="true">
+<div id="confirm-cancel-complimentary-access-upgrade-modal" class="micromodal" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
@@ -571,12 +571,12 @@
             </header>
             <main class="modal__content">
                 <p>
-                    Your organization will be not be upgraded to <strong>{{ legacy_remote_server_next_plan_name }}</strong>
-                    on {{ remote_server_legacy_plan_end_date }}. If your organization has more than
+                    Your organization will be not be upgraded to <strong>{{ complimentary_access_next_plan_name }}</strong>
+                    on {{ complimentary_access_plan_end_date }}. If your organization has more than
                     10 users at that time, you will lose access to the
                     <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">Mobile Push Notification Service</a>.
                     You will also not receive the <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">other benefits</a>
-                    of the {{ legacy_remote_server_next_plan_name }} plan. Are you sure you want to continue?
+                    of the {{ complimentary_access_next_plan_name }} plan. Are you sure you want to continue?
                 </p>
             </main>
             <footer class="modal__footer">

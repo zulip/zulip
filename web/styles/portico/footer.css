@@ -183,7 +183,7 @@
     }
 
     /* #footer responsivity and global fixes */
-    @media (width <= 940px) {
+    @media (width <= 1280px) {
         .footer__container {
             justify-content: flex-start;
             row-gap: 0;

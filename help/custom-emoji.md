@@ -66,7 +66,7 @@ administrators can deactivate anyone's custom emoji.
 
 By default, anyone other than guests can [add custom emoji](/help/custom-emoji)
 to the organization. However, you can restrict the ability to do so to specific
-[roles](/help/roles-and-permissions).
+[roles](/help/user-roles).
 
 {start_tabs}
 

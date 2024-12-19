@@ -135,7 +135,7 @@ async function update_grid_with_search_term(): Promise<void> {
     const $search_elem = $<HTMLInputElement>("input#giphy-search-query");
     // GIPHY popover may have been hidden by the
     // time this function is called.
-    if ($search_elem.length) {
+    if ($search_elem.length > 0) {
         search_term = the($search_elem).value;
         gifs_grid.remove();
         gifs_grid = await renderGIPHYGrid(the($("#giphy_grid_in_popover .giphy-content")));

@@ -184,4 +184,4 @@ group.
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [Create user groups](/help/create-user-groups)
 * [Moving to Zulip](/help/moving-to-zulip)
-* [Roles and permissions](/help/roles-and-permissions)
+* [User roles](/help/user-roles)

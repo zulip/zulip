@@ -1,7 +1,7 @@
 # Roles and permissions
 
 Zulip offers several levels of permissions based on a
-[user's role](/help/roles-and-permissions) in a Zulip organization.
+[user's role](/help/user-roles) in a Zulip organization.
 
 Here are some important details to note when working with these
 roles and permissions in Zulip's API:

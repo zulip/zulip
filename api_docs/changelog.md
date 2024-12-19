@@ -20,6 +20,42 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 331**
+
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),
+  `PATCH /realm`: Added `moderation_request_channel_id` realm setting, which is
+  the ID of the private channel to which moderation requests will be sent.
+
+**Feature level 330**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  Default channels data only includes channel IDs now instead of full
+  channel data.
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  Default channel groups data only includes channel IDs now instead of
+  full channel data.
+
+**Feature level 329**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added new `web_suggest_update_timezone` option to decide whether the user should be
+  shown an alert offering to update their profile time zone to the time zone of the
+  browser in case they differ.
+
+**Feature level 328**
+
+* [`GET /messages`](/api/get-messages), [`GET /events`](/api/get-events):
+  Removed deprecated `user` dictionary from the `reactions` objects returned
+  by the API, as the clients now use `user_id` field instead.
+
+**Feature level 327**
+
+* [`GET /messages`](/api/get-messages), [`GET
+  /messages/{message_id}`](/api/get-message), [`GET /events`](/api/get-events):
+  Adjusted the `recipient_id` field of an incoming 1:1 direct message to use the
+  same value that would be used for an outgoing message in that conversation.
+
 **Feature level 326**
 
 * [`POST /register`](/api/register-queue): Removed `allow_owners_group`
@@ -1227,7 +1263,7 @@ No changes; feature level used for Zulip 8.0 release.
   now includes [web-public streams](/help/public-access-option) as well.
 * [`GET /events`](/api/get-events): Events for stream creation and deletion
   are now sent to clients when a user gains or loses access to any streams
-  due to a change in their [role](/help/roles-and-permissions).
+  due to a change in their [role](/help/user-roles).
 * [`GET /events`](/api/get-events): The `subscription` events for `op:
   "peer_add"` are now sent to clients when a user gains access to a stream
   due to a change in their role.

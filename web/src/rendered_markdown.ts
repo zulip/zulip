@@ -70,7 +70,7 @@ function get_message_for_message_content($content: JQuery): Message | undefined 
     // those elements, and we should address that quirk for
     // mentions holistically.
     const $message_row = $content.closest(".message_row");
-    if (!$message_row.length || $message_row.closest(".overlay-message-row").length) {
+    if ($message_row.length === 0 || $message_row.closest(".overlay-message-row").length > 0) {
         // There's no containing message when rendering a preview.
         return undefined;
     }
@@ -152,7 +152,7 @@ export const update_elements = ($content: JQuery): void => {
             $(this).addClass("user-mention-me");
         }
 
-        if (user_id && user_id !== "*" && !$(this).find(".highlight").length) {
+        if (user_id && user_id !== "*" && $(this).find(".highlight").length === 0) {
             // If it's a mention of a specific user, edit the mention
             // text to show the user's current name, assuming that
             // you're not searching for text inside the highlight.
@@ -209,7 +209,7 @@ export const update_elements = ($content: JQuery): void => {
             $(this).addClass("user-mention-me");
         }
 
-        if (user_group_id && !$(this).find(".highlight").length) {
+        if (user_group_id && $(this).find(".highlight").length === 0) {
             // Edit the mention to show the current name for the
             // user group, if its not in search.
             set_name_in_mention_element(this, user_group.name);
@@ -220,7 +220,7 @@ export const update_elements = ($content: JQuery): void => {
         const stream_id_string = $(this).attr("data-stream-id");
         assert(stream_id_string !== undefined);
         const stream_id = Number.parseInt(stream_id_string, 10);
-        if (stream_id && !$(this).find(".highlight").length) {
+        if (stream_id && $(this).find(".highlight").length === 0) {
             // Display the current name for stream if it is not
             // being displayed in search highlight.
             const stream_name = sub_store.maybe_get_stream_name(stream_id);
@@ -237,7 +237,7 @@ export const update_elements = ($content: JQuery): void => {
         const stream_id_string = $(this).attr("data-stream-id");
         assert(stream_id_string !== undefined);
         const stream_id = Number.parseInt(stream_id_string, 10);
-        if (stream_id && !$(this).find(".highlight").length) {
+        if (stream_id && $(this).find(".highlight").length === 0) {
             // Display the current name for stream if it is not
             // being displayed in search highlight.
             const stream_name = sub_store.maybe_get_stream_name(stream_id);

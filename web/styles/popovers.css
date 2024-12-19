@@ -308,7 +308,7 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
-    padding: 3px 10px;
+    padding: 3px var(--user-group-popover-horizontal-padding);
 }
 
 .popover-group-menu-name-container {
@@ -337,23 +337,39 @@ ul.popover-group-menu-member-list {
     flex-direction: column;
 
     .simplebar-content {
+        display: grid;
+        grid-template-areas: "group-member-icon gap group-member-name";
+        grid-template-columns:
+            max-content var(--user-group-popover-icon-text-gap)
+            minmax(0, 1fr);
         width: unset;
+    }
+
+    .popover-group-menu-member {
+        display: grid;
+        grid-template-columns: subgrid;
+        grid-column: 1 / -1;
+        align-items: center;
+        padding: 0 var(--user-group-popover-horizontal-padding);
+    }
+
+    .popover-group-member-icon {
+        justify-self: center;
+        grid-area: group-member-icon;
+    }
+
+    .popover-group-menu-member-name {
+        grid-area: group-member-name;
     }
 }
 
-.popover-group-menu-member,
 .popover-group-menu-placeholder {
-    display: flex;
-    align-items: center;
-    padding: 0 10px;
+    padding: 0 var(--user-group-popover-horizontal-padding);
+}
 
+.popover-group-menu-member {
     .zulip-icon-triple-users {
         color: var(--color-icon-purple);
-    }
-
-    .zulip-icon {
-        padding-left: 3px;
-        padding-right: 3px;
     }
 }
 
@@ -369,16 +385,13 @@ ul.popover-group-menu-member-list {
     color: var(--color-text-popover-menu);
 }
 
-.user_profile_presence,
-.popover_user_presence {
-    width: var(--length-user-status-circle);
-    height: var(--length-user-status-circle);
-    margin: 0 5px;
-    display: inline-block;
-    float: initial;
-    position: relative;
-    top: 0;
-    flex-shrink: 0;
+.user-status-icon-wrapper {
+    display: flex;
+}
+
+.popover-group-menu-user-presence {
+    /* 11px at 16px/1em */
+    font-size: 0.6875em;
 }
 
 .user_profile_presence {
@@ -387,7 +400,8 @@ ul.popover-group-menu-member-list {
        here maintains the legacy design of keeping
        the user-circle smaller, despite the larger
        surrounding text and icons. */
-    font-size: var(--base-font-size-px);
+    font-size: calc(var(--base-font-size-px) * 0.6666);
+    line-height: 1;
 }
 
 .bot-owner-name {
@@ -436,11 +450,6 @@ ul.popover-group-menu-member-list {
 
     .modal__header {
         justify-content: center;
-    }
-
-    .user_profile_presence {
-        margin: 5px;
-        vertical-align: middle;
     }
 
     .modal__close {
@@ -506,12 +515,14 @@ ul.popover-group-menu-member-list {
 
     .user-profile-manage-own-edit-button,
     .user-profile-manage-others-edit-button {
+        display: flex;
         text-decoration: none;
         /* 15px at 22px/1em */
         font-size: 0.6818em;
     }
 
     .user-profile-manage-own-copy-link-button {
+        display: flex;
         /* 19px at 22px/1em */
         font-size: 0.8638em;
         text-decoration: none;
@@ -617,21 +628,30 @@ ul.popover-group-menu-member-list {
     .stream-list-top-section {
         display: flex;
         margin-top: 12px;
+        align-items: center;
+        margin-bottom: 5px;
+
+        .stream-search-container {
+            margin-left: auto;
+            display: grid;
+            grid-template:
+                "search-input clear-search" auto / minmax(0, 1fr)
+                30px;
+        }
 
         .stream-search {
-            margin-left: auto;
-            align-self: center;
+            grid-column: search-input-start / clear-search-end;
+            grid-row: search-input;
             padding-right: 20px;
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;
+            margin-bottom: 0;
         }
 
         #clear_stream_search {
             display: none;
-            padding: 5px 8px 5px 4px;
-            position: relative;
-            right: 0;
+            grid-area: clear-search;
         }
     }
 
@@ -892,16 +912,29 @@ ul.popover-group-menu-member-list {
         margin: 0;
     }
 
+    .modal_select {
+        width: auto;
+        max-width: 100%;
+    }
+
+    .modal__title {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+
+        .stream-privacy-type-icon {
+            padding-left: 3px;
+            padding-right: 5px;
+        }
+    }
+
     #move_topic_to_stream_widget_wrapper {
         display: flex;
-        margin-bottom: 10px;
 
         .dropdown-widget-button {
             outline: none;
             /* 24px at 16px/1em */
             line-height: 1.5em;
-            width: auto;
-            max-width: 206px;
+            width: 50%;
         }
 
         .dropdown_widget_value {
@@ -929,12 +962,23 @@ ul.popover-group-menu-member-list {
     }
 
     .move_messages_edit_topic {
-        margin-bottom: 10px;
+        margin-bottom: unset;
+        box-sizing: border-box;
+        width: 100%;
+        height: auto;
+    }
+
+    #message_move_select_options {
+        width: 100%;
+    }
+
+    #move_messages_count {
+        margin-top: -20px;
     }
 
     .topic_stream_edit_header {
         display: flex;
-        flex-wrap: wrap;
+        flex-flow: column wrap;
         justify-content: flex-start;
 
         #select_stream_id {
@@ -1022,11 +1066,14 @@ ul.popover-group-menu-member-list {
 
     .popover-menu-user-presence {
         position: absolute;
-        width: 8px;
-        height: 8px;
+        /* Presence dot does not scale, because
+           the avatar itself does not scale. */
+        font-size: 8px;
+        line-height: 1;
         right: -1px;
         bottom: -1px;
-        border: solid 1px var(--color-background);
+        background-color: var(--color-background-popover-menu);
+        border: solid 1px var(--color-background-popover-menu);
         border-radius: 50%;
     }
 
@@ -1059,11 +1106,6 @@ ul.popover-group-menu-member-list {
         color: var(--color-text-item);
         text-overflow: ellipsis;
         white-space: nowrap;
-    }
-
-    .user_circle_empty {
-        background-color: var(--color-background-popover-menu);
-        border-color: hsl(0deg 0% 50%);
     }
 }
 
@@ -1112,19 +1154,17 @@ ul.popover-group-menu-member-list {
 
     .status-circle {
         position: absolute;
-        width: var(--length-user-status-circle);
-        height: var(--length-user-status-circle);
         top: unset;
         left: unset;
+        /* Presence dot does not scale, because
+           the avatar itself does not scale. */
+        font-size: var(--length-user-status-circle);
+        line-height: 1;
         right: -1px;
         bottom: -1px;
-        border: solid 1px var(--color-background);
-        border-radius: 50%;
-    }
-
-    .user_circle_empty {
         background-color: var(--color-background-popover-menu);
-        border-color: hsl(0deg 0% 50%);
+        border: solid 1px var(--color-background-popover-menu);
+        border-radius: 50%;
     }
 
     .text-area {

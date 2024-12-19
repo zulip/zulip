@@ -121,7 +121,7 @@ SORTED_CATEGORIES = [
     "Objects",
     "Symbols",
     "Flags",
-    "Skin Tones",
+    "Component",
 ]
 
 emoji_code_to_zulip_names: dict[str, str] = {}

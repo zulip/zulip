@@ -10,6 +10,9 @@
     {{t 'Scroll to bottom' }}
     {{tooltip_hotkey_hints "End"}}
 </template>
+<template id="compose_disable_stream_reply_button_tooltip_template">
+    {{t 'You do not have permission to post in this channel.' }}
+</template>
 <template id="compose_reply_message_button_tooltip_template">
     {{t 'Reply to selected message' }}
     {{tooltip_hotkey_hints "R"}}
@@ -107,14 +110,14 @@
     </div>
 </template>
 <template id="all-message-tooltip-template">
-    <div class="views-tooltip-container" data-view-code="all_messages">
+    <div class="views-tooltip-container">
         <div>{{t 'Combined feed' }}</div>
         <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
     </div>
     {{tooltip_hotkey_hints "A"}}
 </template>
 <template id="recent-conversations-tooltip-template">
-    <div class="views-tooltip-container" data-view-code="recent_topics">
+    <div class="views-tooltip-container">
         <div>{{t 'Recent conversations' }}</div>
         <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
     </div>
@@ -127,12 +130,12 @@
     {{tooltip_hotkey_hints "*"}}
 </template>
 <template id="my-reactions-tooltip-template">
-    <div class="views-tooltip-container" data-view-code="recent_topics">
+    <div class="views-tooltip-container">
         <div>{{t 'Reactions to your messages' }}</div>
     </div>
 </template>
 <template id="inbox-tooltip-template">
-    <div class="views-tooltip-container" data-view-code="inbox">
+    <div class="views-tooltip-container">
         <div>{{t 'Inbox' }}</div>
         <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
     </div>

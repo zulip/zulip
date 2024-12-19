@@ -398,9 +398,7 @@ class Reaction(AbstractReaction):
             "emoji_name",
             "emoji_code",
             "reaction_type",
-            "user_profile__email",
             "user_profile_id",
-            "user_profile__full_name",
         ]
         # The ordering is important here, as it makes it convenient
         # for clients to display reactions in order without

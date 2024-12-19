@@ -1,6 +1,7 @@
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
+import {ConversationParticipants} from "./conversation_participants.ts";
 import {FetchStatus} from "./fetch_status.ts";
 import type {Filter} from "./filter.ts";
 import type {Message} from "./message_store.ts";
@@ -50,6 +51,8 @@ export class MessageListData {
     // and to allow MessageList objects to be easily garbage collected.
     rendered_message_list_id: number | undefined;
 
+    // TODO: Use it as source of participants data in buddy list.
+    participants: ConversationParticipants;
     // MessageListData is a core data structure for keeping track of a
     // contiguous block of messages matching a given narrow that can
     // be displayed in a Zulip message feed.
@@ -60,6 +63,7 @@ export class MessageListData {
     constructor({excludes_muted_topics, filter}: {excludes_muted_topics: boolean; filter: Filter}) {
         this.filter = filter;
         this.fetch_status = new FetchStatus();
+        this.participants = new ConversationParticipants([]);
         this._all_items = [];
         this._items = [];
         this._hash = new Map();
@@ -162,6 +166,7 @@ export class MessageListData {
         this._all_items = [];
         this._items = [];
         this._hash.clear();
+        this.participants = new ConversationParticipants([]);
     }
 
     // TODO(typescript): Ideally this should only take a number.
@@ -265,6 +270,7 @@ export class MessageListData {
 
     update_items_for_muting(): void {
         this._items = this.unmuted_messages(this._all_items);
+        this.participants = new ConversationParticipants(this._items);
     }
 
     first_unread_message_id(): number | undefined {
@@ -289,7 +295,10 @@ export class MessageListData {
         return this._items.some((message) => message.unread);
     }
 
-    add_messages(messages: Message[]): {
+    add_messages(
+        messages: Message[],
+        ignore_found_newest = false,
+    ): {
         top_messages: Message[];
         bottom_messages: Message[];
         interior_messages: Message[];
@@ -324,6 +333,13 @@ export class MessageListData {
 
         if (top_messages.length > 0) {
             top_messages = this.prepend(top_messages);
+        }
+
+        if (!ignore_found_newest && !this.fetch_status.has_found_newest()) {
+            // Don't add messages at the bottom if we haven't found
+            // the latest message to avoid non-contiguous message history.
+            this.fetch_status.update_expected_max_message_id(bottom_messages);
+            bottom_messages = [];
         }
 
         if (bottom_messages.length > 0) {
@@ -364,6 +380,8 @@ export class MessageListData {
         this._items = [...viewable_messages, ...this._items];
         this._items.sort((a, b) => a.id - b.id);
 
+        this.participants.add_from_messages(viewable_messages);
+
         this._add_to_hash(messages);
         return viewable_messages;
     }
@@ -375,6 +393,8 @@ export class MessageListData {
         this._all_items = [...this._all_items, ...messages];
         this._items = [...this._items, ...viewable_messages];
 
+        this.participants.add_from_messages(viewable_messages);
+
         this._add_to_hash(messages);
         return viewable_messages;
     }
@@ -385,6 +405,8 @@ export class MessageListData {
 
         this._all_items = [...messages, ...this._all_items];
         this._items = [...viewable_messages, ...this._items];
+
+        this.participants.add_from_messages(viewable_messages);
 
         this._add_to_hash(messages);
         return viewable_messages;
@@ -404,7 +426,7 @@ export class MessageListData {
 
         this._items = this._items.filter((msg) => !msg_ids_to_remove.has(msg.id));
         this._all_items = this._all_items.filter((msg) => !msg_ids_to_remove.has(msg.id));
-
+        this.participants = new ConversationParticipants(this._items);
         return found_any_msgs_to_remove;
     }
 

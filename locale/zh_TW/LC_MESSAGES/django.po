@@ -3,6 +3,9 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
+# Ivan Lau <ivan.lau@ahsay.com>, 2020
+# Ken Li Hsieh <ozakiyuyu@gmail.com>, 2017
+# Kir <note351@hotmail.com>, 2017
 # Brian Chang <exee25@gmail.com>, 2024
 # Charle Chang <epson12332@gmail.com>, 2019
 # jeff lin <jefflin0902@gmail.com>, 2020
@@ -17,7 +20,7 @@ msgstr ""
 "POT-Creation-Date: 2024-11-06 19:37+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Brian Chang <exee25@gmail.com>, 2024\n"
-"Language-Team: Chinese (Taiwan) (http://app.transifex.com/zulip/zulip/language/zh_TW/)\n"
+"Language-Team: 繁體中文 (台灣) (http://app.transifex.com/zulip/zulip/language/zh_TW/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -422,7 +425,7 @@ msgstr "分析會在組織建立後的 24 小時才可完整取用。"
 #: templates/analytics/stats.html:23
 #, python-format
 msgid "Zulip analytics for %(target_name)s"
-msgstr ""
+msgstr "%(target_name)s的Zulip分析數據"
 
 #: templates/analytics/stats.html:25
 msgid "Organization summary"
@@ -1350,7 +1353,7 @@ msgstr ""
 
 #: templates/corporate/team.html:139
 msgid "Avatar"
-msgstr ""
+msgstr "頭像"
 
 #: templates/corporate/try-zulip.html:36
 msgid "Try Zulip now"
@@ -1578,6 +1581,8 @@ msgid ""
 "                            No account found for %(email)s.\n"
 "                            "
 msgstr ""
+"\n"
+" 沒有找到帳戶%(email)s"
 
 #: templates/zerver/confirm_continue_registration.html:30
 msgid "Log in with another account"
@@ -1696,11 +1701,11 @@ msgstr "複製"
 
 #: templates/zerver/desktop_redirect.html:19
 msgid "You may then close this window."
-msgstr ""
+msgstr "然後你可以關閉此視窗"
 
 #: templates/zerver/desktop_redirect.html:20
 msgid "Or, continue in your browser."
-msgstr ""
+msgstr "或者於瀏覽器繼續"
 
 #: templates/zerver/development/dev_login.html:26
 msgid "Anonymous user"
@@ -2064,7 +2069,7 @@ msgstr "點擊此處登入 Zulip 並 catch up."
 
 #: templates/zerver/emails/digest.html:40
 msgid "Unsubscribe from digest emails"
-msgstr ""
+msgstr "取消訂閱摘要電郵"
 
 #: templates/zerver/emails/digest.subject.txt:1
 #, python-format
@@ -2082,7 +2087,7 @@ msgstr "管理 email 偏好："
 
 #: templates/zerver/emails/digest.txt:19
 msgid "Unsubscribe from digest emails:"
-msgstr ""
+msgstr "取消訂閱摘要電郵:"
 
 #: templates/zerver/emails/email_base_default.html:33
 #: templates/zerver/emails/email_base_marketing.html:33

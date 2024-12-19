@@ -70,7 +70,7 @@ function on_pill_exit(
     remove_pill: (pill: HTMLElement) => void,
 ): void {
     const $user_pill_container = $(clicked_element).parents(".user-pill-container");
-    if (!$user_pill_container.length) {
+    if ($user_pill_container.length === 0) {
         // This is just a regular search pill, so we don't need to do fancy logic.
         const $clicked_pill = $(clicked_element).closest(".pill");
         remove_pill(util.the($clicked_pill));
@@ -211,7 +211,7 @@ export function set_search_bar_contents(
         search_bar_text_strings.push(partial_pill);
     }
     set_search_bar_text(search_bar_text_strings.join(" "));
-    if (invalid_inputs.length) {
+    if (invalid_inputs.length > 0) {
         $("#search_query").addClass("shake");
     }
 }

@@ -5,7 +5,7 @@
                 <img class="avatar-image{{#if user_is_guest}} guest-avatar{{/if}}" src="{{user_avatar}}"/>
 
                 {{#if is_active }}
-                <span class="status-circle {{user_circle_class}} user_circle hidden-for-spectators" data-tippy-placement="bottom" data-tippy-content="{{user_last_seen_time_status}}"></span>
+                <span class="status-circle zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle hidden-for-spectators" data-tippy-placement="bottom" data-tippy-content="{{user_last_seen_time_status}}"></span>
                 {{/if}}
 
             </div>

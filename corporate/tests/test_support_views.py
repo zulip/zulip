@@ -103,11 +103,11 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             billing_session.migrate_customer_to_legacy_plan(legacy_anchor, next_plan_anchor)
             customer = billing_session.get_customer()
             assert customer is not None
-            legacy_plan = billing_session.get_remote_server_legacy_plan(customer)
-            assert legacy_plan is not None
-            assert legacy_plan.end_date is not None
+            complimentary_access_plan = billing_session.get_complimentary_access_plan(customer)
+            assert complimentary_access_plan is not None
+            assert complimentary_access_plan.end_date is not None
             if upgrade:
-                upgrade_legacy_plan(legacy_plan)
+                upgrade_legacy_plan(complimentary_access_plan)
 
         super().setUp()
 

@@ -139,6 +139,7 @@ export function create_pills(
             setting_name,
             setting_type,
         },
+        show_outline_on_invalid_input: true,
     });
     return pill_widget;
 }

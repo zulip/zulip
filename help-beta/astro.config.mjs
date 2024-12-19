@@ -305,7 +305,7 @@ export default defineConfig({
                         "restrict-moving-messages",
                         "restrict-message-editing-and-deletion",
                         "disable-message-edit-history",
-                        "allow-image-link-previews",
+                        "image-video-and-website-previews",
                         "hide-message-content-in-emails",
                         "message-retention-policy",
                         "digest-emails",

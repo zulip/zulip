@@ -31,7 +31,7 @@
             Zulip is sponsoring a free <a href="{{ billing_base_url }}/plans/">{{ sponsorship_plan_name }}</a> plan for this organization. 🎉
             {% else %}
             This organization has requested sponsorship for a
-            {% if sponsorship_plan_name == "Business" %}
+            {% if is_remotely_hosted and sponsorship_plan_name != "Community" %}
             discounted
             {% endif %}
             <a href="{{ billing_base_url }}/plans/">{{ sponsorship_plan_name }}</a> plan.<br/><a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
@@ -53,21 +53,11 @@
                     <label for="sponsored-org-current-plan" class="inline-block label-title">Your plan</label>
                     <div id="sponsored-org-current-plan" class="not-editable-realm-field">
                         {% if is_sponsored %}
-                        <a href="{{ billing_base_url }}/plans/">
-                        {{ sponsorship_plan_name }}
-                        </a>
-                        {% elif free_trial %}
-                        <a href="{{ billing_base_url }}/plans/">
-                        {{ plan_name -}}
-                        </a> <i>(free trial)</i>
-                        {% elif is_server_on_legacy_plan %}
-                        <a href="{{ billing_base_url }}/plans/">
-                        {{ plan_name.replace(" (legacy plan)", "") -}}
-                        </a> <i>(legacy plan)</i>
+                        <a href="{{ billing_base_url }}/plans/">{{ sponsorship_plan_name }}</a>
+                        {% elif complimentary_access %}
+                        <a href="{{ billing_base_url }}/plans/">Zulip Basic</a> <i>(complimentary access)</i>
                         {% else %}
-                        <a href="{{ billing_base_url }}/plans/">
-                        {{ plan_name }}
-                        </a>
+                        <a href="{{ billing_base_url }}/plans/">{{ plan_name }}</a>
                         {% endif %}
                     </div>
                 </div>

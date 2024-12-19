@@ -1,16 +1,10 @@
-# Roles and permissions
+# User roles
 
-User roles make it convenient to configure different permissions for different
-users in your organization. You can decide what role a user will have when you
-[send them an invitation](/help/invite-new-users), and later [change a user's
-role](/help/roles-and-permissions#change-a-users-role) if needed.
+{!user-roles-intro.md!}
 
-{!user-groups-intro.md!}
+You can also manage permissions with [custom user groups](/help/user-groups).
 
-!!! tip ""
-
-    Learn about [channel permissions](/help/channel-permissions), including
-    **public** and **private** channels.
+## Roles
 
 * **Organization owner**: Can manage users, public channels, organization
   settings, and billing. Organization owners can do anything that an
@@ -21,7 +15,7 @@ role](/help/roles-and-permissions#change-a-users-role) if needed.
   owner's role.
 
 * **Moderator**: Can do anything that members can do, plus additional
-  permissions [configured](/help/roles-and-permissions#manage-permissions) by
+  permissions [configured](/help/manage-permissions) by
   your organization.
 
 * **Member**: This is the default role for most users. Members have access to
@@ -48,25 +42,42 @@ role](/help/roles-and-permissions#change-a-users-role) if needed.
 
 ## Change a user's role
 
-{!change-a-users-role.md!}
+{!admin-only.md!}
 
-## Manage permissions
+An organization owner can change the role of any user. You can make yourself no
+longer an owner only if there is at least one other owner for your organization.
+An organization administrator cannot make someone an owner, or change an
+existing owner's role.
 
 {start_tabs}
 
-{settings_tab|organization-permissions}
+{tab|via-user-profile}
 
-1. Review organization permissions, and modify as needed.
+{!manage-this-user.md!}
 
-{!save-changes.md!}
+1. Under **User role**, select a [role](#roles).
+
+1. Click **Save changes**. The new permissions will take effect immediately.
+
+{!manage-user-tab-tip.md!}
+
+{tab|via-organization-settings}
+
+{settings_tab|users}
+
+1. Find the user you would like to manage. Click the **pencil**
+   (<i class="fa fa-pencil"></i>) to the right of their name.
+
+1. Under **User role**, select a [role](#roles).
+
+1. Click **Save changes**. The new permissions will take effect immediately.
 
 {end_tabs}
 
 ## Related articles
 
-* [Change a user's role](/help/change-a-users-role)
-* [User groups](/help/user-groups)
-* [Channel permissions](/help/channel-permissions)
-* [Inviting new users](/help/invite-new-users)
-* [Zulip Cloud billing](/help/zulip-cloud-billing)
 * [Guest users](/help/guest-users)
+* [User groups](/help/user-groups)
+* [Manage permissions](/help/manage-permissions)
+* [Manage a user](/help/manage-a-user)
+* [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)

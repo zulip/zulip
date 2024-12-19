@@ -165,7 +165,7 @@ exports.fixtures = {
 
     default_streams: {
         type: "default_streams",
-        default_streams: [streams.devel, streams.test],
+        default_streams: [streams.devel.stream_id, streams.test.stream_id],
     },
 
     delete_message: {
@@ -236,11 +236,6 @@ exports.fixtures = {
         emoji_name: "airplane",
         emoji_code: "2708",
         user_id: test_user.user_id,
-        user: {
-            email: test_user.email,
-            full_name: test_user.full_name,
-            user_id: test_user.user_id,
-        },
     },
 
     reaction__remove: {
@@ -251,11 +246,6 @@ exports.fixtures = {
         emoji_name: "8ball",
         emoji_code: "1f3b1",
         user_id: test_user.user_id,
-        user: {
-            email: test_user.email,
-            full_name: test_user.full_name,
-            user_id: test_user.user_id,
-        },
     },
 
     realm__deactivated: {
@@ -1137,6 +1127,14 @@ exports.fixtures = {
         op: "update",
         property: "web_stream_unreads_count_display_policy",
         value: 2,
+    },
+
+    user_settings_web_suggest_update_timezone: {
+        type: "user_settings",
+        op: "update",
+        property: "web_suggest_update_timezone",
+        value: true,
+        id: 1,
     },
 
     user_status__set_status_emoji: {

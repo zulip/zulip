@@ -1,0 +1,50 @@
+{
+  "token": "CqCsBJmXoNSHaNCt3wGWYSEe",
+  "team_id": "T06NRA6HM3P",
+  "context_team_id": "T06NRA6HM3P",
+  "context_enterprise_id": null,
+  "api_app_id": "A0757RM31HN",
+  "event": {
+    "user": "U06NU4E26M9",
+    "type": "message",
+    "ts": "1719211888.680799",
+    "client_msg_id": "452a95ae-9e35-4d84-a4c3-7012c6908f09",
+    "text": "```def is_bot_message(payload: WildValue) -&gt; bool:\n    app_api_id = payload.get(\"api_app_id\").tame(check_none_or(check_string))\n    bot_app_id = (\n        payload.get(\"event\", {})\n        .get(\"bot_profile\", {})\n        .get(\"app_id\")\n        .tame(check_none_or(check_string))\n    )\n    return bot_app_id is not None and app_api_id == bot_app_id```",
+    "team": "T06NRA6HM3P",
+    "blocks": [
+      {
+        "type": "rich_text",
+        "block_id": "293Eu",
+        "elements": [
+          {
+            "type": "rich_text_preformatted",
+            "elements": [
+              {
+                "type": "text",
+                "text": "def is_bot_message(payload: WildValue) -> bool:\n    app_api_id = payload.get(\"api_app_id\").tame(check_none_or(check_string))\n    bot_app_id = (\n        payload.get(\"event\", {})\n        .get(\"bot_profile\", {})\n        .get(\"app_id\")\n        .tame(check_none_or(check_string))\n    )\n    return bot_app_id is not None and app_api_id == bot_app_id"
+              }
+            ],
+            "border": 0
+          }
+        ]
+      }
+    ],
+    "channel": "C06NRA6JLER",
+    "event_ts": "1719211888.680799",
+    "channel_type": "channel"
+  },
+  "type": "event_callback",
+  "event_id": "Ev07A31RB0EL",
+  "event_time": 1719211888,
+  "authorizations": [
+    {
+      "enterprise_id": null,
+      "team_id": "T06NRA6HM3P",
+      "user_id": "U074G5E1ANR",
+      "is_bot": true,
+      "is_enterprise_install": false
+    }
+  ],
+  "is_ext_shared_channel": false,
+  "event_context": "4-eyJldCI6Im1lc3NhZ2UiLCJ0aWQiOiJUMDZOUkE2SE0zUCIsImFpZCI6IkEwNzU3Uk0zMUhOIiwiY2lkIjoiQzA2TlJBNkpMRVIifQ"
+}

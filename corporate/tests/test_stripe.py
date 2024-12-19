@@ -9057,8 +9057,8 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         with time_machine.travel(self.now, tick=False):
             response = self.client_get(f"{billing_base_url}/billing/", subdomain="selfhosting")
         for substring in [
-            "(legacy plan)",
-            f"This is a legacy plan that ends on {end_date.strftime('%B %d, %Y')}",
+            "(complimentary access)",
+            f"Your complimentary access to Zulip Basic ends on {end_date.strftime('%B %d, %Y')}",
             f"Your plan will automatically upgrade to Zulip Business on {end_date.strftime('%B %d, %Y')}",
             "Expected next charge",
             f"${80 * 25 - 20 * 12:,.2f}",

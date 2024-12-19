@@ -7,11 +7,11 @@ channel. Anyone can always [unsubscribe themselves from a channel][unsubscribe].
 
 Organization administrators can also unsubscribe *other* users from any channel,
 including channels the admin is not subscribed to. They can also configure which
-[roles](/help/roles-and-permissions) have access to [add other users to a
+[roles](/help/user-roles) have access to [add other users to a
 channel][add-users] or [remove other users from a channel][remove-users].
 
-[add-users]: /help/configure-who-can-invite-to-channels#configure-who-can-add-users
-[remove-users]: /help/configure-who-can-invite-to-channels#configure-who-can-remove-users
+[add-users]: /help/configure-who-can-invite-to-channels
+[remove-users]: /help/configure-who-can-unsubscribe-others
 
 ## Add users to a channel
 
@@ -153,7 +153,7 @@ subscribe the user.
 * [Manage a user's channel subscriptions](/help/manage-user-channel-subscriptions)
 * [Restrict channel invitations](/help/configure-who-can-invite-to-channels)
 * [Set default channels for new users](/help/set-default-channels-for-new-users)
-* [Roles and permissions](/help/roles-and-permissions)
+* [User roles](/help/user-roles)
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [View channel subscribers](/help/view-channel-subscribers)
 

@@ -50,7 +50,7 @@ from zerver.lib.emoji import codepoint_to_name, get_emoji_file_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
 from zerver.lib.mime_types import guess_type
 from zerver.lib.storage import static_path
-from zerver.lib.thumbnail import resize_realm_icon
+from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, resize_realm_icon
 from zerver.lib.upload import sanitize_name
 from zerver.models import (
     CustomProfileField,
@@ -301,10 +301,9 @@ def users_to_zerver_userprofile(
         found_emails[email.lower()] = user_id
 
         # ref: https://zulip.com/help/change-your-profile-picture
-        avatar_url = build_avatar_url(
-            slack_user_id, user["team_id"], user["profile"]["avatar_hash"]
-        )
-        build_avatar(user_id, realm_id, email, avatar_url, timestamp, avatar_list)
+        avatar_source, avatar_url = build_avatar_url(slack_user_id, user)
+        if avatar_source == UserProfile.AVATAR_FROM_USER:
+            build_avatar(user_id, realm_id, email, avatar_url, timestamp, avatar_list)
         role = UserProfile.ROLE_MEMBER
         if get_owner(user):
             role = UserProfile.ROLE_REALM_OWNER
@@ -340,7 +339,7 @@ def users_to_zerver_userprofile(
             id=user_id,
             email=email,
             delivery_email=email,
-            avatar_source="U",
+            avatar_source=avatar_source,
             is_bot=user.get("is_bot", False),
             role=role,
             bot_type=1 if user.get("is_bot", False) else None,
@@ -464,9 +463,31 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
     raise AssertionError(f"Could not find email address for Slack user {user}")
 
 
-def build_avatar_url(slack_user_id: str, team_id: str, avatar_hash: str) -> str:
-    avatar_url = f"https://ca.slack-edge.com/{team_id}-{slack_user_id}-{avatar_hash}"
-    return avatar_url
+def build_avatar_url(slack_user_id: str, user: ZerverFieldsT) -> tuple[str, str]:
+    avatar_url: str = ""
+    avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+    if user["profile"].get("avatar_hash"):
+        # Process avatar image for a typical Slack user.
+        team_id = user["team_id"]
+        avatar_hash = user["profile"]["avatar_hash"]
+        avatar_url = f"https://ca.slack-edge.com/{team_id}-{slack_user_id}-{avatar_hash}"
+        avatar_source = UserProfile.AVATAR_FROM_USER
+    elif user.get("is_integration_bot"):
+        # Unlike other Slack user types, Slacks integration bot avatar URL ends with
+        # a file type extension (.png, in this case).
+        # e.g https://avatars.slack-edge.com/2024-05-01/7218497908_deb94eac4c_512.png
+        avatar_url = user["profile"]["image_72"]
+        content_type = guess_type(avatar_url)[0]
+        if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
+            logging.info(
+                "Unsupported avatar type (%s) for user -> %s\n", content_type, user.get("name")
+            )
+            avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+        else:
+            avatar_source = UserProfile.AVATAR_FROM_USER
+    else:
+        logging.info("Failed to process avatar for user -> %s\n", user.get("name"))
+    return avatar_source, avatar_url
 
 
 def get_owner(user: ZerverFieldsT) -> bool:
@@ -1254,12 +1275,39 @@ def get_timestamp_from_message(message: ZerverFieldsT) -> float:
     return float(message["ts"])
 
 
+def is_integration_bot_message(message: ZerverFieldsT) -> bool:
+    return message.get("subtype") == "bot_message" and "user" not in message and "bot_id" in message
+
+
+def convert_bot_info_to_slack_user(bot_info: dict[str, Any]) -> ZerverFieldsT:
+    # We use "image_72," an icon-sized 72x72 pixel image, for the Slack integration
+    # bots avatar because it is the best available option. As a consequence, this
+    # will make the avatar appear blurry in places where a medium-sized avatar
+    # (500x500px) is expected, such as in the user profile menu.
+
+    bot_user = {
+        "id": bot_info["id"],
+        "name": bot_info["name"],
+        "deleted": bot_info["deleted"],
+        "is_mirror_dummy": False,
+        "real_name": bot_info["name"],
+        "is_integration_bot": True,
+        "profile": {
+            "image_72": bot_info["icons"]["image_72"],
+            "bot_id": bot_info["id"],
+            "first_name": bot_info["name"],
+        },
+    }
+    return bot_user
+
+
 def fetch_shared_channel_users(
     user_list: list[ZerverFieldsT], slack_data_dir: str, token: str
 ) -> None:
     normal_user_ids = set()
     mirror_dummy_user_ids = set()
     added_channels = {}
+    integration_bot_users: list[str] = []
     team_id_to_domain: dict[str, str] = {}
     for user in user_list:
         user["is_mirror_dummy"] = False
@@ -1288,10 +1336,25 @@ def fetch_shared_channel_users(
 
     all_messages = get_messages_iterator(slack_data_dir, added_channels, {}, {})
     for message in all_messages:
-        user_id = get_message_sending_user(message)
-        if user_id is None or user_id in normal_user_ids:
-            continue
-        mirror_dummy_user_ids.add(user_id)
+        if is_integration_bot_message(message):
+            # This message is likely from an integration bot. Since Slack's integration
+            # bots doesn't have user profiles, we need to artificially create users for
+            # them to convert their messages.
+            bot_id = message["bot_id"]
+            if bot_id in integration_bot_users:
+                continue
+            bot_info = get_slack_api_data(
+                "https://slack.com/api/bots.info", "bot", token=token, bot=bot_id
+            )
+            bot_user = convert_bot_info_to_slack_user(bot_info)
+
+            user_list.append(bot_user)
+            integration_bot_users.append(bot_id)
+        else:
+            user_id = get_message_sending_user(message)
+            if user_id is None or user_id in normal_user_ids:
+                continue
+            mirror_dummy_user_ids.add(user_id)
 
     # Fetch data on the mirror_dummy_user_ids from the Slack API (it's
     # not included in the data export file).
@@ -1418,6 +1481,9 @@ def do_convert_zipfile(
         rm_tree(slack_data_dir)
 
 
+SLACK_IMPORT_TOKEN_SCOPES = {"emoji:read", "users:read", "users:read.email", "team:read"}
+
+
 def do_convert_directory(
     slack_data_dir: str,
     output_dir: str,
@@ -1425,7 +1491,7 @@ def do_convert_directory(
     threads: int = 6,
     convert_slack_threads: bool = False,
 ) -> None:
-    check_token_access(token)
+    check_token_access(token, SLACK_IMPORT_TOKEN_SCOPES)
 
     os.makedirs(output_dir, exist_ok=True)
     if os.listdir(output_dir):
@@ -1520,12 +1586,12 @@ def get_data_file(path: str) -> Any:
         return data
 
 
-def check_token_access(token: str) -> None:
+def check_token_access(token: str, required_scopes: set[str]) -> None:
     if token.startswith("xoxp-"):
         logging.info("This is a Slack user token, which grants all rights the user has!")
     elif token.startswith("xoxb-"):
         data = requests.get(
-            "https://slack.com/api/team.info", headers={"Authorization": f"Bearer {token}"}
+            "https://slack.com/api/api.test", headers={"Authorization": f"Bearer {token}"}
         )
         if data.status_code != 200:
             raise ValueError(
@@ -1536,7 +1602,6 @@ def check_token_access(token: str) -> None:
             if error != "missing_scope":
                 raise ValueError(f"Invalid Slack token: {token}, {error}")
         has_scopes = set(data.headers.get("x-oauth-scopes", "").split(","))
-        required_scopes = {"emoji:read", "users:read", "users:read.email", "team:read"}
         missing_scopes = required_scopes - has_scopes
         if missing_scopes:
             raise ValueError(

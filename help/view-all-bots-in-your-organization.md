@@ -2,7 +2,7 @@
 
 You can view a list of all bots in your organization, including deactivated bots.
 
-Organization [administrators](/help/roles-and-permissions) can also
+Organization [administrators](/help/user-roles) can also
 [deactivate](/help/deactivate-or-reactivate-a-bot),
 [reactivate](/help/deactivate-or-reactivate-a-bot) or
 [edit](/help/edit-a-bot#edit-a-bot-in-your-organization) any bot on the list.

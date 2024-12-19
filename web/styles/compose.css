@@ -232,8 +232,10 @@
             height: var(--compose-recipient-box-min-height);
 
             .conversation-arrow {
-                font-size: 16px;
-                line-height: 16px;
+                font-size: 1.1429em; /* 16px / 14px em */
+                /* Fix the line-height to the font size
+                   to maintain a circle that scales. */
+                line-height: 1;
                 border-radius: 50%;
                 padding: 2px;
                 margin: 0 3px;
@@ -329,8 +331,8 @@
 
     &:has(.new_message_textarea.invalid),
     &:has(.new_message_textarea.invalid:focus) {
-        border-color: hsl(3deg 57% 33%);
-        box-shadow: 0 0 2px hsl(3deg 57% 33%);
+        border-color: var(--color-invalid-input-border);
+        box-shadow: var(--color-invalid-input-box-shadow);
     }
 }
 
@@ -1133,14 +1135,17 @@ textarea.new_message_textarea {
     }
 
     .enter_sends_major {
-        font-size: 15px;
+        /* 15px at 14px/1em */
+        font-size: 1.0714em;
     }
 
     .enter_sends_minor {
-        font-size: 12px;
+        /* 12px at 14px/1em */
+        font-size: 0.8571em;
 
         .popover-menu-hotkey-hint {
-            font-size: 12px;
+            /* 12px at 14px/1em */
+            font-size: 0.8571em;
             padding: 1px 4px;
         }
     }
@@ -1184,6 +1189,9 @@ textarea.new_message_textarea {
     .compose_control_button {
         /* 22px at 14px/1em */
         font-size: 1.5714em;
+        /* Constrain icon fonts to a perfect
+           box (22px at 14px/1em) */
+        line-height: 1;
         /* Coordinate with the value of
            --compose-formatting-buttons-row-height */
         /* 28px at 22px/1em */
@@ -1229,7 +1237,10 @@ textarea.new_message_textarea {
     .compose_control_menu {
         padding: 0 1px;
         /* 18px at 14px/1em */
-        font-size: 1.2957em;
+        font-size: 1.2857em;
+        /* Constrain icon font to a perfect
+           box (18px at 14px/1em) */
+        line-height: 1;
         /* Coordinate with the value of
            --compose-formatting-buttons-row-height */
         /* 28px at 18px/1em */
@@ -1256,14 +1267,15 @@ textarea.new_message_textarea {
     }
 
     .divider {
-        color: hsl(0deg 0% 75%);
-        /* 20px at 14px/1em */
-        font-size: 1.4286em;
-        margin: 0 3px;
+        margin: 0 5px;
         /* Coordinate with the value of
            --compose-formatting-buttons-row-height */
-        /* 28px at 20px/1em */
-        height: 1.4em;
+        /* 16px at 14px/1em */
+        height: 1.1429em;
+        width: 1.5px;
+        /* Prevent dividers from growing or shrinking. */
+        flex: 0 0 auto;
+        background-color: var(--color-compose-formatting-button-divider);
 
         @media (width < 400px) {
             /* Remove at mobile widths to make more space

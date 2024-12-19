@@ -551,7 +551,7 @@ input[name="licenses"] {
 
 #server-login-page-details #server-login-form-title,
 #billing-page-details .stripe-customer-billing-portal,
-#billing-page-details #legacy-server-push-notification-notice,
+#billing-page-details #complimentary-access-end-notice,
 #billing-page-details .next-payment-info {
     width: 450px;
     padding-top: 0;
@@ -724,7 +724,7 @@ input[name="licenses"] {
 
 #remote-billing-confirm-login-button,
 #remote-billing-confirm-email-button,
-#billing-page-details #legacy-server-push-notification-notice-wrapper {
+#billing-page-details #complimentary-access-end-notice-wrapper {
     margin-top: 10px;
 }
 

@@ -186,9 +186,10 @@
 * [GDPR compliance](/help/gdpr-compliance)
 
 ## Users
-* [Roles and permissions](/help/roles-and-permissions)
+* [Manage permissions](/help/manage-permissions)
 * [Invite new users](/help/invite-new-users)
 * [Restrict account creation](/help/restrict-account-creation)
+* [User roles](/help/user-roles)
 * [Guest users](/help/guest-users)
 * [Manage a user](/help/manage-a-user)
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
@@ -196,7 +197,6 @@
 * [Configure default new user settings](/help/configure-default-new-user-settings)
 * [Configure organization language](/help/configure-organization-language)
 * [Manage user groups](/help/manage-user-groups)
-* [Change a user's role](/help/change-a-users-role)
 * [Change a user's name](/help/change-a-users-name)
 * [Manage a user's channel subscriptions](/help/manage-user-channel-subscriptions)
 * [Manage a user's group membership](/help/manage-user-group-membership)
@@ -206,11 +206,15 @@
 
 ## Channel management
 * [Create a channel](/help/create-a-channel)
-* [Channel permissions](/help/channel-permissions)
+* [Private channels](/help/channel-permissions#private-channels)
+* [Public channels](/help/channel-permissions#public-channels)
 * [Public access option](/help/public-access-option)
+* [Channel permissions](/help/channel-permissions)
 * [Channel posting policy](/help/channel-posting-policy)
+* [Configure who can administer a channel](/help/configure-who-can-administer-a-channel)
 * [Restrict channel creation](/help/configure-who-can-create-channels)
-* [Restrict channel membership management](/help/configure-who-can-invite-to-channels)
+* [Restrict who can subscribe others](/help/configure-who-can-invite-to-channels)
+* [Configure who can unsubscribe others](/help/configure-who-can-unsubscribe-others)
 * [Add or remove users from a channel](/help/add-or-remove-users-from-a-channel)
 * [Set default channels for new users](/help/set-default-channels-for-new-users)
 * [Rename a channel](/help/rename-a-channel)

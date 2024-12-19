@@ -2,6 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import * as channel from "./channel.ts";
+import * as group_permission_settings from "./group_permission_settings.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
@@ -108,7 +109,23 @@ $("body").on("click", ".settings-sticky-footer #user_group_go_to_members", (e) =
     const group_name = $<HTMLInputElement>("input#create_user_group_name").val()!.trim();
     const is_user_group_name_valid = user_group_name_error.validate_for_submit(group_name);
 
-    if (is_user_group_name_valid) {
+    let is_any_group_widget_pending = false;
+    const permission_settings = Object.keys(realm.server_supported_permission_settings.group);
+    for (const setting_name of permission_settings) {
+        const widget = group_setting_widget_map.get(setting_name);
+        assert(widget !== undefined);
+        assert(widget !== null);
+        if (widget.is_pending()) {
+            is_any_group_widget_pending = true;
+            // We are not appending any value here, but instead this is
+            // a proxy to invoke the error state for a group widget
+            // that would usually get triggered on pressing enter.
+            widget.appendValue(widget.getCurrentText()!);
+            break;
+        }
+    }
+
+    if (is_user_group_name_valid && !is_any_group_widget_pending) {
         user_group_components.show_user_group_settings_pane.create_user_group(
             "user_group_members_container",
             group_name,
@@ -225,6 +242,18 @@ export function set_up_handlers(): void {
             return;
         }
 
+        assert(user_group_create_members.pill_widget !== undefined);
+        assert(user_group_create_members.pill_widget !== null);
+        if (user_group_create_members.pill_widget.is_pending()) {
+            // We are not appending any value here, but instead this is
+            // a proxy to invoke the error state for a group widget
+            // that would usually get triggered on pressing enter.
+            user_group_create_members.pill_widget.appendValue(
+                user_group_create_members.pill_widget.getCurrentText()!,
+            );
+            return;
+        }
+
         create_user_group();
     });
 
@@ -246,11 +275,11 @@ export function set_up_handlers(): void {
     // This will always be enabled when creating a user group.
     settings_components.enable_opening_typeahead_on_clicking_label($container);
 
-    const permission_settings = Object.keys(realm.server_supported_permission_settings.group);
+    const permission_settings = group_permission_settings.get_group_permission_settings();
     for (const setting_name of permission_settings) {
         const widget = settings_components.create_group_setting_widget({
             $pill_container: $(`#id_new_group_${CSS.escape(setting_name)}`),
-            setting_name: settings_components.group_setting_name_schema.parse(setting_name),
+            setting_name,
         });
         group_setting_widget_map.set(setting_name, widget);
     }

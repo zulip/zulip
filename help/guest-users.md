@@ -98,7 +98,7 @@ is which user IDs exist, and
 
 ## Related articles
 
-* [Roles and permissions](/help/roles-and-permissions)
+* [User roles](/help/user-roles)
 * [Invite new users](/help/invite-new-users)
-* [Change a user's role](/help/change-a-users-role)
+* [Change a user's role](/help/user-roles#change-a-users-role)
 * [Zulip Cloud billing](/help/zulip-cloud-billing)

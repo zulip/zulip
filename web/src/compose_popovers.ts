@@ -21,7 +21,7 @@ export function initialize(): void {
             let preview_mode_on;
             // If the popover is opened from a message edit form, we want to
             // infer the preview mode from that row, else from the compose box.
-            if (parent_row.length) {
+            if (parent_row.length > 0) {
                 preview_mode_on = parent_row.hasClass("preview_mode");
             } else {
                 preview_mode_on = $("#compose").hasClass("preview_mode");

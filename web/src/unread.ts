@@ -573,7 +573,7 @@ class UnreadTopicCounter {
             return false;
         }
 
-        return id_set.size !== 0;
+        return id_set.size > 0;
     }
 
     get_topics_with_unread_mentions(stream_id: number): Set<string> {
@@ -803,7 +803,7 @@ export function process_unread_message(message: UnreadMessageData): void {
 }
 
 export function update_message_for_mention(
-    message: UnreadMessageData,
+    message: UnreadMessageData | Message,
     content_edited = false,
 ): boolean {
     // Returns true if this is a stream message whose content was

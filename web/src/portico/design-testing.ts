@@ -31,8 +31,10 @@ $(window).on("load", () => {
 
     $("#button_select_icon").on("change", function (this: HTMLElement) {
         const icon_name = $(this).val()?.toString() ?? "";
-        $(".action-button .zulip-icon").attr("class", (_index, className) =>
-            className.replaceAll(/zulip-icon-[^\s]+/g, `zulip-icon-${icon_name}`),
+        $(".action-button .zulip-icon, .icon-button .zulip-icon").attr(
+            "class",
+            (_index, className) =>
+                className.replaceAll(/zulip-icon-[^\s]+/g, `zulip-icon-${icon_name}`),
         );
     });
 

@@ -131,9 +131,9 @@ in the Zulip app to add more to your repertoire as needed.
   selected message (outlined in blue). Same behavior as clicking on the
   message.
 
-* **Quote message**: <kbd>></kbd>
+* **Quote message**: <kbd>&gt;</kbd>
 
-* **Forward message**: <kbd><</kbd>
+* **Forward message**: <kbd>&lt;</kbd>
 
 * **Reply directly to sender**: <kbd>Shift</kbd> + <kbd>R</kbd>
 

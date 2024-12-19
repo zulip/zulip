@@ -644,8 +644,7 @@ export function discard_stream_property_element_changes(
     update_dependent_subsettings(property_name);
 }
 
-export function discard_group_property_element_changes(elem: HTMLElement, group: UserGroup): void {
-    const $elem = $(elem);
+export function discard_group_property_element_changes($elem: JQuery, group: UserGroup): void {
     const property_name = settings_components.extract_property_name($elem);
     const property_value = settings_components.get_group_property_value(
         user_groups.user_group_schema.keyof().parse(property_name),
@@ -736,7 +735,7 @@ export function discard_group_settings_subsection_changes(
     group: UserGroup,
 ): void {
     for (const elem of settings_components.get_subsection_property_elements($subsection)) {
-        discard_group_property_element_changes(elem, group);
+        discard_group_property_element_changes($(elem), group);
     }
     const $save_button_controls = $subsection.find(".save-button-controls");
     settings_components.change_save_button_state($save_button_controls, "discarded");
@@ -788,7 +787,7 @@ export function sync_realm_settings(property: string): void {
             break;
     }
     const $element = $(`#id_realm_${CSS.escape(property)}`);
-    if ($element.length) {
+    if ($element.length > 0) {
         const $subsection = $element.closest(".settings-subsection-parent");
         if ($subsection.find(".save-button-controls").hasClass("hide")) {
             discard_realm_property_element_changes(util.the($element));

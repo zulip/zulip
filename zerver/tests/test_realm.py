@@ -800,6 +800,73 @@ class RealmTest(ZulipTestCase):
         do_deactivate_stream(zulip_update_announcements_stream, acting_user=None)
         self.assertIsNone(realm.get_zulip_update_announcements_stream())
 
+    def test_change_moderation_request_channel(self) -> None:
+        # We need an admin user.
+        self.login("iago")
+
+        disabled_moderation_request_channel_id = -1
+        req = dict(
+            moderation_request_channel_id=orjson.dumps(
+                disabled_moderation_request_channel_id
+            ).decode()
+        )
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.moderation_request_channel, None)
+
+        # Test that admin can set the setting to a private stream.
+        new_moderation_request_channel_id = self.make_stream("private_stream", invite_only=True).id
+        req = dict(
+            moderation_request_channel_id=orjson.dumps(new_moderation_request_channel_id).decode()
+        )
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        assert realm.moderation_request_channel is not None
+        self.assertEqual(realm.moderation_request_channel.id, new_moderation_request_channel_id)
+
+        invalid_moderation_request_channel_id = 4321
+        req = dict(
+            moderation_request_channel_id=orjson.dumps(
+                invalid_moderation_request_channel_id
+            ).decode()
+        )
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "Invalid channel ID")
+        realm = get_realm("zulip")
+        assert realm.moderation_request_channel is not None
+        self.assertNotEqual(
+            realm.moderation_request_channel.id, invalid_moderation_request_channel_id
+        )
+
+        # Test that setting this to public channel should fail.
+        public_moderation_request_channel_id = Stream.objects.get(name="Denmark").id
+        req = dict(
+            moderation_request_channel_id=orjson.dumps(
+                public_moderation_request_channel_id
+            ).decode()
+        )
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "Moderation request channel must be private.")
+        realm = get_realm("zulip")
+        assert realm.moderation_request_channel is not None
+        self.assertNotEqual(
+            realm.moderation_request_channel.id, public_moderation_request_channel_id
+        )
+
+    def test_get_default_moderation_request_channel(self) -> None:
+        realm = get_realm("zulip")
+        verona = get_stream("verona", realm)
+        realm.moderation_request_channel = verona
+        realm.save(update_fields=["moderation_request_channel"])
+
+        moderation_request_channel = realm.get_moderation_request_channel()
+        assert moderation_request_channel is not None
+        self.assertEqual(moderation_request_channel, verona)
+        do_deactivate_stream(moderation_request_channel, acting_user=None)
+        self.assertIsNone(realm.get_moderation_request_channel())
+
     def test_change_realm_default_language(self) -> None:
         # we need an admin user.
         self.login("iago")

@@ -636,7 +636,7 @@ test_people("bot_custom_profile_data", () => {
     // http://localhost:9991/#organization/bot-list-admin
     // and then try to edit any of the bots.
     people.add_active_user(bot_botson);
-    assert.equal(people.get_custom_profile_data(bot_botson.user_id, 3), null);
+    assert.equal(people.get_custom_profile_data(bot_botson.user_id, 3), undefined);
 });
 
 test_people("user_timezone", ({override}) => {
@@ -718,14 +718,15 @@ test_people("set_custom_profile_field_data", () => {
     person.profile_data = {};
     const field = {
         id: 3,
-        name: "Custom long field",
-        type: "text",
         value: "Field value",
         rendered_value: "<p>Field value</p>",
     };
     people.set_custom_profile_field_data(person.user_id, field);
     assert.equal(person.profile_data[field.id].value, "Field value");
     assert.equal(person.profile_data[field.id].rendered_value, "<p>Field value</p>");
+
+    people.set_custom_profile_field_data(person.user_id, {id: 3, value: null});
+    assert.ok(!(field.id in person.profile_data));
 });
 
 test_people("is_current_user_only_owner", ({override}) => {
