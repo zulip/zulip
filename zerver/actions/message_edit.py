@@ -38,6 +38,7 @@ from zerver.lib.message import (
     access_message,
     bulk_access_stream_messages_query,
     check_user_group_mention_allowed,
+    event_recipient_ids_for_action_on_messages,
     normalize_body,
     stream_wildcard_mention_allowed,
     topic_wildcard_mention_allowed,
@@ -398,13 +399,16 @@ def do_update_embedded_data(
         "rendering_only": True,
     }
 
+    users_to_notify = event_recipient_ids_for_action_on_messages([message])
+    filtered_ums = [um for um in ums if um.user_profile_id in users_to_notify]
+
     def user_info(um: UserMessage) -> dict[str, Any]:
         return {
             "id": um.user_profile_id,
             "flags": um.flags_list(),
         }
 
-    send_event_on_commit(user_profile.realm, event, list(map(user_info, ums)))
+    send_event_on_commit(user_profile.realm, event, list(map(user_info, filtered_ums)))
 
 
 def get_visibility_policy_after_merge(
