@@ -59,7 +59,7 @@ from zerver.lib.subscription_info import (
 from zerver.lib.thumbnail import THUMBNAIL_OUTPUT_FORMATS
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
-from zerver.lib.topic import TOPIC_NAME
+from zerver.lib.topic import TOPIC_NAME, maybe_rename_general_chat_to_empty_topic
 from zerver.lib.user_groups import (
     get_group_setting_value_for_api,
     get_recursive_membership_groups,
@@ -80,6 +80,7 @@ from zerver.models import (
     Client,
     CustomProfileField,
     Draft,
+    Message,
     NamedUserGroup,
     Realm,
     RealmUserDefault,
@@ -479,6 +480,7 @@ def fetch_initial_state_data(
             settings.MAX_DEACTIVATED_REALM_DELETION_DAYS
         )
 
+        state["realm_empty_topic_display_name"] = Message.EMPTY_TOPIC_FALLBACK_NAME
     if want("realm_user_settings_defaults"):
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         state["realm_user_settings_defaults"] = {}
@@ -1710,9 +1712,10 @@ def apply_event(
         if event["visibility_policy"] == UserTopic.VisibilityPolicy.INHERIT:
             user_topics_state = state["user_topics"]
             for i in range(len(user_topics_state)):
+                topic_name = maybe_rename_general_chat_to_empty_topic(event["topic_name"])
                 if (
                     user_topics_state[i]["stream_id"] == event["stream_id"]
-                    and user_topics_state[i]["topic_name"] == event["topic_name"]
+                    and user_topics_state[i]["topic_name"] == topic_name
                 ):
                     del user_topics_state[i]
                     break
@@ -1750,6 +1753,7 @@ class ClientCapabilities(TypedDict):
     user_list_incomplete: NotRequired[bool]
     include_deactivated_groups: NotRequired[bool]
     archived_channels: NotRequired[bool]
+    empty_topic_name: NotRequired[bool]
 
 
 DEFAULT_CLIENT_CAPABILITIES = ClientCapabilities(notification_settings_null=False)
@@ -1791,6 +1795,7 @@ def do_events_register(
     user_list_incomplete = client_capabilities.get("user_list_incomplete", False)
     include_deactivated_groups = client_capabilities.get("include_deactivated_groups", False)
     archived_channels = client_capabilities.get("archived_channels", False)
+    empty_topic_name = client_capabilities.get("empty_topic_name", False)
 
     if fetch_event_types is not None:
         event_types_set: set[str] | None = set(fetch_event_types)
@@ -1836,7 +1841,12 @@ def do_events_register(
             include_deactivated_groups=include_deactivated_groups,
         )
 
-        post_process_state(user_profile, ret, notification_settings_null=False)
+        post_process_state(
+            user_profile,
+            ret,
+            notification_settings_null=False,
+            allow_empty_topic_name=empty_topic_name,
+        )
         return ret
 
     # Fill up the UserMessage rows if a soft-deactivated user has returned
@@ -1864,6 +1874,7 @@ def do_events_register(
         user_list_incomplete=user_list_incomplete,
         include_deactivated_groups=include_deactivated_groups,
         archived_channels=archived_channels,
+        empty_topic_name=empty_topic_name,
     )
 
     if queue_id is None:
@@ -1904,7 +1915,9 @@ def do_events_register(
         include_deactivated_groups=include_deactivated_groups,
     )
 
-    post_process_state(user_profile, ret, notification_settings_null)
+    post_process_state(
+        user_profile, ret, notification_settings_null, allow_empty_topic_name=empty_topic_name
+    )
 
     if len(events) > 0:
         ret["last_event_id"] = events[-1]["id"]
@@ -1914,7 +1927,10 @@ def do_events_register(
 
 
 def post_process_state(
-    user_profile: UserProfile | None, ret: dict[str, Any], notification_settings_null: bool
+    user_profile: UserProfile | None,
+    ret: dict[str, Any],
+    notification_settings_null: bool,
+    allow_empty_topic_name: bool,
 ) -> None:
     """
     NOTE:
@@ -1928,7 +1944,7 @@ def post_process_state(
     for client.
     """
     if "raw_unread_msgs" in ret:
-        ret["unread_msgs"] = aggregate_unread_data(ret["raw_unread_msgs"])
+        ret["unread_msgs"] = aggregate_unread_data(ret["raw_unread_msgs"], allow_empty_topic_name)
         del ret["raw_unread_msgs"]
 
     """
@@ -1973,3 +1989,8 @@ def post_process_state(
             handle_stream_notifications_compatibility(
                 user_profile, stream_dict, notification_settings_null
             )
+
+    if not allow_empty_topic_name and "user_topics" in ret:
+        for user_topic in ret["user_topics"]:
+            if user_topic["topic_name"] == "":
+                user_topic["topic_name"] = Message.EMPTY_TOPIC_FALLBACK_NAME

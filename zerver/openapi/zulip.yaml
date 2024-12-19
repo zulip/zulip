@@ -2119,6 +2119,16 @@ paths:
                                     Only present if `message_type` is `"stream"`.
 
                                     The topic to which the message was sent.
+
+                                    For clients that don't support the `empty_topic_name` [client capability][client-capabilities],
+                                    the `""` value is replaced with the value of `realm_empty_topic_display_name`
+                                    field in the [`POST /register`](/api/register-queue) response.
+
+                                    **Changes**: Before 10.0 (feature level 333), `empty_topic_name`
+                                    client capability didn't exist and empty string as the topic name for
+                                    channel messages wasn't allowed.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                               example:
                                 {
                                   "type": "delete_message",
@@ -2196,6 +2206,16 @@ paths:
                                   type: string
                                   description: |
                                     The name of the topic.
+
+                                    For clients that don't support the `empty_topic_name` [client capability][client-capabilities],
+                                    the `""` value is replaced with the value of `realm_empty_topic_display_name`
+                                    field in the [`POST /register`](/api/register-queue) response.
+
+                                    **Changes**: Before 10.0 (feature level 333), `empty_topic_name`
+                                    client capability didn't exist and empty string as the topic name for
+                                    channel messages wasn't allowed.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                 last_updated:
                                   type: integer
                                   description: |
@@ -2515,6 +2535,16 @@ paths:
 
                                     The pre-edit topic for all of the messages with IDs in
                                     `message_ids`.
+
+                                    For clients that don't support the `empty_topic_name` [client capability][client-capabilities],
+                                    the `""` value is replaced with the value of `realm_empty_topic_display_name`
+                                    field in the [`POST /register`](/api/register-queue) response.
+
+                                    **Changes**: Before 10.0 (feature level 333), `empty_topic_name`
+                                    client capability didn't exist and empty string as the topic name for
+                                    channel messages wasn't allowed.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                 subject:
                                   type: string
                                   description: |
@@ -2524,6 +2554,16 @@ paths:
 
                                     The post-edit topic for all of the messages with IDs in
                                     `message_ids`.
+
+                                    For clients that don't support the `empty_topic_name` [client capability][client-capabilities],
+                                    the `""` value is replaced with the value of `realm_empty_topic_display_name`
+                                    field in the [`POST /register`](/api/register-queue) response.
+
+                                    **Changes**: Before 10.0 (feature level 333), `empty_topic_name`
+                                    client capability didn't exist and empty string as the topic name for
+                                    channel messages wasn't allowed.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                 topic_links:
                                   type: array
                                   items:
@@ -2724,8 +2764,18 @@ paths:
 
                                     Topic within the channel where the message is being typed.
 
-                                    **Changes**: New in Zulip 4.0 (feature level 58). Previously,
-                                    typing notifications were only for direct messages.
+                                    For clients that don't support the `empty_topic_name` [client capability][client-capabilities],
+                                    the `""` value is replaced with the value of `realm_empty_topic_display_name`
+                                    field in the [`POST /register`](/api/register-queue) response.
+
+                                    **Changes**: Before 10.0 (feature level 333), `empty_topic_name`
+                                    client capability didn't exist and empty string as the topic name for
+                                    channel messages wasn't allowed.
+
+                                    New in Zulip 4.0 (feature level 58). Previously, typing notifications
+                                    were only for direct messages.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                               example:
                                 {
                                   "type": "typing",
@@ -3074,6 +3124,16 @@ paths:
                                           Present only if `type` is `"stream"`.
 
                                           Name of the topic where the message was sent.
+
+                                          For clients that don't support the `empty_topic_name` [client capability][client-capabilities],
+                                          the `""` value is replaced with the value of `realm_empty_topic_display_name`
+                                          field in the [`POST /register`](/api/register-queue) response.
+
+                                          **Changes**: Before 10.0 (feature level 333), `empty_topic_name`
+                                          client capability didn't exist and empty string as the topic name for
+                                          channel messages wasn't allowed.
+
+                                          [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                       unmuted_stream_msg:
                                         type: boolean
                                         deprecated: true
@@ -6808,6 +6868,22 @@ paths:
                 items:
                   type: integer
               example: [1, 2, 3]
+        - name: allow_empty_topic_name
+          in: query
+          description: |
+            Whether the client supports processing the empty string as a topic in the
+            topic name fields in the returned data, including in returned edit_history data.
+
+            If `false`, the server will use the value of `realm_empty_topic_display_name`
+            field in the [`POST /register`](/api/register-queue) response instead of `""`
+            to represent the empty string topic in its response.
+
+            **Changes**: New in Zulip 10.0 (feature level 333). Previously, the empty string
+            was not a valid topic.
+          schema:
+            type: boolean
+            default: false
+          example: true
       responses:
         "200":
           description: Success.
@@ -7232,6 +7308,21 @@ paths:
         [edit-settings]: /help/view-a-messages-edit-history
       parameters:
         - $ref: "#/components/parameters/MessageId"
+        - name: allow_empty_topic_name
+          in: query
+          description: |
+            Whether the topic names i.e. `topic` and `prev_topic` fields in
+            the `message_history` objects returned can be empty string.
+
+            If `false`, the value of `realm_empty_topic_display_name`
+            field in the [`POST /register`](/api/register-queue) response is
+            returned replacing `""` as the topic name.
+
+            **Changes**: New in Zulip 10.0 (feature level 333).
+          schema:
+            type: boolean
+            default: false
+          example: true
       x-response-description: |
         Please note that the original message's snapshot only contains the fields
         `topic`, `content`, `rendered_content`, `timestamp` and `user_id`. This
@@ -8133,6 +8224,22 @@ paths:
             type: boolean
             default: true
           example: false
+        - name: allow_empty_topic_name
+          in: query
+          description: |
+            Whether the client supports processing the empty string as a topic in the
+            topic name fields in the returned data, including in returned edit_history data.
+
+            If `false`, the server will use the value of `realm_empty_topic_display_name`
+            field in the [`POST /register`](/api/register-queue) response instead of `""`
+            to represent the empty string topic in its response.
+
+            **Changes**: New in Zulip 10.0 (feature level 333). Previously, the empty string
+            was not a valid topic.
+          schema:
+            type: boolean
+            default: false
+          example: true
       responses:
         "200":
           description: Success.
@@ -14131,6 +14238,16 @@ paths:
                       access archived channels, without breaking backwards-compatibility for
                       existing clients.
 
+                    - `empty_topic_name`: Boolean for whether the client supports processing
+                      the empty string as a topic name. Clients not declaring this capability
+                      will be sent the value of `realm_empty_topic_display_name` field in the
+                      [`POST /register`](/api/register-queue) response instead of the empty string
+                      wherever topic names appear in the register response or events involving
+                      topic names.
+                      <br/>
+                      **Changes**: New in Zulip 10.0 (feature level 333). Previously,
+                      the empty string was not a valid topic name.
+
                     [help-linkifiers]: /help/add-a-custom-linkifier
                     [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
                     [events-linkifiers]: /api/get-events#realm_linkifiers
@@ -14988,6 +15105,16 @@ paths:
                                   type: string
                                   description: |
                                     The topic under which the messages were sent.
+
+                                    Note that the `""` topic may have been rewritten by the server to
+                                    the value of `realm_empty_topic_display_name` field in the
+                                    [`POST /register`](/api/register-queue) response depending on the
+                                    value of the `empty_topic_name` [client capability][client-capabilities].
+
+                                    **Changes**: The `empty_topic_name` client capability is new in
+                                    Zulip 10.0 (feature level 333).
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                 stream_id:
                                   type: integer
                                   description: |
@@ -15611,6 +15738,16 @@ paths:
                               type: string
                               description: |
                                 The name of the topic.
+
+                                Note that the `""` topic may have been rewritten by the server to
+                                the value of `realm_empty_topic_display_name` field in the
+                                [`POST /register`](/api/register-queue) response depending on the
+                                value of the `empty_topic_name` [client capability][client-capabilities].
+
+                                **Changes**: The `empty_topic_name` client capability is new in
+                                Zulip 10.0 (feature level 333).
+
+                                [client-capabilities]: /api/register-queue#parameter-client_capabilities
                             last_updated:
                               type: integer
                               description: |
@@ -17671,6 +17808,16 @@ paths:
                           primarily relevant to clients containing UI for changing it.
 
                           **Changes**: New in Zulip 9.0 (feature level 242).
+                      realm_empty_topic_display_name:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The name of the topic where messages sent without specifying
+                          a topic will appear.
+
+                          **Changes**: New in Zulip 10.0 (feature level 333). Previously,
+                          messages sent without specifying a topic were posted in `"(no topic)` topic.
                       realm_user_settings_defaults:
                         type: object
                         additionalProperties: false
@@ -23476,6 +23623,16 @@ components:
 
             The field name is a legacy holdover from when topics were
             called "subjects" and will eventually change.
+
+            For clients that don't support the `empty_topic_name` [client capability][client-capabilities],
+            the `""` value is replaced with the value of `realm_empty_topic_display_name`
+            field in the [`POST /register`](/api/register-queue) response, for channel messages.
+
+            **Changes**: Before Zulip 10.0 (feature level 333), `empty_topic_name`
+            client capability didn't exist and empty string as the topic name for
+            channel messages wasn't allowed.
+
+            [client-capabilities]: /api/register-queue#parameter-client_capabilities
         submessages:
           type: array
           description: |
