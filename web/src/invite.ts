@@ -274,7 +274,7 @@ function valid_to(): string {
 
     let time_in_minutes: number;
     if (time_input_value === "custom") {
-        if (!util.validate_custom_time_input(custom_expiration_time_input)) {
+        if (!util.validate_custom_time_input(custom_expiration_time_input, false)) {
             return $t({defaultMessage: "Invalid custom time"});
         }
         time_in_minutes = util.get_custom_time_in_minutes(
@@ -452,7 +452,10 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                     .find(".selected")
                     .attr("data-tab-key");
             }
-            const valid_custom_time = util.validate_custom_time_input(custom_expiration_time_input);
+            const valid_custom_time = util.validate_custom_time_input(
+                custom_expiration_time_input,
+                false,
+            );
             const $button = $("#invite-user-modal .dialog_submit_button");
             $button.prop(
                 "disabled",
@@ -477,6 +480,9 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         pills.onTextInputHook(toggle_invite_submit_button);
 
         $expires_in.on("change", () => {
+            if (!util.validate_custom_time_input(custom_expiration_time_input, false)) {
+                custom_expiration_time_input = 0;
+            }
             settings_components.set_custom_time_inputs_visibility(
                 $expires_in,
                 custom_expiration_time_unit,

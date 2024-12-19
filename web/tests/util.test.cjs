@@ -412,8 +412,14 @@ run_test("get_custom_time_in_minutes", () => {
 });
 
 run_test("check_and_validate_custom_time_input", () => {
+    const input_is_zero = 0;
+    let checked_input = util.check_time_input(input_is_zero);
+    assert.equal(checked_input, 0);
+    assert.equal(util.validate_custom_time_input(checked_input, true), true);
+    assert.equal(util.validate_custom_time_input(checked_input, false), false);
+
     const input_is_nan = "24abc";
-    let checked_input = util.check_time_input(input_is_nan);
+    checked_input = util.check_time_input(input_is_nan);
     assert.equal(checked_input, Number.NaN);
     assert.equal(util.validate_custom_time_input(checked_input), false);
 
