@@ -591,6 +591,19 @@ test("user_last_seen_time_status", ({override}) => {
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Idle");
 });
 
+test("fetch_presence_for_user", () => {
+    set_presence(selma.user_id, "active");
+    set_presence(me.user_id, "active");
+
+    assert.equal(buddy_data.fetch_presence_for_user(selma.user_id), "translated: Active now");
+
+    presence.presence_info.set(old_user.user_id, {last_active: undefined});
+    assert.equal(buddy_data.fetch_presence_for_user(old_user.user_id), "translated: Loading...");
+
+    set_presence(selma.user_id, "idle");
+    assert.equal(buddy_data.fetch_presence_for_user(selma.user_id), "translated: Idle");
+});
+
 test("get_items_for_users", ({override}) => {
     people.add_active_user(alice);
     people.add_active_user(fred);
