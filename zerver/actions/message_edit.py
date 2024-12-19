@@ -38,6 +38,7 @@ from zerver.lib.message import (
     access_message,
     bulk_access_stream_messages_query,
     check_user_group_mention_allowed,
+    event_recipient_ids_for_action_on_messages,
     normalize_body,
     stream_wildcard_mention_allowed,
     topic_wildcard_mention_allowed,
@@ -310,7 +311,7 @@ def send_message_moved_breadcrumbs(
             )
 
 
-def get_mentions_for_message_updates(message_id: int) -> set[int]:
+def get_mentions_for_message_updates(message: Message) -> set[int]:
     # We exclude UserMessage.flags.historical rows since those
     # users did not receive the message originally, and thus
     # probably are not relevant for reprocessed alert_words,
@@ -318,7 +319,7 @@ def get_mentions_for_message_updates(message_id: int) -> set[int]:
     # decision we change in the future.
     mentioned_user_ids = (
         UserMessage.objects.filter(
-            message=message_id,
+            message=message.id,
             flags=~UserMessage.flags.historical,
         )
         .filter(
@@ -331,7 +332,10 @@ def get_mentions_for_message_updates(message_id: int) -> set[int]:
         )
         .values_list("user_profile_id", flat=True)
     )
-    return set(mentioned_user_ids)
+
+    user_ids_having_message_access = event_recipient_ids_for_action_on_messages([message])
+
+    return set(mentioned_user_ids) & user_ids_having_message_access
 
 
 def update_user_message_flags(
@@ -398,13 +402,16 @@ def do_update_embedded_data(
         "rendering_only": True,
     }
 
+    users_to_notify = event_recipient_ids_for_action_on_messages([message])
+    filtered_ums = [um for um in ums if um.user_profile_id in users_to_notify]
+
     def user_info(um: UserMessage) -> dict[str, Any]:
         return {
             "id": um.user_profile_id,
             "flags": um.flags_list(),
         }
 
-    send_event_on_commit(user_profile.realm, event, list(map(user_info, ums)))
+    send_event_on_commit(user_profile.realm, event, list(map(user_info, filtered_ums)))
 
 
 def get_visibility_policy_after_merge(
@@ -1315,7 +1322,7 @@ def check_update_message(
             content=content,
             message_sender=message.sender,
         )
-        prior_mention_user_ids = get_mentions_for_message_updates(message.id)
+        prior_mention_user_ids = get_mentions_for_message_updates(message)
 
         # We render the message using the current user's realm; since
         # the cross-realm bots never edit messages, this should be
