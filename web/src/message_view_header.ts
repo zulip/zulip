@@ -170,6 +170,42 @@ export function initialize(): void {
 export function render_title_area(): void {
     const filter = narrow_state.filter();
     build_message_view_header(filter);
+
+    $(".narrow_description").on("mouseenter mouseleave", function (event) {
+        const $description = $(this);
+        const windowWidth = $(window).width()!;
+
+        if (event.type === "mouseenter") {
+            if (!$description.hasClass("narrow_description_extended")) {
+                const currentWidth = $description.outerWidth();
+                // Set fixed width for word-wrap to work
+                $description.css("width", currentWidth + "px");
+            }
+
+            $description.addClass("narrow_description_extended");
+            $(".top-navbar-container").addClass("top-navbar-container-allow-description-extension");
+
+            if (windowWidth <= 620) {
+                $(".message-header-stream-settings-button").hide();
+                // Let it expand naturally on smaller screens
+                $description.css("width", "");
+            }
+        } else if (event.type === "mouseleave") {
+            $description.removeClass("narrow_description_extended");
+            $(".top-navbar-container").removeClass(
+                "top-navbar-container-allow-description-extension",
+            );
+
+            if (windowWidth <= 620) {
+                $(".message-header-stream-settings-button").show();
+                // Reset width
+                $description.css("width", "");
+            } else {
+                // Reset to flexbox-determined width
+                $description.css("width", "");
+            }
+        }
+    });
 }
 
 // This function checks if "modified_sub" which is the stream whose values
