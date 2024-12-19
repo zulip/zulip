@@ -6,7 +6,7 @@
                 <div class="full-name-change-container">
                     <div class="input-group inline-block grid user-name-parent">
                         <div class="user-name-section inline-block">
-                            <label for="full_name" class="settings-field-label inline-block">{{t "Name" }}</label>
+                            <label for="full_name" class="settings-field-label inline-block {{#unless user_can_change_name}}cursor-text{{/unless}}">{{t "Name" }}</label>
                             <div class="alert-notification full-name-status"></div>
                             <div class="settings-profile-user-field-hint">{{t "How your account is displayed in Zulip." }}</div>
                             <div id="full_name_input_container" {{#unless user_can_change_name}}class="disabled_setting_tooltip"{{/unless}}>
