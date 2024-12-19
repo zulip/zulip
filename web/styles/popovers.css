@@ -974,6 +974,8 @@ ul.popover-group-menu-member-list {
 
     #move_messages_count {
         margin-top: -20px;
+        font-style: italic;
+        opacity: 0.7;
     }
 
     .topic_stream_edit_header {
