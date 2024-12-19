@@ -963,6 +963,7 @@ export function check_realm_default_settings_property_changed(elem: HTMLElement)
     const current_val = get_realm_default_setting_property_value(property_name);
     let proposed_val;
     switch (property_name) {
+        case "color_scheme":
         case "emojiset":
         case "user_list_style":
             proposed_val = get_input_element_value(elem, "radio-group");
