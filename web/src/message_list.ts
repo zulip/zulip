@@ -102,6 +102,16 @@ export class MessageList {
     // the user. Possibly this can be unified in some nice way.
     reading_prevented: boolean;
 
+    // Tracks if the message list is visibly focused (has blue border
+    // around the selected message) or if the navigation buttons at
+    // the bottom of the feed are focused.
+    navigation_bar_focused: boolean;
+
+    // Tracks if the navigation bar is visible or not. Navigation bar
+    // hidden if there are no buttons to show or if the message feed
+    // is empty.
+    navigation_bar_visible: boolean;
+
     // TODO: Clean up these monkey-patched properties somehow.
     last_message_historical?: boolean;
     should_trigger_message_selected_event?: boolean;
@@ -124,6 +134,8 @@ export class MessageList {
         this.view = new MessageListView(this, collapse_messages, opts.is_node_test);
         this.is_combined_feed_view = this.data.filter.is_in_home();
         this.reading_prevented = false;
+        this.navigation_bar_focused = false;
+        this.navigation_bar_visible = false;
 
         return this;
     }
@@ -415,6 +427,38 @@ export class MessageList {
         if (this.should_trigger_message_selected_event) {
             $(document).trigger(new $.Event("message_selected.zulip", opts));
         }
+    }
+
+    focus_navigation_bar(): void {
+        this.navigation_bar_focused = true;
+
+        if (this.navigation_bar_visible) {
+            this.view.focus_navigation_bar();
+        }
+    }
+
+    unfocus_navigation_bar(): void {
+        this.navigation_bar_focused = false;
+        this.view.unfocus_navigation_bar();
+    }
+
+    hide_navigation_bar(): void {
+        this.navigation_bar_visible = false;
+        this.view.unfocus_navigation_bar();
+        this.view.hide_navigation_bar();
+    }
+
+    show_navigation_bar(): void {
+        this.navigation_bar_visible = true;
+        this.view.show_navigation_bar();
+
+        if (this.navigation_bar_focused) {
+            this.focus_navigation_bar();
+        }
+    }
+
+    is_navigation_bar_focused(): boolean {
+        return this.navigation_bar_visible && this.navigation_bar_focused;
     }
 
     selected_message(): Message | undefined {

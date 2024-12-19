@@ -347,6 +347,9 @@ export function scrollTop(target_scrollTop?: number): JQuery | number {
 }
 
 export function stop_auto_scrolling(): void {
+    // We don't want scrolling from previous narrow
+    // to interfere with the new narrow.
+    message_lists.current?.unfocus_navigation_bar();
     if (in_stoppable_autoscroll) {
         $scroll_container.stop();
     }
