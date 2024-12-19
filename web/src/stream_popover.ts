@@ -197,16 +197,6 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
                 popover_menus.hide_current_popover_if_visible(instance);
             });
         },
-        onHide() {
-            const color_picker_popover = popover_menus.get_color_picker_popover();
-            if (!color_picker_popover) {
-                return undefined;
-            }
-            if ($(color_picker_popover.popper).is(":hover")) {
-                return false;
-            }
-            return undefined;
-        },
         onHidden(instance) {
             hide_stream_popover(instance);
         },

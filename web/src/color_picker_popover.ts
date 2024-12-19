@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import type * as tippy from "tippy.js";
 
 import render_color_picker_popover from "../templates/popovers/color_picker_popover.hbs";
 
@@ -28,8 +29,11 @@ const update_stream_color_debounced = _.debounce(
     {leading: false},
 );
 
-export function initialize(): void {
-    popover_menus.register_popover_menu(".choose_stream_color", {
+export function toggle_color_picker_popover(
+    target: tippy.ReferenceElement,
+    stream_id: number,
+): void {
+    popover_menus.toggle_popover_menu(target, {
         theme: "popover-menu",
         placement: "right",
         popperOptions: {
@@ -43,11 +47,10 @@ export function initialize(): void {
             ],
         },
         onShow(instance) {
+            ui_util.show_left_sidebar_menu_icon(target);
             popover_menus.popover_instances.color_picker_popover = instance;
             popover_menus.on_show_prep(instance);
 
-            const $reference = $(instance.reference);
-            const stream_id = Number.parseInt($reference.attr("data-stream-id")!, 10);
             const stream_name = stream_data.get_stream_name_from_id(stream_id);
             const color = stream_data.get_color(stream_id);
             const recipient_bar_color = stream_color.get_recipient_bar_color(color);
@@ -72,11 +75,9 @@ export function initialize(): void {
             );
         },
         onMount(instance) {
-            const $reference = $(instance.reference);
             const $popper = $(instance.popper);
 
             const $color_picker_input = $popper.find(".color-picker-input");
-            const stream_id = Number.parseInt($reference.attr("data-stream-id")!, 10);
             const color = stream_data.get_color(stream_id);
 
             $color_picker_input.val(color);
@@ -114,7 +115,38 @@ export function initialize(): void {
         },
         onHidden(instance) {
             instance.destroy();
+            ui_util.hide_left_sidebar_menu_icon();
             popover_menus.popover_instances.color_picker_popover = null;
         },
     });
+}
+
+export function initialize(): void {
+    $("body").on(
+        "click",
+        ".choose_stream_color",
+        function (this: HTMLElement, e: JQuery.ClickEvent) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            const stream_id = Number.parseInt($(this).attr("data-stream-id")!, 10);
+
+            let target: tippy.ReferenceElement | undefined;
+            if (popover_menus.is_stream_actions_popover_displayed()) {
+                // If the stream actions popover is open, we want to open the color picker popover
+                // from the same reference element as that of the stream actions popover so that
+                // the color picker popover replaces the stream actions popover in-place.
+                // This avoids the cluttering of the UI with multiple popovers, given that we can
+                // also open the browser native color picker from the color picker popover.
+                target = popover_menus.popover_instances.stream_actions_popover?.reference;
+                popover_menus.hide_current_popover_if_visible(
+                    popover_menus.popover_instances.stream_actions_popover,
+                );
+            }
+
+            // If the stream actions popover is not open, we want to open the color picker popover
+            // from the target of the click event.
+            toggle_color_picker_popover(target ?? this, stream_id);
+        },
+    );
 }
