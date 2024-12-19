@@ -805,11 +805,11 @@ test("misc", ({override}) => {
 
     override(realm, "realm_email_changes_disabled", false);
     settings_account.update_email_change_display();
-    assert.ok(!$("#change_email_button").prop("disabled"));
+    assert.ok(!$("#change_email_button").hasClass("hide"));
 
     override(realm, "realm_email_changes_disabled", true);
     settings_account.update_email_change_display();
-    assert.ok($("#change_email_button").prop("disabled"));
+    assert.ok($("#change_email_button").hasClass("hide"));
 
     override(realm, "realm_avatar_changes_disabled", false);
     override(realm, "server_avatar_changes_disabled", false);
@@ -835,7 +835,7 @@ test("misc", ({override}) => {
     assert.ok(!$("#full_name_input_container").hasClass("disabled_setting_tooltip"));
 
     settings_account.update_email_change_display();
-    assert.ok(!$("#change_email_button").prop("disabled"));
+    assert.ok(!$("#change_email_button").hasClass("hide"));
 
     settings_account.update_avatar_change_display();
     assert.ok(!$("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
