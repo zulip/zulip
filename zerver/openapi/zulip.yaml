@@ -17671,6 +17671,16 @@ paths:
                           primarily relevant to clients containing UI for changing it.
 
                           **Changes**: New in Zulip 9.0 (feature level 242).
+                      realm_empty_topic_display_name:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The name of the topic where messages sent without specifying
+                          a topic will appear.
+
+                          **Changes**: New in Zulip 10.0 (feature level 333). Previously,
+                          messages sent without specifying a topic were posted in `"(no topic)` topic.
                       realm_user_settings_defaults:
                         type: object
                         additionalProperties: false
