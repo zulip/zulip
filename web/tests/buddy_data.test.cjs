@@ -595,6 +595,12 @@ test("user_last_seen_time_status", ({override}) => {
 
     set_presence(selma.user_id, "idle");
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Idle");
+
+    presence.presence_info.set(old_user.user_id, {last_active: undefined});
+    const missing_callback = (user_id) => {
+        assert.equal(user_id, old_user.user_id);
+    };
+    assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id, missing_callback), "");
 });
 
 test("get_items_for_users", ({override}) => {
