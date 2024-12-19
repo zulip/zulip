@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const _ = require("lodash");
 
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 mock_esm("../src/settings_data", {
@@ -589,6 +589,21 @@ test("user_last_seen_time_status", ({override}) => {
 
     set_presence(selma.user_id, "idle");
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Idle");
+});
+
+test("get_user_last_seen_status", ({override_rewire}) => {
+    add_canned_users();
+
+    set_presence(selma.user_id, "active");
+    override_rewire(presence, "fetch_presence_for_user", noop);
+
+    assert.equal(buddy_data.get_user_last_seen_status(selma.user_id), "translated: Active now");
+
+    presence.presence_info.set(old_user.user_id, {last_active: undefined});
+    assert.equal(buddy_data.get_user_last_seen_status(old_user.user_id), undefined);
+
+    set_presence(selma.user_id, "idle");
+    assert.equal(buddy_data.get_user_last_seen_status(selma.user_id), "translated: Idle");
 });
 
 test("get_items_for_users", ({override}) => {
