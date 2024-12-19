@@ -6,7 +6,12 @@ from typing import Any
 from typing_extensions import override
 from zulip_bots.lib import extract_query_without_mention
 
-from zerver.lib.bot_lib import EmbeddedBotHandler, EmbeddedBotQuitError, get_bot_handler
+from zerver.lib.bot_lib import (
+    EmbeddedBotHandler,
+    EmbeddedBotQuitError,
+    do_flag_service_bots_messages_as_processed,
+    get_bot_handler,
+)
 from zerver.models import UserProfile
 from zerver.models.bots import get_bot_services
 from zerver.models.users import get_user_profile_by_id
@@ -53,3 +58,4 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                 )
             except EmbeddedBotQuitError as e:
                 logging.warning("%s", e)
+        do_flag_service_bots_messages_as_processed(user_profile, [message["id"]])
