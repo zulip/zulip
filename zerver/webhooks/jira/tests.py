@@ -64,6 +64,21 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
             self.assertFalse(m.called)
             self.assert_json_success(result)
 
+    def test_get_mention_account_name(self) -> None:
+        url = self.build_webhook_url(email="reharshmeena@gmail.com", jira_api_token="BATTATA-VADA")
+        payload = self.get_body("comment_created_with_account_mention")
+
+        with patch(
+            "zerver.webhooks.jira.view.get_mentioned_account_name"
+        ) as mock_get_mentioned_account_name:
+            mock_get_mentioned_account_name.return_value = "Harsh Meena"
+
+            # Sending the POST request
+            result = self.client_post(url, payload, content_type="application/json")
+
+        # Assert that the response is a success
+        self.assert_json_success(result)
+
     def test_created_with_channel_with_spaces_escaped(self) -> None:
         self.CHANNEL_NAME = quote("jira alerts")
         self.url = self.build_webhook_url()
