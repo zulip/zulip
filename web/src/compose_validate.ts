@@ -1,7 +1,9 @@
 import $ from "jquery";
+import _ from "lodash";
 
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
+import render_guest_in_dm_recipient_warning from "../templates/compose_banner/guest_in_dm_recipient_warning.hbs";
 import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
 import render_private_stream_warning from "../templates/compose_banner/private_stream_warning.hbs";
 import render_stream_wildcard_warning from "../templates/compose_banner/stream_wildcard_warning.hbs";
@@ -387,6 +389,76 @@ export function warn_if_in_search_view(): void {
         const new_row_html = render_compose_banner(context);
         compose_banner.append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
     }
+}
+
+export function clear_guest_in_dm_recipient_warning(): void {
+    const classname = compose_banner.CLASSNAMES.guest_in_dm_recipient_warning;
+    $(`#compose_banners .${CSS.escape(classname)}`).remove();
+}
+
+// Only called on recipient change. Adds new banner if not already
+// exists or updates the existing banner or remove banner is no
+// guest in the dm.
+export let warn_if_guest_in_dm_recipient = (): void => {
+    if (!compose_state.composing()) {
+        return;
+    }
+    const recipient_ids = compose_pm_pill.get_user_ids();
+    const guest_ids = people.filter_guest_ids(recipient_ids);
+
+    if (
+        !realm.realm_enable_guest_user_dm_warning ||
+        compose_state.get_message_type() !== "private" ||
+        guest_ids.length === 0
+    ) {
+        clear_guest_in_dm_recipient_warning();
+        compose_state.set_recipient_guest_ids_for_dm_warning([]);
+        return;
+    }
+    // If warning was shown earlier for same guests in the recipients, do nothing.
+    if (_.isEqual(compose_state.get_recipient_guest_ids_for_dm_warning(), guest_ids)) {
+        return;
+    }
+
+    const guest_names = people.user_ids_to_full_names_array(guest_ids);
+    let banner_text: string;
+
+    if (guest_names.length === 1) {
+        banner_text = $t(
+            {defaultMessage: "{name} is a guest in this organization."},
+            {name: guest_names[0]},
+        );
+    } else {
+        const names_string = util.format_array_as_list(guest_names, "long", "conjunction");
+        banner_text = $t(
+            {defaultMessage: "{names} are guests in this organization."},
+            {names: names_string},
+        );
+    }
+
+    const classname = compose_banner.CLASSNAMES.guest_in_dm_recipient_warning;
+    let $banner = $(`#compose_banners .${CSS.escape(classname)}`);
+
+    compose_state.set_recipient_guest_ids_for_dm_warning(guest_ids);
+    // Update banner text if banner already exists.
+    if ($banner.length === 1) {
+        $banner.find(".banner_content").text(banner_text);
+        return;
+    }
+
+    $banner = $(
+        render_guest_in_dm_recipient_warning({
+            banner_text,
+            classname: compose_banner.CLASSNAMES.guest_in_dm_recipient_warning,
+        }),
+    );
+    compose_banner.append_compose_banner_to_banner_list($banner, $("#compose_banners"));
+};
+
+export function rewire_warn_if_guest_in_dm_recipient(
+    value: typeof warn_if_guest_in_dm_recipient,
+): void {
+    warn_if_guest_in_dm_recipient = value;
 }
 
 function show_stream_wildcard_warnings(opts: StreamWildcardOptions): void {
