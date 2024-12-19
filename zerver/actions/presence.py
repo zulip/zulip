@@ -290,6 +290,7 @@ def update_user_presence(
         client,
         status,
     )
-    do_update_user_presence(user_profile, client, log_time, status)
+    if user_profile.presence_enabled:
+        do_update_user_presence(user_profile, client, log_time, status)
     if new_user_input:
         update_user_activity_interval(user_profile, log_time)
