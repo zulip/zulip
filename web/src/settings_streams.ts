@@ -11,12 +11,14 @@ import * as dropdown_widget from "./dropdown_widget.ts";
 import * as hash_parser from "./hash_parser.ts";
 import {$t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_profile_fields from "./settings_profile_fields.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
 
 function add_choice_row($widget: JQuery): void {
@@ -97,13 +99,15 @@ export function maybe_disable_widgets(): void {
         .prop("disabled", true);
 }
 
+let default_stream_list_widget: ListWidgetType<StreamSubscription, Record<"name", string>>;
+
 export function build_default_stream_table(): void {
     const $table = $("#admin_default_streams_table").expectOne();
 
     const stream_ids = stream_data.get_default_stream_ids();
     const subs = stream_ids.map((stream_id) => sub_store.get(stream_id)!);
 
-    ListWidget.create($table, subs, {
+    default_stream_list_widget = ListWidget.create($table, subs, {
         name: "default_streams_list",
         get_item: ListWidget.default_get_item,
         modifier_html(item) {
@@ -254,4 +258,13 @@ export function build_page(): void {
             delete_default_stream(stream_id, $row, $(this));
         },
     );
+
+    $("#admin-default-channels-list").on("click", ".clear_filter", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const $filter = $("#admin-default-channels-list").find(".search_container .search");
+        $filter.val("");
+        default_stream_list_widget.clear_text_filter();
+    });
 }
