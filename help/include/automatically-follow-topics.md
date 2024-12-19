@@ -7,7 +7,7 @@
 {settings_tab|notifications}
 
 1. Under **Topic notifications**, select the desired option from the
-   **Automatically follow topics** dropdown.
+   **Automatically follow topics based on my participation** dropdown.
 
 {end_tabs}
 

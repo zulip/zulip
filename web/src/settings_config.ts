@@ -550,7 +550,7 @@ export const preferences_settings_labels = {
 
 export const notification_settings_labels = {
     automatically_follow_topics_policy: $t({
-        defaultMessage: "Automatically follow topics",
+        defaultMessage: "Automatically follow topics based on my participation",
     }),
     automatically_follow_topics_where_mentioned: $t({
         defaultMessage: "Automatically follow topics where I'm mentioned",
