@@ -8,7 +8,6 @@ const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
@@ -73,7 +72,9 @@ const settings_exports = mock_esm("../src/settings_exports");
 const settings_invites = mock_esm("../src/settings_invites");
 const settings_linkifiers = mock_esm("../src/settings_linkifiers");
 const settings_playgrounds = mock_esm("../src/settings_playgrounds");
-const settings_notifications = mock_esm("../src/settings_notifications");
+const settings_notifications = mock_esm("../src/settings_notifications", {
+    user_settings_panel: {},
+});
 const settings_org = mock_esm("../src/settings_org");
 const settings_profile_fields = mock_esm("../src/settings_profile_fields");
 const settings_preferences = mock_esm("../src/settings_preferences");
@@ -153,6 +154,7 @@ const emoji = zrequire("emoji");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
 const presence = zrequire("presence");
+const sub_store = zrequire("sub_store");
 const user_status = zrequire("user_status");
 const onboarding_steps = zrequire("onboarding_steps");
 const user_groups = zrequire("user_groups");
@@ -184,6 +186,8 @@ const realm_emoji = {};
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 
 emoji.initialize({realm_emoji, emoji_codes});
+
+sub_store.add_hydrated_sub(events.test_streams.devel.stream_id, events.test_streams.devel);
 
 function assert_same(actual, expected) {
     // This helper prevents us from getting false positives
@@ -644,8 +648,10 @@ run_test("channel_folders", ({override}) => {
         assert.equal(folder_2.order, 1);
     }
 
-    blueslip.expect("error", "Unexpected event type channel_folder/other");
-    server_events_dispatch.dispatch_normal_event({type: "channel_folder", op: "other"});
+    assert.throws(
+        () => server_events_dispatch.dispatch_normal_event({type: "channel_folder", op: "other"}),
+        {message: "Unexpected op for channel_folder event"},
+    );
 });
 
 run_test("realm settings", ({override, override_rewire}) => {
@@ -764,8 +770,8 @@ run_test("realm settings", ({override, override_rewire}) => {
     override(stream_settings_components, "get_active_data", () => ({
         id: events.test_streams.devel.stream_id,
     }));
-    override(stream_settings_data, "get_sub_for_settings", () => ({
-        ...events.test_streams.devel,
+    override(stream_settings_data, "get_sub_for_settings", (sub) => ({
+        ...sub,
         can_add_subscribers: false,
     }));
     let add_subscribers_element_updated = false;
@@ -1632,38 +1638,61 @@ run_test("realm_export_consent", ({override}) => {
 });
 
 run_test("server_event_dispatch_op_errors", () => {
-    blueslip.expect("error", "Unexpected event type subscription/other");
-    server_events_dispatch.dispatch_normal_event({type: "subscription", op: "other"});
-    blueslip.expect("error", "Unexpected event type reaction/other");
-    server_events_dispatch.dispatch_normal_event({type: "reaction", op: "other"});
-    blueslip.expect("error", "Unexpected event type realm/update_dict/other");
-    server_events_dispatch.dispatch_normal_event({
-        type: "realm",
-        op: "update_dict",
-        property: "other",
-    });
-    blueslip.expect("error", "Unexpected event type realm_bot/other");
-    server_events_dispatch.dispatch_normal_event({type: "realm_bot", op: "other"});
-    blueslip.expect("error", "Unexpected event type realm_domains/other");
-    server_events_dispatch.dispatch_normal_event({type: "realm_domains", op: "other"});
-    blueslip.expect("error", "Unexpected event type realm_user/other");
-    server_events_dispatch.dispatch_normal_event({type: "realm_user", op: "other"});
-    blueslip.expect("error", "Unexpected event type stream/other");
-    server_events_dispatch.dispatch_normal_event({type: "stream", op: "other"});
-    blueslip.expect("error", "Unexpected event type typing/other");
-    server_events_dispatch.dispatch_normal_event({
-        type: "typing",
-        sender: {user_id: 5},
-        op: "other",
-    });
-    blueslip.expect("error", "Unexpected event type typing_edit_message/other");
-    server_events_dispatch.dispatch_normal_event({
-        type: "typing_edit_message",
-        sender_id: 5,
-        op: "other",
-    });
-    blueslip.expect("error", "Unexpected event type user_group/other");
-    server_events_dispatch.dispatch_normal_event({type: "user_group", op: "other"});
+    assert.throws(
+        () => server_events_dispatch.dispatch_normal_event({type: "subscription", op: "other"}),
+        {message: "Unexpected op for subscription event"},
+    );
+    assert.throws(
+        () => server_events_dispatch.dispatch_normal_event({type: "reaction", op: "other"}),
+        {message: "Unexpected op for reaction event"},
+    );
+    assert.throws(
+        () =>
+            server_events_dispatch.dispatch_normal_event({
+                type: "realm",
+                op: "update_dict",
+                property: "other",
+            }),
+        {message: "Unexpected property for realm/update_dict event"},
+    );
+    assert.throws(
+        () => server_events_dispatch.dispatch_normal_event({type: "realm_bot", op: "other"}),
+        {message: "Unexpected op for realm_bot event"},
+    );
+    assert.throws(
+        () => server_events_dispatch.dispatch_normal_event({type: "realm_domains", op: "other"}),
+        {message: "Unexpected op for realm_domains event"},
+    );
+    assert.throws(
+        () => server_events_dispatch.dispatch_normal_event({type: "realm_user", op: "other"}),
+        {message: "Unexpected op for realm_user event"},
+    );
+    assert.throws(
+        () => server_events_dispatch.dispatch_normal_event({type: "stream", op: "other"}),
+        {message: "Unexpected op for stream event"},
+    );
+    assert.throws(
+        () =>
+            server_events_dispatch.dispatch_normal_event({
+                type: "typing",
+                sender: {user_id: 5},
+                op: "other",
+            }),
+        {message: "Unexpected op for typing event"},
+    );
+    assert.throws(
+        () =>
+            server_events_dispatch.dispatch_normal_event({
+                type: "typing_edit_message",
+                sender_id: 5,
+                op: "other",
+            }),
+        {message: "Unexpected op for typing_edit_message event"},
+    );
+    assert.throws(
+        () => server_events_dispatch.dispatch_normal_event({type: "user_group", op: "other"}),
+        {message: "Unexpected op for user_group event"},
+    );
 });
 
 run_test("realm_user_settings_defaults", ({override}) => {

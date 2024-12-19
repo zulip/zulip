@@ -245,20 +245,16 @@ const server_event_union = z.discriminatedUnion("type", [
             type: z.literal("navigation_view"),
             op: z.literal("update"),
             fragment: z.string(),
-            data: z.object({is_pinned: z.optional(z.boolean()), name: z.optional(z.string())}),
+            data: z.partial(z.object({is_pinned: z.boolean(), name: z.string()})),
         }),
     ]),
     z.object({
         type: z.literal("onboarding_steps"),
         onboarding_steps: z.array(onboarding_step_schema),
     }),
-    // Legacy format because we don't enable simplified_presence_events
     z.object({
         type: z.literal("presence"),
-        user_id: z.number(),
-        server_timestamp: z.number(),
-        presence: presence_info_from_event_schema,
-        email: z.optional(z.string()),
+        presences: presence_info_from_event_schema,
     }),
     z.object({
         type: z.literal("push_device"),

@@ -1,4 +1,7 @@
+import assertNever from "assert-never";
 import $ from "jquery";
+import assert from "minimalistic-assert";
+import * as z from "zod/mini";
 
 import * as activity_ui from "./activity_ui.ts";
 import * as alert_words from "./alert_words.ts";
@@ -22,7 +25,7 @@ import * as emoji from "./emoji.ts";
 import * as emoji_frequency from "./emoji_frequency.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as gear_menu from "./gear_menu.ts";
-import * as gif_state from "./gif_state.ts";
+import {realm_group_setting_name_schema} from "./group_permission_settings.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as information_density from "./information_density.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
@@ -58,6 +61,7 @@ import * as scheduled_messages_feed_ui from "./scheduled_messages_feed_ui.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as scheduled_messages_ui from "./scheduled_messages_ui.ts";
 import * as scroll_bar from "./scroll_bar.ts";
+import type {ServerEvent} from "./server_event_types.ts";
 import * as settings_account from "./settings_account.ts";
 import * as settings_bots from "./settings_bots.ts";
 import * as settings_components from "./settings_components.ts";
@@ -78,7 +82,7 @@ import * as settings_streams from "./settings_streams.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as starred_messages from "./starred_messages.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
-import {current_user, realm} from "./state_data.ts";
+import {current_user, realm, realm_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_events from "./stream_events.ts";
 import * as stream_list from "./stream_list.ts";
@@ -98,16 +102,29 @@ import * as unread_ui from "./unread_ui.ts";
 import * as user_events from "./user_events.ts";
 import * as user_group_edit from "./user_group_edit.ts";
 import * as user_groups from "./user_groups.ts";
-import {user_settings} from "./user_settings.ts";
+import {
+    stream_notification_settings_schema,
+    user_settings,
+    user_settings_schema,
+} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
 import * as user_topics from "./user_topics.ts";
 import * as user_topics_ui from "./user_topics_ui.ts";
 
-export function dispatch_normal_event(event) {
-    const noop = function () {
+export const privacy_setting_name_schema = z.enum([
+    "send_stream_typing_notifications",
+    "send_private_typing_notifications",
+    "send_read_receipts",
+    "presence_enabled",
+    "email_address_visibility",
+    "allow_private_data_export",
+]);
+export type PrivacySettingName = z.infer<typeof privacy_setting_name_schema>;
+
+export function dispatch_normal_event(event: ServerEvent): void {
+    const noop = function (): void {
         // Do nothing
     };
-
     switch (event.type) {
         case "alert_words":
             alert_words.set_words(event.alert_words);
@@ -150,8 +167,7 @@ export function dispatch_normal_event(event) {
                     inbox_ui.complete_rerender();
                     break;
                 default:
-                    blueslip.error("Unexpected event type channel_folder/" + event.op);
-                    break;
+                    assertNever(event, "Unexpected op for channel_folder event");
             }
             break;
 
@@ -222,6 +238,8 @@ export function dispatch_normal_event(event) {
                     navigation_views.add_navigation_view(event.navigation_view);
                     break;
                 case "update":
+                    // TODO(evy): problem 2
+                    // find a way to fix the type to be only optional and not `| undefined`
                     navigation_views.update_navigation_view(event.fragment, event.data);
                     break;
                 case "remove":
@@ -240,14 +258,11 @@ export function dispatch_normal_event(event) {
             break;
 
         case "web_reload_client": {
-            const reload_options = {
+            reload.initiate({
                 save_compose: true,
                 reason: "update",
-            };
-            if (event.immediate) {
-                reload_options.immediate = true;
-            }
-            reload.initiate(reload_options);
+                immediate: event.immediate,
+            });
             break;
         }
 
@@ -262,8 +277,7 @@ export function dispatch_normal_event(event) {
                     emoji_frequency.update_emoji_frequency_on_remove_reaction_event(event);
                     break;
                 default:
-                    blueslip.error("Unexpected event type reaction/" + event.op);
-                    break;
+                    assertNever(event, "Unexpected op for reaction event");
             }
             message_events.update_views_filtered_on_message_property(
                 [event.message_id],
@@ -273,7 +287,7 @@ export function dispatch_normal_event(event) {
             break;
 
         case "realm": {
-            const realm_settings = {
+            const realm_settings: Record<string, () => void> = {
                 allow_message_editing: noop,
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
                 can_access_all_users_group: noop,
@@ -345,8 +359,10 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "update":
                     if (Object.hasOwn(realm_settings, event.property)) {
-                        realm["realm_" + event.property] = event.value;
-                        realm_settings[event.property]();
+                        const parsed_realm_key = z.keyof(realm_schema).parse("realm_" + event.property)
+                        // TODO(evy): problem 1
+                        realm[parsed_realm_key] = event.value;
+                        realm_settings[event.property]!();
                         settings_org.sync_realm_settings(event.property);
 
                         if (event.property === "name") {
@@ -359,9 +375,12 @@ export function dispatch_normal_event(event) {
                         case "default":
                             for (const [key, value] of Object.entries(event.data)) {
                                 if (key === "max_file_upload_size_mib") {
-                                    realm[key] = value;
+                                    assert(typeof value === "number");
+                                    realm.max_file_upload_size_mib = value;
                                 } else {
-                                    realm["realm_" + key] = value;
+                                    const parsed_realm_key = z.keyof(realm_schema).parse("realm_" + key)
+                                    // TODO(evy): problem 1
+                                    realm[parsed_realm_key] = value;
                                 }
 
                                 if (key === "topics_policy") {
@@ -371,16 +390,13 @@ export function dispatch_normal_event(event) {
 
                                 if (Object.hasOwn(realm_settings, key)) {
                                     settings_org.sync_realm_settings(key);
-                                    realm_settings[key]();
+                                    realm_settings[key]!();
                                 }
 
-                                if (
-                                    Object.keys(
-                                        realm.server_supported_permission_settings.realm,
-                                    ).includes(key)
-                                ) {
+                                const parsed = realm_group_setting_name_schema.safeParse(key);
+                                if (parsed.success) {
                                     user_group_edit.update_realm_setting_in_permissions_panel(
-                                        key,
+                                        parsed.data,
                                         group_setting_value_schema.parse(value),
                                     );
                                 }
@@ -426,13 +442,14 @@ export function dispatch_normal_event(event) {
                                         stream_settings_components.get_active_data().id;
                                     if (active_stream_id !== undefined) {
                                         const slim_sub = sub_store.get(active_stream_id);
+                                        assert(slim_sub !== undefined);
                                         const sub =
                                             stream_settings_data.get_sub_for_settings(slim_sub);
                                         stream_ui_updates.update_add_subscriptions_elements(sub);
                                     }
                                 }
                             }
-                            if (event.data.authentication_methods !== undefined) {
+                            if ("authentication_methods" in event.data) {
                                 settings_org.populate_auth_methods(
                                     settings_components.realm_authentication_methods_to_boolean_dict(),
                                 );
@@ -455,10 +472,7 @@ export function dispatch_normal_event(event) {
                             realm_logo.render();
                             break;
                         default:
-                            blueslip.error(
-                                "Unexpected event type realm/update_dict/" + event.property,
-                            );
-                            break;
+                            assertNever(event, "Unexpected property for realm/update_dict event");
                     }
                     break;
                 case "deactivated":
@@ -505,8 +519,7 @@ export function dispatch_normal_event(event) {
                     }
                     break;
                 default:
-                    blueslip.error("Unexpected event type realm_bot/" + event.op);
-                    break;
+                    assertNever(event, "Unexpected op for realm_bot event");
             }
             break;
 
@@ -544,7 +557,6 @@ export function dispatch_normal_event(event) {
 
         case "realm_domains":
             {
-                let i;
                 switch (event.op) {
                     case "add":
                         realm.realm_domains.push(event.realm_domain);
@@ -552,10 +564,9 @@ export function dispatch_normal_event(event) {
                         settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
                         break;
                     case "change":
-                        for (i = 0; i < realm.realm_domains.length; i += 1) {
-                            if (realm.realm_domains[i].domain === event.realm_domain.domain) {
-                                realm.realm_domains[i].allow_subdomains =
-                                    event.realm_domain.allow_subdomains;
+                        for (const realm_domain of realm.realm_domains) {
+                            if (realm_domain.domain === event.realm_domain.domain) {
+                                realm_domain.allow_subdomains = event.realm_domain.allow_subdomains;
                                 break;
                             }
                         }
@@ -563,8 +574,8 @@ export function dispatch_normal_event(event) {
                         settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
                         break;
                     case "remove":
-                        for (i = 0; i < realm.realm_domains.length; i += 1) {
-                            if (realm.realm_domains[i].domain === event.domain) {
+                        for (const [i, realm_domain] of realm.realm_domains.entries()) {
+                            if (realm_domain.domain === event.domain) {
                                 realm.realm_domains.splice(i, 1);
                                 break;
                             }
@@ -573,13 +584,13 @@ export function dispatch_normal_event(event) {
                         settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
                         break;
                     default:
-                        blueslip.error("Unexpected event type realm_domains/" + event.op);
-                        break;
+                        assertNever(event, "Unexpected op for realm_domains event");
                 }
             }
             break;
 
         case "realm_user_settings_defaults": {
+            // TODO(evy) problem 1
             realm_user_settings_defaults[event.property] = event.value;
             settings_realm_user_settings_defaults.update_page(event.property);
 
@@ -637,8 +648,7 @@ export function dispatch_normal_event(event) {
                     break;
                 }
                 default:
-                    blueslip.error("Unexpected event type realm_user/" + event.op);
-                    break;
+                    assertNever(event, "Unexpected op for realm_user event");
             }
             break;
 
@@ -723,6 +733,7 @@ export function dispatch_normal_event(event) {
 
                     for (const stream of event.streams) {
                         const sub = sub_store.get(stream.stream_id);
+                        assert(sub !== undefined);
                         if (overlays.streams_open()) {
                             stream_settings_ui.add_sub_to_table(sub);
                         }
@@ -731,7 +742,9 @@ export function dispatch_normal_event(event) {
                     break;
                 case "delete":
                     for (const stream_id of event.stream_ids) {
-                        const was_subscribed = sub_store.get(stream_id).subscribed;
+                        const sub = sub_store.get(stream_id);
+                        assert(sub !== undefined);
+                        const was_subscribed = sub.subscribed;
                         stream_data.delete_sub(stream_id);
                         stream_settings_ui.remove_stream(stream_id);
                         if (was_subscribed) {
@@ -768,8 +781,7 @@ export function dispatch_normal_event(event) {
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
                 default:
-                    blueslip.error("Unexpected event type stream/" + event.op);
-                    break;
+                    assertNever(event, "Unexpected op for stream event");
             }
             break;
 
@@ -821,6 +833,7 @@ export function dispatch_normal_event(event) {
                 case "remove":
                     for (const rec of event.subscriptions) {
                         const sub = sub_store.get(rec.stream_id);
+                        assert(sub !== undefined);
                         stream_events.mark_unsubscribed(sub);
                     }
                     break;
@@ -828,8 +841,7 @@ export function dispatch_normal_event(event) {
                     stream_events.update_property(event.stream_id, event.property, event.value);
                     break;
                 default:
-                    blueslip.error("Unexpected event type subscription/" + event.op);
-                    break;
+                    assertNever(event, "Unexpected op for subscription event");
             }
             break;
         case "typing":
@@ -846,8 +858,7 @@ export function dispatch_normal_event(event) {
                     typing_events.hide_notification(event);
                     break;
                 default:
-                    blueslip.error("Unexpected event type typing/" + event.op);
-                    break;
+                    assertNever(event, "Unexpected op for typing event");
             }
             break;
 
@@ -865,22 +876,28 @@ export function dispatch_normal_event(event) {
                     typing_events.hide_message_edit_notification(event);
                     break;
                 default:
-                    blueslip.error("Unexpected event type typing_edit_message/" + event.op);
-                    break;
+                    assertNever(event, "Unexpected op for typing_edit_message event");
             }
             break;
 
         case "user_settings": {
             const notification_name = event.property;
             if (settings_config.all_notification_settings.includes(notification_name)) {
+                const parsed_notfication_name = z
+                    .keyof(user_settings_schema)
+                    .parse(notification_name);
                 // Update the global settings checked when determining if we should notify
                 // for a given message. These settings do not affect whether or not a
                 // particular stream should receive notifications.
-                user_settings[notification_name] = event.value;
+                // TODO(evy) problem 1
+                user_settings[parsed_notfication_name] = event.value;
 
-                if (settings_config.stream_notification_settings.includes(notification_name)) {
+                const parsed = z
+                    .keyof(stream_notification_settings_schema)
+                    .safeParse(notification_name);
+                if (parsed.success) {
                     stream_ui_updates.update_notification_setting_checkbox(
-                        settings_config.specialize_stream_notification_setting[notification_name],
+                        settings_config.specialize_stream_notification_setting[parsed.data],
                     );
                 }
 
@@ -891,29 +908,20 @@ export function dispatch_normal_event(event) {
                         user_settings,
                     );
                 }
+                assert(settings_notifications.user_settings_panel !== undefined);
                 settings_notifications.update_page(settings_notifications.user_settings_panel);
                 break;
             }
 
-            // TODO/typescript: Move privacy_setting_name_schema and PrivacySettingName
-            // here from `settings_account` when this file is converted to typescript,
-            // and use them instead of `privacy_settings`.
-            const privacy_settings = [
-                "allow_private_data_export",
-                "email_address_visibility",
-                "presence_enabled",
-                "send_private_typing_notifications",
-                "send_read_receipts",
-                "send_stream_typing_notifications",
-            ];
-
-            if (privacy_settings.includes(event.property)) {
-                user_settings[event.property] = event.value;
-                settings_account.update_privacy_settings_box(event.property);
-                if (event.property === "presence_enabled") {
+            const parsed = privacy_setting_name_schema.safeParse(event.property);
+            if (parsed.success) {
+                // TODO(evy) problem 1
+                user_settings[parsed.data] = event.value;
+                settings_account.update_privacy_settings_box(parsed.data);
+                if (parsed.data === "presence_enabled") {
                     activity_ui.redraw_user(current_user.user_id);
                 }
-                if (event.property === "allow_private_data_export") {
+                if (parsed.data === "allow_private_data_export") {
                     settings_exports.refresh_allow_private_data_export_banner();
                 }
                 break;
@@ -951,6 +959,7 @@ export function dispatch_normal_event(event) {
 
             const original_home_view = user_settings.web_home_view;
             if (user_preferences.includes(event.property)) {
+                // TODO(evy) problem 1
                 user_settings[event.property] = event.value;
             }
             if (event.property === "default_language") {
@@ -963,6 +972,7 @@ export function dispatch_normal_event(event) {
                 settings_preferences.set_default_language(event.value);
             }
             if (event.property === "web_home_view") {
+                assert(typeof event.value === "string");
                 left_sidebar_navigation_area.handle_home_view_changed(event.value);
 
                 // If current hash is empty (home view), and the
@@ -986,6 +996,7 @@ export function dispatch_normal_event(event) {
                 }
             }
             if (event.property === "high_contrast_mode") {
+                assert(typeof event.value === "boolean");
                 $("body").toggleClass("high-contrast", event.value);
             }
             if (event.property === "demote_inactive_streams") {
@@ -1025,6 +1036,7 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "color_scheme") {
                 requestAnimationFrame(() => {
+                    assert(typeof event.value === "number");
                     theme.set_theme_and_update(event.value);
                 });
             }
@@ -1058,7 +1070,7 @@ export function dispatch_normal_event(event) {
                 // reload.
             }
             if (event.property === "emojiset") {
-                settings_preferences.report_emojiset_change(
+                void settings_preferences.report_emojiset_change(
                     settings_preferences.user_settings_panel,
                 );
                 // Rerender the whole message list UI
@@ -1125,6 +1137,7 @@ export function dispatch_normal_event(event) {
                     if (event.op === "add") {
                         unread_ops.process_read_messages_event(event.messages);
                     } else {
+                        assert(event.message_details !== undefined);
                         unread_ops.process_unread_messages_event({
                             message_ids: event.messages,
                             message_details: event.message_details,
@@ -1179,8 +1192,7 @@ export function dispatch_normal_event(event) {
                     break;
                 }
                 default:
-                    blueslip.error("Unexpected event type user_group/" + event.op);
-                    break;
+                    assertNever(event, "Unexpected op for user_group event");
             }
             break;
 
