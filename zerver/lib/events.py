@@ -471,6 +471,14 @@ def fetch_initial_state_data(
         )
 
         state["server_supported_permission_settings"] = get_server_supported_permission_settings()
+
+        state["server_min_deactivated_realm_deletion_days"] = (
+            settings.MIN_DEACTIVATED_REALM_DELETION_DAYS
+        )
+        state["server_max_deactivated_realm_deletion_days"] = (
+            settings.MAX_DEACTIVATED_REALM_DELETION_DAYS
+        )
+
     if want("realm_user_settings_defaults"):
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         state["realm_user_settings_defaults"] = {}
