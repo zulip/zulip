@@ -366,6 +366,11 @@
     justify-content: center;
 }
 
+.time-input-formatted-description {
+    font-style: italic;
+    opacity: 0.7;
+}
+
 #copy_email_address_modal {
     width: 800px;
 
