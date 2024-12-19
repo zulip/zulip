@@ -55,6 +55,11 @@ export function get_potential_members(): User[] {
     return potential_members.filter((user) => !user_id_set.has(user.user_id));
 }
 
+export function get_potential_subgroups(): UserGroup[] {
+    const potential_subgroups = user_groups.get_all_realm_user_groups();
+    return potential_subgroups.filter((group) => !subgroup_id_set.has(group.id));
+}
+
 export function add_user_ids(user_ids: number[]): void {
     for (const user_id of user_ids) {
         if (!user_id_set.has(user_id)) {
