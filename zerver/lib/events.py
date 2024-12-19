@@ -479,6 +479,7 @@ def fetch_initial_state_data(
             settings.MAX_DEACTIVATED_REALM_DELETION_DAYS
         )
 
+        state["realm_empty_topic_display_name"] = "testing general chat"
     if want("realm_user_settings_defaults"):
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         state["realm_user_settings_defaults"] = {}
