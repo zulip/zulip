@@ -133,7 +133,6 @@ test("basics", () => {
         is_muted: false,
         invite_only: true,
         history_public_to_subscribers: false,
-        stream_post_policy: settings_config.stream_post_policy_values.admins.code,
     };
     const test = {
         subscribed: true,
@@ -279,7 +278,6 @@ test("basics", () => {
                 is_muted: false,
                 name: "social",
                 stream_id: 2,
-                stream_post_policy: 2,
                 subscribed: true,
             },
             unique_id: 2,
@@ -309,7 +307,6 @@ test("basics", () => {
                 is_muted: false,
                 name: "social",
                 stream_id: 2,
-                stream_post_policy: 2,
                 subscribed: true,
             },
             unique_id: 2,
@@ -334,7 +331,6 @@ test("get_streams_for_user", ({override}) => {
         is_muted: false,
         invite_only: false,
         history_public_to_subscribers: false,
-        stream_post_policy: settings_config.stream_post_policy_values.admins.code,
     };
     const test = {
         color: "yellow",
@@ -350,7 +346,6 @@ test("get_streams_for_user", ({override}) => {
         is_muted: false,
         invite_only: false,
         history_public_to_subscribers: false,
-        stream_post_policy: settings_config.stream_post_policy_values.admins.code,
     };
     const errors = {
         color: "green",
@@ -359,7 +354,6 @@ test("get_streams_for_user", ({override}) => {
         is_muted: false,
         invite_only: false,
         history_public_to_subscribers: false,
-        stream_post_policy: settings_config.stream_post_policy_values.admins.code,
     };
     const subs = [denmark, social, test, world, errors];
     for (const sub of subs) {
@@ -555,7 +549,6 @@ test("stream_settings", ({override}) => {
         subscribed: true,
         invite_only: true,
         history_public_to_subscribers: true,
-        stream_post_policy: settings_config.stream_post_policy_values.admins.code,
         message_retention_days: 10,
         can_remove_subscribers_group: admins_group.id,
         can_administer_channel_group: nobody_group.id,
@@ -580,10 +573,6 @@ test("stream_settings", ({override}) => {
     assert.equal(sub_rows[2].invite_only, false);
 
     assert.equal(sub_rows[0].history_public_to_subscribers, true);
-    assert.equal(
-        sub_rows[0].stream_post_policy === settings_config.stream_post_policy_values.admins.code,
-        true,
-    );
     assert.equal(sub_rows[0].message_retention_days, 10);
 
     const sub = stream_data.get_sub("a");
@@ -591,7 +580,6 @@ test("stream_settings", ({override}) => {
         invite_only: false,
         history_public_to_subscribers: false,
     });
-    stream_data.update_stream_post_policy(sub, 1);
     stream_data.update_message_retention_setting(sub, -1);
     stream_data.update_stream_permission_group_setting(
         "can_remove_subscribers_group",
@@ -605,7 +593,6 @@ test("stream_settings", ({override}) => {
     );
     assert.equal(sub.invite_only, false);
     assert.equal(sub.history_public_to_subscribers, false);
-    assert.equal(sub.stream_post_policy, settings_config.stream_post_policy_values.everyone.code);
     assert.equal(sub.message_retention_days, -1);
     assert.equal(sub.can_remove_subscribers_group, moderators_group.id);
     assert.equal(sub.can_administer_channel_group, moderators_group.id);
@@ -890,7 +877,6 @@ test("muted_stream_ids", () => {
         is_muted: false,
         invite_only: true,
         history_public_to_subscribers: false,
-        stream_post_policy: settings_config.stream_post_policy_values.admins.code,
     };
     const test = {
         subscribed: true,
@@ -1282,7 +1268,6 @@ test("options for dropdown widget", () => {
         is_muted: false,
         invite_only: true,
         history_public_to_subscribers: false,
-        stream_post_policy: settings_config.stream_post_policy_values.admins.code,
     };
     const test = {
         subscribed: true,
@@ -1330,7 +1315,6 @@ test("options for dropdown widget", () => {
                 is_muted: false,
                 name: "social",
                 stream_id: 2,
-                stream_post_policy: 2,
                 subscribed: true,
             },
             unique_id: 2,
