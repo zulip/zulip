@@ -8,6 +8,9 @@
 
 1. Under **Deactivate organization**, click **Deactivate organization**.
 
+1. Select when the organization's data (users, channels, messages, etc.)
+   should be permanently deleted.
+
 1. Approve by clicking **Confirm**.
 
 {end_tabs}
@@ -17,7 +20,7 @@
     **Note**: This action cannot be undone by anyone in the organization. If you
     deactivated your organization by accident, please contact your server
     administrator ({{ support_email }}) as soon as possible, before the
-    deactivated organization is permanently deleted.
+    deactivated organization's data is permanently deleted.
 
 !!! warn ""
 
