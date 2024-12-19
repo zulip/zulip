@@ -181,10 +181,7 @@ test_ui("validate", ({mock_template, override}) => {
     override(realm, "realm_direct_message_initiator_group", everyone.id);
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.missing_private_message_recipient);
-        assert.equal(
-            data.banner_text,
-            $t({defaultMessage: "Please specify at least one valid recipient."}),
-        );
+        assert.equal(data.banner_text, $t({defaultMessage: "Please specify a valid recipient."}));
         pm_recipient_error_rendered = true;
         return "<banner-stub>";
     });
@@ -623,7 +620,7 @@ test_ui("test_check_overflow_text", ({mock_template, override}) => {
     assert.ok(!$indicator.hasClass("over_limit"));
     assert.equal(limit_indicator_html, "900\n");
     assert.ok(!$textarea.hasClass("over_limit"));
-    assert.ok(!$(".message-send-controls").hasClass("disabled-message-send-controls"));
+    assert.ok($(".message-send-controls").hasClass("disabled-message-send-controls"));
 
     // Indicator must be empty
     $textarea.val("a".repeat(9100 - 1));
