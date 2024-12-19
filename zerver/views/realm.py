@@ -595,7 +595,7 @@ def update_realm_user_settings_defaults(
     web_line_height_percent: Json[int] | None = None,
     translate_emoticons: Json[bool] | None = None,
     display_emoji_reaction_users: Json[bool] | None = None,
-    web_home_view: Literal["recent_topics", "inbox", "all_messages"] | None = None,
+    web_home_view: Literal["recent", "inbox", "all_messages"] | None = None,
     web_escape_navigates_to_home_view: Json[bool] | None = None,
     left_side_userlist: Json[bool] | None = None,
     emojiset: Annotated[str, check_string_in_validator(emojiset_choices)] | None = None,

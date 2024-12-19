@@ -76,7 +76,7 @@ export const user_settings_schema = stream_notification_settings_schema
         web_channel_default_view: z.number(),
         web_escape_navigates_to_home_view: z.boolean(),
         web_font_size_px: z.number(),
-        web_home_view: z.enum(["inbox", "recent_topics", "all_messages"]),
+        web_home_view: z.enum(["inbox", "recent", "all_messages"]),
         web_line_height_percent: z.number(),
         web_mark_read_on_scroll_policy: z.number(),
         web_navigate_to_sent_message: z.boolean(),

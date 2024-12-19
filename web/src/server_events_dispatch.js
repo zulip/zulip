@@ -819,9 +819,7 @@ export function dispatch_normal_event(event) {
                 // under settings, so we set the hash to the previous
                 // value of the home view.
                 if (!browser_history.state.hash_before_overlay && overlays.settings_open()) {
-                    browser_history.state.hash_before_overlay =
-                        "#" +
-                        (original_home_view === "recent_topics" ? "recent" : original_home_view);
+                    browser_history.state.hash_before_overlay = "#" + original_home_view;
                 }
             }
             if (event.property === "twenty_four_hour_time") {

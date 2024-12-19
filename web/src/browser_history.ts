@@ -191,9 +191,6 @@ export function get_current_state_show_more_topics(): boolean | undefined {
 
 export function get_home_view_hash(): string {
     let home_view_hash = `#${user_settings.web_home_view}`;
-    if (home_view_hash === "#recent_topics") {
-        home_view_hash = "#recent";
-    }
 
     if (home_view_hash === "#all_messages") {
         home_view_hash = "#feed";
