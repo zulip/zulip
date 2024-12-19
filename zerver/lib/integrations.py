@@ -588,6 +588,12 @@ INTEGRATIONS: dict[str, Integration] = {
         doc="zerver/integrations/openshift.md",
         stream_name="deployments",
     ),
+    "onyx": Integration(
+        "onyx",
+        ["productivity"],
+        logo="images/integrations/logos/onyx.png",
+        doc="zerver/integrations/onyx.md",
+    ),
     "perforce": Integration("perforce", ["version-control"], doc="zerver/integrations/perforce.md"),
     "phabricator": Integration(
         "phabricator", ["version-control"], doc="zerver/integrations/phabricator.md"
