@@ -3002,7 +3002,9 @@ class StreamAdminTest(ZulipTestCase):
         result = self.common_subscribe_to_streams(
             self.example_user("hamlet"), [deactivated_stream_name], allow_fail=True
         )
-        self.assert_json_error(result, f"Unable to access channel ({deactivated_stream_name}).")
+        self.assert_json_error(
+            result, f"Unable to access archived channel ({deactivated_stream_name})."
+        )
 
         # You cannot re-archive the stream
         with self.capture_send_event_calls(expected_num_events=0) as events:
@@ -6423,7 +6425,7 @@ class InviteOnlyStreamTest(ZulipTestCase):
         # Subscribing oneself to an invite-only stream is not allowed
         self.login_user(othello)
         result = self.common_subscribe_to_streams(othello, [stream_name], allow_fail=True)
-        self.assert_json_error(result, "Unable to access channel (Saxony).")
+        self.assert_json_error(result, "Unable to access private channel (Saxony).")
 
         # authorization_errors_fatal=False works
         self.login_user(othello)
