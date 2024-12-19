@@ -4,7 +4,10 @@
     justify-content: center;
     align-items: center;
     line-height: 1.3333;
-    font-size: var(--base-font-size-px);
+    /* The button font size should be 15px at a 16px base font size.
+       This resolves in pixels, and calc() allows scaling with the
+       base font size. */
+    font-size: calc(0.9375 * var(--base-font-size-px));
     font-family: "Source Sans 3 VF", sans-serif;
     font-weight: 550;
     letter-spacing: 0.02ch;
