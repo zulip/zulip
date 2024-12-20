@@ -143,6 +143,17 @@ Botserver process.  You can do this with the following procedure.
     site=http://hostname
     token=aQVQmSd6j6IHphJ9m1jhgHdbnhl5ZcsY
     ```
+    
+    If the bot needs a configuration file to run, it can be specified using
+    `bot-config-file=`.
+    ```
+    [helloworld]
+    email=foo-bot@hostname
+    key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
+    site=http://hostname
+    token=aQVQmSd6j6IHphJ9m1jhgHdbnhl5ZcsY
+    bot-config-file=~/path/to/helloworld.conf
+    ```
 
     To run an external bot, enter the path to the bot's python file in the square
     brackets `[]`. For example, if we want to run `~/Documents/my_new_bot.py`, our
