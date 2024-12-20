@@ -2963,13 +2963,13 @@ class MarkdownMentionTest(ZulipTestCase):
         msg = Message(sender=desdemona, sending_client=get_client("test"), realm=desdemona.realm)
         rendering_result = render_message_markdown(msg, content)
         self.assertEqual(rendering_result.mentions_user_ids, {hamlet.id})
-        self.assertNotIn(moderators_group, rendering_result.mentions_user_group_ids)
+        self.assertNotIn(moderators_group.id, rendering_result.mentions_user_group_ids)
 
         # Admin belonging to user group also cannot mention a system user group.
         msg = Message(sender=iago, sending_client=get_client("test"), realm=iago.realm)
         rendering_result = render_message_markdown(msg, content)
         self.assertEqual(rendering_result.mentions_user_ids, {hamlet.id})
-        self.assertNotIn(moderators_group, rendering_result.mentions_user_group_ids)
+        self.assertNotIn(moderators_group.id, rendering_result.mentions_user_group_ids)
 
 
 class MarkdownStreamMentionTests(ZulipTestCase):
