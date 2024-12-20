@@ -519,6 +519,14 @@
 
     color: var(--color-compose-scroll-icon);
     background: transparent;
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+
+    &:focus {
+        outline: 0;
+    }
 }
 
 .formatting-scroller-backward {
@@ -534,7 +542,7 @@
     &:active {
         background: var(--color-compose-background-scroll-backward-active);
 
-        .zulip-icon {
+        .scroller-backward-icon {
             /* Subtly shift arrow in scroll direction. */
             margin-left: -2px;
         }
@@ -554,11 +562,17 @@
     &:active {
         background: var(--color-compose-background-scroll-forward-active);
 
-        .zulip-icon {
+        .scroller-forward-icon {
             /* Subtly shift arrow in scroll direction. */
             margin-right: -2px;
         }
     }
+}
+
+.can-scroll-backward .formatting-scroller-backward,
+.can-scroll-forward .formatting-scroller-forward {
+    opacity: 1;
+    pointer-events: all;
 }
 
 .message-limit-indicator:not(:empty) {
