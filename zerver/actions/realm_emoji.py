@@ -8,9 +8,9 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.mime_types import INLINE_MIME_TYPES
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
 from zerver.lib.upload import upload_emoji_image
-from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.models import Realm, RealmAuditLog, RealmEmoji, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realm_emoji import EmojiInfo, get_all_custom_emoji_for_realm

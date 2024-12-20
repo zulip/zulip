@@ -8,28 +8,6 @@ import pyvips
 
 from zerver.models import Realm, UserProfile
 
-INLINE_MIME_TYPES = [
-    "application/pdf",
-    "audio/aac",
-    "audio/flac",
-    "audio/mp4",
-    "audio/mpeg",
-    "audio/wav",
-    "audio/webm",
-    "image/apng",
-    "image/avif",
-    "image/gif",
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-    "text/plain",
-    "video/mp4",
-    "video/webm",
-    # To avoid cross-site scripting attacks, DO NOT add types such
-    # as application/xhtml+xml, application/x-shockwave-flash,
-    # image/svg+xml, text/html, or text/xml.
-]
-
 
 @dataclass
 class StreamingSourceWithSize:
