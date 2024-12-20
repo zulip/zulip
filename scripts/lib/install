@@ -327,6 +327,19 @@ if [ "$mem_kb" -lt 1860000 ]; then
     exit 1
 fi
 
+# Anything under 5GB, we recommended allocating 2GB of swap.  Error
+# out if there's no swap.
+swap_kb=$(grep SwapTotal /proc/meminfo | awk '{print $2}')
+if [ "$mem_kb" -lt 5000000 ] && [ "$swap_kb" -eq 0 ]; then
+    set +x
+    echo -e '\033[0;31m' >&2
+    echo "No swap allocated; when running with < 5GB of RAM, we recommend at least 2GB of swap." >&2
+    echo "https://www.digitalocean.com/community/tutorials/how-to-add-swap-space-on-ubuntu-22-04" >&2
+    echo >&2
+    echo -e '\033[0m' >&2
+    exit 1
+fi
+
 # Do package update, e.g. do `apt-get update` on Debian
 if [ "$package_system" = apt ]; then
     # setup-apt-repo does an `apt-get update`
