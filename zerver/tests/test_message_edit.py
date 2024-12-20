@@ -17,11 +17,12 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.message import messages_for_ids
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import queries_captured
+from zerver.lib.test_helpers import most_recent_message, queries_captured
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Attachment, Message, NamedUserGroup, Realm, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
+from zerver.models.messages import UserMessage
 from zerver.models.realms import WildcardMentionPolicyEnum, get_realm
 from zerver.models.streams import get_stream
 
@@ -1556,6 +1557,42 @@ class EditMessageTest(ZulipTestCase):
                 },
             )
         self.assert_json_success(result)
+
+    def test_user_group_mentions_via_subgroup_when_editing(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("hamlet")
+        self.subscribe(user_profile, "Denmark")
+        my_group = check_add_user_group(
+            user_profile.realm, "my_group", [user_profile], acting_user=user_profile
+        )
+        my_group_via_subgroup = check_add_user_group(
+            user_profile.realm, "my_group_via_subgroup", [], acting_user=user_profile
+        )
+        add_subgroups_to_user_group(my_group_via_subgroup, [my_group], acting_user=None)
+
+        self.send_stream_message(
+            self.example_user("hamlet"), "Denmark", content="there is no mention"
+        )
+
+        message = most_recent_message(user_profile)
+        assert (
+            UserMessage.objects.get(
+                user_profile=user_profile, message=message
+            ).flags.mentioned.is_set
+            is False
+        )
+
+        result = self.client_patch(
+            "/json/messages/" + str(message.id),
+            {
+                "content": "test @*my_group_via_subgroup* mention",
+            },
+        )
+        self.assert_json_success(result)
+
+        assert UserMessage.objects.get(
+            user_profile=user_profile, message=message
+        ).flags.mentioned.is_set
 
     def test_user_group_mention_restrictions_while_editing(self) -> None:
         iago = self.example_user("iago")

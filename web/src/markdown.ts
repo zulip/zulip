@@ -58,7 +58,7 @@ export type MarkdownHelpers = {
 
     // user groups
     get_user_group_from_name: (name: string) => {id: number; name: string} | undefined;
-    is_member_of_user_group: (user_id: number, user_group_id: number) => boolean;
+    is_member_of_user_group: (user_group_id: number, user_id: number) => boolean;
 
     // stream hashes
     get_stream_by_name: (stream_name: string) => {stream_id: number; name: string} | undefined;
@@ -318,7 +318,7 @@ function parse_with_options(
                     display_text = "@" + group.name;
                     classes = "user-group-mention";
                     if (
-                        helper_config.is_member_of_user_group(helper_config.my_user_id(), group.id)
+                        helper_config.is_member_of_user_group(group.id, helper_config.my_user_id())
                     ) {
                         // Mentioned the current user's group.
                         mentioned_group = true;
