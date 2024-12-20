@@ -238,6 +238,11 @@ const custom_profile_field_types_schema = z.object({
 
 export type CustomProfileFieldTypes = z.infer<typeof custom_profile_field_types_schema>;
 
+export const realm_domain_schema = z.object({
+    domain: z.string(),
+    allow_subdomains: z.boolean(),
+});
+
 export const realm_playground_schema = z.object({
     id: z.number(),
     name: z.string(),
@@ -319,12 +324,7 @@ export const realm_schema = z.object({
     realm_direct_message_initiator_group: group_setting_value_schema,
     realm_direct_message_permission_group: group_setting_value_schema,
     realm_disallow_disposable_email_addresses: z.boolean(),
-    realm_domains: z.array(
-        z.object({
-            domain: z.string(),
-            allow_subdomains: z.boolean(),
-        }),
-    ),
+    realm_domains: z.array(realm_domain_schema),
     realm_email_auth_enabled: z.boolean(),
     realm_email_changes_disabled: z.boolean(),
     realm_emails_restricted_to_domains: z.boolean(),
