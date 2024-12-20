@@ -86,6 +86,7 @@ server_events.finished_initial_fetch();
 
 run_test("message_event", ({override}) => {
     const event = {
+        id: 1,
         type: "message",
         message,
         flags: [],
@@ -112,7 +113,20 @@ const setup = () => {
 run_test("event_dispatch_error", () => {
     setup();
 
-    const data = {events: [{type: "stream", op: "update", id: 1, other: "thing"}]};
+    const data = {
+        events: [
+            {
+                type: "stream",
+                op: "update",
+                id: 1,
+                other: "thing",
+                property: "description",
+                value: "",
+                name: "general",
+                stream_id: 1,
+            },
+        ],
+    };
     channel.get = (options) => {
         options.success(data);
     };
@@ -123,6 +137,7 @@ run_test("event_dispatch_error", () => {
 
     const logs = blueslip.get_test_logs("error");
     assert.equal(logs.length, 1);
+    assert.equal(logs[0].cause.message, "subs update error");
     assert.equal(logs[0].more_info.event.type, "stream");
     assert.equal(logs[0].more_info.event.op, "update");
     assert.equal(logs[0].more_info.event.id, 1);
@@ -132,7 +147,7 @@ run_test("event_dispatch_error", () => {
 run_test("event_new_message_error", () => {
     setup();
 
-    const data = {events: [{type: "message", id: 1, other: "thing", message}]};
+    const data = {events: [{type: "message", id: 1, other: "thing", message, flags: []}]};
     channel.get = (options) => {
         options.success(data);
     };
@@ -143,12 +158,27 @@ run_test("event_new_message_error", () => {
 
     const logs = blueslip.get_test_logs("error");
     assert.equal(logs.length, 1);
+    assert.equal(logs[0].cause.message, "insert error");
     assert.equal(logs[0].more_info, undefined);
 });
 
 run_test("event_edit_message_error", () => {
     setup();
-    const data = {events: [{type: "update_message", id: 1, other: "thing"}]};
+    const data = {
+        events: [
+            {
+                type: "update_message",
+                id: 1,
+                other: "thing",
+                user_id: 1,
+                rendering_only: false,
+                message_id: 1,
+                message_ids: [1],
+                flags: [],
+                edit_timestamp: 1,
+            },
+        ],
+    };
     channel.get = (options) => {
         options.success(data);
     };
@@ -158,5 +188,6 @@ run_test("event_edit_message_error", () => {
 
     const logs = blueslip.get_test_logs("error");
     assert.equal(logs.length, 1);
+    assert.equal(logs[0].cause.message, "update error");
     assert.equal(logs[0].more_info, undefined);
 });
