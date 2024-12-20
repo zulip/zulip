@@ -5,6 +5,7 @@ import assert from "minimalistic-assert";
 import * as activity_ui from "./activity_ui.ts";
 import * as blueslip from "./blueslip.ts";
 import * as compose_tooltips from "./compose_tooltips.ts";
+import * as compose_ui from "./compose_ui.ts";
 import type {MessageListData} from "./message_list_data.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import {MessageListView} from "./message_list_view.ts";
@@ -522,6 +523,7 @@ export class MessageList {
         // autosize will not change the height of the textarea if the `$row` is not
         // rendered in DOM yet. So, we call `autosize.update` post render.
         autosize($row.find(".message_edit_content"));
+        compose_ui.maybe_show_scrolling_formatting_buttons(".message-edit-feature-group");
     }
 
     hide_edit_message($row: JQuery): void {

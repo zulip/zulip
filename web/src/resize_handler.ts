@@ -26,6 +26,8 @@ export function handler(): void {
     }
     resize.resize_page_components();
     compose_ui.autosize_textarea($("textarea#compose-textarea"));
+    compose_ui.maybe_show_scrolling_formatting_buttons("#message-formatting-controls-container");
+    compose_ui.maybe_show_scrolling_formatting_buttons(".message-edit-feature-group");
     resize.update_recent_view();
     scroll_bar.handle_overlay_scrollbars();
 
