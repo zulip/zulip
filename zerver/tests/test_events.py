@@ -481,11 +481,11 @@ class BaseAction(ZulipTestCase):
                 print(json.dumps(event, indent=4))
 
             print("\nMISMATCHES:\n")
-            for k in state1:
-                if state1[k] != state2[k]:
+            for k, v1 in state1.items():
+                if v1 != state2[k]:
                     print("\nkey = " + k)
                     try:
-                        self.assertEqual({k: state1[k]}, {k: state2[k]})
+                        self.assertEqual({k: v1}, {k: state2[k]})
                     except AssertionError as e:
                         print(e)
             print(

@@ -237,9 +237,7 @@ class MissedMessageWorker(QueueProcessingWorker):
                     trigger=event.trigger, mentioned_user_group_id=event.mentioned_user_group_id
                 )
 
-            for user_profile_id in events_by_recipient:
-                events = events_by_recipient[user_profile_id]
-
+            for user_profile_id, events in events_by_recipient.items():
                 logging.info(
                     "Batch-processing %s missedmessage_emails events for user %s",
                     len(events),
