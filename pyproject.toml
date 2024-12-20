@@ -131,15 +131,13 @@ select = [
     "SLOT", # __slots__
     "SIM", # simplify
     "T10", # debugger
-    "TCH", # type-checking
+    "TC", # type-checking
     "TID", # tidy imports
     "UP", # upgrade
     "W", # style warnings
     "YTT", # sys.version
 ]
 ignore = [
-    "ANN101", # Missing type annotation for `self` in method
-    "ANN102", # Missing type annotation for `cls` in classmethod
     "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
     "B007", # Loop control variable not used within the loop body
     "B008", # Do not perform function calls in argument defaults
@@ -185,9 +183,9 @@ ignore = [
     "SIM108", # Use ternary operator `action = "[commented]" if action == "created" else f"{action} a [comment]"` instead of if-else-block
     "SIM114", # Combine `if` branches using logical `or` operator
     "SIM401", # Use `d.get(key, default)` instead of an `if` block
-    "TCH001", # Move application import into a type-checking block
-    "TCH002", # Move third-party import into a type-checking block
-    "TCH003", # Move standard library import into a type-checking block
+    "TC001", # Move application import into a type-checking block
+    "TC002", # Move third-party import into a type-checking block
+    "TC003", # Move standard library import into a type-checking block
 ]
 
 [tool.ruff.lint.flake8-gettext]
