@@ -143,7 +143,7 @@ Botserver process.  You can do this with the following procedure.
     site=http://hostname
     token=aQVQmSd6j6IHphJ9m1jhgHdbnhl5ZcsY
     ```
-    
+
     If the bot needs a configuration file to run, it can be specified using
     `bot-config-file=`.
     ```
