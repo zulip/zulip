@@ -1,5 +1,5 @@
 import base64
-import email
+import email.parser
 import email.policy
 import os
 from email.message import EmailMessage
@@ -105,10 +105,9 @@ Example:
             return self._parse_email_json_fixture(fixture_path)
         else:
             with open(fixture_path, "rb") as fp:
-                message = email.message_from_binary_file(fp, policy=email.policy.default)
-                # https://github.com/python/typeshed/issues/2417
-                assert isinstance(message, EmailMessage)
-                return message
+                return email.parser.BytesParser(
+                    _class=EmailMessage, policy=email.policy.default
+                ).parse(fp)
 
     def _prepare_message(self, message: EmailMessage, realm: Realm, stream_name: str) -> None:
         stream = get_stream(stream_name, realm)
