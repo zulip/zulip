@@ -1,6 +1,6 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import base64
-import email
+import email.parser
 import email.policy
 import logging
 from collections.abc import Mapping
@@ -29,11 +29,9 @@ class MirrorWorker(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
         rcpt_to = event["rcpt_to"]
         content = base64.b64decode(event["msg_base64"])
-        msg = email.message_from_bytes(
-            content,
-            policy=email.policy.default,
+        msg = email.parser.BytesParser(_class=EmailMessage, policy=email.policy.default).parsebytes(
+            content
         )
-        assert isinstance(msg, EmailMessage)  # https://github.com/python/typeshed/issues/2417
         if not is_missed_message_address(rcpt_to):
             # Missed message addresses are one-time use, so we don't need
             # to worry about emails to them resulting in message spam.
