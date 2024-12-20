@@ -2871,6 +2871,7 @@ class MarkdownMentionTest(ZulipTestCase):
         update_message_and_check_flag("edited", False)
         update_message_and_check_flag("@*support*", True)
         update_message_and_check_flag("@_*support*", False)
+        update_message_and_check_flag("@_*role:administrators*", False)
 
     def test_user_group_mention_invalid(self) -> None:
         sender_user_profile = self.example_user("othello")
@@ -2906,6 +2907,17 @@ class MarkdownMentionTest(ZulipTestCase):
         )
 
         self.assertEqual(rendering_result.mentions_user_group_ids, set())
+
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=sender_user_profile.realm, is_system_group=True
+        )
+        content = "Please contact @_*role:administrators*"
+        rendering_result = render_message_markdown(msg, content)
+        self.assertEqual(
+            rendering_result.rendered_content,
+            "<p>Please contact "
+            f'<span class="user-group-mention silent" data-user-group-id="{admins_group.id}">Administrators</span></p>',
+        )
 
     def test_deactivated_user_group_mention(self) -> None:
         sender_user_profile = self.example_user("othello")
@@ -2949,27 +2961,6 @@ class MarkdownMentionTest(ZulipTestCase):
         assert_silent_mention("> @_*backend*")
         assert_silent_mention("```quote\n@*backend*\n```")
         assert_silent_mention("```quote\n@_*backend*\n```")
-
-    def test_system_user_group_mention(self) -> None:
-        desdemona = self.example_user("desdemona")
-        iago = self.example_user("iago")
-        hamlet = self.example_user("hamlet")
-        moderators_group = NamedUserGroup.objects.get(
-            realm=iago.realm, name=SystemGroups.MODERATORS, is_system_group=True
-        )
-        content = "@*role:moderators* @**King Hamlet** test message"
-
-        # Owner cannot mention a system user group.
-        msg = Message(sender=desdemona, sending_client=get_client("test"), realm=desdemona.realm)
-        rendering_result = render_message_markdown(msg, content)
-        self.assertEqual(rendering_result.mentions_user_ids, {hamlet.id})
-        self.assertNotIn(moderators_group.id, rendering_result.mentions_user_group_ids)
-
-        # Admin belonging to user group also cannot mention a system user group.
-        msg = Message(sender=iago, sending_client=get_client("test"), realm=iago.realm)
-        rendering_result = render_message_markdown(msg, content)
-        self.assertEqual(rendering_result.mentions_user_ids, {hamlet.id})
-        self.assertNotIn(moderators_group.id, rendering_result.mentions_user_group_ids)
 
 
 class MarkdownStreamMentionTests(ZulipTestCase):

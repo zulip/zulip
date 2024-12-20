@@ -2322,6 +2322,25 @@ class StreamMessagesTest(ZulipTestCase):
         result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
         self.assert_json_success(result)
 
+        # Test mentioning system groups where can_mention_group is
+        # set to "Nobody" group.
+        self.assertEqual(
+            moderators_system_group.can_mention_group.named_user_group.name, SystemGroups.NOBODY
+        )
+        content = "Test mentioning user group @*role:moderators*"
+
+        with self.assertRaisesRegex(
+            JsonableError,
+            f"You are not allowed to mention user group '{moderators_system_group.name}'.",
+        ):
+            self.send_stream_message(iago, "test_stream", content)
+
+        # silent mentioning system groups is allowed.
+        content = "Test mentioning user group @_*role:moderators*"
+        msg_id = self.send_stream_message(iago, "test_stream", content)
+        result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
     def test_stream_message_mirroring(self) -> None:
         user = self.mit_user("starnine")
         self.subscribe(user, "Verona")
