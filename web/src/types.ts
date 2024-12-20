@@ -8,24 +8,6 @@ export const topic_link_schema = z.object({
 
 export type TopicLink = z.infer<typeof topic_link_schema>;
 
-// TODO/typescript: Move this to server_events_dispatch
-export type UserGroupUpdateEvent = {
-    id: number;
-    type: string;
-    group_id: number;
-    data: {
-        name?: string;
-        description?: string;
-        can_add_members_group?: number;
-        can_join_group?: number;
-        can_leave_group?: number;
-        can_manage_group?: number;
-        can_mention_group?: number;
-        can_remove_members_group?: number;
-        deactivated?: boolean;
-    };
-};
-
 // TODO/typescript: Move this to server_events
 export type UpdateMessageEvent = {
     id: number;
