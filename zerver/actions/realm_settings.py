@@ -267,11 +267,11 @@ def get_realm_authentication_methods_for_page_params_api(
 
     from corporate.models import CustomerPlan
 
-    for backend_name in result_dict:
+    for backend_name, backend_result in result_dict.items():
         available_for = AUTH_BACKEND_NAME_MAP[backend_name].available_for_cloud_plans
 
         if available_for is not None and realm.plan_type not in available_for:
-            result_dict[backend_name]["available"] = False
+            backend_result["available"] = False
 
             required_upgrade_plan_number = min(
                 set(available_for).intersection({Realm.PLAN_TYPE_STANDARD, Realm.PLAN_TYPE_PLUS})
@@ -286,11 +286,11 @@ def get_realm_authentication_methods_for_page_params_api(
                     CustomerPlan.TIER_CLOUD_PLUS
                 )
 
-            result_dict[backend_name]["unavailable_reason"] = _(
+            backend_result["unavailable_reason"] = _(
                 "You need to upgrade to the {required_upgrade_plan_name} plan to use this authentication method."
             ).format(required_upgrade_plan_name=required_upgrade_plan_name)
         else:
-            result_dict[backend_name]["available"] = True
+            backend_result["available"] = True
 
     return result_dict
 

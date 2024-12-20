@@ -159,8 +159,7 @@ def convert_channel_data(
             channel_members_map[channel_name] = []
             channel_admins_map[channel_name] = []
 
-        for username in user_data_map:
-            user_dict = user_data_map[username]
+        for username, user_dict in user_data_map.items():
             teams = user_dict["teams"]
             if user_dict["teams"] is None:
                 continue
@@ -845,8 +844,7 @@ def label_mirror_dummy_users(
 
 
 def reset_mirror_dummy_users(username_to_user: dict[str, dict[str, Any]]) -> None:
-    for username in username_to_user:
-        user = username_to_user[username]
+    for user in username_to_user.values():
         user["is_mirror_dummy"] = False
 
 
