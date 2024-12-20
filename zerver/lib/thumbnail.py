@@ -13,6 +13,7 @@ from django.utils.translation import gettext as _
 from typing_extensions import override
 
 from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.mime_types import INLINE_MIME_TYPES
 from zerver.lib.queue import queue_event_on_commit
 from zerver.models import ImageAttachment
 

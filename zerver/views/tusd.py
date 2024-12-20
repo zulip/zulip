@@ -14,7 +14,7 @@ from pydantic.alias_generators import to_pascal
 from confirmation.models import Confirmation, ConfirmationKeyError, get_object_from_key
 from zerver.decorator import get_basic_credentials, validate_api_key
 from zerver.lib.exceptions import AccessDeniedError, JsonableError
-from zerver.lib.mime_types import guess_type
+from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_type
 from zerver.lib.rate_limiter import is_local_addr
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.upload import (
@@ -26,7 +26,6 @@ from zerver.lib.upload import (
     sanitize_name,
     upload_backend,
 )
-from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.models import PreregistrationRealm, Realm, UserProfile
 
 

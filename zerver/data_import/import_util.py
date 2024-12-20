@@ -18,11 +18,10 @@ from django.utils.timezone import now as timezone_now
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.message import normalize_body_for_import
-from zerver.lib.mime_types import guess_extension
+from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_extension
 from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
-from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.models import (
     Attachment,
     DirectMessageGroup,
