@@ -447,11 +447,11 @@ def run_tests_via_node_js() -> int:
 def check_line_coverage(
     fn: str, line_coverage: dict[Any, Any], line_mapping: dict[Any, Any], log: bool = True
 ) -> bool:
-    missing_lines = []
-    for line in line_coverage:
-        if line_coverage[line] == 0:
-            actual_line = line_mapping[line]
-            missing_lines.append(str(actual_line["start"]["line"]))
+    missing_lines = [
+        str(line_mapping[line]["start"]["line"])
+        for line, coverage in line_coverage.items()
+        if coverage == 0
+    ]
     if missing_lines:
         if log:
             print_error(f"{fn} no longer has complete node test coverage")
