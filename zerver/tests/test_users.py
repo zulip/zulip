@@ -713,7 +713,6 @@ class PermissionTest(ZulipTestCase):
     def test_admin_user_can_change_profile_data(self) -> None:
         realm = get_realm("zulip")
         self.login("iago")
-        new_profile_data = []
         cordelia = self.example_user("cordelia")
 
         # Test for all type of data
@@ -729,14 +728,13 @@ class PermissionTest(ZulipTestCase):
             "Pronouns": "she/her",
         }
 
-        for field_name in fields:
-            field = CustomProfileField.objects.get(name=field_name, realm=realm)
-            new_profile_data.append(
-                {
-                    "id": field.id,
-                    "value": fields[field_name],
-                }
-            )
+        new_profile_data = [
+            {
+                "id": CustomProfileField.objects.get(name=field_name, realm=realm).id,
+                "value": value,
+            }
+            for field_name, value in fields.items()
+        ]
 
         result = self.client_patch(
             f"/json/users/{cordelia.id}", {"profile_data": orjson.dumps(new_profile_data).decode()}

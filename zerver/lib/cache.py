@@ -239,10 +239,10 @@ def cache_set_many(
     items: dict[str, Any], cache_name: str | None = None, timeout: int | None = None
 ) -> None:
     new_items = {}
-    for key in items:
+    for key, item in items.items():
         new_key = KEY_PREFIX + key
         validate_cache_key(new_key)
-        new_items[new_key] = items[key]
+        new_items[new_key] = item
     items = new_items
     remote_cache_stats_start()
     get_cache_backend(cache_name).set_many(items, timeout=timeout)
