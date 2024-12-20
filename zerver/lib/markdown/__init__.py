@@ -51,6 +51,7 @@ from zerver.lib.mention import (
     FullNameInfo,
     MentionBackend,
     MentionData,
+    get_user_group_mention_display_name,
 )
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
@@ -1989,7 +1990,7 @@ class UserGroupMentionPattern(CompiledInlineProcessor):
 
                 if not silent:
                     self.zmd.zulip_rendering_result.mentions_user_group_ids.add(user_group.id)
-                name = user_group.name
+                name = get_user_group_mention_display_name(user_group)
                 user_group_id = str(user_group.id)
             else:
                 # Don't highlight @-mentions that don't refer to a valid user
