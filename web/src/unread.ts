@@ -762,8 +762,8 @@ export function process_loaded_messages(
 
 type UnreadMessageData = {
     id: number;
-    mentioned: boolean;
-    mentioned_me_directly: boolean;
+    mentioned: boolean | undefined;
+    mentioned_me_directly: boolean | undefined;
     unread: boolean;
 } & (
     | {
