@@ -519,6 +519,8 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
         }
     }
 
+    const transcoded_image = $media.attr("data-transcoded-image");
+
     if (is_inline_video) {
         type = MediaType.InlineVideo;
         // Render video from original source to reduce load on our own servers.  The `url` is the
@@ -542,6 +544,8 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
         type = MediaType.Image;
         if ($media.attr("data-src-fullsize")) {
             source = $media.attr("data-src-fullsize");
+        } else if (transcoded_image && preview_src) {
+            source = preview_src.replace(/\/[^/]+$/, "/" + transcoded_image);
         } else {
             source = url;
         }
