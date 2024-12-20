@@ -1,9 +1,9 @@
 import base64
+import email.parser
 import email.policy
 import os
 import subprocess
 from collections.abc import Callable, Mapping
-from email import message_from_string
 from email.headerregistry import Address
 from email.message import EmailMessage, MIMEPart
 from typing import TYPE_CHECKING, Any
@@ -1671,9 +1671,9 @@ class TestContentTypeUnspecifiedCharset(ZulipTestCase):
         message_as_string = message_as_string.replace(
             'Content-Type: text/plain; charset="us-ascii"', "Content-Type: text/plain"
         )
-        incoming_message = message_from_string(message_as_string, policy=email.policy.default)
-        # https://github.com/python/typeshed/issues/2417
-        assert isinstance(incoming_message, EmailMessage)
+        incoming_message = email.parser.Parser(
+            _class=EmailMessage, policy=email.policy.default
+        ).parsestr(message_as_string)
 
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
@@ -1696,9 +1696,9 @@ class TestContentTypeInvalidCharset(ZulipTestCase):
             'Content-Type: text/plain; charset="us-ascii"',
             'Content-Type: text/plain; charset="bogus"',
         )
-        incoming_message = message_from_string(message_as_string, policy=email.policy.default)
-        # https://github.com/python/typeshed/issues/2417
-        assert isinstance(incoming_message, EmailMessage)
+        incoming_message = email.parser.Parser(
+            _class=EmailMessage, policy=email.policy.default
+        ).parsestr(message_as_string)
 
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
