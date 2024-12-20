@@ -28,7 +28,7 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import zulip_redirect_to_login
 from zerver.lib.attachments import validate_attachment_request
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.mime_types import guess_type
+from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_type
 from zerver.lib.response import json_success
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import (
@@ -42,7 +42,6 @@ from zerver.lib.upload import (
     get_public_upload_root_url,
     upload_message_attachment_from_request,
 )
-from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.lib.upload.local import assert_is_local_storage_path
 from zerver.lib.upload.s3 import get_signed_upload_url
 from zerver.models import Attachment, ImageAttachment, Realm, UserProfile
