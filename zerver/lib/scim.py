@@ -273,7 +273,7 @@ class ZulipSCIMUser(SCIMUser):
         self._password_set_to = None
         self._role_new_value = None
 
-        if email_new_value:
+        if email_new_value is not None:
             try:
                 # Note that the validate_email check that usually
                 # appears adjacent to email_allowed_for_realm is
@@ -296,6 +296,7 @@ class ZulipSCIMUser(SCIMUser):
                 raise ConflictError("Email address already in use: " + str(e))
 
         if self.is_new_user():
+            assert email_new_value is not None
             assert full_name_new_value is not None
             add_initial_stream_subscriptions = True
             if (
@@ -325,7 +326,7 @@ class ZulipSCIMUser(SCIMUser):
         if full_name_new_value:
             check_change_full_name(self.obj, full_name_new_value, acting_user=None)
 
-        if email_new_value:
+        if email_new_value is not None:
             do_change_user_delivery_email(self.obj, email_new_value)
 
         if role_new_value is not None:
