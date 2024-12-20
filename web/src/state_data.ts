@@ -153,9 +153,10 @@ export const raw_user_group_schema = z.object({
 export const channel_folder_schema = z.object({
     id: z.number(),
     name: z.string(),
+    description: z.string(),
     rendered_description: z.string(),
-    creator_id: z.nullable(z.number()),
     date_created: z.number(),
+    creator_id: z.nullable(z.number()),
     is_archived: z.boolean(),
 });
 
