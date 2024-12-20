@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 332  # Last bumped for data deletion of deactivated realms.
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (305, 1)  # bumped 2024-12-18 to add litellm
+PROVISION_VERSION = (306, 0)  # bumped 2024-12-20 to upgrade Python requirements
