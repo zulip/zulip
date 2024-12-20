@@ -68,6 +68,7 @@ generate an image preview element with the following format.
 <div class="message_inline_image">
     <a href="/user_uploads/path/to/image.png" title="image.png">
         <img data-original-dimensions="1920x1080"
+          data-original-content-type="image/png"
           src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">
     </a>
 </div>
@@ -83,7 +84,10 @@ desired. For example:
 ``` html
 <div class="message_inline_image">
     <a href="/user_uploads/path/to/image.png" title="image.png">
-        <img class="image-loading-placeholder" data-original-dimensions="1920x1080" src="/path/to/spinner.png">
+        <img class="image-loading-placeholder"
+          data-original-dimensions="1920x1080"
+          data-original-content-type="image/png"
+          src="/path/to/spinner.png">
     </a>
 </div>
 ```
@@ -122,6 +126,14 @@ previews:
   change over time.
 - Download button type elements should provide the original image
   (encoded via the `href` of the containing `a` tag).
+- The content-type of the original image is provided on a
+  `data-original-content-type` attribute, so clients can decide if
+  they are capable of rendering the original image.
+- For images whose formats which are not widely-accepted by browsers
+  (e.g., HEIC and TIFF), the image may contain a
+  `data-transcoded-image` attribute, which specifies a high-resolution
+  thumbnail format which clients may use instead of the original
+  image.
 - Lightbox elements for viewing an image should be designed to
   immediately display any already-downloaded thumbnail while fetching
   the original-quality image or an appropriate higher-quality
@@ -143,6 +155,11 @@ previews:
   format match what they requested.
 - No other processing of the URLs is recommended.
 
+**Changes**: In Zulip 10.0 (feature level 336), added
+`data-original-content-type` attribute to convey the type of the
+original image, and optional `data-transcoded-image` attribute for
+images with formats which are not widely supported by browsers.
+
 **Changes**: In Zulip 9.2 (feature levels 278-279, and 287+), added
 `data-original-dimensions` to the `image-loading-placeholder` spinner
 images, containing the dimensions of the original image.
@@ -159,7 +176,7 @@ point to the original image.
 
 Clients that correctly implement the current API should handle
 Thumbor-based older thumbnails correctly, as long as they do not
-assume that `data-original-dimension` is present. Clients should not
+assume that `data-original-dimensions` is present. Clients should not
 assume that messages sent prior to the introduction of thumbnailing
 have been re-rendered to use the new format or have thumbnails
 available.
