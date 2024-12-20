@@ -1200,13 +1200,15 @@ export function content_typeahead_selected(
             // will cause encoding issues.
             // "beginning" contains all the text before the cursor, so we use lastIndexOf to
             // avoid any other stream+topic mentions in the message.
-            const syntax_start_index = beginning.lastIndexOf("#**");
+            const syntax = "#**";
+            const syntax_start_index = beginning.lastIndexOf(syntax);
+            const stream_name = beginning.slice(
+                syntax_start_index + syntax.length,
+                beginning.lastIndexOf(">"),
+            );
             beginning =
                 beginning.slice(0, syntax_start_index) +
-                topic_link_util.get_stream_topic_link_syntax(
-                    beginning.slice(syntax_start_index),
-                    item.topic,
-                ) +
+                topic_link_util.get_stream_topic_link_syntax(stream_name, item.topic) +
                 " ";
             break;
         }
