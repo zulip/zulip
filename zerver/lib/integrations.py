@@ -476,7 +476,22 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         display_name="Slack-compatible webhook",
         logo="images/integrations/logos/slack.svg",
     ),
-    WebhookIntegration("slack", ["communication"]),
+    WebhookIntegration(
+        "slack",
+        ["communication"],
+        config_options=[
+            WebhookConfigOption(
+                name="slack_app_token",
+                description="Slack app bot token",
+                validator=check_string,
+            ),
+            WebhookConfigOption(
+                name="channel_mapping_options",
+                description="Map Slack channel to Zulip channel?",
+                validator=check_bool,
+            ),
+        ],
+    ),
     WebhookIntegration("sonarqube", ["continuous-integration"], display_name="SonarQube"),
     WebhookIntegration("sonarr", ["entertainment"]),
     WebhookIntegration("splunk", ["monitoring"]),
