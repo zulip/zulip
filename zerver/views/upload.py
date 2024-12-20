@@ -310,14 +310,18 @@ def serve_file(
                 if not thumbnail_format.animated
             ]
         else:
-            potential_output_formats = THUMBNAIL_OUTPUT_FORMATS
+            potential_output_formats = list(THUMBNAIL_OUTPUT_FORMATS)
         if requested_format not in potential_output_formats:
             if rendered_formats == []:
                 # We haven't rendered anything, and they requested
                 # something we don't support.
                 return serve_image_error(404, "images/errors/image-not-exist.png")
             elif requested_format in rendered_formats:
-                # Not a _current_ format, but we did render it at the time, so fine to serve
+                # Not a _current_ format, but we did render it at the
+                # time, so fine to serve.  We also end up here for
+                # TRANSCODED_IMAGE_FORMAT requests, which are not in
+                # the default THUMBNAIL_OUTPUT_FORMATS, but may exist
+                # for some images types not in INLINE_MIME_TYPES.
                 pass
             else:
                 # Find something "close enough".  This will not be a
@@ -337,7 +341,8 @@ def serve_file(
             # currently processing the row.
             with transaction.atomic(savepoint=False):
                 ensure_thumbnails(
-                    ImageAttachment.objects.select_for_update().get(id=image_attachment.id)
+                    ImageAttachment.objects.select_for_update().get(id=image_attachment.id),
+                    attachment.content_type,
                 )
 
         # Update the path that we are fetching to be the thumbnail

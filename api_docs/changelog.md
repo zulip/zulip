@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 336**
+
+* [Markdown message formatting](/api/message-formatting#image-previews): Added
+  `data-original-content-type` attribute to convey the type of the original
+  image, and optional `data-transcoded-image` attribute for images with formats
+  which are not widely supported by browsers.
+
 **Feature level 335**
 
 * [`GET /streams/{stream_id}/email_address`](/api/get-stream-email-address):

@@ -669,6 +669,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 "data-original-dimensions",
                 f"{metadata.original_width_px}x{metadata.original_height_px}",
             )
+            if metadata.original_content_type:
+                img.set(
+                    "data-original-content-type",
+                    metadata.original_content_type,
+                )
         else:
             img.set("src", image_url)
 

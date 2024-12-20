@@ -1273,7 +1273,10 @@ class RealmImportExportTest(ExportFile):
         expected_rendered_preview = (
             f'<p>An <a href="/user_uploads/{path_id}">image</a></p>\n'
             f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
-            f'<img data-original-dimensions="128x128" src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
+            "<img"
+            ' data-original-content-type="image/png"'
+            ' data-original-dimensions="128x128"'
+            f' src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
         )
         self.assertEqual(
             imported_message_with_thumbnail.rendered_content, expected_rendered_preview
