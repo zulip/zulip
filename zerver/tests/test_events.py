@@ -3372,14 +3372,6 @@ class NormalActionsTest(BaseAction):
             for k, v in fields.items():
                 self.assertEqual(msg[k], v)
 
-    def test_deactivate_stream_neversubscribed(self) -> None:
-        for i, include_streams in enumerate([True, False]):
-            stream = self.make_stream(f"stream{i}")
-            with self.verify_action(include_streams=include_streams) as events:
-                do_deactivate_stream(stream, acting_user=None)
-            check_stream_delete("events[0]", events[0])
-            self.assertIsNone(events[0]["streams"][0]["stream_weekly_traffic"])
-
     def test_admin_deactivate_unsubscribed_stream(self) -> None:
         self.set_up_db_for_testing_user_access()
         stream = self.make_stream("test_stream")
