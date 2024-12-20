@@ -4,6 +4,7 @@
 import autosize from "autosize";
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 import {
     insertTextIntoField,
     replaceFieldText,
@@ -146,6 +147,56 @@ export function rewire_insert_and_scroll_into_view(
     value: typeof insert_and_scroll_into_view,
 ): void {
     insert_and_scroll_into_view = value;
+}
+
+export function maybe_show_scrolling_formatting_buttons(container_selector: string): void {
+    const button_container = document.querySelector(container_selector);
+    const button_bar = document.querySelector(
+        `${container_selector} .compose-control-buttons-container`,
+    );
+
+    if (!button_container || !button_bar) {
+        return;
+    }
+
+    const button_container_width = button_container?.clientWidth;
+    const button_bar_width = button_bar?.scrollWidth;
+    const button_bar_scroll_left = button_bar?.scrollLeft;
+
+    const button_bar_max_left_scroll = button_bar_width - button_container_width;
+
+    assert(
+        typeof button_container_width === "number" &&
+            typeof button_bar_width === "number" &&
+            typeof button_bar_scroll_left === "number",
+    );
+
+    // Set these values as data attributes for ready access by
+    // other scrolling logic
+    //
+    // TODO: Modify eslint config, if we wish to avoid dataset
+    //
+    /* eslint unicorn/prefer-dom-node-dataset: "off" */
+    button_container.setAttribute("data-button-container-width", button_container_width.toString());
+    button_container.setAttribute("data-button-bar-width", button_bar_width.toString());
+    button_container.setAttribute(
+        "data-button-bar-max-left-scroll",
+        button_bar_max_left_scroll.toString(),
+    );
+
+    button_container.classList.remove("can-scroll-forward", "can-scroll-backward");
+
+    if (button_container_width < button_bar_width) {
+        // It's possible that the buttons may be scrolled prior
+        // to the viewport being resized
+        if (button_bar_scroll_left < button_bar_max_left_scroll) {
+            button_container?.classList.add("can-scroll-forward");
+        }
+
+        if (button_bar_scroll_left > 0) {
+            button_container?.classList.add("can-scroll-backward");
+        }
+    }
 }
 
 function get_focus_area(opts: ComposeTriggeredOptions): string {
