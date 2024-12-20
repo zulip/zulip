@@ -49,8 +49,11 @@ export const stream_specific_notification_settings_schema = z.object({
     wildcard_mentions_notify: z.boolean().nullable(),
 });
 
-export const never_subscribed_stream_schema = stream_schema.extend({
+export const api_stream_schema = stream_schema.extend({
     stream_weekly_traffic: z.number().nullable(),
+});
+
+export const never_subscribed_stream_schema = api_stream_schema.extend({
     subscribers: z.array(z.number()).optional(),
 });
 
@@ -61,7 +64,8 @@ export const stream_properties_schema = stream_specific_notification_settings_sc
 });
 
 // This is the raw data we get from the server for a subscription.
-export const api_stream_subscription_schema = stream_schema.merge(stream_properties_schema).extend({
-    stream_weekly_traffic: z.number().nullable(),
-    subscribers: z.array(z.number()).optional(),
-});
+export const api_stream_subscription_schema = api_stream_schema
+    .merge(stream_properties_schema)
+    .extend({
+        subscribers: z.array(z.number()).optional(),
+    });
