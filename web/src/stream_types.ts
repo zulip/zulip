@@ -69,3 +69,8 @@ export const api_stream_subscription_schema = api_stream_schema
     .extend({
         subscribers: z.array(z.number()).optional(),
     });
+
+export const updatable_stream_properties_schema = api_stream_subscription_schema.extend({
+    in_home_view: z.boolean(),
+});
+export type UpdatableStreamProperties = z.infer<typeof updatable_stream_properties_schema>;
