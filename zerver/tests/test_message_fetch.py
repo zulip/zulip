@@ -17,6 +17,7 @@ from analytics.models import RealmCount
 from zerver.actions.message_edit import do_update_message
 from zerver.actions.reactions import check_add_reaction
 from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.streams import do_deactivate_stream
 from zerver.actions.uploads import do_claim_attachments
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_deactivate_user
@@ -214,6 +215,86 @@ class NarrowBuilderTest(ZulipTestCase):
         self.assert_length(existing, 0)
 
         # Number of recipient ids will increase by 1 and not 3
+        self._do_add_term_test(
+            term,
+            "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))",
+        )
+
+    def test_add_term_using_channels_operator_and_archived_operand(self) -> None:
+        term = NarrowParameter(operator="channels", operand="archived")
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
+        )
+
+        # Add new channels
+        channel_dicts: list[StreamDict] = [
+            {
+                "name": "public-channel",
+                "description": "Public channel with public history",
+            },
+            {
+                "name": "private-channel",
+                "description": "Private channel with non-public history",
+                "invite_only": True,
+            },
+            {
+                "name": "private-channel-with-history",
+                "description": "Private channel with public history",
+                "invite_only": True,
+                "history_public_to_subscribers": True,
+            },
+        ]
+        realm = get_realm("zulip")
+        created, existing = create_streams_if_needed(realm, channel_dicts)
+        self.assert_length(created, 3)
+        self.assert_length(existing, 0)
+
+        # Archive the streams in the created list
+        for archived_stream in created:
+            do_deactivate_stream(archived_stream, acting_user=None)
+
+        # Verify the term behavior after archiving streams
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
+        )
+
+    def test_add_term_using_channels_operator_and_archived_operand_negated(self) -> None:
+        term = NarrowParameter(operator="channels", operand="archived", negated=True)
+        self._do_add_term_test(
+            term,
+            "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))",
+        )
+
+        # Add new channels
+        channel_dicts: list[StreamDict] = [
+            {
+                "name": "public-channel",
+                "description": "Public channel with public history",
+            },
+            {
+                "name": "private-channel",
+                "description": "Private channel with non-public history",
+                "invite_only": True,
+            },
+            {
+                "name": "private-channel-with-history",
+                "description": "Private channel with public history",
+                "invite_only": True,
+                "history_public_to_subscribers": True,
+            },
+        ]
+        realm = get_realm("zulip")
+        created, existing = create_streams_if_needed(realm, channel_dicts)
+        self.assert_length(created, 3)
+        self.assert_length(existing, 0)
+
+        # Archive the streams in the created list
+        for archived_stream in created:
+            do_deactivate_stream(archived_stream, acting_user=None)
+
+        # Verify the term behavior with negation after archiving streams
         self._do_add_term_test(
             term,
             "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))",
@@ -714,6 +795,20 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))",
         )
 
+    def test_add_term_using_streams_operator_and_archived_operand(self) -> None:
+        term = NarrowParameter(operator="streams", operand="archived")
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
+        )
+
+    def test_add_term_using_streams_operator_and_archived_operand_negated(self) -> None:
+        term = NarrowParameter(operator="streams", operand="archived", negated=True)
+        self._do_add_term_test(
+            term,
+            "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))",
+        )
+
     def _do_add_term_test(
         self, term: NarrowParameter, where_clause: str, params: dict[str, Any] | None = None
     ) -> None:
@@ -1029,7 +1124,9 @@ class NarrowLibraryTest(ZulipTestCase):
         self.assertTrue(
             is_spectator_compatible([NarrowParameter(operator="channels", operand="public")])
         )
-
+        self.assertTrue(
+            is_spectator_compatible([NarrowParameter(operator="channels", operand="archived")])
+        )
         # "is:private" is a legacy alias for "is:dm".
         self.assertFalse(
             is_spectator_compatible([NarrowParameter(operator="is", operand="private")])
@@ -1062,6 +1159,9 @@ class NarrowLibraryTest(ZulipTestCase):
         self.assertTrue(
             is_spectator_compatible([NarrowParameter(operator="streams", operand="public")])
         )
+        self.assertTrue(
+            is_spectator_compatible([NarrowParameter(operator="streams", operand="archived")])
+        )
 
 
 class IncludeHistoryTest(ZulipTestCase):
@@ -1084,6 +1184,18 @@ class IncludeHistoryTest(ZulipTestCase):
         # Negated -channels:public searches should not include history.
         narrow = [
             NarrowParameter(operator="channels", operand="public", negated=True),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+
+        # channels:archived searches should not include history for non-guest members.
+        narrow = [
+            NarrowParameter(operator="channels", operand="archived"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+
+        # Negated -channels:archived searches should not include history.
+        narrow = [
+            NarrowParameter(operator="channels", operand="archived", negated=True),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
@@ -1160,6 +1272,30 @@ class IncludeHistoryTest(ZulipTestCase):
         ]
         self.assertTrue(ok_to_include_history(narrow, user_profile, False))
 
+        narrow = [
+            NarrowParameter(operator="channels", operand="archived"),
+            NarrowParameter(operator="is", operand="mentioned"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+
+        narrow = [
+            NarrowParameter(operator="channels", operand="archived"),
+            NarrowParameter(operator="is", operand="unread"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+
+        narrow = [
+            NarrowParameter(operator="channels", operand="archived"),
+            NarrowParameter(operator="is", operand="alerted"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+
+        narrow = [
+            NarrowParameter(operator="channels", operand="archived"),
+            NarrowParameter(operator="is", operand="resolved"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+
         # simple True case
         narrow = [
             NarrowParameter(operator="channel", operand="public_channel"),
@@ -1181,6 +1317,10 @@ class IncludeHistoryTest(ZulipTestCase):
         # channels:public searches should not include history for guest members.
         narrow = [
             NarrowParameter(operator="channels", operand="public"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
+        narrow = [
+            NarrowParameter(operator="channels", operand="archived"),
         ]
         self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
 

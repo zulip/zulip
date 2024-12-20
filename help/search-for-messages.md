@@ -77,6 +77,8 @@ Zulip offers the following filters based on the location of the message.
   channels](/help/change-the-privacy-of-a-channel) in the organization, including
   channels you are not subscribed to; see details
   [below](#searching-shared-history).
+* `channels:archived`: Search the history of [archived
+  channels](/help/archive-a-channel#archive-a-channel_1) in the organization.
 
 ### Search by sender
 

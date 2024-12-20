@@ -45,6 +45,7 @@ from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import (
     can_access_stream_history_by_id,
     can_access_stream_history_by_name,
+    get_archived_streams_queryset,
     get_public_streams_queryset,
     get_stream_by_narrow_operand_access_unchecked,
     get_web_public_streams_queryset,
@@ -493,6 +494,8 @@ class NarrowBuilder:
             # Get all both subscribed and non-subscribed public channels
             # but exclude any private subscribed channels.
             recipient_queryset = get_public_streams_queryset(self.realm)
+        elif operand == "archived":
+            recipient_queryset = get_archived_streams_queryset(self.realm)
         elif operand == "web-public":
             recipient_queryset = get_web_public_streams_queryset(self.realm)
         else:
