@@ -6,6 +6,7 @@ import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 import * as recent_view_util from "./recent_view_util.ts";
+import type {UpdateMessageEvent} from "./server_event_types.ts";
 import * as settings_config from "./settings_config.ts";
 import type {
     StateData,
@@ -15,7 +16,6 @@ import type {
 import * as stream_data from "./stream_data.ts";
 import type {TopicHistoryEntry} from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
-import type {UpdateMessageEvent} from "./types.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
