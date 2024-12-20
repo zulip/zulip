@@ -5,9 +5,11 @@ from re import Match
 
 from django.conf import settings
 from django.db.models import Prefetch, Q
+from django_stubs_ext import StrPromise
 
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import NamedUserGroup, UserProfile
+from zerver.models.groups import SystemGroups
 from zerver.models.streams import get_linkable_streams
 
 BEFORE_MENTION_ALLOWED_REGEX = r"(?<![^\s\'\"\(\{\[\/<])"
@@ -275,7 +277,7 @@ class MentionData:
             # would take away the advantage of using 'prefetch_related'
             # because of not using group.direct_members.all().
             for group in NamedUserGroup.objects.filter(
-                realm_id=realm_id, name__in=user_group_names, is_system_group=False
+                realm_id=realm_id, name__in=user_group_names
             ).prefetch_related(
                 Prefetch(
                     "direct_members",
@@ -315,3 +317,10 @@ class MentionData:
 
 def silent_mention_syntax_for_user(user_profile: UserProfile) -> str:
     return f"@_**{user_profile.full_name}|{user_profile.id}**"
+
+
+def get_user_group_mention_display_name(user_group: NamedUserGroup) -> StrPromise | str:
+    if user_group.is_system_group:
+        return SystemGroups.GROUP_DISPLAY_NAME_MAP[user_group.name]
+
+    return user_group.name
