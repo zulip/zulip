@@ -11,9 +11,9 @@ To run a Zulip server, you will need:
   - x86-64
   - aarch64
 - At least 2 GB RAM, and 10 GB disk space
+  - If you have < 5 GB RAM, we require some swap space; we recommend configuring
+    2 GB of swap
   - If you expect 100+ users: 4 GB RAM, and 2 CPUs
-  - If you intend to [upgrade from Git][upgrade-from-git]: 3 GB RAM, or
-    2G and at least 1G of swap configured.
 - A hostname in DNS
 - Credentials for sending email
 
@@ -63,11 +63,10 @@ sudo apt update
 
 - CPU and memory: For installations with 100+ users you'll need a
   minimum of **2 CPUs** and **4 GB RAM**. For installations with fewer
-  users, 1 CPU and 2 GB RAM is sufficient. We strongly recommend against
-  installing with less than 2 GB of RAM, as you will likely experience
-  out of memory issues installing dependencies. We recommend against
-  using highly CPU-limited servers like the AWS `t2` style instances
-  for organizations with hundreds of users (active or no).
+  users, 1 CPU and 2 GB RAM with 2 GB of swap is sufficient. We
+  recommend against using highly CPU-limited servers like the AWS `t2`
+  style instances for organizations with hundreds of users (active or
+  no).
 
 - Disk space: You'll need at least 10 GB of free disk space for a
   server with dozens of users. We recommend using an SSD and avoiding
