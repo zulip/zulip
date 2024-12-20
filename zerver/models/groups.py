@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import CASCADE
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext_lazy
 from django_cte import CTEManager
 
 from zerver.lib.types import GroupPermissionSetting
@@ -16,6 +17,17 @@ class SystemGroups:
     MEMBERS = "role:members"
     EVERYONE = "role:everyone"
     NOBODY = "role:nobody"
+
+    GROUP_DISPLAY_NAME_MAP = {
+        NOBODY: gettext_lazy("Nobody"),
+        OWNERS: gettext_lazy("Owners"),
+        ADMINISTRATORS: gettext_lazy("Administrators"),
+        MODERATORS: gettext_lazy("Moderators"),
+        FULL_MEMBERS: gettext_lazy("Full members"),
+        MEMBERS: gettext_lazy("Members"),
+        EVERYONE: gettext_lazy("Everyone"),
+        EVERYONE_ON_INTERNET: gettext_lazy("Everyone on the internet"),
+    }
 
 
 class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
