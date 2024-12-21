@@ -394,7 +394,7 @@ test("empty_query_suggestions", () => {
     assert.equal(describe("is:dm"), "Direct messages");
     assert.equal(describe("is:starred"), "Starred messages");
     assert.equal(describe("is:mentioned"), "@-mentions");
-    assert.equal(describe("is:alerted"), "Alerted messages");
+    assert.equal(describe("is:alerted"), "Messages containing watched phrases");
     assert.equal(describe("is:unread"), "Unread messages");
     assert.equal(describe("is:resolved"), "Topics marked as resolved");
     assert.equal(describe("is:followed"), "Followed topics");
@@ -494,7 +494,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     assert.equal(describe("is:dm"), "Direct messages");
     assert.equal(describe("is:starred"), "Starred messages");
     assert.equal(describe("is:mentioned"), "@-mentions");
-    assert.equal(describe("is:alerted"), "Alerted messages");
+    assert.equal(describe("is:alerted"), "Messages containing watched phrases");
     assert.equal(describe("is:unread"), "Unread messages");
     assert.equal(describe("is:resolved"), "Topics marked as resolved");
     assert.equal(describe("is:followed"), "Followed topics");
@@ -516,7 +516,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     assert.equal(describe("-is:dm"), "Exclude direct messages");
     assert.equal(describe("-is:starred"), "Exclude starred messages");
     assert.equal(describe("-is:mentioned"), "Exclude @-mentions");
-    assert.equal(describe("-is:alerted"), "Exclude alerted messages");
+    assert.equal(describe("-is:alerted"), "Exclude messages containing watched phrases");
     assert.equal(describe("-is:unread"), "Exclude unread messages");
     assert.equal(describe("-is:resolved"), "Exclude topics marked as resolved");
     assert.equal(describe("-is:followed"), "Exclude followed topics");
