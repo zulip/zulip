@@ -31,6 +31,7 @@ import * as stream_data from "./stream_data.ts";
 import type {StreamPillData} from "./stream_pill.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
+import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as topic_link_util from "./topic_link_util.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
@@ -463,6 +464,10 @@ export function tokenize_compose_str(s: string): string {
                 ) {
                     // return any string as long as its not ''.
                     return ">topic_jump";
+                } else if (s.slice(Math.max(0, i - 1), i) === "#") {
+                    // a shorter syntax for linking to the channel currently
+                    // composing to (in stream messages)
+                    return ">topic_list_shortcut";
                 }
                 // maybe topic_list; let's let the stream_topic_regex decide later.
                 return ">topic_list";
@@ -921,10 +926,20 @@ export function get_candidates(
 
         // Matches '#**stream name>some text' at the end of a split.
         const stream_topic_regex = /#\*\*([^*>]+)>([^*]*)$/;
-        const should_begin_typeahead = stream_topic_regex.test(split[0]);
+        // Shortcut to link to topics in the channel currently composing to.
+        // `>` is enclosed in a capture group to use the code path for both cases.
+        const shortcut_regex = /#(>)([^*]*)$/;
+        const should_begin_typeahead =
+            stream_topic_regex.test(split[0]) || shortcut_regex.test(split[0]);
         if (should_begin_typeahead) {
             completing = "topic_list";
-            const tokens = stream_topic_regex.exec(split[0]);
+            let stream_id: number | undefined;
+            let tokens = stream_topic_regex.exec(split[0]);
+            if (tokens === null) {
+                // If the regex doesn't match, it means the shortcut syntax is used.
+                tokens = shortcut_regex.exec(split[0]);
+                stream_id = compose_state.stream_id();
+            }
             assert(tokens !== null);
             if (tokens[1]) {
                 const stream_name = tokens[1];
@@ -934,8 +949,9 @@ export function get_candidates(
                 if (token.startsWith(" ")) {
                     return [];
                 }
-
-                const stream_id = stream_data.get_stream_id(stream_name);
+                if (stream_id === undefined) {
+                    stream_id = stream_data.get_stream_id(stream_name);
+                }
                 const topic_list = topics_seen_for(stream_id);
                 if (should_show_custom_query(token, topic_list)) {
                     topic_list.push(token);
@@ -1175,13 +1191,30 @@ export function content_typeahead_selected(
             // will cause encoding issues.
             // "beginning" contains all the text before the cursor, so we use lastIndexOf to
             // avoid any other stream+topic mentions in the message.
-            const syntax_start_index = beginning.lastIndexOf("#**");
+            let channel_name = "";
+
+            // Both #** and #> are valid syntaxes for stream+topic mentions.
+            // `#>` is a shorter syntax for linking to the channel currently
+            // composing to and opening the topic_list typeahead.
+            const channel_topic_mention_start_regex = /#\*\*|#>/g;
+            const match = beginning.matchAll(channel_topic_mention_start_regex).toArray();
+            const syntax_text = match.at(-1)![0];
+            const syntax_start_index = match.at(-1)!.index;
+            if (syntax_text === "#**") {
+                channel_name = beginning.slice(
+                    syntax_start_index + syntax_text.length,
+                    beginning.lastIndexOf(">"),
+                );
+            } else {
+                const stream_id = compose_state.stream_id();
+                assert(stream_id !== undefined);
+                const stream = sub_store.get(stream_id);
+                assert(stream !== undefined);
+                channel_name = stream.name;
+            }
             beginning =
                 beginning.slice(0, syntax_start_index) +
-                topic_link_util.get_stream_topic_link_syntax(
-                    beginning.slice(syntax_start_index),
-                    item.topic,
-                ) +
+                topic_link_util.get_stream_topic_link_syntax(channel_name, item.topic) +
                 " ";
             break;
         }
