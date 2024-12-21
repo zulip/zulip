@@ -683,7 +683,7 @@ paths:
                                     Removed `role` field from the dictionary
                                     in Zulip 6.0 (feature level 133).
                                   items:
-                                    $ref: "#/components/schemas/Subscriptions"
+                                    $ref: "#/components/schemas/Subscription"
                               additionalProperties: false
                               example:
                                 {
@@ -10161,7 +10161,7 @@ paths:
                           Removed `role` field from the dictionary
                           in Zulip 6.0 (feature level 133).
                         items:
-                          $ref: "#/components/schemas/Subscriptions"
+                          $ref: "#/components/schemas/Subscription"
                     example:
                       {
                         "msg": "",
@@ -14819,7 +14819,7 @@ paths:
                       subscriptions:
                         type: array
                         items:
-                          $ref: "#/components/schemas/Subscriptions"
+                          $ref: "#/components/schemas/Subscription"
                         description: |
                           Present if `subscription` is present in `fetch_event_types`.
 
@@ -14835,7 +14835,7 @@ paths:
                       unsubscribed:
                         type: array
                         items:
-                          $ref: "#/components/schemas/Subscriptions"
+                          $ref: "#/components/schemas/Subscription"
                         description: |
                           Present if `subscription` is present in `fetch_event_types`.
 
@@ -22864,7 +22864,7 @@ components:
         - 600
       default: 400
       example: 600
-    Subscriptions:
+    Subscription:
       type: object
       additionalProperties: false
       properties:
