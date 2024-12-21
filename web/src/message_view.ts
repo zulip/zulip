@@ -997,6 +997,17 @@ export function maybe_add_local_messages(opts: {
         assert(id_info.final_select_id !== undefined);
 
         if (!load_local_messages(msg_data, superset_data)) {
+            // We don't have the message we want to select locally,
+            // and since our unread data is incomplete, we just
+            // ask server directly for `first_unread`.
+            if (
+                unread.old_unreads_missing &&
+                // Ensure our intent is to narrow to first unread.
+                id_info.final_select_id === unread_info.msg_id &&
+                unread_info.msg_id !== id_info.target_id
+            ) {
+                id_info.final_select_id = undefined;
+            }
             return;
         }
 
