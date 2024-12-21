@@ -2111,3 +2111,23 @@ body:not(.hide-left-sidebar) {
         border: 1px solid var(--color-border-personal-menu-avatar);
     }
 }
+
+.popover-menu-user-avatar-container.deactivated,
+.inline_profile_picture.deactivated {
+    position: relative;
+
+    > img {
+        opacity: 0.5;
+    }
+
+    .deactivated-user-icon {
+        background-color: var(--color-background-deactivated-user-circle);
+        color: var(--color-user-circle-deactivated);
+        padding: 0.2em;
+        font-size: 1em;
+        position: absolute;
+        border-radius: 10px;
+        bottom: -2px;
+        right: -2px;
+    }
+}
