@@ -17,7 +17,7 @@ authoritatively render messages to HTML (and implements
 slow/expensive/complex features like querying the Twitter API to
 render tweets nicely). The frontend implementation is in JavaScript,
 based on [marked.js](https://github.com/chjj/marked)
-(`web/src/echo.js`), and is used to preview and locally echo
+(`web/src/echo.ts`), and is used to preview and locally echo
 messages the moment the sender hits Enter, without waiting for round
 trip from the server. Those frontend renderings are only shown to the
 sender of a message, and they are (ideally) identical to the backend
