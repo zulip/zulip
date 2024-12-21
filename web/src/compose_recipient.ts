@@ -33,14 +33,14 @@ type DirectMessagesOption = {
     name: string;
 };
 
-function composing_to_current_topic_narrow(): boolean {
+export function composing_to_current_topic_narrow(): boolean {
     return (
         util.lower_same(compose_state.stream_name(), narrow_state.stream_name() ?? "") &&
         util.lower_same(compose_state.topic(), narrow_state.topic() ?? "")
     );
 }
 
-function composing_to_current_private_message_narrow(): boolean {
+export function composing_to_current_private_message_narrow(): boolean {
     const compose_state_recipient = compose_state.private_message_recipient();
     const narrow_state_recipient = narrow_state.pm_emails_string();
     if (narrow_state_recipient === undefined) {
