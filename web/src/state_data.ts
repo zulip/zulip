@@ -321,6 +321,7 @@ export const realm_schema = z.object({
             config: z.record(z.string()),
         }),
     ),
+    realm_enable_guest_user_dm_warning: z.boolean(),
     realm_enable_guest_user_indicator: z.boolean(),
     realm_enable_read_receipts: z.boolean(),
     realm_enable_spectator_access: z.boolean(),
