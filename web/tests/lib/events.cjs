@@ -1094,11 +1094,11 @@ exports.fixtures = {
         value: "inbox",
     },
 
-    user_settings__web_home_view_recent_topics: {
+    user_settings__web_home_view_recent: {
         type: "user_settings",
         op: "update",
         property: "web_home_view",
-        value: "recent_topics",
+        value: "recent",
     },
 
     user_settings__web_line_height_percent: {
