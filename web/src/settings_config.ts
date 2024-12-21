@@ -187,6 +187,7 @@ export type DisplaySettings = {
 export const information_section_checkbox_group: DisplaySettings = {
     settings: {
         user_preferences: [
+            "web_left_sidebar_unreads_count_summary",
             "starred_message_counts",
             "receives_typing_notifications",
             "fluid_layout_width",
@@ -578,6 +579,9 @@ export const preferences_settings_labels = {
     ),
     receives_typing_notifications: $t({defaultMessage: "Show when other users are typing"}),
     starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
+    web_left_sidebar_unreads_count_summary: $t({
+        defaultMessage: "Show unread count summaries in the left sidebar",
+    }),
     twenty_four_hour_time: $t({defaultMessage: "Time format"}),
     translate_emoticons: new Handlebars.SafeString(
         $t_html({
