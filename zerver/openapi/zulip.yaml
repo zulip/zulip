@@ -1633,7 +1633,7 @@ paths:
                                   enum:
                                     - add
                                 attachment:
-                                  $ref: "#/components/schemas/Attachments"
+                                  $ref: "#/components/schemas/Attachment"
                                 upload_space_used:
                                   type: integer
                                   description: |
@@ -1674,7 +1674,7 @@ paths:
                                   enum:
                                     - update
                                 attachment:
-                                  $ref: "#/components/schemas/Attachments"
+                                  $ref: "#/components/schemas/Attachment"
                                 upload_space_used:
                                   type: integer
                                   description: |
@@ -5660,7 +5660,7 @@ paths:
                           A list of `attachment` objects, each containing
                           details about a file uploaded by the user.
                         items:
-                          $ref: "#/components/schemas/Attachments"
+                          $ref: "#/components/schemas/Attachment"
                       upload_space_used:
                         type: integer
                         description: |
@@ -8474,7 +8474,7 @@ paths:
 
                           New in Zulip 10.0 (feature level 285).
                         items:
-                          $ref: "#/components/schemas/Attachments"
+                          $ref: "#/components/schemas/Attachment"
                     example:
                       {
                         "result": "success",
@@ -21808,7 +21808,7 @@ components:
         filtering by event type in [POST /register](/api/register-queue).
     Anchor:
       type: string
-    Attachments:
+    Attachment:
       type: object
       description: |
         Dictionary containing details of a file uploaded by a user.
