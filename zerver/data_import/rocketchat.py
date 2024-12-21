@@ -64,8 +64,7 @@ def process_users(
     realm_owners: list[int] = []
     bots: list[int] = []
 
-    for rc_user_id in user_id_to_user_map:
-        user_dict = user_id_to_user_map[rc_user_id]
+    for rc_user_id, user_dict in user_id_to_user_map.items():
         is_mirror_dummy = False
         is_bot = False
         is_active = True
@@ -166,9 +165,7 @@ def convert_channel_data(
 ) -> list[ZerverFieldsT]:
     streams = []
 
-    for rc_room_id in room_id_to_room_map:
-        channel_dict = room_id_to_room_map[rc_room_id]
-
+    for rc_room_id, channel_dict in room_id_to_room_map.items():
         date_created = float(channel_dict["ts"].timestamp())
         stream_id = stream_id_mapper.get(rc_room_id)
         invite_only = channel_dict["t"] == "p"
@@ -214,9 +211,7 @@ def convert_stream_subscription_data(
 ) -> None:
     stream_members_map: dict[int, set[int]] = {}
 
-    for rc_user_id in user_id_to_user_map:
-        user_dict = user_id_to_user_map[rc_user_id]
-
+    for rc_user_id, user_dict in user_id_to_user_map.items():
         if not user_dict.get("__rooms"):
             continue
 
@@ -249,11 +244,10 @@ def convert_direct_message_group_data(
 ) -> list[ZerverFieldsT]:
     zerver_direct_message_group: list[ZerverFieldsT] = []
 
-    for rc_direct_message_group_id in direct_message_group_id_to_direct_message_group_map:
-        direct_message_group_dict = direct_message_group_id_to_direct_message_group_map[
-            rc_direct_message_group_id
-        ]
-
+    for (
+        rc_direct_message_group_id,
+        direct_message_group_dict,
+    ) in direct_message_group_id_to_direct_message_group_map.items():
         direct_message_group_id = direct_message_group_id_mapper.get(rc_direct_message_group_id)
         direct_message_group = build_direct_message_group(
             direct_message_group_id, len(direct_message_group_dict["uids"])

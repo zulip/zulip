@@ -68,9 +68,9 @@ def main() -> None:
     metrics = metrics_file["metrics"]
 
     while True:
-        for metric_id in metrics:
+        for metric_id, query in metrics.items():
             try:
-                update_metric(metric_id, metrics.get(metric_id), page_id, oauth_token)
+                update_metric(metric_id, query, page_id, oauth_token)
             except Exception as e:
                 logging.exception(e)
         time.sleep(30)

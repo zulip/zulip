@@ -25,12 +25,14 @@ langs = {
     for alias in aliases
 }
 
-for name in priorities:
-    if langs.get(name) is None:
-        langs[name] = {
-            "priority": priorities[name],
-            "pretty_name": name,
-        }
+langs |= {
+    name: {
+        "priority": priority,
+        "pretty_name": name,
+    }
+    for name, priority in priorities.items()
+    if name not in langs
+}
 
 with open(OUT_PATH, "w") as f:
     json.dump({"langs": langs}, f)

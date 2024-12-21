@@ -184,80 +184,64 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
     def render_table(self, return_values: dict[str, Any], spacing: int) -> list[str]:
         IGNORE = ["result", "msg", "ignored_parameters_unsupported"]
         ans = []
-        for return_value in return_values:
+        for return_value, schema in return_values.items():
             if return_value in IGNORE:
                 continue
-            if "oneOf" in return_values[return_value]:
+            if "oneOf" in schema:
                 # For elements using oneOf there are two descriptions. The first description
                 # should be at level with the oneOf and should contain the basic non-specific
                 # description of the endpoint. Then for each element of oneOf there is a
                 # specialized description for that particular case. The description used
                 # right below is the main description.
-                data_type = generate_data_type(return_values[return_value])
+                data_type = generate_data_type(schema)
                 ans.append(
-                    self.render_desc(
-                        return_values[return_value]["description"], spacing, data_type, return_value
-                    )
+                    self.render_desc(schema["description"], spacing, data_type, return_value)
                 )
-                ans += self.render_oneof_block(return_values[return_value], spacing + 4)
+                ans += self.render_oneof_block(schema, spacing + 4)
                 continue
-            description = return_values[return_value]["description"]
-            data_type = generate_data_type(return_values[return_value])
-            check_deprecated_consistency(
-                return_values[return_value].get("deprecated", False), description
-            )
+            description = schema["description"]
+            data_type = generate_data_type(schema)
+            check_deprecated_consistency(schema.get("deprecated", False), description)
             ans.append(self.render_desc(description, spacing, data_type, return_value))
-            if "properties" in return_values[return_value]:
-                ans += self.render_table(return_values[return_value]["properties"], spacing + 4)
-            if return_values[return_value].get("additionalProperties", False):
-                data_type = generate_data_type(return_values[return_value]["additionalProperties"])
+            if "properties" in schema:
+                ans += self.render_table(schema["properties"], spacing + 4)
+            if schema.get("additionalProperties", False):
+                data_type = generate_data_type(schema["additionalProperties"])
                 ans.append(
                     self.render_desc(
-                        return_values[return_value]["additionalProperties"]["description"],
+                        schema["additionalProperties"]["description"],
                         spacing + 4,
                         data_type,
                     )
                 )
-                if "properties" in return_values[return_value]["additionalProperties"]:
+                if "properties" in schema["additionalProperties"]:
                     ans += self.render_table(
-                        return_values[return_value]["additionalProperties"]["properties"],
+                        schema["additionalProperties"]["properties"],
                         spacing + 8,
                     )
-                elif "oneOf" in return_values[return_value]["additionalProperties"]:
-                    ans += self.render_oneof_block(
-                        return_values[return_value]["additionalProperties"], spacing + 8
-                    )
-                elif return_values[return_value]["additionalProperties"].get(
-                    "additionalProperties", False
-                ):
+                elif "oneOf" in schema["additionalProperties"]:
+                    ans += self.render_oneof_block(schema["additionalProperties"], spacing + 8)
+                elif schema["additionalProperties"].get("additionalProperties", False):
                     data_type = generate_data_type(
-                        return_values[return_value]["additionalProperties"]["additionalProperties"]
+                        schema["additionalProperties"]["additionalProperties"]
                     )
                     ans.append(
                         self.render_desc(
-                            return_values[return_value]["additionalProperties"][
-                                "additionalProperties"
-                            ]["description"],
+                            schema["additionalProperties"]["additionalProperties"]["description"],
                             spacing + 8,
                             data_type,
                         )
                     )
 
                     ans += self.render_table(
-                        return_values[return_value]["additionalProperties"]["additionalProperties"][
-                            "properties"
-                        ],
+                        schema["additionalProperties"]["additionalProperties"]["properties"],
                         spacing + 12,
                     )
-            if "items" in return_values[return_value]:
-                if "properties" in return_values[return_value]["items"]:
-                    ans += self.render_table(
-                        return_values[return_value]["items"]["properties"], spacing + 4
-                    )
-                elif "oneOf" in return_values[return_value]["items"]:
-                    ans += self.render_oneof_block(
-                        return_values[return_value]["items"], spacing + 4
-                    )
+            if "items" in schema:
+                if "properties" in schema["items"]:
+                    ans += self.render_table(schema["items"]["properties"], spacing + 4)
+                elif "oneOf" in schema["items"]:
+                    ans += self.render_oneof_block(schema["items"], spacing + 4)
         return ans
 
     def generate_event_strings(self, event_data: EventData) -> list[str]:

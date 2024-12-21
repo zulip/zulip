@@ -54,7 +54,7 @@ for line in output.split("\n"):
 
 now = int(time.time())
 
-for queue_name in consumers:
+for queue_name, count in consumers.items():
     target_count = 1
     if queue_name == "notify_tornado":
         target_count = TORNADO_PROCESSES
@@ -67,6 +67,6 @@ for queue_name in consumers:
 
     atomic_nagios_write(
         "check-rabbitmq-consumers-" + queue_name,
-        "critical" if consumers[queue_name] < target_count else "ok",
-        f"queue {queue_name} has {consumers[queue_name]} consumers, needs {target_count}",
+        "critical" if count < target_count else "ok",
+        f"queue {queue_name} has {count} consumers, needs {target_count}",
     )

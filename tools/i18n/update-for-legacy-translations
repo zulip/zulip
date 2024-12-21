@@ -212,17 +212,17 @@ def update_for_legacy_stream_translations(
 ) -> None:
     number_of_updates = 0
     updated_translations: dict[str, str] = {}
-    for line in current:
+    for line, translation in current.items():
         # If the string has a legacy string mapped and see if it's
         # not currently translated (e.g. an empty string), then use
         # the legacy translated string (which might be an empty string).
-        if line in LEGACY_STRINGS_MAP and current[line] == "":
+        if line in LEGACY_STRINGS_MAP and translation == "":
             legacy_string = LEGACY_STRINGS_MAP[line]
             if legacy_string in legacy:
                 updated_translations[line] = legacy[legacy_string]
                 number_of_updates += 1
         else:
-            updated_translations[line] = current[line]
+            updated_translations[line] = translation
 
     # Only replace file content if we've made any updates for legacy
     # translated strings.

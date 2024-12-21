@@ -79,8 +79,8 @@ def get_realm_day_counts() -> dict[str, dict[str, Markup]]:
         return Markup('<td class="number {good_bad}">{cnt}</td>').format(good_bad=good_bad, cnt=cnt)
 
     result = {}
-    for string_id in counts:
-        raw_cnts = [counts[string_id].get(age, 0) for age in range(8)]
+    for string_id, realm_counts in counts.items():
+        raw_cnts = [realm_counts.get(age, 0) for age in range(8)]
         min_cnt = min(raw_cnts[1:])
         max_cnt = max(raw_cnts[1:])
 
