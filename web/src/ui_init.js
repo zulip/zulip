@@ -63,6 +63,7 @@ import * as message_actions_popover from "./message_actions_popover.ts";
 import * as message_edit_history from "./message_edit_history.ts";
 import * as message_fetch from "./message_fetch.ts";
 import * as message_list_hover from "./message_list_hover.ts";
+import * as message_list_navigation from "./message_list_navigation.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_scroll from "./message_scroll.ts";
@@ -221,7 +222,7 @@ export function initialize_kitchen_sink_stuff() {
         if (delta < 0 && message_viewport.at_rendered_top()) {
             navigate.up();
         } else if (delta > 0 && message_viewport.at_rendered_bottom()) {
-            navigate.down();
+            navigate.down(false, true);
         }
 
         message_viewport.set_last_movement_direction(delta);
@@ -661,7 +662,7 @@ export function initialize_everything(state_data) {
 
     // All overlays, and also activity_ui, must be initialized before hashchange.ts
     hashchange.initialize();
-
+    message_list_navigation.init();
     emoji_picker.initialize();
     user_group_popover.initialize();
     user_card_popover.initialize();
