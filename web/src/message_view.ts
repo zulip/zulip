@@ -60,6 +60,7 @@ import * as stream_list from "./stream_list.ts";
 import * as submessage from "./submessage.ts";
 import * as topic_generator from "./topic_generator.ts";
 import * as typing_events from "./typing_events.ts";
+import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as unread_ui from "./unread_ui.ts";
 import {user_settings} from "./user_settings.ts";
@@ -998,6 +999,17 @@ export function maybe_add_local_messages(opts: {
         assert(id_info.final_select_id !== undefined);
 
         if (!load_local_messages(msg_data, superset_data)) {
+            // We don't have the message we want to select locally,
+            // and since our unread data is incomplete, we just
+            // ask server directly for `first_unread`.
+            if (
+                unread.old_unreads_missing &&
+                // Ensure our intent is to narrow to first unread.
+                id_info.final_select_id === unread_info.msg_id &&
+                id_info.target_id === undefined
+            ) {
+                id_info.final_select_id = undefined;
+            }
             return;
         }
 
