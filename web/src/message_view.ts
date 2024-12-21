@@ -60,6 +60,7 @@ import * as stream_list from "./stream_list.ts";
 import * as submessage from "./submessage.ts";
 import * as topic_generator from "./topic_generator.ts";
 import * as typing_events from "./typing_events.ts";
+import * as ui_report from "./ui_report.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as unread_ui from "./unread_ui.ts";
@@ -75,6 +76,7 @@ const fetch_message_response_schema = z.object({
 export function reset_ui_state(opts: {trigger?: string}): void {
     // Resets the state of various visual UI elements that are
     // a function of the current narrow.
+    ui_report.hide_error($("#found-missing-unreads"), true);
     narrow_banner.hide_empty_narrow_message();
     message_feed_top_notices.hide_top_of_narrow_notices();
     message_feed_loading.hide_indicators();
@@ -131,6 +133,7 @@ type TargetMessageIdInfo = {
     target_id: number | undefined;
     final_select_id: number | undefined;
     local_select_id: number | undefined;
+    first_unread_msg_id_pending_server_verification: number | undefined;
 };
 
 function create_and_update_message_list(
@@ -359,6 +362,7 @@ export function get_id_info(): TargetMessageIdInfo {
         target_id: undefined,
         final_select_id: undefined,
         local_select_id: undefined,
+        first_unread_msg_id_pending_server_verification: undefined,
     };
 }
 
@@ -366,6 +370,7 @@ export function reset_id_info(id_info: TargetMessageIdInfo): void {
     id_info.target_id = undefined;
     id_info.final_select_id = undefined;
     id_info.local_select_id = undefined;
+    id_info.first_unread_msg_id_pending_server_verification = undefined;
 }
 
 export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): void => {
@@ -779,6 +784,73 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
             then_select_offset,
         );
 
+        if (id_info.first_unread_msg_id_pending_server_verification) {
+            const params = message_fetch.get_parameters_for_message_fetch_api({
+                anchor: "first_unread",
+                num_before: 0,
+                num_after: 0,
+                cont() {
+                    // Success callback is sufficient to do what we need to do
+                    // here, we don't need another post fetch callback.
+                },
+                msg_list_data: msg_list.data,
+            });
+            void channel.get({
+                url: "/json/messages",
+                data: params,
+                success(raw_data) {
+                    // If we switched narrow, there is nothing to do.
+                    if (
+                        msg_list !== message_lists.current ||
+                        !id_info.first_unread_msg_id_pending_server_verification
+                    ) {
+                        return;
+                    }
+                    const data = message_fetch.response_schema.parse(raw_data);
+                    const first_unread_message_id = data.anchor;
+                    const current_selected_id = msg_list.selected_id();
+                    if (
+                        first_unread_message_id <
+                        id_info.first_unread_msg_id_pending_server_verification
+                    ) {
+                        // We convert the current narrow into a `near` narrow so that
+                        // user doesn't accidentally mark msgs read which they haven't seen.
+                        const terms = [
+                            ...msg_list.data.filter.terms(),
+                            {
+                                operator: "near",
+                                operand: current_selected_id.toString(),
+                            },
+                        ];
+                        const opts = {
+                            trigger: "old_unreads_missing",
+                        };
+                        show(terms, opts);
+
+                        // Show user a banner with a button to allow user to navigate
+                        // to the first unread if required.
+                        //
+                        // Clear any previous click handlers.
+                        $("#missing-unreads-jump-to-first-unread").off("click");
+                        $("#missing-unreads-jump-to-first-unread").on("click", (e) => {
+                            ui_report.hide_error($("#found-missing-unreads"), true);
+                            if (msg_list.id === message_lists.current?.id) {
+                                show(
+                                    message_lists.current.data.filter
+                                        .terms()
+                                        .filter((term) => term.operator !== "near"),
+                                    {then_select_id: first_unread_message_id},
+                                );
+                            }
+                            e.preventDefault();
+                            e.stopPropagation();
+                        });
+                        ui_report.show_error($("#found-missing-unreads"));
+                    }
+                },
+            });
+        }
+
         const post_span_context = {
             name: "post-narrow busy time",
             op: "function",
@@ -1007,6 +1079,13 @@ export function maybe_add_local_messages(opts: {
         // need to look at unread here.
         id_info.final_select_id = min_defined(id_info.target_id, unread_info.msg_id);
         assert(id_info.final_select_id !== undefined);
+
+        // We found a message id to select from the unread data available
+        // locally but if we didn't have the complete unread data locally
+        // cached, we need to check from server if it is the first unread.
+        if (unread.old_unreads_missing) {
+            id_info.first_unread_msg_id_pending_server_verification = unread_info.msg_id;
+        }
 
         if (!load_local_messages(msg_data, superset_data)) {
             // We don't have the message we want to select locally,

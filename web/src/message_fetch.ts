@@ -29,7 +29,7 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as ui_report from "./ui_report.ts";
 
-const response_schema = z.object({
+export const response_schema = z.object({
     anchor: z.number(),
     found_newest: z.boolean(),
     found_oldest: z.boolean(),
@@ -315,7 +315,9 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
     return JSON.stringify(narrow_terms);
 }
 
-function get_parameters_for_message_fetch_api(opts: MessageFetchOptions): MessageFetchAPIParams {
+export function get_parameters_for_message_fetch_api(
+    opts: MessageFetchOptions,
+): MessageFetchAPIParams {
     if (typeof opts.anchor === "number") {
         // Messages that have been locally echoed messages have
         // floating point temporary IDs, which is intended to be a.
