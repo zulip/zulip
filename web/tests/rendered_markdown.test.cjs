@@ -76,8 +76,14 @@ const group_other = {
     id: 2,
     members: [cordelia.user_id],
 };
+const group_me_via_subgroup = {
+    name: "I am part of this group via a subgroup",
+    id: 3,
+    members: [],
+    direct_subgroup_ids: [group_me.id],
+};
 user_groups.initialize({
-    realm_user_groups: [group_me, group_other],
+    realm_user_groups: [group_me, group_other, group_me_via_subgroup],
 });
 
 const stream = {
@@ -360,6 +366,33 @@ run_test("user-group-mention", () => {
     // Final asserts
     assert.ok($group_me.hasClass("user-mention-me"));
     assert.equal($group_me.text(), `@${group_me.name}`);
+    assert.equal($group_other.text(), `@${group_other.name}`);
+});
+
+run_test("user-group-mention", () => {
+    // Setup
+    const $content = get_content_element();
+    const $group_me_via_subgroup = $.create("user-group-mention(me_via_subgroup)");
+    $group_me_via_subgroup.set_find_results(".highlight", false);
+    $group_me_via_subgroup.attr("data-user-group-id", group_me_via_subgroup.id);
+    const $group_other = $.create("user-group-mention(other)");
+    $group_other.set_find_results(".highlight", false);
+    $group_other.attr("data-user-group-id", group_other.id);
+    $content.set_find_results(
+        ".user-group-mention",
+        $array([$group_me_via_subgroup, $group_other]),
+    );
+
+    // Initial asserts
+    assert.ok(!$group_me_via_subgroup.hasClass("user-mention-me"));
+    assert.equal($group_me_via_subgroup.text(), "never-been-set");
+    assert.equal($group_other.text(), "never-been-set");
+
+    rm.update_elements($content);
+
+    // Final asserts
+    assert.ok($group_me_via_subgroup.hasClass("user-mention-me"));
+    assert.equal($group_me_via_subgroup.text(), `@${group_me_via_subgroup.name}`);
     assert.equal($group_other.text(), `@${group_other.name}`);
 });
 
