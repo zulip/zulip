@@ -12,6 +12,7 @@ import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
 import * as compose_state from "./compose_state.ts";
+import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -490,6 +491,16 @@ export function initialize() {
     $("#compose").on("click", ".narrow_to_compose_recipients", (e) => {
         e.preventDefault();
         message_view.to_compose_target();
+        if (
+            onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has(
+                "intro_go_to_conversation_button_tooltip",
+            )
+        ) {
+            compose_tooltips.hide_go_to_conversation_button_intro_tooltip();
+            onboarding_steps.post_onboarding_step_as_read(
+                "intro_go_to_conversation_button_tooltip",
+            );
+        }
     });
 
     $("#compose").on("click", ".collapse-composebox-button", (e) => {
@@ -505,6 +516,9 @@ export function initialize() {
             compose_notifications.maybe_show_one_time_non_interleaved_view_messages_fading_banner();
         } else {
             compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
+        }
+        if (compose_tooltips.can_show_go_to_conversation_button_intro_tooltip()) {
+            compose_tooltips.show_go_to_conversation_button_intro_tooltip();
         }
     });
 
