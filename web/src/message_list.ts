@@ -579,19 +579,17 @@ export class MessageList {
         this.view.clear_rendering_state(false);
         this.view.update_render_window(this.selected_idx(), false);
 
-        if (!this.is_combined_feed_view) {
-            if (
-                this.visibly_empty() &&
-                this.data.fetch_status.has_found_oldest() &&
-                this.data.fetch_status.has_found_newest()
-            ) {
-                // Show the empty narrow message only if we're certain
-                // that the view doesn't have messages that we're
-                // waiting for the server to send us.
-                narrow_banner.show_empty_narrow_message();
-            } else {
-                narrow_banner.hide_empty_narrow_message();
-            }
+        if (
+            this.visibly_empty() &&
+            this.data.fetch_status.has_found_oldest() &&
+            this.data.fetch_status.has_found_newest()
+        ) {
+            // Show the empty narrow message only if we're certain
+            // that the view doesn't have messages that we're
+            // waiting for the server to send us.
+            narrow_banner.show_empty_narrow_message();
+        } else {
+            narrow_banner.hide_empty_narrow_message();
         }
         this.rerender_view();
     }
