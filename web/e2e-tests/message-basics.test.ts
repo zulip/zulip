@@ -334,10 +334,8 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     // Enter the search box and test highlighted suggestion
     await page.click(".stream-list-filter");
 
-    await page.waitForSelector("#stream_filters .highlighted_stream", {visible: true});
-    // First stream in list gets highlighted on clicking search.
     await page.waitForSelector((await get_stream_li(page, "core team")) + ".highlighted_stream", {
-        visible: true,
+        hidden: true,
     });
 
     await page.waitForSelector((await get_stream_li(page, "Denmark")) + ".highlighted_stream", {
@@ -357,6 +355,7 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     });
 
     // Navigate through suggestions using arrow keys
+    await arrow(page, "Down");
     await arrow(page, "Down"); // core team -> Denmark
     await arrow(page, "Down"); // Denmark -> sandbox
     await arrow(page, "Up"); // sandbox -> Denmark
