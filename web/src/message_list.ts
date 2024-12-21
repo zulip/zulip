@@ -619,6 +619,11 @@ export class MessageList {
         // participants, we don't need to call
         // this.update_user_sidebar_participants, because changing a
         // muted user's state already does a full sidebar redraw.
+
+        // Show the empty narrow message if the message list is empty
+        if (this.visibly_empty() && this.is_current_message_list()) {
+            narrow_banner.show_empty_narrow_message();
+        }
     }
 
     all_messages(): Message[] {
