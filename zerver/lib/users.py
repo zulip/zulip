@@ -113,7 +113,15 @@ def check_bot_name_available(realm_id: int, full_name: str, *, is_activation: bo
             )
         else:
             raise JsonableError(_("Name is already in use!"))
+ # Ensure bot name is not being used by a regular user
+    user_exists = UserProfile.objects.filter(
+        realm_id=realm_id,
+        full_name=full_name.strip(),
+        is_bot=False,  # Ensure it's not a bot
+    ).exists()
 
+    if user_exists:
+        raise JsonableError(_("This name is already used by a regular user!"))
 
 def check_short_name(short_name_raw: str) -> str:
     short_name = short_name_raw.strip()
