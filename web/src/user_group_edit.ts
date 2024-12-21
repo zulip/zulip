@@ -1334,8 +1334,9 @@ export function initialize(): void {
         });
     });
 
-    function save_group_info(this: HTMLElement): void {
-        const group = get_user_group_for_target(this);
+    function save_group_info(e: JQuery.ClickEvent): void {
+        assert(e.currentTarget instanceof HTMLElement);
+        const group = get_user_group_for_target(e.currentTarget);
         assert(group !== undefined);
         const url = `/json/user_groups/${group.id}`;
         let name;
