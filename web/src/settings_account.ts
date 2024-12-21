@@ -67,9 +67,11 @@ export function update_name_change_display(): void {
     if (!settings_data.user_can_change_name()) {
         $("#full_name").prop("disabled", true);
         $("#full_name_input_container").addClass("disabled_setting_tooltip");
+        $("label[for='full_name']").addClass("cursor-text");
     } else {
         $("#full_name").prop("disabled", false);
         $("#full_name_input_container").removeClass("disabled_setting_tooltip");
+        $("label[for='full_name']").removeClass("cursor-text");
     }
 }
 
@@ -81,9 +83,11 @@ export function update_email_change_display(): void {
     if (!settings_data.user_can_change_email()) {
         $("#change_email_button").prop("disabled", true);
         $("#change_email_button_container").addClass("disabled_setting_tooltip");
+        $("label[for='change_email_button']").addClass("cursor-text");
     } else {
         $("#change_email_button").prop("disabled", false);
         $("#change_email_button_container").removeClass("disabled_setting_tooltip");
+        $("label[for='change_email_button']").removeClass("cursor-text");
     }
 }
 
