@@ -91,13 +91,13 @@ const EMBEDDED_BOT_TYPE = "4";
 export function show_button_spinner($button: JQuery): void {
     const $spinner = $button.find(".modal__spinner");
     $button.prop("disabled", true);
-    loading.show_spinner($button, $spinner);
+    loading.show_button_spinner($button, $spinner);
 }
 
 export function hide_button_spinner($button: JQuery): void {
     const $spinner = $button.find(".modal__spinner");
     $button.prop("disabled", false);
-    loading.hide_spinner($button, $spinner);
+    loading.hide_button_spinner($button, $spinner);
 }
 
 function compare_by_name(
