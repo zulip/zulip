@@ -581,6 +581,11 @@
     */
     --table-header-sortable-column-padding-right: 1em;
 
+    /* Color picker popover values */
+    --size-color-swatch: 1em;
+    --grid-gap-color-swatch: 1em;
+    --padding-color-swatch-list: 0.6666em;
+
     /* Colors used across the app */
     --color-date: hsl(0deg 0% 15% / 75%);
     --color-background-private-message-header: hsl(46deg 35% 93%);
