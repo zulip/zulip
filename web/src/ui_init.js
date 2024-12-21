@@ -137,6 +137,7 @@ import * as topic_popover from "./topic_popover.ts";
 import * as transmit from "./transmit.js";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as typing from "./typing.ts";
+import * as ui_report from "./ui_report.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as unread_ui from "./unread_ui.ts";
@@ -692,6 +693,7 @@ export function initialize_everything(state_data) {
     message_edit_history.initialize();
     hotkey.initialize();
     desktop_integration.initialize();
+    ui_report.initialize(message_view.show);
 
     $("#app-loading").addClass("loaded");
 }
