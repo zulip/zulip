@@ -504,6 +504,12 @@ export function initialize_everything(state_data) {
     recent_view_ui.initialize({
         on_click_participant(avatar_element, participant_user_id) {
             const user = people.get_by_user_id(participant_user_id);
+            const last_active = presence.last_active_date(participant_user_id);
+            if (!last_active) {
+                presence.fetch_user_last_seen_status(participant_user_id, () => {
+                    user_card_popover.toggle_user_card_popover(avatar_element, user);
+                });
+            }
             user_card_popover.toggle_user_card_popover(avatar_element, user);
         },
         on_mark_pm_as_read: unread_ops.mark_pm_as_read,
