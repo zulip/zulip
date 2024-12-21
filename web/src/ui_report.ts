@@ -11,6 +11,13 @@ import {$t} from "./i18n.ts";
    cls- class that we want to add/remove to/from the status_box
 */
 
+let jump_to_first_unread_callback: ((element: HTMLElement) => void) | undefined;
+export function set_jump_to_first_unread_callback(
+    callback: ((element: HTMLElement) => void) | undefined,
+): void {
+    jump_to_first_unread_callback = callback;
+}
+
 export function message(
     response_html: string,
     $status_box: JQuery,
@@ -82,7 +89,12 @@ export function generic_row_button_error(xhr: JQuery.jqXHR, $button: JQuery): vo
     }
 }
 
-export function hide_error($target: JQuery): void {
+export function hide_error($target: JQuery, instantly = false): void {
+    if (instantly) {
+        $target.removeClass("show");
+        return;
+    }
+
     $target.addClass("fade-out");
     setTimeout(() => {
         $target.removeClass("show fade-out");
@@ -109,4 +121,14 @@ export function loading(
     }
 
     $status_box.addClass("show");
+}
+
+export function initialize(): void {
+    $("#missing-unreads-jump-to-first-unread").on("click", function (this: HTMLElement, e) {
+        if (jump_to_first_unread_callback) {
+            jump_to_first_unread_callback(this);
+        }
+        e.preventDefault();
+        e.stopPropagation();
+    });
 }
