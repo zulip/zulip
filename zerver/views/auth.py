@@ -1232,17 +1232,21 @@ def logout_view(request: HttpRequest) -> HttpResponse:
 
 
 def password_reset(request: HttpRequest) -> HttpResponse:
+
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
         redirect_url = append_url_query_string(
             reverse("realm_redirect"), urlencode({"next": reverse("password_reset")})
         )
         return HttpResponseRedirect(redirect_url)
-
     try:
+        email = None
+        if request.user.is_authenticated:
+            email = request.user.email
         response = DjangoPasswordResetView.as_view(
             template_name="zerver/reset.html",
             form_class=ZulipPasswordResetForm,
             success_url="/accounts/password/reset/done/",
+            initial={"email": email},
         )(request)
     except RateLimitedError as e:
         assert e.secs_to_freedom is not None
