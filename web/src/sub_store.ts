@@ -2,6 +2,7 @@ import {z} from "zod";
 
 import * as blueslip from "./blueslip.ts";
 import type {
+    api_stream_schema,
     never_subscribed_stream_schema,
     stream_properties_schema,
     stream_schema,
@@ -13,6 +14,7 @@ export type Stream = z.infer<typeof stream_schema>;
 export type StreamSpecificNotificationSettings = z.infer<
     typeof stream_specific_notification_settings_schema
 >;
+export type ApiStream = z.infer<typeof api_stream_schema>;
 export type NeverSubscribedStream = z.infer<typeof never_subscribed_stream_schema>;
 export type StreamProperties = z.infer<typeof stream_properties_schema>;
 export type ApiStreamSubscription = z.infer<typeof api_stream_subscription_schema>;

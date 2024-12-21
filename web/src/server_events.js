@@ -10,7 +10,8 @@ import {page_params} from "./page_params.ts";
 import * as reload from "./reload.ts";
 import * as reload_state from "./reload_state.ts";
 import * as sent_messages from "./sent_messages.ts";
-import * as server_events_dispatch from "./server_events_dispatch.js";
+import {server_event_schema} from "./server_event_types.ts";
+import * as server_events_dispatch from "./server_events_dispatch.ts";
 import {server_message_schema} from "./server_message.ts";
 import * as ui_report from "./ui_report.ts";
 import * as watchdog from "./watchdog.ts";
@@ -93,7 +94,7 @@ function get_events_success(events) {
 
     for (const event of events) {
         try {
-            dispatch_event(event);
+            dispatch_event(server_event_schema.parse(event));
         } catch (error) {
             blueslip.error("Failed to process an event", {event: clean_event(event)}, error);
         }

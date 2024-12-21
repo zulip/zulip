@@ -21,6 +21,7 @@ import * as modals from "./modals.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import type {MessageDetails} from "./server_event_types.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as ui_report from "./ui_report.ts";
 import * as unread from "./unread.ts";
@@ -454,13 +455,7 @@ export function process_unread_messages_event({
     message_details,
 }: {
     message_ids: number[];
-    message_details: Record<
-        number,
-        {mentioned: boolean} & (
-            | {type: "private"; user_ids: number[]}
-            | {type: "stream"; stream_id: number; topic: string}
-        )
-    >;
+    message_details: MessageDetails;
 }): void {
     // This is the reverse of process_read_messages_event.
     message_ids = unread.get_read_message_ids(message_ids);

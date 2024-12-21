@@ -1,6 +1,7 @@
 import $ from "jquery";
 import Cookies from "js-cookie";
 import assert from "minimalistic-assert";
+import type {z} from "zod";
 
 import render_dialog_default_language from "../templates/default_language_modal.hbs";
 
@@ -24,7 +25,7 @@ import type {RequestOpts} from "./settings_ui.ts";
 import * as settings_ui from "./settings_ui.ts";
 import {realm} from "./state_data.ts";
 import * as ui_report from "./ui_report.ts";
-import {user_settings} from "./user_settings.ts";
+import {user_settings, user_settings_schema} from "./user_settings.ts";
 import type {UserSettings} from "./user_settings.ts";
 
 export type SettingsPanel = {
@@ -41,10 +42,10 @@ export type SettingsPanel = {
       }
 );
 
-type UserSettingsProperty = Exclude<
-    keyof UserSettings,
-    "available_notification_sounds" | "emojiset_choices"
->;
+export const user_settings_property_schema = user_settings_schema
+    .omit({available_notification_sounds: true, emojiset_choices: true})
+    .keyof();
+type UserSettingsProperty = z.output<typeof user_settings_property_schema>;
 
 const meta = {
     loaded: false,

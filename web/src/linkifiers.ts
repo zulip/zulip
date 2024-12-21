@@ -1,6 +1,8 @@
 import * as url_template_lib from "url-template";
+import type {z} from "zod";
 
 import * as blueslip from "./blueslip.ts";
+import type {realm_linkifier_schema} from "./state_data.ts";
 
 type LinkifierMap = Map<
     RegExp,
@@ -8,11 +10,7 @@ type LinkifierMap = Map<
 >;
 const linkifier_map: LinkifierMap = new Map();
 
-type Linkifier = {
-    pattern: string;
-    url_template: string;
-    id: number;
-};
+type Linkifier = z.output<typeof realm_linkifier_schema>;
 
 export function get_linkifier_map(): LinkifierMap {
     return linkifier_map;

@@ -1,4 +1,4 @@
-import type {z} from "zod";
+import {z} from "zod";
 
 import * as people from "./people.ts";
 import type {StateData, presence_schema} from "./state_data.ts";
@@ -14,14 +14,15 @@ export type PresenceStatus = {
     last_active?: number | undefined;
 };
 
-export type PresenceInfoFromEvent = {
-    website: {
-        client: "website";
-        status: "idle" | "active";
-        timestamp: number;
-        pushable: boolean;
-    };
-};
+export const presence_info_from_event_schema = z.object({
+    website: z.object({
+        client: z.literal("website"),
+        status: z.enum(["idle", "active"]),
+        timestamp: z.number(),
+        pushable: z.boolean(),
+    }),
+});
+export type PresenceInfoFromEvent = z.output<typeof presence_info_from_event_schema>;
 
 // This module just manages data.  See activity.js for
 // the UI of our buddy list.
@@ -212,7 +213,7 @@ export function set_info(
         // Note: In contrast with all other state updates received
         // from the server, presence data is updated via a
         // polling process rather than the events system
-        // (server_events_dispatch.js).
+        // (server_events_dispatch.ts).
         //
         // This means that if we're coming back from being offline and
         // new users were created in the meantime, we may see user IDs

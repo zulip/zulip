@@ -29,7 +29,10 @@ import * as stream_list from "./stream_list.ts";
 import * as stream_muting from "./stream_muting.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
-import {stream_permission_group_settings_schema} from "./stream_types.ts";
+import {
+    type UpdatableStreamProperties,
+    stream_permission_group_settings_schema,
+} from "./stream_types.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import {group_setting_value_schema} from "./types.ts";
@@ -61,8 +64,6 @@ function update_stream_setting(
     }
     sub[setting] = value;
 }
-
-type UpdatableStreamProperties = sub_store.ApiStreamSubscription & {in_home_view: boolean};
 
 export function update_property<P extends keyof UpdatableStreamProperties>(
     stream_id: number,
@@ -136,9 +137,6 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
                 other_values.rendered_description,
             );
         },
-        email_address(value) {
-            sub.email_address = value;
-        },
         pin_to_top(value) {
             update_stream_setting(sub, value, "pin_to_top");
             stream_list.refresh_pinned_or_unpinned_stream(sub);
@@ -198,7 +196,7 @@ function show_first_stream_created_modal(stream: StreamSubscription): void {
 // but for now we just pass in the subscribers and color (things likely to be different).
 export function mark_subscribed(
     sub: StreamSubscription,
-    subscribers: number[],
+    subscribers: number[] | undefined,
     color: string | undefined,
 ): void {
     if (sub.subscribed) {

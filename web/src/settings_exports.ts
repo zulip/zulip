@@ -24,13 +24,13 @@ import * as timerender from "./timerender.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
 
-const export_consent_schema = z.object({
+export const export_consent_schema = z.object({
     user_id: z.number(),
     consented: z.boolean(),
 });
 type ExportConsent = z.output<typeof export_consent_schema>;
 
-const realm_export_schema = z.object({
+export const realm_export_schema = z.object({
     id: z.number(),
     export_time: z.number(),
     acting_user_id: z.number(),
