@@ -22,7 +22,7 @@ import _ from "lodash";
 export const popular_emojis = [
     "1f44d", // +1
     "1f389", // tada
-    "1f642", // smile
+    "1f642", // slight_smile
     "2764", // heart
     "1f6e0", // working_on_it
     "1f419", // octopus
