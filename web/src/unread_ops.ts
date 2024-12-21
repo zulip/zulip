@@ -584,6 +584,26 @@ function process_scrolled_to_bottom(): void {
         // feed, so it would not be correct to instead ask the server
         // to mark all messages matching this entire narrow as read.
         notify_server_messages_read(message_lists.current.all_messages());
+        if (
+            message_lists.current.data.filter.is_in_home() &&
+            message_lists.current.should_preserve_current_rendered_state()
+        ) {
+            const with_msg_ids = true;
+            const unread_counts = unread.get_counts(with_msg_ids);
+            const home_unread_count = unread_counts.home_unread_messages;
+            if (home_unread_count !== 0) {
+                const unread_msgs = unread_counts.home_stream_msg_ids;
+                const combined_feed_msgs = new Set(
+                    message_lists.current.all_messages().map((msg) => msg.id),
+                );
+                const missing_unread_msgs = unread_msgs.filter(
+                    (msg) => !combined_feed_msgs.has(msg),
+                );
+                blueslip.error("Combined feed missing unread messages", {
+                    missing_unread_msg_ids: JSON.stringify(missing_unread_msgs),
+                });
+            }
+        }
         return;
     }
 

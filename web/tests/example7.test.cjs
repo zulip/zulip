@@ -59,7 +59,7 @@ const message_lists = mock_esm("../src/message_lists");
 const message_viewport = mock_esm("../src/message_viewport");
 const unread_ui = mock_esm("../src/unread_ui");
 
-message_lists.current = {view: {}};
+message_lists.current = {view: {}, data: {filter: {is_in_home: noop}}};
 message_lists.all_rendered_message_lists = () => [message_lists.current];
 
 const message_store = zrequire("message_store");
