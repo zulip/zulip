@@ -215,8 +215,11 @@ export function initialize(): void {
         trigger: "mouseenter",
         appendTo: () => document.body,
         onShow(instance) {
-            // Don't show Send button tooltip if the popover is displayed.
-            if (popover_menus.is_scheduled_messages_popover_displayed()) {
+            // Don't show send-area tooltips if the popover is displayed or if the send button is disabled.
+            if (
+                popover_menus.is_scheduled_messages_popover_displayed() ||
+                $(".message-send-controls").hasClass("disabled-message-send-controls")
+            ) {
                 return false;
             }
             if (user_settings.enter_sends) {

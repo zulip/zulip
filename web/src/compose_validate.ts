@@ -71,10 +71,11 @@ export function set_recipient_disallowed(status: boolean): void {
 }
 
 function update_send_button_status(): void {
-    $(".message-send-controls").toggleClass(
-        "disabled-message-send-controls",
-        message_too_long || upload_in_progress || recipient_disallowed,
-    );
+    if (message_too_long || upload_in_progress || recipient_disallowed) {
+        $(".message-send-controls").addClass("disabled-message-send-controls");
+    } else {
+        $(".message-send-controls").removeClass("disabled-message-send-controls");
+    }
 }
 
 export function get_disabled_send_tooltip(): string {
