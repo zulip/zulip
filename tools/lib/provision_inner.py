@@ -23,7 +23,10 @@ from scripts.lib.zulip_tools import (
     OKBLUE,
     get_dev_uuid_var_path,
     get_tzdata_zi,
+    is_dev_droplet,
     is_digest_obsolete,
+    is_vagrant_environment,
+    is_wsl_environment,
     run,
     run_as_root,
     write_new_digest,
@@ -91,6 +94,16 @@ def configure_rabbitmq_paths() -> list[str]:
     return paths
 
 
+def is_specialized_environment() -> bool:
+    # Check for DigitalOcean development droplet
+    IS_DEV_DROPLET = is_dev_droplet()
+    # Check for Vagrant environment
+    IS_VAGRANT_ENV_HOST = is_vagrant_environment(ZULIP_PATH)
+    # Check for WSL environment
+    IS_WSL_HOST = is_wsl_environment()
+    return IS_DEV_DROPLET or IS_VAGRANT_ENV_HOST or IS_WSL_HOST
+
+
 def setup_shell_profile(shell_profile: str) -> None:
     shell_profile_path = os.path.expanduser(shell_profile)
 
@@ -105,8 +118,9 @@ def setup_shell_profile(shell_profile: str) -> None:
             with open(shell_profile_path, "w") as shell_profile_file:
                 shell_profile_file.writelines(command + "\n")
 
-    source_activate_command = "source " + os.path.join(VENV_PATH, "bin", "activate")
-    write_command(source_activate_command)
+    if is_specialized_environment():
+        source_activate_command = "source " + os.path.join(VENV_PATH, "bin", "activate")
+        write_command(source_activate_command)
     if os.path.exists("/srv/zulip"):
         write_command("cd /srv/zulip")
 

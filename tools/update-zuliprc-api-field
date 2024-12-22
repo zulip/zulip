@@ -17,7 +17,7 @@ import sys
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ZULIP_PATH)
-from scripts.lib.zulip_tools import is_vagrant_env_host
+from scripts.lib.zulip_tools import is_vagrant_environment
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument(
@@ -50,7 +50,7 @@ for zuliprc_path in zuliprc_paths_list:
         # Make sure the cwd is the root of Zulip checkout.
         os.chdir(ZULIP_PATH)
 
-        if is_vagrant_env_host(ZULIP_PATH):
+        if is_vagrant_environment(ZULIP_PATH):
             arguments = [
                 "vagrant",
                 "ssh",
