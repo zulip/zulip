@@ -198,6 +198,15 @@ export function set_up_attachments(): void {
         );
     });
 
+    $("#attachments-settings").on("click", ".clear-filter", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const $filter = $("#attachments-settings").find(".search-container .search");
+        $filter.val("");
+
+        $filter.trigger("input");
+    });
+
     void channel.get({
         url: "/json/attachments",
         success(raw_data) {
