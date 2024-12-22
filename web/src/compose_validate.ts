@@ -695,7 +695,7 @@ function validate_private_message(): boolean {
 
     if (compose_state.private_message_recipient().length === 0) {
         compose_banner.show_error_message(
-            $t({defaultMessage: "Please specify at least one valid recipient."}),
+            $t({defaultMessage: "Please specify a valid recipient."}),
             compose_banner.CLASSNAMES.missing_private_message_recipient,
             $banner_container,
             $("#private_message_recipient"),
