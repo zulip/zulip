@@ -1410,7 +1410,7 @@ textarea.new_message_textarea {
 
     &.disabled-message-send-controls {
         & button {
-            pointer-events: none;
+            cursor: default;
             opacity: 0.5;
         }
     }
