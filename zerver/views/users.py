@@ -11,7 +11,7 @@ from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
-from pydantic import AfterValidator, BaseModel, Json, StringConstraints
+from pydantic import AfterValidator, BaseModel, Json
 
 from zerver.actions.bots import (
     do_change_bot_owner,
@@ -19,7 +19,7 @@ from zerver.actions.bots import (
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
 )
-from zerver.actions.create_user import do_create_user, do_reactivate_user, notify_created_bot
+from zerver.actions.create_user import do_create_user, notify_created_bot
 from zerver.actions.custom_profile_fields import (
     check_remove_custom_profile_field_value,
     do_update_user_custom_profile_data_if_changed,
@@ -32,8 +32,8 @@ from zerver.actions.user_settings import (
     do_regenerate_api_key,
 )
 from zerver.actions.users import (
+    change_user_is_active,
     do_change_user_role,
-    do_deactivate_user,
     do_update_bot_config_data,
     do_update_outgoing_webhook_service,
 )
@@ -112,24 +112,24 @@ def check_last_owner(user_profile: UserProfile) -> bool:
     owners = set(user_profile.realm.get_human_owner_users())
     return user_profile.is_realm_owner and not user_profile.is_bot and len(owners) == 1
 
-def assign_bot_role_based_on_owner(bot: UserProfile, owner: UserProfile):
-    if owner.is_realm_owner or owner.is_admin:
+
+def assign_bot_role_based_on_owner(bot: UserProfile, owner: UserProfile) -> None:
+    if owner.is_realm_owner or owner.is_guest:
         bot.role = UserProfile.ROLE_MEMBER  # Full member role
     else:
-        bot.role = UserProfile.ROLE_NEW_MEMBER  # New member role
+        bot.role = UserProfile.ROLE_GUEST
     bot.save()
+
 
 def create_bot(
     owner: UserProfile,
     full_name: str,
-    short_name: str,
     bot_type: int,
-    **kwargs,
+    **kwargs: Any,
 ) -> UserProfile:
     bot = UserProfile.objects.create(
         realm=owner.realm,
         full_name=full_name,
-        short_name=short_name,
         bot_type=bot_type,
         is_bot=True,
         role=UserProfile.ROLE_MEMBER,  # Default role, will be updated
@@ -138,10 +138,12 @@ def create_bot(
     assign_bot_role_based_on_owner(bot, owner)
     return bot
 
-def transfer_bot_ownership(bot: UserProfile, new_owner: UserProfile):
-    bot.owner = new_owner
+
+def transfer_bot_ownership(bot: UserProfile, new_owner: UserProfile) -> None:
+    bot.bot_owner = new_owner
     assign_bot_role_based_on_owner(bot, new_owner)
     bot.save()
+
 
 def reactivate_user_backend(
     request: HttpRequest, user_profile: UserProfile, user_id: int
@@ -151,10 +153,10 @@ def reactivate_user_backend(
     )
     if target.is_bot:
         assert target.bot_type is not None
-        check_bot_creation_policy(user_profile, target.bot_type)
-        check_bot_name_available(user_profile.realm_id, target.full_name, is_activation=True)
-        assign_bot_role_based_on_owner(target, target.owner)  # Update role
-    do_reactivate_user(target, acting_user=user_profile)
+
+        if target.bot_owner:
+            assign_bot_role_based_on_owner(target, target.bot_owner)
+            change_user_is_active(target, True)
     return json_success(request)
 
 
@@ -163,9 +165,8 @@ def deactivate_user_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    user_id: PathOnly[int],
-    deactivation_notification_comment: Annotated[str, StringConstraints(max_length=2000)]
-    | None = None,
+    user_id: int,
+    deactivation_notification_comment: str | None = None,
 ) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, for_admin=True)
     if target.is_realm_owner and not user_profile.is_realm_owner:
@@ -188,7 +189,8 @@ def deactivate_user_own_backend(request: HttpRequest, user_profile: UserProfile)
     if user_profile.is_realm_owner and check_last_owner(user_profile):
         raise CannotDeactivateLastUserError(is_last_owner=True)
 
-    do_deactivate_user(user_profile, acting_user=user_profile)
+    change_user_is_active(user_profile, False)
+    user_profile.save(update_fields=["is_active"])
     return json_success(request)
 
 
@@ -208,7 +210,7 @@ def _deactivate_user_profile_backend(
     *,
     deactivation_notification_comment: str | None,
 ) -> HttpResponse:
-    do_deactivate_user(target, acting_user=user_profile)
+    change_user_is_active(target, False)
 
     # It's important that we check for None explicitly here, since ""
     # encodes sending an email without a custom administrator comment.
@@ -223,20 +225,8 @@ def _deactivate_user_profile_backend(
                 "realm_name": target.realm.name,
             },
         )
-    return json_success(request)
 
-
-def reactivate_user_backend(
-    request: HttpRequest, user_profile: UserProfile, user_id: int
-) -> HttpResponse:
-    target = access_user_by_id(
-        user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=True
-    )
-    if target.is_bot:
-        assert target.bot_type is not None
-        check_bot_creation_policy(user_profile, target.bot_type)
-        check_bot_name_available(user_profile.realm_id, target.full_name, is_activation=True)
-    do_reactivate_user(target, acting_user=user_profile)
+    # Ensure that the return statement is inside the function
     return json_success(request)
 
 

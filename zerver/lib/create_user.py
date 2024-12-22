@@ -217,10 +217,10 @@ def create_user(
 
     if bot_type is not None and bot_owner is not None:
         if bot_owner.role == UserProfile.ROLE_REALM_ADMINISTRATOR:
-           user_profile.role = UserProfile.ROLE_REALM_ADMINISTRATOR
+            user_profile.role = UserProfile.ROLE_REALM_ADMINISTRATOR
         elif bot_owner.role == UserProfile.ROLE_MEMBER:
-           user_profile.role = UserProfile.ROLE_MEMBER 
-    
+            user_profile.role = UserProfile.ROLE_MEMBER
+
     user_profile.avatar_source = avatar_source
     user_profile.timezone = timezone
     user_profile.default_sending_stream = default_sending_stream
