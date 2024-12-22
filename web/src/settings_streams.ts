@@ -254,4 +254,13 @@ export function build_page(): void {
             delete_default_stream(stream_id, $row, $(this));
         },
     );
+
+    $("#admin-default-channels-list").on("click", ".clear-filter", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const $filter = $("#admin-default-channels-list").find(".search-container .search");
+        $filter.val("");
+        $filter.trigger("input");
+    });
 }
