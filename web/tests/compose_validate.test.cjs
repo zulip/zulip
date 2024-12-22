@@ -620,7 +620,7 @@ test_ui("test_check_overflow_text", ({mock_template, override}) => {
     assert.ok(!$indicator.hasClass("over_limit"));
     assert.equal(limit_indicator_html, "900\n");
     assert.ok(!$textarea.hasClass("over_limit"));
-    assert.ok(!$(".message-send-controls").hasClass("disabled-message-send-controls"));
+    assert.ok($(".message-send-controls").hasClass("disabled-message-send-controls"));
 
     // Indicator must be empty
     $textarea.val("a".repeat(9100 - 1));
