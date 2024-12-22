@@ -316,6 +316,15 @@ export function on_load_success(
 
         $(".dialog_submit_button").attr("data-invite-id", invite_id);
     });
+
+    $("#admin-invites-list").on("click", ".clear-filter", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const $filter = $("#admin-invites-list").find(".search-container .search");
+        $filter.val("");
+        $filter.trigger("input");
+    });
 }
 
 export function update_invite_users_setting_tip(): void {
