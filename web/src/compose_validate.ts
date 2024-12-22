@@ -36,6 +36,10 @@ let upload_in_progress = false;
 let message_too_long = false;
 let recipient_disallowed = false;
 
+export const NO_PRIVATE_RECIPIENT_ERROR_MESSAGE = $t({
+    defaultMessage: "Please add a valid recipient.",
+});
+
 type StreamWildcardOptions = {
     stream_id: number;
     $banner_container: JQuery;
@@ -717,7 +721,7 @@ function validate_private_message(): boolean {
 
     if (compose_state.private_message_recipient().length === 0) {
         compose_banner.show_error_message(
-            $t({defaultMessage: "Please specify at least one valid recipient."}),
+            NO_PRIVATE_RECIPIENT_ERROR_MESSAGE,
             compose_banner.CLASSNAMES.missing_private_message_recipient,
             $banner_container,
             $("#private_message_recipient"),
