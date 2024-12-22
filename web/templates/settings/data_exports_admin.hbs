@@ -55,7 +55,7 @@
             <h3>{{t "Export permissions"}}</h3>
             <div class="user_filters">
                 {{> ../dropdown_widget widget_name="filter_by_consent"}}
-                <input type="text" class="search filter_text_input" placeholder="{{t 'Filter users' }}" aria-label="{{t 'Filter users' }}"/>
+                {{> filter_text_input placeholder=(t 'Filter users') aria_label=(t 'Filter users')}}
             </div>
         </div>
 
