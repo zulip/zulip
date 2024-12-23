@@ -86,6 +86,15 @@ export function set_up(): void {
         },
     );
 
+    $("#user-topic-settings").on("click", ".clear-filter", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const $filter = $("#user-topic-settings").find(".search-container .search");
+        $filter.val("");
+        $filter.trigger("input");
+    });
+
     populate_list();
 }
 

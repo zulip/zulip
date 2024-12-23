@@ -66,6 +66,15 @@ export function set_up(): void {
         muted_users.unmute_user(user_id);
     });
 
+    $("#muted-user-settings").on("click", ".clear-filter", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const $filter = $("#muted-user-settings").find(".search-container .search");
+        $filter.val("");
+        $filter.trigger("input");
+    });
+
     populate_list();
 }
 

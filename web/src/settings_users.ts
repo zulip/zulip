@@ -480,6 +480,28 @@ function active_create_table(active_users: number[]): void {
     $("#admin_users_table").show();
 }
 
+function handle_clear_button_for_users($tbody: JQuery): void {
+    const $container = $tbody.closest(".user-settings-section");
+    $container.on("click", ".clear-filter", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const $filter = $container.find(".search");
+        set_text_search_value($tbody, "");
+        $filter.trigger("input");
+    });
+}
+
+export function handle_clear_button_for_bots(): void {
+    $("#admin-bot-list").on("click", ".clear-filter", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const $filter = $("#admin-bot-list").find(".search-container .search");
+        $filter.val("");
+        $filter.trigger("input");
+    });
+}
+
 function deactivated_create_table(deactivated_users: number[]): void {
     const $deactivated_users_table = $("#admin_deactivated_users_table");
     deactivated_section.list_widget = ListWidget.create(
@@ -712,6 +734,7 @@ function active_handle_events(): void {
     handle_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
+    handle_clear_button_for_users($tbody);
 }
 
 function deactivated_handle_events(): void {
@@ -721,6 +744,7 @@ function deactivated_handle_events(): void {
     handle_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
+    handle_clear_button_for_users($tbody);
 }
 
 function bots_handle_events(): void {
@@ -729,6 +753,7 @@ function bots_handle_events(): void {
     handle_bot_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
+    handle_clear_button_for_bots();
 }
 
 export function set_up_humans(): void {

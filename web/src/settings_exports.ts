@@ -379,6 +379,15 @@ export function set_up(): void {
         show_start_export_modal();
     });
 
+    $("#data-exports").on("click", ".clear-filter", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const $filter = $("#data-exports").find(".search-container .search");
+        $filter.val("");
+        $filter.trigger("input");
+    });
+
     // Do an initial population of the 'Data exports' table
     void channel.get({
         url: "/json/export/realm",
