@@ -532,7 +532,11 @@ class RealmTest(ZulipTestCase):
         iago.role = UserProfile.ROLE_REALM_OWNER
         iago.save(update_fields=["role"])
         do_deactivate_realm(
-            realm, acting_user=iago, deactivation_reason="owner_request", email_owners=True
+            realm,
+            acting_user=iago,
+            deactivation_reason="owner_request",
+            deletion_delay_days=14,
+            email_owners=True,
         )
         self.assertEqual(realm.deactivated, True)
         self.assert_length(mail.outbox, 2)
@@ -551,6 +555,35 @@ class RealmTest(ZulipTestCase):
                 self.assertIn(
                     "Your Zulip organization, Zulip Dev, was deactivated by Iago on", email.body
                 )
+            self.assertIn(
+                "All data associated with this organization will be permanently deleted on",
+                email.body,
+            )
+
+    def test_do_send_realm_deactivation_email_with_immediate_data_deletion(self) -> None:
+        realm = get_realm("zulip")
+        desdemona = self.example_user("desdemona")
+        with (
+            mock.patch("zerver.actions.realm_settings.do_scrub_realm") as mock_scrub_realm,
+            self.assertLogs(level="INFO"),
+        ):
+            do_deactivate_realm(
+                realm,
+                acting_user=desdemona,
+                deactivation_reason="owner_request",
+                deletion_delay_days=0,
+                email_owners=True,
+            )
+            self.assertEqual(realm.deactivated, True)
+            mock_scrub_realm.assert_called_once_with(realm, acting_user=None)
+            self.assert_length(mail.outbox, 1)
+            email = mail.outbox[0]
+            self.assertIn("Your Zulip organization Zulip Dev has been deactivated", email.subject)
+            self.assertIn("You have deactivated your Zulip organization, Zulip Dev, on", email.body)
+            self.assertIn(
+                "All data associated with this organization has been permanently deleted.",
+                email.body,
+            )
 
     def test_do_send_realm_reactivation_email(self) -> None:
         realm = get_realm("zulip")
