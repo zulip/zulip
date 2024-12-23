@@ -15,6 +15,10 @@ export function is_resolved(topic_name: string): boolean {
     return topic_name.startsWith(RESOLVED_TOPIC_PREFIX);
 }
 
+export function is_unresolved(topic_name: string): boolean {
+    return !topic_name.startsWith(RESOLVED_TOPIC_PREFIX);
+}
+
 export function resolve_name(topic_name: string): string {
     return RESOLVED_TOPIC_PREFIX + topic_name;
 }
