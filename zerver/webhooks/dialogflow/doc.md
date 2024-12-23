@@ -9,12 +9,14 @@ Dialogflow queries!
     of Zulip. Thus, using an incoming webhook bot lowers the security risk of
     exposing the bot's API key to a third-party service.
 
-    Construct the URL for the Dialogflow bot using the bot's API key and your
-    Zulip email. The webhook URL should look like:
+    Construct the URL for the Dialogflow bot using the bot's
+    [API key](/api/api-keys#get-a-bots-api-key) and your Zulip email. The
+    webhook URL should look like:
 
     `{{api_url}}?api_key=BOT'S_API_KEY&email=foo@example.com`
 
-    Modify the parameters of the URL above where `api_key` is the API key of your Zulip bot
+    Modify the parameters of the URL above where `api_key` is the
+    [API key](/api/api-keys#get-a-bots-api-key) of your Zulip bot
     and `email` is your Zulip email.
 
 1. Go to the **Fulfillment** settings of your Dialogflow app and enable **Webhooks**.

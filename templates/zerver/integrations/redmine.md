@@ -34,7 +34,7 @@ out the following fields:
 
     * Zulip URL (e.g `https://yourZulipDomain.zulipchat.com/`)
     * Zulip Bot E-mail
-    * Zulip Bot API key
+    * Zulip Bot [API key](/api/api-keys#get-a-bots-api-key)
     * Stream name __*__
     * Issue updates subject __*__
     * Version updates subject __*__
