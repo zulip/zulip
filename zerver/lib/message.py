@@ -1528,3 +1528,12 @@ def set_visibility_policy_possible(user_profile: UserProfile, message: Message) 
 def remove_single_newlines(content: str) -> str:
     content = content.strip("\n")
     return re.sub(r"(?<!\n)\n(?!\n|[-*] |[0-9]+\. )", " ", content)
+
+
+def validate_can_send_moderation_request(
+    user_profile: UserProfile,
+) -> bool:
+    """
+    Returns whether a moderation request can be made or not
+    """
+    return True
