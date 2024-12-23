@@ -56,6 +56,8 @@ class ErrorCode(Enum):
     SYSTEM_GROUP_REQUIRED = auto()
     CANNOT_DEACTIVATE_GROUP_IN_USE = auto()
     CANNOT_ADMINISTER_CHANNEL = auto()
+    CANNOT_ACCESS_ARCHIVED_STREAM = auto()
+    CANNOT_ACCESS_PRIVATE_STREAM = auto()
 
 
 class JsonableError(Exception):
@@ -753,3 +755,29 @@ class CannotManageDefaultChannelError(JsonableError):
     @override
     def msg_format() -> str:
         return _("You do not have permission to change default channels.")
+
+
+class CannotAccessPrivateStreamError(JsonableError):
+    code = ErrorCode.CANNOT_ACCESS_PRIVATE_STREAM
+    data_fields = ["channel_name"]
+
+    def __init__(self, channel_name: str) -> None:
+        self.channel_name = channel_name
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Unable to access private channel ({channel_name}).")
+
+
+class CannotAccessArchivedStreamError(JsonableError):
+    code = ErrorCode.CANNOT_ACCESS_ARCHIVED_STREAM
+    data_fields = ["channel_name"]
+
+    def __init__(self, channel_name: str) -> None:
+        self.channel_name = channel_name
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Unable to access archived channel ({channel_name}).")
