@@ -718,7 +718,13 @@ urls += [
 # Incoming webhook URLs
 # We don't create URLs for particular Git integrations here
 # because of generic one below
-urls.extend(incoming_webhook.url_object for incoming_webhook in WEBHOOK_INTEGRATIONS)
+urls.extend(
+    [
+        url_object
+        for incoming_webhook in WEBHOOK_INTEGRATIONS
+        for url_object in incoming_webhook.url_objects
+    ]
+)
 
 # Desktop-specific authentication URLs
 urls += [
