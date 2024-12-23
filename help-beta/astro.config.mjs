@@ -268,7 +268,7 @@ export default defineConfig({
                         "configure-default-new-user-settings",
                         "configure-organization-language",
                         "manage-user-groups",
-                        "change-a-users-role",
+                        "user-roles",
                         "change-a-users-name",
                         "manage-user-channel-subscriptions",
                         "restrict-name-and-email-changes",
