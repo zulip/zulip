@@ -488,6 +488,11 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         ["communication"],
         config_options=[
             WebhookConfigOption(
+                name="slack_app_token",
+                description="Slack app bot token",
+                validator=check_string,
+            ),
+            WebhookConfigOption(
                 name="channels_map_to_topics",
                 description="Slack channel mapping option (1, 0 or empty)",
                 validator=check_string,
