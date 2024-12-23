@@ -258,7 +258,7 @@ export default defineConfig({
                 {
                     label: "Users",
                     items: [
-                        "roles-and-permissions",
+                        "manage-permissions",
                         "invite-new-users",
                         "restrict-account-creation",
                         "guest-users",
