@@ -205,7 +205,7 @@ export const update_elements = ($content: JQuery): void => {
 
         const my_user_id = people.my_current_user_id();
         // Mark user group you're a member of.
-        if (user_groups.is_direct_member_of(my_user_id, user_group_id)) {
+        if (user_groups.is_user_in_group(user_group_id, my_user_id)) {
             $(this).addClass("user-mention-me");
         }
 
