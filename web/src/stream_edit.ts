@@ -142,9 +142,6 @@ export function open_edit_panel_empty(): void {
 
 export function update_stream_name(sub: StreamSubscription, new_name: string): void {
     const $edit_container = stream_settings_containers.get_edit_container(sub);
-    if (sub.email_address !== undefined) {
-        $edit_container.find(".email-address").text(sub.email_address);
-    }
     $edit_container.find(".sub-stream-name").text(new_name);
 
     const active_data = stream_settings_components.get_active_data();

@@ -215,10 +215,6 @@ test("update_property", ({override}) => {
         assert.equal(args.val, "we write code");
     }
 
-    // Test email address change
-    stream_events.update_property(stream_id, "email_address", "zooly@zulip.com");
-    assert.equal(sub.email_address, "zooly@zulip.com");
-
     // Test pin to top
     {
         override(stream_list, "refresh_pinned_or_unpinned_stream", noop);

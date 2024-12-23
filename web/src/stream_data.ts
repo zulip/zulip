@@ -393,10 +393,6 @@ export function get_colors(): string[] {
     return subscribed_subs().map((sub) => sub.color);
 }
 
-export function update_stream_email_address(sub: StreamSubscription, email: string): void {
-    sub.email_address = email;
-}
-
 export function update_stream_post_policy(
     sub: StreamSubscription,
     stream_post_policy: StreamPostPolicy,

@@ -3,7 +3,7 @@ import _ from "lodash";
 
 import * as blueslip from "./blueslip.ts";
 import type {MatchedMessage, Message, RawMessage} from "./message_store.ts";
-import type {UpdateMessageEvent} from "./types.ts";
+import type {UpdateMessageEvent} from "./server_event_types.ts";
 import {user_settings} from "./user_settings.ts";
 
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random

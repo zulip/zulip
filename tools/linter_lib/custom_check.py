@@ -117,7 +117,7 @@ js_rules = RuleList(
             "pattern": "subject|SUBJECT",
             "exclude": {
                 "web/src/message_store.ts",
-                "web/src/types.ts",
+                "web/src/server_event_types.ts",
                 "web/src/util.ts",
                 "web/src/message_events_util.ts",
                 "web/src/message_helper.ts",

@@ -238,6 +238,24 @@ const custom_profile_field_types_schema = z.object({
 
 export type CustomProfileFieldTypes = z.infer<typeof custom_profile_field_types_schema>;
 
+export const realm_domain_schema = z.object({
+    domain: z.string(),
+    allow_subdomains: z.boolean(),
+});
+
+export const realm_playground_schema = z.object({
+    id: z.number(),
+    name: z.string(),
+    pygments_language: z.string(),
+    url_template: z.string(),
+});
+
+export const realm_linkifier_schema = z.object({
+    pattern: z.string(),
+    url_template: z.string(),
+    id: z.number(),
+});
+
 // Sync this with zerver.lib.events.do_events_register.
 export const realm_schema = z.object({
     custom_profile_fields: z.array(custom_profile_field_schema),
@@ -306,12 +324,7 @@ export const realm_schema = z.object({
     realm_direct_message_initiator_group: group_setting_value_schema,
     realm_direct_message_permission_group: group_setting_value_schema,
     realm_disallow_disposable_email_addresses: z.boolean(),
-    realm_domains: z.array(
-        z.object({
-            domain: z.string(),
-            allow_subdomains: z.boolean(),
-        }),
-    ),
+    realm_domains: z.array(realm_domain_schema),
     realm_email_auth_enabled: z.boolean(),
     realm_email_changes_disabled: z.boolean(),
     realm_emails_restricted_to_domains: z.boolean(),
@@ -349,13 +362,7 @@ export const realm_schema = z.object({
     realm_invite_to_stream_policy: z.number(),
     realm_is_zephyr_mirror_realm: z.boolean(),
     realm_jitsi_server_url: z.nullable(z.string()),
-    realm_linkifiers: z.array(
-        z.object({
-            pattern: z.string(),
-            url_template: z.string(),
-            id: z.number(),
-        }),
-    ),
+    realm_linkifiers: z.array(realm_linkifier_schema),
     realm_logo_source: z.string(),
     realm_logo_url: z.string(),
     realm_mandatory_topics: z.boolean(),
@@ -373,14 +380,7 @@ export const realm_schema = z.object({
     realm_org_type: z.number(),
     realm_password_auth_enabled: z.boolean(),
     realm_plan_type: z.number(),
-    realm_playgrounds: z.array(
-        z.object({
-            id: z.number(),
-            name: z.string(),
-            pygments_language: z.string(),
-            url_template: z.string(),
-        }),
-    ),
+    realm_playgrounds: z.array(realm_playground_schema),
     realm_presence_disabled: z.boolean(),
     realm_push_notifications_enabled: z.boolean(),
     realm_push_notifications_enabled_end_timestamp: z.number().nullable(),

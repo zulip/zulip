@@ -29,6 +29,7 @@ import * as loading from "./loading.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
+import type {UserGroupUpdateEvent} from "./server_event_types.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -44,30 +45,6 @@ import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import * as user_profile from "./user_profile.ts";
 import * as util from "./util.ts";
-
-type UserGroupPermissionData =
-    | number
-    | {
-          direct_members: number[];
-          direct_subgroups: number[];
-      };
-
-type UserGroupUpdateEvent = {
-    id: number;
-    type: string;
-    group_id: number;
-    data: {
-        name: string;
-        description: string;
-        can_add_members_group: UserGroupPermissionData;
-        can_remove_members_group: UserGroupPermissionData;
-        can_join_group: UserGroupPermissionData;
-        can_leave_group: UserGroupPermissionData;
-        can_manage_group: UserGroupPermissionData;
-        can_mention_group: UserGroupPermissionData;
-        deactivated: boolean;
-    };
-};
 
 type ActiveData = {
     $row: JQuery | undefined;
