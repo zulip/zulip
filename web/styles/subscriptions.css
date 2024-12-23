@@ -513,11 +513,8 @@ h4.user_group_setting_subsection_title {
 
 #search_stream_name,
 #search_group_name {
-    padding: 3px 5px;
-    display: inline-block;
-    border-radius: 5px;
     box-shadow: none;
-    padding-right: 20px;
+    padding-right: 28px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
