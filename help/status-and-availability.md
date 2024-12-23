@@ -154,6 +154,9 @@ Zulip.
 
 With this setting, your "Last active" time displayed to other users in
 the UI will be frozen as the approximate time you enabled this setting.
+!!! warn ""
+
+    **Note**: Users who have Invisible mode enabled will be included in aggregate usage statistics.
 
 !!! tip ""
 
