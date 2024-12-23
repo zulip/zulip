@@ -384,6 +384,23 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("buildbot", ["continuous-integration"]),
     WebhookIntegration("canarytoken", ["monitoring"], display_name="Thinkst Canarytokens"),
     WebhookIntegration("circleci", ["continuous-integration"], display_name="CircleCI"),
+    WebhookIntegration(
+        "clickup",
+        ["project-management"],
+        display_name="ClickUp",
+        config_options=[
+            WebhookConfigOption(
+                name="clickup_api_key",
+                description="Your ClickUp API key",
+                validator=check_string,
+            ),
+            WebhookConfigOption(
+                name="team_id",
+                description="Your ClickUp team id",
+                validator=check_string,
+            ),
+        ],
+    ),
     WebhookIntegration("clubhouse", ["project-management"]),
     WebhookIntegration("codeship", ["continuous-integration", "deployment"]),
     WebhookIntegration("crashlytics", ["monitoring"]),
@@ -716,6 +733,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "buildbot": [ScreenshotConfig("started.json")],
     "canarytoken": [ScreenshotConfig("canarytoken_real.json")],
     "circleci": [ScreenshotConfig("github_job_completed.json")],
+    "clickup": [ScreenshotConfig("task_moved.json")],
     "clubhouse": [ScreenshotConfig("story_create.json")],
     "codeship": [ScreenshotConfig("error_build.json")],
     "crashlytics": [ScreenshotConfig("issue_message.json")],
