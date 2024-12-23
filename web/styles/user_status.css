@@ -3,14 +3,18 @@
     width: 384px;
 
     .user-status-content-wrapper {
-        display: flex;
+        display: grid;
+        grid-template:
+            "status-icon search-input clear-search" auto / auto minmax(0, 1fr)
+            auto;
         align-items: center;
         border: 1px solid;
         border-color: hsl(0deg 0% 0% / 60%);
         border-radius: 5px;
+        height: 35px;
 
         & input.user-status {
-            flex: 1 1 0;
+            grid-area: search-input;
             width: 100%;
             border: none;
             outline: none;
@@ -23,9 +27,10 @@
             }
         }
 
-        .old_clear_search_button {
-            position: static;
-            padding: 6px;
+        .clear_search_button {
+            grid-area: clear-search;
+            width: 40px;
+            padding-left: 5px;
         }
 
         .status-emoji-wrapper {
