@@ -79,7 +79,9 @@ def convert_slack_user_and_channel_mentions(text: str, app_token: str) -> str:
             # a mention isn't triggered for a Zulip channel with the same name.
             channel_info: list[str] = slack_channelmention_match.group(0).split("|")
             channel_name = channel_info[1]
-            tokens[iterator] = f"**#{channel_name}**" if channel_name else "**#[private channel]**"
+            tokens[iterator] = (
+                f"**#{channel_name}**" if channel_name else "**#[private Slack channel]**"
+            )
     text = " ".join(tokens)
     return text
 
