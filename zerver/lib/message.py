@@ -28,7 +28,12 @@ from zerver.lib.stream_subscription import (
     num_subscribers_for_stream_id,
 )
 from zerver.lib.streams import can_access_stream_history, get_web_public_streams_queryset
-from zerver.lib.topic import MESSAGE__TOPIC, TOPIC_NAME, messages_for_topic
+from zerver.lib.topic import (
+    MESSAGE__TOPIC,
+    TOPIC_NAME,
+    maybe_rename_general_chat_to_empty_topic,
+    messages_for_topic,
+)
 from zerver.lib.types import UserDisplayRecipient
 from zerver.lib.user_groups import user_has_permission_for_group_setting
 from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_visibility_policy
@@ -212,6 +217,7 @@ def messages_for_ids(
     search_fields: dict[int, dict[str, str]],
     apply_markdown: bool,
     client_gravatar: bool,
+    allow_empty_topic_name: bool,
     allow_edit_history: bool,
     user_profile: UserProfile | None,
     realm: Realm,
@@ -257,6 +263,7 @@ def messages_for_ids(
         message_list,
         apply_markdown=apply_markdown,
         client_gravatar=client_gravatar,
+        allow_empty_topic_name=allow_empty_topic_name,
         realm=realm,
         user_recipient_id=None if user_profile is None else user_profile.recipient_id,
     )
@@ -823,11 +830,15 @@ def extract_unread_data_from_um_rows(
     return raw_unread_messages
 
 
-def aggregate_streams(*, input_dict: dict[int, RawUnreadStreamDict]) -> list[UnreadStreamInfo]:
+def aggregate_streams(
+    *, input_dict: dict[int, RawUnreadStreamDict], allow_empty_topic_name: bool
+) -> list[UnreadStreamInfo]:
     lookup_dict: dict[tuple[int, str], UnreadStreamInfo] = {}
     for message_id, attribute_dict in input_dict.items():
         stream_id = attribute_dict["stream_id"]
         topic_name = attribute_dict["topic"]
+        if topic_name == "" and not allow_empty_topic_name:
+            topic_name = Message.EMPTY_TOPIC_FALLBACK_NAME
         lookup_key = (stream_id, topic_name.lower())
         if lookup_key not in lookup_dict:
             obj = UnreadStreamInfo(
@@ -900,7 +911,9 @@ def aggregate_direct_message_groups(
     return [lookup_dict[k] for k in sorted_keys]
 
 
-def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesResult:
+def aggregate_unread_data(
+    raw_data: RawUnreadMessagesResult, allow_empty_topic_name: bool
+) -> UnreadMessagesResult:
     pm_dict = raw_data["pm_dict"]
     stream_dict = raw_data["stream_dict"]
     unmuted_stream_msgs = raw_data["unmuted_stream_msgs"]
@@ -910,7 +923,9 @@ def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesRe
     count = len(pm_dict) + len(unmuted_stream_msgs) + len(direct_message_group_dict)
 
     pm_objects = aggregate_pms(input_dict=pm_dict)
-    stream_objects = aggregate_streams(input_dict=stream_dict)
+    stream_objects = aggregate_streams(
+        input_dict=stream_dict, allow_empty_topic_name=allow_empty_topic_name
+    )
     direct_message_groups = aggregate_direct_message_groups(input_dict=direct_message_group_dict)
 
     result: UnreadMessagesResult = dict(
@@ -952,7 +967,9 @@ def apply_unread_message_event(
         )
 
         stream_muted = stream_id in state["muted_stream_ids"]
-        visibility_policy = get_topic_visibility_policy(user_profile, stream_id, topic_name)
+        visibility_policy = get_topic_visibility_policy(
+            user_profile, stream_id, topic_name=maybe_rename_general_chat_to_empty_topic(topic_name)
+        )
         # A stream message is unmuted if it belongs to:
         # * a not muted topic in a normal stream
         # * an unmuted or followed topic in a muted stream
