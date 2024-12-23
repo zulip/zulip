@@ -18,6 +18,12 @@ See also the [Zulip Slack incoming webhook integration][1].
    you'd like to use for Slack notifications. Otherwise, for each public
    Slack channel, [create a Zulip channel][2] with the same name.
 
+1. If you're setting up a [Slack Bridge][6], switch the value of the
+   `?api_key=` query in the **integration URL** you generated with the
+   API key of the **Generic bot** used for the Slack Bridge. Make sure
+   to continue the setup with this new URL. Otherwise, proceed to the
+   next step.
+
 1. {!create-an-incoming-webhook.md!}
 
 1. {!generate-webhook-url-basic.md!}
@@ -30,6 +36,12 @@ See also the [Zulip Slack incoming webhook integration][1].
     Otherwise, add `&channels_map_to_topics=0` to the generated URL.
     Note that any Zulip channel you specified when generating the URL
     will be ignored in this case.
+
+    If you're setting this as a [bidirectional bridge][6] between Zulip and
+    Slack, you'll also need to create a **Generic bot** and replace the
+    `&api_token=`query in the **integration URL** you just generated
+    with the API key of the **Generic bot**. Make sure to continue the
+    setup with this new URL.
 
 1. Create a new [Slack app][4], and open it. Navigate to the **OAuth
    & Permissions** menu, and scroll down to the **Scopes** section.
@@ -77,3 +89,4 @@ See also the [Zulip Slack incoming webhook integration][1].
 [3]: https://api.slack.com/apis/events-api
 [4]: https://api.slack.com/apps
 [5]: https://api.slack.com/legacy/custom-integrations/outgoing-webhooks
+[6]: https://github.com/zulip/python-zulip-api/blob/main/zulip/integrations/bridge_with_slack/README.md
