@@ -42,6 +42,7 @@ def property_name(property: str, index: int) -> str:
         "Open",
         "Pending",
         "Resolved",
+        "Unresolved",
         "Closed",
         "Waiting on Customer",
         "Job Application",
