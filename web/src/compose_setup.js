@@ -67,6 +67,9 @@ export function initialize() {
     $("textarea#compose-textarea").on("keyup", (event) => {
         compose_ui.handle_keyup(event, $("textarea#compose-textarea").expectOne());
     });
+    $("textarea#compose-textarea").on("focusin", () => {
+        compose_validate.check_overflow_text($("#send_message_form"));
+    });
 
     $("textarea#compose-textarea").on("input propertychange", () => {
         compose_validate.warn_if_topic_resolved(false);
@@ -516,6 +519,14 @@ export function initialize() {
 
     $("input#stream_message_recipient_topic").on("focus", () => {
         compose_recipient.update_placeholder_text();
+    });
+
+    $("input#stream_message_recipient_topic").on("blur mouseleave", () => {
+        compose_validate.validate(false, false);
+    });
+
+    $("#compose-direct-recipient").on("blur mouseleave", () => {
+        compose_validate.validate(false, false);
     });
 
     $("input#stream_message_recipient_topic").on("input", () => {
