@@ -100,6 +100,9 @@
             {{/inline}}
             {{/tr~}}
         </span>
+        {{#each recipient_users}}
+            {{#if is_bot}}<i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>{{/if}}
+        {{/each}}
         </a>
         <span class="recipient_row_date {{#if (and (not always_display_date) date_unchanged )}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
     </div>
