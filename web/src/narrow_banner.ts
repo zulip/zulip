@@ -124,12 +124,28 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
                   },
               ),
     };
+    const combined_feed_banner = {
+        title: $t({defaultMessage: "There are no messages in your combined feed."}),
+        // Spectators cannot start a conversation.
+        html: page_params.is_spectator
+            ? ""
+            : $t_html(
+                  {
+                      defaultMessage:
+                          "Would you like to <z-link>view messages in all public channels</z-link>?",
+                  },
+                  {
+                      "z-link": (content_html) =>
+                          `<a href="#narrow/streams/public">${content_html.join("")}</a>`,
+                  },
+              ),
+    };
     const default_banner_for_multiple_filters = $t({defaultMessage: "No search results."});
 
     const current_filter = narrow_state.filter();
 
     if (current_filter === undefined || current_filter.is_in_home()) {
-        return default_banner;
+        return combined_feed_banner;
     }
 
     const first_term = current_filter.terms()[0]!;
