@@ -550,7 +550,7 @@ def fetch_initial_state_data(
             id=0,
             default_language=spectator_requested_language,
             # Set home view to recent conversations for spectators regardless of default.
-            web_home_view="recent_topics",
+            web_home_view="recent",
         )
     if want("realm_user"):
         state["raw_users"] = get_users_for_api(
