@@ -239,7 +239,6 @@ export default defineConfig({
                 {
                     label: "Organization basics",
                     items: [
-                        "review-your-organization-settings",
                         "organization-type",
                         "communities-directory",
                         "import-from-mattermost",
