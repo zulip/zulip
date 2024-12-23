@@ -6,6 +6,7 @@ import hashlib
 import json
 import logging
 import os
+import platform
 import pwd
 import random
 import shlex
@@ -653,8 +654,47 @@ def get_or_create_dev_uuid_var_path(path: str) -> str:
     return absolute_path
 
 
-def is_vagrant_env_host(path: str) -> bool:
-    return ".vagrant" in os.listdir(path)
+def is_dev_droplet() -> bool:
+    return pwd.getpwuid(os.getuid()).pw_name == "zulipdev"
+
+
+def is_vagrant_environment(path: str) -> bool:
+    """
+    Detect if the current environment is Vagrant-based.
+    Checks for 'vagrant' user or the presence of a '.vagrant' directory.
+    """
+    try:
+        # Check if the username matches "vagrant"
+        is_vagrant_user = pwd.getpwuid(os.getuid()).pw_name == "vagrant"
+
+        # Check for ".vagrant" directory
+        vagrant_dirs = {".vagrant"}
+        has_vagrant_dir = any(dir_name in vagrant_dirs for dir_name in os.listdir(path))
+        return is_vagrant_user or has_vagrant_dir
+    except (FileNotFoundError, PermissionError, OSError):
+        return False
+
+
+def is_wsl_environment() -> bool:
+    """
+    Detect if the environment is WSL.
+    Looks for WSL-related strings in system files or env variables.
+    """
+    try:
+        if platform.system() == "Windows":
+            return False  # Native Windows, not WSL
+        # Check Linux /proc files for WSL indicators
+        for file_path in ["/proc/version", "/proc/sys/kernel/osrelease"]:
+            try:
+                with open(file_path) as f:
+                    if "microsoft" in f.read().lower():
+                        return True
+            except FileNotFoundError:
+                continue
+        # Check WSL environment variable
+        return "WSL_DISTRO_NAME" in os.environ
+    except Exception:
+        return False
 
 
 def has_application_server(once: bool = False) -> bool:
