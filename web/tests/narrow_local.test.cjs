@@ -289,9 +289,9 @@ run_test("is:mentioned with no unreads and no matches", () => {
     test_with(fixture);
 });
 
-run_test("is:alerted with no unreads and one match", () => {
+run_test("is:watched with no unreads and one match", () => {
     const fixture = {
-        filter_terms: [{operator: "is", operand: "alerted"}],
+        filter_terms: [{operator: "is", operand: "watched"}],
         unread_info: {
             flavor: "not_found",
         },

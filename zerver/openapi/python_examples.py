@@ -1646,7 +1646,7 @@ def delete_custom_emoji(client: Client) -> None:
 @openapi_test_function("/users/me/alert_words:get")
 def get_alert_words(client: Client) -> None:
     # {code_example|start}
-    # Get all of the user's configured alert words.
+    # Get all of the user's configured watched phrases.
     result = client.get_alert_words()
     # {code_example|end}
     assert_success_response(result)
@@ -1657,7 +1657,7 @@ def get_alert_words(client: Client) -> None:
 def add_alert_words(client: Client) -> None:
     words = ["foo", "bar"]
     # {code_example|start}
-    # Add words (or phrases) to the user's set of configured alert words.
+    # Add phrases to the user's set of configured watched phrases.
     result = client.add_alert_words(words)
     # {code_example|end}
     assert_success_response(result)
@@ -1669,7 +1669,7 @@ def remove_alert_words(client: Client) -> None:
     words = client.get_alert_words()["alert_words"]
     assert len(words) > 0
     # {code_example|start}
-    # Remove words (or phrases) from the user's set of configured alert words.
+    # Remove phrases from the user's set of configured watched phrases.
     result = client.remove_alert_words(words)
     # {code_example|end}
     assert_success_response(result)
