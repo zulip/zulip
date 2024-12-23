@@ -846,6 +846,13 @@
       "text_content": "Invalid time format: 1969-12-31T00:00:00+32:00"
     },
     {
+      "name": "timestamp_overflow",
+      "input": "<time:0001-01-01T01:00:00+02:00>",
+      "expected_output": "<p><span class=\"timestamp-error\">Invalid time format: 0001-01-01T01:00:00+02:00</span></p>",
+      "marked_expected_output": "<p><span>0001-01-01T01:00:00+02:00</span></p>",
+      "text_content": "Invalid time format: 0001-01-01T01:00:00+02:00"
+    },
+    {
       "name": "timestamp_unix",
       "input": "Let's meet at <time:1496701800>.",
       "expected_output": "<p>Let's meet at <time datetime=\"2017-06-05T22:30:00Z\">1496701800</time>.</p>",
