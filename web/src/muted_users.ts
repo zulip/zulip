@@ -1,11 +1,11 @@
-import type {z} from "zod";
+import type * as v from "valibot";
 
 import * as channel from "./channel.ts";
 import type {StateData, muted_user_schema} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
 import {get_time_from_date_muted} from "./util.ts";
 
-export type RawMutedUser = z.infer<typeof muted_user_schema>;
+export type RawMutedUser = v.InferOutput<typeof muted_user_schema>;
 
 type MutedUser = {
     id: number;

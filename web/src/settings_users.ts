@@ -1,6 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
+import * as v from "valibot";
 
 import render_settings_user_list_row from "../templates/settings/settings_user_list_row.hbs";
 
@@ -768,7 +769,7 @@ export function fetch_presence_user_setting({render_table}: FetchPresenceUserSet
             history_limit_days: 365 * 1000,
         },
         success(response) {
-            const data = post_presence_response_schema.parse(response);
+            const data = v.parse(post_presence_response_schema, response);
 
             if (data.presences) {
                 assert(

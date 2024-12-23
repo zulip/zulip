@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as loading from "../loading.ts";
 
@@ -7,26 +7,26 @@ import * as helpers from "./helpers.ts";
 
 const billing_base_url = $("#data").attr("data-billing-base-url")!;
 
-const stripe_response_schema = z.object({
-    session: z.object({
-        type: z.string(),
-        status: z.string(),
-        is_manual_license_management_upgrade_session: z.boolean().optional(),
-        tier: z.number().nullable().optional(),
-        event_handler: z
-            .object({
-                status: z.string(),
-                error: z
-                    .object({
-                        message: z.string(),
-                    })
-                    .optional(),
-            })
-            .optional(),
+const stripe_response_schema = v.object({
+    session: v.object({
+        type: v.string(),
+        status: v.string(),
+        is_manual_license_management_upgrade_session: v.optional(v.boolean()),
+        tier: v.nullish(v.number()),
+        event_handler: v.optional(
+            v.object({
+                status: v.string(),
+                error: v.optional(
+                    v.object({
+                        message: v.string(),
+                    }),
+                ),
+            }),
+        ),
     }),
 });
 
-type StripeSession = z.infer<typeof stripe_response_schema>["session"];
+type StripeSession = v.InferOutput<typeof stripe_response_schema>["session"];
 
 function update_status_and_redirect(redirect_to: string): void {
     window.location.replace(redirect_to);
@@ -59,7 +59,7 @@ async function stripe_checkout_session_status_check(stripe_session_id: string): 
     const response: unknown = await $.get(`/json${billing_base_url}/billing/event/status`, {
         stripe_session_id,
     });
-    const response_data = stripe_response_schema.parse(response);
+    const response_data = v.parse(stripe_response_schema, response);
 
     if (response_data.session.status === "created") {
         return false;
@@ -84,22 +84,22 @@ export async function stripe_invoice_status_check(stripe_invoice_id: string): Pr
         stripe_invoice_id,
     });
 
-    const response_schema = z.object({
-        stripe_invoice: z.object({
-            status: z.string(),
-            event_handler: z
-                .object({
-                    status: z.string(),
-                    error: z
-                        .object({
-                            message: z.string(),
-                        })
-                        .optional(),
-                })
-                .optional(),
+    const response_schema = v.object({
+        stripe_invoice: v.object({
+            status: v.string(),
+            event_handler: v.optional(
+                v.object({
+                    status: v.string(),
+                    error: v.optional(
+                        v.object({
+                            message: v.string(),
+                        }),
+                    ),
+                }),
+            ),
         }),
     });
-    const response_data = response_schema.parse(response);
+    const response_data = v.parse(response_schema, response);
 
     switch (response_data.stripe_invoice.status) {
         case "paid":

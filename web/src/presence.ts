@@ -1,11 +1,11 @@
-import type {z} from "zod";
+import type * as v from "valibot";
 
 import * as people from "./people.ts";
 import type {StateData, presence_schema} from "./state_data.ts";
 import {realm} from "./state_data.ts";
 import {user_settings} from "./user_settings.ts";
 
-export type RawPresence = z.infer<typeof presence_schema> & {
+export type RawPresence = v.InferOutput<typeof presence_schema> & {
     server_timestamp: number;
 };
 
@@ -186,7 +186,7 @@ export function update_info_from_event(
 }
 
 export function set_info(
-    presences: Record<number, z.infer<typeof presence_schema>>,
+    presences: Record<number, v.InferOutput<typeof presence_schema>>,
     server_timestamp: number,
     last_update_id = -1,
 ): void {
