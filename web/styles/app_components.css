@@ -407,37 +407,6 @@ input.settings_text_input {
     margin: 0;
 }
 
-/* TODO: Once all layouts using this button
-   are modernized, the Font Awesome icon
-   should be replaced with a Zulip icon,
-   and its formatting should have no extra
-   space around its viewbox in SVG. */
-.old_clear_search_button {
-    &:hover {
-        color: var(--color-text-clear-search-button-hover);
-    }
-
-    &:disabled {
-        visibility: hidden;
-    }
-
-    &,
-    &:focus,
-    &:active,
-    &:disabled:hover {
-        background: none;
-        border: none;
-        text-align: center;
-        color: var(--color-text-clear-search-button);
-        text-shadow: none;
-        outline: none !important;
-        box-shadow: none;
-        z-index: 5;
-    }
-}
-
-/* This is new clear_search_button style, it'll replace all
-old_clear_search_button for consistency. */
 .clear_search_button {
     grid-area: 1 / 2 / 2 / 3;
     padding: 0;
