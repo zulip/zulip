@@ -486,6 +486,10 @@ $user_status_emoji_width: 24px;
             height: var(--line-height-sidebar-row-prominent);
             box-sizing: border-box;
         }
+
+        .user-list-filter:placeholder-shown + #clear_search_people_button {
+            display: none;
+        }
     }
 
     #buddy-list-menu-icon {
