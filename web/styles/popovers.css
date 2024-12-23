@@ -642,7 +642,7 @@ ul.popover-group-menu-member-list {
         .stream-search {
             grid-column: search-input-start / clear-search-end;
             grid-row: search-input;
-            padding-right: 20px;
+            padding-right: 28px;
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;
