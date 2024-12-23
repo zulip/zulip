@@ -1032,6 +1032,17 @@ export class Filter {
         return this._terms.length === 1 && this.has_operand("in", "home");
     }
 
+    is_in_channel_topic_narrow(): boolean {
+        if (
+            this.terms().length === 2 &&
+            this.has_operator("channel") &&
+            this.has_operator("topic")
+        ) {
+            return true;
+        }
+        return false;
+    }
+
     is_keyword_search(): boolean {
         return this.has_operator("search");
     }
