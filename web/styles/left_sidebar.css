@@ -83,13 +83,6 @@
 
     .topic_search_section {
         margin: 3px 0;
-
-        .old_clear_search_button {
-            grid-area: clear-button;
-            /* Override app-component positioning. */
-            position: static;
-            padding: 0;
-        }
     }
 
     & li {
@@ -919,8 +912,7 @@ li.top_left_scheduled_messages {
 .left-sidebar-navigation-label-container,
 .dm-box,
 .subscription_block,
-.searching-for-more-topics,
-.topic_search_section {
+.searching-for-more-topics {
     display: grid;
     align-items: center;
     /* This general pattern of elements applies to every single row in the left
@@ -1142,12 +1134,10 @@ li.top_left_scheduled_messages {
 }
 
 .topic_search_section {
-    grid-template-columns:
-        var(--left-sidebar-toggle-width-offset) 0 0
-        [filter-box-start] minmax(0, 1fr)
-        minmax(0, max-content)
-        [clear-button-start] var(--left-sidebar-vdots-width)
-        [clear-button-end filter-box-end] 0;
+    padding: 8px 10px;
+    display: grid;
+    grid-template: "search-input clear-search" auto / minmax(0, 1fr) 30px;
+    border-bottom: 1px solid var(--color-border-modal-bar);
 }
 
 .topic-box .zero_count {
@@ -1218,7 +1208,13 @@ li.top_left_scheduled_messages {
 }
 
 .topic-list-filter {
-    grid-area: filter-box;
+    box-shadow: none;
+    padding-right: 28px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    grid-column: search-input-start / clear-search-end;
+    grid-row: search-input;
 }
 
 #filter-topic-input:placeholder-shown + #clear_search_topic_button {
@@ -1730,11 +1726,8 @@ li.topic-list-item {
 .direct-messages-search-section {
     .stream-list-filter,
     .direct-messages-list-filter {
-        /* Use the border-box model so flex
-           can do its thing despite whatever
-           padding and border we specify. */
         box-sizing: border-box;
-        flex: 1 0 100%;
+        width: 100%;
         /* Match the input height exactly
            with the row height for a perfect
            fit and better vertical alignment. */
@@ -1745,35 +1738,13 @@ li.topic-list-item {
         padding-right: 30px;
     }
 
-    .old_clear_search_button {
-        /* Use the border-box model so flex
-           can do its thing despite whatever
-           padding and border we specify. */
+    .clear_search_button {
         box-sizing: border-box;
-        /* Clear inherited positioning. */
         position: static;
-        /* We're going to use flexbox, not
-           positioning, to get the clear button
-           over top of the input. This -30px
-           margin accomplishes that, in tandem
-           with the 30px width of this element,
-           which is shared with the ending
-           anchor element in left sidebar header
-           rows. */
+        display: grid;
+        place-items: center;
         width: 30px;
         margin-left: -30px;
-        /* Flexbox respects z-index; this just
-           ensures the button remains over top
-           of the input. */
-        z-index: 1;
-        /* Make the button itself a flex container,
-           so we can perfectly center the X icon. */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        /* Flexbox will pull the element open
-           to make a generous clickable area. */
-        padding: 0;
     }
 
     .direct-messages-list-filter:placeholder-shown
