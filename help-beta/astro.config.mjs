@@ -100,7 +100,7 @@ export default defineConfig({
                         "mention-a-user-or-group",
                         "link-to-a-message-or-conversation",
                         "format-a-quote",
-                        "quote-and-reply",
+                        "quote-or-forward-a-message",
                         "emoji-and-emoticons",
                         "insert-a-link",
                         "share-and-upload-files",
