@@ -71,6 +71,10 @@ Files: web/images/icons/search.svg
 Copyright: 2015-present Ionic (http://ionic.io/)
 License: Expat
 
+File: web/images/icons/filter.svg
+Copyright: 2012-present Fonticons, Inc. (https://fontawesome.com/)
+License: CC-BY-4.0 
+
 Files: web/shared/icons/all-messages.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
