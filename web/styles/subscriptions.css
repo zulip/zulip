@@ -539,10 +539,8 @@ h4.user_group_setting_subsection_title {
     width: 100%;
 }
 
-#clear_search_stream_name,
-#clear_search_group_name {
-    grid-area: clear-search;
-    padding: 0;
+#search_group_name:placeholder-shown + #clear_search_group_name {
+    visibility: hidden;
 }
 
 #search_stream_name:placeholder-shown + #clear_search_stream_name {

@@ -1751,6 +1751,10 @@ li.topic-list-item {
         + #clear-direct-messages-search-button {
         display: none;
     }
+
+    .stream-list-filter:placeholder-shown + #clear_search_stream_button {
+        display: none;
+    }
 }
 
 /* Prepare an adjusted grid for the logged-out state,

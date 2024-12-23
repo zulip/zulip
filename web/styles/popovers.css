@@ -649,9 +649,8 @@ ul.popover-group-menu-member-list {
             margin-bottom: 0;
         }
 
-        #clear_stream_search {
-            display: none;
-            grid-area: clear-search;
+        .stream-search:placeholder-shown + #clear_stream_search {
+            visibility: hidden;
         }
     }
 
