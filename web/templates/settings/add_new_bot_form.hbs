@@ -8,7 +8,7 @@
             <select name="bot_type" id="create_bot_type" class="modal_select bootstrap-focus-style">
                 {{#each bot_types}}
                     {{#if this.allowed}}
-                    <option value="{{this.type_id}}">{{this.name}}</option>
+                    <option value="{{this.type_id}}">{{t this.name}}</option>
                     {{/if}}
                 {{/each}}
             </select>
