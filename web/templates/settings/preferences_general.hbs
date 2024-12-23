@@ -23,9 +23,21 @@
     </div>
     <div class="input-group">
         <label for="{{prefix}}color_scheme" class="settings-field-label">{{t "Theme" }}</label>
-        <select name="color_scheme" class="setting_color_scheme prop-element settings_select bootstrap-focus-style" id="{{prefix}}color_scheme" data-setting-widget-type="number">
-            {{> dropdown_options_widget option_values=color_scheme_values}}
-        </select>
+        <div id="{{prefix}}color_scheme" class="tab-picker prop-element" data-setting-widget-type="radio-group">
+            <input type="radio" id="{{prefix}}theme_select_automatic" class="tab-option setting_color_scheme" data-setting-widget-type="number" name="{{prefix}}theme_select" value="{{color_scheme_values.automatic.code}}" />
+            <label class="tab-option-content tippy-zulip-delayed-tooltip" for="{{prefix}}theme_select_automatic" aria-label="{{t 'Select automatic theme' }}" data-tooltip-template-id="automatic-theme-template" tabindex="0">
+                <i class="zulip-icon zulip-icon-monitor" aria-hidden="true"></i>
+            </label>
+            <input type="radio" id="{{prefix}}theme_select_light" class="tab-option setting_color_scheme" data-setting-widget-type="number" name="{{prefix}}theme_select" value="{{color_scheme_values.light.code}}" />
+            <label class="tab-option-content tippy-zulip-delayed-tooltip" for="{{prefix}}theme_select_light" aria-label="{{t 'Select light theme' }}" data-tippy-content="{{t 'Light theme' }}" tabindex="0">
+                <i class="zulip-icon zulip-icon-sun" aria-hidden="true"></i>
+            </label>
+            <input type="radio" id="{{prefix}}theme_select_dark" class="tab-option setting_color_scheme" data-setting-widget-type="number" name="{{prefix}}theme_select" value="{{color_scheme_values.dark.code}}" />
+            <label class="tab-option-content tippy-zulip-delayed-tooltip" for="{{prefix}}theme_select_dark" aria-label="{{t 'Select dark theme' }}" data-tippy-content="{{t 'Dark theme' }}" tabindex="0">
+                <i class="zulip-icon zulip-icon-moon" aria-hidden="true"></i>
+            </label>
+            <span class="slider"></span>
+        </div>
     </div>
 
     {{> settings_checkbox
