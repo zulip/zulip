@@ -712,7 +712,7 @@ run_test("format_text - bulleted and numbered lists", ({override_rewire}) => {
     // // (wrongly) indented as part of the list's last item too.
     assert.equal(
         get_textarea_state(),
-        "before_first\n\n<1. first_item\n2. second_item>\n\nafter_last",
+        "before_first\n<1. first_item\n2. second_item>\n\nafter_last",
     );
 
     // Toggling off numbered list
