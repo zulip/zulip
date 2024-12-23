@@ -809,7 +809,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Subscribed user who received the message should be able to view file
         self.login_user(cordelia)
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(9):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.getvalue(), b"zulip!")
@@ -870,7 +870,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Originally subscribed user should be able to view file
         self.login_user(polonius)
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(9):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.getvalue(), b"zulip!")

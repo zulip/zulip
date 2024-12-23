@@ -132,28 +132,43 @@ def validate_attachment_request(
         return True, attachment
 
     messages = attachment.messages.all()
-    if UserMessage.objects.filter(user_profile=user_profile, message__in=messages).exists():
-        # If it was sent in a direct message or private stream
-        # message, then anyone who received that message can access it.
-        return True, attachment
 
-    # The user didn't receive any of the messages that included this
-    # attachment.  But they might still have access to it, if it was
-    # sent to a stream they are on where history is public to
-    # subscribers.
+    usermessages_channel_ids = set()
+    usermessage_rows = UserMessage.objects.filter(
+        user_profile=user_profile, message__in=messages
+    ).select_related("message", "message__recipient")
+    for um in usermessage_rows:
+        if not um.message.is_stream_message():
+            # If the attachment was sent in a direct message or group direct
+            # message then anyone who received that message can access it.
+            return True, attachment
+        else:
+            usermessages_channel_ids.add(um.message.recipient.type_id)
 
-    # These are subscriptions to a stream one of the messages was sent to
-    relevant_stream_ids = Subscription.objects.filter(
+    # These are subscriptions to a channel one of the messages was sent to
+    relevant_channel_ids = Subscription.objects.filter(
         user_profile=user_profile,
         active=True,
         recipient__type=Recipient.STREAM,
         recipient__in=[m.recipient_id for m in messages],
     ).values_list("recipient__type_id", flat=True)
-    if len(relevant_stream_ids) == 0:
+
+    if usermessages_channel_ids & set(relevant_channel_ids):
+        # If the attachment was sent in a channel with public
+        # or protected history and the user is still subscribed
+        # to the channel then anyone who received that message
+        # can access it.
+        return True, attachment
+
+    # The user didn't receive any of the messages that included this
+    # attachment. But they might still have access to it, if it was
+    # sent to a stream they are on where history is public to
+    # subscribers.
+    if len(relevant_channel_ids) == 0:
         return False, attachment
 
     return Stream.objects.filter(
-        id__in=relevant_stream_ids, history_public_to_subscribers=True
+        id__in=relevant_channel_ids, history_public_to_subscribers=True
     ).exists(), attachment
 
 
