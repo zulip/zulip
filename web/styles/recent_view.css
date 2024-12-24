@@ -89,8 +89,9 @@
 
     .fa-check-square-o,
     .fa-square-o {
-        padding: 0 2px;
         width: 0.7142em; /* Legacy 10px size at 14px/1em. */
+        padding-right: 0.3571em; /* Legacy 5px size at 14px/1em. */
+        padding-left: 0.1428em; /* Legacy 2px size at 14px/1em. */
     }
 
     .zulip-icon-user {
@@ -177,6 +178,7 @@
         /* Legacy 6px 12px at 14px/1em. */
         padding: 0.4285em 0.8571em;
         line-height: 100%;
+        display: inline-flex;
 
         &:hover {
             background-color: var(--color-background-zulip-button-hover);
