@@ -91,7 +91,7 @@ function user_has_permission(policy_value: number): boolean {
 }
 
 export function user_has_permission_for_group_setting(
-    setting_group_id: GroupSettingValue,
+    setting_value: GroupSettingValue,
     setting_name: string,
     setting_type: "realm" | "stream" | "group",
 ): boolean {
@@ -109,7 +109,7 @@ export function user_has_permission_for_group_setting(
         return false;
     }
 
-    return user_groups.is_user_in_setting_group(setting_group_id, current_user.user_id);
+    return user_groups.is_user_in_setting_group(setting_value, current_user.user_id);
 }
 
 export function user_can_invite_users_by_email(): boolean {
