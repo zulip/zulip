@@ -1208,6 +1208,12 @@ run_test("user_settings", ({override}) => {
         dispatch(event);
         assert.equal($("#automatically_offer_update_time_zone").prop("checked"), false);
     }
+
+    event = event_fixtures.user_settings__allow_private_data_export;
+    override(user_settings, "allow_private_data_export", false);
+    override(settings_exports, "refresh_allow_private_data_export_banner", noop);
+    dispatch(event);
+    assert_same(user_settings.allow_private_data_export, true);
 });
 
 run_test("update_message (read)", ({override}) => {

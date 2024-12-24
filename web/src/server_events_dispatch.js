@@ -764,6 +764,9 @@ export function dispatch_normal_event(event) {
                 if (event.property === "presence_enabled") {
                     activity_ui.redraw_user(current_user.user_id);
                 }
+                if (event.property === "allow_private_data_export") {
+                    settings_exports.refresh_allow_private_data_export_banner();
+                }
                 break;
             }
 
