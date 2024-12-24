@@ -972,53 +972,53 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 
         try:
             ldap_logger.debug("Syncing groups for user: %s", user_profile.id)
-            intended_group_name_set_for_user = set(ldap_user.group_names).intersection(
+            ldap_group_name_set_for_user = set(ldap_user.group_names).intersection(
                 configured_ldap_group_names_for_sync
             )
 
-            existing_group_name_set_for_user = set(
+            zulip_group_names_user_belongs_to = set(
                 UserGroupMembership.objects.filter(
-                    user_group__realm=user_profile.realm,
-                    user_group__named_user_group__name__in=set(
-                        settings.LDAP_SYNCHRONIZED_GROUPS_BY_REALM[user_profile.realm.string_id]
-                    ),
+                    user_group__named_user_group__name__in=configured_ldap_group_names_for_sync,
                     user_profile=user_profile,
                 ).values_list("user_group__named_user_group__name", flat=True)
             )
 
             ldap_logger.debug(
                 "intended groups: %s; zulip groups: %s",
-                repr(intended_group_name_set_for_user),
-                repr(existing_group_name_set_for_user),
+                repr(ldap_group_name_set_for_user),
+                repr(zulip_group_names_user_belongs_to),
             )
 
-            new_groups = NamedUserGroup.objects.filter(
-                name__in=intended_group_name_set_for_user.difference(
-                    existing_group_name_set_for_user
-                ),
+            group_names_to_add_user_to = ldap_group_name_set_for_user.difference(
+                zulip_group_names_user_belongs_to
+            )
+            group_names_to_remove_user_from = zulip_group_names_user_belongs_to.difference(
+                ldap_group_name_set_for_user
+            )
+            groups_to_add_user_to = NamedUserGroup.objects.filter(
+                name__in=group_names_to_add_user_to,
                 realm=user_profile.realm,
             )
-            if new_groups:
+            groups_to_delete_user_from = NamedUserGroup.objects.filter(
+                name__in=group_names_to_remove_user_from, realm=user_profile.realm
+            )
+
+            if groups_to_add_user_to:
                 ldap_logger.debug(
-                    "add %s to %s", user_profile.id, [group.name for group in new_groups]
+                    "add %s to %s", user_profile.id, [group.name for group in groups_to_add_user_to]
                 )
-                bulk_add_members_to_user_groups(new_groups, [user_profile.id], acting_user=None)
+                bulk_add_members_to_user_groups(
+                    groups_to_add_user_to, [user_profile.id], acting_user=None
+                )
 
-            group_names_for_membership_deletion = existing_group_name_set_for_user.difference(
-                intended_group_name_set_for_user
-            )
-            groups_for_membership_deletion = NamedUserGroup.objects.filter(
-                name__in=group_names_for_membership_deletion, realm=user_profile.realm
-            )
-
-            if group_names_for_membership_deletion:
+            if group_names_to_remove_user_from:
                 ldap_logger.debug(
                     "removing groups %s from %s",
-                    group_names_for_membership_deletion,
+                    group_names_to_remove_user_from,
                     user_profile.id,
                 )
                 bulk_remove_members_from_user_groups(
-                    groups_for_membership_deletion, [user_profile.id], acting_user=None
+                    groups_to_delete_user_from, [user_profile.id], acting_user=None
                 )
 
             if settings.LDAP_GROUP_DESCRIPTION_ATTR is None:
@@ -1033,12 +1033,12 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                     # of the corresponding LDAP group. We don't have ldap description data for other
                     # groups, so they won't be subject to syncing anyway.
                     realm=user_profile.realm,
-                    name__in=intended_group_name_set_for_user,
+                    name__in=ldap_group_name_set_for_user,
                 ).only("name", "description")
             }
 
             for group_name, ldap_description in ldap_group_descriptions_dict.items():
-                if group_name not in intended_group_name_set_for_user:
+                if group_name not in ldap_group_name_set_for_user:
                     continue
 
                 zulip_description = zulip_group_descriptions_dict.get(group_name)
