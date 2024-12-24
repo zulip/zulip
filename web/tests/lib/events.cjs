@@ -883,6 +883,13 @@ exports.fixtures = {
         },
     },
 
+    user_settings__allow_private_data_export: {
+        type: "user_settings",
+        op: "update",
+        property: "allow_private_data_export",
+        value: true,
+    },
+
     user_settings__color_scheme_automatic: {
         type: "user_settings",
         op: "update",
