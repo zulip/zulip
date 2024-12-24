@@ -1029,29 +1029,33 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             zulip_group_descriptions_dict = {
                 group.name: group.description
                 for group in NamedUserGroup.objects.filter(
-                    realm=user_profile.realm, name__in=configured_ldap_group_names_for_sync
-                )
+                    # We only need to fetch the groups for which the user is a membr
+                    # of the corresponding LDAP group. We don't have ldap description data for other
+                    # groups, so they won't be subject to syncing anyway.
+                    realm=user_profile.realm,
+                    name__in=intended_group_name_set_for_user,
+                ).only("name", "description")
             }
 
             for group_name, ldap_description in ldap_group_descriptions_dict.items():
-                if group_name in intended_group_name_set_for_user:
-                    zulip_description = zulip_group_descriptions_dict.get(group_name)
-                    if ldap_description is not None and zulip_description != ldap_description:
-                        # Sanity assert: make sure we didn't get some strange data from LDAP.
-                        assert isinstance(ldap_description, str)
+                if group_name not in intended_group_name_set_for_user:
+                    continue
 
-                        user_group = NamedUserGroup.objects.get(
-                            name=group_name, realm=user_profile.realm
-                        )
-                        ldap_logger.debug(
-                            "Updating group description for %s from %s to %s",
-                            group_name,
-                            zulip_description,
-                            ldap_description,
-                        )
-                        do_update_user_group_description(
-                            user_group, ldap_description, acting_user=None
-                        )
+                zulip_description = zulip_group_descriptions_dict.get(group_name)
+                if ldap_description is not None and zulip_description != ldap_description:
+                    # Sanity assert: make sure we didn't get some strange data from LDAP.
+                    assert isinstance(ldap_description, str)
+
+                    user_group = NamedUserGroup.objects.get(
+                        name=group_name, realm=user_profile.realm
+                    )
+                    ldap_logger.debug(
+                        "Updating group description for %s from %s to %s",
+                        group_name,
+                        zulip_description,
+                        ldap_description,
+                    )
+                    do_update_user_group_description(user_group, ldap_description, acting_user=None)
 
         except Exception as e:
             raise ZulipLDAPError(str(e)) from e
