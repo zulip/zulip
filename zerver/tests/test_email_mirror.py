@@ -13,7 +13,7 @@ import orjson
 from django.conf import settings
 
 from zerver.actions.realm_settings import do_deactivate_realm
-from zerver.actions.streams import do_change_stream_post_policy, do_deactivate_stream
+from zerver.actions.streams import do_change_stream_group_based_setting, do_deactivate_stream
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.email_mirror import (
     create_missed_message_address,
@@ -39,6 +39,7 @@ from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish, most_recent_message, most_recent_usermessage
 from zerver.models import Attachment, ChannelEmailAddress, Recipient, Stream, UserProfile
+from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.messages import Message
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -1182,8 +1183,11 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         self.assert_json_success(result)
 
         stream = get_stream("announce", user_profile.realm)
-        do_change_stream_post_policy(
-            stream, Stream.STREAM_POST_POLICY_ADMINS, acting_user=user_profile
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=user_profile.realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", admins_group, acting_user=user_profile
         )
 
         usermessage = most_recent_usermessage(user_profile)
@@ -1204,7 +1208,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         self.assertEqual(
             message.content,
-            "Error sending message to channel announce via message notification email reply:\nOnly organization administrators can send to this channel.",
+            "Error sending message to channel announce via message notification email reply:\nYou do not have permission to post in this channel.",
         )
         self.assertEqual(
             message.sender,

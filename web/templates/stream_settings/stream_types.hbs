@@ -53,18 +53,11 @@
     </div>
     <div class="advanced-configurations-collapase-view hide">
 
-        <div class="input-group">
-            <label class="dropdown-title settings-field-label" for="{{prefix}}stream_post_policy">{{t 'Who can post to this channel'}}
-                {{> ../help_link_widget link="/help/stream-sending-policy" }}
-            </label>
-            <select name="stream-post-policy" class="stream_post_policy_setting prop-element settings_select bootstrap-focus-style" id="{{prefix}}stream_post_policy" data-setting-widget-type="number">
-                {{#each stream_post_policy_values}}
-                    <option value="{{this.code}}" {{#if (eq this.code ../stream_post_policy) }}selected{{/if}}>
-                        {{ this.description}}
-                    </option>
-                {{/each}}
-            </select>
-        </div>
+        {{> ../settings/group_setting_value_pill_input
+          setting_name="can_send_message_group"
+          label=(t 'Who can post to this channel')
+          prefix=prefix
+          help_link="/help/stream-sending-policy" }}
 
         {{> ../settings/group_setting_value_pill_input
           setting_name="can_administer_channel_group"

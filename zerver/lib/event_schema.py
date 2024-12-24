@@ -65,6 +65,7 @@ group_setting_type = UnionType(
 default_stream_fields = [
     ("is_archived", bool),
     ("can_administer_channel_group", group_setting_type),
+    ("can_send_message_group", group_setting_type),
     ("can_remove_subscribers_group", group_setting_type),
     ("creator_id", OptionalType(int)),
     ("date_created", int),
@@ -1444,6 +1445,9 @@ def check_stream_update(
         assert extra_keys == set()
         assert isinstance(value, int)
     elif prop == "is_recently_active":
+        assert extra_keys == set()
+        assert isinstance(value, bool)
+    elif prop == "is_announcement_only":
         assert extra_keys == set()
         assert isinstance(value, bool)
     else:

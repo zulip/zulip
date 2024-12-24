@@ -7,7 +7,6 @@ from django.db.models.functions import Upper
 from django.db.models.signals import post_delete, post_save
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext_lazy
-from django_stubs_ext import StrPromise
 from typing_extensions import override
 
 from zerver.lib.cache import flush_stream
@@ -82,23 +81,13 @@ class Stream(models.Model):
     STREAM_POST_POLICY_ADMINS = 2
     STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS = 3
     STREAM_POST_POLICY_MODERATORS = 4
-    # TODO: Implement policy to restrict posting to a user group or admins.
 
-    # Who in the organization has permission to send messages to this stream.
-    stream_post_policy = models.PositiveSmallIntegerField(default=STREAM_POST_POLICY_EVERYONE)
-    POST_POLICIES: dict[int, StrPromise] = {
-        # These strings should match the strings in the
-        # stream_post_policy_values object in stream_data.js.
-        STREAM_POST_POLICY_EVERYONE: gettext_lazy("All channel members can post"),
-        STREAM_POST_POLICY_ADMINS: gettext_lazy("Only organization administrators can post"),
-        STREAM_POST_POLICY_MODERATORS: gettext_lazy(
-            "Only organization administrators and moderators can post"
-        ),
-        STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS: gettext_lazy(
-            "Only organization full members can post"
-        ),
-    }
-    STREAM_POST_POLICY_TYPES = list(POST_POLICIES.keys())
+    STREAM_POST_POLICY_TYPES = [
+        STREAM_POST_POLICY_EVERYONE,
+        STREAM_POST_POLICY_ADMINS,
+        STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS,
+        STREAM_POST_POLICY_MODERATORS,
+    ]
 
     # The unique thing about Zephyr public streams is that we never list their
     # users.  We may try to generalize this concept later, but for now
@@ -129,6 +118,9 @@ class Stream(models.Model):
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
     can_remove_subscribers_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT)
+    can_send_message_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
 
     # The very first message ID in the stream.  Used to help clients
     # determine whether they might need to display "show all topics" for a
@@ -147,6 +139,13 @@ class Stream(models.Model):
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name="stream_creator_or_nobody",
+        ),
+        "can_send_message_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
         ),
         "can_remove_subscribers_group": GroupPermissionSetting(
             require_system_group=False,
@@ -195,8 +194,8 @@ class Stream(models.Model):
         "message_retention_days",
         "name",
         "rendered_description",
-        "stream_post_policy",
         "can_administer_channel_group_id",
+        "can_send_message_group_id",
         "can_remove_subscribers_group_id",
         "is_recently_active",
     ]
@@ -250,6 +249,18 @@ def get_stream_by_id_in_realm(stream_id: int, realm: Realm) -> Stream:
     return Stream.objects.select_related("realm", "recipient").get(id=stream_id, realm=realm)
 
 
+def get_stream_for_sending_message(stream_name: str, realm: Realm) -> Stream:
+    return Stream.objects.select_related(
+        "can_send_message_group", "can_send_message_group__named_user_group"
+    ).get(name__iexact=stream_name.strip(), realm_id=realm.id)
+
+
+def get_stream_by_id_for_sending_message(stream_id: int, realm: Realm) -> Stream:
+    return Stream.objects.select_related(
+        "realm", "recipient", "can_send_message_group", "can_send_message_group__named_user_group"
+    ).get(id=stream_id, realm=realm)
+
+
 def bulk_get_streams(realm: Realm, stream_names: set[str]) -> dict[str, Any]:
     def fetch_streams_by_name(stream_names: set[str]) -> QuerySet[Stream]:
         #
@@ -263,7 +274,11 @@ def bulk_get_streams(realm: Realm, stream_names: set[str]) -> dict[str, Any]:
         where_clause = (
             "upper(zerver_stream.name::text) IN (SELECT upper(name) FROM unnest(%s) AS name)"
         )
-        return get_active_streams(realm).extra(where=[where_clause], params=(list(stream_names),))  # noqa: S610
+        return (
+            get_active_streams(realm)
+            .select_related("can_send_message_group", "can_send_message_group__named_user_group")
+            .extra(where=[where_clause], params=(list(stream_names),))  # noqa: S610
+        )
 
     if not stream_names:
         return {}

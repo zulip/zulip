@@ -20,6 +20,29 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 333**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `can_send_message_group`
+  which is a [group-setting value](/api/group-setting-values) describing the
+  set of users with permissions to post in the channel.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added `can_send_message_group`
+  which is a [group-setting value](/api/group-setting-values) describing the
+  set of users with permissions to post in the channel.
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): `stream_post_policy` field is
+  deprecated, having been replaced by `can_send_message_group`. Notably,
+  this backwards-compatible `stream_post_policy` value now contains the
+  superset of the true value that best approximates the actual permission
+  setting.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Removed
+  `stream_post_policy` and `is_announcement_only` properties, as the permission
+  to post in the channel is now controlled by `can_send_message_group` setting.
+
 **Feature level 332**
 
 * [`POST /register`](/api/register-queue): Added
