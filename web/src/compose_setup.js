@@ -17,6 +17,7 @@ import * as compose_validate from "./compose_validate.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as flatpickr from "./flatpickr.ts";
 import {$t_html} from "./i18n.ts";
+import {is_enter_event} from "./keydown_util.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_view from "./message_view.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -60,6 +61,12 @@ export function initialize() {
     $(".compose-control-buttons-container .audio_link").toggle(
         compose_call.compute_show_audio_chat_button(),
     );
+
+    $("input#stream_message_recipient_topic").on("keydown", (event) => {
+        if (is_enter_event(event)) {
+            event.preventDefault();
+        }
+    });
 
     $("textarea#compose-textarea").on("keydown", (event) => {
         compose_ui.handle_keydown(event, $("textarea#compose-textarea").expectOne());
