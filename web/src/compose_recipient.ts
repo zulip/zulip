@@ -62,7 +62,7 @@ function composing_to_current_private_message_narrow(): boolean {
     );
 }
 
-export let update_narrow_to_recipient_visibility = (): void => {
+export function should_display_narrow_to_recipient(): boolean {
     const message_type = compose_state.get_message_type();
     if (message_type === "stream") {
         const stream_exists = Boolean(compose_state.stream_id());
@@ -72,8 +72,7 @@ export let update_narrow_to_recipient_visibility = (): void => {
             !composing_to_current_topic_narrow() &&
             compose_state.has_full_recipient()
         ) {
-            $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
-            return;
+            return true;
         }
     } else if (message_type === "private") {
         const recipients = compose_state.private_message_recipient();
@@ -82,9 +81,16 @@ export let update_narrow_to_recipient_visibility = (): void => {
             !composing_to_current_private_message_narrow() &&
             compose_state.has_full_recipient()
         ) {
-            $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
-            return;
+            return true;
         }
+    }
+    return false;
+}
+
+export let update_narrow_to_recipient_visibility = (): void => {
+    if (should_display_narrow_to_recipient()) {
+        $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
+        return;
     }
     $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", false);
 };
