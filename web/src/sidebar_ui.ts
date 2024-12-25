@@ -128,6 +128,10 @@ export function initialize(): void {
         e.preventDefault();
         e.stopPropagation();
 
+            // Toggle the visibility of the right side icon
+        $("#rightside-open-dot").toggle(); 
+        $("#rightside-close-dot").toggle();
+
         if (window.innerWidth >= media_breakpoints_num.xl) {
             $("body").toggleClass("hide-right-sidebar");
             if (!$("body").hasClass("hide-right-sidebar")) {
@@ -147,6 +151,10 @@ export function initialize(): void {
     $(".left-sidebar-toggle-button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
+
+            // Toggle the visibility of the left side icon
+        $("#leftside-open-dot").toggle();
+        $("#leftside-close-solid").toggle();
 
         if (window.innerWidth >= media_breakpoints_num.md) {
             $("body").toggleClass("hide-left-sidebar");
