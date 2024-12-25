@@ -48,17 +48,17 @@ def get_email_gateway_message_string_from_address(address: str) -> str:
     return msg_string
 
 
-def encode_email_address(stream: Stream, show_sender: bool = False) -> str:
+def get_channel_email_token(stream: Stream) -> str:
     channel_email_address, ignored = ChannelEmailAddress.objects.get_or_create(
         realm=stream.realm,
         channel=stream,
         creator=stream.creator,
         sender=get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id),
     )
-    return encode_email_address_helper(stream.name, channel_email_address.email_token, show_sender)
+    return channel_email_address.email_token
 
 
-def encode_email_address_helper(name: str, email_token: str, show_sender: bool = False) -> str:
+def encode_email_address(name: str, email_token: str, show_sender: bool = False) -> str:
     # Some deployments may not use the email gateway
     if settings.EMAIL_GATEWAY_PATTERN == "":
         return ""

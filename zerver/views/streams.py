@@ -48,7 +48,7 @@ from zerver.decorator import (
     require_realm_admin,
 )
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
-from zerver.lib.email_mirror_helpers import encode_email_address
+from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.exceptions import (
     CannotManageDefaultChannelError,
     JsonableError,
@@ -1133,6 +1133,7 @@ def get_stream_email_address(
         user_profile,
         stream_id,
     )
-    stream_email = encode_email_address(stream, show_sender=True)
+    email_token = get_channel_email_token(stream)
+    stream_email = encode_email_address(stream.name, email_token, show_sender=True)
 
     return json_success(request, data={"email": stream_email})

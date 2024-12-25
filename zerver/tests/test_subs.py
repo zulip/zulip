@@ -55,7 +55,7 @@ from zerver.lib.default_streams import (
     get_default_stream_ids_for_realm,
     get_slim_realm_default_streams,
 )
-from zerver.lib.email_mirror_helpers import encode_email_address_helper
+from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
 from zerver.lib.response import json_success
@@ -107,7 +107,6 @@ from zerver.lib.types import (
 from zerver.lib.user_groups import is_user_in_group
 from zerver.models import (
     Attachment,
-    ChannelEmailAddress,
     DefaultStream,
     DefaultStreamGroup,
     Message,
@@ -6164,10 +6163,8 @@ class GetStreamsTest(ZulipTestCase):
         denmark_stream = get_stream("Denmark", realm)
         result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
         json = self.assert_json_success(result)
-        email_token = ChannelEmailAddress.objects.get(channel=denmark_stream).email_token
-        denmark_email = encode_email_address_helper(
-            denmark_stream.name, email_token, show_sender=True
-        )
+        email_token = get_channel_email_token(denmark_stream)
+        denmark_email = encode_email_address(denmark_stream.name, email_token, show_sender=True)
         self.assertEqual(json["email"], denmark_email)
 
         self.login("polonius")
