@@ -26,6 +26,15 @@ mock_esm("../src/user_profile", {
 });
 const stream_events = mock_esm("../src/stream_events");
 
+const buddy_list = mock_esm("../src/buddy_list", {
+    BuddyList: class {
+        insert_or_move = noop;
+    },
+});
+
+const buddy_data = new buddy_list.BuddyList();
+buddy_list.buddy_list = buddy_data;
+
 mock_esm("../src/activity_ui", {
     redraw() {},
 });
@@ -278,6 +287,7 @@ run_test("updates", ({override}) => {
         assert.equal(user_id, isaac.user_id);
         user_removed_from_streams = true;
     };
+    buddy_list.BuddyList.insert_or_move = noop;
     user_events.update_person({user_id: isaac.user_id, is_active: false});
     assert.ok(!people.is_person_active(isaac.user_id));
     assert.ok(user_removed_from_streams);

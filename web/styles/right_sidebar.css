@@ -155,6 +155,11 @@
         line-height: 1;
         /* ...which is approximately 11px at 16px/1em. */
         font-size: 0.6875em;
+
+        &.user-circle-deactivated {
+            color: var(--color-user-circle-offline);
+            font-size: 0.85em;
+        }
     }
 
     .user_sidebar_entry.with_avatar {
