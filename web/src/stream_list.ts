@@ -718,7 +718,7 @@ export function get_sidebar_stream_topic_info(filter: Filter): {
 }
 
 function deselect_stream_items(): void {
-    $("ul#stream_filters li").removeClass("active-filter stream-expanded");
+    $("ul#stream_filters li").removeClass("top-left-active-filter stream-expanded");
 }
 
 export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undefined {
@@ -747,7 +747,7 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     }
 
     if (!info.topic_selected) {
-        $stream_li.addClass("active-filter");
+        $stream_li.addClass("top-left-active-filter");
     }
 
     // Always add 'stream-expanded' class irrespective of whether
