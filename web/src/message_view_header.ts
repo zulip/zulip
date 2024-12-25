@@ -175,9 +175,10 @@ export function render_title_area(): void {
 // This function checks if "modified_sub" which is the stream whose values
 // have been updated is the same as the stream which is currently
 // narrowed and rerenders if necessary
-export function maybe_rerender_title_area_for_stream(modified_sub: StreamSubscription): void {
+export function maybe_rerender_title_area_for_stream(modified_stream_id: number): void {
     const current_stream_id = narrow_state.stream_id();
-    if (current_stream_id === modified_sub.stream_id) {
+
+    if (current_stream_id === modified_stream_id) {
         render_title_area();
     }
 }

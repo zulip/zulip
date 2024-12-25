@@ -135,7 +135,7 @@ export function update_stream_name(sub: StreamSubscription, new_name: string): v
     }
 
     // Update navbar if needed
-    message_view_header.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub.stream_id);
 
     // Update the create stream error if needed
     if (overlays.streams_open()) {
@@ -160,7 +160,7 @@ export function update_stream_description(
     stream_edit.update_stream_description(sub);
 
     // Update navbar if needed
-    message_view_header.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub.stream_id);
 }
 
 export function update_stream_privacy(
@@ -195,7 +195,7 @@ export function update_stream_privacy(
     }
 
     // Update navbar if needed
-    message_view_header.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub.stream_id);
 }
 
 export function update_message_retention_setting(
@@ -228,7 +228,7 @@ export function update_is_default_stream(): void {
 export function update_subscribers_ui(sub: StreamSubscription): void {
     update_left_panel_row(sub);
     stream_edit_subscribers.update_subscribers_list(sub);
-    message_view_header.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub.stream_id);
 }
 
 export function add_sub_to_table(sub: StreamSubscription): void {

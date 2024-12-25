@@ -605,7 +605,7 @@ export function dispatch_normal_event(event) {
                         );
                         stream_data.delete_sub(stream.stream_id);
                         stream_settings_ui.remove_stream(stream.stream_id);
-                        message_view_header.maybe_rerender_title_area_for_stream(stream);
+                        message_view_header.maybe_rerender_title_area_for_stream(stream.stream_id);
                         if (was_subscribed) {
                             stream_list.remove_sidebar_row(stream.stream_id);
                             if (stream.stream_id === compose_state.selected_recipient_id) {
