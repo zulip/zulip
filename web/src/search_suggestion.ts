@@ -1035,7 +1035,8 @@ export function get_search_result(
         attacher.push([...attacher.base, ...suggestion_line]);
     } else if (
         all_search_terms.length > 0 &&
-        all_search_terms.every((term) => Filter.is_valid_search_term(term))
+        all_search_terms.every((term) => Filter.is_valid_search_term(term)) &&
+        !(last.operator === "sender" && last.operand === people.my_current_email())
     ) {
         suggestion_line = get_default_suggestion_line(all_search_terms);
         attacher.push(suggestion_line);

@@ -507,6 +507,10 @@ export class Filter {
                     }
                 }
 
+                if (operator === "sender" && operand.toString().toLowerCase() === "me") {
+                    operand = people.my_current_email();
+                }
+
                 // We use Filter.operator_to_prefix() to check if the
                 // operator is known.  If it is not known, then we treat
                 // it as a search for the given string (which may contain
