@@ -1689,6 +1689,16 @@ export class Filter {
         return false;
     }
 
+    is_interleaved_view(): boolean {
+        if (
+            this.can_bucket_by("dm") ||
+            this.can_bucket_by("channel", "topic")
+        ) {
+            return false;
+        }
+        return true;
+    }
+
     excludes_muted_topics(): boolean {
         return (
             // not narrowed to a topic
