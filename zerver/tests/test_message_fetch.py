@@ -14,7 +14,7 @@ from typing_extensions import override
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
-from zerver.actions.message_edit import do_update_message
+from zerver.actions.message_edit import do_update_message, get_message_edit_request_object
 from zerver.actions.reactions import check_add_reaction
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.streams import do_deactivate_stream
@@ -5128,15 +5128,20 @@ class MessageHasKeywordsTest(ZulipTestCase):
         rendering_result = render_message_markdown(msg, content)
         mention_backend = MentionBackend(realm_id)
         mention_data = MentionData(mention_backend, content, msg.sender)
+        message_edit_request = get_message_edit_request_object(
+            message=msg,
+            user_profile=hamlet,
+            propagate_mode="change_one",
+            stream_id=None,
+            topic_name=None,
+            content=content,
+        )
         do_update_message(
             hamlet,
             msg,
-            None,
-            None,
-            "change_one",
+            message_edit_request,
             False,
             False,
-            content,
             rendering_result,
             set(),
             mention_data=mention_data,

@@ -2,7 +2,10 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import IntEnum
-from typing import Any, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
+
+if TYPE_CHECKING:
+    from zerver.models import Stream
 
 from django_stubs_ext import StrPromise
 from typing_extensions import NotRequired, TypedDict
@@ -358,3 +361,27 @@ class AnalyticsDataUploadLevel(IntEnum):
     BASIC = 1
     BILLING = 2
     ALL = 3
+
+
+@dataclass
+class StreamMessageEditRequest:
+    is_content_edited: bool
+    is_topic_edited: bool
+    is_stream_edited: bool
+    is_message_moved: bool
+    topic_resolved: bool
+    topic_unresolved: bool
+    content: str
+    target_topic_name: str
+    target_stream: "Stream"
+    orig_content: str
+    orig_topic_name: str
+    orig_stream: "Stream"
+    propagate_mode: str
+
+
+@dataclass
+class DirectMessageEditRequest:
+    content: str
+    orig_content: str
+    is_content_edited: bool
