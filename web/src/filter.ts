@@ -1690,10 +1690,7 @@ export class Filter {
     }
 
     is_interleaved_view(): boolean {
-        if (
-            this.can_bucket_by("dm") ||
-            this.can_bucket_by("channel", "topic")
-        ) {
+        if (this.can_bucket_by("dm") || this.can_bucket_by("channel", "topic")) {
             return false;
         }
         return true;
