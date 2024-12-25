@@ -11,7 +11,7 @@ from django.core.management.base import CommandError, CommandParser
 from typing_extensions import override
 
 from zerver.lib.email_mirror import mirror_email_message
-from zerver.lib.email_mirror_helpers import encode_email_address
+from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Realm
 from zerver.models.realms import get_realm
@@ -111,6 +111,7 @@ Example:
 
     def _prepare_message(self, message: EmailMessage, realm: Realm, stream_name: str) -> None:
         stream = get_stream(stream_name, realm)
+        email_token = get_channel_email_token(stream)
 
         # The block below ensures that the imported email message doesn't have any recipient-like
         # headers that are inconsistent with the recipient we want (the stream address).
@@ -125,8 +126,8 @@ Example:
         for header in recipient_headers:
             if header in message:
                 del message[header]
-                message[header] = encode_email_address(stream)
+                message[header] = encode_email_address(stream.name, email_token)
 
         if "To" in message:
             del message["To"]
-        message["To"] = encode_email_address(stream)
+        message["To"] = encode_email_address(stream.name, email_token)
