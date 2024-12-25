@@ -437,7 +437,7 @@ export function populate_auth_methods(auth_method_to_bool_map: Record<string, bo
             enabled: value,
             disable_configure_auth_method: !can_configure_auth_methods() || cant_be_enabled,
             // The negated character class regexp serves as an allowlist - the replace() will
-            // remove *all* symbols *but* digits (\d) and lowecase letters (a-z),
+            // remove *all* symbols *but* digits (\d) and lowercase letters (a-z),
             // so that we can make assumptions on this string elsewhere in the code.
             // As a result, the only two "incoming" assumptions on the auth method name are:
             // 1) It contains at least one allowed symbol

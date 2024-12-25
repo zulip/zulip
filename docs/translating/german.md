@@ -302,7 +302,7 @@ _"Suchen" (YouTube, Google, Facebook, Transifex)_
 
 - Pin/Unpin - **Anpinnen/Loslösen**
 
-While "pinnen" is shorter than "anpinnen", "anpinnen" sweeps any amiguity out of
+While "pinnen" is shorter than "anpinnen", "anpinnen" sweeps any ambiguity out of
 the way. This term is not used too often on Zulip, so the length shouldn't be a
 problem.
 
