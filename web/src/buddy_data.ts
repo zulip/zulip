@@ -219,6 +219,9 @@ export function info_for(user_id: number): BuddyUserInfo {
         WITH_AVATAR: user_list_style_value === 3,
     };
 
+    const is_deactivated = !people.is_person_active(user_id);
+    const is_dm = narrow_state.pm_ids_set().has(user_id);
+
     return {
         href: hash_util.pm_with_url(person.email),
         name: person.full_name,
@@ -227,7 +230,7 @@ export function info_for(user_id: number): BuddyUserInfo {
         profile_picture: people.small_avatar_url_for_person(person),
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
-        user_circle_class,
+        user_circle_class: is_deactivated && is_dm ? "user-circle-deactivated" : user_circle_class,
         status_text,
         has_status_text: Boolean(status_text),
         user_list_style,
@@ -389,8 +392,9 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
             return false;
         }
 
-        if (!people.is_person_active(user_id)) {
-            // Deactivated users are hidden from the right sidebar entirely.
+        const is_dm = narrow_state.pm_ids_set().has(user_id);
+        if (!people.is_person_active(user_id) && !is_dm) {
+            // Deactivated users are hidden from the right sidebar except for the dm.
             return false;
         }
 
