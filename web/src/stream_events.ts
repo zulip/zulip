@@ -233,7 +233,7 @@ export function mark_subscribed(
     }
 
     // update navbar if necessary
-    message_view_header.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub.stream_id);
 
     if (stream_create.get_name() === sub.name) {
         // In this case, we just created this channel using this very
@@ -275,7 +275,7 @@ export function mark_unsubscribed(sub: StreamSubscription): void {
             stream_settings_ui.update_settings_for_unsubscribed(sub);
         }
         // update navbar if necessary
-        message_view_header.maybe_rerender_title_area_for_stream(sub);
+        message_view_header.maybe_rerender_title_area_for_stream(sub.stream_id);
     } else {
         // Already unsubscribed
         return;
