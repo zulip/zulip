@@ -7,9 +7,9 @@ from django.db import connection
 from django.db.models import F, Func, JSONField, Q, QuerySet, Subquery, TextField, Value
 from django.db.models.functions import Cast
 
-from zerver.lib.types import EditHistoryEvent
+from zerver.lib.types import EditHistoryEvent, StreamMessageEditRequest
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Message, Reaction, Stream, UserMessage, UserProfile
+from zerver.models import Message, Reaction, UserMessage, UserProfile
 
 # Only use these constants for events.
 ORIG_TOPIC = "orig_subject"
@@ -118,26 +118,23 @@ def update_edit_history(
 def update_messages_for_topic_edit(
     acting_user: UserProfile,
     edited_message: Message,
-    propagate_mode: str,
-    orig_topic_name: str,
-    topic_name: str | None,
-    new_stream: Stream | None,
-    old_stream: Stream,
+    message_edit_request: StreamMessageEditRequest,
     edit_history_event: EditHistoryEvent,
     last_edit_time: datetime,
 ) -> tuple[QuerySet[Message], Callable[[], QuerySet[Message]]]:
     # Uses index: zerver_message_realm_recipient_upper_subject
+    old_stream = message_edit_request.orig_stream
     messages = Message.objects.filter(
         realm_id=old_stream.realm_id,
         recipient_id=assert_is_not_none(old_stream.recipient_id),
-        subject__iexact=orig_topic_name,
+        subject__iexact=message_edit_request.orig_topic_name,
     )
-    if propagate_mode == "change_all":
+    if message_edit_request.propagate_mode == "change_all":
         messages = messages.exclude(id=edited_message.id)
-    if propagate_mode == "change_later":
+    if message_edit_request.propagate_mode == "change_later":
         messages = messages.filter(id__gt=edited_message.id)
 
-    if new_stream is not None:
+    if message_edit_request.is_stream_edited:
         # If we're moving the messages between streams, only move
         # messages that the acting user can access, so that one cannot
         # gain access to messages through moving them.
@@ -183,10 +180,10 @@ def update_messages_for_topic_edit(
             TextField(),
         ),
     }
-    if new_stream is not None:
-        update_fields["recipient"] = new_stream.recipient
-    if topic_name is not None:
-        update_fields["subject"] = topic_name
+    if message_edit_request.is_stream_edited:
+        update_fields["recipient"] = message_edit_request.target_stream.recipient
+    if message_edit_request.is_topic_edited:
+        update_fields["subject"] = message_edit_request.target_topic_name
 
     # The update will cause the 'messages' query to no longer match
     # any rows; we capture the set of matching ids first, do the
