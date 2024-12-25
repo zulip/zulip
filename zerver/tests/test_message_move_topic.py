@@ -9,8 +9,10 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_edit import (
+    StreamMessageEditRequest,
     check_update_message,
     do_update_message,
+    get_message_edit_request_object,
     maybe_send_resolve_topic_notifications,
 )
 from zerver.actions.reactions import do_add_reaction
@@ -139,15 +141,20 @@ class MessageMoveTopicTest(ZulipTestCase):
             topic_name: str,
             users_to_be_notified: list[dict[str, Any]],
         ) -> None:
+            message_edit_request = get_message_edit_request_object(
+                message,
+                user_profile,
+                propagate_mode="change_later",
+                stream_id=None,
+                topic_name=topic_name,
+                content=None,
+            )
             do_update_message(
                 user_profile=user_profile,
                 target_message=message,
-                new_stream=None,
-                topic_name=topic_name,
-                propagate_mode="change_later",
+                message_edit_request=message_edit_request,
                 send_notification_to_old_thread=False,
                 send_notification_to_new_thread=False,
-                content=None,
                 rendering_result=None,
                 prior_mention_user_ids=set(),
                 mention_data=None,
@@ -1741,13 +1748,14 @@ class MessageMoveTopicTest(ZulipTestCase):
         assert stream.recipient_id is not None
         changed_messages = messages_for_topic(stream.realm_id, stream.recipient_id, original_topic)
         resolve_topic = RESOLVED_TOPIC_PREFIX + original_topic
+        message_edit_request = get_message_edit_request_object(
+            message, admin_user, "change_all", None, resolve_topic, None
+        )
+        assert isinstance(message_edit_request, StreamMessageEditRequest)
         maybe_send_resolve_topic_notifications(
             user_profile=admin_user,
-            stream=stream,
-            old_topic_name=original_topic,
-            new_topic_name=resolve_topic,
+            message_edit_request=message_edit_request,
             changed_messages=changed_messages,
-            pre_truncation_new_topic_name=resolve_topic,
         )
 
         topic_messages = get_topic_messages(admin_user, stream, resolve_topic)

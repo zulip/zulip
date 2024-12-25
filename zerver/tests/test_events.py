@@ -51,7 +51,12 @@ from zerver.actions.invites import (
     do_revoke_user_invite,
 )
 from zerver.actions.message_delete import do_delete_messages
-from zerver.actions.message_edit import do_update_embedded_data, do_update_message
+from zerver.actions.message_edit import (
+    StreamMessageEditRequest,
+    do_update_embedded_data,
+    do_update_message,
+    get_message_edit_request_object,
+)
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
 from zerver.actions.onboarding_steps import do_mark_onboarding_step_as_read
@@ -596,16 +601,16 @@ class NormalActionsTest(BaseAction):
             message_sender=self.example_user("cordelia"),
         )
 
+        message_edit_request = get_message_edit_request_object(
+            pm, self.user_profile, "change_one", None, None, content
+        )
         with self.verify_action(state_change_expected=False) as events:
             do_update_message(
                 self.user_profile,
                 pm,
-                None,
-                None,
-                None,
+                message_edit_request,
                 False,
                 False,
-                content,
                 rendering_result,
                 prior_mention_user_ids,
                 mention_data,
@@ -900,16 +905,16 @@ class NormalActionsTest(BaseAction):
             message_sender=iago,
         )
 
+        message_edit_request = get_message_edit_request_object(
+            message, self.user_profile, "change_one", None, None, content
+        )
         with self.verify_action(state_change_expected=False) as events:
             do_update_message(
                 self.user_profile,
                 message,
-                None,
-                None,
-                None,
+                message_edit_request,
                 False,
                 False,
-                content,
                 rendering_result,
                 prior_mention_user_ids,
                 mention_data,
@@ -928,16 +933,17 @@ class NormalActionsTest(BaseAction):
         topic_name = "new_topic"
         propagate_mode = "change_all"
 
+        message_edit_request = get_message_edit_request_object(
+            message, self.user_profile, propagate_mode, None, topic_name, None
+        )
+
         with self.verify_action(state_change_expected=True) as events:
             do_update_message(
                 self.user_profile,
                 message,
-                None,
-                topic_name,
-                propagate_mode,
+                message_edit_request,
                 False,
                 False,
-                None,
                 None,
                 prior_mention_user_ids,
                 mention_data,
@@ -977,6 +983,9 @@ class NormalActionsTest(BaseAction):
         propagate_mode = "change_all"
         prior_mention_user_ids = set()
 
+        message_edit_request = get_message_edit_request_object(
+            message, self.user_profile, propagate_mode, stream.id, None, None
+        )
         with self.verify_action(
             state_change_expected=True,
             # There are 3 events generated for this action
@@ -987,12 +996,9 @@ class NormalActionsTest(BaseAction):
             do_update_message(
                 self.user_profile,
                 message,
-                stream,
-                None,
-                propagate_mode,
+                message_edit_request,
                 True,
                 True,
-                None,
                 None,
                 set(),
                 None,
@@ -1016,6 +1022,11 @@ class NormalActionsTest(BaseAction):
         propagate_mode = "change_all"
         prior_mention_user_ids = set()
 
+        message_edit_request = get_message_edit_request_object(
+            message, self.user_profile, "change_one", stream.id, "final_topic", None
+        )
+        assert isinstance(message_edit_request, StreamMessageEditRequest)
+        message_edit_request.stream = stream
         with self.verify_action(
             state_change_expected=True,
             # Skip "update_message_flags" to exercise the code path
@@ -1029,12 +1040,9 @@ class NormalActionsTest(BaseAction):
             do_update_message(
                 self.user_profile,
                 message,
-                stream,
-                "final_topic",
-                propagate_mode,
+                message_edit_request,
                 True,
                 True,
-                None,
                 None,
                 set(),
                 None,

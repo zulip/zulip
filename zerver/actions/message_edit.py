@@ -93,6 +93,31 @@ class UpdateMessageResult:
     detached_uploads: list[dict[str, Any]]
 
 
+@dataclass
+class DirectMessageEditRequest:
+    content: str
+    orig_content: str
+    is_content_edited: bool
+
+
+@dataclass
+class StreamMessageEditRequest:
+    is_content_edited: bool
+    is_topic_edited: bool
+    is_stream_edited: bool
+    is_message_moved: bool
+    topic_resolved: bool
+    topic_unresolved: bool
+    content: str
+    topic_name: str
+    pre_truncation_topic_name: str
+    stream: Stream
+    orig_content: str
+    orig_topic_name: str
+    orig_stream: Stream
+    propagate_mode: str
+
+
 def subscriber_info(user_id: int) -> dict[str, Any]:
     return {"id": user_id, "flags": ["read"]}
 
@@ -152,26 +177,13 @@ def validate_user_can_edit_message(
 def maybe_send_resolve_topic_notifications(
     *,
     user_profile: UserProfile,
-    stream: Stream,
-    old_topic_name: str,
-    new_topic_name: str,
+    message_edit_request: StreamMessageEditRequest,
     changed_messages: QuerySet[Message],
-    pre_truncation_new_topic_name: str,
 ) -> tuple[int | None, bool]:
     """Returns resolved_topic_message_id if resolve topic notifications were in fact sent."""
     # Note that topics will have already been stripped in check_update_message.
-    resolved_prefix_len = len(RESOLVED_TOPIC_PREFIX)
-    topic_resolved: bool = (
-        new_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
-        and not old_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
-        and pre_truncation_new_topic_name[resolved_prefix_len:] == old_topic_name
-    )
-    topic_unresolved: bool = (
-        old_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
-        and not new_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
-        and old_topic_name.lstrip(RESOLVED_TOPIC_PREFIX) == new_topic_name
-    )
-
+    topic_resolved = message_edit_request.topic_resolved
+    topic_unresolved = message_edit_request.topic_unresolved
     if not topic_resolved and not topic_unresolved:
         # If there's some other weird topic that does not toggle the
         # state of "topic starts with RESOLVED_TOPIC_PREFIX", we do
@@ -188,13 +200,16 @@ def maybe_send_resolve_topic_notifications(
         # not a bug with the "resolve topics" feature.
         return None, False
 
+    stream = message_edit_request.orig_stream
     # Sometimes a user might accidentally resolve a topic, and then
     # have to undo the action. We don't want to spam "resolved",
     # "unresolved" messages one after another in such a situation.
     # For that reason, we apply a short grace period during which
     # such an undo action will just delete the previous notification
     # message instead.
-    if maybe_delete_previous_resolve_topic_notification(user_profile, stream, new_topic_name):
+    if maybe_delete_previous_resolve_topic_notification(
+        user_profile, stream, message_edit_request.topic_name
+    ):
         return None, True
 
     # Compute the users who either sent or reacted to messages that
@@ -218,7 +233,7 @@ def maybe_send_resolve_topic_notifications(
         resolved_topic_message_id = internal_send_stream_message(
             sender,
             stream,
-            new_topic_name,
+            message_edit_request.topic_name,
             notification_string.format(
                 user=user_mention,
             ),
@@ -539,12 +554,9 @@ def update_message_content(
 def do_update_message(
     user_profile: UserProfile,
     target_message: Message,
-    new_stream: Stream | None,
-    topic_name: str | None,
-    propagate_mode: str | None,
+    message_edit_request: StreamMessageEditRequest | DirectMessageEditRequest,
     send_notification_to_old_thread: bool,
     send_notification_to_new_thread: bool,
-    content: str | None,
     rendering_result: MessageRenderingResult | None,
     prior_mention_user_ids: set[int],
     mention_data: MentionData | None = None,
@@ -581,13 +593,6 @@ def do_update_message(
     realm = user_profile.realm
     attachment_reference_change = AttachmentChangeResult(False, [])
 
-    stream_being_edited = None
-    if target_message.is_stream_message():
-        stream_id = target_message.recipient.type_id
-        stream_being_edited = get_stream_by_id_in_realm(stream_id, realm)
-        event["stream_name"] = stream_being_edited.name
-        event["stream_id"] = stream_being_edited.id
-
     ums = UserMessage.objects.filter(message=target_message.id)
 
     def user_info(um: UserMessage) -> dict[str, Any]:
@@ -596,20 +601,15 @@ def do_update_message(
             "flags": um.flags_list(),
         }
 
-    if target_message.is_stream_message():
-        if topic_name is not None:
-            new_topic_name = topic_name
-        else:
-            new_topic_name = target_message.topic_name()
-
+    if isinstance(message_edit_request, StreamMessageEditRequest):
         stream_topic: StreamTopicTarget | None = StreamTopicTarget(
-            stream_id=stream_id,
-            topic_name=new_topic_name,
+            stream_id=message_edit_request.orig_stream.id,
+            topic_name=message_edit_request.topic_name,
         )
     else:
         stream_topic = None
 
-    if content is not None:
+    if message_edit_request.is_content_edited:
         assert rendering_result is not None
 
         # mention_data is required if there's a content edit.
@@ -618,7 +618,7 @@ def do_update_message(
         update_message_content(
             user_profile,
             target_message,
-            content,
+            message_edit_request.content,
             rendering_result,
             prior_mention_user_ids,
             mention_data,
@@ -634,7 +634,7 @@ def do_update_message(
         )
         target_message.has_attachment = attachment_reference_change.did_attachment_change
 
-        if not target_message.is_stream_message():
+        if isinstance(message_edit_request, DirectMessageEditRequest):
             update_edit_history(target_message, timestamp, edit_history_event)
 
             # This does message.save(update_fields=[...])
@@ -649,17 +649,21 @@ def do_update_message(
                 changed_messages_count, attachment_reference_change.detached_attachments
             )
 
-    if topic_name is not None or new_stream is not None:
-        assert propagate_mode is not None
+    assert isinstance(message_edit_request, StreamMessageEditRequest)
+
+    stream_being_edited = message_edit_request.orig_stream
+    event["stream_name"] = stream_being_edited.name
+    event["stream_id"] = stream_being_edited.id
+
+    if message_edit_request.is_message_moved:
         orig_topic_name = target_message.topic_name()
-        event["propagate_mode"] = propagate_mode
+        event["propagate_mode"] = message_edit_request.propagate_mode
 
     users_losing_access = UserProfile.objects.none()
     user_ids_gaining_usermessages: list[int] = []
-    if new_stream is not None:
-        assert content is None
-        assert target_message.is_stream_message()
-        assert stream_being_edited is not None
+    if message_edit_request.is_stream_edited:
+        assert message_edit_request.stream is not None
+        new_stream = message_edit_request.stream
 
         edit_history_event["prev_stream"] = stream_being_edited.id
         edit_history_event["stream"] = new_stream.id
@@ -668,7 +672,7 @@ def do_update_message(
         target_message.recipient_id = new_stream.recipient_id
 
         event["new_stream_id"] = new_stream.id
-        event["propagate_mode"] = propagate_mode
+        event["propagate_mode"] = message_edit_request.propagate_mode
 
         # When messages are moved from one stream to another, some
         # users may lose access to those messages, including guest
@@ -684,7 +688,7 @@ def do_update_message(
         old_stream_all_users = UserProfile.objects.filter(
             id__in=Subscription.objects.filter(
                 recipient__type=Recipient.STREAM,
-                recipient__type_id=stream_id,
+                recipient__type_id=stream_being_edited.id,
             ).values_list("user_profile_id")
         ).only("id")
 
@@ -730,9 +734,10 @@ def do_update_message(
     # We save the full topic name so that checks that require comparison
     # between the original topic and the topic name passed into this function
     # will not be affected by the potential truncation of topic_name below.
-    pre_truncation_topic_name = topic_name
-    if topic_name is not None:
-        topic_name = truncate_topic(topic_name)
+    pre_truncation_topic_name = message_edit_request.pre_truncation_topic_name
+    if message_edit_request.is_topic_edited:
+        topic_name = message_edit_request.topic_name
+        assert topic_name is not None
         target_message.set_topic_name(topic_name)
 
         # These fields have legacy field names.
@@ -749,12 +754,12 @@ def do_update_message(
     #
     # We need to calculate 'target_topic_has_messages' here,
     # as we are moving the messages in the next step.
-    if topic_name is not None or new_stream is not None:
-        assert stream_being_edited is not None
-        assert orig_topic_name is not None
+    if message_edit_request.is_message_moved:
+        assert message_edit_request.stream is not None
+        assert message_edit_request.topic_name is not None
 
-        target_stream: Stream = new_stream if new_stream is not None else stream_being_edited
-        target_topic_name: str = topic_name if topic_name is not None else orig_topic_name
+        target_stream = message_edit_request.stream
+        target_topic_name = message_edit_request.topic_name
 
         assert target_stream.recipient_id is not None
         target_topic_has_messages = messages_for_topic(
@@ -767,8 +772,7 @@ def do_update_message(
     save_changes_for_propagation_mode = lambda: Message.objects.filter(
         id=target_message.id
     ).select_related(*Message.DEFAULT_SELECT_RELATED)
-    if propagate_mode in ["change_later", "change_all"]:
-        assert topic_name is not None or new_stream is not None
+    if message_edit_request.propagate_mode in ["change_later", "change_all"]:
         assert stream_being_edited is not None
 
         # Other messages should only get topic/stream fields in their edit history.
@@ -776,20 +780,20 @@ def do_update_message(
             "user_id": edit_history_event["user_id"],
             "timestamp": edit_history_event["timestamp"],
         }
-        if topic_name is not None:
+        if message_edit_request.is_topic_edited:
             topic_only_edit_history_event["prev_topic"] = edit_history_event["prev_topic"]
             topic_only_edit_history_event["topic"] = edit_history_event["topic"]
-        if new_stream is not None:
+        if message_edit_request.is_stream_edited:
             topic_only_edit_history_event["prev_stream"] = edit_history_event["prev_stream"]
             topic_only_edit_history_event["stream"] = edit_history_event["stream"]
 
         later_messages, save_changes_for_propagation_mode = update_messages_for_topic_edit(
             acting_user=user_profile,
             edited_message=target_message,
-            propagate_mode=propagate_mode,
+            propagate_mode=message_edit_request.propagate_mode,
             orig_topic_name=orig_topic_name,
-            topic_name=topic_name,
-            new_stream=new_stream,
+            topic_name=message_edit_request.topic_name,
+            new_stream=message_edit_request.stream,
             old_stream=stream_being_edited,
             edit_history_event=topic_only_edit_history_event,
             last_edit_time=timestamp,
@@ -798,7 +802,8 @@ def do_update_message(
         changed_message_ids = list(changed_messages.values_list("id", flat=True))
         changed_messages_count = len(changed_message_ids)
 
-    if new_stream is not None:
+    if message_edit_request.is_stream_edited:
+        assert message_edit_request.stream is not None
         assert stream_being_edited is not None
 
         # The fact that the user didn't have a UserMessage
@@ -838,7 +843,7 @@ def do_update_message(
 
         # Reset the Attachment.is_*_public caches for all messages
         # moved to another stream with different access permissions.
-        if new_stream.invite_only != stream_being_edited.invite_only:
+        if message_edit_request.stream.invite_only != stream_being_edited.invite_only:
             Attachment.objects.filter(messages__in=changed_messages.values("id")).update(
                 is_realm_public=None,
             )
@@ -846,7 +851,7 @@ def do_update_message(
                 is_realm_public=None,
             )
 
-        if new_stream.is_web_public != stream_being_edited.is_web_public:
+        if message_edit_request.stream.is_web_public != stream_being_edited.is_web_public:
             Attachment.objects.filter(messages__in=changed_messages.values("id")).update(
                 is_web_public=None,
             )
@@ -878,9 +883,10 @@ def do_update_message(
     # newly sent messages anyway) and having magical live-updates
     # where possible.
     users_to_be_notified = list(map(user_info, unmodified_user_messages))
-    if stream_being_edited is not None and stream_being_edited.is_history_public_to_subscribers():
+    if stream_being_edited.is_history_public_to_subscribers():
+        assert message_edit_request.stream is not None
         subscriptions = get_active_subscriptions_for_stream_id(
-            stream_id, include_deactivated_users=False
+            message_edit_request.stream.id, include_deactivated_users=False
         )
         # We exclude long-term idle users, since they by
         # definition have no active clients.
@@ -893,7 +899,7 @@ def do_update_message(
             user_profile_id__in=[um.user_profile_id for um in unmodified_user_messages]
         )
 
-        if new_stream is not None:
+        if message_edit_request.is_stream_edited:
             subscriptions = subscriptions.exclude(user_profile__in=users_losing_access)
 
             # TODO: Guest users don't see the new moved topic
@@ -925,10 +931,10 @@ def do_update_message(
     # whether we've moved the entire topic, or just part of it. We
     # make that determination here.
     moved_all_visible_messages = False
-    if topic_name is not None or new_stream is not None:
+    if message_edit_request.is_message_moved:
         assert stream_being_edited is not None
 
-        if propagate_mode == "change_all":
+        if message_edit_request.propagate_mode == "change_all":
             moved_all_visible_messages = True
         else:
             # With other propagate modes, if the user in fact moved
@@ -975,7 +981,10 @@ def do_update_message(
         for user_topic in get_users_with_user_topic_visibility_policy(
             stream_being_edited.id, orig_topic_name
         ):
-            if new_stream is not None and user_topic.user_profile_id in user_ids_losing_access:
+            if (
+                message_edit_request.is_stream_edited
+                and user_topic.user_profile_id in user_ids_losing_access
+            ):
                 stream_inaccessible_to_user_profiles.append(user_topic.user_profile)
             else:
                 orig_topic_user_profile_to_visibility_policy[user_topic.user_profile] = (
@@ -1102,21 +1111,23 @@ def do_update_message(
 
     resolved_topic_message_id = None
     resolved_topic_message_deleted = False
-    if topic_name is not None and content is None and new_stream is None:
+    if (
+        message_edit_request.is_topic_edited
+        and not message_edit_request.is_content_edited
+        and not message_edit_request.is_stream_edited
+    ):
         assert stream_being_edited is not None
         assert pre_truncation_topic_name is not None
+        assert topic_name is not None
         resolved_topic_message_id, resolved_topic_message_deleted = (
             maybe_send_resolve_topic_notifications(
                 user_profile=user_profile,
-                stream=stream_being_edited,
-                old_topic_name=orig_topic_name,
-                new_topic_name=topic_name,
+                message_edit_request=message_edit_request,
                 changed_messages=changed_messages,
-                pre_truncation_new_topic_name=pre_truncation_topic_name,
             )
         )
 
-    if (new_stream is not None or topic_name is not None) and stream_being_edited is not None:
+    if (message_edit_request.is_message_moved) and stream_being_edited is not None:
         # Notify users that the topic was moved.
         old_thread_notification_string = None
         if send_notification_to_old_thread:
@@ -1139,24 +1150,19 @@ def do_update_message(
         new_thread_notification_string = None
         if send_notification_to_new_thread and (
             # The stream changed -> eligible to notify.
-            new_stream is not None
+            message_edit_request.is_stream_edited
             # The topic changed -> eligible to notify.
             or (
-                pre_truncation_topic_name is not None
-                and orig_topic_name.lstrip(RESOLVED_TOPIC_PREFIX)
-                != pre_truncation_topic_name.lstrip(RESOLVED_TOPIC_PREFIX)
-            )
-            or not (
-                # We have not completed our obligation to notify about a
-                # resolve topic, which happens if either we sent a notification or
-                # deleted a very recent previous notification.
-                resolved_topic_message_id or resolved_topic_message_deleted
+                message_edit_request.is_topic_edited
+                and not message_edit_request.topic_resolved
+                and not message_edit_request.topic_unresolved
             )
         ):
-            stream_for_new_topic = new_stream if new_stream is not None else stream_being_edited
+            assert message_edit_request.stream is not None
+            stream_for_new_topic = message_edit_request.stream
             assert stream_for_new_topic.recipient_id is not None
 
-            new_topic_name = topic_name if topic_name is not None else orig_topic_name
+            new_topic_name = message_edit_request.topic_name
 
             # We calculate whether the user moved the entire topic
             # using that user's own permissions, which is important to
@@ -1193,8 +1199,8 @@ def do_update_message(
             stream_being_edited,
             orig_topic_name,
             old_thread_notification_string,
-            new_stream if new_stream is not None else stream_being_edited,
-            topic_name,
+            message_edit_request.stream,
+            message_edit_request.topic_name,
             new_thread_notification_string,
             changed_messages_count,
         )
@@ -1296,6 +1302,83 @@ def check_time_limit_for_change_all_propagate_mode(
     )
 
 
+def get_message_edit_request_object(
+    message: Message,
+    user_profile: UserProfile,
+    propagate_mode: str,
+    stream_id: int | None = None,
+    topic_name: str | None = None,
+    content: str | None = None,
+) -> StreamMessageEditRequest | DirectMessageEditRequest:
+    if not message.is_stream_message():
+        # We have already validated the code to have content
+        # as not None.
+        assert content is not None
+        return DirectMessageEditRequest(
+            content=content,
+            orig_content=message.content,
+            is_content_edited=True,
+        )
+
+    is_content_edited = False
+    new_content = message.content
+    if content is not None:
+        is_content_edited = True
+        if content.rstrip() == "":
+            content = "(deleted)"
+        new_content = normalize_body(content)
+
+    is_topic_edited = False
+    topic_resolved = False
+    topic_unresolved = False
+    old_topic_name = message.topic_name()
+    new_topic_name = old_topic_name
+    pre_truncation_new_topic_name = old_topic_name
+
+    if topic_name is not None:
+        is_topic_edited = True
+        pre_truncation_new_topic_name = topic_name
+        new_topic_name = truncate_topic(topic_name)
+
+        resolved_prefix_len = len(RESOLVED_TOPIC_PREFIX)
+        topic_resolved = (
+            new_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
+            and not old_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
+            and pre_truncation_new_topic_name[resolved_prefix_len:] == old_topic_name
+        )
+        topic_unresolved = (
+            old_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
+            and not new_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
+            and old_topic_name.lstrip(RESOLVED_TOPIC_PREFIX) == new_topic_name
+        )
+
+    orig_stream_id = message.recipient.type_id
+    orig_stream = get_stream_by_id_in_realm(orig_stream_id, message.realm)
+
+    is_stream_edited = False
+    new_stream = orig_stream
+    if stream_id is not None:
+        new_stream = access_stream_by_id(user_profile, stream_id, require_active=True)[0]
+        is_stream_edited = True
+
+    return StreamMessageEditRequest(
+        is_content_edited=is_content_edited,
+        content=new_content,
+        is_topic_edited=is_topic_edited,
+        topic_name=new_topic_name,
+        pre_truncation_topic_name=pre_truncation_new_topic_name,
+        is_stream_edited=is_stream_edited,
+        topic_resolved=topic_resolved,
+        topic_unresolved=topic_unresolved,
+        orig_content=message.content,
+        orig_topic_name=old_topic_name,
+        orig_stream=orig_stream,
+        propagate_mode=propagate_mode,
+        stream=new_stream,
+        is_message_moved=is_stream_edited or is_topic_edited,
+    )
+
+
 @transaction.atomic(durable=True)
 def check_update_message(
     user_profile: UserProfile,
@@ -1323,48 +1406,53 @@ def check_update_message(
     if content is not None:
         validate_user_can_edit_message(user_profile, message, edit_limit_buffer)
 
-    # The zerver/views/message_edit.py call point already strips this
-    # via OptionalTopic; so we can delete this line if we arrange a
-    # contract where future callers in the embedded bots system strip
-    # use OptionalTopic as well (or otherwise are guaranteed to strip input).
     if topic_name is not None:
+        # The zerver/views/message_edit.py call point already strips this
+        # via OptionalTopic; so we can delete this line if we arrange a
+        # contract where future callers in the embedded bots system strip
+        # use OptionalTopic as well (or otherwise are guaranteed to strip input).
         topic_name = topic_name.strip()
         if topic_name == message.topic_name():
             topic_name = None
 
     validate_message_edit_payload(message, stream_id, topic_name, propagate_mode, content)
 
-    if topic_name is not None and not user_profile.can_move_messages_to_another_topic():
-        raise JsonableError(_("You don't have permission to edit this message"))
+    message_edit_request = get_message_edit_request_object(
+        message, user_profile, propagate_mode, stream_id, topic_name, content
+    )
 
-    # If there is a change to the topic, check that the user is allowed to
-    # edit it and that it has not been too long. If user is not admin or moderator,
-    # and the time limit for editing topics is passed, raise an error.
     if (
-        topic_name is not None
-        and user_profile.realm.move_messages_within_stream_limit_seconds is not None
-        and not user_profile.is_realm_admin
-        and not user_profile.is_moderator
+        isinstance(message_edit_request, StreamMessageEditRequest)
+        and message_edit_request.is_topic_edited
     ):
-        deadline_seconds = (
-            user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
-        )
-        if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
-            raise JsonableError(_("The time limit for editing this message's topic has passed."))
+        if not user_profile.can_move_messages_to_another_topic():
+            raise JsonableError(_("You don't have permission to edit this message"))
+
+        # If there is a change to the topic, check that the user is allowed to
+        # edit it and that it has not been too long. If user is not admin or moderator,
+        # and the time limit for editing topics is passed, raise an error.
+        if (
+            user_profile.realm.move_messages_within_stream_limit_seconds is not None
+            and not user_profile.is_realm_admin
+            and not user_profile.is_moderator
+        ):
+            deadline_seconds = (
+                user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
+            )
+            if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
+                raise JsonableError(
+                    _("The time limit for editing this message's topic has passed.")
+                )
 
     rendering_result = None
     links_for_embed: set[str] = set()
     prior_mention_user_ids: set[int] = set()
     mention_data: MentionData | None = None
-    if content is not None:
-        if content.rstrip() == "":
-            content = "(deleted)"
-        content = normalize_body(content)
-
+    if message_edit_request.is_content_edited:
         mention_backend = MentionBackend(user_profile.realm_id)
         mention_data = MentionData(
             mention_backend=mention_backend,
-            content=content,
+            content=message_edit_request.content,
             message_sender=message.sender,
         )
         prior_mention_user_ids = get_mentions_for_message_updates(message.id)
@@ -1375,7 +1463,7 @@ def check_update_message(
         # Note: If rendering fails, the called code will raise a JsonableError.
         rendering_result = render_incoming_message(
             message,
-            content,
+            message_edit_request.content,
             user_profile.realm,
             mention_data=mention_data,
         )
@@ -1399,46 +1487,46 @@ def check_update_message(
             mentioned_group_ids = list(rendering_result.mentions_user_group_ids)
             check_user_group_mention_allowed(user_profile, mentioned_group_ids)
 
-    new_stream = None
+    if isinstance(message_edit_request, StreamMessageEditRequest):
+        if message_edit_request.is_stream_edited:
+            assert message.is_stream_message()
+            if not user_profile.can_move_messages_between_streams():
+                raise JsonableError(_("You don't have permission to move this message"))
 
-    if stream_id is not None:
-        assert message.is_stream_message()
-        if not user_profile.can_move_messages_between_streams():
-            raise JsonableError(_("You don't have permission to move this message"))
+            check_stream_access_based_on_stream_post_policy(
+                user_profile, message_edit_request.stream
+            )
 
-        new_stream = access_stream_by_id(user_profile, stream_id, require_active=True)[0]
-        check_stream_access_based_on_stream_post_policy(user_profile, new_stream)
+            if (
+                user_profile.realm.move_messages_between_streams_limit_seconds is not None
+                and not user_profile.is_realm_admin
+                and not user_profile.is_moderator
+            ):
+                deadline_seconds = (
+                    user_profile.realm.move_messages_between_streams_limit_seconds
+                    + edit_limit_buffer
+                )
+                if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
+                    raise JsonableError(
+                        _("The time limit for editing this message's channel has passed")
+                    )
 
         if (
-            user_profile.realm.move_messages_between_streams_limit_seconds is not None
+            propagate_mode == "change_all"
             and not user_profile.is_realm_admin
             and not user_profile.is_moderator
+            and message_edit_request.is_message_moved
         ):
-            deadline_seconds = (
-                user_profile.realm.move_messages_between_streams_limit_seconds + edit_limit_buffer
+            check_time_limit_for_change_all_propagate_mode(
+                message, user_profile, topic_name, stream_id
             )
-            if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
-                raise JsonableError(
-                    _("The time limit for editing this message's channel has passed")
-                )
-
-    if (
-        propagate_mode == "change_all"
-        and not user_profile.is_realm_admin
-        and not user_profile.is_moderator
-        and (topic_name is not None or stream_id is not None)
-    ):
-        check_time_limit_for_change_all_propagate_mode(message, user_profile, topic_name, stream_id)
 
     updated_message_result = do_update_message(
         user_profile,
         message,
-        new_stream,
-        topic_name,
-        propagate_mode,
+        message_edit_request,
         send_notification_to_old_thread,
         send_notification_to_new_thread,
-        content,
         rendering_result,
         prior_mention_user_ids,
         mention_data,
@@ -1461,13 +1549,18 @@ def check_update_message(
     # cron job handle updating the old stream. User might still want
     # to interact with the old stream and keeping it placed in the same
     # position in the left sidebar might help user.
-    if stream_id is not None and new_stream is not None and not new_stream.is_recently_active:
+    if (
+        isinstance(message_edit_request, StreamMessageEditRequest)
+        and message_edit_request.is_stream_edited
+        and not message_edit_request.stream.is_recently_active
+    ):
         date_days_ago = timezone_now() - timedelta(days=Stream.LAST_ACTIVITY_DAYS_BEFORE_FOR_ACTIVE)
+        new_stream = message_edit_request.stream
         is_stream_active = Message.objects.filter(
             date_sent__gte=date_days_ago,
             recipient__type=Recipient.STREAM,
             realm=user_profile.realm,
-            recipient__type_id=stream_id,
+            recipient__type_id=new_stream.id,
         ).exists()
 
         if is_stream_active != new_stream.is_recently_active:
