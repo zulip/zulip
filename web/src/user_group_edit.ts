@@ -155,7 +155,7 @@ function update_group_permission_settings_elements(group: UserGroup): void {
         return;
     }
 
-    // We are concerend with the General tab for changing group permissions.
+    // We are concerned with the General tab for changing group permissions.
     const $group_permission_settings = $("#group_permission_settings");
 
     const $permission_pill_container_elements = $group_permission_settings.find(".pill-container");

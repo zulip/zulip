@@ -726,7 +726,7 @@ export function process_hotkey(e, hotkey) {
 
     // modals.any_active() and modals.active_modal() both query the dom to
     // find and retrieve any active modal. Thus, we limit the number of calls
-    // to the DOM by storing these values as constansts to be reused.
+    // to the DOM by storing these values as constants to be reused.
     const is_any_modal_active = modals.any_active();
     const active_modal = is_any_modal_active ? modals.active_modal() : null;
 

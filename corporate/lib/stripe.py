@@ -1887,7 +1887,7 @@ class BillingSession(ABC):
                             _("Please add a credit card to schedule upgrade."),
                         )
 
-                # Setting status > CustomerPLan.LIVE_STATUS_THRESHOLD makes sure we
+                # Setting status > CustomerPlan.LIVE_STATUS_THRESHOLD makes sure we
                 # don't have to worry about this plan being used for any other purpose.
                 # NOTE: This is the 2nd plan for the customer.
                 plan_params["status"] = CustomerPlan.NEVER_STARTED
