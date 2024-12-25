@@ -51,7 +51,11 @@ export function set_is_searching_users(val: boolean): void {
     is_searching_users = val;
 }
 
-export function get_user_circle_class(user_id: number): string {
+export function get_user_circle_class(user_id: number, use_deactivated_circle = false): string {
+    if (use_deactivated_circle) {
+        return "user-circle-deactivated";
+    }
+
     const status = presence.get_status(user_id);
 
     switch (status) {
@@ -204,7 +208,10 @@ export type BuddyUserInfo = {
 };
 
 export function info_for(user_id: number): BuddyUserInfo {
-    const user_circle_class = get_user_circle_class(user_id);
+    const is_deactivated = !people.is_person_active(user_id);
+    const is_dm = narrow_state.pm_ids_set().has(user_id);
+
+    const user_circle_class = get_user_circle_class(user_id, is_deactivated && is_dm);
     const person = people.get_by_user_id(user_id);
 
     const status_emoji_info = user_status.get_status_emoji(user_id);
@@ -381,8 +388,9 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
             return false;
         }
 
-        if (!people.is_person_active(user_id)) {
-            // Deactivated users are hidden from the right sidebar entirely.
+        const is_dm = narrow_state.pm_ids_set().has(user_id);
+        if (!people.is_person_active(user_id) && !is_dm) {
+            // Deactivated users are hidden in the buddy list except in DM narrows.
             return false;
         }
 

@@ -53,7 +53,7 @@ function get_total_human_subscriber_count(
 
         let human_user_count = 0;
         for (const pm_id of all_recipient_user_ids_set) {
-            if (!people.is_valid_bot_user(pm_id) && people.is_person_active(pm_id)) {
+            if (!people.is_valid_bot_user(pm_id)) {
                 human_user_count += 1;
             }
         }
