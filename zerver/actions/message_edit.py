@@ -808,10 +808,7 @@ def do_update_message(
     # freshly-fetched-from-the-database changed messages.
     changed_messages = save_changes_for_propagation_mode()
 
-    realm_id: int | None = None
-    if stream_being_edited is not None:
-        realm_id = stream_being_edited.realm_id
-
+    realm_id = target_message.realm_id
     event["message_ids"] = update_message_cache(changed_messages, realm_id)
 
     def user_info(um: UserMessage) -> dict[str, Any]:
