@@ -1068,7 +1068,7 @@ No changes; feature level used for Zulip 8.0 release.
 * `PATCH /realm`, [`POST /register`](/api/register-queue),
   [`GET /events`](/api/get-events): Added `can_access_all_users_group_id`
   realm setting, which is the ID of the user group whose members can
-  access all the users in the oragnization.
+  access all the users in the organization.
 
 * [`POST /register`](/api/register-queue): Added `allowed_system_groups`
   field to configuration data object of permission settings passed in

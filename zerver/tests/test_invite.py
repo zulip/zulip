@@ -825,7 +825,7 @@ class InviteUserTest(InviteUserBase):
         self.assert_json_error(result, "Insufficient permission")
 
         # Test that user having permission to manage all groups can
-        # add user to groups through invitiation.
+        # add user to groups through invitation.
         owners_group = NamedUserGroup.objects.get(
             name=SystemGroups.OWNERS, realm=realm, is_system_group=True
         )
@@ -859,7 +859,7 @@ class InviteUserTest(InviteUserBase):
         self.assertTrue(find_key_by_email(invitee))
 
         # Test that user having permission to add members to a group can
-        # add user to that group through invitiation.
+        # add user to that group through invitation.
         do_change_user_group_permission_setting(
             test_group,
             "can_add_members_group",
@@ -880,7 +880,7 @@ class InviteUserTest(InviteUserBase):
         self.assertTrue(find_key_by_email(invitee))
 
         # Test that user having permission to manage a group can
-        # add user to that group through invitiation.
+        # add user to that group through invitation.
         do_change_user_group_permission_setting(
             hamletcharacters_group,
             "can_manage_group",
@@ -3190,7 +3190,7 @@ class MultiuseInviteTest(ZulipTestCase):
         )
 
         # Test that user having permission to manage all groups can
-        # add users to groups through invitiation.
+        # add users to groups through invitation.
         owners_group = NamedUserGroup.objects.get(
             name=SystemGroups.OWNERS, realm=realm, is_system_group=True
         )
@@ -3217,7 +3217,7 @@ class MultiuseInviteTest(ZulipTestCase):
         check_create_multiuse_invite("desdemona", [test_group.id, hamletcharacters_group.id])
 
         # Test that user having permission to add members to a group can
-        # add user to that group through invitiation.
+        # add user to that group through invitation.
         do_change_user_group_permission_setting(
             test_group,
             "can_add_members_group",
@@ -3234,7 +3234,7 @@ class MultiuseInviteTest(ZulipTestCase):
         check_create_multiuse_invite("shiva", [test_group.id])
 
         # Test that user having permission to manage a group can
-        # add user to that group through invitiation.
+        # add user to that group through invitation.
         do_change_user_group_permission_setting(
             hamletcharacters_group,
             "can_manage_group",

@@ -237,9 +237,9 @@ async function delete_realm_icon(page: Page): Promise<void> {
 
 async function test_organization_profile(page: Page): Promise<void> {
     await page.click("li[data-section='organization-profile']");
-    const gravatar_selctor =
+    const gravatar_selector =
         '#realm-icon-upload-widget .image-block[src^="https://secure.gravatar.com/avatar/"]';
-    await page.waitForSelector(gravatar_selctor, {visible: true});
+    await page.waitForSelector(gravatar_selector, {visible: true});
     await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {hidden: true});
 
     await test_upload_realm_icon_image(page);
@@ -247,7 +247,7 @@ async function test_organization_profile(page: Page): Promise<void> {
 
     await delete_realm_icon(page);
     await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {hidden: true});
-    await page.waitForSelector(gravatar_selctor, {visible: true});
+    await page.waitForSelector(gravatar_selector, {visible: true});
 }
 
 async function test_authentication_methods(page: Page): Promise<void> {

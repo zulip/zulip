@@ -137,7 +137,7 @@ def handle_upload_pre_finish_hook(
     request: HttpRequest, user_profile: UserProfile, data: TusUpload
 ) -> HttpResponse:
     # With an S3 backend, the filename we passed in pre_create's
-    # data.id has a randomly-generated "mutlipart-id" appended with a
+    # data.id has a randomly-generated "multipart-id" appended with a
     # `+`.  Our path_ids cannot contain `+`, so we strip any suffix
     # starting with `+`.
     path_id = data.id.partition("+")[0]
