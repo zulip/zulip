@@ -4,6 +4,7 @@ import orjson
 from django.db import transaction
 from django.utils.translation import gettext as _
 
+from zerver.actions.user_settings import send_account_modification_notifications
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.streams import render_stream_description
@@ -173,6 +174,7 @@ def notify_user_update_custom_profile_data(
 def do_update_user_custom_profile_data_if_changed(
     user_profile: UserProfile,
     data: list[ProfileDataElementUpdateDict],
+    acting_user: UserProfile | None = None,
 ) -> None:
     for custom_profile_field in data:
         field_value, created = CustomProfileFieldValue.objects.get_or_create(
@@ -191,6 +193,7 @@ def do_update_user_custom_profile_data_if_changed(
             # we have nothing to do here for this field.
             continue
 
+        old_value = field_value.value if field_value.value else None
         field_value.value = custom_profile_field_value_string
         if field_value.field.is_renderable():
             field_value.rendered_value = render_stream_description(
@@ -199,6 +202,34 @@ def do_update_user_custom_profile_data_if_changed(
             field_value.save(update_fields=["value", "rendered_value"])
         else:
             field_value.save(update_fields=["value"])
+
+        # If the field is a select field, we need to convert the value to the
+        # user-facing text representation.
+        if field_value.field.field_type == CustomProfileField.SELECT:
+            field_data = orjson.loads(field_value.field.field_data)
+            old_value_user_facing = field_data.get(old_value, {}).get("text") if old_value else None
+            new_value_user_facing = (
+                field_data.get(custom_profile_field["value"], {}).get("text")
+                or custom_profile_field["value"]
+            )
+        else:
+            old_value_user_facing = old_value
+            new_value_user_facing = custom_profile_field["value"]
+
+        # If the field is a mentor field, we need to convert the array
+        # of values to array of user-facing user_name.
+        if field_value.field.name.lower() == "mentor":
+            if old_value:
+                old_mentors = UserProfile.objects.filter(id__in=orjson.loads(old_value))
+                old_value_user_facing = ", ".join(mentor.full_name for mentor in old_mentors)
+            else:
+                old_value_user_facing = None
+
+            if custom_profile_field["value"]:
+                new_mentors = UserProfile.objects.filter(id__in=custom_profile_field["value"])
+                new_value_user_facing = ", ".join(mentor.full_name for mentor in new_mentors)
+            else:
+                new_value_user_facing = None
         notify_user_update_custom_profile_data(
             user_profile,
             {
@@ -207,6 +238,13 @@ def do_update_user_custom_profile_data_if_changed(
                 "rendered_value": field_value.rendered_value,
                 "type": field_value.field.field_type,
             },
+        )
+        send_account_modification_notifications(
+            user_profile,
+            field_value.field.name,
+            acting_user,
+            old_value_user_facing,
+            new_value_user_facing,
         )
 
 

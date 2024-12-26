@@ -940,14 +940,14 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         data: list[ProfileDataElementUpdateDict] = [
             {"id": field.id, "value": [self.example_user("aaron").id]},
         ]
-        do_update_user_custom_profile_data_if_changed(iago, data)
+        do_update_user_custom_profile_data_if_changed(iago, data, acting_user=None)
 
         with mock.patch(
             "zerver.actions.custom_profile_fields.notify_user_update_custom_profile_data"
         ) as mock_notify:
             # Attempting to "update" the field value, when it wouldn't actually change,
             # shouldn't trigger notify.
-            do_update_user_custom_profile_data_if_changed(iago, data)
+            do_update_user_custom_profile_data_if_changed(iago, data, acting_user=None)
             mock_notify.assert_not_called()
 
     def test_removing_option_from_select_field(self) -> None:

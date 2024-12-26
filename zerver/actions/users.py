@@ -17,6 +17,7 @@ from zerver.actions.user_groups import (
     do_send_user_group_members_update_event,
     update_users_in_full_members_system_group,
 )
+from zerver.actions.user_settings import send_account_modification_notifications
 from zerver.lib.avatar import get_avatar_field
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields
@@ -613,6 +614,7 @@ def do_change_user_role(
     user_profile.refresh_from_db()
 
     old_value = user_profile.role
+    old_role = user_profile.get_role_name()
     if old_value == value:
         return
     old_system_group = get_system_user_group_for_user(user_profile)
@@ -687,6 +689,9 @@ def do_change_user_role(
         )
 
     send_stream_events_for_role_update(user_profile, previously_accessible_streams)
+    send_account_modification_notifications(
+        user_profile, "role", acting_user, old_role, user_profile.get_role_name()
+    )
 
 
 @transaction.atomic(savepoint=False)
