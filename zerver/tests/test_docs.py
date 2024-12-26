@@ -132,7 +132,6 @@ class DocPageTest(ZulipTestCase):
             "/errors/404/",
             "/errors/5xx/",
             "/integrations/",
-            "/integrations/",
             "/integrations/bots",
             "/integrations/doc-html/asana",
             "/integrations/doc/github",
