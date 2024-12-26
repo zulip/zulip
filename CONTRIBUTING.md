@@ -15,14 +15,14 @@ server hosted at [chat.zulip.org](https://chat.zulip.org/):
   ideas, and generally help each other out.
 
 Everyone is welcome to [sign up](https://chat.zulip.org/) and
-participate — we love hearing from our users! Public streams in the
+participate — we love hearing from our users! Public channels in the
 community receive thousands of messages a week. We recommend signing
 up using the special invite links for
 [users](https://chat.zulip.org/join/t5crtoe62bpcxyisiyglmtvb/),
 [self-hosters](https://chat.zulip.org/join/wnhv3jzm6afa4raenedanfno/)
 and
 [contributors](https://chat.zulip.org/join/npzwak7vpmaknrhxthna3c7p/)
-to get a curated list of initial stream subscriptions.
+to get a curated list of initial channel subscriptions.
 
 To learn how to get started participating in the community, including [community
 norms](https://zulip.com/development-community/#community-norms) and [where to
@@ -255,7 +255,7 @@ GitHub issue or pull request.
 
 To get early feedback on any UI changes, we encourage you to post screenshots of
 your work in the [#design
-stream](https://chat.zulip.org/#narrow/channel/101-design) in the [Zulip
+channel](https://chat.zulip.org/#narrow/channel/101-design) in the [Zulip
 development community](https://zulip.com/development-community/)
 
 For more advice, see [What makes a great Zulip
@@ -395,7 +395,7 @@ to:
 - Organization: What does your organization do? How big is the organization?
   A link to your organization's website?
 
-You can contact us in the [#feedback stream of the Zulip development
+You can contact us in the [#feedback channel of the Zulip development
 community](https://chat.zulip.org/#narrow/channel/137-feedback) or
 by emailing [support@zulip.com](mailto:support@zulip.com).
 
