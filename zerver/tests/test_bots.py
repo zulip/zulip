@@ -107,21 +107,23 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_num_bots_equal(0)
 
     def test_bot_role_inference(self) -> None:
-        self.login("iago")
+        iago_user = self.example_user("iago")
+        self.login_user(iago_user)
         admin_bot_info = dict(
             full_name="My adminTestBot name",
             short_name="adminTestBot",
-            bot_type=1,
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
         )
         admin_result = self.client_post("/json/bots", admin_bot_info)
         self.assert_json_success(admin_result)
         admin_bot_user_id = admin_result.json()["user_id"]
         self.logout()
-        self.login("AARON")
+        aaron_user = self.example_user("AARON")
+        self.login_user(aaron_user)
         member_bot_info = dict(
             full_name="My MemberTestBot name",
             short_name="memberTestBot",
-            bot_type=1,
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
         )
         member_result = self.client_post("/json/bots", member_bot_info)
         self.assert_json_success(member_result)
@@ -129,19 +131,18 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         response = self.client_get("/json/users")
         self.assert_json_success(response)
         users = response.json()["members"]
-           
         admin_bot = next((user for user in users if user["user_id"] == admin_bot_user_id), None)
         member_bot = next((user for user in users if user["user_id"] == member_bot_user_id), None)
-  
-        self.assertIsNotNone(admin_bot)
-        self.assertIsNotNone(member_bot)
-               
-        self.assertEqual(admin_bot.get("role"), 200)
-        self.assertEqual(member_bot.get("role"), 400)
+        self.assertIsNotNone(admin_bot, "Admin bot was not found in the user list.")
+        self.assertIsNotNone(member_bot, "Member bot was not found in the user list.")
+        assert admin_bot is not None
+        assert member_bot is not None
+        self.assertEqual(admin_bot.get("role"), UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.assertEqual(member_bot.get("role"), UserProfile.ROLE_MEMBER)
         self.assertEqual(admin_bot["full_name"], "My adminTestBot name")
-        self.assertEqual(admin_bot["bot_type"], 1)
+        self.assertEqual(admin_bot["bot_type"], UserProfile.INCOMING_WEBHOOK_BOT)
         self.assertEqual(member_bot["full_name"], "My MemberTestBot name")
-        self.assertEqual(member_bot["bot_type"], 1)    
+        self.assertEqual(member_bot["bot_type"], UserProfile.INCOMING_WEBHOOK_BOT)
 
     @override_settings(FAKE_EMAIL_DOMAIN="invaliddomain", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_add_bot_with_invalid_fake_email_domain(self) -> None:
