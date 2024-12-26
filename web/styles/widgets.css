@@ -286,6 +286,8 @@ input {
     /* Ensure controls remain visible on narrower screens. */
     flex-flow: row wrap;
     gap: 5px;
+    /* Reserve space for the focus outline to prevent it from being cut off */
+    margin-right: 2px;
     margin-bottom: var(--markdown-interelement-space-px);
 }
 
