@@ -245,23 +245,41 @@ a chat thread in addition to the GitHub issue.
 Please follow the same guidelines as described above: find an issue labeled
 "help wanted", and only pick up one issue at a time to start with.
 
-### Working on an issue
+### Getting help
 
-You're encouraged to ask questions on how to best implement or debug your
-changes -- the Zulip maintainers are excited to answer questions to help you
-stay unblocked and working efficiently. You can ask questions in the [Zulip
-development community](https://zulip.com/development-community/), or on the
-GitHub issue or pull request.
+You may have questions as you work on your pull request. For example, you might
+not be sure about some details of what's required, or have questions about your
+implementation approach.
 
-To get early feedback on any UI changes, we encourage you to post screenshots of
-your work in the [#design
-channel](https://chat.zulip.org/#narrow/channel/101-design) in the [Zulip
-development community](https://zulip.com/development-community/)
+Zulip's maintainers are happy to answer thoughtfully posed questions, and
+discuss any difficulties that might arise as you work on your PR. You can get
+help in public channels in the [Zulip development
+community](https://zulip.com/development-community/):
 
-For more advice, see [What makes a great Zulip
-contributor?](#what-makes-a-great-zulip-contributor) below. It's OK if your
-first issue takes you a while; that's normal! You'll be able to work a lot
-faster as you build experience.
+1. **Review** the [Zulip development community
+   guidelines](https://zulip.com/development-community/#community-norms).
+
+1. **Decide where to post.** If there is a discussion thread linked from the
+   issue you're working on, that's usually the best place to post any
+   clarification questions about the issue. Otherwise, follow [these
+   guidelines](https://zulip.com/development-community/#where-do-i-send-my-message)
+   to figure out where to post your question. Don’t stress too much about
+   picking the right place if you’re not sure, as moderators can [move your
+   question thread to a different
+   channel](https://zulip.com/help/move-content-to-another-channel) if needed.
+
+1. **Write** up your question, being sure to follow our [guide on asking great
+   questions](https://zulip.readthedocs.io/en/latest/contributing/asking-great-questions.html).
+   The guide explains what you need to do make sure that folks will be able to
+   help you out, and that you're making good use of maintainers' limited time.
+
+1. **Review** your message before you send it. Will your question make sense to
+   someone who is familiar with Zulip, but might not have the details of what
+   you are working on fresh in mind?
+
+Well-posed questions will generally get a response within 1-2 business days.
+There is no need to @-mention anyone when you ask a question, as maintainers
+keep a close eye on all the ongoing discussions.
 
 ### Submitting a pull request
 
@@ -274,6 +292,9 @@ guide](https://zulip.readthedocs.io/en/latest/contributing/review-process.html)
 explains the stages of review your PR will go through, and offers guidance on
 how to help the review process move forward.
 
+It's OK if your first issue takes you a while; that's normal! You'll be able to
+work a lot faster as you build experience.
+
 ### Beyond the first issue
 
 To find a second issue to work on, we recommend looking through issues with the same
@@ -281,6 +302,9 @@ To find a second issue to work on, we recommend looking through issues with the 
 work you did learning how that part of the codebase works. Also, the path to
 becoming a core developer often involves taking ownership of one of these area
 labels.
+
+For more advice, see [What makes a great Zulip
+contributor?](#what-makes-a-great-zulip-contributor) below.
 
 ### Common questions
 
