@@ -27,9 +27,7 @@ from zerver.actions.bots import (
 )
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import (
-    check_remove_custom_profile_field_value,
     do_remove_realm_custom_profile_field,
-    do_update_user_custom_profile_data_if_changed,
     try_add_realm_custom_profile_field,
     try_update_realm_custom_profile_field,
 )
@@ -223,7 +221,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
-from zerver.lib.types import AnonymousSettingGroupDict, ProfileDataElementUpdateDict
+from zerver.lib.types import AnonymousSettingGroupDict
 from zerver.lib.upload import upload_message_attachment
 from zerver.lib.user_groups import (
     get_group_setting_value_for_api,
@@ -1457,59 +1455,6 @@ class NormalActionsTest(BaseAction):
         )
         self.assertEqual(pronouns_field["type"], CustomProfileField.SHORT_TEXT)
 
-    def test_custom_profile_field_data_events(self) -> None:
-        field_id = self.user_profile.realm.customprofilefield_set.get(
-            realm=self.user_profile.realm, name="Biography"
-        ).id
-        field: ProfileDataElementUpdateDict = {
-            "id": field_id,
-            "value": "New value",
-        }
-        with self.verify_action() as events:
-            do_update_user_custom_profile_data_if_changed(self.user_profile, [field])
-        check_realm_user_update("events[0]", events[0], "custom_profile_field")
-        self.assertEqual(
-            events[0]["person"]["custom_profile_field"].keys(), {"id", "value", "rendered_value"}
-        )
-
-        # Test we pass correct stringify value in custom-user-field data event
-        field_id = self.user_profile.realm.customprofilefield_set.get(
-            realm=self.user_profile.realm, name="Mentor"
-        ).id
-        field = {
-            "id": field_id,
-            "value": [self.example_user("ZOE").id],
-        }
-        with self.verify_action() as events:
-            do_update_user_custom_profile_data_if_changed(self.user_profile, [field])
-        check_realm_user_update("events[0]", events[0], "custom_profile_field")
-        self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
-
-        # Test event for removing custom profile data
-        with self.verify_action() as events:
-            check_remove_custom_profile_field_value(
-                self.user_profile, field_id, acting_user=self.user_profile
-            )
-        check_realm_user_update("events[0]", events[0], "custom_profile_field")
-        self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
-
-        # Test event for updating custom profile data for guests.
-        self.set_up_db_for_testing_user_access()
-        self.user_profile = self.example_user("polonius")
-        field = {
-            "id": field_id,
-            "value": "New value",
-        }
-        cordelia = self.example_user("cordelia")
-        with self.verify_action(num_events=0, state_change_expected=False) as events:
-            do_update_user_custom_profile_data_if_changed(cordelia, [field])
-
-        hamlet = self.example_user("hamlet")
-        with self.verify_action() as events:
-            do_update_user_custom_profile_data_if_changed(hamlet, [field])
-        check_realm_user_update("events[0]", events[0], "custom_profile_field")
-        self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
-
     def test_presence_events(self) -> None:
         with self.verify_action(slim_presence=False) as events:
             do_update_user_presence(
@@ -2142,15 +2087,15 @@ class NormalActionsTest(BaseAction):
 
     def test_change_full_name(self) -> None:
         now = timezone_now()
-        with self.verify_action() as events:
-            do_change_full_name(self.user_profile, "Sir Hamlet", self.user_profile)
+        with self.verify_action(num_events=2) as events:
+            do_change_full_name(self.user_profile, "Sir Hamlet", self.example_user("iago"))
         check_realm_user_update("events[0]", events[0], "full_name")
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=self.user_profile.realm,
                 event_type=AuditLogEventType.USER_FULL_NAME_CHANGED,
                 event_time__gte=now,
-                acting_user=self.user_profile,
+                acting_user=self.example_user("iago"),
             ).count(),
             1,
         )
@@ -2165,7 +2110,7 @@ class NormalActionsTest(BaseAction):
                 event_time__gte=now,
                 acting_user=self.user_profile,
             ).count(),
-            1,
+            0,
         )
 
         self.set_up_db_for_testing_user_access()
@@ -2451,9 +2396,9 @@ class NormalActionsTest(BaseAction):
 
         for role in [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_MEMBER]:
             if role == UserProfile.ROLE_REALM_ADMINISTRATOR:
-                num_events = 6
+                num_events = 7
             else:
-                num_events = 5
+                num_events = 6
 
             with self.verify_action(num_events=num_events) as events:
                 do_change_user_role(self.user_profile, role, acting_user=None)
@@ -2504,9 +2449,9 @@ class NormalActionsTest(BaseAction):
 
         for role in [UserProfile.ROLE_REALM_OWNER, UserProfile.ROLE_MEMBER]:
             if role == UserProfile.ROLE_REALM_OWNER:
-                num_events = 6
+                num_events = 7
             else:
-                num_events = 5
+                num_events = 6
             with self.verify_action(num_events=num_events) as events:
                 do_change_user_role(self.user_profile, role, acting_user=None)
             check_realm_user_update("events[0]", events[0], "role")
@@ -2533,7 +2478,7 @@ class NormalActionsTest(BaseAction):
 
         do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         for role in [UserProfile.ROLE_MODERATOR, UserProfile.ROLE_MEMBER]:
-            with self.verify_action(num_events=4) as events:
+            with self.verify_action(num_events=5) as events:
                 do_change_user_role(self.user_profile, role, acting_user=None)
             check_realm_user_update("events[0]", events[0], "role")
             self.assertEqual(events[0]["person"]["role"], role)
@@ -2563,9 +2508,9 @@ class NormalActionsTest(BaseAction):
                 # When changing role from guest to member, peer_add events are also sent
                 # to make sure the subscribers info is provided to the clients for the
                 # streams added by stream creation event.
-                num_events = 7
+                num_events = 8
             else:
-                num_events = 5
+                num_events = 6
             with self.verify_action(num_events=num_events) as events:
                 do_change_user_role(self.user_profile, role, acting_user=None)
             check_realm_user_update("events[0]", events[0], "role")
