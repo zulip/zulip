@@ -436,6 +436,98 @@ def get_visibility_policy_after_merge(
     return UserTopic.VisibilityPolicy.INHERIT
 
 
+def update_message_content(
+    user_profile: UserProfile,
+    target_message: Message,
+    content: str,
+    rendering_result: MessageRenderingResult,
+    prior_mention_user_ids: set[int],
+    mention_data: MentionData,
+    event: dict[str, Any],
+    edit_history_event: EditHistoryEvent,
+    stream_topic: StreamTopicTarget | None,
+) -> None:
+    realm = user_profile.realm
+
+    ums = UserMessage.objects.filter(message=target_message.id)
+
+    # add data from group mentions to mentions_user_ids.
+    for group_id in rendering_result.mentions_user_group_ids:
+        members = mention_data.get_group_members(group_id)
+        rendering_result.mentions_user_ids.update(members)
+
+    # One could imagine checking realm.allow_edit_history here and
+    # modifying the events based on that setting, but doing so
+    # doesn't really make sense.  We need to send the edit event
+    # to clients regardless, and a client already had access to
+    # the original/pre-edit content of the message anyway.  That
+    # setting must be enforced on the client side, and making a
+    # change here simply complicates the logic for clients parsing
+    # edit history events.
+    edit_history_event["prev_content"] = target_message.content
+    edit_history_event["prev_rendered_content"] = target_message.rendered_content
+    edit_history_event["prev_rendered_content_version"] = target_message.rendered_content_version
+
+    event["orig_content"] = target_message.content
+    event["orig_rendered_content"] = target_message.rendered_content
+    event["content"] = content
+    event["rendered_content"] = rendering_result.rendered_content
+    event["is_me_message"] = Message.is_status_message(content, rendering_result.rendered_content)
+
+    target_message.content = content
+    target_message.rendered_content = rendering_result.rendered_content
+    target_message.rendered_content_version = markdown_version
+
+    info = get_recipient_info(
+        realm_id=realm.id,
+        recipient=target_message.recipient,
+        sender_id=target_message.sender_id,
+        stream_topic=stream_topic,
+        possible_topic_wildcard_mention=mention_data.message_has_topic_wildcards(),
+        possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),
+    )
+
+    event["online_push_user_ids"] = list(info.online_push_user_ids)
+    event["dm_mention_push_disabled_user_ids"] = list(info.dm_mention_push_disabled_user_ids)
+    event["dm_mention_email_disabled_user_ids"] = list(info.dm_mention_email_disabled_user_ids)
+    event["stream_push_user_ids"] = list(info.stream_push_user_ids)
+    event["stream_email_user_ids"] = list(info.stream_email_user_ids)
+    event["followed_topic_push_user_ids"] = list(info.followed_topic_push_user_ids)
+    event["followed_topic_email_user_ids"] = list(info.followed_topic_email_user_ids)
+    event["muted_sender_user_ids"] = list(info.muted_sender_user_ids)
+    event["prior_mention_user_ids"] = list(prior_mention_user_ids)
+    event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info.active_user_ids)
+    event["all_bot_user_ids"] = list(info.all_bot_user_ids)
+    if rendering_result.mentions_stream_wildcard:
+        event["stream_wildcard_mention_user_ids"] = list(info.stream_wildcard_mention_user_ids)
+        event["stream_wildcard_mention_in_followed_topic_user_ids"] = list(
+            info.stream_wildcard_mention_in_followed_topic_user_ids
+        )
+    else:
+        event["stream_wildcard_mention_user_ids"] = []
+        event["stream_wildcard_mention_in_followed_topic_user_ids"] = []
+
+    if rendering_result.mentions_topic_wildcard:
+        event["topic_wildcard_mention_user_ids"] = list(info.topic_wildcard_mention_user_ids)
+        event["topic_wildcard_mention_in_followed_topic_user_ids"] = list(
+            info.topic_wildcard_mention_in_followed_topic_user_ids
+        )
+        topic_participant_user_ids = info.topic_participant_user_ids
+    else:
+        event["topic_wildcard_mention_user_ids"] = []
+        event["topic_wildcard_mention_in_followed_topic_user_ids"] = []
+        topic_participant_user_ids = set()
+
+    update_user_message_flags(rendering_result, ums, topic_participant_user_ids)
+
+    do_update_mobile_push_notification(
+        target_message,
+        prior_mention_user_ids,
+        rendering_result.mentions_user_ids,
+        info.stream_push_user_ids,
+    )
+
+
 # This must be called already in a transaction, with a write lock on
 # the target_message.
 @transaction.atomic(savepoint=False)
@@ -493,39 +585,41 @@ def do_update_message(
 
     ums = UserMessage.objects.filter(message=target_message.id)
 
+    def user_info(um: UserMessage) -> dict[str, Any]:
+        return {
+            "id": um.user_profile_id,
+            "flags": um.flags_list(),
+        }
+
+    if target_message.is_stream_message():
+        if topic_name is not None:
+            new_topic_name = topic_name
+        else:
+            new_topic_name = target_message.topic_name()
+
+        stream_topic: StreamTopicTarget | None = StreamTopicTarget(
+            stream_id=stream_id,
+            topic_name=new_topic_name,
+        )
+    else:
+        stream_topic = None
+
     if content is not None:
         assert rendering_result is not None
 
         # mention_data is required if there's a content edit.
         assert mention_data is not None
 
-        # add data from group mentions to mentions_user_ids.
-        for group_id in rendering_result.mentions_user_group_ids:
-            members = mention_data.get_group_members(group_id)
-            rendering_result.mentions_user_ids.update(members)
-
-        # One could imagine checking realm.allow_edit_history here and
-        # modifying the events based on that setting, but doing so
-        # doesn't really make sense.  We need to send the edit event
-        # to clients regardless, and a client already had access to
-        # the original/pre-edit content of the message anyway.  That
-        # setting must be enforced on the client side, and making a
-        # change here simply complicates the logic for clients parsing
-        # edit history events.
-        event["orig_content"] = target_message.content
-        event["orig_rendered_content"] = target_message.rendered_content
-        edit_history_event["prev_content"] = target_message.content
-        edit_history_event["prev_rendered_content"] = target_message.rendered_content
-        edit_history_event["prev_rendered_content_version"] = (
-            target_message.rendered_content_version
-        )
-        target_message.content = content
-        target_message.rendered_content = rendering_result.rendered_content
-        target_message.rendered_content_version = markdown_version
-        event["content"] = content
-        event["rendered_content"] = rendering_result.rendered_content
-        event["is_me_message"] = Message.is_status_message(
-            content, rendering_result.rendered_content
+        update_message_content(
+            user_profile,
+            target_message,
+            content,
+            rendering_result,
+            prior_mention_user_ids,
+            mention_data,
+            event,
+            edit_history_event,
+            stream_topic,
         )
 
         # target_message.has_image and target_message.has_link will have been
@@ -534,67 +628,21 @@ def do_update_message(
             target_message, rendering_result
         )
         target_message.has_attachment = attachment_reference_change.did_attachment_change
-        if target_message.is_stream_message():
-            if topic_name is not None:
-                new_topic_name = topic_name
-            else:
-                new_topic_name = target_message.topic_name()
 
-            stream_topic: StreamTopicTarget | None = StreamTopicTarget(
-                stream_id=stream_id,
-                topic_name=new_topic_name,
+        if not target_message.is_stream_message():
+            update_edit_history(target_message, timestamp, edit_history_event)
+
+            # This does message.save(update_fields=[...])
+            save_message_for_edit_use_case(message=target_message)
+
+            event["message_ids"] = update_message_cache([target_message])
+            users_to_be_notified = list(map(user_info, ums))
+            send_event_on_commit(user_profile.realm, event, users_to_be_notified)
+
+            changed_messages_count = 1
+            return UpdateMessageResult(
+                changed_messages_count, attachment_reference_change.detached_attachments
             )
-        else:
-            stream_topic = None
-
-        info = get_recipient_info(
-            realm_id=realm.id,
-            recipient=target_message.recipient,
-            sender_id=target_message.sender_id,
-            stream_topic=stream_topic,
-            possible_topic_wildcard_mention=mention_data.message_has_topic_wildcards(),
-            possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),
-        )
-
-        event["online_push_user_ids"] = list(info.online_push_user_ids)
-        event["dm_mention_push_disabled_user_ids"] = list(info.dm_mention_push_disabled_user_ids)
-        event["dm_mention_email_disabled_user_ids"] = list(info.dm_mention_email_disabled_user_ids)
-        event["stream_push_user_ids"] = list(info.stream_push_user_ids)
-        event["stream_email_user_ids"] = list(info.stream_email_user_ids)
-        event["followed_topic_push_user_ids"] = list(info.followed_topic_push_user_ids)
-        event["followed_topic_email_user_ids"] = list(info.followed_topic_email_user_ids)
-        event["muted_sender_user_ids"] = list(info.muted_sender_user_ids)
-        event["prior_mention_user_ids"] = list(prior_mention_user_ids)
-        event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info.active_user_ids)
-        event["all_bot_user_ids"] = list(info.all_bot_user_ids)
-        if rendering_result.mentions_stream_wildcard:
-            event["stream_wildcard_mention_user_ids"] = list(info.stream_wildcard_mention_user_ids)
-            event["stream_wildcard_mention_in_followed_topic_user_ids"] = list(
-                info.stream_wildcard_mention_in_followed_topic_user_ids
-            )
-        else:
-            event["stream_wildcard_mention_user_ids"] = []
-            event["stream_wildcard_mention_in_followed_topic_user_ids"] = []
-
-        if rendering_result.mentions_topic_wildcard:
-            event["topic_wildcard_mention_user_ids"] = list(info.topic_wildcard_mention_user_ids)
-            event["topic_wildcard_mention_in_followed_topic_user_ids"] = list(
-                info.topic_wildcard_mention_in_followed_topic_user_ids
-            )
-            topic_participant_user_ids = info.topic_participant_user_ids
-        else:
-            event["topic_wildcard_mention_user_ids"] = []
-            event["topic_wildcard_mention_in_followed_topic_user_ids"] = []
-            topic_participant_user_ids = set()
-
-        update_user_message_flags(rendering_result, ums, topic_participant_user_ids)
-
-        do_update_mobile_push_notification(
-            target_message,
-            prior_mention_user_ids,
-            rendering_result.mentions_user_ids,
-            info.stream_push_user_ids,
-        )
 
     if topic_name is not None or new_stream is not None:
         assert propagate_mode is not None
@@ -810,12 +858,6 @@ def do_update_message(
 
     realm_id = target_message.realm_id
     event["message_ids"] = update_message_cache(changed_messages, realm_id)
-
-    def user_info(um: UserMessage) -> dict[str, Any]:
-        return {
-            "id": um.user_profile_id,
-            "flags": um.flags_list(),
-        }
 
     # The following blocks arranges that users who are subscribed to a
     # stream and can see history from before they subscribed get
