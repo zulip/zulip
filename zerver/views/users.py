@@ -314,7 +314,7 @@ def update_user_backend(
         validate_user_custom_profile_data(
             target.realm.id, clean_profile_data, acting_user=user_profile
         )
-        do_update_user_custom_profile_data_if_changed(target, clean_profile_data, user_profile)
+        do_update_user_custom_profile_data_if_changed(target, clean_profile_data, acting_user=user_profile)
 
     if new_email is not None and target.delivery_email != new_email:
         assert user_profile.can_change_user_emails and user_profile.is_realm_admin

@@ -818,6 +818,7 @@ class Command(ZulipBaseCommand):
                     {"id": github_profile.id, "value": "zulip"},
                     {"id": pronouns.id, "value": "he/him"},
                 ],
+                acting_user=iago,
             )
             do_update_user_custom_profile_data_if_changed(
                 hamlet,
@@ -835,6 +836,7 @@ class Command(ZulipBaseCommand):
                     {"id": github_profile.id, "value": "zulipbot"},
                     {"id": pronouns.id, "value": "he/him"},
                 ],
+                acting_user=hamlet,
             )
             # We need to create at least one scheduled message for Iago for the api-test
             # cURL example to delete an existing scheduled message.

@@ -621,7 +621,7 @@ def send_account_modification_notifications(
     old_value: str | list[int] | None,
     new_value: str | list[int] | None,
 ) -> None:
-    if user_profile.is_bot or acting_user == user_profile or acting_user is None:
+    if user_profile.is_bot or acting_user == user_profile:
         return
 
     realm = user_profile.realm

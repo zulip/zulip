@@ -6743,7 +6743,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         desdemona_recipient = self.example_user("desdemona").recipient
         message_to_owner = Message.objects.filter(
             realm_id=realm.id, sender=sender.id, recipient=desdemona_recipient
-        ).first()
+        ).last()
         assert message_to_owner is not None
         self.assertEqual(message_to_owner.content, expected_message)
         self.assertEqual(message_to_owner.recipient.type, Recipient.PERSONAL)
@@ -6752,7 +6752,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         hamlet_recipient = self.example_user("hamlet").recipient
         message_to_billing_admin = Message.objects.filter(
             realm_id=realm.id, sender=sender.id, recipient=hamlet_recipient
-        ).first()
+        ).last()
         assert message_to_billing_admin is not None
         self.assertEqual(message_to_billing_admin.content, expected_message)
         self.assertEqual(message_to_billing_admin.recipient.type, Recipient.PERSONAL)

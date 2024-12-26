@@ -325,6 +325,6 @@ def update_user_custom_profile_data(
 ) -> HttpResponse:
     validate_user_custom_profile_data(user_profile.realm.id, data, acting_user=user_profile)
     with transaction.atomic(durable=True):
-        do_update_user_custom_profile_data_if_changed(user_profile, data)
+        do_update_user_custom_profile_data_if_changed(user_profile, data, acting_user=user_profile)
     # We need to call this explicitly otherwise constraints are not check
     return json_success(request)

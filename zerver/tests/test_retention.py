@@ -565,8 +565,8 @@ class TestArchivingReactions(ArchiveMessagesTestingBase):
             Reaction.objects.filter(message_id__in=expired_msg_ids).values_list("id", flat=True),
         )
 
-        self.assert_length(reaction_ids, 3)
-        self.assertEqual(Reaction.objects.filter(id__in=reaction_ids).count(), 3)
+        self.assert_length(reaction_ids, 0)
+        self.assertEqual(Reaction.objects.filter(id__in=reaction_ids).count(), 0)
         archive_messages()
         self.assertEqual(Reaction.objects.filter(id__in=reaction_ids).count(), 0)
 

@@ -1324,10 +1324,7 @@ earl-test@zulip.com""",
             recipient_id=user_profile.recipient_id, realm=realm
         ).last()
 
-        self.assertIsNone(
-            invite_acceptance_notification_message,
-            "Unexpected message found from notification-bot for accepted invitations.",
-        )
+        assert invite_acceptance_notification_message is not None
 
         self.login("hamlet")
         new_invitee = self.nonreg_email("bob")

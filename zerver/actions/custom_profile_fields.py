@@ -174,7 +174,8 @@ def notify_user_update_custom_profile_data(
 def do_update_user_custom_profile_data_if_changed(
     user_profile: UserProfile,
     data: list[ProfileDataElementUpdateDict],
-    acting_user: UserProfile | None = None,
+    *,
+    acting_user: UserProfile,
 ) -> None:
     for custom_profile_field in data:
         field_value, created = CustomProfileFieldValue.objects.get_or_create(

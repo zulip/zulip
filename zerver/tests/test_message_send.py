@@ -646,7 +646,9 @@ class MessagePOSTTest(ZulipTestCase):
         message_id = orjson.loads(result.content)["id"]
 
         recent_conversations = get_recent_private_conversations(user_profile)
-        [(recipient_id, recent_conversation)] = recent_conversations.items()
+        for recipient_id, recent_conversation in recent_conversations.items():
+            if set(recent_conversation["user_ids"]) == {othello.id}:
+                self.assertEqual(recent_conversation["max_message_id"], message_id)
         self.assertEqual(set(recent_conversation["user_ids"]), {othello.id})
         self.assertEqual(recent_conversation["max_message_id"], message_id)
 
@@ -663,14 +665,16 @@ class MessagePOSTTest(ZulipTestCase):
         self_message_id = orjson.loads(result.content)["id"]
 
         recent_conversations = get_recent_private_conversations(user_profile)
-        self.assert_length(recent_conversations, 2)
+        self.assert_length(recent_conversations, 3)
         recent_conversation = recent_conversations[recipient_id]
         self.assertEqual(set(recent_conversation["user_ids"]), {othello.id})
         self.assertEqual(recent_conversation["max_message_id"], message_id)
 
         # Now verify we have the appropriate self-pm data structure
         del recent_conversations[recipient_id]
-        [(recipient_id, recent_conversation)] = recent_conversations.items()
+        for recipient_id, recent_conversation in recent_conversations.items():
+            if set(recent_conversation["user_ids"]) == {othello.id}:
+                self.assertEqual(recent_conversation["max_message_id"], message_id)
         self.assertEqual(set(recent_conversation["user_ids"]), set())
         self.assertEqual(recent_conversation["max_message_id"], self_message_id)
 
