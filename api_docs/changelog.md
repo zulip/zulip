@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 333**
+
+* [`GET /invites`](/api/get-invites): The `stream_ids` and
+  `include_realm_default_subscriptions` field has been added
+  to be returned for all invites.
+
+
 **Feature level 332**
 
 * [`POST /register`](/api/register-queue): Added
