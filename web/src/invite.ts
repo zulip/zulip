@@ -24,6 +24,7 @@ import * as invite_stream_picker_pill from "./invite_stream_picker_pill.ts";
 import * as loading from "./loading.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
+import type {User} from "./people.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import type {UserRoleValue} from "./settings_config.ts";
@@ -66,7 +67,7 @@ function reset_error_messages(): void {
     }
 }
 
-function get_welcome_message_custom_text_value(): string | null {
+export function get_welcome_message_custom_text_value(): string | null {
     const realm_welcome_message_configured = realm.realm_welcome_message_custom_text.length > 0;
     const send_realm_default_custom_message = $(
         "#send_default_realm_welcome_message_custom_text",
@@ -335,7 +336,7 @@ function valid_to(): string {
     return $t({defaultMessage: "Expires on {date} at {time}"}, {date, time});
 }
 
-function set_streams_to_join_list_visibility(): void {
+export function set_streams_to_join_list_visibility(): void {
     const realm_has_default_streams = stream_data.get_default_stream_ids().length > 0;
     const hide_streams_list =
         realm_has_default_streams &&
@@ -347,7 +348,7 @@ function set_streams_to_join_list_visibility(): void {
     }
 }
 
-function set_welcome_message_custom_text_visibility(): void {
+export function set_welcome_message_custom_text_visibility(): void {
     if (!current_user.is_admin) {
         return;
     }
@@ -437,14 +438,24 @@ function update_stream_list(): void {
     }
 }
 
-function get_invite_as_options_for_invite(user: CurrentUser): UserRoleValue[] {
+export function get_invite_as_options_for_invite(
+    user: CurrentUser | User,
+    current_invite_as?: number,
+): UserRoleValue[] {
     const role_values = settings_config.user_role_values;
 
     return Object.values(role_values).filter((option) => {
+        if (current_invite_as === option.code) {
+            return true;
+        }
+
         if (option.code === role_values.guest.code || option.code === role_values.member.code) {
             return true;
         }
         if (option.code === role_values.owner.code) {
+            if (current_user.user_id !== user.user_id) {
+                return current_user.is_owner && user.is_owner;
+            }
             return user.is_owner;
         }
         return user.is_admin;
