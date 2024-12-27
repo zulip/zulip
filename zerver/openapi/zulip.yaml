@@ -4741,6 +4741,11 @@ paths:
                                         Whether notification emails in this organization are allowed to
                                         contain Zulip the message content, or simply indicate that a new
                                         message was sent.
+                                    signup_notifications_include_referrer:
+                                      type: boolean
+                                      description: |
+                                        Whether the organization's [signup notifications](/help/invite-new-users)
+                                        include the referrer's name and email address.
                                     message_content_delete_limit_seconds:
                                       type: integer
                                       nullable: true
@@ -16808,6 +16813,12 @@ paths:
                           Whether notification emails in this organization are allowed to
                           contain Zulip the message content, or simply indicate that a new
                           message was sent.
+                      realm_signup_notifications_include_referrer:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether new user signup notifications contain the referrer's name.
                       realm_enable_spectator_access:
                         type: boolean
                         description: |

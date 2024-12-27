@@ -35,6 +35,9 @@ const admin_settings_label = {
     realm_mandatory_topics: $t({defaultMessage: "Require topics in channel messages"}),
     realm_new_stream_announcements_stream: $t({defaultMessage: "New channel announcements"}),
     realm_signup_announcements_stream: $t({defaultMessage: "New user announcements"}),
+    realm_signup_notifications_include_referrer: $t({
+        defaultMessage: "Include referrer's name in new user signup notifications",
+    }),
     realm_zulip_update_announcements_stream: $t({defaultMessage: "Zulip update announcements"}),
     realm_inline_image_preview: $t({
         defaultMessage: "Show previews of uploaded and linked images and videos",
@@ -180,6 +183,8 @@ export function build_page(): void {
         realm_night_logo_url,
         realm_mandatory_topics: realm.realm_mandatory_topics,
         realm_send_welcome_emails: realm.realm_send_welcome_emails,
+        realm_signup_notifications_include_referrer:
+            realm.realm_signup_notifications_include_referrer,
         realm_message_content_allowed_in_email_notifications:
             realm.realm_message_content_allowed_in_email_notifications,
         realm_enable_spectator_access: realm.realm_enable_spectator_access,

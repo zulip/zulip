@@ -201,6 +201,7 @@ class HomeTest(ZulipTestCase):
         "realm_push_notifications_enabled_end_timestamp",
         "realm_require_unique_names",
         "realm_send_welcome_emails",
+        "realm_signup_notifications_include_referrer",
         "realm_signup_announcements_stream_id",
         "realm_upload_quota_mib",
         "realm_uri",

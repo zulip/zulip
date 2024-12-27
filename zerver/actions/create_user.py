@@ -97,17 +97,32 @@ def send_group_direct_message_to_admins(sender: UserProfile, realm: Realm, conte
     )
 
 
-def notify_new_user(user_profile: UserProfile) -> None:
+def notify_new_user(user_profile: UserProfile, referring_user: UserProfile | None) -> None:
     user_count = realm_user_count(user_profile.realm)
     sender_email = settings.NOTIFICATION_BOT
     sender = get_system_bot(sender_email, user_profile.realm_id)
+    realm = user_profile.realm
 
     is_first_user = user_count == 1
     if not is_first_user:
         with override_language(user_profile.realm.default_language):
-            message = _("{user} joined this organization.").format(
-                user=silent_mention_syntax_for_user(user_profile), user_count=user_count
-            )
+            # If referring_user exists
+            if referring_user:
+                if realm.signup_notifications_include_referrer:
+                    message = _(
+                        "{user} accepted {referrer}'s invitation to join this organization."
+                    ).format(
+                        user=f"@_**{user_profile.full_name}|{user_profile.id}**",
+                        referrer=f"@_**{referring_user.full_name}|{referring_user.id}**",
+                    )
+                else:
+                    message = _("{user} joined this organization.").format(
+                        user=silent_mention_syntax_for_user(user_profile), user_count=user_count
+                    )
+            else:
+                message = _("{user} joined this organization.").format(
+                    user=silent_mention_syntax_for_user(user_profile), user_count=user_count
+                )
             send_message_to_signup_notification_stream(sender, user_profile.realm, message)
 
         if settings.BILLING_ENABLED:
@@ -332,7 +347,8 @@ def process_new_human_user(
     if prereg_user is not None and prereg_user.referred_by is not None:
         notify_invites_changed(user_profile.realm, changed_invite_referrer=prereg_user.referred_by)
 
-    notify_new_user(user_profile)
+    referred_by = prereg_user.referred_by if prereg_user else None
+    notify_new_user(user_profile, referred_by)
     # Clear any scheduled invitation emails to prevent them
     # from being sent after the user is created.
     clear_scheduled_invitation_emails(user_profile.delivery_email)

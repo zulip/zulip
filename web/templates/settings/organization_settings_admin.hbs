@@ -38,6 +38,12 @@
                   label=admin_settings_label.realm_message_content_allowed_in_email_notifications}}
 
                 {{> settings_checkbox
+                  setting_name="realm_signup_notifications_include_referrer"
+                  prefix="id_"
+                  is_checked=realm_signup_notifications_include_referrer
+                  label=admin_settings_label.realm_signup_notifications_include_referrer}}
+
+                {{> settings_checkbox
                   setting_name="realm_send_welcome_emails"
                   prefix="id_"
                   is_checked=realm_send_welcome_emails

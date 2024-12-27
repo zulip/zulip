@@ -131,6 +131,7 @@ def update_realm(
     send_welcome_emails: Json[bool] | None = None,
     digest_emails_enabled: Json[bool] | None = None,
     message_content_allowed_in_email_notifications: Json[bool] | None = None,
+    signup_notifications_include_referrer: Json[bool] | None = None,
     bot_creation_policy: Json[BotCreationPolicyEnum] | None = None,
     can_create_groups: Json[GroupSettingChangeRequest] | None = None,
     can_create_public_channel_group: Json[GroupSettingChangeRequest] | None = None,

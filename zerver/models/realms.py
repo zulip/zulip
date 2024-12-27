@@ -218,6 +218,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     send_welcome_emails = models.BooleanField(default=True)
     message_content_allowed_in_email_notifications = models.BooleanField(default=True)
+    signup_notifications_include_referrer = models.BooleanField(default=True)
 
     mandatory_topics = models.BooleanField(default=False)
 
@@ -661,6 +662,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         push_notifications_enabled=bool,
         require_unique_names=bool,
         send_welcome_emails=bool,
+        signup_notifications_include_referrer=bool,
         video_chat_provider=int,
         waiting_period_threshold=int,
         want_advertise_in_communities_directory=bool,

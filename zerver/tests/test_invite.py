@@ -1272,6 +1272,9 @@ class InviteUserTest(InviteUserBase):
             signups_stream_msg.content.startswith(
                 f"@_**alice_zulip.com|{invitee_profile.id}** joined this organization",
             )
+            or signups_stream_msg.content.startswith(
+                f"@_**alice_zulip.com|{invitee_profile.id}** accepted",
+            )
         )
 
         self.assertEqual(invitee_msg.sender.email, "welcome-bot@zulip.com")
