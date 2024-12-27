@@ -197,7 +197,7 @@ function do_revoke_invite({
 
 function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}): void {
     const modal_invite_id = $(".dialog_submit_button").attr("data-invite-id");
-    const $resend_button = $row.find("button.resend");
+    const $resend_button = $row.find("button.resend-invite");
 
     if (modal_invite_id !== invite_id) {
         blueslip.error("Invite resending canceled due to non-matching fields.");
@@ -260,7 +260,7 @@ export function on_load_success(
     if (!initialize_event_handlers) {
         return;
     }
-    $(".admin_invites_table").on("click", ".revoke", function (this: HTMLElement, e) {
+    $(".admin_invites_table").on("click", ".revoke-invite", function (this: HTMLElement, e) {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active` in `settings.ts`.
         e.preventDefault();
@@ -294,7 +294,7 @@ export function on_load_success(
         $(".dialog_submit_button").attr("data-is-multiuse", is_multiuse);
     });
 
-    $(".admin_invites_table").on("click", ".resend", function (this: HTMLElement, e) {
+    $(".admin_invites_table").on("click", ".resend-invite", function (this: HTMLElement, e) {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active` in `settings.ts`.
         e.preventDefault();
