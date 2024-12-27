@@ -13992,6 +13992,9 @@ paths:
 
         Note that administrators can manage invitations that were created by other users.
 
+        **Changes**: Prior to Zulip 11.0 (feature level 379), `stream_ids` and
+        `include_realm_default_subscriptions` fields were not included in the invitation objects.
+
         **Changes**: Prior to Zulip 8.0 (feature level 209), non-admin users could
         only create email invitations, and therefore the response would never include
         reusable invitation links for these users.
@@ -14030,6 +14033,8 @@ paths:
                               invited_by_user_id: 9,
                               notify_referrer_on_join: true,
                               is_multiuse: false,
+                              stream_ids: [7, 9],
+                              include_realm_default_subscriptions: true,
                             },
                             {
                               expiry_date: 1711463862,
@@ -14040,6 +14045,8 @@ paths:
                               is_multiuse: true,
                               notify_referrer_on_join: true,
                               link_url: "https://example.zulipchat.com/join/yddhtzk4jgl7rsmazc5fyyyy/",
+                              stream_ids: [7, 9],
+                              include_realm_default_subscriptions: true,
                             },
                           ],
                       }
@@ -23836,6 +23843,24 @@ components:
           description: |
             A boolean specifying whether the [invitation](/help/invite-new-users) is a
             reusable invitation link or an email invitation.
+
+            **Changes**: New in Zulip 11.0 (feature level 379).
+        stream_ids:
+          type: array
+          items:
+            type: integer
+          description: |
+            A list containing the [IDs of the streams](/api/get-stream-id) that the
+            newly created user will be automatically subscribed to if the invitation
+            is accepted. If the list is empty, then the new user will not be
+            subscribed to any streams.
+
+            **Changes**: New in Zulip 11.0 (feature level 379).
+        include_realm_default_subscriptions:
+          type: boolean
+          description: |
+            A boolean specifying whether the [invitation](/help/invite-new-users) include default
+            channel subscription or not.
     InviteExpirationParameter:
       description: |
         The number of minutes before the invitation will expire. If `null`, the
