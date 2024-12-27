@@ -28,6 +28,8 @@ format used by the Zulip server that they are interacting with.
 * [`PATCH /invites/multiuse/{invite_id}`](/api/edit-invite-link):
   Added support for editing `invite_as` and `stream_ids` fields of
   reusable invitation links.
+* [`PATCH /invites/multiuse/{invite_id}`](/api/edit-invite-link):
+  A user can only edit the invitations that they can manage.
 
 **Feature level 377**
 
