@@ -2243,9 +2243,12 @@ class InvitationsTestCase(InviteUserBase):
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
 
-        streams = [
-            get_stream(stream_name, user_profile.realm) for stream_name in ["Denmark", "Scotland"]
-        ]
+        streams = []
+        stream_ids = []
+        for stream_name in ["Denmark", "Scotland"]:
+            stream = get_stream(stream_name, user_profile.realm)
+            streams.append(stream)
+            stream_ids.append(stream.id)
 
         invite_expires_in_minutes = 2 * 24 * 60
         with self.captureOnCommitCallbacks(execute=True):
@@ -2273,6 +2276,7 @@ class InvitationsTestCase(InviteUserBase):
                 PreregistrationUser.INVITE_AS["MEMBER"],
                 invite_expires_in_minutes,
                 include_realm_default_subscriptions=False,
+                streams=streams,
             )
 
         prereg_user_three = PreregistrationUser(
@@ -2299,8 +2303,12 @@ class InvitationsTestCase(InviteUserBase):
 
         self.assertFalse(invites[0]["is_multiuse"])
         self.assertEqual(invites[0]["email"], "TestOne@zulip.com")
+        self.assertEqual(set(invites[0]["stream_ids"]), set(stream_ids))
+
         self.assertTrue(invites[1]["is_multiuse"])
         self.assertEqual(invites[1]["invited_by_user_id"], hamlet.id)
+        self.assertEqual(invites[1]["stream_ids"], [])
+        self.assertFalse(invites[1]["include_realm_default_subscriptions"])
 
     def test_get_never_expiring_invitations(self) -> None:
         self.login("iago")

@@ -27,6 +27,8 @@ export const invite_schema = z.intersection(
         expiry_date: z.number().nullable(),
         id: z.number(),
         invited_as: z.number(),
+        stream_ids: z.array(z.number()),
+        include_realm_default_subscriptions: z.boolean(),
     }),
     z.discriminatedUnion("is_multiuse", [
         z.object({
