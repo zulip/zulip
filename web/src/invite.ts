@@ -289,7 +289,7 @@ function valid_to(): string {
     return $t({defaultMessage: "Expires on {date} at {time}"}, {date, time});
 }
 
-function set_streams_to_join_list_visibility(): void {
+export function set_streams_to_join_list_visibility(): void {
     const realm_has_default_streams = stream_data.get_default_stream_ids().length > 0;
     const hide_streams_list =
         realm_has_default_streams &&

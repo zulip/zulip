@@ -36,8 +36,9 @@
           icon="trash"
           intent="danger"
           custom_classes="revoke tippy-zulip-delayed-tooltip"
+          data-invite-id="{{id}}"
+          data-is-multiuse="{{is_multiuse}}"
           data-tippy-content=(t "Revoke")
-          disabled=disable_buttons
           }}
         {{#unless is_multiuse}}
         {{> ../components/icon_button
@@ -50,9 +51,18 @@
           icon="send-dm"
           intent="neutral"
           custom_classes="resend tippy-zulip-delayed-tooltip"
+          data-invite-id="{{id}}"
           data-tippy-content=(t "Resend")
-          disabled=disable_buttons
           }}
+        {{else}}
+        {{> ../components/icon_button
+          icon="edit"
+          intent="neutral"
+          custom_classes="edit-invite tippy-zulip-delayed-tooltip"
+          data-invite-id="{{id}}"
+          data-tippy-content=(t "Edit")
+          disabled=disable_buttons
+        }}
         {{/unless}}
     </td>
 </tr>
