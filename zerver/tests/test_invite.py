@@ -3391,7 +3391,7 @@ class MultiuseInviteTest(ZulipTestCase):
                 "include_realm_default_subscriptions": orjson.dumps(False).decode(),
             },
         )
-        self.assert_json_error(result, "Insufficient permission")
+        self.assert_json_success(result)
 
         result = self.client_patch(
             f"/json/invites/multiuse/{multiuse_invite_1.id}",
