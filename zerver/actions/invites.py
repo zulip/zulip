@@ -10,6 +10,7 @@ from django.db import transaction
 from django.db.models import Q, QuerySet, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from pydantic_partials.sentinels import Missing, MissingType
 from zxcvbn import zxcvbn
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
@@ -393,6 +394,37 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
             )
         )
     return invites
+
+
+@transaction.atomic(durable=True)
+def do_edit_multiuse_invite_link(
+    multiuse_invite: MultiuseInvite,
+    *,
+    invited_as: int | None = None,
+    streams: Collection[Stream] | None = None,
+    user_groups: Collection[NamedUserGroup] | None = None,
+    include_realm_default_subscriptions: bool | None = None,
+    welcome_message_custom_text: str | None | MissingType = Missing,
+) -> None:
+    if streams is not None:
+        multiuse_invite.streams.set(streams)
+
+    if user_groups is not None:
+        multiuse_invite.groups.set(user_groups)
+
+    if invited_as is not None:
+        multiuse_invite.invited_as = invited_as
+
+    if include_realm_default_subscriptions is not None:
+        multiuse_invite.include_realm_default_subscriptions = include_realm_default_subscriptions
+
+    if not isinstance(welcome_message_custom_text, MissingType):
+        multiuse_invite.welcome_message_custom_text = welcome_message_custom_text
+
+    multiuse_invite.save()
+
+    realm = multiuse_invite.referred_by.realm
+    notify_invites_changed(realm, changed_invite_referrer=multiuse_invite.referred_by)
 
 
 @transaction.atomic(durable=True)
