@@ -15799,6 +15799,10 @@ paths:
                               invited_by_user_id: 9,
                               notify_referrer_on_join: true,
                               is_multiuse: false,
+                              stream_ids: [7, 9],
+                              group_ids: [10, 11],
+                              include_realm_default_subscriptions: true,
+                              welcome_message_custom_text: null,
                             },
                             {
                               expiry_date: 1711463862,
@@ -15809,6 +15813,10 @@ paths:
                               is_multiuse: true,
                               notify_referrer_on_join: true,
                               link_url: "https://example.zulipchat.com/join/yddhtzk4jgl7rsmazc5fyyyy/",
+                              stream_ids: [7, 9],
+                              group_ids: [10, 11],
+                              include_realm_default_subscriptions: true,
+                              welcome_message_custom_text: "Welcome!",
                             },
                           ],
                       }
@@ -26530,6 +26538,50 @@ components:
           description: |
             A boolean specifying whether the [invitation](/help/invite-new-users) is a
             reusable invitation link or an email invitation.
+        stream_ids:
+          type: array
+          items:
+            type: integer
+          description: |
+            A list containing the [IDs of the streams](/api/get-stream-id) that the
+            newly created user will be automatically subscribed to if the invitation
+            is accepted. If the list is empty, then the new user will not be
+            subscribed to any streams.
+
+            **Changes**: New in Zulip 12.0 (feature level ZF-8d0c68).
+        group_ids:
+          type: array
+          items:
+            type: integer
+          description: |
+            A list containing the [IDs of the user groups](/api/get-user-groups) that
+            the newly created user will be automatically added to if the invitation
+            is accepted. If the list is empty, then the new user will not be
+            added to any user groups.
+
+            **Changes**: New in Zulip 12.0 (feature level ZF-8d0c68).
+        include_realm_default_subscriptions:
+          type: boolean
+          description: |
+            Boolean indicating whether the newly created user should be subscribed
+            to the [default channels][default-channels] for the organization.
+
+            **Changes**: New in Zulip 12.0 (feature level ZF-8d0c68).
+        welcome_message_custom_text:
+          type: string
+          nullable: true
+          description: |
+            Custom message text, in Zulip Markdown format, to be sent by the
+            Welcome Bot to new users that join the organization via this
+            invitation.
+
+            Maximum length is 8000 characters.
+
+            - `null`: the organization's default `welcome_message_custom_text` is used.
+            - Empty string: no Welcome Bot custom message is sent.
+            - Otherwise, the provided string is the custom message.
+
+            **Changes**: New in Zulip 12.0 (feature level ZF-8d0c68).
     InviteExpirationParameter:
       description: |
         The number of minutes before the invitation will expire. If `null`, the

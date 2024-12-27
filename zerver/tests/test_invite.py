@@ -2416,9 +2416,16 @@ class InvitationsTestCase(InviteUserBase):
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
 
-        streams = [
-            get_stream(stream_name, user_profile.realm) for stream_name in ["Denmark", "Scotland"]
-        ]
+        streams = []
+        stream_ids = []
+        for stream_name in ["Denmark", "Scotland"]:
+            stream = get_stream(stream_name, user_profile.realm)
+            streams.append(stream)
+            stream_ids.append(stream.id)
+
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm=user_profile.realm
+        )
 
         invite_expires_in_minutes = 2 * 24 * 60
         with self.captureOnCommitCallbacks(execute=True):
@@ -2426,6 +2433,7 @@ class InvitationsTestCase(InviteUserBase):
                 user_profile,
                 ["TestOne@zulip.com"],
                 streams,
+                user_groups=[hamletcharacters_group],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
@@ -2462,7 +2470,8 @@ class InvitationsTestCase(InviteUserBase):
             hamlet,
             PreregistrationUser.INVITE_AS["MEMBER"],
             invite_expires_in_minutes,
-            include_realm_default_subscriptions=False,
+            include_realm_default_subscriptions=True,
+            welcome_message_custom_text="Welcome!",
         )
 
         result = self.client_get("/json/invites")
@@ -2472,8 +2481,17 @@ class InvitationsTestCase(InviteUserBase):
 
         self.assertFalse(invites[0]["is_multiuse"])
         self.assertEqual(invites[0]["email"], "TestOne@zulip.com")
+        self.assertEqual(set(invites[0]["stream_ids"]), set(stream_ids))
+        self.assertEqual(invites[0]["group_ids"], [hamletcharacters_group.id])
+        self.assertFalse(invites[0]["include_realm_default_subscriptions"])
+        self.assertIsNone(invites[0]["welcome_message_custom_text"])
+
         self.assertTrue(invites[1]["is_multiuse"])
         self.assertEqual(invites[1]["invited_by_user_id"], hamlet.id)
+        self.assertTrue(invites[1]["include_realm_default_subscriptions"])
+        self.assertEqual(invites[1]["stream_ids"], [])
+        self.assertEqual(invites[1]["group_ids"], [])
+        self.assertEqual(invites[1]["welcome_message_custom_text"], "Welcome!")
 
     def test_get_never_expiring_invitations(self) -> None:
         self.login("iago")
