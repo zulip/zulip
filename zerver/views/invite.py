@@ -11,6 +11,7 @@ from pydantic import Json
 from confirmation import settings as confirmation_settings
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
+    do_edit_multiuse_invite_link,
     do_get_invites_controlled_by_user,
     do_invite_users,
     do_revoke_multi_use_invite,
@@ -229,6 +230,55 @@ def resend_user_invite_email(
 ) -> HttpResponse:
     prereg_user = access_invite_by_id(user_profile, invite_id)
     do_send_user_invite_email(prereg_user, event_time=timezone_now())
+    return json_success(request)
+
+
+@require_member_or_admin
+@typed_endpoint
+def edit_multiuse_invite(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    invite_id: PathOnly[int],
+    stream_ids: Json[list[int]] | None = None,
+    invite_as: Annotated[
+        Json[int] | None,
+        check_int_in_validator(list(PreregistrationUser.INVITE_AS.values())),
+    ] = None,
+    include_realm_default_subscriptions: Json[bool] = True,
+) -> HttpResponse:
+    try:
+        invite = MultiuseInvite.objects.get(id=invite_id)
+    except MultiuseInvite.DoesNotExist:
+        raise JsonableError(
+            _("Invite does not exist with id: {invite_id}.").format(invite_id=invite_id)
+        )
+
+    if (
+        invite.referred_by_id != user_profile.id
+        and not user_profile.is_realm_admin
+        and not user_profile.can_create_multiuse_invite_to_realm()
+    ):
+        # Guest users case will not be handled here as it will
+        # be handled by the decorator above.
+        raise JsonableError(_("Insufficient permission"))
+
+    if invite_as is not None:
+        require_admin = invite_as in [
+            PreregistrationUser.INVITE_AS["REALM_OWNER"],
+            PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+            PreregistrationUser.INVITE_AS["MODERATOR"],
+        ]
+        check_role_based_permissions(invite.invited_as, user_profile, require_admin=require_admin)
+
+    streams: list[Stream] = []
+    if stream_ids is not None:
+        streams = access_streams_for_invite(stream_ids, user_profile)
+
+    if invite_as is not None:
+        do_edit_multiuse_invite_link(
+            invite, invite_as, streams, include_realm_default_subscriptions
+        )
     return json_success(request)
 
 

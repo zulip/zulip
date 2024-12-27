@@ -385,6 +385,23 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
 
 
 @transaction.atomic(durable=True)
+def do_edit_multiuse_invite_link(
+    multiuse_invite: MultiuseInvite,
+    invited_as: int,
+    streams: Collection[Stream],
+    include_realm_default_subscriptions: bool,
+) -> None:
+    # The `streams` and `invited_as` fields of a `multiuse_invite` can be edited.
+    multiuse_invite.streams.set(streams)
+    multiuse_invite.invited_as = invited_as
+    multiuse_invite.include_realm_default_subscriptions = include_realm_default_subscriptions
+    multiuse_invite.save()
+
+    realm = multiuse_invite.referred_by.realm
+    notify_invites_changed(realm, changed_invite_referrer=multiuse_invite.referred_by)
+
+
+@transaction.atomic(durable=True)
 def do_create_multiuse_invite_link(
     referred_by: UserProfile,
     invited_as: int,

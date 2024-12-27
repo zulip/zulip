@@ -102,6 +102,7 @@
 * [Send invitations](/api/send-invites)
 * [Create a reusable invitation link](/api/create-invite-link)
 * [Resend an email invitation](/api/resend-email-invite)
+* [Edit a reusable invitation link](/api/edit-invite-link)
 * [Revoke an email invitation](/api/revoke-email-invite)
 * [Revoke a reusable invitation link](/api/revoke-invite-link)
 
