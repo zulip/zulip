@@ -72,9 +72,11 @@ function get_display_value_from_item(item: UserGroupPill): string {
 }
 
 function generate_pill_html(item: UserGroupPill): string {
+    const group = user_groups.get_user_group_from_id(item.group_id);
     return render_input_pill({
         group_id: item.group_id,
         display_value: user_groups.get_display_group_name(item.group_name),
+        deactivated: group.deactivated,
     });
 }
 

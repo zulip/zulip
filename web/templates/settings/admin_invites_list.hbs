@@ -53,6 +53,14 @@
           data-tippy-content=(t "Resend")
           disabled=disable_revoke_and_resend_button
           }}
+        {{else}}
+        {{> ../components/icon_button
+          icon="edit"
+          intent="neutral"
+          custom_classes="edit-invite tippy-zulip-delayed-tooltip"
+          data-tippy-content=(t "Edit")
+          disabled=disable_edit_button
+          }}
         {{/unless}}
     </td>
 </tr>
