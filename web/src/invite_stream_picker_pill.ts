@@ -52,7 +52,10 @@ export function add_default_stream_pills(pill_widget: stream_pill.StreamPillWidg
     add_specific_stream_pills(pill_widget, default_stream_ids);
 }
 
-export function create($stream_pill_container: JQuery): stream_pill.StreamPillWidget {
+export function create(
+    $stream_pill_container: JQuery,
+    stream_ids?: number[],
+): stream_pill.StreamPillWidget {
     const pill_widget = input_pill.create({
         $container: $stream_pill_container,
         create_item_from_text: create_item_from_stream_name,
@@ -60,7 +63,7 @@ export function create($stream_pill_container: JQuery): stream_pill.StreamPillWi
         generate_pill_html: stream_pill.generate_pill_html,
         get_display_value_from_item: stream_pill.get_display_value_from_item,
     });
-    const stream_ids_to_add = stream_data.get_default_stream_ids();
+    const stream_ids_to_add = stream_ids ?? stream_data.get_default_stream_ids();
     add_specific_stream_pills(pill_widget, stream_ids_to_add);
     set_up_pill_typeahead({pill_widget, $pill_container: $stream_pill_container});
     return pill_widget;
