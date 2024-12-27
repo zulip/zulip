@@ -46,13 +46,14 @@ from zerver.actions.realm_settings import (
 from zerver.actions.streams import do_change_stream_group_based_setting
 from zerver.actions.user_groups import check_add_user_group, do_change_user_group_permission_setting
 from zerver.actions.user_settings import do_change_full_name
-from zerver.actions.users import change_user_is_active
+from zerver.actions.users import change_user_is_active, do_change_user_role
 from zerver.lib.create_user import create_user
 from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.send_email import queue_scheduled_emails
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import find_key_by_email
+from zerver.lib.types import UserGroupMembersData
 from zerver.lib.user_groups import get_direct_user_groups, is_user_in_group
 from zerver.models import (
     DefaultStream,
@@ -3324,6 +3325,534 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = self.assert_json_success(result)["invite_link"]
         self.check_user_able_to_register(self.nonreg_email("test"), invite_link)
 
+    def create_multiuse_invite(
+        self,
+        user: UserProfile,
+        *,
+        invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
+        invite_expires_in_minutes: int | None = None,
+        include_realm_default_subscriptions: bool = True,
+        streams: Sequence[Stream] = [],
+    ) -> MultiuseInvite:
+        do_create_multiuse_invite_link(
+            user,
+            invite_as,
+            invite_expires_in_minutes,
+            include_realm_default_subscriptions,
+            streams,
+        )
+        invite = MultiuseInvite.objects.last()
+        assert invite is not None
+        return invite
+
+    def test_edit_multiuse_invite_with_malformed_parameters(self) -> None:
+        """
+        For a successful edit to a multiuse_invite, it is essential
+        that the following parameters are correct.
+        * stream_ids - IDs of the streams the invite applies to
+        * id - ID of the multiuse_invite
+        """
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+
+        modified_invited_as = PreregistrationUser.INVITE_AS["MODERATOR"]
+        modified_streams = [
+            get_stream(stream_name, realm).id for stream_name in ["Denmark", "Verona"]
+        ]
+
+        invite = self.create_multiuse_invite(iago)
+
+        # Try to patch the invite with a non-existent stream IDs
+        result = self.api_patch(
+            iago,
+            f"/api/v1/invites/multiuse/{invite.id}",
+            {
+                "invite_as": modified_invited_as,
+                "stream_ids": [1000],
+            },
+        )
+        self.assert_json_error(result, f"Invalid channel ID {1000}. No invites were sent.")
+
+        # Try to patch the invite with a non-existent invite ID
+        result = self.api_patch(
+            iago,
+            f"/api/v1/invites/multiuse/{invite.id + 10}",
+            {
+                "invite_as": modified_invited_as,
+                "stream_ids": modified_streams,
+            },
+        )
+        self.assert_json_error(result, "No such invitation")
+
+        invalid_invite_as = max(PreregistrationUser.INVITE_AS.values()) + 100
+        result = self.api_patch(
+            iago,
+            f"/api/v1/invites/multiuse/{invite.id}",
+            {
+                "invite_as": invalid_invite_as,
+                "stream_ids": modified_streams,
+            },
+        )
+        self.assert_json_error(
+            result, "Invalid invite_as: Value error, Not in the list of possible values"
+        )
+
+    def test_permission_for_editing_multiuse_invite(self) -> None:
+        """
+        Test that only users who can access the invite and have
+        permission to create multiuse invites can edit them.
+        """
+        realm = get_realm("zulip")
+        othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        desdemona = self.example_user("desdemona")
+
+        modified_streams_ids = [get_stream("Verona", realm).id]
+
+        def check_edit_multiuse_invite(
+            user: UserProfile,
+            *,
+            error_message: str | None = None,
+        ) -> None:
+            invite = self.create_multiuse_invite(user)
+            result = self.api_patch(
+                user,
+                f"/api/v1/invites/multiuse/{invite.id}",
+                dict(stream_ids=modified_streams_ids),
+            )
+            if error_message is not None:
+                self.assert_json_error(result, error_message)
+            else:
+                self.assert_json_success(result)
+
+        # System group: MEMBERS
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "create_multiuse_invite_group", members_group, acting_user=None
+        )
+        check_edit_multiuse_invite(othello)
+
+        # System group: ADMINISTRATORS
+        administrators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "create_multiuse_invite_group", administrators_group, acting_user=None
+        )
+        check_edit_multiuse_invite(othello, error_message="Insufficient permission")
+        check_edit_multiuse_invite(iago)
+
+        # User-defined group
+        user_defined_group = check_add_user_group(
+            realm, "editors", [iago, othello], acting_user=othello
+        )
+        do_change_realm_permission_group_setting(
+            realm, "create_multiuse_invite_group", user_defined_group, acting_user=None
+        )
+        # User-defined group: Only members of the group can edit their own invites.
+        check_edit_multiuse_invite(desdemona, error_message="Insufficient permission")
+        check_edit_multiuse_invite(hamlet, error_message="Insufficient permission")
+        check_edit_multiuse_invite(iago)
+        check_edit_multiuse_invite(othello)
+
+        # Anonymous group
+        anonymous_group = self.create_or_update_anonymous_group_for_setting([iago, hamlet], [])
+        do_change_realm_permission_group_setting(
+            realm, "create_multiuse_invite_group", anonymous_group, acting_user=None
+        )
+        check_edit_multiuse_invite(othello, error_message="Insufficient permission")
+        check_edit_multiuse_invite(iago)
+        check_edit_multiuse_invite(hamlet)
+
+        # General rule: Only admins or the creator can edit a multiuse invite.
+        # This is tested once for clarity.
+        do_change_realm_permission_group_setting(
+            realm, "create_multiuse_invite_group", members_group, acting_user=None
+        )
+        invite = self.create_multiuse_invite(othello)
+        result = self.api_patch(
+            hamlet,
+            f"/api/v1/invites/multiuse/{invite.id}",
+            dict(stream_ids=modified_streams_ids),
+        )
+        self.assert_json_error(result, "Must be an organization administrator")
+
+        result = self.api_patch(
+            iago,
+            f"/api/v1/invites/multiuse/{invite.id}",
+            dict(stream_ids=modified_streams_ids),
+        )
+        self.assert_json_success(result)
+
+        # Admins cannot edit the invite with invite_as set to
+        # owner.
+        invite = self.create_multiuse_invite(
+            desdemona, invite_as=PreregistrationUser.INVITE_AS["REALM_OWNER"]
+        )
+        result = self.api_patch(
+            iago,
+            f"/api/v1/invites/multiuse/{invite.id}",
+            dict(stream_ids=modified_streams_ids),
+        )
+        self.assert_json_error(result, "Must be an organization owner")
+
+    def test_editing_invite_as(self) -> None:
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        shiva = self.example_user("shiva")
+        othello = self.example_user("othello")
+
+        OWNER_INVITE_AS = PreregistrationUser.INVITE_AS["REALM_OWNER"]
+        ADMIN_INVITE_AS = PreregistrationUser.INVITE_AS["REALM_ADMIN"]
+        MODERATOR_INVITE_AS = PreregistrationUser.INVITE_AS["MODERATOR"]
+        MEMBER_INVITE_AS = PreregistrationUser.INVITE_AS["MEMBER"]
+        GUEST_INVITE_AS = PreregistrationUser.INVITE_AS["GUEST_USER"]
+
+        realm = get_realm("zulip")
+        member_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "create_multiuse_invite_group", member_system_group, acting_user=None
+        )
+
+        def check_changing_invite_as(
+            user: UserProfile,
+            invite: MultiuseInvite,
+            new_invite_as: int,
+            error_message: str | None = None,
+        ) -> None:
+            result = self.api_patch(
+                user,
+                f"/api/v1/invites/multiuse/{invite.id}",
+                dict(invite_as=orjson.dumps(new_invite_as).decode()),
+            )
+            if error_message is not None:
+                self.assert_json_error(result, error_message)
+                return
+
+            self.assert_json_success(result)
+            invite.refresh_from_db()
+            self.assertEqual(invite.invited_as, new_invite_as)
+
+        # Members can only change invite_as to Member or Guest.
+        invite = self.create_multiuse_invite(othello, invite_as=MEMBER_INVITE_AS)
+        check_changing_invite_as(othello, invite, GUEST_INVITE_AS)
+        check_changing_invite_as(othello, invite, MEMBER_INVITE_AS)
+        check_changing_invite_as(
+            othello,
+            invite,
+            MODERATOR_INVITE_AS,
+            error_message="Must be an organization administrator",
+        )
+        check_changing_invite_as(
+            othello, invite, ADMIN_INVITE_AS, error_message="Must be an organization administrator"
+        )
+        check_changing_invite_as(
+            othello, invite, OWNER_INVITE_AS, error_message="Must be an organization owner"
+        )
+
+        # Moderators can only change invite_as to Member or Guest.
+        invite = self.create_multiuse_invite(shiva, invite_as=MEMBER_INVITE_AS)
+        check_changing_invite_as(shiva, invite, GUEST_INVITE_AS)
+        check_changing_invite_as(shiva, invite, MEMBER_INVITE_AS)
+        check_changing_invite_as(
+            shiva,
+            invite,
+            MODERATOR_INVITE_AS,
+            error_message="Must be an organization administrator",
+        )
+        check_changing_invite_as(
+            shiva, invite, ADMIN_INVITE_AS, error_message="Must be an organization administrator"
+        )
+        check_changing_invite_as(
+            shiva, invite, OWNER_INVITE_AS, error_message="Must be an organization owner"
+        )
+
+        # Admins can change invite_as to all roles except Owner.
+        invite = self.create_multiuse_invite(iago, invite_as=MEMBER_INVITE_AS)
+        check_changing_invite_as(iago, invite, GUEST_INVITE_AS)
+        check_changing_invite_as(iago, invite, MEMBER_INVITE_AS)
+        check_changing_invite_as(iago, invite, MODERATOR_INVITE_AS)
+        check_changing_invite_as(iago, invite, ADMIN_INVITE_AS)
+        check_changing_invite_as(
+            iago, invite, OWNER_INVITE_AS, error_message="Must be an organization owner"
+        )
+
+        invite = self.create_multiuse_invite(desdemona, invite_as=MEMBER_INVITE_AS)
+        check_changing_invite_as(desdemona, invite, GUEST_INVITE_AS)
+        check_changing_invite_as(desdemona, invite, MEMBER_INVITE_AS)
+        check_changing_invite_as(desdemona, invite, MODERATOR_INVITE_AS)
+        check_changing_invite_as(desdemona, invite, ADMIN_INVITE_AS)
+        check_changing_invite_as(desdemona, invite, OWNER_INVITE_AS)
+
+    def test_editing_invite_as_for_invites_created_by_others(self) -> None:
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        shiva = self.example_user("shiva")
+        othello = self.example_user("othello")
+
+        OWNER_INVITE_AS = PreregistrationUser.INVITE_AS["REALM_OWNER"]
+        ADMIN_INVITE_AS = PreregistrationUser.INVITE_AS["REALM_ADMIN"]
+        MODERATOR_INVITE_AS = PreregistrationUser.INVITE_AS["MODERATOR"]
+        MEMBER_INVITE_AS = PreregistrationUser.INVITE_AS["MEMBER"]
+        GUEST_INVITE_AS = PreregistrationUser.INVITE_AS["GUEST_USER"]
+
+        realm = get_realm("zulip")
+        member_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "create_multiuse_invite_group", member_system_group, acting_user=None
+        )
+
+        def check_changing_invite_as(
+            user: UserProfile,
+            invite: MultiuseInvite,
+            new_invite_as: int,
+            error_message: str | None = None,
+        ) -> None:
+            result = self.api_patch(
+                user,
+                f"/api/v1/invites/multiuse/{invite.id}",
+                dict(invite_as=orjson.dumps(new_invite_as).decode()),
+            )
+            if error_message is not None:
+                self.assert_json_error(result, error_message)
+                return
+
+            self.assert_json_success(result)
+            invite.refresh_from_db()
+            self.assertEqual(invite.invited_as, new_invite_as)
+
+        error_message = (
+            "This invitation is owned by a user without permission to give other users this role."
+        )
+
+        # For invites created by members, admins, can only change
+        # invite_as to Member or Guest.
+        invite = self.create_multiuse_invite(othello, invite_as=MEMBER_INVITE_AS)
+        check_changing_invite_as(desdemona, invite, GUEST_INVITE_AS)
+        check_changing_invite_as(desdemona, invite, MEMBER_INVITE_AS)
+        check_changing_invite_as(
+            desdemona, invite, MODERATOR_INVITE_AS, error_message=error_message
+        )
+        check_changing_invite_as(desdemona, invite, ADMIN_INVITE_AS, error_message=error_message)
+        check_changing_invite_as(desdemona, invite, OWNER_INVITE_AS, error_message=error_message)
+
+        # For invites created by moderators, admins can only change
+        # invite_as to Member or Guest.
+        invite = self.create_multiuse_invite(shiva, invite_as=MEMBER_INVITE_AS)
+        check_changing_invite_as(desdemona, invite, GUEST_INVITE_AS)
+        check_changing_invite_as(desdemona, invite, MEMBER_INVITE_AS)
+        check_changing_invite_as(
+            desdemona, invite, MODERATOR_INVITE_AS, error_message=error_message
+        )
+        check_changing_invite_as(desdemona, invite, ADMIN_INVITE_AS, error_message=error_message)
+        check_changing_invite_as(desdemona, invite, OWNER_INVITE_AS, error_message=error_message)
+
+        # For invites created by admins, even owners cannot change
+        # invite_as to Owner.
+        invite = self.create_multiuse_invite(iago, invite_as=MEMBER_INVITE_AS)
+        check_changing_invite_as(desdemona, invite, GUEST_INVITE_AS)
+        check_changing_invite_as(desdemona, invite, MEMBER_INVITE_AS)
+        check_changing_invite_as(desdemona, invite, MODERATOR_INVITE_AS)
+        check_changing_invite_as(desdemona, invite, ADMIN_INVITE_AS)
+        check_changing_invite_as(desdemona, invite, OWNER_INVITE_AS, error_message=error_message)
+
+        # For invites created by owners, admins can change invite_as to
+        # all other values except Owner and only another owner can
+        # change invite_as to Owner.
+        invite = self.create_multiuse_invite(desdemona, invite_as=MEMBER_INVITE_AS)
+        check_changing_invite_as(iago, invite, GUEST_INVITE_AS)
+        check_changing_invite_as(iago, invite, MEMBER_INVITE_AS)
+        check_changing_invite_as(iago, invite, MODERATOR_INVITE_AS)
+        check_changing_invite_as(iago, invite, ADMIN_INVITE_AS)
+        check_changing_invite_as(
+            iago, invite, OWNER_INVITE_AS, error_message="Must be an organization owner"
+        )
+
+        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=desdemona)
+        check_changing_invite_as(iago, invite, OWNER_INVITE_AS)
+
+    def test_edit_include_realm_default_subscriptions(self) -> None:
+        """
+        Test editing the include_realm_default_subscriptions parameter for MultiuseInvite.
+        """
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        streams = [get_stream("Denmark", realm), get_stream("Scotland", realm)]
+        invite_link = do_create_multiuse_invite_link(
+            iago,
+            PreregistrationUser.INVITE_AS["MEMBER"],
+            invite_expires_in_minutes=None,
+            include_realm_default_subscriptions=True,
+            streams=streams,
+        )
+        multiuse_invite = MultiuseInvite.objects.last()
+        assert multiuse_invite is not None
+        self.assertTrue(multiuse_invite.include_realm_default_subscriptions)
+
+        email = self.nonreg_email("test1")
+        default_streams = get_slim_realm_default_streams(realm.id)
+        self.assert_length(default_streams, 3)
+        self.check_user_able_to_register(email, invite_link)
+        self.check_user_subscribed_only_to_streams("test1", set(default_streams) | set(streams))
+
+        result = self.api_patch(
+            iago,
+            f"/api/v1/invites/multiuse/{multiuse_invite.id}",
+            {
+                "include_realm_default_subscriptions": orjson.dumps(False).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        multiuse_invite.refresh_from_db()
+        self.assertFalse(multiuse_invite.include_realm_default_subscriptions)
+
+        email = self.nonreg_email("test")
+        self.check_user_able_to_register(email, invite_link)
+        self.check_user_subscribed_only_to_streams("test", set(streams))
+
+        result = self.api_patch(
+            iago,
+            f"/api/v1/invites/multiuse/{multiuse_invite.id}",
+            {
+                "include_realm_default_subscriptions": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        multiuse_invite.refresh_from_db()
+        self.assertTrue(multiuse_invite.include_realm_default_subscriptions)
+
+        email = self.nonreg_email("alice")
+        self.check_user_able_to_register(email, invite_link)
+        self.check_user_subscribed_only_to_streams("alice", set(default_streams) | set(streams))
+
+    def test_edit_multiuse_invite_welcome_message_custom_text(self) -> None:
+        """
+        Test editing the welcome_message_custom_text parameter for MultiuseInvite.
+        """
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "create_multiuse_invite_group", members_group, acting_user=None
+        )
+
+        def check_update_invite_welcome_message_custom_text(
+            user: UserProfile,
+            new_welcome_message_custom_text: str | None,
+            *,
+            error_msg: str | None = None,
+        ) -> None:
+            multiuse_invite = self.create_multiuse_invite(iago)
+            if new_welcome_message_custom_text is None:
+                new_welcome_message_custom_text = orjson.dumps(None).decode()
+            result = self.api_patch(
+                user,
+                f"/api/v1/invites/multiuse/{multiuse_invite.id}",
+                {
+                    "welcome_message_custom_text": new_welcome_message_custom_text,
+                },
+            )
+            if error_msg is not None:
+                self.assert_json_error(result, error_msg)
+                return
+
+            self.assert_json_success(result)
+            multiuse_invite.refresh_from_db()
+            self.assertEqual(
+                multiuse_invite.welcome_message_custom_text, new_welcome_message_custom_text
+            )
+
+        # Test editing welcome message from None to a custom text.
+        welcome_message_custom_text = "Welcome to our organization!"
+        check_update_invite_welcome_message_custom_text(iago, welcome_message_custom_text)
+
+        # Test editing welcome message to a different value
+        welcome_message_custom_text = "Updated welcome message for new members!"
+        check_update_invite_welcome_message_custom_text(iago, welcome_message_custom_text)
+
+        # Test setting welcome message to empty string
+        check_update_invite_welcome_message_custom_text(iago, "")
+
+        # Test setting welcome message to use organization's default.
+        check_update_invite_welcome_message_custom_text(iago, None)
+
+        # Test with very long welcome message.
+        long_message = "x" * (Realm.MAX_REALM_WELCOME_MESSAGE_CUSTOM_TEXT_LENGTH + 1)
+        check_update_invite_welcome_message_custom_text(
+            iago,
+            long_message,
+            error_msg="welcome_message_custom_text is too long (limit: 8000 characters)",
+        )
+
+        # Test with valid long message at the limit.
+        valid_long_message = "x" * Realm.MAX_REALM_WELCOME_MESSAGE_CUSTOM_TEXT_LENGTH
+        check_update_invite_welcome_message_custom_text(iago, valid_long_message)
+
+        # Test that non-admins cannot edit welcome custom message to anything
+        # other than organization's default.
+        welcome_message_custom_text = "Welcome to our organization"
+        check_update_invite_welcome_message_custom_text(
+            hamlet, welcome_message_custom_text, error_msg="Must be an organization administrator"
+        )
+        check_update_invite_welcome_message_custom_text(
+            hamlet, "", error_msg="Must be an organization administrator"
+        )
+
+        # Test that admin can edit member's invite and add a welcome message other than
+        # organization default.
+        multiuse_invite = self.create_multiuse_invite(hamlet)
+        welcome_message_custom_text = "Admin setting message for member's invite"
+        result = self.api_patch(
+            iago,
+            f"/api/v1/invites/multiuse/{multiuse_invite.id}",
+            {"welcome_message_custom_text": welcome_message_custom_text},
+        )
+        self.assert_json_success(result)
+        multiuse_invite.refresh_from_db()
+        self.assertEqual(multiuse_invite.welcome_message_custom_text, welcome_message_custom_text)
+
+    def test_expired_multiuse_invites(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        modified_streams = [get_stream("Verona", realm)]
+        multiuse_invite = self.create_multiuse_invite(iago, invite_expires_in_minutes=1)
+
+        with time_machine.travel(timezone_now() + timedelta(minutes=2), tick=False):
+            result = self.api_patch(
+                iago,
+                f"/api/v1/invites/multiuse/{multiuse_invite.id}",
+                {
+                    "stream_ids": [stream.id for stream in modified_streams],
+                },
+            )
+            self.assert_json_error(result, "The invitation link has expired or been deactivated.")
+
+        result = self.api_patch(
+            iago,
+            f"/api/v1/invites/multiuse/{multiuse_invite.id}",
+            {
+                "stream_ids": [stream.id for stream in modified_streams],
+            },
+        )
+        self.assert_json_success(result)
+
     def test_create_multiuse_link_with_specified_streams_api_call(self) -> None:
         self.login("iago")
         stream_names = ["Rome", "Scotland", "Venice"]
@@ -3446,6 +3975,124 @@ class MultiuseInviteTest(ZulipTestCase):
             set(user_group_names),
             {SystemGroups.MEMBERS, SystemGroups.FULL_MEMBERS},
         )
+
+    def test_edit_multiuse_invite_without_permission_to_subscribe_others(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+
+        stream_names = ["Denmark", "Scotland"]
+        streams = [get_stream(name, realm) for name in stream_names]
+        stream_ids = [stream.id for stream in streams]
+
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm, "create_multiuse_invite_group", members_group, acting_user=None
+        )
+
+        def check_edit_multiuse_invite_with_subscribe_permission(
+            user: UserProfile,
+            new_stream_ids: list[int],
+            expect_fail: bool = False,
+        ) -> None:
+            invite = self.create_multiuse_invite(user)
+            result = self.api_patch(
+                user,
+                f"/api/v1/invites/multiuse/{invite.id}",
+                dict(stream_ids=orjson.dumps(new_stream_ids).decode()),
+            )
+            if expect_fail:
+                self.assert_json_error(
+                    result, "You do not have permission to subscribe other users to channels."
+                )
+                invite.refresh_from_db()
+                self.assertEqual(set(invite.streams.values_list("id", flat=True)), set())
+            else:
+                self.assert_json_success(result)
+                invite.refresh_from_db()
+                self.assertEqual(
+                    set(invite.streams.values_list("id", flat=True)),
+                    set(new_stream_ids),
+                )
+
+        # Only admins can add subscribers (realm-level)
+        do_change_realm_permission_group_setting(
+            realm, "can_add_subscribers_group", admins_group, acting_user=None
+        )
+        check_edit_multiuse_invite_with_subscribe_permission(
+            hamlet, [streams[0].id, streams[1].id], expect_fail=True
+        )
+        check_edit_multiuse_invite_with_subscribe_permission(iago, [streams[0].id, streams[1].id])
+
+        # All members can add subscribers (realm-level)
+        do_change_realm_permission_group_setting(
+            realm, "can_add_subscribers_group", members_group, acting_user=None
+        )
+        check_edit_multiuse_invite_with_subscribe_permission(hamlet, [streams[0].id, streams[1].id])
+
+        # Stream-level can_add_subscribers_group set to anonymous group for Denmark only
+        anonymous_group = UserGroupMembersData(direct_members=[cordelia.id], direct_subgroups=[])
+        do_change_stream_group_based_setting(
+            streams[0],
+            "can_add_subscribers_group",
+            anonymous_group,
+            acting_user=iago,
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_add_subscribers_group", nobody_group, acting_user=None
+        )
+        check_edit_multiuse_invite_with_subscribe_permission(cordelia, [streams[0].id])
+        check_edit_multiuse_invite_with_subscribe_permission(
+            cordelia, [streams[0].id, streams[1].id], expect_fail=True
+        )
+        check_edit_multiuse_invite_with_subscribe_permission(
+            hamlet, [streams[0].id], expect_fail=True
+        )
+        check_edit_multiuse_invite_with_subscribe_permission(
+            hamlet, [streams[0].id, streams[1].id], expect_fail=True
+        )
+        check_edit_multiuse_invite_with_subscribe_permission(iago, stream_ids)
+
+        # Stream-level can_administer_channel_group set to anonymous group for Denmark only
+        do_change_stream_group_based_setting(
+            streams[1],
+            "can_administer_channel_group",
+            anonymous_group,
+            acting_user=cordelia,
+        )
+        check_edit_multiuse_invite_with_subscribe_permission(cordelia, [streams[1].id])
+        check_edit_multiuse_invite_with_subscribe_permission(cordelia, [streams[0].id])
+        check_edit_multiuse_invite_with_subscribe_permission(
+            hamlet, [streams[1].id], expect_fail=True
+        )
+        check_edit_multiuse_invite_with_subscribe_permission(
+            hamlet, [streams[0].id], expect_fail=True
+        )
+        check_edit_multiuse_invite_with_subscribe_permission(iago, stream_ids)
+
+        # All permissions set to nobody (only admin can edit)
+        do_change_realm_permission_group_setting(
+            realm, "can_add_subscribers_group", nobody_group, acting_user=iago
+        )
+        for stream in streams:
+            do_change_stream_group_based_setting(
+                stream, "can_add_subscribers_group", nobody_group, acting_user=iago
+            )
+            do_change_stream_group_based_setting(
+                stream, "can_administer_channel_group", nobody_group, acting_user=iago
+            )
+        check_edit_multiuse_invite_with_subscribe_permission(iago, stream_ids)
+        check_edit_multiuse_invite_with_subscribe_permission(hamlet, stream_ids, expect_fail=True)
 
     def test_multiuse_invite_without_permission_to_subscribe_others(self) -> None:
         realm = get_realm("zulip")
