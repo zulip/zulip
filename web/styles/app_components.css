@@ -831,6 +831,10 @@ input.settings_text_input {
     .actions {
         width: 1%;
         white-space: nowrap;
+
+        i.fa-paper-plane {
+            font-size: 13px;
+        }
     }
 
     th.actions {
