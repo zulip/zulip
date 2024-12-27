@@ -321,6 +321,10 @@ class PreregistrationInviteData:
     invited_as: int
     is_multiuse: bool
     notify_referrer_on_join: bool
+    stream_ids: list[int]
+    group_ids: list[int]
+    include_realm_default_subscriptions: bool
+    welcome_message_custom_text: str | None
 
 
 @dataclass
@@ -332,6 +336,10 @@ class MultiuseInviteData:
     link_url: str
     invited_as: int
     is_multiuse: bool
+    stream_ids: list[int]
+    group_ids: list[int]
+    include_realm_default_subscriptions: bool
+    welcome_message_custom_text: str | None
 
 
 def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[str, Any]]:
@@ -353,6 +361,8 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
 
     for invitee in prereg_users:
         assert invitee.referred_by is not None
+        stream_ids = list(invitee.streams.all().values_list("id", flat=True))
+        group_ids = list(invitee.groups.all().values_list("id", flat=True))
         invites.append(
             PreregistrationInviteData(
                 email=invitee.email,
@@ -363,6 +373,10 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
                 invited_as=invitee.invited_as,
                 is_multiuse=False,
                 notify_referrer_on_join=invitee.notify_referrer_on_join,
+                stream_ids=stream_ids,
+                group_ids=group_ids,
+                include_realm_default_subscriptions=invitee.include_realm_default_subscriptions,
+                welcome_message_custom_text=invitee.welcome_message_custom_text,
             )
         )
 
@@ -404,6 +418,10 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
                 link_url=confirmation_url_for(confirmation_obj),
                 invited_as=invite.invited_as,
                 is_multiuse=True,
+                stream_ids=list(invite.streams.values_list("id", flat=True)),
+                group_ids=list(invite.groups.values_list("id", flat=True)),
+                include_realm_default_subscriptions=invite.include_realm_default_subscriptions,
+                welcome_message_custom_text=invite.welcome_message_custom_text,
             )
         )
     return [asdict(invite) for invite in invites]
