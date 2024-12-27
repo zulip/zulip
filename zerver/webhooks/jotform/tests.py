@@ -15,7 +15,12 @@ class JotformHookTests(WebhookTestCase):
 * **Student's Name**: Niloth P
 * **Type of Tutoring**: Online Tutoring
 * **Subject for Tutoring**: Math
-* **Grade**: 12""".strip()
+* **Grade**: 12
+* **Prior Tutoring?** No
+
+* **Identity Proof**: [Student_ID_!_$&'()_,-.;=@[]^_`{}~ .png](https://www.jotform.com/uploads/UserNiloth/243231271343446/6111139644845227683/Student_ID_%21_%24%26%27%28%29_%2C-.%3B%3D%40%5B%5D%5E_%60%7B%7D~%20.png), [Driving.license.png](https://www.jotform.com/uploads/UserNiloth/243231271343446/6111139644845227684/Driving.license.png)
+
+* **Reports**: [Report Card.pdf](https://www.jotform.com/uploads/UserNiloth/243231271343446/6111139644845227685/Report%20Card.pdf)""".strip()
 
         self.check_webhook(
             "response",
