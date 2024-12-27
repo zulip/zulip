@@ -317,7 +317,7 @@ function valid_to(): string {
     return $t({defaultMessage: "Expires on {date} at {time}"}, {date, time});
 }
 
-function set_streams_to_join_list_visibility(): void {
+export function set_streams_to_join_list_visibility(): void {
     const realm_has_default_streams = stream_data.get_default_stream_ids().length > 0;
     const hide_streams_list =
         realm_has_default_streams &&
@@ -431,7 +431,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         is_owner: current_user.is_owner,
         show_group_pill_container,
         development_environment: page_params.development_environment,
-        invite_as_options: settings_config.user_role_values,
+        invite_as_options: get_invite_as_options_for_invite(),
         expires_in_options: settings_config.expires_in_values,
         time_choices: settings_config.custom_time_unit_values,
         show_select_default_streams_option: stream_data.get_default_stream_ids().length > 0,
@@ -651,6 +651,44 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         on_click: invite_users,
         post_render: invite_user_modal_post_render,
         always_visible_scrollbar: true,
+    });
+}
+
+export function get_invite_as_options_for_invite(
+    current_invite_as?: number,
+    creator_role?: number,
+): (typeof settings_config.user_role_values)[keyof typeof settings_config.user_role_values][] {
+    const role_values = settings_config.user_role_values;
+
+    function can_invite_creator_assign_role(role_code: number): boolean {
+        if (role_code === role_values.guest.code || role_code === role_values.member.code) {
+            return true;
+        }
+        if (role_code === role_values.moderator.code || role_code === role_values.admin.code) {
+            return (
+                creator_role === role_values.admin.code || creator_role === role_values.owner.code
+            );
+        }
+        if (role_code === role_values.owner.code) {
+            return creator_role === role_values.owner.code;
+        }
+        return false;
+    }
+
+    return Object.values(role_values).filter((option) => {
+        if (current_invite_as === option.code) {
+            return true;
+        }
+        if (creator_role !== undefined) {
+            return can_invite_creator_assign_role(option.code);
+        }
+        if (option.code === role_values.guest.code || option.code === role_values.member.code) {
+            return true;
+        }
+        if (option.code === role_values.owner.code) {
+            return current_user.is_owner;
+        }
+        return current_user.is_admin;
     });
 }
 
