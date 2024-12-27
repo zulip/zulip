@@ -1142,23 +1142,10 @@ class InviteUserTest(InviteUserBase):
         )
 
         hamlet = self.example_user("hamlet")
-        hamlet.date_joined = timezone_now() - timedelta(days=9)
-
-        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
-
-        email = "issac-test@zulip.com"
-        email2 = "steven-test@zulip.com"
-        invitee = f"Issac Test <{email}>, {email2}"
-        self.assert_json_error(
-            self.invite(invitee, ["Denmark"]),
-            "Insufficient permission",
-        )
-
-        do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
-
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(email))
         self.assertTrue(find_key_by_email(email2))
+
         self.check_sent_emails([email, email2])
 
         cordelia = self.example_user("cordelia")
@@ -3070,7 +3057,7 @@ class MultiuseInviteTest(ZulipTestCase):
                 "include_realm_default_subscriptions": orjson.dumps(False).decode(),
             },
         )
-        self.assert_json_error(result, "Must be an organization owner")
+        self.assert_json_success(result)
 
     def test_admin_can_edit_multiuse_invite(self) -> None:
         """

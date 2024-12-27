@@ -25,6 +25,9 @@ format used by the Zulip server that they are interacting with.
 * [`GET /invites`](/api/get-invites): The `stream_ids` and
   `include_realm_default_subscriptions` field has been added
   to be returned for all invites.
+* [`PATCH /invites/multiuse/{invite_id}`](/api/edit-invite-link):
+  Added support for editing `invite_as` and `stream_ids` fields of
+  reusable invitation links.
 
 
 **Feature level 332**
