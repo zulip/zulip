@@ -332,6 +332,7 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
 
     for invitee in prereg_users:
         assert invitee.referred_by is not None
+        stream_ids = list(invitee.streams.all().values_list("id", flat=True))
         invites.append(
             dict(
                 email=invitee.email,
@@ -342,6 +343,8 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
                 invited_as=invitee.invited_as,
                 is_multiuse=False,
                 notify_referrer_on_join=invitee.notify_referrer_on_join,
+                stream_ids=stream_ids,
+                include_realm_default_subscriptions=invitee.include_realm_default_subscriptions,
             )
         )
 
@@ -374,6 +377,8 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
                 link_url=confirmation_url_for(confirmation_obj),
                 invited_as=invite.invited_as,
                 is_multiuse=True,
+                stream_ids=list(invite.streams.values_list("id", flat=True)),
+                include_realm_default_subscriptions=invite.include_realm_default_subscriptions,
             )
         )
     return invites
