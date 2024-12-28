@@ -247,7 +247,7 @@ function process_newly_read_message(
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.view.show_message_as_read(message, options);
     }
-    desktop_notifications.close_notification(message);
+    desktop_notifications.close_notification(message.id);
     recent_view_ui.update_topic_unread_count(message);
 }
 

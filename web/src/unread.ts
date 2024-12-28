@@ -1,6 +1,7 @@
 import type {z} from "zod";
 
 import * as blueslip from "./blueslip.ts";
+import * as desktop_notifications from "./desktop_notifications.ts";
 import {FoldDict} from "./fold_dict.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
@@ -853,6 +854,7 @@ export function mark_as_read(message_id: number): void {
     // was never set to unread.
     unread_direct_message_counter.delete(message_id);
 
+    desktop_notifications.close_notification(message_id);
     // Important: This function uses `unread_topic_counter` to look up
     // the stream/topic for this previously unread message, so much
     // happen before the message is removed from that data structure.
