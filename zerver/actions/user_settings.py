@@ -8,6 +8,7 @@ from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
 from confirmation.settings import STATUS_REVOKED
+from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.presence import do_update_user_presence
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import (
@@ -18,6 +19,7 @@ from zerver.lib.cache import (
 )
 from zerver.lib.create_user import get_display_email_address
 from zerver.lib.i18n import get_language_name
+from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
 from zerver.lib.timezone import canonicalize_timezone
@@ -42,7 +44,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.users import bot_owner_user_ids, get_user_profile_by_id
+from zerver.models.users import bot_owner_user_ids, get_system_bot, get_user_profile_by_id
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -247,6 +249,9 @@ def do_change_full_name(
             dict(type="realm_bot", op="update", bot=payload),
             bot_owner_user_ids(user_profile),
         )
+    send_account_modification_notifications(
+        user_profile, "full name", acting_user, old_name, full_name
+    )
 
 
 def check_change_full_name(
@@ -607,3 +612,26 @@ def do_change_user_setting(
                 force_send_update=True,
             )
         )
+
+
+def send_account_modification_notifications(
+    user_profile: UserProfile,
+    property: str,
+    acting_user: UserProfile | None,
+    old_value: str | list[int] | None,
+    new_value: str | list[int] | None,
+) -> None:
+    if user_profile.is_bot or acting_user == user_profile:
+        return
+
+    realm = user_profile.realm
+    sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+    if acting_user:
+        detailed_message = f"{silent_mention_syntax_for_user(acting_user)} has updated your `{property}`.\n\n- **Old `{property}`:** {old_value}\n- **New `{property}`:** {new_value}"
+    else:
+        detailed_message = f"The following updates have been made to your account.\n\n- **Old `{property}`:** {old_value}\n- **New `{property}`:** {new_value}"
+    internal_send_private_message(
+        sender,
+        user_profile,
+        detailed_message,
+    )
