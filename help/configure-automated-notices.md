@@ -59,6 +59,15 @@ You will be notified if someone [subscribes you to a
 channel](/help/add-or-remove-users-from-a-channel#add-users-to-a-channel), or
 changes your [group](/help/user-groups) membership.
 
+
+## Notices about user account details changes
+
+{!admin-only.md!}
+
+When an administrator [modifies](/help/change-a-users-name) something about a user's account, it would notify
+them that a change was made. We have a Notification Bot that send a private message
+to the user informing them about the change.
+
 ### New user announcements
 
 {!admin-only.md!}

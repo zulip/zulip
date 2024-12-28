@@ -626,7 +626,7 @@ def send_account_modification_notifications(
 
     realm = user_profile.realm
     sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
-    if acting_user:
+    if acting_user is not None:
         detailed_message = f"{silent_mention_syntax_for_user(acting_user)} has updated your `{property}`.\n\n- **Old `{property}`:** {old_value}\n- **New `{property}`:** {new_value}"
     else:
         detailed_message = f"The following updates have been made to your account.\n\n- **Old `{property}`:** {old_value}\n- **New `{property}`:** {new_value}"
