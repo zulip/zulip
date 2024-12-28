@@ -1299,6 +1299,16 @@ label.preferences-radio-choice-label {
         margin: 10px 0;
     }
 
+    .settings-table-search-section {
+        float: right;
+    }
+
+    .clear_search_button {
+        position: absolute;
+        right: 0;
+        top: 11px;
+    }
+
     .sidebar-wrapper {
         float: left;
         position: relative;
