@@ -105,6 +105,7 @@ function make_filter_element() {
     const $element = {};
 
     $element.cleared = false;
+    $element.clear_button_elem_cleared = false;
 
     $element.on = (ev, f) => {
         assert.equal(ev, "input.list_widget_filter");
@@ -114,6 +115,23 @@ function make_filter_element() {
     $element.off = (ev) => {
         assert.equal(ev, "input.list_widget_filter");
         $element.cleared = true;
+    };
+
+    const clear_input_element = {};
+
+    clear_input_element.on = (ev, f) => {
+        assert.equal(ev, "click");
+        clear_input_element.f = f;
+    };
+
+    clear_input_element.off = (ev) => {
+        assert.equal(ev, "click");
+        $element.clear_button_elem_cleared = true;
+    };
+
+    $element.siblings = (selector) => {
+        assert.equal(selector, ".clear_search_button");
+        return clear_input_element;
     };
 
     return $element;
@@ -135,6 +153,20 @@ function make_search_input() {
             };
             f.call(elem);
         };
+    };
+
+    const clear_search_button_element = {};
+
+    clear_search_button_element.on = (event, f) => {
+        assert.equal(event, "click");
+        $element.simulate_clear_search = () => {
+            f.call();
+        };
+    };
+
+    $element.siblings = (selector) => {
+        assert.equal(selector, ".clear_search_button");
+        return clear_search_button_element;
     };
 
     return $element;
@@ -280,6 +312,13 @@ run_test("filtering", () => {
     assert.deepEqual(widget.get_current_list(), ["dog", "egg", "grape"]);
     expected_html = "<div>dog</div><div>egg</div><div>grape</div>";
     assert.deepEqual($container.$appended_data.html(), expected_html);
+
+    $search_input.simulate_clear_search();
+    assert.deepEqual(widget.get_current_list(), list);
+
+    // Reset the search input value to test that list is updated correctly.
+    $search_input.val = () => "g";
+    $search_input.simulate_input_event();
 
     // We can insert new data into the widget.
     const new_data = ["greta", "faye", "gary", "frank", "giraffe", "fox"];
@@ -561,12 +600,14 @@ run_test("clear_event_handlers", () => {
     assert.equal($sort_container.cleared, false);
     assert.equal($scroll_container.cleared, false);
     assert.equal($filter_element.cleared, false);
+    assert.equal($filter_element.clear_button_elem_cleared, false);
 
     // The second time we'll clear the old events.
     ListWidget.create($container, list, opts);
     assert.equal($sort_container.cleared, true);
     assert.equal($scroll_container.cleared, true);
     assert.equal($filter_element.cleared, true);
+    assert.equal($filter_element.clear_button_elem_cleared, true);
 });
 
 run_test("sort helpers", () => {

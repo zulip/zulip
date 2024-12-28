@@ -697,12 +697,18 @@ function handle_filter_change($tbody: JQuery, section: UserSettingsSection): voi
     // ListWidget for the input.list_widget_filter event type, but we
     // can't use that, because we're also filtering on Role with our
     // custom predicate.
-    $tbody
+    const $search_input = $tbody
         .closest(".user-settings-section")
-        .find<HTMLInputElement>(".search")
-        .on("input.list_widget_filter", function (this: HTMLInputElement) {
-            add_value_to_filters(section, "text_search", this.value.toLocaleLowerCase());
-        });
+        .find<HTMLInputElement>(".search");
+
+    $search_input.on("input.list_widget_filter", function (this: HTMLInputElement) {
+        add_value_to_filters(section, "text_search", this.value.toLocaleLowerCase());
+    });
+
+    $search_input.siblings(".clear_search_button").on("click", () => {
+        $search_input.val("");
+        add_value_to_filters(section, "text_search", "");
+    });
 }
 
 function active_handle_events(): void {

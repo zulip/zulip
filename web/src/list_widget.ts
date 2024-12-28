@@ -467,6 +467,12 @@ export function create<Key, Item = Key>(
                 widget.set_filter_value(value);
                 widget.hard_redraw();
             });
+
+            opts.filter?.$element?.siblings(".clear_search_button").on("click", () => {
+                opts.filter?.$element?.val("");
+                widget.set_filter_value("");
+                widget.clean_redraw();
+            });
         },
 
         clear_event_handlers() {
@@ -477,6 +483,7 @@ export function create<Key, Item = Key>(
             }
 
             opts.filter?.$element?.off("input.list_widget_filter");
+            opts.filter?.$element?.siblings(".clear_search_button").off("click");
         },
 
         increase_rendered_offset() {

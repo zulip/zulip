@@ -1,7 +1,11 @@
 <div id="muted-user-settings" class="settings-section" data-name="muted-users">
     <div class="settings_panel_list_header">
         <h3>{{t "Muted users"}}</h3>
-        <input id="muted_users_search" class="search filter_text_input" type="text" placeholder="{{t 'Filter muted users' }}" aria-label="{{t 'Filter muted users' }}"/>
+        {{> clear_search_button
+          id="muted_users_search"
+          placeholder=(t 'Filter muted users')
+          aria-label=(t 'Filter muted users')
+          }}
     </div>
     <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">
         <table class="table table-striped wrapped-table">

@@ -1299,6 +1299,39 @@ label.preferences-radio-choice-label {
         margin: 10px 0;
     }
 
+    .settings-table-search-section {
+        position: relative;
+        display: inline-block;
+        height: 32px;
+    }
+
+    .settings-table-search-section input {
+        padding-right: 0;
+        height: 100%;
+        box-sizing: border-box;
+    }
+
+    .settings-table-search-section .clear_search_button {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        line-height: 16px;
+        align-items: center;
+        display: none;
+    }
+
+    /* Show button when input has text */
+    .settings-table-search-section
+        input:not(:placeholder-shown)
+        ~ .clear_search_button {
+        display: block;
+    }
+
     .sidebar-wrapper {
         float: left;
         position: relative;

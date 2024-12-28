@@ -5,7 +5,10 @@
         <div class="alert-notification" id="user-field-status"></div>
         <div class="user_filters">
             {{> ../dropdown_widget widget_name=active_user_list_dropdown_widget_name}}
-            <input type="text" class="search filter_text_input" placeholder="{{t 'Filter users' }}" aria-label="{{t 'Filter users' }}"/>
+            {{> clear_search_button
+              placeholder=(t 'Filter users')
+              aria-label=(t 'Filter users')
+              }}
         </div>
     </div>
 
