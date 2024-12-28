@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 333**
+
+* [`PATCH /users`](/api/update-user): Added `send_account_modification_notifications`
+  function in `do_change_full_name` which notify the user when an admin changes
+  their full name.
+
 **Feature level 332**
 
 * [`POST /register`](/api/register-queue): Added
