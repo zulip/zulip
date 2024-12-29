@@ -31,6 +31,7 @@ from zerver.actions.message_send import (
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    do_change_mobile_push_notifications_enabled,
     do_change_stream_description,
     do_change_stream_group_based_setting,
     do_change_stream_message_retention_days,
@@ -267,6 +268,7 @@ def update_stream_backend(
     is_web_public: Json[bool] | None = None,
     new_name: str | None = None,
     message_retention_days: Json[str] | Json[int] | None = None,
+    mobile_push_notifications_enabled: Json[bool] | None = None,
     can_administer_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
 ) -> HttpResponse:
@@ -373,6 +375,11 @@ def update_stream_backend(
         )
         do_change_stream_message_retention_days(
             stream, user_profile, new_message_retention_days_value
+        )
+
+    if mobile_push_notifications_enabled is not None:
+        do_change_mobile_push_notifications_enabled(
+            stream, mobile_push_notifications_enabled, acting_user=user_profile
         )
 
     if description is not None:
@@ -600,6 +607,7 @@ def add_subscriptions_backend(
     announce: Json[bool] = False,
     principals: Json[list[str] | list[int]] | None = None,
     authorization_errors_fatal: Json[bool] = True,
+    mobile_push_notifications_enabled: Json[bool] = False,
 ) -> HttpResponse:
     realm = user_profile.realm
     stream_dicts = []
@@ -662,6 +670,7 @@ def add_subscriptions_backend(
         stream_dict_copy["can_remove_subscribers_group"] = group_settings_map[
             "can_remove_subscribers_group"
         ]
+        stream_dict_copy["mobile_push_notifications_enabled"] = mobile_push_notifications_enabled
 
         stream_dicts.append(stream_dict_copy)
 

@@ -77,6 +77,7 @@ class StreamDict(TypedDict, total=False):
     stream_post_policy: int
     history_public_to_subscribers: bool | None
     message_retention_days: int | None
+    mobile_push_notifications_enabled: bool
     can_administer_channel_group: UserGroup | None
     can_remove_subscribers_group: UserGroup | None
 
@@ -188,6 +189,7 @@ def create_stream_if_needed(
     can_administer_channel_group: UserGroup | None = None,
     can_remove_subscribers_group: UserGroup | None = None,
     acting_user: UserProfile | None = None,
+    mobile_push_notifications_enabled: bool = False,
     setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
 ) -> tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
@@ -227,6 +229,7 @@ def create_stream_if_needed(
             history_public_to_subscribers=history_public_to_subscribers,
             is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
             message_retention_days=message_retention_days,
+            mobile_push_notifications_enabled=mobile_push_notifications_enabled,
             **group_setting_values,
         ),
     )
@@ -293,6 +296,9 @@ def create_streams_if_needed(
             can_administer_channel_group=stream_dict.get("can_administer_channel_group", None),
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
             acting_user=acting_user,
+            mobile_push_notifications_enabled=stream_dict.get(
+                "mobile_push_notifications_enabled", False
+            ),
             setting_groups_dict=setting_groups_dict,
         )
 
@@ -837,6 +843,7 @@ def list_to_streams(
 
     message_retention_days_not_none = False
     web_public_stream_requested = False
+    mobile_push_notifications_enabled_not_false = False
     for stream_dict in streams_raw:
         stream_name = stream_dict["name"]
         stream = existing_stream_map.get(stream_name.lower())
@@ -847,6 +854,8 @@ def list_to_streams(
 
             if autocreate and stream_dict["is_web_public"]:
                 web_public_stream_requested = True
+            if stream_dict.get("mobile_push_notifications_enabled", False):
+                mobile_push_notifications_enabled_not_false = True
         else:
             existing_streams.append(stream)
 
@@ -889,6 +898,9 @@ def list_to_streams(
                 raise OrganizationOwnerRequiredError
 
             user_profile.realm.ensure_not_on_limited_plan()
+
+        if mobile_push_notifications_enabled_not_false and not user_profile.is_realm_admin:
+            raise JsonableError(_("Insufficient permission"))
 
         # We already filtered out existing streams, so dup_streams
         # will normally be an empty list below, but we protect against somebody
@@ -1010,6 +1022,7 @@ def stream_to_dict(
         stream_post_policy=stream.stream_post_policy,
         is_announcement_only=stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
         stream_weekly_traffic=stream_weekly_traffic,
+        mobile_push_notifications_enabled=stream.mobile_push_notifications_enabled,
     )
 
 
