@@ -860,4 +860,15 @@ export function initialize(): void {
             instance.destroy();
         },
     });
+
+    tippy.delegate("body", {
+        target: ".mobile_push_notifications_enabled_setting .control-label-disabled",
+        content: $t({
+            defaultMessage: "Mobile push notifications are not configured on this server.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 }

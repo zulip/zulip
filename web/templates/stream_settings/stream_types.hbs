@@ -109,5 +109,16 @@
                 </div>
             </div>
         {{/if}}
+
+        {{#if (or is_admin is_stream_edit)}}
+            <div class="mobile_push_notifications_enabled_setting">
+                {{> ../settings/settings_checkbox
+                  prefix="id_"
+                  setting_name="mobile_push_notifications_enabled"
+                  is_checked=mobile_push_notifications_enabled
+                  label=(t "Mobile push notifications enabled by default")
+                  }}
+            </div>
+        {{/if}}
     </div>
 </div>
