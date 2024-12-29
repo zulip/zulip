@@ -79,6 +79,26 @@ export function confirm_deactivation(
                 });
             }
 
+            function set_spammer_field_visibility(dialog_widget_id: string): void {
+                const $modal = $(`#${CSS.escape(dialog_widget_id)}`);
+                const $spammer_checkbox = $modal.find(".spammer");
+                const $spammer_field = $modal.find(".spammer-field"); // Updated class name
+
+                $spammer_field.hide();
+                $spammer_checkbox.on("change", () => {
+                    if ($spammer_checkbox.is(":checked")) {
+                        $spammer_field.show();
+                    } else {
+                        $spammer_field.hide();
+                    }
+                });
+            }
+
+            function set_field_visibility(dialog_widget_id: string): void {
+                set_email_field_visibility(dialog_widget_id);
+                set_spammer_field_visibility(dialog_widget_id);
+            }
+
             dialog_widget.launch({
                 html_heading: $t_html(
                     {defaultMessage: "Deactivate {name}?"},
@@ -89,7 +109,7 @@ export function confirm_deactivation(
                 html_submit_button: $t_html({defaultMessage: "Deactivate"}),
                 id: "deactivate-user-modal",
                 on_click: handle_confirm,
-                post_render: set_email_field_visibility,
+                post_render: set_field_visibility,
                 loading_spinner,
                 focus_submit_on_open: true,
             });
