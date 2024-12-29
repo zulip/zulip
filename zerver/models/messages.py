@@ -19,6 +19,7 @@ from zerver.models.clients import Client
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.realms import Realm
 from zerver.models.recipients import Recipient
+from zerver.models.streams import Stream
 from zerver.models.users import UserProfile
 
 
@@ -157,6 +158,16 @@ class Message(AbstractMessage):
 
     DEFAULT_SELECT_RELATED = ["sender", "realm", "recipient", "sending_client"]
 
+    NO_DELETE_ACTION = 0
+    DELETE_PUBLIC_STREAM_MESSAGE = 1
+    DELETE_ALL_MESSAGE = 2
+
+    DEACTIVATED_USER_MESSAGE_DELETE_ACTION = [
+        NO_DELETE_ACTION,
+        DELETE_PUBLIC_STREAM_MESSAGE,
+        DELETE_ALL_MESSAGE,
+    ]
+
     class Meta:
         indexes = [
             GinIndex("search_tsvector", fastupdate=False, name="zerver_message_search_tsvector"),
@@ -251,6 +262,16 @@ class Message(AbstractMessage):
         or implicitly (message.stream_id is not None).
         """
         return self.recipient.type == Recipient.STREAM
+
+    def is_public_stream_message(self) -> bool:
+        """
+        Find out whether the stream to which the message belongs to
+        is public or not.
+        """
+        if self.is_stream_message():
+            stream = Stream.objects.get(recipient=self.recipient)
+            return stream.is_public()
+        return False
 
     def get_realm(self) -> Realm:
         return self.realm
