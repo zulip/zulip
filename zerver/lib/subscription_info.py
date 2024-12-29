@@ -73,6 +73,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
             stream.can_send_message_group
         )
         is_announcement_only = stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS
+        mobile_push_notifications_enabled = stream.mobile_push_notifications_enabled
 
         # Add versions of the Subscription fields based on a simulated
         # new user subscription set.
@@ -119,6 +120,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
             stream_post_policy=stream_post_policy,
             stream_weekly_traffic=stream_weekly_traffic,
             wildcard_mentions_notify=wildcard_mentions_notify,
+            mobile_push_notifications_enabled=mobile_push_notifications_enabled,
         )
         subscribed.append(sub)
 
@@ -185,6 +187,7 @@ def build_stream_api_dict(
         stream_weekly_traffic=stream_weekly_traffic,
         is_announcement_only=is_announcement_only,
         is_recently_active=raw_stream_dict["is_recently_active"],
+        mobile_push_notifications_enabled=raw_stream_dict["mobile_push_notifications_enabled"],
     )
 
 
@@ -215,6 +218,7 @@ def build_stream_dict_for_sub(
     is_announcement_only = stream_dict["is_announcement_only"]
     is_recently_active = stream_dict["is_recently_active"]
 
+    mobile_push_notifications_enabled = stream_dict["mobile_push_notifications_enabled"]
     # Handle Subscription.API_FIELDS.
     color = sub_dict["color"]
     is_muted = sub_dict["is_muted"]
@@ -260,6 +264,7 @@ def build_stream_dict_for_sub(
         stream_post_policy=stream_post_policy,
         stream_weekly_traffic=stream_weekly_traffic,
         wildcard_mentions_notify=wildcard_mentions_notify,
+        mobile_push_notifications_enabled=mobile_push_notifications_enabled,
     )
 
 
@@ -282,6 +287,7 @@ def build_stream_dict_for_never_sub(
     rendered_description = raw_stream_dict["rendered_description"]
     stream_id = raw_stream_dict["id"]
     stream_post_policy = raw_stream_dict["stream_post_policy"]
+    mobile_push_notifications_enabled = raw_stream_dict["mobile_push_notifications_enabled"]
 
     if recent_traffic is not None:
         stream_weekly_traffic = get_average_weekly_stream_traffic(
@@ -326,6 +332,7 @@ def build_stream_dict_for_never_sub(
         stream_id=stream_id,
         stream_post_policy=stream_post_policy,
         stream_weekly_traffic=stream_weekly_traffic,
+        mobile_push_notifications_enabled=mobile_push_notifications_enabled,
     )
 
 

@@ -719,6 +719,7 @@ paths:
                                         "can_add_subscribers_group": 2,
                                         "can_remove_subscribers_group": 2,
                                         "subscribers": [10],
+                                        "mobile_push_notifications_enabled": false,
                                       },
                                     ],
                                   "id": 0,
@@ -1355,6 +1356,7 @@ paths:
                                         "is_announcement_only": false,
                                         "can_add_subscribers_group": 2,
                                         "can_remove_subscribers_group": 2,
+                                        "mobile_push_notifications_enabled": true,
                                         "stream_weekly_traffic": null,
                                       },
                                     ],
@@ -10533,6 +10535,18 @@ paths:
                   type: boolean
                   default: false
                   example: true
+                mobile_push_notifications_enabled:
+                  description: |
+                    A boolean used to set the value of push_notifications when a user
+                    subscribes to the stream.
+
+                    When set to `true` push_notifications will be enabled on subscribing to stream.
+                    When set to `false` push_notifications will depend on user-level default settings.
+
+                    **Changes**: New in Zulip 10.0 (feature level 333).
+                  type: boolean
+                  default: false
+                  example: true
                 is_default_stream:
                   description: |
                     This parameter determines whether any newly created channels will be
@@ -15115,6 +15129,7 @@ paths:
                                 is_recently_active: {}
                                 is_announcement_only: {}
                                 can_add_subscribers_group: {}
+                                mobile_push_notifications_enabled: {}
                                 can_remove_subscribers_group: {}
                                 can_administer_channel_group: {}
                                 can_send_message_group: {}
@@ -15718,6 +15733,10 @@ paths:
                               **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions,
                               and followed topics` option, renumbering the options to insert it in
                               order.
+                          mobile_push_notifications_enabled:
+                            type: boolean
+                            description: |
+                              Enable mobile push notifications for direct messages and @-mentions.
                           realm_name_in_email_notifications_policy:
                             type: integer
                             description: |
@@ -17529,6 +17548,20 @@ paths:
                           to users when the indicated timestamp is near.
 
                           **Changes**: New in Zulip 8.0 (feature level 231).
+                      realm_mobile_push_notifications_enabled:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether mobile push notifications are enabled for this organization.
+                          Typically `true` for Zulip Cloud and self-hosted realms that have a valid
+                          registration for the [Mobile push notifications
+                          service](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html),
+                          and `false` for self-hosted servers that do not.
+
+                          **Changes**: Before Zulip 10.0 (feature level 333), this incorrectly was
+                          `true` for servers that were partly configured to use the Mobile Push
+                          Notifications Service but not properly registered.
                       realm_upload_quota_mib:
                         type: integer
                         nullable: true
@@ -20063,6 +20096,7 @@ paths:
                                 can_remove_subscribers_group: {}
                                 can_administer_channel_group: {}
                                 can_send_message_group: {}
+                                mobile_push_notifications_enabled: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -20127,6 +20161,7 @@ paths:
                               "is_default": false,
                               "is_web_public": false,
                               "message_retention_days": null,
+                              "mobile_push_notifications_enabled": false,
                               "name": "management",
                               "rendered_description": "<p>A private channel</p>",
                               "stream_id": 2,
@@ -20147,6 +20182,7 @@ paths:
                               "is_archived": false,
                               "is_default": true,
                               "is_web_public": false,
+                              "mobile_push_notifications_enabled": false,
                               "message_retention_days": null,
                               "name": "welcome",
                               "rendered_description": "<p>A default public channel</p>",
@@ -20222,6 +20258,7 @@ paths:
                             "stream_post_policy": 1,
                             "can_add_subscribers_group": 2,
                             "can_remove_subscribers_group": 2,
+                            "mobile_push_notifications_enabled": true,
                             "stream_weekly_traffic": null,
                           },
                       }
@@ -20394,6 +20431,17 @@ paths:
                           "old": 15,
                         }
                     - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                mobile_push_notifications_enabled:
+                  description: |
+                    A boolean used to set the value of push_notifications when a user
+                    subscribes to the stream.
+
+                    When set to `true` push_notifications will be enabled on subscribing to stream.
+                    When set to `false` push_notifications will depend on user-level default settings.
+
+                    **Changes**: New in Zulip 10.0 (feature level 333).
+                  type: boolean
+                  example: true
                 can_remove_subscribers_group:
                   allOf:
                     - description: |
@@ -22187,6 +22235,7 @@ components:
             is_recently_active: {}
             is_announcement_only: {}
             can_add_subscribers_group: {}
+            mobile_push_notifications_enabled: {}
             can_remove_subscribers_group: {}
             can_administer_channel_group: {}
             can_send_message_group: {}
@@ -22330,6 +22379,16 @@ components:
             - `-1` encodes retaining messages in this channel forever.
 
             **Changes**: New in Zulip 3.0 (feature level 17).
+        mobile_push_notifications_enabled:
+          type: boolean
+          description: |
+            A boolean used to set the value of push_notifications when a user
+            subscribes to the stream.
+
+            When set to `true` push_notifications will be enabled on subscribing to stream.
+            When set to `false` push_notifications will depend on user-level default settings.
+
+            **Changes**: New in Zulip 10.0 (feature level 333).
         history_public_to_subscribers:
           type: boolean
           description: |
@@ -23451,6 +23510,16 @@ components:
             channels. Note that some endpoints will never return archived
             channels unless the client declares explicit support for
             them via the `archived_channels` client capability.
+        mobile_push_notifications_enabled:
+          type: boolean
+          description: |
+            A boolean used to set the value of push_notifications when a user
+            subscribes to the stream.
+
+            When set to `true` push_notifications will be enabled on subscribing to stream.
+            When set to `false` push_notifications will depend on user-level default settings.
+
+            **Changes**: New in Zulip 10.0 (feature level 333).
     DefaultChannelGroup:
       type: object
       description: |

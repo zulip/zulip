@@ -421,6 +421,13 @@ export function update_stream_permission_group_setting(
     sub[setting_name] = group_setting;
 }
 
+export function update_mobile_push_notifications_enabled(
+    sub: StreamSubscription,
+    mobile_push_notifications_enabled: boolean,
+): void {
+    sub.mobile_push_notifications_enabled = mobile_push_notifications_enabled;
+}
+
 export function receives_notifications(
     stream_id: number,
     notification_name: keyof StreamSpecificNotificationSettings,

@@ -172,6 +172,9 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         message_retention_days(value) {
             stream_settings_ui.update_message_retention_setting(sub, value);
         },
+        mobile_push_notifications_enabled(value) {
+            stream_settings_ui.update_mobile_push_notifications_enabled(sub, value);
+        },
         is_recently_active(value) {
             update_stream_setting(sub, value, "is_recently_active");
             stream_list.update_streams_sidebar();
@@ -214,9 +217,14 @@ export function mark_subscribed(
     sub: StreamSubscription,
     subscribers: number[],
     color: string | undefined,
+    push_notifications: boolean | null,
 ): void {
     if (sub.subscribed) {
         return;
+    }
+
+    if (push_notifications !== null) {
+        update_stream_setting(sub, push_notifications, "push_notifications");
     }
 
     // If the backend sent us a color, use that

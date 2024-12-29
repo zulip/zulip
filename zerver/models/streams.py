@@ -120,6 +120,10 @@ class Stream(models.Model):
     }
     message_retention_days = models.IntegerField(null=True, default=None)
 
+    # Used to set the value of push_notifications field when user subscribes.
+    # False means we inherit user-level default.
+    mobile_push_notifications_enabled = models.BooleanField(default=False)
+
     # on_delete field for group value settings is set to RESTRICT
     # because we don't want to allow deleting a user group in case it
     # is referenced by the respective setting. We are not using PROTECT
@@ -220,6 +224,7 @@ class Stream(models.Model):
         "can_send_message_group_id",
         "can_remove_subscribers_group_id",
         "is_recently_active",
+        "mobile_push_notifications_enabled",
     ]
 
 

@@ -279,9 +279,17 @@ export function enable_or_disable_permission_settings_in_edit_panel(
     const $stream_settings = stream_settings_containers.get_edit_container(sub);
 
     const $general_settings_container = $stream_settings.find($("#stream_permission_settings"));
+    const $mobile_push_notifications_container = $stream_settings.find(
+        ".mobile_push_notifications_enabled_setting",
+    );
     $general_settings_container
         .find("input, button")
         .prop("disabled", !sub.can_change_stream_permissions);
+
+    $mobile_push_notifications_container.toggleClass(
+        "control-label-disabled",
+        !realm.realm_mobile_push_notifications_enabled || !sub.can_change_stream_permissions,
+    );
 
     const $advanced_configurations_container = $stream_settings.find(
         $("#stream-advanced-configurations"),

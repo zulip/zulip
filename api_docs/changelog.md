@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 347**
+
+* [`PATCH /streams/{stream_id}`](/api/update-stream), [`POST /users/me/subscriptions`]
+(/api/subscribe): Added a new parameter `mobile_push_notifications_enabled`, which allow
+to choose the default value of push notifications on subscribing a stream.
+
 **Feature level 346**
 
 * [Markdown message formatting](/api/message-formatting#links-to-channels-topics-and-messages):
