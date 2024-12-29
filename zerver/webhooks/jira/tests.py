@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from urllib.parse import quote, unquote
 
 from zerver.lib.test_classes import WebhookTestCase
@@ -63,6 +63,25 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
                 result = self.client_post(url, payload, content_type="application/json")
             self.assertFalse(m.called)
             self.assert_json_success(result)
+
+    def test_replace_account_ids_with_usernames(self) -> None:
+        url = self.build_webhook_url(email="reharshmeena@gmail.com", jira_api_token="BATTATA-VADA")
+        payload = self.get_body("comment_created_with_account_mention")
+
+        # Create a mock response object
+        mock_response = MagicMock()
+        mock_response.json.return_value = {"displayName": "Harsh Meena"}
+        mock_response.status_code = 200
+
+        with patch("requests.get", return_value=mock_response) as mock_get:
+            # Sending the POST request
+            result = self.client_post(url, payload, content_type="application/json")
+
+            # Assert that the mock GET request was called
+            mock_get.assert_called_once()
+
+        # Assert that the response is a success
+        self.assert_json_success(result)
 
     def test_created_with_channel_with_spaces_escaped(self) -> None:
         self.CHANNEL_NAME = quote("jira alerts")
