@@ -119,6 +119,8 @@ def deactivate_user_backend(
     user_profile: UserProfile,
     *,
     user_id: PathOnly[int],
+    is_spammer: Json[bool] = True,
+    message_delete_action: Json[int] = 0,
     deactivation_notification_comment: Annotated[str, StringConstraints(max_length=2000)]
     | None = None,
 ) -> HttpResponse:
@@ -133,6 +135,8 @@ def deactivate_user_backend(
         request,
         user_profile,
         target,
+        is_spammer=is_spammer,
+        message_delete_action=message_delete_action,
         deactivation_notification_comment=deactivation_notification_comment,
     )
 
@@ -152,7 +156,7 @@ def deactivate_bot_backend(
 ) -> HttpResponse:
     target = access_bot_by_id(user_profile, bot_id)
     return _deactivate_user_profile_backend(
-        request, user_profile, target, deactivation_notification_comment=None
+        request, user_profile, target=target, deactivation_notification_comment=None
     )
 
 
@@ -161,9 +165,16 @@ def _deactivate_user_profile_backend(
     user_profile: UserProfile,
     target: UserProfile,
     *,
+    is_spammer: Json[bool] = True,
+    message_delete_action: Json[int] = 0,
     deactivation_notification_comment: str | None,
 ) -> HttpResponse:
-    do_deactivate_user(target, acting_user=user_profile)
+    do_deactivate_user(
+        target,
+        acting_user=user_profile,
+        is_spammer=is_spammer,
+        message_delete_action=message_delete_action,
+    )
 
     # It's important that we check for None explicitly here, since ""
     # encodes sending an email without a custom administrator comment.

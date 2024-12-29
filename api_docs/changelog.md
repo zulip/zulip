@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 349**
+
+* [`DELETE /users/{user_id}`](/api/deactivate-user): Add new
+  parameters `is_spammer` boolean and `message_delete_action` integer
+  for marking as span while deactivating a user.
+
 **Feature level 348**
 
 * [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),
