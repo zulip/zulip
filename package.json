@@ -23,6 +23,7 @@
     "@zxcvbn-ts/language-common": "^3.0.2",
     "@zxcvbn-ts/language-en": "^3.0.1",
     "altcha": "^2.0.3",
+    "assert-never": "^1.4.0",
     "autosize": "^5.0.2",
     "babel-loader": "^10.0.0",
     "babel-plugin-formatjs": "^10.2.6",
