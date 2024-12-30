@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as blueslip from "./blueslip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -39,9 +39,10 @@ export function maybe_show_deprecation_notice(key: string): void {
     if (localstorage.supported()) {
         const notices_from_storage = localStorage.getItem("shown_deprecation_notices");
         if (notices_from_storage !== null) {
-            const parsed_notices_from_storage = z
-                .array(z.string())
-                .parse(JSON.parse(notices_from_storage));
+            const parsed_notices_from_storage = v.parse(
+                v.array(v.string()),
+                JSON.parse(notices_from_storage),
+            );
 
             shown_deprecation_notices = parsed_notices_from_storage;
         } else {

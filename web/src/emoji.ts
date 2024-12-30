@@ -1,13 +1,13 @@
 import _ from "lodash";
-import type {z} from "zod";
+import type * as v from "valibot";
 
 import * as blueslip from "./blueslip.ts";
 import type {StateData, realm_emoji_map_schema, server_emoji_schema} from "./state_data.ts";
 
 // This is the data structure that we get from the server on initialization.
-export type ServerEmoji = z.infer<typeof server_emoji_schema>;
+export type ServerEmoji = v.InferOutput<typeof server_emoji_schema>;
 
-type RealmEmojiMap = z.infer<typeof realm_emoji_map_schema>;
+type RealmEmojiMap = v.InferOutput<typeof realm_emoji_map_schema>;
 
 // The data the server provides about unicode emojis.
 type ServerUnicodeEmojiData = {

@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as v from "valibot";
 
 import {realm} from "./state_data.ts";
 import type {GroupPermissionSetting} from "./state_data.ts";
@@ -17,7 +17,7 @@ export function get_group_permission_setting_config(
     return permission_config_dict;
 }
 
-export const group_setting_name_schema = z.enum([
+export const group_setting_name_schema = v.picklist([
     "can_add_members_group",
     "can_join_group",
     "can_leave_group",
@@ -26,10 +26,11 @@ export const group_setting_name_schema = z.enum([
     "can_remove_members_group",
 ]);
 
-export type GroupSettingName = z.infer<typeof group_setting_name_schema>;
+export type GroupSettingName = v.InferOutput<typeof group_setting_name_schema>;
 
 export function get_group_permission_settings(): GroupSettingName[] {
-    return z
-        .array(group_setting_name_schema)
-        .parse(Object.keys(realm.server_supported_permission_settings.group));
+    return v.parse(
+        v.array(group_setting_name_schema),
+        Object.keys(realm.server_supported_permission_settings.group),
+    );
 }

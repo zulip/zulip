@@ -1,4 +1,4 @@
-import type {z} from "zod";
+import type * as v from "valibot";
 
 import render_topic_muted from "../templates/topic_muted.hbs";
 
@@ -17,7 +17,7 @@ import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 import {get_time_from_date_muted} from "./util.ts";
 
-export type ServerUserTopic = z.infer<typeof user_topic_schema>;
+export type ServerUserTopic = v.InferOutput<typeof user_topic_schema>;
 
 export type UserTopic = {
     stream_id: number;

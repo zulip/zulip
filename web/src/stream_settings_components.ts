@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
@@ -152,11 +152,12 @@ export function ajaxSubscribe(
                 $("#create_stream_name").val("");
             }
 
-            const res = z
-                .object({
-                    already_subscribed: z.record(z.string(), z.array(z.string())),
-                })
-                .parse(xhr.responseJSON);
+            const res = v.parse(
+                v.object({
+                    already_subscribed: v.record(v.string(), v.array(v.string())),
+                }),
+                xhr.responseJSON,
+            );
             if (Object.keys(res.already_subscribed).length > 0) {
                 // Display the canonical stream capitalization.
                 true_stream_name = res.already_subscribed[current_user.user_id]![0];

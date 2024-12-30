@@ -17,6 +17,7 @@ if [ "$#" -eq 0 ]; then
             ':!docs/THIRDPARTY' \
             ':!docs/translating' \
             ':!locale' \
+            ':!patches' \
             ':!postgresql.conf.template.erb' \
             ':!tools/setup/emoji/emoji_map.json' \
             ':!tools/setup/emoji/emoji_names.py' \

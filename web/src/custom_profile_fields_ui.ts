@@ -1,6 +1,6 @@
 import flatpickr from "flatpickr";
 import $ from "jquery";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
 
@@ -15,7 +15,7 @@ import * as typeahead_helper from "./typeahead_helper.ts";
 import type {UserPillWidget} from "./user_pill.ts";
 import * as user_pill from "./user_pill.ts";
 
-const user_value_schema = z.array(z.number());
+const user_value_schema = v.array(v.number());
 
 export function append_custom_profile_fields(element_id: string, user_id: number): void {
     const person = people.get_by_user_id(user_id);
@@ -46,7 +46,8 @@ export function append_custom_profile_fields(element_id: string, user_id: number
             field_value = {value: "", rendered_value: ""};
         }
         if (is_select_field) {
-            const field_choice_dict = settings_components.select_field_data_schema.parse(
+            const field_choice_dict = v.parse(
+                settings_components.select_field_data_schema,
                 JSON.parse(field.field_data),
             );
             for (const [value, {order, text}] of Object.entries(field_choice_dict)) {
@@ -122,7 +123,7 @@ export function initialize_custom_user_type_fields(
             const pills = user_pill.create_pills($pill_container, pill_config);
 
             if (field_value_raw !== undefined) {
-                const field_value = user_value_schema.parse(JSON.parse(field_value_raw));
+                const field_value = v.parse(user_value_schema, JSON.parse(field_value_raw));
                 for (const pill_user_id of field_value) {
                     const user = people.get_user_by_id_assert_valid(pill_user_id);
                     user_pill.append_user(user, pills);
