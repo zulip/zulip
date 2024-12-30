@@ -445,6 +445,7 @@ function bots_create_table(): void {
 
     loading.destroy_indicator($("#admin_page_bots_loading_indicator"));
     $bots_table.show();
+    bot_list_widget.clear_text_filter();
 }
 
 function active_create_table(active_users: number[]): void {
