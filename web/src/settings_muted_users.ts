@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_muted_user_ui_row from "../templates/muted_user_ui_row.hbs";
 
 import * as ListWidget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as muted_users from "./muted_users.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -15,6 +16,8 @@ type MutedUserItem = {
     date_muted: number;
     date_muted_str: string;
 };
+
+let muted_users_list_widget: ListWidgetType<MutedUserItem, MutedUserItem>;
 
 export function populate_list(): void {
     const all_muted_users = muted_users.get_muted_users().map((user) => {
@@ -30,30 +33,36 @@ export function populate_list(): void {
     const $muted_users_table = $("#muted_users_table");
     const $search_input = $<HTMLInputElement>("input#muted_users_search");
 
-    ListWidget.create<MutedUserItem>($muted_users_table, all_muted_users, {
-        name: "muted-users-list",
-        get_item: ListWidget.default_get_item,
-        modifier_html(muted_user) {
-            return render_muted_user_ui_row({muted_user});
-        },
-        filter: {
-            $element: $search_input,
-            predicate(item, value) {
-                return item.user_name.toLocaleLowerCase().includes(value);
+    muted_users_list_widget = ListWidget.create<MutedUserItem>(
+        $muted_users_table,
+        all_muted_users,
+        {
+            name: "muted-users-list",
+            get_item: ListWidget.default_get_item,
+            modifier_html(muted_user) {
+                return render_muted_user_ui_row({muted_user});
             },
-            onupdate() {
-                scroll_util.reset_scrollbar(
-                    $muted_users_table.closest(".progressive-table-wrapper"),
-                );
+            filter: {
+                $element: $search_input,
+                predicate(item, value) {
+                    return item.user_name.toLocaleLowerCase().includes(value);
+                },
+                onupdate() {
+                    scroll_util.reset_scrollbar(
+                        $muted_users_table.closest(".progressive-table-wrapper"),
+                    );
+                },
             },
+            sort_fields: {
+                ...ListWidget.generic_sort_functions("alphabetic", ["user_name"]),
+                ...ListWidget.generic_sort_functions("numeric", ["date_muted"]),
+            },
+            $parent_container: $("#muted-user-settings"),
+            $simplebar_container: $("#muted-user-settings .progressive-table-wrapper"),
         },
-        sort_fields: {
-            ...ListWidget.generic_sort_functions("alphabetic", ["user_name"]),
-            ...ListWidget.generic_sort_functions("numeric", ["date_muted"]),
-        },
-        $parent_container: $("#muted-user-settings"),
-        $simplebar_container: $("#muted-user-settings .progressive-table-wrapper"),
-    });
+    );
+
+    muted_users_list_widget?.clear_text_filter();
 }
 
 export function set_up(): void {
