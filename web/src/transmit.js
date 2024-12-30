@@ -4,7 +4,7 @@ import * as people from "./people.ts";
 import * as reload from "./reload.ts";
 import * as reload_state from "./reload_state.ts";
 import * as sent_messages from "./sent_messages.ts";
-import * as server_events from "./server_events.js";
+import * as server_events from "./server_events.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 

@@ -455,9 +455,13 @@ const wrapped_server_event_schema = z.discriminatedUnion("type", [
     event_type("user_status", z.object({user_id: z.number()}).and(user_status_schema)),
 ]);
 
-export const server_event_schema = z
-    .object({id: z.number(), type: z.string()})
-    .catchall(z.unknown())
+export const base_server_event_schema = z
+    .object({id: z.number(), type: z.string(), op: z.optional(z.string())})
+    .catchall(z.unknown());
+
+export type BaseServerEvent = z.output<typeof base_server_event_schema>;
+
+export const server_event_schema = base_server_event_schema
     .transform((event) => ({id: event.id, type: event.type, event}))
     .pipe(z.object({id: z.number()}).and(wrapped_server_event_schema))
     .transform(({id, event}) => ({id, ...event}));

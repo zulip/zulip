@@ -1,8 +1,11 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
+import type {ServerMessage} from "./echo.ts";
 import * as echo from "./echo.ts";
 import * as loading from "./loading.ts";
 import * as message_events from "./message_events.ts";
@@ -10,38 +13,54 @@ import {page_params} from "./page_params.ts";
 import * as reload from "./reload.ts";
 import * as reload_state from "./reload_state.ts";
 import * as sent_messages from "./sent_messages.ts";
-import {server_event_schema} from "./server_event_types.ts";
+import {
+    type BaseServerEvent,
+    type ServerEvent,
+    type UpdateMessageEvent,
+    base_server_event_schema,
+    server_event_schema,
+} from "./server_event_types.ts";
 import * as server_events_dispatch from "./server_events_dispatch.ts";
+import type {StateData} from "./state_data.ts";
 import * as ui_report from "./ui_report.ts";
 import * as watchdog from "./watchdog.ts";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 
-export let queue_id;
-let last_event_id;
-let event_queue_longpoll_timeout_seconds;
+export let queue_id: string;
+let last_event_id: number;
+let event_queue_longpoll_timeout_seconds: number;
 
 let waiting_on_initial_fetch = true;
 
-let events_stored_while_loading = [];
+let events_stored_while_loading: BaseServerEvent[] = [];
 
-let get_events_xhr;
-let get_events_timeout;
+let get_events_xhr: JQuery.jqXHR | undefined;
+let get_events_timeout: ReturnType<typeof setTimeout> | undefined;
 let get_events_failures = 0;
-const get_events_params = {};
+const get_events_params: {
+    dont_block?: boolean;
+    queue_id?: string;
+    last_event_id?: number;
+    client_gravatar?: true;
+    slim_presence?: true;
+} = {};
 
 let event_queue_expired = false;
 
-function get_events_success(events) {
-    let messages = [];
-    const update_message_events = [];
-    const post_message_events = [];
+function get_events_success(events: BaseServerEvent[]): void {
+    let messages: ServerMessage[] = [];
+    const update_message_events: UpdateMessageEvent[] = [];
+    const post_message_events: (ServerEvent & {
+        type: "delete_message" | "submessage" | "update_message_flags";
+    })[] = [];
 
-    const clean_event = function clean_event(event) {
+    const clean_event = function clean_event(event: BaseServerEvent): BaseServerEvent {
         // Only log a whitelist of the event to remove private data
         return _.pick(event, "id", "type", "op");
     };
 
+    assert(get_events_params.last_event_id !== undefined);
     for (const event of events) {
         try {
             get_events_params.last_event_id = Math.max(get_events_params.last_event_id, event.id);
@@ -64,10 +83,10 @@ function get_events_success(events) {
     // called in the default case.  The goal of this split is to avoid
     // contributors needing to read or understand the complex and
     // rarely modified logic for non-normal events.
-    const dispatch_event = function dispatch_event(event) {
+    const dispatch_event = function dispatch_event(event: ServerEvent): void {
         switch (event.type) {
             case "message": {
-                const msg = {...event.message, flags: event.flags};
+                const msg: ServerMessage = {...event.message, flags: event.flags};
                 if (event.local_message_id) {
                     msg.local_id = event.local_message_id;
                 }
@@ -108,7 +127,7 @@ function get_events_success(events) {
             if (messages.length > 0) {
                 let sent_by_this_client = false;
                 for (const msg of messages) {
-                    if (sent_messages.messages.has(msg.local_id)) {
+                    if (msg.local_id !== undefined && sent_messages.messages.has(msg.local_id)) {
                         sent_by_this_client = true;
                     }
                     sent_messages.report_event_received(msg.local_id);
@@ -144,17 +163,17 @@ function get_events_success(events) {
     }
 }
 
-function show_ui_connection_error() {
+function show_ui_connection_error(): void {
     ui_report.show_error($("#connection-error"));
     $("#connection-error").addClass("get-events-error");
 }
 
-function hide_ui_connection_error() {
+function hide_ui_connection_error(): void {
     ui_report.hide_error($("#connection-error"));
     $("#connection-error").removeClass("get-events-error");
 }
 
-function get_events({dont_block = false} = {}) {
+function get_events({dont_block = false} = {}): void {
     if (reload_state.is_in_progress()) {
         return;
     }
@@ -195,9 +214,10 @@ function get_events({dont_block = false} = {}) {
         url: "/json/events",
         data: get_events_params,
         timeout: event_queue_longpoll_timeout_seconds * 1000,
-        success(data) {
+        success(raw_data) {
             watchdog.set_suspect_offline(false);
             try {
+                const data = z.object({events: z.array(base_server_event_schema)}).parse(raw_data);
                 get_events_xhr = undefined;
                 get_events_failures = 0;
                 hide_ui_connection_error();
@@ -213,7 +233,12 @@ function get_events({dont_block = false} = {}) {
                 get_events_xhr = undefined;
                 // If we're old enough that our message queue has been
                 // garbage collected, immediately reload.
-                if (xhr.status === 400 && xhr.responseJSON?.code === "BAD_EVENT_QUEUE_ID") {
+                if (
+                    xhr.status === 400 &&
+                    z
+                        .object({result: z.literal("error"), code: z.literal("BAD_EVENT_QUEUE_ID")})
+                        .safeParse(xhr.responseJSON).success
+                ) {
                     event_queue_expired = true;
                     reload.initiate({
                         immediate: true,
@@ -252,11 +277,21 @@ function get_events({dont_block = false} = {}) {
             const backoff_scale = Math.min(2 ** ((get_events_failures + 1) / 2), 90);
             const backoff_delay_secs = ((1 + Math.random()) / 2) * backoff_scale;
             let rate_limit_delay_secs = 0;
-            if (xhr.status === 429 && xhr.responseJSON?.code === "RATE_LIMIT_HIT") {
+            let parsed;
+            if (
+                xhr.status === 429 &&
+                (parsed = z
+                    .object({
+                        result: z.literal("error"),
+                        code: z.literal("RATE_LIMIT_HIT"),
+                        "retry-after": z.number(),
+                    })
+                    .safeParse(xhr.responseJSON)).success
+            ) {
                 // Add a bit of jitter to the required delay suggested
                 // by the server, because we may be racing with other
                 // copies of the web app.
-                rate_limit_delay_secs = xhr.responseJSON["retry-after"] + Math.random() * 0.5;
+                rate_limit_delay_secs = parsed.data["retry-after"] + Math.random() * 0.5;
             }
 
             const retry_delay_secs = Math.max(backoff_delay_secs, rate_limit_delay_secs);
@@ -265,29 +300,29 @@ function get_events({dont_block = false} = {}) {
     });
 }
 
-export function assert_get_events_running(error_message) {
+export function assert_get_events_running(error_message: string): void {
     if (get_events_xhr === undefined && get_events_timeout === undefined) {
         restart_get_events({dont_block: true});
         blueslip.error(error_message);
     }
 }
 
-export function restart_get_events(options) {
+export function restart_get_events(options?: {dont_block?: boolean}): void {
     get_events(options);
 }
 
-export function force_get_events() {
+export function force_get_events(): void {
     get_events_timeout = setTimeout(get_events, 0);
 }
 
-export function finished_initial_fetch() {
+export function finished_initial_fetch(): void {
     waiting_on_initial_fetch = false;
     get_events_success([]);
     // Destroy loading indicator after we added fetched messages.
     loading.destroy_indicator($("#page_loading_indicator"));
 }
 
-export function initialize(params) {
+export function initialize(params: StateData["server_events"]): void {
     queue_id = params.queue_id;
     last_event_id = params.last_event_id;
     event_queue_longpoll_timeout_seconds = params.event_queue_longpoll_timeout_seconds;
@@ -309,7 +344,7 @@ export function initialize(params) {
     get_events();
 }
 
-function cleanup_event_queue() {
+function cleanup_event_queue(): void {
     // Submit a request to the server to clean up our event queue
     if (event_queue_expired || page_params.no_event_queue) {
         return;

@@ -17,6 +17,7 @@ mock_esm("../src/reload_state", {
     is_in_progress() {
         return false;
     },
+    set_csrf_failed_handler() {},
 });
 page_params.test_suite = false;
 
@@ -85,7 +86,20 @@ const message = {
     content_type: "text/html",
 };
 
-server_events.finished_initial_fetch();
+run_test("initialize", ({override}) => {
+    override(channel, "get", ({success}) => {
+        success({events: []});
+    });
+
+    server_events.initialize({
+        queue_id: "q",
+        server_generation: 1,
+        event_queue_longpoll_timeout_seconds: 90,
+        last_event_id: -1,
+    });
+
+    server_events.finished_initial_fetch();
+});
 
 run_test("message_event", ({override}) => {
     const event = {
@@ -94,6 +108,9 @@ run_test("message_event", ({override}) => {
         message,
         flags: [],
     };
+    override(channel, "get", ({success}) => {
+        success({events: [event]});
+    });
 
     let inserted;
     override(message_events, "insert_new_messages", (messages) => {
@@ -102,7 +119,7 @@ run_test("message_event", ({override}) => {
         return messages;
     });
 
-    server_events._get_events_success([event]);
+    server_events.restart_get_events();
     assert.ok(inserted);
 });
 
