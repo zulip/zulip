@@ -234,6 +234,8 @@ export function populate_export_consents_table(): void {
         },
     );
 
+    export_consent_list_widget.clear_text_filter();
+
     filter_by_consent_dropdown_widget = new dropdown_widget.DropdownWidget({
         widget_name: "filter_by_consent",
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
