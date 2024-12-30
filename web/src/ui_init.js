@@ -116,7 +116,7 @@ import * as scheduled_messages_ui from "./scheduled_messages_ui.ts";
 import * as scroll_bar from "./scroll_bar.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as search from "./search.ts";
-import * as server_events from "./server_events.js";
+import * as server_events from "./server_events.ts";
 import * as server_events_state from "./server_events_state.ts";
 import * as settings from "./settings.ts";
 import * as settings_notifications from "./settings_notifications.ts";
