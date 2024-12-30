@@ -87,6 +87,8 @@ class UserBaseSettings(models.Model):
         default=WEB_LINE_HEIGHT_PERCENT_DEFAULT
     )
 
+    display_organization_name = models.BooleanField(default=False)
+
     # UI setting to control how animated images are played.
     web_animate_image_previews = models.TextField(default="on_hover")
 
@@ -357,6 +359,7 @@ class UserBaseSettings(models.Model):
         web_stream_unreads_count_display_policy=int,
         web_font_size_px=int,
         web_line_height_percent=int,
+        display_organization_name=bool,
         web_navigate_to_sent_message=bool,
         web_suggest_update_timezone=bool,
     )

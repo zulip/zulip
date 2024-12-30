@@ -775,6 +775,7 @@ export function dispatch_normal_event(event) {
                 "web_home_view",
                 "demote_inactive_streams",
                 "dense_mode",
+                "display_organization_name",
                 "web_mark_read_on_scroll_policy",
                 "web_channel_default_view",
                 "emojiset",
@@ -913,6 +914,9 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "web_suggest_update_timezone") {
                 $("#automatically_offer_update_time_zone").prop("checked", event.value);
+            }
+            if (event.property === "display_organization_name") {
+                $("#left-sidebar .organization_name").toggleClass("notdisplayed", !event.value);
             }
             settings_preferences.update_page(event.property);
             break;

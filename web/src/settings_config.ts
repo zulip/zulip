@@ -571,6 +571,7 @@ export const preferences_settings_labels = {
                 "Display names of reacting users when few users have reacted to a message",
         }),
     ),
+    display_organization_name: $t({defaultMessage: "Display organization name in left sidebar"}),
     fluid_layout_width: $t({defaultMessage: "Use full width on wide screens"}),
     high_contrast_mode: $t({defaultMessage: "High contrast mode"}),
     enter_sends: new Handlebars.SafeString(

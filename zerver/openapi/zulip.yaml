@@ -11882,6 +11882,13 @@ paths:
                     feature level.
                   type: integer
                   example: 122
+                display_organization_name:
+                  description: |
+                    Whether to display organization name in left-sidebar.
+
+                    **Changes**: New in Zulip 10.0 (feature level 333).
+                  type: boolean
+                  example: true
                 color_scheme:
                   description: |
                     Controls which [color theme](/help/dark-theme) to use.
@@ -12321,6 +12328,8 @@ paths:
               web_font_size_px:
                 contentType: application/json
               web_line_height_percent:
+                contentType: application/json
+              display_organization_name:
                 contentType: application/json
               color_scheme:
                 contentType: application/json
@@ -15217,6 +15226,13 @@ paths:
                               feature level.
                             type: integer
                             example: 122
+                          display_organization_name:
+                            description: |
+                              Whether to display organization name in left-sidebar.
+
+                              **Changes**: New in Zulip 10.0 (feature level 333).
+                            type: boolean
+                            example: true
                           color_scheme:
                             type: integer
                             description: |
@@ -17770,6 +17786,13 @@ paths:
                               feature level.
                             type: integer
                             example: 122
+                          display_organization_name:
+                            description: |
+                              Whether to display organization name in left-sidebar.
+
+                              **Changes**: New in Zulip 10.0 (feature level 333).
+                            type: boolean
+                            example: true
                           color_scheme:
                             type: integer
                             description: |
@@ -18941,6 +18964,13 @@ paths:
                     feature level.
                   type: integer
                   example: 122
+                display_organization_name:
+                  description: |
+                    Whether to display organization name in left-sidebar.
+
+                    **Changes**: New in Zulip 10.0 (feature level 333).
+                  type: boolean
+                  example: true
                 color_scheme:
                   description: |
                     Controls which [color theme](/help/dark-theme) to use.
@@ -19504,6 +19534,8 @@ paths:
               web_font_size_px:
                 contentType: application/json
               web_line_height_percent:
+                contentType: application/json
+              display_organization_name:
                 contentType: application/json
               color_scheme:
                 contentType: application/json
