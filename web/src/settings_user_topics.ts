@@ -4,12 +4,15 @@ import assert from "minimalistic-assert";
 import render_user_topic_ui_row from "../templates/user_topic_ui_row.hbs";
 
 import * as ListWidget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_config from "./settings_config.ts";
 import * as user_topics from "./user_topics.ts";
 import type {UserTopic} from "./user_topics.ts";
 
 export let loaded = false;
+
+let user_topics_list_widget: ListWidgetType<UserTopic, UserTopic>;
 
 export function populate_list(): void {
     const all_user_topics = [];
@@ -25,7 +28,7 @@ export function populate_list(): void {
     const $user_topics_table = $("#user_topics_table");
     const $search_input = $<HTMLInputElement>("#user_topics_search");
 
-    ListWidget.create<UserTopic>($user_topics_table, all_user_topics, {
+    user_topics_list_widget = ListWidget.create<UserTopic>($user_topics_table, all_user_topics, {
         name: "user-topics-list",
         get_item: ListWidget.default_get_item,
         modifier_html(user_topic) {
@@ -56,6 +59,8 @@ export function populate_list(): void {
         $parent_container: $("#user-topic-settings"),
         $simplebar_container: $("#user-topic-settings .progressive-table-wrapper"),
     });
+
+    user_topics_list_widget?.clear_text_filter();
 }
 
 export function set_up(): void {
