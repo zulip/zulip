@@ -41,7 +41,7 @@ import * as stream_list from "./stream_list.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
-import type {StreamPermissionGroupSetting, StreamPostPolicy} from "./stream_types.ts";
+import type {StreamPermissionGroupSetting} from "./stream_types.ts";
 import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
@@ -195,14 +195,6 @@ export function update_stream_privacy(
 
     // Update navbar if needed
     message_view_header.maybe_rerender_title_area_for_stream(sub);
-}
-
-export function update_stream_post_policy(
-    sub: StreamSubscription,
-    new_value: StreamPostPolicy,
-): void {
-    stream_data.update_stream_post_policy(sub, new_value);
-    stream_ui_updates.update_setting_element(sub, "stream_post_policy");
 }
 
 export function update_message_retention_setting(
@@ -733,7 +725,6 @@ function setup_page(callback: () => void): void {
             is_owner: current_user.is_owner,
             stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
             stream_privacy_policy,
-            stream_post_policy_values: settings_config.stream_post_policy_values,
             check_default_stream: false,
             zulip_plan_is_not_limited: realm.zulip_plan_is_not_limited,
             org_level_message_retention_setting:

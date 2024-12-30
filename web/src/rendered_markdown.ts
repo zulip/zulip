@@ -212,7 +212,7 @@ export const update_elements = ($content: JQuery): void => {
         if (user_group_id && $(this).find(".highlight").length === 0) {
             // Edit the mention to show the current name for the
             // user group, if its not in search.
-            set_name_in_mention_element(this, user_group.name);
+            set_name_in_mention_element(this, user_groups.get_display_group_name(user_group.name));
         }
     });
 

@@ -470,10 +470,10 @@ def build_stream(
         date_created=date_created,
         invite_only=invite_only,
         id=stream_id,
-        stream_post_policy=stream_post_policy,
         history_public_to_subscribers=history_public_to_subscribers,
     )
     stream_dict = model_to_dict(stream, exclude=["realm"])
+    stream_dict["stream_post_policy"] = stream_post_policy
     stream_dict["realm"] = realm_id
     return stream_dict
 

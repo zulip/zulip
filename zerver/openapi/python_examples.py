@@ -804,7 +804,6 @@ def update_stream(client: Client, stream_id: int) -> None:
     # Update settings for the channel with a given ID.
     request = {
         "stream_id": stream_id,
-        "stream_post_policy": 2,
         "is_private": True,
     }
     result = client.update_stream(request)

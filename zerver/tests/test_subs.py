@@ -38,7 +38,6 @@ from zerver.actions.streams import (
     deactivated_streams_by_old_name,
     do_change_stream_group_based_setting,
     do_change_stream_permission,
-    do_change_stream_post_policy,
     do_deactivate_stream,
     do_unarchive_stream,
 )
@@ -254,7 +253,12 @@ class TestMiscStuff(ZulipTestCase):
         expected_fields = fix_expected_fields_for_stream_group_settings(expected_fields)
 
         stream_dict_fields = set(APIStreamDict.__annotations__.keys())
-        computed_fields = {"is_announcement_only", "is_default", "stream_weekly_traffic"}
+        computed_fields = {
+            "is_announcement_only",
+            "is_default",
+            "stream_post_policy",
+            "stream_weekly_traffic",
+        }
 
         self.assertEqual(stream_dict_fields - computed_fields, expected_fields)
 
@@ -310,7 +314,6 @@ class TestCreateStreams(ZulipTestCase):
                     "name": stream_name,
                     "description": stream_description,
                     "invite_only": True,
-                    "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS,
                     "message_retention_days": -1,
                     "can_remove_subscribers_group": moderators_system_group,
                 }
@@ -329,7 +332,6 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(actual_stream_descriptions, set(stream_descriptions))
         for stream in new_streams:
             self.assertTrue(stream.invite_only)
-            self.assertTrue(stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS)
             self.assertTrue(stream.message_retention_days == -1)
             self.assertEqual(stream.can_remove_subscribers_group.id, moderators_system_group.id)
             # Streams created where acting_user is None have no creator
@@ -494,7 +496,6 @@ class TestCreateStreams(ZulipTestCase):
             "invite_only": "false",
             "announce": "true",
             "principals": orjson.dumps([iago.id, aaron.id, cordelia.id, hamlet.id]).decode(),
-            "stream_post_policy": "1",
         }
 
         response = self.client_post("/json/users/me/subscriptions", data)
@@ -544,13 +545,10 @@ class TestCreateStreams(ZulipTestCase):
         # But it should be marked as read for Iago, the stream creator.
         self.assert_length(iago_unread_messages, 0)
 
-    def test_can_administer_channel_group_on_stream_creation(self) -> None:
+    def test_can_administer_channel_group_default_on_stream_creation(self) -> None:
         user = self.example_user("hamlet")
         realm = user.realm
         self.login_user(user)
-        moderators_system_group = NamedUserGroup.objects.get(
-            name="role:moderators", realm=realm, is_system_group=True
-        )
         nobody_system_group = NamedUserGroup.objects.get(
             name="role:nobody", realm=realm, is_system_group=True
         )
@@ -565,192 +563,173 @@ class TestCreateStreams(ZulipTestCase):
         )
         self.assertCountEqual(stream.can_administer_channel_group.direct_members.all(), [user])
 
-        subscriptions = [{"name": "new_stream1", "description": "First new stream"}]
-        result = self.common_subscribe_to_streams(
-            user,
-            subscriptions,
-            {"can_administer_channel_group": orjson.dumps(moderators_system_group.id).decode()},
-            subdomain="zulip",
-        )
-        self.assert_json_success(result)
-        stream = get_stream("new_stream1", realm)
-        self.assertEqual(stream.can_administer_channel_group.id, moderators_system_group.id)
-
-        subscriptions = [{"name": "new_stream2", "description": "Second new stream"}]
-        result = self.common_subscribe_to_streams(user, subscriptions, subdomain="zulip")
-        self.assert_json_success(result)
-        stream = get_stream("new_stream2", realm)
-        self.assertCountEqual(stream.can_administer_channel_group.direct_members.all(), [user])
-
-        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
-        subscriptions = [{"name": "new_stream3", "description": "Third new stream"}]
-        result = self.common_subscribe_to_streams(
-            user,
-            subscriptions,
-            {"can_administer_channel_group": orjson.dumps(hamletcharacters_group.id).decode()},
-            allow_fail=True,
-            subdomain="zulip",
-        )
-        self.assert_json_success(result)
-        stream = get_stream("new_stream3", realm)
-        self.assertEqual(stream.can_administer_channel_group.id, hamletcharacters_group.id)
-
-        subscriptions = [{"name": "new_stream4", "description": "Fourth new stream"}]
-        result = self.common_subscribe_to_streams(
-            user,
-            subscriptions,
-            {
-                "can_administer_channel_group": orjson.dumps(
-                    {"direct_members": [user.id], "direct_subgroups": [moderators_system_group.id]}
-                ).decode()
-            },
-            allow_fail=True,
-            subdomain="zulip",
-        )
-        self.assert_json_success(result)
-        stream = get_stream("new_stream4", realm)
-        self.assertEqual(list(stream.can_administer_channel_group.direct_members.all()), [user])
-        self.assertEqual(
-            list(stream.can_administer_channel_group.direct_subgroups.all()),
-            [moderators_system_group],
-        )
-
-        subscriptions = [{"name": "new_stream5", "description": "Fifth new stream"}]
-        internet_group = NamedUserGroup.objects.get(
-            name="role:internet", is_system_group=True, realm=realm
-        )
-        result = self.common_subscribe_to_streams(
-            user,
-            subscriptions,
-            {"can_administer_channel_group": orjson.dumps(internet_group.id).decode()},
-            allow_fail=True,
-            subdomain="zulip",
-        )
-        self.assert_json_error(
-            result,
-            "'can_administer_channel_group' setting cannot be set to 'role:internet' group.",
-        )
-
-        everyone_group = NamedUserGroup.objects.get(
-            name="role:everyone", is_system_group=True, realm=realm
-        )
-        result = self.common_subscribe_to_streams(
-            user,
-            subscriptions,
-            {"can_administer_channel_group": orjson.dumps(everyone_group.id).decode()},
-            allow_fail=True,
-            subdomain="zulip",
-        )
-        self.assert_json_error(
-            result,
-            "'can_administer_channel_group' setting cannot be set to 'role:everyone' group.",
-        )
-
-    def test_can_remove_subscribers_group_on_stream_creation(self) -> None:
+    def do_test_permission_setting_on_stream_creation(self, setting_name: str) -> None:
         user = self.example_user("hamlet")
         realm = user.realm
         self.login_user(user)
         moderators_system_group = NamedUserGroup.objects.get(
             name="role:moderators", realm=realm, is_system_group=True
         )
-        admins_system_group = NamedUserGroup.objects.get(
-            name="role:administrators", realm=realm, is_system_group=True
-        )
 
-        subscriptions = [{"name": "new_stream1", "description": "First new stream"}]
+        permission_config = Stream.stream_permission_group_settings[setting_name]
+
+        subscriptions = [{"name": "new_stream", "description": "New stream"}]
+        extra_post_data = {}
+        extra_post_data[setting_name] = orjson.dumps(moderators_system_group.id).decode()
         result = self.common_subscribe_to_streams(
             user,
             subscriptions,
-            {"can_remove_subscribers_group": orjson.dumps(moderators_system_group.id).decode()},
+            extra_post_data,
             subdomain="zulip",
         )
         self.assert_json_success(result)
-        stream = get_stream("new_stream1", realm)
-        self.assertEqual(stream.can_remove_subscribers_group.id, moderators_system_group.id)
+        stream = get_stream("new_stream", realm)
+        self.assertEqual(getattr(stream, setting_name).id, moderators_system_group.id)
+        # Delete the created stream, so we can create a new one for
+        # testing another setting value.
+        stream.delete()
 
-        subscriptions = [{"name": "new_stream2", "description": "Second new stream"}]
+        subscriptions = [{"name": "new_stream", "description": "New stream"}]
         result = self.common_subscribe_to_streams(user, subscriptions, subdomain="zulip")
         self.assert_json_success(result)
-        stream = get_stream("new_stream2", realm)
-        self.assertEqual(stream.can_remove_subscribers_group.id, admins_system_group.id)
+        stream = get_stream("new_stream", realm)
+        if permission_config.default_group_name == "stream_creator_or_nobody":
+            self.assertEqual(list(getattr(stream, setting_name).direct_members.all()), [user])
+            self.assertEqual(
+                list(getattr(stream, setting_name).direct_subgroups.all()),
+                [],
+            )
+        else:
+            default_group = NamedUserGroup.objects.get(
+                name=permission_config.default_group_name, realm=realm, is_system_group=True
+            )
+            self.assertEqual(getattr(stream, setting_name).id, default_group.id)
+        # Delete the created stream, so we can create a new one for
+        # testing another setting value.
+        stream.delete()
 
         hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
-        subscriptions = [{"name": "new_stream3", "description": "Third new stream"}]
+        subscriptions = [{"name": "new_stream", "description": "New stream"}]
+        extra_post_data[setting_name] = orjson.dumps(hamletcharacters_group.id).decode()
         result = self.common_subscribe_to_streams(
             user,
             subscriptions,
-            {"can_remove_subscribers_group": orjson.dumps(hamletcharacters_group.id).decode()},
+            extra_post_data,
             allow_fail=True,
             subdomain="zulip",
         )
         self.assert_json_success(result)
-        stream = get_stream("new_stream3", realm)
-        self.assertEqual(stream.can_remove_subscribers_group.id, hamletcharacters_group.id)
+        stream = get_stream("new_stream", realm)
+        self.assertEqual(getattr(stream, setting_name).id, hamletcharacters_group.id)
+        # Delete the created stream, so we can create a new one for
+        # testing another setting value.
+        stream.delete()
 
-        subscriptions = [{"name": "new_stream4", "description": "Fourth new stream"}]
+        subscriptions = [{"name": "new_stream", "description": "New stream"}]
+        extra_post_data[setting_name] = orjson.dumps(
+            {"direct_members": [user.id], "direct_subgroups": [moderators_system_group.id]}
+        ).decode()
         result = self.common_subscribe_to_streams(
             user,
             subscriptions,
-            {
-                "can_remove_subscribers_group": orjson.dumps(
-                    {"direct_members": [user.id], "direct_subgroups": [moderators_system_group.id]}
-                ).decode()
-            },
+            extra_post_data,
             allow_fail=True,
             subdomain="zulip",
         )
         self.assert_json_success(result)
-        stream = get_stream("new_stream4", realm)
-        self.assertEqual(list(stream.can_remove_subscribers_group.direct_members.all()), [user])
+        stream = get_stream("new_stream", realm)
+        self.assertEqual(list(getattr(stream, setting_name).direct_members.all()), [user])
         self.assertEqual(
-            list(stream.can_remove_subscribers_group.direct_subgroups.all()),
+            list(getattr(stream, setting_name).direct_subgroups.all()),
             [moderators_system_group],
         )
+        # Delete the created stream, so we can create a new one for
+        # testing another setting value.
+        stream.delete()
 
-        subscriptions = [{"name": "new_stream5", "description": "Fifth new stream"}]
+        subscriptions = [{"name": "new_stream", "description": "New stream"}]
         owners_group = NamedUserGroup.objects.get(
             name="role:owners", is_system_group=True, realm=realm
         )
+        extra_post_data[setting_name] = orjson.dumps(owners_group.id).decode()
         result = self.common_subscribe_to_streams(
             user,
             subscriptions,
-            {"can_remove_subscribers_group": orjson.dumps(owners_group.id).decode()},
+            extra_post_data,
             allow_fail=True,
             subdomain="zulip",
         )
         self.assert_json_success(result)
-        stream = get_stream("new_stream5", realm)
-        self.assertEqual(stream.can_remove_subscribers_group.id, owners_group.id)
+        stream = get_stream("new_stream", realm)
+        self.assertEqual(getattr(stream, setting_name).id, owners_group.id)
+        # Delete the created stream, so we can create a new one for
+        # testing another setting value.
+        stream.delete()
 
-        subscriptions = [{"name": "new_stream6", "description": "Sixth new stream"}]
+        subscriptions = [{"name": "new_stream", "description": "New stream"}]
         nobody_group = NamedUserGroup.objects.get(
             name="role:nobody", is_system_group=True, realm=realm
         )
+        extra_post_data[setting_name] = orjson.dumps(nobody_group.id).decode()
         result = self.common_subscribe_to_streams(
             user,
             subscriptions,
-            {"can_remove_subscribers_group": orjson.dumps(nobody_group.id).decode()},
+            extra_post_data,
             allow_fail=True,
             subdomain="zulip",
         )
-        stream = get_stream("new_stream6", realm)
-        self.assertEqual(stream.can_remove_subscribers_group.id, nobody_group.id)
+        self.assert_json_success(result)
+        stream = get_stream("new_stream", realm)
+        self.assertEqual(getattr(stream, setting_name).id, nobody_group.id)
+        # Delete the created stream, so we can create a new one for
+        # testing another setting value.
+        stream.delete()
 
-        subscriptions = [{"name": "new_stream7", "description": "Seventh new stream"}]
-        internet_group = NamedUserGroup.objects.get(
-            name="role:internet", is_system_group=True, realm=realm
+        subscriptions = [{"name": "new_stream", "description": "New stream"}]
+        everyone_group = NamedUserGroup.objects.get(
+            name="role:everyone", is_system_group=True, realm=realm
         )
+        extra_post_data[setting_name] = orjson.dumps(everyone_group.id).decode()
         result = self.common_subscribe_to_streams(
             user,
             subscriptions,
-            {"can_remove_subscribers_group": orjson.dumps(internet_group.id).decode()},
+            extra_post_data,
+            allow_fail=True,
+            subdomain="zulip",
+        )
+        if permission_config.allow_everyone_group:
+            self.assert_json_success(result)
+            stream = get_stream("new_stream", realm)
+            self.assertEqual(getattr(stream, setting_name).id, everyone_group.id)
+            # Delete the created stream, so we can create a new one for
+            # testing another setting value.
+            stream.delete()
+        else:
+            self.assert_json_error(
+                result,
+                f"'{setting_name}' setting cannot be set to 'role:everyone' group.",
+            )
+
+        subscriptions = [{"name": "new_stream", "description": "New stream"}]
+        internet_group = NamedUserGroup.objects.get(
+            name="role:internet", is_system_group=True, realm=realm
+        )
+        extra_post_data[setting_name] = orjson.dumps(internet_group.id).decode()
+        result = self.common_subscribe_to_streams(
+            user,
+            subscriptions,
+            extra_post_data,
             allow_fail=True,
             subdomain="zulip",
         )
         self.assert_json_error(
             result,
-            "'can_remove_subscribers_group' setting cannot be set to 'role:internet' group.",
+            f"'{setting_name}' setting cannot be set to 'role:internet' group.",
         )
+
+    def test_permission_settings_on_stream_creation(self) -> None:
+        for setting_name in Stream.stream_permission_group_settings:
+            self.do_test_permission_setting_on_stream_creation(setting_name)
 
     def test_acting_user_is_creator(self) -> None:
         """
@@ -766,7 +745,6 @@ class TestCreateStreams(ZulipTestCase):
                     description="No description",
                     invite_only=True,
                     is_web_public=True,
-                    stream_post_policy=Stream.STREAM_POST_POLICY_ADMINS,
                 )
             ],
             acting_user=hamlet,
@@ -2254,127 +2232,6 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_error(result, "You do not have permission to administer this channel.")
 
-    def test_change_to_stream_post_policy_admins(self) -> None:
-        user_profile = self.example_user("hamlet")
-        self.login_user(user_profile)
-
-        self.subscribe(user_profile, "stream_name1")
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
-
-        stream_id = get_stream("stream_name1", user_profile.realm).id
-        result = self.client_patch(
-            f"/json/streams/{stream_id}", {"is_announcement_only": orjson.dumps(True).decode()}
-        )
-        self.assert_json_success(result)
-        stream = get_stream("stream_name1", user_profile.realm)
-        self.assertEqual(stream.stream_post_policy, Stream.STREAM_POST_POLICY_ADMINS)
-
-        messages = get_topic_messages(user_profile, stream, "channel events")
-        expected_notification = (
-            f"@_**{user_profile.full_name}|{user_profile.id}** changed the "
-            "[posting permissions](/help/channel-posting-policy) for this channel:\n\n"
-            "* **Old permissions**: All channel members can post.\n"
-            "* **New permissions**: Only organization administrators can post."
-        )
-        self.assertEqual(messages[-1].content, expected_notification)
-
-        realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
-            modified_stream=stream,
-        ).last()
-        assert realm_audit_log is not None
-        expected_extra_data = {
-            RealmAuditLog.OLD_VALUE: Stream.STREAM_POST_POLICY_EVERYONE,
-            RealmAuditLog.NEW_VALUE: Stream.STREAM_POST_POLICY_ADMINS,
-            "property": "stream_post_policy",
-        }
-        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
-
-    def test_change_stream_post_policy_requires_admin(self) -> None:
-        user_profile = self.example_user("hamlet")
-        self.login_user(user_profile)
-
-        self.make_stream("stream_name1")
-        stream = self.subscribe(user_profile, "stream_name1")
-
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-
-        do_set_realm_property(user_profile.realm, "waiting_period_threshold", 10, acting_user=None)
-
-        def test_non_admin(how_old: int, is_new: bool, policy: int) -> None:
-            user_profile.date_joined = timezone_now() - timedelta(days=how_old)
-            user_profile.save()
-            self.assertEqual(user_profile.is_provisional_member, is_new)
-            stream = get_stream("stream_name1", user_profile.realm)
-            self.assertFalse(is_user_in_group(stream.can_administer_channel_group, user_profile))
-            result = self.client_patch(
-                f"/json/streams/{stream.id}", {"stream_post_policy": orjson.dumps(policy).decode()}
-            )
-            self.assert_json_error(result, "You do not have permission to administer this channel.")
-
-        policies = [
-            Stream.STREAM_POST_POLICY_ADMINS,
-            Stream.STREAM_POST_POLICY_MODERATORS,
-            Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS,
-        ]
-
-        for policy in policies:
-            test_non_admin(how_old=15, is_new=False, policy=policy)
-            test_non_admin(how_old=5, is_new=True, policy=policy)
-
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
-
-        for policy in policies:
-            stream = get_stream("stream_name1", user_profile.realm)
-            old_post_policy = stream.stream_post_policy
-            result = self.client_patch(
-                f"/json/streams/{stream.id}", {"stream_post_policy": orjson.dumps(policy).decode()}
-            )
-            self.assert_json_success(result)
-            stream = get_stream("stream_name1", user_profile.realm)
-            self.assertEqual(stream.stream_post_policy, policy)
-
-            messages = get_topic_messages(user_profile, stream, "channel events")
-            expected_notification = (
-                f"@_**{user_profile.full_name}|{user_profile.id}** changed the "
-                "[posting permissions](/help/channel-posting-policy) for this channel:\n\n"
-                f"* **Old permissions**: {Stream.POST_POLICIES[old_post_policy]}.\n"
-                f"* **New permissions**: {Stream.POST_POLICIES[policy]}."
-            )
-
-            self.assertEqual(messages[-1].content, expected_notification)
-
-            realm_audit_log = RealmAuditLog.objects.filter(
-                event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
-                modified_stream=stream,
-            ).last()
-            assert realm_audit_log is not None
-            expected_extra_data = {
-                RealmAuditLog.OLD_VALUE: old_post_policy,
-                RealmAuditLog.NEW_VALUE: policy,
-                "property": "stream_post_policy",
-            }
-            self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
-
-        # Test non-admin should be able to change policy if they are
-        # part of can_administer_channel_group
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        user_profile_group = check_add_user_group(
-            user_profile.realm, "user_profile_group", [user_profile], acting_user=user_profile
-        )
-        do_change_stream_group_based_setting(
-            stream,
-            "can_administer_channel_group",
-            user_profile_group,
-            acting_user=None,
-        )
-        stream = get_stream("stream_name1", user_profile.realm)
-        old_post_policy = stream.stream_post_policy
-        result = self.client_patch(
-            f"/json/streams/{stream.id}", {"stream_post_policy": orjson.dumps(policies[0]).decode()}
-        )
-        self.assert_json_success(result)
-
     def test_change_stream_message_retention_days_notifications(self) -> None:
         user_profile = self.example_user("desdemona")
         self.login_user(user_profile)
@@ -2567,10 +2424,23 @@ class StreamAdminTest(ZulipTestCase):
         stream = get_stream("stream_name1", realm)
         self.assertEqual(stream.message_retention_days, 2)
 
-    def test_change_stream_can_remove_subscribers_group(self) -> None:
+    def do_test_change_stream_permission_setting(self, setting_name: str) -> None:
         user_profile = self.example_user("iago")
         realm = user_profile.realm
         stream = self.subscribe(user_profile, "stream_name1")
+
+        permission_config = Stream.stream_permission_group_settings[setting_name]
+
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", is_system_group=True, realm=realm
+        )
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_administer_channel_group",
+            nobody_group,
+            acting_user=None,
+        )
 
         moderators_system_group = NamedUserGroup.objects.get(
             name="role:moderators", realm=realm, is_system_group=True
@@ -2578,284 +2448,281 @@ class StreamAdminTest(ZulipTestCase):
         shiva = self.example_user("shiva")
         self.login_user(shiva)
         self.assertFalse(is_user_in_group(stream.can_administer_channel_group, shiva))
-        result = self.client_patch(
-            f"/json/streams/{stream.id}",
-            {
-                "can_remove_subscribers_group": orjson.dumps(
-                    {"new": moderators_system_group.id}
-                ).decode()
-            },
-        )
+
+        params = {}
+        params[setting_name] = orjson.dumps({"new": moderators_system_group.id}).decode()
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
         self.assert_json_error(result, "You do not have permission to administer this channel.")
 
-        shiva_group = check_add_user_group(realm, "user_profile_group", [shiva], acting_user=shiva)
         do_change_stream_group_based_setting(
             stream,
             "can_administer_channel_group",
-            shiva_group,
+            moderators_system_group,
             acting_user=None,
         )
         members_system_group = NamedUserGroup.objects.get(
             name="role:members", realm=realm, is_system_group=True
         )
+        params[setting_name] = orjson.dumps({"new": members_system_group.id}).decode()
         result = self.client_patch(
             f"/json/streams/{stream.id}",
-            {
-                "can_remove_subscribers_group": orjson.dumps(
-                    {"new": members_system_group.id}
-                ).decode()
-            },
+            params,
         )
         self.assert_json_success(result)
         stream = get_stream("stream_name1", realm)
-        self.assertEqual(stream.can_remove_subscribers_group.id, members_system_group.id)
+        self.assertEqual(getattr(stream, setting_name).id, members_system_group.id)
 
         self.login("iago")
+        params[setting_name] = orjson.dumps({"new": moderators_system_group.id}).decode()
         result = self.client_patch(
             f"/json/streams/{stream.id}",
-            {
-                "can_remove_subscribers_group": orjson.dumps(
-                    {"new": moderators_system_group.id}
-                ).decode()
-            },
+            params,
         )
         self.assert_json_success(result)
         stream = get_stream("stream_name1", realm)
-        self.assertEqual(stream.can_remove_subscribers_group.id, moderators_system_group.id)
+        self.assertEqual(getattr(stream, setting_name).id, moderators_system_group.id)
 
-        # This setting can only be set to system groups.
         hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        params[setting_name] = orjson.dumps({"new": hamletcharacters_group.id}).decode()
         result = self.client_patch(
             f"/json/streams/{stream.id}",
-            {
-                "can_remove_subscribers_group": orjson.dumps(
-                    {"new": hamletcharacters_group.id}
-                ).decode()
-            },
+            params,
         )
         self.assert_json_success(result)
         stream = get_stream("stream_name1", realm)
-        self.assertEqual(stream.can_remove_subscribers_group.id, hamletcharacters_group.id)
+        self.assertEqual(getattr(stream, setting_name).id, hamletcharacters_group.id)
 
         # Test changing it to anonymous group.
         hamlet = self.example_user("hamlet")
 
         # Test passing incorrect old value.
+        params[setting_name] = orjson.dumps(
+            {
+                "new": {
+                    "direct_members": [hamlet.id],
+                    "direct_subgroups": [moderators_system_group.id],
+                },
+                "old": moderators_system_group.id,
+            }
+        ).decode()
         result = self.client_patch(
             f"/json/streams/{stream.id}",
-            {
-                "can_remove_subscribers_group": orjson.dumps(
-                    {
-                        "new": {
-                            "direct_members": [hamlet.id],
-                            "direct_subgroups": [moderators_system_group.id],
-                        },
-                        "old": moderators_system_group.id,
-                    }
-                ).decode()
-            },
+            params,
         )
         self.assert_json_error(result, "'old' value does not match the expected value.")
 
+        params[setting_name] = orjson.dumps(
+            {
+                "new": {
+                    "direct_members": [hamlet.id],
+                    "direct_subgroups": [moderators_system_group.id],
+                },
+                "old": hamletcharacters_group.id,
+            }
+        ).decode()
         result = self.client_patch(
             f"/json/streams/{stream.id}",
-            {
-                "can_remove_subscribers_group": orjson.dumps(
-                    {
-                        "new": {
-                            "direct_members": [hamlet.id],
-                            "direct_subgroups": [moderators_system_group.id],
-                        },
-                        "old": hamletcharacters_group.id,
-                    }
-                ).decode()
-            },
+            params,
         )
         self.assert_json_success(result)
         stream = get_stream("stream_name1", realm)
-        self.assertEqual(list(stream.can_remove_subscribers_group.direct_members.all()), [hamlet])
+        self.assertEqual(list(getattr(stream, setting_name).direct_members.all()), [hamlet])
         self.assertEqual(
-            list(stream.can_remove_subscribers_group.direct_subgroups.all()),
+            list(getattr(stream, setting_name).direct_subgroups.all()),
             [moderators_system_group],
         )
 
         owners_group = NamedUserGroup.objects.get(
             name="role:owners", is_system_group=True, realm=realm
         )
+        params[setting_name] = orjson.dumps({"new": owners_group.id}).decode()
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", realm)
+        self.assertEqual(getattr(stream, setting_name).id, owners_group.id)
+
+        params[setting_name] = orjson.dumps({"new": nobody_group.id}).decode()
         result = self.client_patch(
             f"/json/streams/{stream.id}",
-            {"can_remove_subscribers_group": orjson.dumps({"new": owners_group.id}).decode()},
+            params,
         )
         self.assert_json_success(result)
         stream = get_stream("stream_name1", realm)
-        self.assertEqual(stream.can_remove_subscribers_group.id, owners_group.id)
-
-        nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=realm
-        )
-        result = self.client_patch(
-            f"/json/streams/{stream.id}",
-            {"can_remove_subscribers_group": orjson.dumps({"new": nobody_group.id}).decode()},
-        )
-        self.assert_json_success(result)
-        stream = get_stream("stream_name1", realm)
-        self.assertEqual(stream.can_remove_subscribers_group.id, nobody_group.id)
-
-        internet_group = NamedUserGroup.objects.get(
-            name="role:internet", is_system_group=True, realm=realm
-        )
-        result = self.client_patch(
-            f"/json/streams/{stream.id}",
-            {"can_remove_subscribers_group": orjson.dumps({"new": internet_group.id}).decode()},
-        )
-        self.assert_json_error(
-            result,
-            "'can_remove_subscribers_group' setting cannot be set to 'role:internet' group.",
-        )
-
-        # For private streams, even admins must be subscribed to the stream to change
-        # can_remove_subscribers_group setting.
-        stream = self.make_stream("stream_name2", invite_only=True)
-        result = self.client_patch(
-            f"/json/streams/{stream.id}",
-            {
-                "can_remove_subscribers_group": orjson.dumps(
-                    {"new": moderators_system_group.id}
-                ).decode()
-            },
-        )
-        self.assert_json_error(result, "Invalid channel ID")
-
-        self.subscribe(user_profile, "stream_name2")
-        result = self.client_patch(
-            f"/json/streams/{stream.id}",
-            {
-                "can_remove_subscribers_group": orjson.dumps(
-                    {"new": moderators_system_group.id}
-                ).decode()
-            },
-        )
-        self.assert_json_success(result)
-        stream = get_stream("stream_name2", realm)
-        self.assertEqual(stream.can_remove_subscribers_group.id, moderators_system_group.id)
-
-    def test_change_stream_can_administer_channel_group(self) -> None:
-        user_profile = self.example_user("iago")
-        realm = user_profile.realm
-        stream = self.subscribe(user_profile, "stream_name1")
-
-        moderators_system_group = NamedUserGroup.objects.get(
-            name="role:moderators", realm=realm, is_system_group=True
-        )
-        shiva = self.example_user("shiva")
-        self.login_user(shiva)
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group, shiva))
-        result = self.client_patch(
-            f"/json/streams/{stream.id}",
-            {
-                "can_administer_channel_group": orjson.dumps(
-                    {"new": moderators_system_group.id}
-                ).decode()
-            },
-        )
-        self.assert_json_error(result, "You do not have permission to administer this channel.")
-
-        shiva_group = check_add_user_group(realm, "user_profile_group", [shiva], acting_user=shiva)
-        do_change_stream_group_based_setting(
-            stream,
-            "can_administer_channel_group",
-            shiva_group,
-            acting_user=None,
-        )
-        members_system_group = NamedUserGroup.objects.get(
-            name="role:members", realm=realm, is_system_group=True
-        )
-        result = self.client_patch(
-            f"/json/streams/{stream.id}",
-            {
-                "can_administer_channel_group": orjson.dumps(
-                    {"new": members_system_group.id}
-                ).decode()
-            },
-        )
-        self.assert_json_success(result)
-        stream = get_stream("stream_name1", realm)
-        self.assertEqual(stream.can_administer_channel_group.id, members_system_group.id)
-
-        self.login("iago")
-        result = self.client_patch(
-            f"/json/streams/{stream.id}",
-            {
-                "can_administer_channel_group": orjson.dumps(
-                    {"new": moderators_system_group.id}
-                ).decode()
-            },
-        )
-        self.assert_json_success(result)
-        stream = get_stream("stream_name1", realm)
-        self.assertEqual(stream.can_administer_channel_group.id, moderators_system_group.id)
-
-        # This setting can be set to non-system groups.
-        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
-        result = self.client_patch(
-            f"/json/streams/{stream.id}",
-            {
-                "can_administer_channel_group": orjson.dumps(
-                    {"new": hamletcharacters_group.id}
-                ).decode()
-            },
-        )
-        self.assert_json_success(result)
-
-        internet_group = NamedUserGroup.objects.get(
-            name="role:internet", is_system_group=True, realm=realm
-        )
-        result = self.client_patch(
-            f"/json/streams/{stream.id}",
-            {"can_administer_channel_group": orjson.dumps({"new": internet_group.id}).decode()},
-        )
-        self.assert_json_error(
-            result,
-            "'can_administer_channel_group' setting cannot be set to 'role:internet' group.",
-        )
+        self.assertEqual(getattr(stream, setting_name).id, nobody_group.id)
 
         everyone_group = NamedUserGroup.objects.get(
             name="role:everyone", is_system_group=True, realm=realm
         )
+        params[setting_name] = orjson.dumps({"new": everyone_group.id}).decode()
         result = self.client_patch(
             f"/json/streams/{stream.id}",
-            {"can_administer_channel_group": orjson.dumps({"new": everyone_group.id}).decode()},
+            params,
+        )
+        if permission_config.allow_everyone_group:
+            self.assert_json_success(result)
+            stream = get_stream("stream_name1", realm)
+            self.assertEqual(getattr(stream, setting_name).id, everyone_group.id)
+        else:
+            self.assert_json_error(
+                result,
+                f"'{setting_name}' setting cannot be set to 'role:everyone' group.",
+            )
+
+        internet_group = NamedUserGroup.objects.get(
+            name="role:internet", is_system_group=True, realm=realm
+        )
+        params[setting_name] = orjson.dumps({"new": internet_group.id}).decode()
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            params,
         )
         self.assert_json_error(
             result,
-            "'can_administer_channel_group' setting cannot be set to 'role:everyone' group.",
+            f"'{setting_name}' setting cannot be set to 'role:internet' group.",
         )
 
-        # For private streams, even admins must be subscribed to the stream to change
-        # can_administer_channel_group setting.
-        stream = self.make_stream("stream_name2", invite_only=True)
+        # For private streams, even admins must be subscribed to the
+        # stream to change the setting.
+        stream = get_stream("stream_name2", realm)
+        params[setting_name] = orjson.dumps({"new": moderators_system_group.id}).decode()
         result = self.client_patch(
             f"/json/streams/{stream.id}",
-            {
-                "can_administer_channel_group": orjson.dumps(
-                    {"new": moderators_system_group.id}
-                ).decode()
-            },
+            params,
         )
         self.assert_json_error(result, "Invalid channel ID")
 
         self.subscribe(user_profile, "stream_name2")
         result = self.client_patch(
             f"/json/streams/{stream.id}",
+            params,
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name2", realm)
+        self.assertEqual(getattr(stream, setting_name).id, moderators_system_group.id)
+        # Unsubscribe user from private stream to test next setting.
+        self.unsubscribe(user_profile, "stream_name2")
+
+    def test_changing_stream_permission_settings(self) -> None:
+        self.make_stream("stream_name1")
+        self.make_stream("stream_name2", invite_only=True)
+        # Subscribe at least one user to the private stream.
+        self.subscribe(self.example_user("hamlet"), "stream_name2")
+
+        for setting_name in Stream.stream_permission_group_settings:
+            self.do_test_change_stream_permission_setting(setting_name)
+
+    def test_notification_on_changing_stream_posting_permission(self) -> None:
+        desdemona = self.example_user("desdemona")
+        realm = desdemona.realm
+        stream = self.subscribe(desdemona, "stream_name1")
+
+        everyone_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        self.login("desdemona")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"can_send_message_group": orjson.dumps({"new": moderators_group.id}).decode()},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", realm)
+        self.assertEqual(stream.can_send_message_group_id, moderators_group.id)
+
+        messages = get_topic_messages(desdemona, stream, "channel events")
+        expected_notification = (
+            f"@_**{desdemona.full_name}|{desdemona.id}** changed the "
+            "[posting permissions](/help/channel-posting-policy) for this channel:\n\n"
+            f"* **Old**: @_*{everyone_group.name}*\n"
+            f"* **New**: @_*{moderators_group.name}*"
+        )
+        self.assertEqual(messages[-1].content, expected_notification)
+
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+        )
+        hamlet = self.example_user("hamlet")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
             {
-                "can_administer_channel_group": orjson.dumps(
-                    {"new": moderators_system_group.id}
+                "can_send_message_group": orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [hamlet.id],
+                            "direct_subgroups": [owners_group.id, moderators_group.id],
+                        }
+                    }
                 ).decode()
             },
         )
         self.assert_json_success(result)
-        stream = get_stream("stream_name2", realm)
-        self.assertEqual(stream.can_administer_channel_group.id, moderators_system_group.id)
+        stream = get_stream("stream_name1", realm)
+        self.assertCountEqual(
+            list(stream.can_send_message_group.direct_subgroups.all()),
+            [moderators_group, owners_group],
+        )
+        self.assertCountEqual(list(stream.can_send_message_group.direct_members.all()), [hamlet])
+
+        messages = get_topic_messages(desdemona, stream, "channel events")
+        expected_notification = (
+            f"@_**{desdemona.full_name}|{desdemona.id}** changed the "
+            "[posting permissions](/help/channel-posting-policy) for this channel:\n\n"
+            f"* **Old**: @_*{moderators_group.name}*\n"
+            f"* **New**: @_*{owners_group.name}*, @_*{moderators_group.name}*, @_**{hamlet.full_name}|{hamlet.id}**"
+        )
+        self.assertEqual(messages[-1].content, expected_notification)
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {
+                "can_send_message_group": orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [desdemona.id],
+                            "direct_subgroups": [hamletcharacters_group.id],
+                        }
+                    }
+                ).decode()
+            },
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", realm)
+        self.assertCountEqual(
+            list(stream.can_send_message_group.direct_subgroups.all()), [hamletcharacters_group]
+        )
+        self.assertCountEqual(list(stream.can_send_message_group.direct_members.all()), [desdemona])
+
+        messages = get_topic_messages(desdemona, stream, "channel events")
+        expected_notification = (
+            f"@_**{desdemona.full_name}|{desdemona.id}** changed the "
+            "[posting permissions](/help/channel-posting-policy) for this channel:\n\n"
+            f"* **Old**: @_*{owners_group.name}*, @_*{moderators_group.name}*, @_**{hamlet.full_name}|{hamlet.id}**\n"
+            f"* **New**: @_*{hamletcharacters_group.name}*, @_**{desdemona.full_name}|{desdemona.id}**"
+        )
+        self.assertEqual(messages[-1].content, expected_notification)
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"can_send_message_group": orjson.dumps({"new": nobody_group.id}).decode()},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", realm)
+        self.assertEqual(stream.can_send_message_group_id, nobody_group.id)
+
+        messages = get_topic_messages(desdemona, stream, "channel events")
+        expected_notification = (
+            f"@_**{desdemona.full_name}|{desdemona.id}** changed the "
+            "[posting permissions](/help/channel-posting-policy) for this channel:\n\n"
+            f"* **Old**: @_*{hamletcharacters_group.name}*, @_**{desdemona.full_name}|{desdemona.id}**\n"
+            f"* **New**: @_*{nobody_group.name}*"
+        )
+        self.assertEqual(messages[-1].content, expected_notification)
 
     def test_stream_message_retention_days_on_stream_creation(self) -> None:
         """
@@ -5231,7 +5098,7 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_sub = ["multi_user_stream"]
         with (
             self.capture_send_event_calls(expected_num_events=5) as events,
-            self.assert_database_query_count(41),
+            self.assert_database_query_count(42),
         ):
             self.common_subscribe_to_streams(
                 self.test_user,
@@ -5373,53 +5240,39 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_peer_event["event"]["op"], "peer_add")
         self.assertEqual(add_peer_event["event"]["user_ids"], [self.example_user("iago").id])
 
-    def test_subscribe_to_stream_post_policy_admins_stream(self) -> None:
-        """
-        Members can subscribe to streams where only admins can post
-        """
-        member = self.example_user("AARON")
-        stream = self.make_stream("stream1")
-        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_ADMINS, acting_user=member)
-        result = self.common_subscribe_to_streams(member, ["stream1"])
+    def test_subscribing_to_stream_without_permission_to_post(self) -> None:
+        stream = self.make_stream("stream_name1")
+        realm = get_realm("zulip")
+
+        iago = self.example_user("iago")
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", admins_group, acting_user=iago
+        )
+
+        # Members can subscribe even when only admins can post.
+        member = self.example_user("hamlet")
+        result = self.common_subscribe_to_streams(member, ["stream_name1"])
         json = self.assert_json_success(result)
-        self.assertEqual(json["subscribed"], {str(member.id): ["stream1"]})
+        self.assertEqual(json["subscribed"], {str(member.id): ["stream_name1"]})
         self.assertEqual(json["already_subscribed"], {})
 
-    def test_subscribe_to_stream_post_policy_restrict_new_members_stream(self) -> None:
-        """
-        New members can subscribe to streams where they cannot post
-        """
-        new_member_email = self.nonreg_email("test")
-        self.register(new_member_email, "test")
-        new_member = self.nonreg_user("test")
-
-        do_set_realm_property(new_member.realm, "waiting_period_threshold", 10, acting_user=None)
-        self.assertTrue(new_member.is_provisional_member)
-
-        stream = self.make_stream("stream1")
-        do_change_stream_post_policy(
-            stream, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS, acting_user=new_member
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
-        result = self.common_subscribe_to_streams(new_member, ["stream1"])
-        json = self.assert_json_success(result)
-        self.assertEqual(json["subscribed"], {str(new_member.id): ["stream1"]})
-        self.assertEqual(json["already_subscribed"], {})
-
-    def test_subscribe_to_stream_post_policy_moderators_stream(self) -> None:
-        """
-        Members can subscribe to streams where only admins and moderators can post
-        """
-        member = self.example_user("AARON")
-        stream = self.make_stream("stream1")
-        # Make sure that we are testing this with full member which is just below the moderator
-        # in the role hierarchy.
-        self.assertFalse(member.is_provisional_member)
-        do_change_stream_post_policy(
-            stream, Stream.STREAM_POST_POLICY_MODERATORS, acting_user=member
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [self.example_user("cordelia")], [moderators_group]
         )
-        result = self.common_subscribe_to_streams(member, ["stream1"])
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", setting_group, acting_user=iago
+        )
+
+        member = self.example_user("othello")
+        result = self.common_subscribe_to_streams(member, ["stream_name1"])
         json = self.assert_json_success(result)
-        self.assertEqual(json["subscribed"], {str(member.id): ["stream1"]})
+        self.assertEqual(json["subscribed"], {str(member.id): ["stream_name1"]})
         self.assertEqual(json["already_subscribed"], {})
 
     def test_guest_user_subscribe(self) -> None:
@@ -5551,7 +5404,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Sends 3 peer-remove events, 2 unsubscribe events
         # and 2 stream delete events for private streams.
         with (
-            self.assert_database_query_count(18),
+            self.assert_database_query_count(19),
             self.assert_memcached_count(3),
             self.capture_send_event_calls(expected_num_events=7) as events,
         ):
@@ -6071,7 +5924,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(41):
+        with self.assert_database_query_count(42):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[0]],
@@ -6079,7 +5932,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(45):
+        with self.assert_database_query_count(46):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[1]],
@@ -6091,7 +5944,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(52):
+        with self.assert_database_query_count(53):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[2]],
@@ -6470,6 +6323,7 @@ class GetSubscribersTest(ZulipTestCase):
             "is_announcement_only",
             "in_home_view",
             "stream_id",
+            "stream_post_policy",
             "stream_weekly_traffic",
             "subscribers",
         }
@@ -6486,6 +6340,7 @@ class GetSubscribersTest(ZulipTestCase):
             "is_archived",
             "is_announcement_only",
             "stream_id",
+            "stream_post_policy",
             "stream_weekly_traffic",
             "subscribers",
         }
@@ -6620,7 +6475,7 @@ class GetSubscribersTest(ZulipTestCase):
         for user in [cordelia, othello, polonius]:
             self.assert_user_got_subscription_notification(user, msg)
 
-        with self.assert_database_query_count(6):
+        with self.assert_database_query_count(7):
             subscribed_streams, _ = gather_subscriptions(
                 self.user_profile, include_subscribers=True
             )
@@ -6655,7 +6510,7 @@ class GetSubscribersTest(ZulipTestCase):
             acting_user=None,
         )
 
-        with self.assert_database_query_count(6):
+        with self.assert_database_query_count(7):
             subscribed_streams, _ = gather_subscriptions(
                 self.user_profile, include_subscribers=True
             )
@@ -6682,6 +6537,92 @@ class GetSubscribersTest(ZulipTestCase):
                 )
             else:
                 self.assertEqual(sub["can_remove_subscribers_group"], admins_group.id)
+
+    def test_stream_post_policy_values_in_subscription_objects(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        desdemona = self.example_user("desdemona")
+
+        streams = [f"stream_{i}" for i in range(6)]
+        for stream_name in streams:
+            self.make_stream(stream_name)
+
+        realm = hamlet.realm
+        self.common_subscribe_to_streams(
+            hamlet,
+            streams,
+            dict(principals=orjson.dumps([hamlet.id, cordelia.id]).decode()),
+        )
+
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        full_members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+        )
+
+        stream = get_stream("stream_1", realm)
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", admins_group, acting_user=desdemona
+        )
+
+        stream = get_stream("stream_2", realm)
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", members_group, acting_user=desdemona
+        )
+
+        stream = get_stream("stream_3", realm)
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", full_members_group, acting_user=desdemona
+        )
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        stream = get_stream("stream_4", realm)
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", hamletcharacters_group, acting_user=desdemona
+        )
+
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [cordelia], [admins_group]
+        )
+        stream = get_stream("stream_5", realm)
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", setting_group, acting_user=desdemona
+        )
+
+        with self.assert_database_query_count(7):
+            subscribed_streams, _ = gather_subscriptions(hamlet, include_subscribers=True)
+
+        [stream_1_sub] = [sub for sub in subscribed_streams if sub["name"] == "stream_1"]
+        self.assertEqual(stream_1_sub["can_send_message_group"], admins_group.id)
+        self.assertEqual(stream_1_sub["stream_post_policy"], Stream.STREAM_POST_POLICY_ADMINS)
+
+        [stream_2_sub] = [sub for sub in subscribed_streams if sub["name"] == "stream_2"]
+        self.assertEqual(stream_2_sub["can_send_message_group"], members_group.id)
+        self.assertEqual(stream_2_sub["stream_post_policy"], Stream.STREAM_POST_POLICY_EVERYONE)
+
+        [stream_3_sub] = [sub for sub in subscribed_streams if sub["name"] == "stream_3"]
+        self.assertEqual(stream_3_sub["can_send_message_group"], full_members_group.id)
+        self.assertEqual(
+            stream_3_sub["stream_post_policy"], Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS
+        )
+
+        [stream_4_sub] = [sub for sub in subscribed_streams if sub["name"] == "stream_4"]
+        self.assertEqual(stream_4_sub["can_send_message_group"], hamletcharacters_group.id)
+        self.assertEqual(stream_4_sub["stream_post_policy"], Stream.STREAM_POST_POLICY_EVERYONE)
+
+        [stream_5_sub] = [sub for sub in subscribed_streams if sub["name"] == "stream_5"]
+        self.assertEqual(
+            stream_5_sub["can_send_message_group"],
+            AnonymousSettingGroupDict(
+                direct_members=[cordelia.id],
+                direct_subgroups=[admins_group.id],
+            ),
+        )
+        self.assertEqual(stream_5_sub["stream_post_policy"], Stream.STREAM_POST_POLICY_EVERYONE)
 
     def test_never_subscribed_streams(self) -> None:
         """
@@ -6748,7 +6689,7 @@ class GetSubscribersTest(ZulipTestCase):
         create_private_streams()
 
         def get_never_subscribed() -> list[NeverSubscribedStreamDict]:
-            with self.assert_database_query_count(6):
+            with self.assert_database_query_count(7):
                 sub_data = gather_subscriptions_helper(self.user_profile)
                 self.verify_sub_fields(sub_data)
             never_subscribed = sub_data.never_subscribed
@@ -6945,7 +6886,7 @@ class GetSubscribersTest(ZulipTestCase):
             subdomain="zephyr",
         )
 
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(6):
             subscribed_streams, _ = gather_subscriptions(mit_user_profile, include_subscribers=True)
 
         self.assertGreaterEqual(len(subscribed_streams), 2)

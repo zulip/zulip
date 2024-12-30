@@ -73,6 +73,7 @@ export function maybe_update_error_message(): void {
 const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
     ["can_administer_channel_group", null],
     ["can_remove_subscribers_group", null],
+    ["can_send_message_group", null],
 ]);
 
 class StreamSubscriptionError {
@@ -350,13 +351,6 @@ function create_stream(): void {
         $<HTMLInputElement>("#stream_creation_form input.is_default_stream"),
     ).checked;
 
-    const stream_post_policy = Number.parseInt(
-        $<HTMLSelectOneElement>(
-            "#stream_creation_form select:not([multiple])[name=stream-post-policy]",
-        ).val()!,
-        10,
-    );
-
     let message_retention_selection = $(
         "#stream_creation_form select[name=stream_message_retention_setting]",
     ).val();
@@ -405,7 +399,6 @@ function create_stream(): void {
         invite_only: JSON.stringify(invite_only),
         history_public_to_subscribers: JSON.stringify(history_public_to_subscribers),
         is_default_stream: JSON.stringify(default_stream),
-        stream_post_policy: JSON.stringify(stream_post_policy),
         message_retention_days: JSON.stringify(message_retention_selection),
         announce: JSON.stringify(announce),
         principals,

@@ -10214,13 +10214,16 @@ paths:
         Note that the ability to subscribe oneself and/or other users to a specified
         channel depends on the [channel's privacy settings](/help/channel-permissions).
 
-        **Changes**: Before Zulip 8.0 (feature level 208), if a user
-        specified by the [`principals`][principals-param] parameter was
-        a deactivated user, or did not exist, then an HTTP status code
-        of 403 was returned with `code: "UNAUTHORIZED_PRINCIPAL"` in the
-        error response. As of this feature level, an HTTP status code of
-        400 is returned with `code: "BAD_REQUEST"` in the error response
-        for these cases.
+        **Changes**: Removed `stream_post_policy` and `is_announcement_only`
+        parameters in Zulip 10.0 (feature level 333), as permission to post
+        in the channel is now controlled by `can_send_message_group`.
+
+        Before Zulip 8.0 (feature level 208), if a user specified by the
+        [`principals`][principals-param] parameter was a deactivated user,
+        or did not exist, then an HTTP status code of 403 was returned with
+        `code: "UNAUTHORIZED_PRINCIPAL"` in the error response. As of this
+        feature level, an HTTP status code of 400 is returned with
+        `code: "BAD_REQUEST"` in the error response for these cases.
 
         [principals-param]: /api/subscribe#parameter-principals
       x-curl-examples-parameters:
@@ -10347,14 +10350,14 @@ paths:
                   example: true
                 history_public_to_subscribers:
                   $ref: "#/components/schemas/HistoryPublicToSubscribers"
-                stream_post_policy:
-                  $ref: "#/components/schemas/ChannelPostPolicy"
                 message_retention_days:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 can_remove_subscribers_group:
                   $ref: "#/components/schemas/CanRemoveSubscribersGroup"
                 can_administer_channel_group:
                   $ref: "#/components/schemas/CanAdministerChannelGroup"
+                can_send_message_group:
+                  $ref: "#/components/schemas/CanSendMessageGroup"
               required:
                 - subscriptions
             encoding:
@@ -10374,11 +10377,11 @@ paths:
                 contentType: application/json
               history_public_to_subscribers:
                 contentType: application/json
-              stream_post_policy:
-                contentType: application/json
               can_remove_subscribers_group:
                 contentType: application/json
               can_administer_channel_group:
+                contentType: application/json
+              can_send_message_group:
                 contentType: application/json
       responses:
         "200":
@@ -14878,6 +14881,7 @@ paths:
                                 is_announcement_only: {}
                                 can_remove_subscribers_group: {}
                                 can_administer_channel_group: {}
+                                can_send_message_group: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -19758,6 +19762,7 @@ paths:
                                 is_announcement_only: {}
                                 can_remove_subscribers_group: {}
                                 can_administer_channel_group: {}
+                                can_send_message_group: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -19964,6 +19969,10 @@ paths:
         Note that an organization administrator's ability to change a
         [private channel's permissions](/help/channel-permissions#private-channels)
         depends on them being subscribed to the channel.
+
+        **Changes**: Removed `stream_post_policy` and `is_announcement_only`
+        parameters in Zulip 10.0 (feature level 333), as permission to post
+        in the channel is now controlled by `can_send_message_group`.
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -20011,15 +20020,6 @@ paths:
                     Change whether the channel is a private channel.
                   type: boolean
                   example: true
-                is_announcement_only:
-                  deprecated: true
-                  description: |
-                    Whether the channel is limited to announcements.
-
-                    **Changes**: Deprecated in Zulip 3.0 (feature level 1). Clients
-                    should use `stream_post_policy` instead.
-                  type: boolean
-                  example: true
                 is_web_public:
                   description: |
                     Change whether the channel is a web-public channel.
@@ -20064,8 +20064,6 @@ paths:
                     could only be changed using the [dedicated API endpoint](/api/add-default-stream).
                   type: boolean
                   example: false
-                stream_post_policy:
-                  $ref: "#/components/schemas/ChannelPostPolicy"
                 message_retention_days:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 can_remove_subscribers_group:
@@ -20149,10 +20147,42 @@ paths:
                       "new": {"direct_members": [10], "direct_subgroups": [11]},
                       "old": 15,
                     }
+                can_send_message_group:
+                  description: |
+                    The set of users who have permission to post in this channel
+                    expressed as an [update to a group-setting value][update-group-setting].
+
+                    Note that a user who is a member of the specified user group must
+                    also [have access](/help/channel-permissions) to the channel in
+                    order to post in the channel.
+
+                    **Changes**: New in Zulip 10.0 (feature level 333). Previously
+                    `stream_post_policy` field used to control the permission to
+                    post in the channel.
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    new:
+                      allOf:
+                        - description: |
+                            The new [group-setting value](/api/group-setting-values) for who would
+                            have the permission to post in this channel.
+                        - $ref: "#/components/schemas/CanSendMessageGroup"
+                    old:
+                      allOf:
+                        - description: |
+                            The expected current [group-setting value](/api/group-setting-values)
+                            for who has the permission to post in this channel.
+                        - $ref: "#/components/schemas/CanSendMessageGroup"
+                  required:
+                    - new
+                  example:
+                    {
+                      "new": {"direct_members": [10], "direct_subgroups": [11]},
+                      "old": 15,
+                    }
             encoding:
               is_private:
-                contentType: application/json
-              is_announcement_only:
                 contentType: application/json
               is_web_public:
                 contentType: application/json
@@ -20160,11 +20190,11 @@ paths:
                 contentType: application/json
               is_default_stream:
                 contentType: application/json
-              stream_post_policy:
-                contentType: application/json
               can_remove_subscribers_group:
                 contentType: application/json
               can_administer_channel_group:
+                contentType: application/json
+              can_send_message_group:
                 contentType: application/json
       responses:
         "200":
@@ -21892,6 +21922,7 @@ components:
             is_announcement_only: {}
             can_remove_subscribers_group: {}
             can_administer_channel_group: {}
+            can_send_message_group: {}
             stream_weekly_traffic:
               type: integer
               nullable: true
@@ -21995,18 +22026,29 @@ components:
             **Changes**: New in Zulip 2.1.0.
         stream_post_policy:
           type: integer
+          deprecated: true
           description: |
-            [Policy][permission-level] for which users can post messages to the channel.
+            A deprecated representation of a superset of the users who
+            have permission to post messages to the channel available
+            for backwards-compatibility. Clients should use
+            `can_send_message_group` instead.
+
+            It is an enum with the following possible values, corresponding
+            to roles/system groups:
 
             - 1 = Any user can post.
             - 2 = Only administrators can post.
             - 3 = Only [full members][calc-full-member] can post.
             - 4 = Only moderators can post.
 
-            **Changes**: New in Zulip 3.0 (feature level 1), replacing the previous
+            **Changes**: Deprecated in Zulip 10.0 (feature level 333) and
+            replaced by `can_send_message_group`, which supports finer
+            resolution of configurations, resulting in this property being
+            inaccurate following that transition.
+
+            New in Zulip 3.0 (feature level 1), replacing the previous
             `is_announcement_only` boolean.
 
-            [permission-level]: /api/roles-and-permissions#permission-levels
             [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
         message_retention_days:
           type: integer
@@ -22064,6 +22106,8 @@ components:
           $ref: "#/components/schemas/CanRemoveSubscribersGroup"
         can_administer_channel_group:
           $ref: "#/components/schemas/CanAdministerChannelGroup"
+        can_send_message_group:
+          $ref: "#/components/schemas/CanSendMessageGroup"
     BasicBot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -23028,18 +23072,29 @@ components:
             The user's personal color for the channel.
         stream_post_policy:
           type: integer
+          deprecated: true
           description: |
-            [Policy][permission-level] for which users can post messages to the channel.
+            A deprecated representation of a superset of the users who
+            have permission to post messages to the channel available
+            for backwards-compatibility. Clients should use
+            `can_send_message_group` instead.
+
+            It is an enum with the following possible values, corresponding
+            to roles/system groups:
 
             - 1 = Any user can post.
             - 2 = Only administrators can post.
             - 3 = Only [full members][calc-full-member] can post.
             - 4 = Only moderators can post.
 
-            **Changes**: New in Zulip 3.0 (feature level 1), replacing the previous
+            **Changes**: Deprecated in Zulip 10.0 (feature level 333) and
+            replaced by `can_send_message_group`, which supports finer
+            resolution of configurations, resulting in this property being
+            inaccurate following that transition.
+
+            New in Zulip 3.0 (feature level 1), replacing the previous
             `is_announcement_only` boolean.
 
-            [permission-level]: /api/roles-and-permissions#permission-levels
             [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
         message_retention_days:
           type: integer
@@ -23095,6 +23150,8 @@ components:
           $ref: "#/components/schemas/CanRemoveSubscribersGroup"
         can_administer_channel_group:
           $ref: "#/components/schemas/CanAdministerChannelGroup"
+        can_send_message_group:
+          $ref: "#/components/schemas/CanSendMessageGroup"
         is_archived:
           type: boolean
           description: |
@@ -24608,23 +24665,6 @@ components:
         throw an error.
       type: string
       example: Hello
-    ChannelPostPolicy:
-      description: |
-        [Policy][permission-level] for which users can post messages to the channel.
-
-        - 1 = Any user can post.
-        - 2 = Only administrators can post.
-        - 3 = Only [full members][calc-full-member] can post.
-        - 4 = Only moderators can post.
-
-        **Changes**: New in Zulip 3.0 (feature level 1), replacing the previous
-        `is_announcement_only` boolean.
-
-        [permission-level]: /api/roles-and-permissions#permission-levels
-        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
-      type: integer
-      default: 1
-      example: 2
     HistoryPublicToSubscribers:
       description: |
         Whether the channel's message history should be available to
@@ -24757,6 +24797,22 @@ components:
             **Changes**: New in Zulip 10.0 (feature level 325). Prior to this
             change, the permission to administer channels was limited to realm
             administrators.
+
+            [setting-values]: /api/group-setting-values
+    CanSendMessageGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to post in this channel.
+
+            Note that a user who is a member of the specified user group must
+            also [have access](/help/channel-permissions) to the channel in
+            order to post in the channel.
+
+            **Changes**: New in Zulip 10.0 (feature level 333). Previously
+            `stream_post_policy` field used to control the permission to
+            post in the channel.
 
             [setting-values]: /api/group-setting-values
     LinkifierPattern:
