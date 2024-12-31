@@ -26,7 +26,7 @@ Receive GoSquared notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/gosquared/000.png)
+![](/static/images/integrations/gosquared/001.png)
 
 {!event-filtering-additional-feature.md!}
 

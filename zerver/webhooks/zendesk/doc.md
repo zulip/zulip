@@ -59,7 +59,7 @@ Get notifications about Zendesk tickets in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/zendesk/007.png)
+![](/static/images/integrations/zendesk/001.png)
 
 ### Related documentation
 

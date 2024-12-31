@@ -19,7 +19,7 @@ Get Zulip notifications for your Opsgenie events!
 
 {!congrats.md!}
 
-![](/static/images/integrations/opsgenie/000.png)
+![](/static/images/integrations/opsgenie/001.png)
 
 {!event-filtering-additional-feature.md!}
 
