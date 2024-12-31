@@ -349,6 +349,10 @@ print(bot_handler.storage.get("foo"))  # print "bar"
 
 will check if the entry `key` exists.
 
+Note that this will only check the cache, so it would return `False` if no
+previous call to `bot_handler.storage.get()` or `bot_handler.storage.put()`
+was made for `key`, since the bot was restarted.
+
 ##### Arguments
 
 * key - a UTF-8 string
