@@ -723,9 +723,9 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "gitlab": [ScreenshotConfig("push_hook__push_local_branch_without_commits.json")],
     "gocd": [ScreenshotConfig("pipeline_with_mixed_job_result.json")],
     "gogs": [ScreenshotConfig("pull_request__opened.json")],
-    "gosquared": [ScreenshotConfig("traffic_spike.json", image_name="000.png")],
+    "gosquared": [ScreenshotConfig("traffic_spike.json")],
     "grafana": [ScreenshotConfig("alert_values_v11.json")],
-    "greenhouse": [ScreenshotConfig("candidate_stage_change.json", image_name="000.png")],
+    "greenhouse": [ScreenshotConfig("candidate_stage_change.json")],
     "groove": [ScreenshotConfig("ticket_started.json")],
     "harbor": [ScreenshotConfig("scanning_completed.json")],
     "hellosign": [
@@ -751,7 +751,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "netlify": [ScreenshotConfig("deploy_building.json")],
     "newrelic": [ScreenshotConfig("incident_activated_new_default_payload.json", "001.png")],
     "opencollective": [ScreenshotConfig("one_time_donation.json")],
-    "opsgenie": [ScreenshotConfig("addrecipient.json", image_name="000.png")],
+    "opsgenie": [ScreenshotConfig("addrecipient.json")],
     "pagerduty": [ScreenshotConfig("trigger_v2.json")],
     "papertrail": [ScreenshotConfig("short_post.json", payload_as_query_param=True)],
     "patreon": [ScreenshotConfig("members_pledge_create.json")],
@@ -797,7 +797,6 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "zendesk": [
         ScreenshotConfig(
             "",
-            "007.png",
             use_basic_auth=True,
             extra_params={
                 "ticket_title": "Hardware Ecosystem Compatibility Inquiry",

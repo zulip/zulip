@@ -25,7 +25,7 @@ Receive Greenhouse notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/greenhouse/000.png)
+![](/static/images/integrations/greenhouse/001.png)
 
 ### Related documentation
 
