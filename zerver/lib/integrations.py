@@ -737,7 +737,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     ],
     "helloworld": [ScreenshotConfig("hello.json")],
     "heroku": [ScreenshotConfig("deploy.txt")],
-    "homeassistant": [ScreenshotConfig("reqwithtitle.json", image_name="003.png")],
+    "homeassistant": [ScreenshotConfig("reqwithtitle.json")],
     "insping": [ScreenshotConfig("website_state_available.json")],
     "intercom": [ScreenshotConfig("conversation_admin_replied.json")],
     "jira": [ScreenshotConfig("created_v1.json")],
