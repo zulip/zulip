@@ -1528,3 +1528,8 @@ def set_visibility_policy_possible(user_profile: UserProfile, message: Message) 
 def remove_single_newlines(content: str) -> str:
     content = content.strip("\n")
     return re.sub(r"(?<!\n)\n(?!\n|[-*] |[0-9]+\. )", " ", content)
+
+
+# Must be kept in sync with ./static/shared/js/fenced_code.js
+def get_unused_fence(content: str) -> str:
+    return "`" * (1 + max([2] + [len(x) for x in re.findall(r"`+", content)]))
