@@ -74,6 +74,7 @@ from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import DisposableEmailError
 from zerver.views.push_notifications import validate_token
 from zilencer.auth import InvalidZulipServerKeyError
+from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
     RemoteInstallationCount,
     RemotePushDeviceToken,
@@ -1039,7 +1040,7 @@ def get_human_user_realm_uuids(
 def handle_customer_migration_from_server_to_realm(
     server: RemoteZulipServer,
 ) -> None:
-    from corporate.lib.stripe import RemoteServerBillingSession
+    from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
 
     server_billing_session = RemoteServerBillingSession(server)
     server_customer = server_billing_session.get_customer()
@@ -1050,7 +1051,7 @@ def handle_customer_migration_from_server_to_realm(
         # If we have a pending sponsorship request, defer moving any
         # data until the sponsorship request has been processed. This
         # avoids a race where a sponsorship request made at the server
-        # level gets approved after the legacy plan has already been
+        # level gets approved after the active plan has already been
         # moved to the sole human RemoteRealm, which would violate
         # invariants.
         return
@@ -1058,7 +1059,7 @@ def handle_customer_migration_from_server_to_realm(
     server_plan = get_current_plan_by_customer(server_customer)
     if server_plan is None:
         # If the server has no current plan, either because it never
-        # had one or because a previous legacy plan was migrated to
+        # had one or because a previous active plan was migrated to
         # the RemoteRealm object, there's nothing to potentially
         # migrate.
         return
@@ -1123,6 +1124,31 @@ def handle_customer_migration_from_server_to_realm(
             logger.warning(
                 "Failed to migrate customer from server (id: %s) to realm (id: %s): RemoteRealm customer already exists "
                 "and plans can't be migrated automatically.",
+                server.id,
+                remote_realm.id,
+            )
+            raise JsonableError(
+                _(
+                    "Couldn't reconcile billing data between server and realm. Please contact {support_email}"
+                ).format(support_email=FromAddress.SUPPORT)
+            )
+
+    # We successfully moved the plan from the remote server to the remote realm.
+    # Update the license ledger for paid plans with automated license management.
+    remote_realm_customer = get_customer_by_remote_realm(remote_realm)
+    assert remote_realm_customer is not None
+    moved_customer_plan = get_current_plan_by_customer(remote_realm_customer)
+    assert moved_customer_plan is not None
+    if moved_customer_plan.is_a_paid_plan() and moved_customer_plan.automanage_licenses:
+        remote_realm_billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
+        try:
+            remote_realm_billing_session.update_license_ledger_for_automanaged_plan(
+                moved_customer_plan, event_time
+            )
+        except MissingDataError:  # nocoverage
+            logger.warning(
+                "Failed to migrate customer from server (id: %s) to realm (id: %s): RemoteZulipServer has stale "
+                "audit log data and cannot update license ledger for plan with automated license management.",
                 server.id,
                 remote_realm.id,
             )

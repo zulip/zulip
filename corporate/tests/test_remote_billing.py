@@ -17,6 +17,7 @@ from corporate.lib.remote_billing_util import (
 from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession, add_months
 from corporate.models import (
     CustomerPlan,
+    LicenseLedger,
     get_current_plan_by_customer,
     get_customer_by_remote_realm,
     get_customer_by_remote_server,
@@ -1019,6 +1020,15 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
             billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
             tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
             status=CustomerPlan.ACTIVE,
+            automanage_licenses=True,
+        )
+        initial_license_count = 100
+        LicenseLedger.objects.create(
+            plan=server_plan,
+            is_renewal=True,
+            event_time=timezone_now(),
+            licenses=initial_license_count,
+            licenses_at_next_renewal=initial_license_count,
         )
         self.server.plan_type = RemoteZulipServer.PLAN_TYPE_BUSINESS
         self.server.save(update_fields=["plan_type"])
@@ -1095,6 +1105,16 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         self.assertEqual(remote_realm_with_plan.plan_type, RemoteRealm.PLAN_TYPE_BUSINESS)
         self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
         self.assertEqual(plan.status, CustomerPlan.ACTIVE)
+
+        # Check that an updated license ledger entry was created.
+        billing_session = RemoteRealmBillingSession(remote_realm=remote_realm_with_plan)
+        license_ledger = billing_session.get_last_ledger_for_automanaged_plan_if_exists()
+        billable_licenses = billing_session.get_billable_licenses_for_customer(customer, plan.tier)
+        assert license_ledger is not None
+        self.assertNotEqual(initial_license_count, billable_licenses)
+        self.assertEqual(license_ledger.licenses, initial_license_count)
+        self.assertEqual(license_ledger.licenses_at_next_renewal, billable_licenses)
+        self.assertFalse(license_ledger.is_renewal)
 
     @responses.activate
     def test_transfer_plan_from_server_to_realm_edge_cases(self) -> None:
