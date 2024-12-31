@@ -1068,7 +1068,6 @@ def handle_customer_migration_from_server_to_realm(
         return
 
     event_time = timezone_now()
-    remote_realm_audit_logs = []
 
     if len(realm_uuids) != 1:
         return
@@ -1138,21 +1137,17 @@ def handle_customer_migration_from_server_to_realm(
     remote_realm.save(update_fields=["plan_type"])
     server.plan_type = RemoteZulipServer.PLAN_TYPE_SELF_MANAGED
     server.save(update_fields=["plan_type"])
-    remote_realm_audit_logs.append(
-        RemoteRealmAuditLog(
-            server=server,
-            remote_realm=remote_realm,
-            event_type=AuditLogEventType.REMOTE_PLAN_TRANSFERRED_SERVER_TO_REALM,
-            event_time=event_time,
-            extra_data={
-                "attr_name": "plan_type",
-                "old_value": RemoteRealm.PLAN_TYPE_SELF_MANAGED,
-                "new_value": remote_realm.plan_type,
-            },
-        )
+    RemoteRealmAuditLog.objects.create(
+        server=server,
+        remote_realm=remote_realm,
+        event_type=AuditLogEventType.REMOTE_PLAN_TRANSFERRED_SERVER_TO_REALM,
+        event_time=event_time,
+        extra_data={
+            "attr_name": "plan_type",
+            "old_value": RemoteRealm.PLAN_TYPE_SELF_MANAGED,
+            "new_value": remote_realm.plan_type,
+        },
     )
-
-    RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
 
 
 @typed_endpoint
