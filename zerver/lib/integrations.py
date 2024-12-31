@@ -763,10 +763,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "rhodecode": [ScreenshotConfig("push.json")],
     "rundeck": [ScreenshotConfig("start.json")],
     "semaphore": [ScreenshotConfig("pull_request.json")],
-    "sentry": [
-        ScreenshotConfig("event_for_exception_python.json"),
-        ScreenshotConfig("issue_assigned_to_team.json", "002.png"),
-    ],
+    "sentry": [ScreenshotConfig("event_for_exception_python.json")],
     "slack": [ScreenshotConfig("message_with_normal_text.json")],
     "sonarqube": [ScreenshotConfig("error.json")],
     "sonarr": [ScreenshotConfig("sonarr_episode_grabbed.json")],
@@ -774,7 +771,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "statuspage": [ScreenshotConfig("incident_created.json")],
     "stripe": [ScreenshotConfig("charge_succeeded__card.json")],
     "taiga": [ScreenshotConfig("userstory_changed_status.json")],
-    "teamcity": [ScreenshotConfig("success.json"), ScreenshotConfig("personal.json", "002.png")],
+    "teamcity": [ScreenshotConfig("success.json")],
     "thinkst": [ScreenshotConfig("canary_consolidated_port_scan.json")],
     "transifex": [
         ScreenshotConfig(
