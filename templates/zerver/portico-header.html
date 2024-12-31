@@ -23,6 +23,9 @@
                 {% if page_is_policy_center %}
                 <span class="light portico-header-text"> | <a href="{{ root_domain_url }}/policies/">{{ doc_root_title }}</a></span>
                 {% endif %}
+                {% if page_is_design_testing %}
+                <span class="light portico-header-text"> | <a href="{{ root_domain_url }}/devtools/{{ design_component }}">{{ doc_root_title }}</a></span>
+                {% endif %}
             </div>
             {% endif %}
         </div>

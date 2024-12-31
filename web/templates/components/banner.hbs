@@ -1,0 +1,13 @@
+<div {{#if process}}data-process="{{process}}"{{/if}} class="{{#if custom_classes}}{{custom_classes}} {{/if}}banner banner-{{intent}}">
+    <span class="banner-label">
+        {{label}}
+    </span>
+    <span class="banner-action-buttons">
+        {{#each buttons}}
+            {{> action-button .}}
+        {{/each}}
+    </span>
+    {{#if close_button}}
+        {{> icon-button custom_classes="banner-close-button" icon="close" intent=intent}}
+    {{/if}}
+</div>

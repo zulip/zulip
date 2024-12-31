@@ -591,6 +591,25 @@
         oklch(70% 0.3 0deg) 100%
     );
 
+    /* Banner grid layout variables */
+    --banner-horizontal-padding: 13px;
+    --banner-vertical-padding: 5px;
+    --banner-grid-template-areas-lg: ". . . . . . banner-close-btn banner-close-btn"
+        ". . banner-label . banner-btns . banner-close-btn banner-close-btn"
+        ". . . . . . banner-close-btn banner-close-btn";
+    --banner-grid-template-columns-lg: var(--banner-horizontal-padding) 0 auto
+        minmax(0, 1fr) auto 0 minmax(0, auto) var(--banner-horizontal-padding);
+    --banner-grid-template-rows-lg: 5px auto 5px;
+    --banner-grid-template-areas-md: ". . . . banner-close-btn banner-close-btn"
+        ". . banner-label banner-label banner-close-btn banner-close-btn"
+        ". banner-btns banner-btns banner-btns . .";
+    --banner-grid-template-columns-md: var(--banner-horizontal-padding) 0
+        minmax(auto, 1fr) 0 minmax(0, auto) var(--banner-horizontal-padding);
+    --banner-grid-template-rows-md: 5px auto auto 5px;
+    --banner-grid-template-areas-sm: ". . . . banner-close-btn banner-close-btn"
+        ". . banner-label banner-label banner-close-btn banner-close-btn"
+        ". banner-btns banner-btns banner-btns banner-btns .";
+
     /* Colors used across the app */
     --color-date: hsl(0deg 0% 15% / 75%);
     --color-background-private-message-header: hsl(46deg 35% 93%);
@@ -1492,6 +1511,57 @@
         hsl(359deg 93% 39%) 13%,
         transparent
     );
+
+    /* Banners */
+    --color-text-link-banner: hsl(210deg 94% 42%);
+    /* Banners - Neutral Variant */
+    --color-text-neutral-banner: hsl(229deg 12% 25%);
+    --color-border-neutral-banner: color-mix(
+        in oklch,
+        hsl(240deg 2% 30%) 40%,
+        transparent
+    );
+    --color-background-neutral-banner: hsl(240deg 7% 93%);
+    /* Banners - Brand Variant */
+    --color-text-brand-banner: hsl(264deg 95% 34%);
+    --color-border-brand-banner: color-mix(
+        in oklch,
+        hsl(254deg 60% 50%) 40%,
+        transparent
+    );
+    --color-background-brand-banner: hsl(254deg 42% 94%);
+    /* Banners - Info Variant */
+    --color-text-info-banner: hsl(241deg 95% 25%);
+    --color-border-info-banner: color-mix(
+        in oklch,
+        hsl(204deg 49% 29%) 40%,
+        transparent
+    );
+    --color-background-info-banner: hsl(204deg 58% 92%);
+    /* Banners - Success Variant */
+    --color-text-success-banner: hsl(144deg 88% 16%);
+    --color-border-success-banner: color-mix(
+        in oklch,
+        hsl(147deg 57% 25%) 40%,
+        transparent
+    );
+    --color-background-success-banner: hsl(147deg 43% 92%);
+    /* Banners - Warning Variant */
+    --color-text-warning-banner: hsl(34deg 89% 25%);
+    --color-border-warning-banner: color-mix(
+        in oklch,
+        hsl(38deg 44% 27%) 40%,
+        transparent
+    );
+    --color-background-warning-banner: hsl(50deg 75% 92%);
+    /* Banners - Danger Variant */
+    --color-text-danger-banner: hsl(359deg 94% 35%);
+    --color-border-danger-banner: color-mix(
+        in oklch,
+        hsl(3deg 57% 33%) 40%,
+        transparent
+    );
+    --color-background-danger-banner: hsl(0deg 35% 92%);
 }
 
 %dark-theme {
@@ -2414,6 +2484,56 @@
         hsl(5deg 88% 60%) 17%,
         transparent
     );
+
+    /* Banners */
+    /* Banners - Neutral Variant */
+    --color-text-neutral-banner: hsl(231deg 11% 76%);
+    --color-border-neutral-banner: color-mix(
+        in oklch,
+        hsl(240deg 7% 66%) 40%,
+        transparent
+    );
+    --color-background-neutral-banner: hsl(240deg 7% 17%);
+    /* Banners - Brand Variant */
+    --color-text-brand-banner: hsl(244deg 96% 82%);
+    --color-border-brand-banner: color-mix(
+        in oklch,
+        hsl(253deg 70% 89%) 40%,
+        transparent
+    );
+    --color-background-brand-banner: hsl(254deg 49% 16%);
+    /* Banners - Info Variant */
+    --color-text-info-banner: hsl(221deg 93% 89%);
+    --color-border-info-banner: color-mix(
+        in oklch,
+        hsl(205deg 58% 69%) 40%,
+        transparent
+    );
+    --color-background-info-banner: hsl(204deg 100% 12%);
+    /* Banners - Success Variant */
+    --color-text-success-banner: hsl(135deg 56% 63%);
+    --color-border-success-banner: color-mix(
+        in oklch,
+        hsl(149deg 48% 52%) 40%,
+        transparent
+    );
+    --color-background-success-banner: hsl(146deg 90% 7%);
+    /* Banners - Warning Variant */
+    --color-text-warning-banner: hsl(40deg 94% 56%);
+    --color-border-warning-banner: color-mix(
+        in oklch,
+        hsl(44deg 44% 66%) 40%,
+        transparent
+    );
+    --color-background-warning-banner: hsl(50deg 100% 10%);
+    /* Banners - Danger Variant */
+    --color-text-danger-banner: hsl(7deg 100% 74%);
+    --color-border-danger-banner: color-mix(
+        in oklch,
+        hsl(3deg 73% 74%) 40%,
+        transparent
+    );
+    --color-background-danger-banner: hsl(0deg 52% 18%);
 }
 
 @media screen {
