@@ -13,7 +13,10 @@ from django.views.static import serve
 from zerver.views.auth import login_page
 from zerver.views.development.cache import remove_caches
 from zerver.views.development.camo import handle_camo_url
-from zerver.views.development.design_testing import dev_buttons_design_testing
+from zerver.views.development.design_testing import (
+    dev_banners_design_testing,
+    dev_buttons_design_testing,
+)
 from zerver.views.development.dev_login import (
     api_dev_fetch_api_key,
     api_dev_list_users,
@@ -100,6 +103,7 @@ urls = [
     path("external_content/<digest>/<received_url>", handle_camo_url),
     # Endpoints for design testing.
     path("devtools/buttons/", dev_buttons_design_testing),
+    path("devtools/banners/", dev_banners_design_testing),
 ]
 
 v1_api_mobile_patterns = [

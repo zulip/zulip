@@ -1,0 +1,131 @@
+.banner-wrapper {
+    container: banner / inline-size;
+}
+
+.banner {
+    box-sizing: border-box;
+    display: grid;
+    grid-template: var(--banner-grid-template-rows-lg) / var(
+            --banner-grid-template-columns-lg
+        );
+    grid-template-areas: var(--banner-grid-template-areas-lg);
+    place-items: start;
+    font-size: 0.9375em;
+    border: 1px solid;
+    border-radius: 6px;
+}
+
+.banner__link {
+    color: var(--color-text-link-banner);
+}
+
+.banner-label {
+    grid-area: banner-label;
+    padding: 0.3333em 0 0.2667em;
+    line-height: 1.2667;
+}
+
+.banner-action-buttons {
+    grid-area: banner-btns;
+    display: flex;
+    gap: 8px;
+    margin-left: 6px;
+}
+
+.banner-close-button {
+    display: flex;
+    grid-area: banner-close-btn;
+    padding: 0.6875em;
+    margin-left: 5px;
+}
+
+.navbar-alert-banner {
+    grid-template-columns:
+        var(--banner-horizontal-padding) minmax(0, 1fr)
+        auto 0 auto minmax(0, 1fr) minmax(0, auto) var(
+            --banner-horizontal-padding
+        );
+    border: unset;
+    border-bottom: 1px solid;
+    border-radius: 0;
+    place-items: start center;
+}
+
+.navbar-alert-banner .banner-action-buttons {
+    justify-content: center;
+}
+
+@container (width >= 44em) and (width < 63em) {
+    .navbar-alert-banner[data-process="notifications"] {
+        grid-template: var(--banner-grid-template-rows-md) / var(
+                --banner-grid-template-columns-md
+            );
+        grid-template-areas: var(--banner-grid-template-areas-md);
+        text-align: center;
+    }
+}
+
+@container (width < 44em) {
+    .banner {
+        grid-template: var(--banner-grid-template-rows-md) / var(
+                --banner-grid-template-columns-md
+            );
+        grid-template-areas: var(--banner-grid-template-areas-md);
+    }
+
+    .banner-action-buttons {
+        flex-wrap: wrap;
+        margin-left: 0;
+    }
+
+    .navbar-alert-banner {
+        text-align: center;
+    }
+}
+
+@container (width < 25em) {
+    .banner {
+        grid-template-areas: var(--banner-grid-template-areas-sm);
+    }
+
+    .banner-action-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+}
+
+.banner-neutral {
+    background-color: var(--color-background-neutral-banner);
+    color: var(--color-text-neutral-banner);
+    border-color: var(--color-border-neutral-banner);
+}
+
+.banner-brand {
+    background-color: var(--color-background-brand-banner);
+    color: var(--color-text-brand-banner);
+    border-color: var(--color-border-brand-banner);
+}
+
+.banner-info {
+    background-color: var(--color-background-info-banner);
+    color: var(--color-text-info-banner);
+    border-color: var(--color-border-info-banner);
+}
+
+.banner-success {
+    background-color: var(--color-background-success-banner);
+    color: var(--color-text-success-banner);
+    border-color: var(--color-border-success-banner);
+}
+
+.banner-warning {
+    background-color: var(--color-background-warning-banner);
+    color: var(--color-text-warning-banner);
+    border-color: var(--color-border-warning-banner);
+}
+
+.banner-danger {
+    background-color: var(--color-background-danger-banner);
+    color: var(--color-text-danger-banner);
+    border-color: var(--color-border-danger-banner);
+}

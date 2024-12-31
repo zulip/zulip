@@ -21,30 +21,27 @@ body {
     display: flex;
     flex-flow: column;
     gap: 20px;
-    padding-bottom: 20px;
+    padding: 40px 20px;
 }
 
-.design-testing-title {
-    font-size: 2em;
-    text-align: center;
-    padding: 20px 0;
-}
-
-.action-button-section {
-    display: flex;
-    flex-flow: column;
-    gap: 5px;
+.design-controls-section {
+    display: grid;
+    grid-template-columns: [control-name-start] max-content [control-name-end control-input-start] 1fr [control-input-end];
+    gap: 10px;
+    margin-top: 50px;
+    width: min(100%, 500px);
 }
 
 .design-testing-controls {
     display: grid;
-    grid-template-columns: [control-name-start] max-content [control-name-end control-input-start] min-content [control-input-end];
+    grid-template-columns: subgrid;
+    grid-column: control-name-start / control-input-end;
     grid-auto-rows: 1fr;
     gap: 10px;
     background-color: var(--color-background);
     border: solid 1px;
     padding: 10px;
-    width: fit-content;
+    width: 100%;
 }
 
 .design-testing-control {
@@ -79,7 +76,9 @@ body {
     display: none !important;
 }
 
-.section-heading {
+.design-testing-controls-label {
+    grid-column: control-name-start / control-input-end;
+    margin-top: 10px;
     font-size: 1.4em;
     font-weight: 600;
 }
@@ -124,4 +123,13 @@ body {
 .dev-icon-buttons-label {
     font-size: 1.1em;
     font-weight: 500;
+}
+
+#banner_select_intent {
+    text-transform: capitalize;
+}
+
+#dev_normal_banner_wrapper {
+    width: min(100%, 800px);
+    margin: 0 auto;
 }

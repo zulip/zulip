@@ -15,12 +15,5 @@
         "./src/reload_state.ts",
         "./src/channel.ts"
     ],
-    "dev-buttons": [
-        "./src/bundles/portico.ts",
-        "./src/portico/design-testing.ts",
-        "./styles/app_variables.css",
-        "./styles/portico/dev-buttons.css",
-        "./styles/buttons.css",
-        "./styles/app_components.css"
-    ]
+    "dev-testing": ["./src/bundles/design-testing.ts"]
 }
