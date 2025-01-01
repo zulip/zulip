@@ -38,7 +38,9 @@ def create_if_missing_realm_internal_bots() -> None:
             setup_realm_internal_bots(realm)
 
 
-def send_initial_direct_message(user: UserProfile) -> int:
+def send_initial_direct_message(
+    user: UserProfile, *, welcome_bot_custom_message: str | None = None
+) -> int:
     # We adjust the initial Welcome Bot direct message for education organizations.
     education_organization = user.realm.org_type in (
         Realm.ORG_TYPES["education_nonprofit"]["id"],
@@ -84,6 +86,23 @@ will be **automatically deleted** in 30 days.
 I've kicked off some conversations to help you get started. You can find
 them in your [Inbox](/#inbox).
 """)
+        welcome_bot_custom_message_string = ""
+        welcome_bot_custom_message_content = ""
+        can_add_welcome_bot_custom_message = False
+        # Add welcome bot custom message configured by administrators.
+        if welcome_bot_custom_message is not None:
+            welcome_bot_custom_message_content = welcome_bot_custom_message
+            can_add_welcome_bot_custom_message = True
+        elif user.realm.welcome_bot_custom_message_enabled:
+            assert user.realm.welcome_bot_custom_message is not None
+            welcome_bot_custom_message_content = user.realm.welcome_bot_custom_message
+            can_add_welcome_bot_custom_message = True
+        if can_add_welcome_bot_custom_message:
+            welcome_bot_custom_message_string = _("""
+The administrators for this organization would like to share the following information:
+
+>{}
+""").format(welcome_bot_custom_message_content)
 
         content = _("""
 Hello, and welcome to Zulip!👋 {inform_about_tracked_onboarding_messages_text}
@@ -92,11 +111,14 @@ Hello, and welcome to Zulip!👋 {inform_about_tracked_onboarding_messages_text}
 
 {demo_organization_text}
 
+{welcome_bot_custom_message_text}
+
 """).format(
             inform_about_tracked_onboarding_messages_text=inform_about_tracked_onboarding_messages_text,
             getting_started_text=getting_started_string,
             organization_setup_text=organization_setup_string,
             demo_organization_text=demo_organization_warning_string,
+            welcome_bot_custom_message_text=welcome_bot_custom_message_string,
         )
 
     message_id = internal_send_private_message(

@@ -170,6 +170,13 @@ def update_realm(
     ] = None,
     enable_guest_user_indicator: Json[bool] | None = None,
     can_access_all_users_group: Json[GroupSettingChangeRequest] | None = None,
+    welcome_bot_custom_message_enabled: Json[bool] | None = None,
+    welcome_bot_custom_message: Annotated[
+        str | None,
+        StringConstraints(
+            max_length=Realm.MAX_REALM_WELCOME_BOT_CUSTOM_MESSAGE_LENGTH, strip_whitespace=True
+        ),
+    ] = None,
 ) -> HttpResponse:
     # Realm object is being refetched here to make sure that we
     # do not use stale object from cache which can happen when a

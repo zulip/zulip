@@ -306,6 +306,8 @@ export const realm_schema = z.object({
     realm_can_move_messages_between_channels_group: group_setting_value_schema,
     realm_can_move_messages_between_topics_group: group_setting_value_schema,
     realm_create_multiuse_invite_group: group_setting_value_schema,
+    realm_welcome_bot_custom_message_enabled: z.boolean(),
+    realm_welcome_bot_custom_message: z.string(),
     realm_date_created: z.number(),
     realm_default_code_block_language: z.string(),
     realm_default_external_accounts: z.record(

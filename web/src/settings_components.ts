@@ -1415,6 +1415,18 @@ function should_disable_save_button_for_group_settings(settings: string[]): bool
     return false;
 }
 
+function should_disable_save_button_for_welcome_bot_custom_message_setting(): boolean {
+    const is_welcome_bot_custom_message_enabled = $(
+        "#id_realm_welcome_bot_custom_message_enabled",
+    ).is(":checked");
+    const welcome_bot_custom_message_value = $("#id_realm_welcome_bot_custom_message")
+        .val()
+        ?.toString()
+        .trim();
+
+    return is_welcome_bot_custom_message_enabled && welcome_bot_custom_message_value === "";
+}
+
 function enable_or_disable_save_button($subsection_elem: JQuery): void {
     const time_limit_settings = [...$subsection_elem.find(".time-limit-setting")];
 
@@ -1443,6 +1455,8 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
                 tippy_instance.destroy();
             }
         }
+    } else if ($subsection_elem.attr("id") === "org-notifications") {
+        disable_save_button = should_disable_save_button_for_welcome_bot_custom_message_setting();
     }
 
     if (!disable_save_button) {
