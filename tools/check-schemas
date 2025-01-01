@@ -116,7 +116,7 @@ def run() -> None:
     verify_fixtures_are_sorted(list(fixtures.keys()))
     for name, event in fixtures.items():
         check_event(name, event)
-    print("Successful check. All tests passed.")
+    print(f"Successfully checked {len(fixtures)} fixtures. All tests passed.")
 
 
 if __name__ == "__main__":
