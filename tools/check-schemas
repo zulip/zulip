@@ -55,29 +55,37 @@ from zerver.lib import event_schema
 from zerver.lib.data_types import make_checker
 
 
-def get_event_checker(event: dict[str, Any]) -> Callable[[str, dict[str, Any]], None] | None:
+def get_event_checker(event: dict[str, Any]) -> Callable[[str, dict[str, Any]], None]:
+    # Follow the naming convention to find the event checker.
+    # Start by grabbing the event type.
     name = event["type"]
+
+    # Work around the fact that we send a "saved_snippets" (plural)
+    # event type for an event that really just sends a single value.
+    if name == "saved_snippets":
+        name = "saved_snippet"
+
+    # Handle things like attachment_remove_event.
     if "op" in event:
         name += "_" + event["op"]
 
+    # And add the suffix.
     name += "_event"
 
-    if hasattr(event_schema, name):
-        return make_checker(getattr(event_schema, name))
-    return None
+    if not hasattr(event_schema, name):
+        raise ValueError(f"We could not find {name} in event_schemas.py")
+
+    return make_checker(getattr(event_schema, name))
 
 
 def check_event(name: str, event: dict[str, Any]) -> None:
     event["id"] = 1
     checker = get_event_checker(event)
-    if checker is not None:
-        try:
-            checker(name, event)
-        except AssertionError:
-            print(f"\n{EVENTS_JS} has bad data for {name}:\n\n")
-            raise
-    else:
-        print(f"WARNING - NEED SCHEMA: {name}")
+    try:
+        checker(name, event)
+    except AssertionError:
+        print(f"\n{EVENTS_JS} has bad data for {name}:\n\n")
+        raise
 
 
 def read_fixtures() -> dict[str, Any]:
