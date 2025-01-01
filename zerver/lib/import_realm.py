@@ -2165,9 +2165,18 @@ def check_migration_status(exported_migration_status: MigrationStatusJson) -> No
             logging.warning("This server has '%s' app installed, but exported realm does not.", app)
         elif not local_app_migrations:
             logging.warning("Exported realm has '%s' app installed, but this server does not.", app)
-        elif local_app_migrations != exported_app_migrations:
+        elif set(local_app_migrations) != set(exported_app_migrations):
+            # We sort the list of migrations to ensure the same sets of
+            # migrations don't somehow ordered differently. This has been
+            # reported to happen when importing Zulip Cloud to self-host.
+            #
+            # The order of migrations listed in `migration_status.json`
+            # don't actually matter, migrations specify which other
+            # migrations they depend on.
             diff = list(
-                unified_diff(exported_app_migrations, local_app_migrations, lineterm="", n=1)
+                unified_diff(
+                    sorted(exported_app_migrations), sorted(local_app_migrations), lineterm="", n=1
+                )
             )
             mismatched_migrations_log[f"\n'{app}' app:\n"] = "\n".join(diff[3:])
 
