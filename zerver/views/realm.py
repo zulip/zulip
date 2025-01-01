@@ -50,6 +50,7 @@ from zerver.models.realms import (
     BotCreationPolicyEnum,
     CommonPolicyEnum,
     DigestWeekdayEnum,
+    MessageEditHistoryVisibilityEnum,
     OrgTypeEnum,
     WildcardMentionPolicyEnum,
 )
@@ -115,7 +116,7 @@ def update_realm(
     message_content_edit_limit_seconds_raw: Annotated[
         Json[int | str] | None, ApiParamConfig("message_content_edit_limit_seconds")
     ] = None,
-    allow_edit_history: Json[bool] | None = None,
+    message_edit_history_visibility: Json[MessageEditHistoryVisibilityEnum] | None = None,
     default_language: str | None = None,
     waiting_period_threshold: Json[NonNegativeInt] | None = None,
     authentication_methods: Json[dict[str, Any]] | None = None,
