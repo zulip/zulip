@@ -52,7 +52,8 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.test_settings"
 django.setup()
 
 from zerver.lib import event_schema
-from zerver.lib.data_types import make_checker
+
+make_checker = event_schema.__dict__["make_checker"]
 
 
 def get_event_checker(event: dict[str, Any]) -> Callable[[str, dict[str, Any]], None]:
@@ -65,12 +66,15 @@ def get_event_checker(event: dict[str, Any]) -> Callable[[str, dict[str, Any]], 
     if name == "saved_snippets":
         name = "saved_snippet"
 
-    # Handle things like attachment_remove_event.
+    # Handle things like AttachmentRemoveEvent
     if "op" in event:
-        name += "_" + event["op"]
+        name += "_" + event["op"].title()
 
-    # And add the suffix.
-    name += "_event"
+    # Change to CamelCase
+    name = name.replace("_", " ").title().replace(" ", "")
+
+    # And add the prefix.
+    name = "Event" + name
 
     if not hasattr(event_schema, name):
         raise ValueError(f"We could not find {name} in event_schemas.py")
