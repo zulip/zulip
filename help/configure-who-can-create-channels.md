@@ -48,5 +48,7 @@ unadvertised web-public channel in a legitimate organization.
 
 ## Related articles
 
-* [Create a channel](/help/create-a-channel)
+* [Channel permissions](/help/channel-permissions)
 * [User roles](/help/user-roles)
+* [Create a channel](/help/create-a-channel)
+* [Introduction to channels](/help/introduction-to-channels)

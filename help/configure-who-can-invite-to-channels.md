@@ -14,5 +14,8 @@
 
 ## Related articles
 
+* [Channel permissions](/help/channel-permissions)
+* [User roles](/help/user-roles)
+* [User groups](/help/user-groups)
 * [Configure who can unsubscribe other users from a channel](/help/configure-who-can-unsubscribe-others)
 * [Add or remove users from a channel](/help/add-or-remove-users-from-a-channel)

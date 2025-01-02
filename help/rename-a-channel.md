@@ -39,3 +39,8 @@ and Unicode emoji.
 {end_tabs}
 
 {!automated-notice-channel-event.md!}
+
+## Related articles
+
+* [Change a channel's description](/help/change-the-channel-description)
+* [Channel permissions](/help/channel-permissions)

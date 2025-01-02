@@ -2,10 +2,9 @@
 
 {!admin-only.md!}
 
-By default, anyone who belongs to a channel can also send messages to
-the channel. However, sometimes it's useful to have a channel (often a
-[default channel](/help/set-default-channels-for-new-users)) where only
-certain users can send messages.
+You can restrict who can send messages to a channel. For example,
+you can set up an announcement channel where only a specific
+[group](/help/user-groups) of users can send messages.
 
 {start_tabs}
 
@@ -22,3 +21,11 @@ certain users can send messages.
 {end_tabs}
 
 {!automated-notice-channel-event.md!}
+
+## Related articles
+
+* [Channel permissions](/help/channel-permissions)
+* [User roles](/help/user-roles)
+* [User groups](/help/user-groups)
+* [Set default channels for new users](/help/set-default-channels-for-new-users)
+* [Configure who can administer a channel](/help/configure-who-can-administer-a-channel)
