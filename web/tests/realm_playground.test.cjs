@@ -9,6 +9,7 @@ const {$t} = zrequire("i18n");
 const pygments_data = zrequire("pygments_data");
 const realm_playground = zrequire("realm_playground");
 const typeahead_helper = zrequire("typeahead_helper");
+const {initialize_user_settings} = zrequire("user_settings");
 
 run_test("get_pygments_typeahead_list_for_composebox", () => {
     // When no Code Playground is configured, the list of candidates should
@@ -45,6 +46,8 @@ run_test("get_pygments_typeahead_list_for_composebox", () => {
 });
 
 run_test("get_pygments_typeahead_list_for_settings", () => {
+    initialize_user_settings({user_settings: {}});
+
     const custom_pygment_language = "custom_lang";
     const playground_data = [
         {
