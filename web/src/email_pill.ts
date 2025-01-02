@@ -1,31 +1,37 @@
+import {parseOneAddress} from "email-addresses";
+
 import type {InputPillConfig, InputPillContainer} from "./input_pill.ts";
 import * as input_pill from "./input_pill.ts";
 
 type EmailPill = {
     type: "email";
     email: string;
+    parsed_email: string;
 };
 
 export type EmailPillWidget = InputPillContainer<EmailPill>;
-
-const email_regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function create_item_from_email(
     email: string,
     current_items: EmailPill[],
 ): EmailPill | undefined {
-    if (!email_regex.test(email)) {
+    const original_email = email;
+    const parsed_address = parseOneAddress(email);
+    if (!parsed_address || parsed_address.type !== "mailbox") {
         return undefined;
     }
 
-    const existing_emails = current_items.map((item) => item.email);
-    if (existing_emails.includes(email)) {
+    const parsed_email = parsed_address.address;
+
+    const existing_emails = current_items.map((item) => item.parsed_email);
+    if (existing_emails.includes(parsed_email)) {
         return undefined;
     }
 
     return {
         type: "email",
-        email,
+        email: original_email,
+        parsed_email,
     };
 }
 
@@ -37,7 +43,7 @@ export function get_current_email(
     pill_container: input_pill.InputPillContainer<EmailPill>,
 ): string | null {
     const current_text = pill_container.getCurrentText();
-    if (current_text !== null && email_regex.test(current_text)) {
+    if (current_text !== null && parseOneAddress(current_text)) {
         return current_text;
     }
     return null;
