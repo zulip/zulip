@@ -24,6 +24,21 @@ class JotformHookTests(WebhookTestCase):
             content_type="multipart/form-data",
         )
 
+    def test_response_with_pretty(self) -> None:
+        expected_title = "Tutor Appointment Form"
+        expected_message = """
+* **Student's Name**: Niloth P
+* **Type of Tutoring**: Online Tutoring
+* **Subject for Tutoring**: Math
+* **Grade**: 12""".strip()
+
+        self.check_webhook(
+            "response_with_pretty",
+            expected_title,
+            expected_message,
+            content_type="multipart/form-data",
+        )
+
     def test_bad_payload(self) -> None:
         with self.assertRaisesRegex(AssertionError, "Unable to handle Jotform payload"):
             self.check_webhook("response")

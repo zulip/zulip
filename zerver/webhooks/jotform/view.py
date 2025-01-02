@@ -19,18 +19,24 @@ def api_jotform_webhook(
 ) -> HttpResponse:
     payload = request.POST
     topic_name = payload.get("formTitle")
-    fields = payload.get("pretty", "").split(", ")
+    pretty_field = payload.get("pretty", "")
 
-    if not topic_name or not fields:
+    if not topic_name or not pretty_field:
         raise JsonableError(_("Unable to handle Jotform payload"))
 
-    form_response = ""
-    for field in fields:
+    # List of known values that can appear in the `pretty` field (can be dynamic based on your case)
+    known_values = ["Student's Name", "Type of Tutoring", "Subject for Tutoring", "Grade"]
+    form_response = []
+
+    # Split the pretty field by commas and loop through to process each key-value pair
+    for field in pretty_field.split(", "):
         label, value = field.split(":", 1)
-        # TODO: Add fixtures and tests for question-like fields and files
-        separator = " " if label.endswith("?") else ": "
-        form_response += f"* **{label}**{separator}{value}\n"
-    message = form_response.strip()
+        # Check if the label matches any of the known values
+        if any(known_value in label for known_value in known_values):
+            form_response.append(f"* **{label}**: {value.strip()}")
+
+    message = "\n".join(form_response)
+
 
     check_send_webhook_message(request, user_profile, topic_name, message)
     return json_success(request)
