@@ -27,3 +27,10 @@ that default set.
 2. Find the channel you would like to remove, and click **Remove from default**.
 
 {end_tabs}
+
+## Related articles
+
+* [User roles](/help/user-roles)
+* [User groups](/help/user-groups)
+* [Channel permissions](/help/channel-permissions)
+* [Create channels for a new organization](/help/create-channels)
