@@ -1802,6 +1802,14 @@ body:not(.hide-left-sidebar) {
 
     .left-sidebar-toggle-button {
         height: var(--header-height);
+
+        .zulip-icon-panel-left {
+            font-size: 18px;
+        }
+
+        .zulip-icon-panel-left-dashed {
+            font-size: 18px;
+        }
     }
 
     nav
@@ -2090,6 +2098,14 @@ body:not(.hide-left-sidebar) {
     }
 
     .zulip-icon-gear {
+        font-size: 18px;
+    }
+
+    .zulip-icon-panel-right {
+        font-size: 18px;
+    }
+
+    .zulip-icon-panel-right-dashed {
         font-size: 18px;
     }
 

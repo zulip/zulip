@@ -31,19 +31,27 @@ function save_sidebar_toggle_status(): void {
 
 export function restore_sidebar_toggle_status(): void {
     const ls = localstorage();
+
+    // Restore left sidebar state
     if (ls.get("left-sidebar")) {
         $("body").addClass("hide-left-sidebar");
     }
+
+    // Restore right sidebar state
     if (ls.get("right-sidebar")) {
         $("body").addClass("hide-right-sidebar");
     }
-}
 
+    // Update the icon state after restoring sidebar states
+    updateLeftSidebarIcon();
+    updateRightSidebarIcon();
+}
 export let left_sidebar_expanded_as_overlay = false;
 export let right_sidebar_expanded_as_overlay = false;
 
 export function hide_userlist_sidebar(): void {
     $(".app-main .column-right").removeClass("expanded");
+    updateRightSidebarIcon();
     right_sidebar_expanded_as_overlay = false;
 }
 
@@ -61,6 +69,7 @@ export function show_userlist_sidebar(): void {
     }
 
     $userlist_sidebar.addClass("expanded");
+    updateRightSidebarIcon();
     fix_invite_user_button_flicker();
     resize.resize_page_components();
     right_sidebar_expanded_as_overlay = true;
@@ -68,12 +77,14 @@ export function show_userlist_sidebar(): void {
 
 export function show_streamlist_sidebar(): void {
     $(".app-main .column-left").addClass("expanded");
+    updateLeftSidebarIcon();
     resize.resize_stream_filters_container();
     left_sidebar_expanded_as_overlay = true;
 }
 
 export function hide_streamlist_sidebar(): void {
     $(".app-main .column-left").removeClass("expanded");
+    updateLeftSidebarIcon();
     left_sidebar_expanded_as_overlay = false;
 }
 
@@ -108,6 +119,71 @@ function fix_invite_user_button_flicker(): void {
         $("body").removeClass("hide-right-sidebar-by-visibility");
     }, 0);
 }
+// Update icon based on sidebar state
+function updateRightSidebarIcon(): void {
+    const $iconElement = $("#panel-right");
+    const isLargeScreen = window.innerWidth >= media_breakpoints_num.xl;
+    const $isSidebarHidden = $("body").hasClass("hide-right-sidebar");
+    const $isSidebarExpanded = $(".app-main .column-right").hasClass("expanded");
+
+    if (isLargeScreen) {
+        // On large screens, rely on `hide-right-sidebar` class
+        if ($isSidebarHidden) {
+            $iconElement
+                .removeClass("zulip-icon-panel-right-dashed")
+                .addClass("zulip-icon-panel-right");
+        } else {
+            $iconElement
+                .removeClass("zulip-icon-panel-right")
+                .addClass("zulip-icon-panel-right-dashed");
+        }
+    } else {
+        // On small screens, rely on `expanded` class
+        if ($isSidebarExpanded) {
+            $iconElement
+                .removeClass("zulip-icon-panel-right")
+                .addClass("zulip-icon-panel-right-dashed");
+        } else {
+            $iconElement
+                .removeClass("zulip-icon-panel-right-dashed")
+                .addClass("zulip-icon-panel-right");
+        }
+    }
+}
+
+function updateLeftSidebarIcon(): void {
+    const isLargeScreen = window.innerWidth >= media_breakpoints_num.md;
+    const $iconElement = isLargeScreen
+        ? $(".column-left #panel-left")
+        : $(".column-middle #panel-left");
+
+    const $isSidebarHidden = $("body").hasClass("hide-left-sidebar");
+    const $isSidebarExpanded = $(".app-main .column-left").hasClass("expanded");
+
+    if (isLargeScreen) {
+        // On large screens, rely on `hide-left-sidebar` class
+        if ($isSidebarHidden) {
+            $iconElement
+                .removeClass("zulip-icon-panel-left-dashed")
+                .addClass("zulip-icon-panel-left");
+        } else {
+            $iconElement
+                .removeClass("zulip-icon-panel-left")
+                .addClass("zulip-icon-panel-left-dashed");
+        }
+    } else {
+        // On small screens, rely on `expanded` class
+        if ($isSidebarExpanded) {
+            $iconElement
+                .removeClass("zulip-icon-panel-left")
+                .addClass("zulip-icon-panel-left-dashed");
+        } else {
+            $iconElement
+                .removeClass("zulip-icon-panel-left-dashed")
+                .addClass("zulip-icon-panel-left");
+        }
+    }
+}
 
 export function initialize(): void {
     $("body").on("click", ".login_button", (e) => {
@@ -130,13 +206,14 @@ export function initialize(): void {
 
         if (window.innerWidth >= media_breakpoints_num.xl) {
             $("body").toggleClass("hide-right-sidebar");
+
             if (!$("body").hasClass("hide-right-sidebar")) {
                 fix_invite_user_button_flicker();
             }
+            updateRightSidebarIcon();
             save_sidebar_toggle_status();
             return;
         }
-
         if (right_sidebar_expanded_as_overlay) {
             hide_userlist_sidebar();
             return;
@@ -147,21 +224,18 @@ export function initialize(): void {
     $(".left-sidebar-toggle-button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-
         if (window.innerWidth >= media_breakpoints_num.md) {
             $("body").toggleClass("hide-left-sidebar");
             if (
                 message_lists.current !== undefined &&
                 window.innerWidth <= media_breakpoints_num.xl
             ) {
-                // We expand the middle column width between md and xl breakpoints when the
-                // left sidebar is hidden. This can cause the pointer to move out of view.
                 message_viewport.scroll_to_selected();
             }
+            updateLeftSidebarIcon(); // Update icon state
             save_sidebar_toggle_status();
             return;
         }
-
         if (left_sidebar_expanded_as_overlay) {
             hide_streamlist_sidebar();
             return;
