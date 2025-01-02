@@ -162,6 +162,11 @@ topic to a different channel](/help/move-content-to-another-channel).
   the right place for general conversations about work on the Zulip
   server and web app respectively (including design discussions,
   questions, updates on a project, or anything else).
+- [#design](https://chat.zulip.org/#narrow/channel/101-design) is the
+  place to discuss the detailed UI and UX design of a change you're
+  working on, meaning how it looks and how it behaves as seen by the
+  user.  (Technical discussions, including how the code itself is
+  designed, go in one of the other channels above.)
 - [#automated
   testing](https://chat.zulip.org/#narrow/channel/43-automated-testing)
   is primarily used for automated notifications about [CI
