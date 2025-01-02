@@ -9,7 +9,7 @@ import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import type {GroupSettingValue, StateData} from "./state_data.ts";
+import type {CurrentUser, GroupSettingValue, StateData} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import type {StreamPermissionGroupSetting, StreamPostPolicy} from "./stream_types.ts";
 import * as sub_store from "./sub_store.ts";
@@ -596,7 +596,10 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
     );
 }
 
-export let can_post_messages_in_stream = function (stream: StreamSubscription): boolean {
+export let can_post_messages_in_stream = function (
+    stream: StreamSubscription,
+    sender: CurrentUser = current_user,
+): boolean {
     if (stream.is_archived) {
         return false;
     }
@@ -605,7 +608,9 @@ export let can_post_messages_in_stream = function (stream: StreamSubscription): 
         return false;
     }
 
-    if (current_user.is_admin) {
+    const user: User = people.get_by_user_id(sender.user_id);
+
+    if (user.is_admin) {
         return true;
     }
 
@@ -613,7 +618,7 @@ export let can_post_messages_in_stream = function (stream: StreamSubscription): 
         return false;
     }
 
-    if (current_user.is_moderator) {
+    if (user.is_moderator) {
         return true;
     }
 
@@ -622,16 +627,15 @@ export let can_post_messages_in_stream = function (stream: StreamSubscription): 
     }
 
     if (
-        current_user.is_guest &&
+        user.is_guest &&
         stream.stream_post_policy !== settings_config.stream_post_policy_values.everyone.code
     ) {
         return false;
     }
 
-    const person = people.get_by_user_id(people.my_current_user_id());
     const current_datetime = Date.now();
-    const person_date_joined = new Date(person.date_joined).getTime();
-    const days = (current_datetime - person_date_joined) / 1000 / 86400;
+    const user_date_joined = new Date(user.date_joined).getTime();
+    const days = (current_datetime - user_date_joined) / 1000 / 86400;
     if (
         stream.stream_post_policy ===
             settings_config.stream_post_policy_values.non_new_members.code &&

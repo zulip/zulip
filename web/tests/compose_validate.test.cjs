@@ -57,6 +57,7 @@ stream_data.add_sub(social_sub);
 
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
+current_user.user_id = me.user_id;
 
 people.add_active_user(alice);
 people.add_active_user(bob);
@@ -471,13 +472,13 @@ test_ui("validate_stream_message", ({override, override_rewire, mock_template}) 
     assert.ok(wildcards_not_allowed_rendered);
 });
 
-test_ui("test_validate_stream_message_post_policy_admin_only", ({mock_template, override}) => {
+test_ui("test_validate_stream_message_post_policy_admin_only", ({mock_template}) => {
     // This test is in continuation with test_validate but it has been separated out
     // for better readability. Their relative position of execution should not be changed.
     // Although the position with respect to test_validate_stream_message does not matter
     // as different stream is used for this test.
     mock_banners();
-    override(current_user, "is_admin", false);
+    me.is_admin = false;
     const sub_stream_102 = {
         stream_id: 102,
         name: "stream102",
@@ -508,8 +509,8 @@ test_ui("test_validate_stream_message_post_policy_admin_only", ({mock_template, 
     // Reset error message.
     compose_state.set_stream_id(social_sub.stream_id);
 
-    override(current_user, "is_admin", false);
-    override(current_user, "is_guest", true);
+    me.is_admin = false;
+    me.is_guest = true;
 
     compose_state.topic("topic102");
     compose_state.set_stream_id(sub_stream_102.stream_id);
@@ -518,12 +519,12 @@ test_ui("test_validate_stream_message_post_policy_admin_only", ({mock_template, 
     assert.ok(banner_rendered);
 });
 
-test_ui("test_validate_stream_message_post_policy_moderators_only", ({mock_template, override}) => {
+test_ui("test_validate_stream_message_post_policy_moderators_only", ({mock_template}) => {
     mock_banners();
 
-    override(current_user, "is_admin", false);
-    override(current_user, "is_moderator", false);
-    override(current_user, "is_guest", false);
+    me.is_admin = false;
+    me.is_moderator = false;
+    me.is_guest = false;
 
     const sub = {
         stream_id: 104,
@@ -553,47 +554,41 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", ({mock_templ
     // Reset error message.
     compose_state.set_stream_id(social_sub.stream_id);
 
-    override(current_user, "is_guest", true);
+    me.is_guest = true;
     assert.ok(!compose_validate.validate());
     assert.ok(banner_rendered);
 });
 
-test_ui(
-    "test_validate_stream_message_post_policy_full_members_only",
-    ({mock_template, override}) => {
-        mock_banners();
-        override(current_user, "is_admin", false);
-        override(current_user, "is_guest", true);
-        const sub = {
-            stream_id: 103,
-            name: "stream103",
-            subscribed: true,
-            stream_post_policy: settings_config.stream_post_policy_values.non_new_members.code,
-        };
+test_ui("test_validate_stream_message_post_policy_full_members_only", ({mock_template}) => {
+    mock_banners();
+    me.is_admin = false;
+    me.is_guest = true;
+    const sub = {
+        stream_id: 103,
+        name: "stream103",
+        subscribed: true,
+        stream_post_policy: settings_config.stream_post_policy_values.non_new_members.code,
+    };
 
-        stream_data.add_sub(sub);
-        compose_state.topic("topic103");
-        compose_state.set_stream_id(sub.stream_id);
-        let banner_rendered = false;
-        mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-            assert.equal(data.classname, compose_banner.CLASSNAMES.no_post_permissions);
-            assert.equal(
-                data.banner_text,
-                $t({
-                    defaultMessage: "You do not have permission to post in this channel.",
-                }),
-            );
-            banner_rendered = true;
-            return "<banner-stub>";
-        });
-        $("#send_message_form").set_find_results(
-            ".message-textarea",
-            $("textarea#compose-textarea"),
+    stream_data.add_sub(sub);
+    compose_state.topic("topic103");
+    compose_state.set_stream_id(sub.stream_id);
+    let banner_rendered = false;
+    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+        assert.equal(data.classname, compose_banner.CLASSNAMES.no_post_permissions);
+        assert.equal(
+            data.banner_text,
+            $t({
+                defaultMessage: "You do not have permission to post in this channel.",
+            }),
         );
-        assert.ok(!compose_validate.validate());
-        assert.ok(banner_rendered);
-    },
-);
+        banner_rendered = true;
+        return "<banner-stub>";
+    });
+    $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
+    assert.ok(!compose_validate.validate());
+    assert.ok(banner_rendered);
+});
 
 test_ui("test_check_overflow_text", ({mock_template, override}) => {
     override(realm, "max_message_length", 10000);

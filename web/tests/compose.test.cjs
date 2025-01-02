@@ -111,6 +111,7 @@ const bot = {
 people.add_active_user(new_user);
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
+current_user.user_id = me.user_id;
 
 people.add_active_user(alice);
 people.add_active_user(bob);

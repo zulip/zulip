@@ -101,6 +101,7 @@ function test(label, f) {
         people.init();
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
+        current_user.user_id = me.user_id;
         stream_data.clear_subscriptions();
         user_groups.initialize({
             realm_user_groups: [
@@ -1167,23 +1168,23 @@ test("can_post_messages_in_stream", ({override}) => {
         history_public_to_subscribers: false,
         stream_post_policy: settings_config.stream_post_policy_values.admins.code,
     };
-    override(current_user, "is_admin", false);
+    me.is_admin = false;
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
-    override(current_user, "is_admin", true);
+    me.is_admin = true;
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     social.stream_post_policy = settings_config.stream_post_policy_values.moderators.code;
-    override(current_user, "is_moderator", false);
-    override(current_user, "is_admin", false);
+    me.is_moderator = false;
+    me.is_admin = false;
 
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
-    override(current_user, "is_moderator", true);
+    me.is_moderator = true;
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     social.stream_post_policy = settings_config.stream_post_policy_values.non_new_members.code;
-    override(current_user, "is_moderator", false);
+    me.is_moderator = false;
     me.date_joined = new Date(Date.now());
     override(realm, "realm_waiting_period_threshold", 10);
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
@@ -1191,7 +1192,7 @@ test("can_post_messages_in_stream", ({override}) => {
     me.date_joined = new Date(Date.now() - 20 * 86400000);
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
-    override(current_user, "is_guest", true);
+    me.is_guest = true;
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
     social.stream_post_policy = settings_config.stream_post_policy_values.everyone.code;
