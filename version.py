@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 332  # Last bumped for data deletion of deactivated realms.
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (307, 0)  # bumped 2025-01-02 to upgrade JavaScript dependencies
+PROVISION_VERSION = (307, 1)  # bumped 2025-01-02 to rebuild emoji_names
