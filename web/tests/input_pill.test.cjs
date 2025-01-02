@@ -113,6 +113,15 @@ function set_up() {
     };
 }
 
+run_test("get_text_from_item and get_display_value_from_item", () => {
+    const info = set_up();
+    const config = info.config;
+
+    const item = {color_name: "BLUE", type: "color"};
+    assert.equal(config.get_text_from_item(item), "BLUE");
+    assert.equal(config.get_display_value_from_item(item), "BLUE");
+});
+
 run_test("copy from pill", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.ok(["BLUE", "RED"].includes(data.display_value));

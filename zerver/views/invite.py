@@ -1,6 +1,7 @@
 import re
 from typing import Annotated
 
+import orjson
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
@@ -23,6 +24,7 @@ from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, get_streams_to_which_user_cannot_add_subscribers
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_int_in_validator
+from zerver.lib.types import Invitee
 from zerver.lib.user_groups import UserGroupMembershipDetails, access_user_group_for_update
 from zerver.models import MultiuseInvite, NamedUserGroup, PreregistrationUser, Stream, UserProfile
 
@@ -155,14 +157,26 @@ def invite_users_backend(
     if not invitee_emails_raw:
         raise JsonableError(_("You must specify at least one email address."))
 
-    invitee_emails = get_invitee_emails_set(invitee_emails_raw)
+    # Attempt to parse invitee_emails_raw as JSON (new format)
+    invitees = set()
+    try:
+        invitees_list = orjson.loads(invitee_emails_raw)
+        if isinstance(invitees_list, list) and all(
+            isinstance(item, dict) and "email" in item for item in invitees_list
+        ):
+            for invitee in invitees_list:
+                email = invitee["email"].strip()
+                full_name = invitee.get("full_name", "").strip()
+                invitees.add(Invitee(email=email, full_name=full_name))
+    except (orjson.JSONDecodeError, TypeError):
+        invitees = get_invitees_set(invitee_emails_raw)
 
     streams = access_streams_for_invite(stream_ids, user_profile)
     user_groups = access_user_groups_for_invite(group_ids, user_profile)
 
     skipped = do_invite_users(
         user_profile,
-        invitee_emails,
+        invitees,
         streams,
         notify_referrer_on_join,
         user_groups,
@@ -185,15 +199,19 @@ def invite_users_backend(
     return json_success(request)
 
 
-def get_invitee_emails_set(invitee_emails_raw: str) -> set[str]:
-    invitee_emails_list = set(re.split(r"[,\n]", invitee_emails_raw))
-    invitee_emails = set()
-    for email in invitee_emails_list:
+def get_invitees_set(invitee_emails_raw: str) -> set[Invitee]:
+    invitees_list = set(re.split(r"[,\n]", invitee_emails_raw))
+    invitees = set()
+
+    for email in invitees_list:
+        email = email.strip()
         is_email_with_name = re.search(r"<(?P<email>.*)>", email)
         if is_email_with_name:
-            email = is_email_with_name.group("email")
-        invitee_emails.add(email.strip())
-    return invitee_emails
+            email = is_email_with_name.group("email").strip()
+
+        invitees.add(Invitee(email=email, full_name=""))
+
+    return invitees
 
 
 @require_member_or_admin

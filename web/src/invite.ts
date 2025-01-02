@@ -51,6 +51,11 @@ function reset_error_messages(): void {
     }
 }
 
+export type Invitees = {
+    email: string;
+    full_name: string;
+};
+
 function get_common_invitation_data(): {
     csrfmiddlewaretoken: string;
     invite_as: number;
@@ -99,18 +104,16 @@ function get_common_invitation_data(): {
         stream_ids: JSON.stringify(stream_ids),
         invite_expires_in_minutes: JSON.stringify(expires_in),
         group_ids: JSON.stringify(group_ids),
-        invitee_emails: pills
-            .items()
-            .map((pill) => email_pill.get_email_from_item(pill))
-            .join(","),
+        invitee_emails: JSON.stringify(
+            pills.items().map((pill) => email_pill.get_invitee_from_item(pill)),
+        ),
         include_realm_default_subscriptions: JSON.stringify(include_realm_default_subscriptions),
     };
     const current_email = email_pill.get_current_email(pills);
     if (current_email) {
-        if (pills.items().length === 0) {
-            data.invitee_emails = current_email;
-        } else {
-            data.invitee_emails += "," + current_email;
+        const current_email_item = email_pill.create_item_from_email(current_email, pills.items());
+        if (current_email_item) {
+            data.invitee_emails = JSON.stringify([...pills.items(), current_email_item]);
         }
     }
     return data;
