@@ -237,7 +237,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
-from zerver.lib.types import ProfileDataElementUpdateDict, UserGroupMembersDict
+from zerver.lib.types import Invitee, ProfileDataElementUpdateDict, UserGroupMembersDict
 from zerver.lib.upload import upload_message_attachment
 from zerver.lib.user_groups import (
     get_group_setting_value_for_api,
@@ -1277,7 +1277,7 @@ class NormalActionsTest(BaseAction):
         with self.verify_action(state_change_expected=False) as events:
             do_invite_users(
                 self.user_profile,
-                ["foo@zulip.com"],
+                [Invitee(email="foo@zulip.com")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1309,7 +1309,7 @@ class NormalActionsTest(BaseAction):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 user_profile,
-                ["foo@zulip.com"],
+                [Invitee(email="foo@zulip.com")],
                 [],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1332,7 +1332,7 @@ class NormalActionsTest(BaseAction):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 self.user_profile,
-                ["foo@zulip.com"],
+                [Invitee(email="foo@zulip.com")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1378,7 +1378,7 @@ class NormalActionsTest(BaseAction):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 self.user_profile,
-                ["foo@zulip.com"],
+                [Invitee(email="foo@zulip.com")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
