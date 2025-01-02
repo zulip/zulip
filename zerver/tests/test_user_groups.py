@@ -1555,7 +1555,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             for i in range(50)
         ]
 
-        with self.assert_database_query_count(9):
+        with self.assert_database_query_count(10):
             user_group = create_user_group_in_database(
                 name="support",
                 members=[hamlet, cordelia, *original_users],
@@ -1925,6 +1925,8 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 self.assert_json_success(result)
                 user_group.refresh_from_db()
                 self.assertEqual(user_group.name, new_name)
+                if "\n" in new_description:
+                    new_description = new_description.replace("\n", " ")
                 self.assertEqual(user_group.description, new_description)
             else:
                 self.assert_json_error(result, error_msg)
@@ -2000,7 +2002,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         promote_new_full_members()
         check_update_user_group(
             "help",
-            "Troubleshooting team",
+            "Troubleshooting team\n",
             "cordelia",
         )
         check_update_user_group("support", "Support team", "aaron", "Insufficient permission")

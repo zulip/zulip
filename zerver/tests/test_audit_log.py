@@ -1361,6 +1361,7 @@ class TestRealmAuditLog(ZulipTestCase):
             {
                 RealmAuditLog.OLD_VALUE: "No description",
                 RealmAuditLog.NEW_VALUE: "Foo",
+                "property": "description",
             },
         )
 
