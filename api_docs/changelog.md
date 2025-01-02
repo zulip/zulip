@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 337**
+
+* `POST /calls/bigbluebutton/create`: Added a `voice_only` parameter
+  controlling whether the call should be voice-only, in which case we
+  keep cameras disabled for this call. Now the call creator is a
+  moderator and all other joinees are viewers.
+
 **Feature level 336**
 
 * [Markdown message formatting](/api/message-formatting#image-previews): Added

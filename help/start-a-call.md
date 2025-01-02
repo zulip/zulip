@@ -90,14 +90,10 @@ supported by Zulip are:
 * [Zoom integration](/integrations/doc/zoom)
 * [BigBlueButton integration](/integrations/doc/big-blue-button)
 
-If you choose BigBlueButton as the call provider, there will be a single button
-(<i class="zulip-icon zulip-icon-video-call"></i>) for starting a call in the
-compose box. The call is initiated with cameras turned off.
-
 !!! tip ""
 
-    It is also possible to disable the video and voice call buttons for your organization
-    by setting the provider to "None".
+    You can disable the video and voice call buttons for your organization
+    by setting the **call provider** to "None".
 
 ### Change your organization's call provider
 
