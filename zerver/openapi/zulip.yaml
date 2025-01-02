@@ -21864,8 +21864,14 @@ paths:
       summary: Create BigBlueButton video call
       description: |
         Create a video call URL for a BigBlueButton video call.
-        Requires [BigBlueButton](/integrations/doc/big-blue-button)
+        Requires [BigBlueButton 2.4+](/integrations/doc/big-blue-button)
         to be configured on the Zulip server.
+
+        The acting user will be given the moderator role on the call.
+
+        **Changes**: Prior to Zulip 10.0 (feature level 337), every
+        user was given the moderator role on BigBlueButton calls, via
+        encoding a moderator password in the generated URLs.
       parameters:
         - in: query
           name: meeting_name
@@ -21875,6 +21881,18 @@ paths:
           description: |
             Meeting name for the BigBlueButton video call.
           example: "test_channel meeting"
+        - in: query
+          name: voice_only
+          schema:
+            type: boolean
+          required: false
+          description: |
+            Configures whether the call is voice-only; if true,
+            disables cameras for all users. Only the call
+            creator/moderator can edit this configuration.
+
+            **Changes**: New in Zulip 10.0 (feature level 337).
+          example: true
       responses:
         "200":
           description: Success.
