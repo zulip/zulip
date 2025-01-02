@@ -230,7 +230,7 @@ export function initialize(): void {
         appendTo: () => document.body,
         onShow(instance) {
             const $container = $(instance.popper).find(".views-tooltip-container");
-            if ($container.data("view-code") === user_settings.web_home_view) {
+            if ($container.attr("data-view-code") === user_settings.web_home_view) {
                 $container.find(".views-tooltip-home-view-note").removeClass("hide");
             }
 
