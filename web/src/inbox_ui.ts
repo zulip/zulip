@@ -730,7 +730,7 @@ function row_in_search_results(keyword: string, text: string): boolean {
 
 function filter_should_hide_dm_row({dm_key}: {dm_key: string}): boolean {
     const recipients_string = people.get_recipients(dm_key);
-    const text = recipients_string.toLowerCase();
+    const text = recipients_string.join(",");
 
     if (!row_in_search_results(search_keyword, text)) {
         return true;
