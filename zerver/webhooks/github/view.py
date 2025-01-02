@@ -919,6 +919,17 @@ def api_github_webhook(
         # Ignore private repository events
         return json_success(request)
 
+    # Ignore 'comment edited' events (except discussion comments)
+    # if the comment body remains unchanged.
+    if (
+        "comment" in header_event
+        and "discussion" not in header_event
+        and payload.get("action", "").tame(check_string) == "edited"
+        and payload["changes"]["body"]["from"].tame(check_string)
+        == payload["comment"]["body"].tame(check_string)
+    ):
+        return json_success(request)
+
     event = get_zulip_event_name(header_event, payload, branches)
     if event is None:
         # This is nothing to worry about--get_event() returns None
