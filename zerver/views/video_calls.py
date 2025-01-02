@@ -1,8 +1,6 @@
 import hashlib
 import json
 import random
-import secrets
-from base64 import b32encode
 from urllib.parse import quote, urlencode, urljoin
 
 import requests
@@ -206,12 +204,15 @@ def deauthorize_zoom_user(request: HttpRequest) -> HttpResponse:
 
 @typed_endpoint
 def get_bigbluebutton_url(
-    request: HttpRequest, user_profile: UserProfile, *, meeting_name: str
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    meeting_name: str,
+    voice_only: Json[bool] = False,
 ) -> HttpResponse:
     # https://docs.bigbluebutton.org/dev/api.html#create for reference on the API calls
     # https://docs.bigbluebutton.org/dev/api.html#usage for reference for checksum
     id = "zulip-" + str(random.randint(100000000000, 999999999999))
-    password = b32encode(secrets.token_bytes(20)).decode()  # 20 bytes means 32 characters
 
     # We sign our data here to ensure a Zulip user cannot tamper with
     # the join link to gain access to other meetings that are on the
@@ -220,7 +221,8 @@ def get_bigbluebutton_url(
         {
             "meeting_id": id,
             "name": meeting_name,
-            "password": password,
+            "lock_settings_disable_cam": voice_only,
+            "moderator": request.user.id,
         }
     )
     url = append_url_query_string("/calls/bigbluebutton/join", "bigbluebutton=" + signed)
@@ -250,14 +252,7 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
         {
             "meetingID": bigbluebutton_data["meeting_id"],
             "name": bigbluebutton_data["name"],
-            "moderatorPW": bigbluebutton_data["password"],
-            # We generate the attendee password from moderatorPW,
-            # because the BigBlueButton API requires a separate
-            # password. This integration is designed to have all users
-            # join as moderators, so we generate attendeePW by
-            # truncating the moderatorPW while keeping it long enough
-            # to not be vulnerable to brute force attacks.
-            "attendeePW": bigbluebutton_data["password"][:16],
+            "lockSettingsDisableCam": bigbluebutton_data["lock_settings_disable_cam"],
         },
         quote_via=quote,
     )
@@ -286,9 +281,11 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
     join_params = urlencode(
         {
             "meetingID": bigbluebutton_data["meeting_id"],
-            # We use the moderator password here to grant ever user
-            # full moderator permissions to the bigbluebutton session.
-            "password": bigbluebutton_data["password"],
+            # We use the moderator role only for the user who created the
+            # meeting, the attendee role for everyone else, so that only
+            # the user who created the meeting can convert a voice-only
+            # call to a video call.
+            "role": "MODERATOR" if bigbluebutton_data["moderator"] == request.user.id else "VIEWER",
             "fullName": request.user.full_name,
             # https://docs.bigbluebutton.org/dev/api.html#create
             # The createTime option is used to have the user redirected to a link

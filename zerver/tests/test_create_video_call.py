@@ -22,7 +22,17 @@ class TestVideoCall(ZulipTestCase):
             {
                 "meeting_id": "a",
                 "name": "a",
-                "password": "a",
+                "lock_settings_disable_cam": True,
+                "moderator": self.user.id,
+            }
+        )
+        # For testing viewer role (different creator / moderator from self)
+        self.signed_bbb_a_object_different_creator = self.signer.sign_object(
+            {
+                "meeting_id": "a",
+                "name": "a",
+                "lock_settings_disable_cam": True,
+                "moderator": self.example_user("cordelia").id,
             }
         )
 
@@ -234,8 +244,30 @@ class TestVideoCall(ZulipTestCase):
             mock.patch("zerver.views.video_calls.random.randint", return_value="1"),
             mock.patch("secrets.token_bytes", return_value=b"\x00" * 20),
         ):
+            with mock.patch("zerver.views.video_calls.random.randint", return_value="1"):
+                response = self.client_get(
+                    "/json/calls/bigbluebutton/create?meeting_name=general > meeting&voice_only=false"
+                )
+            response_dict = self.assert_json_success(response)
+            self.assertEqual(
+                response_dict["url"],
+                append_url_query_string(
+                    "/calls/bigbluebutton/join",
+                    "bigbluebutton="
+                    + self.signer.sign_object(
+                        {
+                            "meeting_id": "zulip-1",
+                            "name": "general > meeting",
+                            "lock_settings_disable_cam": False,
+                            "moderator": self.user.id,
+                        }
+                    ),
+                ),
+            )
+
+            # Testing for audio call
             response = self.client_get(
-                "/json/calls/bigbluebutton/create?meeting_name=general > meeting"
+                "/json/calls/bigbluebutton/create?meeting_name=general > meeting&voice_only=true"
             )
             response_dict = self.assert_json_success(response)
             self.assertEqual(
@@ -247,7 +279,8 @@ class TestVideoCall(ZulipTestCase):
                         {
                             "meeting_id": "zulip-1",
                             "name": "general > meeting",
-                            "password": "A" * 32,
+                            "lock_settings_disable_cam": True,
+                            "moderator": self.user.id,
                         }
                     ),
                 ),
@@ -257,8 +290,8 @@ class TestVideoCall(ZulipTestCase):
     def test_join_bigbluebutton_redirect(self) -> None:
         responses.add(
             responses.GET,
-            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a"
-            "&moderatorPW=a&attendeePW=a&checksum=131bdec35f62fc63d5436e6f791d6d7aed7cf79ef256c03597e51d320d042823",
+            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True"
+            "&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
             "<response><returncode>SUCCESS</returncode><messageKey/><createTime>0</createTime></response>",
         )
         response = self.client_get(
@@ -269,15 +302,27 @@ class TestVideoCall(ZulipTestCase):
         self.assertEqual(
             response["Location"],
             "https://bbb.example.com/bigbluebutton/api/join?meetingID=a&"
-            "password=a&fullName=King%20Hamlet&createTime=0&checksum=47ca959b4ff5c8047a5a56d6e99c07e17eac43dbf792afc0a2a9f6491ec0048b",
+            "role=MODERATOR&fullName=King%20Hamlet&createTime=0&checksum=54259b884a7c20ddcd7b280a1b62e59d7990568fe4f22001812bc4bcfd161a46",
+        )
+        # Testing for viewer role
+        response = self.client_get(
+            "/calls/bigbluebutton/join",
+            {"bigbluebutton": self.signed_bbb_a_object_different_creator},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(isinstance(response, HttpResponseRedirect), True)
+        self.assertEqual(
+            response["Location"],
+            "https://bbb.example.com/bigbluebutton/api/join?meetingID=a&"
+            "role=VIEWER&fullName=King%20Hamlet&createTime=0&checksum=52efaf64109ca4ec5a20a1d295f315af53f9e6ec30b50ed3707fd2909ac6bd94",
         )
 
     @responses.activate
     def test_join_bigbluebutton_invalid_signature(self) -> None:
         responses.add(
             responses.GET,
-            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a"
-            "&moderatorPW=a&attendeePW=a&checksum=131bdec35f62fc63d5436e6f791d6d7aed7cf79ef256c03597e51d320d042823",
+            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True"
+            "&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
             "<response><returncode>SUCCESS</returncode><messageKey/><createTime>0</createTime></response>",
         )
         response = self.client_get(
@@ -289,7 +334,7 @@ class TestVideoCall(ZulipTestCase):
     def test_join_bigbluebutton_redirect_wrong_big_blue_button_checksum(self) -> None:
         responses.add(
             responses.GET,
-            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&moderatorPW=a&attendeePW=a&checksum=131bdec35f62fc63d5436e6f791d6d7aed7cf79ef256c03597e51d320d042823",
+            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
             "<response><returncode>FAILED</returncode><messageKey>checksumError</messageKey>"
             "<message>You did not pass the checksum security check</message></response>",
         )
@@ -304,7 +349,7 @@ class TestVideoCall(ZulipTestCase):
         # Simulate bbb server error
         responses.add(
             responses.GET,
-            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&moderatorPW=a&attendeePW=a&checksum=131bdec35f62fc63d5436e6f791d6d7aed7cf79ef256c03597e51d320d042823",
+            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
             "",
             status=500,
         )
@@ -319,7 +364,7 @@ class TestVideoCall(ZulipTestCase):
         # Simulate bbb server error
         responses.add(
             responses.GET,
-            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&moderatorPW=a&attendeePW=a&checksum=131bdec35f62fc63d5436e6f791d6d7aed7cf79ef256c03597e51d320d042823",
+            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
             "<response><returncode>FAILURE</returncode><messageKey>otherFailure</messageKey></response>",
         )
         response = self.client_get(
