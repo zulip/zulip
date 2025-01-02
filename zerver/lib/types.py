@@ -419,3 +419,9 @@ class DirectMessageEditRequest:
     content: str
     orig_content: str
     is_content_edited: bool
+
+
+@dataclass(frozen=True)
+class Invitee:
+    email: str
+    full_name: str = ""
