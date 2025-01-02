@@ -74,7 +74,7 @@ in the Zulip organizations where you want to use it.
 
 To use the [BigBlueButton](https://bigbluebutton.org/) video call
 integration on a self-hosted Zulip installation, you'll need to have a
-BigBlueButton server and configure it:
+BigBlueButton server (version 2.4+) and configure it:
 
 1. Get the Shared Secret using the `bbb-conf --secret` command on your
    BigBlueButton Server. See also [the BigBlueButton
