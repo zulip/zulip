@@ -39,7 +39,9 @@ export function compute_show_audio_chat_button(): boolean {
             get_jitsi_server_url() !== null &&
             realm.realm_video_chat_provider === available_providers.jitsi_meet.id) ||
         (available_providers.zoom &&
-            realm.realm_video_chat_provider === available_providers.zoom.id)
+            realm.realm_video_chat_provider === available_providers.zoom.id) ||
+        (available_providers.big_blue_button &&
+            realm.realm_video_chat_provider === available_providers.big_blue_button.id)
     ) {
         return true;
     }
