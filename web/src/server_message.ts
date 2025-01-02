@@ -40,10 +40,10 @@ const submessage_schema = z.array(
 
 export const server_message_schema = z
     .object({
-        avatar_url: z.string().nullish(),
+        avatar_url: z.string().nullable(),
         client: z.string(),
         content: z.string(),
-        content_type: z.enum(["text/html", "text/x-markdown"]),
+        content_type: z.literal("text/html"),
         display_recipient: z.union([z.string(), z.array(display_recipient_users_schema)]),
         edit_history: z.optional(message_edit_history_schema),
         id: z.number(),

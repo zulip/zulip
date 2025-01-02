@@ -165,7 +165,7 @@ export type Message = (
     message_reactions?: MessageCleanReaction[];
     url?: string;
 
-    // Used in `markdown.js`, `server_events.js`, and
+    // Used in `markdown.js`, `server_events.ts`, and
     // `convert_raw_message_to_message_with_booleans`
     flags?: string[];
 
