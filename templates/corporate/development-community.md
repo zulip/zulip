@@ -187,14 +187,14 @@ topic to a different channel](/help/move-content-to-another-channel).
   to participate!
 - [#design](https://chat.zulip.org/#narrow/channel/101-design) is where
   we discuss UI and feature design and collect feedback on potential
-  design changes. We love feedback, so don’t hesitate to speak up!
-  Note that
+  design changes. We love feedback, so take a look at the active
+  discussions and don’t hesitate to speak up!
+  <br><p>The [#design](https://chat.zulip.org/#narrow/channel/101-design)
+  channel is primarily intended for discussing changes the community
+  is actively working on. For starting a topic to propose a new
+  design change,
   [#feedback](https://chat.zulip.org/#narrow/channel/137-feedback) is
-  usually the best place for end users to start a topic about a
-  proposed design change;
-  [#design](https://chat.zulip.org/#narrow/channel/101-design) is
-  primarily intended for discussing changes the community is actively
-  working on.
+  the best place.</p>
 - [#discussions](https://chat.zulip.org/#narrow/channel/277-discussions)
   is where we do fun community conversations like “Ask Me Anything”
   Q&A sessions with project members.
