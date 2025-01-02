@@ -51,6 +51,7 @@ from zerver.data_import.slack_message_conversion import (
 from zerver.lib.emoji import codepoint_to_name, get_emoji_file_name
 from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
+from zerver.lib.message import truncate_content
 from zerver.lib.mime_types import guess_type
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, resize_realm_icon
@@ -64,6 +65,7 @@ from zerver.models import (
     Recipient,
     UserProfile,
 )
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 
 SlackToZulipUserIDT: TypeAlias = dict[str, int]
 AddedChannelsT: TypeAlias = dict[str, tuple[str, int]]
@@ -898,6 +900,49 @@ def get_messages_iterator(
         yield from sorted(messages_for_one_day, key=get_timestamp_from_message)
 
 
+def get_parent_user_id_from_thread_message(thread_message: ZerverFieldsT, subtype: str) -> str:
+    """
+    This retrieves the user id of the sender of the original thread
+    message.
+    """
+    if subtype == "thread_broadcast":
+        return thread_message["root"]["user"]
+    elif thread_message["thread_ts"] == thread_message["ts"]:
+        # This is the original thread message
+        return thread_message["user"]
+    else:
+        return thread_message["parent_user_id"]
+
+
+def get_zulip_thread_topic_name(
+    message_content: str, thread_ts: datetime, thread_counter: dict[str, int]
+) -> str:
+    """
+    The topic name format is date + message snippet + counter.
+
+    e.g "2024-05-22 Hello this is a long message that will be c… (1)"
+    """
+    thread_date = thread_ts.strftime(r"%Y-%m-%d")
+
+    # Truncate
+    truncated_zulip_topic_name = truncate_content(
+        f"{thread_date} {message_content}".strip(), MAX_TOPIC_NAME_LENGTH, "…"
+    )
+    collision = thread_counter[truncated_zulip_topic_name]
+    thread_counter[truncated_zulip_topic_name] += 1
+    count = (f" ({collision + 1})") if collision > 0 else ""
+
+    # Important: The count is at the end, after …, so we need to
+    # subtract its length when doing truncation.
+    final_topic_name = (
+        truncate_content(
+            f"{thread_date} {message_content}".strip(), MAX_TOPIC_NAME_LENGTH - len(f"{count}"), "…"
+        )
+        + f"{count}"
+    )
+    return final_topic_name
+
+
 def channel_message_to_zerver_message(
     realm_id: int,
     users: list[ZerverFieldsT],
@@ -1034,22 +1079,21 @@ def channel_message_to_zerver_message(
         has_image = file_info["has_image"]
 
         # Slack's unthreaded messages go into a single topic, while
-        # threads each generate a unique topic labeled by the date and
-        # a counter among topics on that day.
+        # threads each generate a unique topic labeled by the date,
+        # a snippet of the original message and a counter if there
+        # are any thread with the same topic name
         topic_name = "imported from Slack"
         if convert_slack_threads and not is_direct_message_type and "thread_ts" in message:
             thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
             thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
-            # The topic name is "2015-08-18 Slack thread 2", where the counter at the end is to disambiguate
-            # threads with the same date.
-            if thread_ts_str in thread_map:
-                topic_name = thread_map[thread_ts_str]
+            parent_user_id = get_parent_user_id_from_thread_message(message, subtype)
+            thread_key = f"{thread_ts_str}-{parent_user_id}"
+
+            if thread_key in thread_map:
+                topic_name = thread_map[thread_key]
             else:
-                thread_date = thread_ts.strftime(r"%Y-%m-%d")
-                thread_counter[thread_date] += 1
-                count = thread_counter[thread_date]
-                topic_name = f"{thread_date} Slack thread {count}"
-                thread_map[thread_ts_str] = topic_name
+                topic_name = get_zulip_thread_topic_name(content, thread_ts, thread_counter)
+                thread_map[thread_key] = topic_name
 
         if is_direct_message_type:
             topic_name = ""
