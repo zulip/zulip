@@ -80,7 +80,7 @@ export function get_conversations(search_string = ""): DisplayObject[] {
 
         const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
         assert(reply_to !== undefined);
-        const recipients_string = people.get_recipients(user_ids_string);
+        const recipients_string = people.format_recipients(user_ids_string, "narrow");
 
         const num_unread = unread.num_unread_for_user_ids_string(user_ids_string);
         const has_unread_mention =
