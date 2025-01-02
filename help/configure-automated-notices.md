@@ -14,7 +14,7 @@ language](/help/change-your-language).
 
 Notices about channel settings changes, such as [name](/help/rename-a-channel),
 [description](/help/change-the-channel-description),
-[permission](/help/channel-permissions) and
+[privacy](/help/change-the-privacy-of-a-channel) and
 [policy](/help/channel-posting-policy) updates are sent to the
 “channel events” topic in the channel that was modified.
 
