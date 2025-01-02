@@ -110,14 +110,14 @@
     </div>
 </template>
 <template id="all-message-tooltip-template">
-    <div class="views-tooltip-container">
+    <div class="views-tooltip-container" data-view-code="all_messages">
         <div>{{t 'Combined feed' }}</div>
         <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
     </div>
     {{tooltip_hotkey_hints "A"}}
 </template>
 <template id="recent-conversations-tooltip-template">
-    <div class="views-tooltip-container">
+    <div class="views-tooltip-container" data-view-code="recent_topics">
         <div>{{t 'Recent conversations' }}</div>
         <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
     </div>
@@ -130,12 +130,12 @@
     {{tooltip_hotkey_hints "*"}}
 </template>
 <template id="my-reactions-tooltip-template">
-    <div class="views-tooltip-container">
+    <div class="views-tooltip-container" data-view-code="recent_topics">
         <div>{{t 'Reactions to your messages' }}</div>
     </div>
 </template>
 <template id="inbox-tooltip-template">
-    <div class="views-tooltip-container">
+    <div class="views-tooltip-container" data-view-code="inbox">
         <div>{{t 'Inbox' }}</div>
         <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
     </div>
