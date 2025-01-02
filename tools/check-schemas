@@ -61,11 +61,6 @@ def get_event_checker(event: dict[str, Any]) -> Callable[[str, dict[str, Any]], 
     # Start by grabbing the event type.
     name = event["type"]
 
-    # Work around the fact that we send a "saved_snippets" (plural)
-    # event type for an event that really just sends a single value.
-    if name == "saved_snippets":
-        name = "saved_snippet"
-
     # Handle things like AttachmentRemoveEvent
     if "op" in event:
         name += "_" + event["op"].title()

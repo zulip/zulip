@@ -719,14 +719,14 @@ class SavedSnippetFields(BaseModel):
     date_created: int
 
 
-class EventSavedSnippetAdd(BaseModel):
+class EventSavedSnippetsAdd(BaseModel):
     type: Literal["saved_snippets"]
     op: Literal["add"]
     saved_snippet: SavedSnippetFields
     id: int
 
 
-class EventSavedSnippetRemove(BaseModel):
+class EventSavedSnippetsRemove(BaseModel):
     type: Literal["saved_snippets"]
     op: Literal["remove"]
     saved_snippet_id: int
