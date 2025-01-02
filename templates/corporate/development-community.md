@@ -182,9 +182,13 @@ topic to a different channel](/help/move-content-to-another-channel).
   is the right place for general conversations about work on the
   mobile app (including technical design discussions, questions,
   updates on a project, or anything else).
-- [#mobile](https://chat.zulip.org/#narrow/channel/48-mobile) has a
-  wider audience of Zulip community members, and is for user feedback
-  on proposed changes.
+- [#mobile-design](https://chat.zulip.org/#narrow/channel/530-mobile-design)
+  is the place to discuss the detailed UI and UX design of a change
+  you're working on, meaning how it looks and how it behaves as seen
+  by the user.  (Technical discussions, including how the code itself
+  is designed, go in one of the other channels above.)
+- [#mobile](https://chat.zulip.org/#narrow/channel/48-mobile) is
+  primarily for user feedback and issue reports, not work on the code.
 
 ### Desktop and terminal apps
 
@@ -210,16 +214,16 @@ topic to a different channel](/help/move-content-to-another-channel).
   for progress updates on what you’re working on and its status;
   usually folks post with their name as the topic. Everyone is welcome
   to participate!
-- [#design](https://chat.zulip.org/#narrow/channel/101-design) is where
-  we discuss UI and feature design and collect feedback on potential
-  design changes. We love feedback, so take a look at the active
-  discussions and don’t hesitate to speak up!
-  <br><p>The [#design](https://chat.zulip.org/#narrow/channel/101-design)
-  channel is primarily intended for discussing changes the community
-  is actively working on. For starting a topic to propose a new
-  design change,
-  [#feedback](https://chat.zulip.org/#narrow/channel/137-feedback) is
-  the best place.</p>
+- [#design](https://chat.zulip.org/#narrow/channel/101-design) and
+  [#mobile-design](https://chat.zulip.org/#narrow/channel/530-mobile-design)
+  are where we discuss UI and feature design and collect feedback on
+  potential design changes. We love feedback, so take a look at the
+  active discussions and don’t hesitate to speak up!
+  <br><p>These "design" channels are primarily intended for discussing
+  changes the community is actively working on. For starting a topic
+  to propose a new design change, the best place is
+  [#feedback](https://chat.zulip.org/#narrow/channel/137-feedback) or
+  [#mobile](https://chat.zulip.org/#narrow/channel/48-mobile).</p>
 - [#discussions](https://chat.zulip.org/#narrow/channel/277-discussions)
   is where we do fun community conversations like “Ask Me Anything”
   Q&A sessions with project members.
