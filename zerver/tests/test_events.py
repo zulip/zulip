@@ -175,8 +175,8 @@ from zerver.lib.event_schema import (
     check_realm_user_add,
     check_realm_user_remove,
     check_realm_user_update,
-    check_saved_snippet_add,
-    check_saved_snippet_remove,
+    check_saved_snippets_add,
+    check_saved_snippets_remove,
     check_scheduled_message_add,
     check_scheduled_message_remove,
     check_scheduled_message_update,
@@ -1676,14 +1676,14 @@ class NormalActionsTest(BaseAction):
     def test_saved_replies_events(self) -> None:
         with self.verify_action() as events:
             do_create_saved_snippet("Welcome message", "Welcome", self.user_profile)
-        check_saved_snippet_add("events[0]", events[0])
+        check_saved_snippets_add("events[0]", events[0])
 
         saved_snippet_id = (
             SavedSnippet.objects.filter(user_profile=self.user_profile).order_by("id")[0].id
         )
         with self.verify_action() as events:
             do_delete_saved_snippet(saved_snippet_id, self.user_profile)
-        check_saved_snippet_remove("events[0]", events[0])
+        check_saved_snippets_remove("events[0]", events[0])
 
     def test_away_events(self) -> None:
         client = get_client("website")

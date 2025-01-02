@@ -54,8 +54,8 @@ from zerver.lib.event_types import (
     EventRealmUserSettingsDefaultsUpdate,
     EventRealmUserUpdate,
     EventRestart,
-    EventSavedSnippetAdd,
-    EventSavedSnippetRemove,
+    EventSavedSnippetsAdd,
+    EventSavedSnippetsRemove,
     EventScheduledMessagesAdd,
     EventScheduledMessagesRemove,
     EventScheduledMessagesUpdate,
@@ -156,8 +156,8 @@ check_realm_playgrounds = make_checker(EventRealmPlaygrounds)
 check_realm_user_add = make_checker(EventRealmUserAdd)
 check_realm_user_remove = make_checker(EventRealmUserRemove)
 check_restart = make_checker(EventRestart)
-check_saved_snippet_add = make_checker(EventSavedSnippetAdd)
-check_saved_snippet_remove = make_checker(EventSavedSnippetRemove)
+check_saved_snippets_add = make_checker(EventSavedSnippetsAdd)
+check_saved_snippets_remove = make_checker(EventSavedSnippetsRemove)
 check_scheduled_message_add = make_checker(EventScheduledMessagesAdd)
 check_scheduled_message_remove = make_checker(EventScheduledMessagesRemove)
 check_scheduled_message_update = make_checker(EventScheduledMessagesUpdate)
