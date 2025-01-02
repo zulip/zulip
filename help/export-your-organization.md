@@ -13,14 +13,14 @@ available for all Zulip organizations:
 * [**Export of public
    data**](#export-for-migrating-to-zulip-cloud-or-a-self-hosted-server):
    Complete data for your organization *other than* [private
-   channel](/help/channel-permissions) messages and [direct
+   channel](/help/channel-permissions#private-channels) messages and [direct
    messages](/help/direct-messages). This export includes user settings and
    channel subscriptions.
 
 * [**Standard
   export**](#export-for-migrating-to-zulip-cloud-or-a-self-hosted-server):
   Everything in the export of public data, plus all the [private
-  channel](/help/channel-permissions) messages and [direct
+  channel](/help/channel-permissions#private-channels) messages and [direct
   messages](/help/direct-messages) that members who have
   [allowed](#configure-whether-administrators-can-export-your-private-data)
   administrators to export their private data can access.
