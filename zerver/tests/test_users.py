@@ -1008,7 +1008,7 @@ class QueryCountTest(ZulipTestCase):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 user_profile=self.example_user("hamlet"),
-                invitee_emails=["fred@zulip.com"],
+                invitee_emails=[("fred@zulip.com", "")],
                 streams=streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1945,7 +1945,7 @@ class ActivateTest(ZulipTestCase):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 iago,
-                ["new1@zulip.com", "new2@zulip.com"],
+                [("new1@zulip.com", ""), ("new2@zulip.com", "")],
                 [],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1953,7 +1953,7 @@ class ActivateTest(ZulipTestCase):
             )
             do_invite_users(
                 desdemona,
-                ["new3@zulip.com", "new4@zulip.com"],
+                [("new3@zulip.com", ""), ("new4@zulip.com", "")],
                 [],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1962,7 +1962,7 @@ class ActivateTest(ZulipTestCase):
 
             do_invite_users(
                 iago,
-                ["new5@zulip.com"],
+                [("new5@zulip.com", "")],
                 [],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=None,
@@ -1970,7 +1970,7 @@ class ActivateTest(ZulipTestCase):
             )
             do_invite_users(
                 desdemona,
-                ["new6@zulip.com"],
+                [("new6@zulip.com", "")],
                 [],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=None,

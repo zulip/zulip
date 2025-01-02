@@ -164,14 +164,18 @@ def invite_users_backend(
     return json_success(request)
 
 
-def get_invitee_emails_set(invitee_emails_raw: str) -> set[str]:
+def get_invitee_emails_set(invitee_emails_raw: str) -> set[tuple[str, str]]:
     invitee_emails_list = set(re.split(r"[,\n]", invitee_emails_raw))
     invitee_emails = set()
     for email in invitee_emails_list:
-        is_email_with_name = re.search(r"<(?P<email>.*)>", email)
+        is_email_with_name = re.search(r"(?P<name>.*) <(?P<email>.*)>", email)
         if is_email_with_name:
-            email = is_email_with_name.group("email")
-        invitee_emails.add(email.strip())
+            name = is_email_with_name.group("name").strip()
+            email = is_email_with_name.group("email").strip()
+        else:
+            name = ""
+            email = email.strip()
+        invitee_emails.add((email, name))
     return invitee_emails
 
 

@@ -1641,7 +1641,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         with invite_context():
             do_invite_users(
                 user,
-                ["user1@domain.tld", "user2@domain.tld"],
+                [("user1@domain.tld", ""), ("user2@domain.tld", "")],
                 [stream],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1653,7 +1653,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         with invite_context():
             do_invite_users(
                 user,
-                ["user1@domain.tld", "user2@domain.tld"],
+                [("user1@domain.tld", ""), ("user2@domain.tld", "")],
                 [stream],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1664,7 +1664,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         with invite_context(failure=True):
             do_invite_users(
                 user,
-                ["user3@domain.tld", "malformed"],
+                [("user3@domain.tld", ""), ("malformed", "")],
                 [stream],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1675,7 +1675,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         with invite_context():
             skipped = do_invite_users(
                 user,
-                ["first@domain.tld", "user4@domain.tld"],
+                [("first@domain.tld", ""), ("user4@domain.tld", "")],
                 [stream],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,

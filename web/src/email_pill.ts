@@ -9,11 +9,25 @@ type EmailPill = {
 export type EmailPillWidget = InputPillContainer<EmailPill>;
 
 const email_regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const email_extraction_regex = /<([^>]+)>$/;
+
+// Utility function for extracting email within angle brackets
+export function extract_email_from_text(text: string): string | null {
+    const match = email_extraction_regex.exec(text);
+    return match?.[1] ?? null;
+}
 
 export function create_item_from_email(
     email: string,
     current_items: EmailPill[],
 ): EmailPill | undefined {
+    const original_email = email;
+    const extracted_email = extract_email_from_text(email);
+
+    if (extracted_email) {
+        email = extracted_email;
+    }
+
     if (!email_regex.test(email)) {
         return undefined;
     }
@@ -25,7 +39,7 @@ export function create_item_from_email(
 
     return {
         type: "email",
-        email,
+        email: original_email,
     };
 }
 

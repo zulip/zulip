@@ -8,6 +8,7 @@ const blueslip = require("./lib/zblueslip.cjs");
 
 const people = zrequire("people");
 const user_pill = zrequire("user_pill");
+const email_pill = zrequire("email_pill");
 const {set_realm} = zrequire("state_data");
 
 const settings_data = mock_esm("../src/settings_data");
@@ -102,6 +103,20 @@ test("create_item", ({override}) => {
 
 test("get_email", () => {
     assert.equal(user_pill.get_email_from_item({email: "foo@example.com"}), "foo@example.com");
+});
+
+test("get_email_from_angular_brackets", () => {
+    assert.equal(
+        email_pill.extract_email_from_text("Alice <alice@example.com>"),
+        "alice@example.com",
+    );
+    assert.equal(email_pill.extract_email_from_text("Bob <bob@example.com>"), "bob@example.com");
+    assert.equal(email_pill.extract_email_from_text("No brackets"), null);
+    assert.equal(email_pill.extract_email_from_text("<noemail>"), "noemail");
+    assert.equal(
+        email_pill.extract_email_from_text("Multiple <brackets> <test@example.com>"),
+        "test@example.com",
+    );
 });
 
 test("append", () => {
