@@ -55,7 +55,7 @@ export function compute_narrow_title(filter?: Filter): string {
         const user_ids = people.emails_strings_to_user_ids_string(emails);
 
         if (user_ids !== undefined) {
-            return people.get_recipients(user_ids);
+            return people.format_recipients(user_ids, "long");
         }
         if (emails.includes(",")) {
             return $t({defaultMessage: "Invalid users"});
