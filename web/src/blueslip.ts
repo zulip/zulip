@@ -19,7 +19,7 @@ function make_logger_func(name: "debug" | "log" | "info" | "warn" | "error") {
     return function Logger_func(this: Logger, ...args: unknown[]) {
         const date_str = new Date().toISOString();
 
-        const str_args = args.map((x) => (typeof x === "object" ? JSON.stringify(x) : x));
+        const str_args = args.map((x) => (typeof x === "string" ? x : JSON.stringify(x)));
 
         const log_entry = date_str + " " + name.toUpperCase() + ": " + str_args.join("");
         this._memory_log.push(log_entry);
