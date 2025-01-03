@@ -523,7 +523,6 @@ INTEGRATIONS: dict[str, Integration] = {
         display_name="GIPHY",
         categories=["misc"],
         doc="zerver/integrations/giphy.md",
-        logo="images/integrations/giphy/GIPHY_big_logo.png",
     ),
     "git": Integration(
         "git", ["version-control"], stream_name="commits", doc="zerver/integrations/git.md"
