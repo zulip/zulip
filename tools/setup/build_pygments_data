@@ -15,6 +15,7 @@ with open(DATA_PATH) as f:
         **pygments_data["default"], **pygments_data["custom"], **pygments_data["aliases"]
     )
 
+excluded_aliases = {"🔥"}
 lexers = get_all_lexers()
 langs = {
     alias: {
@@ -23,6 +24,7 @@ langs = {
     }
     for longname, aliases, filename_patterns, mimetypes in lexers
     for alias in aliases
+    if alias not in excluded_aliases
 }
 
 langs |= {
