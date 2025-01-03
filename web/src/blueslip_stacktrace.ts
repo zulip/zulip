@@ -123,7 +123,7 @@ export async function display_stacktrace(ex: unknown, message?: string): Promise
                     "constructor" in prototype
                         ? `thrown ${prototype.constructor.name}`
                         : "thrown",
-                message: ex === undefined ? message : `${String(ex)}: ${message}`,
+                message: ex === undefined || ex === null ? message : JSON.stringify(ex),
                 stackframes: [],
             });
             break;
@@ -158,7 +158,7 @@ export async function display_stacktrace(ex: unknown, message?: string): Promise
             stackframes,
         });
         ex = ex.cause;
-    } while (ex !== undefined);
+    } while (ex !== undefined && ex !== null);
 
     const $alert = $("<div>").addClass("stacktrace").html(render_blueslip_stacktrace({errors}));
     $(".alert-box").append($alert);
