@@ -103,14 +103,10 @@ export function reset_compose_message_max_height(bottom_whitespace_height?: numb
     // We ensure that the last message is not overlapped by compose box.
     $("textarea#compose-textarea").css(
         "max-height",
-        // Because <textarea> max-height includes padding, we subtract
-        // 10 for the padding.
-        bottom_whitespace_height - compose_non_textarea_height - 10,
+        bottom_whitespace_height - compose_non_textarea_height,
     );
     $("#preview_message_area").css(
         "max-height",
-        // Because <div> max-height doesn't include padding, we do not
-        // subtract anything.
         bottom_whitespace_height - compose_non_textarea_height,
     );
     $("#scroll-to-bottom-button-container").css("bottom", compose_height);
