@@ -1785,13 +1785,13 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(stream.history_public_to_subscribers, was_history_public)
 
         self.assertEqual(
-            [hamlet.id, cordelia.id],
-            [
+            {hamlet.id, cordelia.id},
+            {
                 sub.user_profile_id
                 for sub in get_active_subscriptions_for_stream_id(
                     stream.id, include_deactivated_users=True
                 )
-            ],
+            },
         )
 
     def test_vacate_private_stream_removes_default_stream(self) -> None:
