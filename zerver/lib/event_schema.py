@@ -6,7 +6,9 @@
 #
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 from collections.abc import Callable
-from typing import Any, cast
+from typing import cast
+
+from pydantic import BaseModel
 
 from zerver.lib.event_types import (
     AllowMessageEditingData,
@@ -107,7 +109,7 @@ from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
 from zerver.lib.types import AnonymousSettingGroupDict
 from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
 
-EventModel = Any
+EventModel = type[BaseModel]
 
 
 def validate_event_with_model_type(event: dict[str, object], model: EventModel) -> None:
