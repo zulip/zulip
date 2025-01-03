@@ -422,7 +422,16 @@ else:
         )
 
     logging.info("Restarting Zulip...")
-    start_args = ["--skip-checks", "--skip-client-reloads"]
+    start_args = ["--skip-checks"]
+    if args.only_django and IS_SERVER_UP:
+        # Calling `start-server --only-django` only starts Django,
+        # which is almost certainly not what we want after an upgrade.
+        # If we had to stop services for other reasons (e.g. puppet),
+        # we ignore --only-django and downgrade it to
+        # --skip-client-reloads
+        start_args.append("--only-django")
+    else:
+        start_args.append("--skip-client-reloads")
     if not HAS_FILLED_CACHES:
         start_args.append("--fill-cache")
     if IS_SERVER_UP:
@@ -436,7 +445,7 @@ else:
 
     subprocess.check_call(["./scripts/lib/run_hooks.py", "post-deploy"])
 
-    if not args.skip_client_reloads:
+    if not args.skip_client_reloads and not args.only_django:
         subprocess.check_call(["./scripts/reload-clients"], preexec_fn=su_to_zulip)
 
 if args.audit_fts_indexes:
