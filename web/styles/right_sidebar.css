@@ -264,6 +264,10 @@ $user_status_emoji_width: 24px;
     margin-right: 2px;
 }
 
+.buddy-list-heading-user-count-with-parens {
+    opacity: 0.75;
+}
+
 .buddy-list-subsection-header.no-display {
     display: none;
 }
