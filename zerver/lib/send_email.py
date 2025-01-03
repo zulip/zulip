@@ -6,6 +6,7 @@ from collections.abc import Callable, Mapping
 from contextlib import suppress
 from datetime import timedelta
 from email.headerregistry import Address
+from email.message import EmailMessage
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
@@ -526,7 +527,7 @@ def custom_email_sender(
 ) -> Callable[..., None]:
     with open(markdown_template_path) as f:
         text = f.read()
-        parsed_email_template = Parser(policy=default).parsestr(text)
+        parsed_email_template = Parser(_class=EmailMessage, policy=default).parsestr(text)
         email_template_hash = hashlib.sha256(text.encode()).hexdigest()[0:32]
 
     email_id = f"zerver/emails/custom/custom_email_{email_template_hash}"

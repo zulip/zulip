@@ -142,7 +142,7 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
         and configured_fixed_price_plan.sent_invoice_id == invoice.stripe_invoice_id
     ):
         billing_session = get_billing_session_for_stripe_webhook(customer, user_id=None)
-        remote_server_legacy_plan = billing_session.get_remote_server_legacy_plan(customer)
+        complimentary_access_plan = billing_session.get_complimentary_access_plan(customer)
         assert customer.required_plan_tier is not None
         billing_session.process_initial_upgrade(
             plan_tier=customer.required_plan_tier,
@@ -153,7 +153,7 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
             billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
             charge_automatically=False,
             free_trial=False,
-            remote_server_legacy_plan=remote_server_legacy_plan,
+            complimentary_access_plan=complimentary_access_plan,
             stripe_invoice_paid=True,
         )
     else:
@@ -168,7 +168,7 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
             return
 
         billing_session = get_billing_session_for_stripe_webhook(customer, metadata.get("user_id"))
-        remote_server_legacy_plan = billing_session.get_remote_server_legacy_plan(customer)
+        complimentary_access_plan = billing_session.get_complimentary_access_plan(customer)
         billing_schedule = int(metadata["billing_schedule"])
         plan_tier = int(metadata["plan_tier"])
         charge_automatically = stripe_invoice.collection_method != "send_invoice"
@@ -183,7 +183,7 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
                 billing_schedule=billing_schedule,
                 charge_automatically=charge_automatically,
                 free_trial=False,
-                remote_server_legacy_plan=remote_server_legacy_plan,
+                complimentary_access_plan=complimentary_access_plan,
                 stripe_invoice_paid=True,
             )
             return
@@ -207,6 +207,6 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
             billing_schedule=billing_schedule,
             charge_automatically=charge_automatically,
             free_trial=False,
-            remote_server_legacy_plan=remote_server_legacy_plan,
+            complimentary_access_plan=complimentary_access_plan,
             stripe_invoice_paid=True,
         )

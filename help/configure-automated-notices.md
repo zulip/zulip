@@ -22,13 +22,14 @@ Notices about channel settings changes, such as [name](/help/rename-a-channel),
 
 {!admin-only.md!}
 
-When creating a new [public channel](/help/channel-permissions), the
-channel creator can choose to advertise the new channel via an automated
-notice. You can configure what channel Zulip uses for these notices, or
-disable these notices entirely. The topic for these messages is “new
-channels”.
+When creating a new [public](/help/channel-permissions#public-channels) or
+[web-public](/help/channel-permissions#web-public-channels) channel, the channel
+creator can choose to advertise the new channel via an automated notice. You can
+configure what channel Zulip uses for these notices, or disable these notices
+entirely. The topic for these messages is “new channels”.
 
-New [private](/help/channel-permissions) channels are never announced.
+New [private](/help/channel-permissions#private-channels) channels are never
+announced.
 
 {start_tabs}
 

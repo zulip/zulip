@@ -253,7 +253,13 @@ def messages_for_ids(
         msg_dict["can_access_sender"] = msg_dict["sender_id"] not in inaccessible_sender_ids
         message_list.append(msg_dict)
 
-    MessageDict.post_process_dicts(message_list, apply_markdown, client_gravatar, realm)
+    MessageDict.post_process_dicts(
+        message_list,
+        apply_markdown=apply_markdown,
+        client_gravatar=client_gravatar,
+        realm=realm,
+        user_recipient_id=None if user_profile is None else user_profile.recipient_id,
+    )
 
     return message_list
 

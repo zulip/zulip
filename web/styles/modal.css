@@ -30,10 +30,14 @@
 }
 
 .modal__header {
-    padding: 16px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 16px 16px 16px 24px;
+    display: grid;
+    /* 25px at 16px/1em = 1.6667
+       29px at 16px/1em = 1.8125 */
+    grid-template:
+        "heading close-button" 1.6667em "heading ." auto / minmax(0, 1fr)
+        1.8125em;
+    grid-column-gap: 4px;
 }
 
 .modal__footer {
@@ -57,8 +61,20 @@
     }
 }
 
+.modal__title:has(.stream-or-topic-reference) {
+    /* Reduce the font weight of headings that
+       include stream or topic references (e.g.,
+       topic move/rename modals). */
+    font-weight: 450;
+
+    .stream-or-topic-reference {
+        /* Make the stream or topic references
+           more prominent. */
+        font-weight: 600;
+    }
+}
+
 .user-profile-name-heading {
-    padding-right: 1rem;
     max-width: 80%;
     display: flex;
     align-items: center;
@@ -88,7 +104,6 @@
     &::before {
         content: "\2715";
     }
-    margin-right: -4px;
     background: transparent;
     border: 0;
 
@@ -349,6 +364,11 @@
 .modal__spinner {
     display: flex;
     justify-content: center;
+}
+
+.time-input-formatted-description {
+    font-style: italic;
+    opacity: 0.7;
 }
 
 #copy_email_address_modal {

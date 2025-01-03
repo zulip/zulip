@@ -6,7 +6,7 @@
         {{else if is_bot}}
         <span class="conversation-partners-icon zulip-icon zulip-icon-bot" aria-hidden="true"></span>
         {{else}}
-        <span class="conversation-partners-icon {{user_circle_class}} user_circle"></span>
+        <span class="conversation-partners-icon zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle"></span>
         {{/if}}
 
         <a href="{{url}}" class="conversation-partners">

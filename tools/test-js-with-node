@@ -63,7 +63,7 @@ EXEMPT_FILES = make_set(
         "web/src/bootstrap_typeahead.ts",
         "web/src/browser_history.ts",
         "web/src/buddy_list.ts",
-        "web/src/click_handlers.js",
+        "web/src/click_handlers.ts",
         "web/src/compose.js",
         "web/src/compose_actions.ts",
         "web/src/compose_banner.ts",
@@ -111,9 +111,10 @@ EXEMPT_FILES = make_set(
         "web/src/giphy.ts",
         "web/src/giphy_state.ts",
         "web/src/global.ts",
+        "web/src/group_permission_settings.ts",
         "web/src/group_setting_pill.ts",
         "web/src/hash_util.ts",
-        "web/src/hashchange.js",
+        "web/src/hashchange.ts",
         "web/src/hbs.d.ts",
         "web/src/hotkey.js",
         "web/src/inbox_ui.ts",
@@ -136,7 +137,7 @@ EXEMPT_FILES = make_set(
         "web/src/message_actions_popover.ts",
         "web/src/message_edit.ts",
         "web/src/message_edit_history.ts",
-        "web/src/message_events.js",
+        "web/src/message_events.ts",
         "web/src/message_events_util.ts",
         "web/src/message_feed_loading.ts",
         "web/src/message_feed_top_notices.ts",
@@ -201,6 +202,7 @@ EXEMPT_FILES = make_set(
         "web/src/search_suggestion.ts",
         "web/src/sent_messages.ts",
         "web/src/sentry.ts",
+        "web/src/server_event_types.ts",
         "web/src/server_events.js",
         "web/src/settings.ts",
         "web/src/settings_account.ts",
@@ -268,12 +270,12 @@ EXEMPT_FILES = make_set(
         "web/src/upload_widget.ts",
         "web/src/user_card_popover.ts",
         "web/src/user_deactivation_ui.ts",
-        "web/src/user_events.js",
+        "web/src/user_events.ts",
         "web/src/user_group_components.ts",
         "web/src/user_group_create.ts",
         "web/src/user_group_create_members.ts",
         "web/src/user_group_create_members_data.ts",
-        "web/src/user_group_edit.js",
+        "web/src/user_group_edit.ts",
         "web/src/user_group_edit_members.ts",
         "web/src/user_group_popover.ts",
         "web/src/user_groups.ts",
@@ -446,11 +448,11 @@ def run_tests_via_node_js() -> int:
 def check_line_coverage(
     fn: str, line_coverage: dict[Any, Any], line_mapping: dict[Any, Any], log: bool = True
 ) -> bool:
-    missing_lines = []
-    for line in line_coverage:
-        if line_coverage[line] == 0:
-            actual_line = line_mapping[line]
-            missing_lines.append(str(actual_line["start"]["line"]))
+    missing_lines = [
+        str(line_mapping[line]["start"]["line"])
+        for line, coverage in line_coverage.items()
+        if coverage == 0
+    ]
     if missing_lines:
         if log:
             print_error(f"{fn} no longer has complete node test coverage")

@@ -13,7 +13,7 @@ import * as stream_settings_api from "./stream_settings_api.ts";
 extend([lchPlugin, mixPlugin]);
 
 export function update_stream_recipient_color($stream_header: JQuery): void {
-    if ($stream_header.length) {
+    if ($stream_header.length > 0) {
         const stream_id = Number.parseInt($stream_header.attr("data-stream-id")!, 10);
         if (!stream_id) {
             return;
@@ -22,7 +22,7 @@ export function update_stream_recipient_color($stream_header: JQuery): void {
         const recipient_bar_color = get_recipient_bar_color(stream_color);
 
         const $stream_privacy_icon = $stream_header.find(".stream-privacy");
-        if ($stream_privacy_icon.length) {
+        if ($stream_privacy_icon.length > 0) {
             $stream_privacy_icon.css("color", get_stream_privacy_icon_color(stream_color));
         }
 

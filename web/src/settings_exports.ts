@@ -3,12 +3,14 @@ import type * as tippy from "tippy.js";
 import {z} from "zod";
 
 import render_confirm_delete_data_export from "../templates/confirm_dialog/confirm_delete_data_export.hbs";
+import render_allow_private_data_export_banner from "../templates/modal_banner/allow_private_data_export_banner.hbs";
 import render_admin_export_consent_list from "../templates/settings/admin_export_consent_list.hbs";
 import render_admin_export_list from "../templates/settings/admin_export_list.hbs";
 import render_start_export_modal from "../templates/start_export_modal.hbs";
 
 import * as channel from "./channel.ts";
 import * as components from "./components.ts";
+import * as compose_banner from "./compose_banner.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
@@ -23,14 +25,15 @@ import * as settings_config from "./settings_config.ts";
 import * as timerender from "./timerender.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
+import {user_settings} from "./user_settings.ts";
 
-const export_consent_schema = z.object({
+export const export_consent_schema = z.object({
     user_id: z.number(),
     consented: z.boolean(),
 });
 type ExportConsent = z.output<typeof export_consent_schema>;
 
-const realm_export_schema = z.object({
+export const realm_export_schema = z.object({
     id: z.number(),
     export_time: z.number(),
     acting_user_id: z.number(),
@@ -132,7 +135,7 @@ export function populate_exports_table(exports: RealmExport[]): void {
     });
 
     const $spinner = $(".export_row .export_url_spinner");
-    if ($spinner.length) {
+    if ($spinner.length > 0) {
         loading.make_indicator($spinner);
     } else {
         loading.destroy_indicator($spinner);
@@ -257,6 +260,32 @@ export function populate_export_consents_table(): void {
     filter_by_consent_dropdown_widget.setup();
 }
 
+function maybe_show_allow_private_data_export_banner(): void {
+    if (!user_settings.allow_private_data_export) {
+        const context = {
+            banner_type: compose_banner.WARNING,
+            classname: "allow_private_data_export_warning",
+            hide_close_button: true,
+        };
+        $("#allow_private_data_export_banner_container").html(
+            render_allow_private_data_export_banner(context),
+        );
+    }
+}
+
+export function refresh_allow_private_data_export_banner(): void {
+    if (user_settings.allow_private_data_export) {
+        $(".allow_private_data_export_warning").remove();
+    } else if ($("#allow_private_data_export_banner_container").length > 0) {
+        maybe_show_allow_private_data_export_banner();
+        const $export_type = $<HTMLSelectOneElement>("select:not([multiple])#export_type");
+        const selected_export_type = Number.parseInt($export_type.val()!, 10);
+        if (selected_export_type === settings_config.export_type_values.export_public.value) {
+            $(".allow_private_data_export_warning").hide();
+        }
+    }
+}
+
 function show_start_export_modal(): void {
     const html_body = render_start_export_modal({
         export_type_values: settings_config.export_type_values,
@@ -300,6 +329,9 @@ function show_start_export_modal(): void {
                 {users_consented_for_export_count, total_users_count},
             ),
         );
+
+        maybe_show_allow_private_data_export_banner();
+
         const $export_type = $<HTMLSelectOneElement>("select:not([multiple])#export_type");
         $export_type.on("change", () => {
             const selected_export_type = Number.parseInt($export_type.val()!, 10);
@@ -308,8 +340,10 @@ function show_start_export_modal(): void {
                 settings_config.export_type_values.export_full_with_consent.value
             ) {
                 $("#allow_private_data_export_stats").show();
+                $(".allow_private_data_export_warning").show();
             } else {
                 $("#allow_private_data_export_stats").hide();
+                $(".allow_private_data_export_warning").hide();
             }
         });
     }
@@ -423,7 +457,7 @@ function maybe_store_export_consent_data_and_return(export_consent: ExportConsen
 function update_start_export_modal_stats(): void {
     total_users_count = export_consents.size;
     users_consented_for_export_count = get_export_consents_having_consent_value(true).length;
-    if ($("#allow_private_data_export_stats").length) {
+    if ($("#allow_private_data_export_stats").length > 0) {
         $("#allow_private_data_export_stats").text(
             $t(
                 {

@@ -70,6 +70,11 @@ export function maybe_update_error_message(): void {
     }
 }
 
+const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
+    ["can_administer_channel_group", null],
+    ["can_remove_subscribers_group", null],
+]);
+
 class StreamSubscriptionError {
     report_no_subs_to_stream(): void {
         $("#stream_subscription_error").text(
@@ -200,7 +205,23 @@ $("body").on("click", ".settings-sticky-footer #stream_creation_go_to_subscriber
     let invite_only = false;
     let is_web_public = false;
 
-    if (is_stream_name_valid) {
+    let is_any_stream_group_widget_pending = false;
+    const permission_settings = Object.keys(realm.server_supported_permission_settings.stream);
+    for (const setting_name of permission_settings) {
+        const widget = group_setting_widget_map.get(setting_name);
+        assert(widget !== undefined);
+        assert(widget !== null);
+        if (widget.is_pending()) {
+            is_any_stream_group_widget_pending = true;
+            // We are not appending any value here, but instead this is
+            // a proxy to invoke the error state for a group widget
+            // that would usually get triggered on pressing enter.
+            widget.appendValue(widget.getCurrentText()!);
+            break;
+        }
+    }
+
+    if (is_stream_name_valid && !is_any_stream_group_widget_pending) {
         if (privacy_type === "invite-only" || privacy_type === "invite-only-public-history") {
             invite_only = true;
         } else if (privacy_type === "web-public") {
@@ -520,6 +541,7 @@ function set_up_group_setting_widgets(): void {
                 $pill_container: $("#id_new_" + setting_name),
                 setting_name: stream_permission_group_settings_schema.parse(setting_name),
             });
+        group_setting_widget_map.set(setting_name, group_setting_widgets[setting_name]);
     }
 }
 
@@ -559,6 +581,19 @@ export function set_up_handlers(): void {
             stream_subscription_error.report_no_subs_to_stream();
             return;
         }
+
+        assert(stream_create_subscribers.pill_widget !== undefined);
+        assert(stream_create_subscribers.pill_widget !== null);
+        if (stream_create_subscribers.pill_widget.is_pending()) {
+            // We are not appending any value here, but instead this is
+            // a proxy to invoke the error state for a group widget
+            // that would usually get triggered on pressing enter.
+            stream_create_subscribers.pill_widget.appendValue(
+                stream_create_subscribers.pill_widget.getCurrentText()!,
+            );
+            return;
+        }
+
         if (!principals.includes(people.my_current_user_id()) && !current_user.is_admin) {
             stream_subscription_error.cant_create_stream_without_subscribing();
             return;

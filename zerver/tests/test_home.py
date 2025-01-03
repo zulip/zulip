@@ -213,6 +213,7 @@ class HomeTest(ZulipTestCase):
         "realm_want_advertise_in_communities_directory",
         "realm_wildcard_mention_policy",
         "realm_zulip_update_announcements_stream_id",
+        "realm_moderation_request_channel_id",
         "recent_private_conversations",
         "saved_snippets",
         "scheduled_messages",
@@ -221,6 +222,8 @@ class HomeTest(ZulipTestCase):
         "server_generation",
         "server_inline_image_preview",
         "server_inline_url_embed_preview",
+        "server_max_deactivated_realm_deletion_days",
+        "server_min_deactivated_realm_deletion_days",
         "server_jitsi_server_url",
         "server_name_changes_disabled",
         "server_needs_upgrade",
@@ -825,6 +828,18 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(
             page_params["state_data"]["realm_zulip_update_announcements_stream_id"],
             get_stream("Denmark", realm).id,
+        )
+
+    def test_moderation_request_channel(self) -> None:
+        realm = get_realm("zulip")
+        realm.moderation_request_channel = self.make_stream("private_stream", invite_only=True)
+        realm.save()
+        self.login("hamlet")
+        result = self._get_home_page()
+        page_params = self._get_page_params(result)
+        self.assertEqual(
+            page_params["state_data"]["realm_moderation_request_channel_id"],
+            get_stream("private_stream", realm).id,
         )
 
     def test_people(self) -> None:

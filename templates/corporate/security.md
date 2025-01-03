@@ -34,11 +34,14 @@ priority.
 
 ## Configurable access control policies
 
-- Zulip supports direct messages (to one or more individuals), private
-  channels with any number of subscribers, as well as public channels
-  available to all organization members.  We also support guest accounts,
-  which only have access to a fixed set of channels, and announcement
-  channels, where only organization owners and administrators can post.
+- Zulip supports [direct messages](/help/direct-messages) (to one or more
+  individuals), [private channels](/help/channel-permissions#private-channels)
+  with any number of subscribers, as well as [public
+  channels](/help/channel-permissions#public-channels) available to all
+  organization members.  We also support [guest accounts](/help/guest-users),
+  which only have access to a fixed set of channels, and [announcement
+  channels](/help/channel-posting-policy), where only organization owners and
+  administrators can post.
 - By default, users can maintain their own names and email addresses, but
   Zulip also supports
   [restricting changes](/help/restrict-name-and-email-changes) and
@@ -66,7 +69,7 @@ priority.
 ## Authentication
 
 - Zulip supports integrated single sign-on with Google, GitHub, SAML
-  (including Okta), AzureAD, and Active Directory/LDAP.  With Zulip
+  (including Okta), Entra ID (AzureAD), and Active Directory/LDAP.  With Zulip
   on-premise, we can support any of the 100+ authentication tools
   supported by
   [python-social-auth](https://python-social-auth.readthedocs.io/en/latest/backends/index.html#social-backends)

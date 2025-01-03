@@ -201,8 +201,18 @@ WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
 
 ##### 1. Install Vagrant, Docker, and Git
 
+Install vagrant:
+
 ```console
-$ sudo apt install vagrant docker.io git
+$ wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+$ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+$ sudo apt update && sudo apt install vagrant
+```
+
+Install Docker and Git:
+
+```console
+$ sudo apt install docker.io git
 ```
 
 ```{include} setup/install-docker.md
@@ -664,9 +674,13 @@ close your terminal window(s).
 
 On Windows with WSL 2, to resume developing you just need to open a new Git
 BASH window. Then change into your `zulip` folder and verify the Python
-environment was properly activated (you will see `(zulip-py3-venv)`). If the
-`(zulip-py3-venv)` part is missing, run
-`source /srv/zulip-py3-venv/bin/activate`.
+environment was properly activated (you should see `(zulip-py3-venv)`). If the
+`(zulip-py3-venv)` part is missing, run:
+
+```console
+$ source /srv/zulip-py3-venv/bin/activate
+```
+
 :::
 
 :::{tab-item} Windows (VM)

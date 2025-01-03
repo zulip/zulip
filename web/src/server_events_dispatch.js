@@ -25,7 +25,7 @@ import * as information_density from "./information_density.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as linkifiers from "./linkifiers.ts";
 import * as message_edit from "./message_edit.ts";
-import * as message_events from "./message_events.js";
+import * as message_events from "./message_events.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as message_view from "./message_view.ts";
@@ -86,8 +86,8 @@ import * as theme from "./theme.ts";
 import * as typing_events from "./typing_events.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as unread_ui from "./unread_ui.ts";
-import * as user_events from "./user_events.js";
-import * as user_group_edit from "./user_group_edit.js";
+import * as user_events from "./user_events.ts";
+import * as user_group_edit from "./user_group_edit.ts";
 import * as user_groups from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
@@ -157,7 +157,7 @@ export function dispatch_normal_event(event) {
             break;
 
         case "invites_changed":
-            if ($("#admin-invites-list").length) {
+            if ($("#admin-invites-list").length > 0) {
                 settings_invites.set_up(false);
             }
             break;
@@ -664,7 +664,6 @@ export function dispatch_normal_event(event) {
                     for (const rec of event.subscriptions) {
                         const sub = sub_store.get(rec.stream_id);
                         if (sub) {
-                            stream_data.update_stream_email_address(sub, rec.email_address);
                             stream_events.mark_subscribed(sub, rec.subscribers, rec.color);
                         } else {
                             blueslip.error("Subscribing to unknown stream", {
@@ -765,6 +764,9 @@ export function dispatch_normal_event(event) {
                 if (event.property === "presence_enabled") {
                     activity_ui.redraw_user(current_user.user_id);
                 }
+                if (event.property === "allow_private_data_export") {
+                    settings_exports.refresh_allow_private_data_export_banner();
+                }
                 break;
             }
 
@@ -793,6 +795,7 @@ export function dispatch_normal_event(event) {
                 "starred_message_counts",
                 "web_navigate_to_sent_message",
                 "enter_sends",
+                "web_suggest_update_timezone",
             ];
 
             const original_home_view = user_settings.web_home_view;
@@ -910,6 +913,9 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "web_escape_navigates_to_home_view") {
                 $("#go-to-home-view-hotkey-help").toggleClass("notdisplayed", !event.value);
+            }
+            if (event.property === "web_suggest_update_timezone") {
+                $("#automatically_offer_update_time_zone").prop("checked", event.value);
             }
             settings_preferences.update_page(event.property);
             break;

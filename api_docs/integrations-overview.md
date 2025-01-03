@@ -31,7 +31,7 @@ Zulip.
 * Use a third-party webhook integration designed to work with
   [Slack's webhook API](https://api.slack.com/messaging/webhooks)
   pointed at Zulip's
-  [Slack-compatible webhook API](/integrations/slack/slack_incoming).
+  [Slack-compatible webhook API](/integrations/doc/slack_incoming).
 
 * If the product can send email notifications, you can
   [send those emails to a channel](/help/message-a-channel-by-email).

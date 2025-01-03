@@ -425,13 +425,9 @@ input.settings_text_input {
     &:focus,
     &:active,
     &:disabled:hover {
-        position: relative;
-        right: 20px;
         background: none;
         border: none;
         text-align: center;
-        padding-top: 8px;
-        padding-left: 4px;
         color: var(--color-text-clear-search-button);
         text-shadow: none;
         outline: none !important;
@@ -496,8 +492,7 @@ input.settings_text_input {
     border-bottom: 0;
 }
 
-.edit-controls .fa-angle-right,
-.topic_stream_edit_header .fa-angle-right {
+.edit-controls .fa-angle-right {
     font-size: 0.9em;
     -webkit-text-stroke: 0.05em;
     position: relative;
@@ -602,6 +597,21 @@ input.settings_text_input {
                 var(--color-focus-outline-settings-convert-demo-organization);
             outline-offset: 0;
         }
+    }
+}
+
+.user_status_icon_wrapper {
+    display: inline;
+    white-space: nowrap;
+}
+
+.user-status-microlayout {
+    display: inline-grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    .user-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
 

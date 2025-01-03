@@ -6,7 +6,7 @@
         justify-content: space-between;
         gap: 5px;
 
-        .removed-drafts-message {
+        .drafts-header-note {
             text-align: left;
             margin-left: 25px;
 

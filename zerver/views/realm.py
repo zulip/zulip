@@ -1,6 +1,7 @@
 from collections.abc import Mapping
 from typing import Annotated, Any, Literal
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
@@ -18,6 +19,7 @@ from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_reactivate_realm,
     do_set_realm_authentication_methods,
+    do_set_realm_moderation_request_channel,
     do_set_realm_new_stream_announcements_stream,
     do_set_realm_property,
     do_set_realm_signup_announcements_stream,
@@ -33,11 +35,7 @@ from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import access_stream_by_id
-from zerver.lib.typed_endpoint import (
-    ApiParamConfig,
-    typed_endpoint,
-    typed_endpoint_without_parameters,
-)
+from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_int_in_validator, check_string_in_validator
 from zerver.lib.user_groups import (
     GroupSettingChangeRequest,
@@ -123,6 +121,7 @@ def update_realm(
     authentication_methods: Json[dict[str, Any]] | None = None,
     # Note: push_notifications_enabled and push_notifications_enabled_end_timestamp
     # are not offered here as it is maintained by the server, not via the API.
+    moderation_request_channel_id: Json[int] | None = None,
     new_stream_announcements_stream_id: Json[int] | None = None,
     signup_announcements_stream_id: Json[int] | None = None,
     zulip_update_announcements_stream_id: Json[int] | None = None,
@@ -402,9 +401,25 @@ def update_realm(
         do_set_realm_authentication_methods(realm, authentication_methods, acting_user=user_profile)
         data["authentication_methods"] = authentication_methods
 
-    # Realm.new_stream_announcements_stream, Realm.signup_announcements_stream,
-    # and Realm.zulip_update_announcements_stream are not boolean, str or integer field,
-    # and thus doesn't fit into the do_set_realm_property framework.
+    # Channel-valued settings are not yet fully supported by the
+    # property_types framework, and thus have explicit blocks here.
+    if moderation_request_channel_id is not None and (
+        realm.moderation_request_channel is None
+        or realm.moderation_request_channel.id != moderation_request_channel_id
+    ):
+        new_moderation_request_channel_id = None
+        if moderation_request_channel_id >= 0:
+            (new_moderation_request_channel_id, sub) = access_stream_by_id(
+                user_profile, moderation_request_channel_id, allow_realm_admin=True
+            )
+        do_set_realm_moderation_request_channel(
+            realm,
+            new_moderation_request_channel_id,
+            moderation_request_channel_id,
+            acting_user=user_profile,
+        )
+        data["moderation_request_channel_id"] = moderation_request_channel_id
+
     if new_stream_announcements_stream_id is not None and (
         realm.new_stream_announcements_stream is None
         or (realm.new_stream_announcements_stream.id != new_stream_announcements_stream_id)
@@ -480,11 +495,38 @@ def update_realm(
 
 
 @require_realm_owner
-@typed_endpoint_without_parameters
-def deactivate_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
+@typed_endpoint
+def deactivate_realm(
+    request: HttpRequest, user: UserProfile, *, deletion_delay_days: Json[int | None] = None
+) -> HttpResponse:
+    if settings.MAX_DEACTIVATED_REALM_DELETION_DAYS is not None and (
+        deletion_delay_days is None
+        or deletion_delay_days > settings.MAX_DEACTIVATED_REALM_DELETION_DAYS
+    ):
+        raise JsonableError(
+            _("Data deletion time must be at most {max_allowed_days} days in the future.").format(
+                max_allowed_days=settings.MAX_DEACTIVATED_REALM_DELETION_DAYS,
+            )
+        )
+
+    if (
+        settings.MIN_DEACTIVATED_REALM_DELETION_DAYS is not None
+        and deletion_delay_days is not None
+        and deletion_delay_days < settings.MIN_DEACTIVATED_REALM_DELETION_DAYS
+    ):
+        raise JsonableError(
+            _("Data deletion time must be at least {min_allowed_days} days in the future.").format(
+                min_allowed_days=settings.MIN_DEACTIVATED_REALM_DELETION_DAYS,
+            )
+        )
+
     realm = user.realm
     do_deactivate_realm(
-        realm, acting_user=user, deactivation_reason="owner_request", email_owners=True
+        realm,
+        acting_user=user,
+        deactivation_reason="owner_request",
+        email_owners=True,
+        deletion_delay_days=deletion_delay_days,
     )
     return json_success(request)
 
@@ -632,6 +674,7 @@ def update_realm_user_settings_defaults(
     ]
     | None = None,
     web_navigate_to_sent_message: Json[bool] | None = None,
+    web_suggest_update_timezone: Json[bool] | None = None,
 ) -> HttpResponse:
     if notification_sound is not None or email_notifications_batching_period_seconds is not None:
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)

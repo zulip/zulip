@@ -6,6 +6,7 @@ import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 import * as recent_view_util from "./recent_view_util.ts";
+import type {UpdateMessageEvent} from "./server_event_types.ts";
 import * as settings_config from "./settings_config.ts";
 import type {
     StateData,
@@ -15,7 +16,6 @@ import type {
 import * as stream_data from "./stream_data.ts";
 import type {TopicHistoryEntry} from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
-import type {UpdateMessageEvent} from "./types.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
@@ -573,7 +573,7 @@ class UnreadTopicCounter {
             return false;
         }
 
-        return id_set.size !== 0;
+        return id_set.size > 0;
     }
 
     get_topics_with_unread_mentions(stream_id: number): Set<string> {
@@ -762,8 +762,8 @@ export function process_loaded_messages(
 
 type UnreadMessageData = {
     id: number;
-    mentioned: boolean;
-    mentioned_me_directly: boolean;
+    mentioned: boolean | undefined;
+    mentioned_me_directly: boolean | undefined;
     unread: boolean;
 } & (
     | {
@@ -803,7 +803,7 @@ export function process_unread_message(message: UnreadMessageData): void {
 }
 
 export function update_message_for_mention(
-    message: UnreadMessageData,
+    message: UnreadMessageData | Message,
     content_edited = false,
 ): boolean {
     // Returns true if this is a stream message whose content was

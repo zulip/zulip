@@ -1005,14 +1005,11 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                 self.assertIn(content_disposition, response["Content-disposition"])
             self.assertEqual(set(response["Cache-Control"].split(", ")), {"private", "immutable"})
 
-        check_xsend_links(
-            "zulip.txt", "zulip.txt", 'filename="zulip.txt"', returned_attachment=True
-        )
+        check_xsend_links("zulip.txt", "zulip.txt", 'filename="zulip.txt"')
         check_xsend_links(
             "áéБД.txt",
             "%C3%A1%C3%A9%D0%91%D0%94.txt",
             "filename*=utf-8''%C3%A1%C3%A9%D0%91%D0%94.txt",
-            returned_attachment=True,
         )
         check_xsend_links(
             "zulip.html",
@@ -1967,7 +1964,7 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
             self.assert_json_error(result, "Invalid image format")
             resize_mock.assert_not_called()
 
-    def test_upsupported_format(self) -> None:
+    def test_unsupported_format(self) -> None:
         """Invalid format is not resized"""
         self.login("iago")
         with (

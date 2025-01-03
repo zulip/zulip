@@ -50,7 +50,7 @@ problematic behavior.
 * [Configure email visibility](/help/configure-email-visibility)
   to prevent off-platform spam.
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
-  so only [moderators](/help/roles-and-permissions) can mention everyone in your organization.
+  so only [moderators](/help/user-roles) can mention everyone in your organization.
 * Create a [default channel](/help/set-default-channels-for-new-users)
   for announcements where [only admins can
   post](/help/channel-posting-policy).

@@ -5,8 +5,8 @@
                 <h1 class="modal__title user-profile-name-heading" id="name">
                     {{#unless is_bot}}
                         {{#if is_active}}
-                            <div class="tippy-zulip-tooltip" data-tippy-content="{{last_seen}}">
-                                <span class="{{user_circle_class}} user_circle user_profile_presence" data-presence-indicator-user-id="{{user_id}}"></span>
+                            <div class="tippy-zulip-tooltip user-status-icon-wrapper" data-tippy-content="{{last_seen}}">
+                                <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle user_profile_presence" data-presence-indicator-user-id="{{user_id}}"></span>
                             </div>
                         {{else}}
                             <div>
@@ -117,10 +117,12 @@
                             <div class="header-section">
                                 <h3 class="stream-tab-element-header">{{t 'Subscribed channels' }}</h3>
                             </div>
-                            <input type="text" class="stream-search modal_text_input" placeholder="{{t 'Filter channels' }}" />
-                            <button type="button" class="clear_search_button" id="clear_stream_search">
-                                <i class="fa fa-remove" aria-hidden="true"></i>
-                            </button>
+                            <div class="stream-search-container">
+                                <input type="text" class="stream-search modal_text_input" placeholder="{{t 'Filter channels' }}" />
+                                <button type="button" class="clear_search_button" id="clear_stream_search">
+                                    <i class="fa fa-remove" aria-hidden="true"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="subscription-stream-list empty-list">
                             <table class="user-stream-list" data-empty="{{t 'No channel subscriptions.'}}" data-search-results-empty="{{t 'No matching channels' }}"></table>

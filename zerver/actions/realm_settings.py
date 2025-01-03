@@ -1,3 +1,4 @@
+import datetime
 import logging
 import zoneinfo
 from email.headerregistry import Address
@@ -16,6 +17,7 @@ from zerver.actions.user_groups import update_users_in_full_members_system_group
 from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
+from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.send_email import FromAddress, send_email, send_email_to_admins
 from zerver.lib.sessions import delete_realm_user_sessions
@@ -265,11 +267,11 @@ def get_realm_authentication_methods_for_page_params_api(
 
     from corporate.models import CustomerPlan
 
-    for backend_name in result_dict:
+    for backend_name, backend_result in result_dict.items():
         available_for = AUTH_BACKEND_NAME_MAP[backend_name].available_for_cloud_plans
 
         if available_for is not None and realm.plan_type not in available_for:
-            result_dict[backend_name]["available"] = False
+            backend_result["available"] = False
 
             required_upgrade_plan_number = min(
                 set(available_for).intersection({Realm.PLAN_TYPE_STANDARD, Realm.PLAN_TYPE_PLUS})
@@ -284,11 +286,11 @@ def get_realm_authentication_methods_for_page_params_api(
                     CustomerPlan.TIER_CLOUD_PLUS
                 )
 
-            result_dict[backend_name]["unavailable_reason"] = _(
+            backend_result["unavailable_reason"] = _(
                 "You need to upgrade to the {required_upgrade_plan_name} plan to use this authentication method."
             ).format(required_upgrade_plan_name=required_upgrade_plan_name)
         else:
-            result_dict[backend_name]["available"] = True
+            backend_result["available"] = True
 
     return result_dict
 
@@ -375,6 +377,7 @@ def do_set_realm_authentication_methods(
 def do_set_realm_stream(
     realm: Realm,
     field: Literal[
+        "moderation_request_channel",
         "new_stream_announcements_stream",
         "signup_announcements_stream",
         "zulip_update_announcements_stream",
@@ -386,7 +389,11 @@ def do_set_realm_stream(
 ) -> None:
     # We could calculate more of these variables from `field`, but
     # it's probably more readable to not do so.
-    if field == "new_stream_announcements_stream":
+    if field == "moderation_request_channel":
+        old_value = realm.moderation_request_channel_id
+        realm.moderation_request_channel = stream
+        property = "moderation_request_channel_id"
+    elif field == "new_stream_announcements_stream":
         old_value = realm.new_stream_announcements_stream_id
         realm.new_stream_announcements_stream = stream
         property = "new_stream_announcements_stream_id"
@@ -424,6 +431,16 @@ def do_set_realm_stream(
             value=stream_id,
         )
         send_event_on_commit(realm, event, active_user_ids(realm.id))
+
+
+def do_set_realm_moderation_request_channel(
+    realm: Realm, stream: Stream | None, stream_id: int, *, acting_user: UserProfile | None
+) -> None:
+    if stream is not None and stream.is_public():
+        raise JsonableError(_("Moderation request channel must be private."))
+    do_set_realm_stream(
+        realm, "moderation_request_channel", stream, stream_id, acting_user=acting_user
+    )
 
 
 def do_set_realm_new_stream_announcements_stream(
@@ -502,6 +519,7 @@ def do_deactivate_realm(
     *,
     acting_user: UserProfile | None,
     deactivation_reason: RealmDeactivationReasonType,
+    deletion_delay_days: int | None = None,
     email_owners: bool,
 ) -> None:
     """
@@ -518,7 +536,13 @@ def do_deactivate_realm(
 
     with transaction.atomic(durable=True):
         realm.deactivated = True
-        realm.save(update_fields=["deactivated"])
+        if deletion_delay_days is None:
+            realm.save(update_fields=["deactivated"])
+        else:
+            realm.scheduled_deletion_date = timezone_now() + datetime.timedelta(
+                days=deletion_delay_days
+            )
+            realm.save(update_fields=["scheduled_deletion_date", "deactivated"])
 
         if settings.BILLING_ENABLED:
             billing_session = RealmBillingSession(user=acting_user, realm=realm)
@@ -551,6 +575,13 @@ def do_deactivate_realm(
         event = dict(type="realm", op="deactivated", realm_id=realm.id)
         send_event_on_commit(realm, event, active_user_ids(realm.id))
 
+        if deletion_delay_days == 0:
+            event = {
+                "type": "scrub_deactivated_realm",
+                "realm_id": realm.id,
+            }
+            queue_json_publish_rollback_unsafe("deferred_work", event)
+
     # Don't deactivate the users, as that would lose a lot of state if
     # the realm needs to be reactivated, but do delete their sessions
     # so they get bumped to the login screen, where they'll get a
@@ -575,8 +606,9 @@ def do_reactivate_realm(realm: Realm) -> None:
         return
 
     realm.deactivated = False
+    realm.scheduled_deletion_date = None
     with transaction.atomic(durable=True):
-        realm.save(update_fields=["deactivated"])
+        realm.save(update_fields=["deactivated", "scheduled_deletion_date"])
 
         event_time = timezone_now()
         RealmAuditLog.objects.create(
@@ -621,6 +653,7 @@ def do_delete_all_realm_attachments(realm: Realm, *, batch_size: int = 1000) -> 
         obj_class._default_manager.filter(realm=realm).delete()
 
 
+@transaction.atomic(durable=True)
 def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
     if settings.BILLING_ENABLED:
         from corporate.lib.stripe import RealmBillingSession
@@ -676,6 +709,20 @@ def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
         acting_user=acting_user,
         event_type=AuditLogEventType.REALM_SCRUBBED,
     )
+    realm.scheduled_deletion_date = None
+    realm.save()
+
+
+def scrub_deactivated_realm(realm_to_scrub: Realm) -> None:
+    if (
+        realm_to_scrub.scheduled_deletion_date is not None
+        and realm_to_scrub.scheduled_deletion_date <= timezone_now()
+    ):
+        assert (
+            realm_to_scrub.deactivated
+        ), "Non-deactivated realm unexpectedly scheduled for deletion."
+        do_scrub_realm(realm_to_scrub, acting_user=None)
+        logging.info("Scrubbed realm %s", realm_to_scrub.id)
 
 
 @transaction.atomic(durable=True)

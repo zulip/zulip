@@ -468,6 +468,12 @@
     }
 
     /*
+    User group info popover elements and values.
+    */
+    --user-group-popover-horizontal-padding: 0.6666em; /* 10px at 15px/1em */
+    --user-group-popover-icon-text-gap: 0.3125em; /* 5px at 16px/1em */
+
+    /*
     Width to be reserved for document scrollbar when scrolling is disabled.
     Using `scrollbar-gutter` would be more appropriate but doesn't has wide
     support and doesn't work for `fixed` elements.
@@ -686,6 +692,8 @@
     --color-background-animated-button: hsl(0deg 0% 90%);
     --color-animated-button-text: hsl(0deg 0% 0%);
     --color-background-animated-button-hover: hsl(240deg 96% 68%);
+    --color-invalid-input-border: hsl(3deg 57% 33%);
+    --color-invalid-input-box-shadow: 0 0 2px hsl(3deg 57% 33%);
 
     /* Recent view */
     --color-border-recent-view-row: hsl(0deg 0% 87%);
@@ -696,6 +704,14 @@
     --color-background-recent-view-unread-row-hover: hsl(210deg 100% 97%);
     --color-recent-view-link: hsl(205deg 47% 42%);
     --color-recent-view-link-hover: hsl(214deg 40% 58%);
+    --color-background-recent-filters-button-focus: hsl(0deg 0% 80%);
+    --color-background-recent-filters-button-disabled: hsl(0deg 0% 100%);
+    --color-border-recent-filters-button-disabled: hsl(0deg 0% 80%);
+    --color-recent-view-participant-overflow-text: hsl(0deg 0% 0%);
+    --color-background-recent-view-participant-overflow: hsl(0deg 0% 88%);
+    --color-background-recent-view-selected: hsl(0deg 11% 93%);
+    --color-background-recent-view-table-thead-th: hsl(0deg 0% 100%);
+    --color-background-recent-view-table-thead-sort-header: hsl(0deg 0% 95%);
 
     /* Compose box colors */
     --color-compose-box-background: hsl(232deg 30% 92%);
@@ -768,6 +784,7 @@
     --color-message-content-container-border: hsl(0deg 0% 0% / 10%);
     --color-message-content-container-border-focus: hsl(0deg 0% 57%);
     --color-compose-control-button-background-hover: hsl(0deg 0% 0% / 5%);
+    --color-compose-formatting-button-divider: hsl(0deg 0% 75%);
     --color-compose-focus-ring: var(--color-outline-focus);
 
     /* Text colors */
@@ -878,6 +895,7 @@
     --color-tab-picker-icon: hsl(200deg 100% 40%);
     --color-user-circle-active: hsl(106deg 74% 44%);
     --color-user-circle-idle: hsl(29deg 84% 51%);
+    --color-user-circle-offline: hsl(0deg 0% 50%);
     /* hsl(229deg 9% 36%) corresponds to --grey-600.
        We use the hsl() equivalent directly since postcss-color-mix-function
        cannot dynamically resolve var() arguments. */
@@ -1313,6 +1331,146 @@
         #c0070a 13%,
         transparent
     );
+
+    /* Icon buttons */
+    /* Icon buttons -- Neutral Variant */
+    --color-text-neutral-icon-button: color-mix(
+        in oklch,
+        hsl(229deg 9% 36%) 70%,
+        transparent
+    );
+    --color-text-neutral-icon-button-hover: hsl(229deg 9% 36%);
+    --color-text-neutral-icon-button-active: color-mix(
+        in oklch,
+        hsl(229deg 9% 36%) 70%,
+        transparent
+    );
+    --color-text-neutral-icon-button-square-active: hsl(229deg 9% 36%);
+    --color-background-neutral-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(229deg 9% 36%) 7%,
+        transparent
+    );
+    --color-background-neutral-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(229deg 9% 36%) 11%,
+        transparent
+    );
+    /* Icon buttons -- Brand Variant */
+    --color-text-brand-icon-button: color-mix(
+        in oklch,
+        hsl(255deg 54% 50%) 70%,
+        transparent
+    );
+    --color-text-brand-icon-button-hover: hsl(255deg 54% 50%);
+    --color-text-brand-icon-button-active: color-mix(
+        in oklch,
+        hsl(255deg 54% 50%) 70%,
+        transparent
+    );
+    --color-text-brand-icon-button-square-active: hsl(255deg 54% 50%);
+    --color-background-brand-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(264deg 100% 22%) 5%,
+        transparent
+    );
+    --color-background-brand-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(264deg 100% 22%) 10%,
+        transparent
+    );
+    /* Icon buttons -- Info Variant */
+    --color-text-info-icon-button: color-mix(
+        in oklch,
+        hsl(227deg 70% 46%) 70%,
+        transparent
+    );
+    --color-text-info-icon-button-hover: hsl(227deg 70% 46%);
+    --color-text-info-icon-button-active: color-mix(
+        in oklch,
+        hsl(227deg 70% 46%) 70%,
+        transparent
+    );
+    --color-text-info-icon-button-square-active: hsl(227deg 70% 46%);
+    --color-background-info-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(241deg 95% 25%) 5%,
+        transparent
+    );
+    --color-background-info-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(241deg 95% 25%) 9%,
+        transparent
+    );
+    /* Icon buttons -- Success Variant */
+    --color-text-success-icon-button: color-mix(
+        in oklch,
+        hsl(146deg 90% 27%) 70%,
+        transparent
+    );
+    --color-text-success-icon-button-hover: hsl(146deg 90% 27%);
+    --color-text-success-icon-button-active: color-mix(
+        in oklch,
+        hsl(146deg 90% 27%) 70%,
+        transparent
+    );
+    --color-text-success-icon-button-square-active: hsl(146deg 90% 27%);
+    --color-background-success-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(144deg 84% 22%) 8%,
+        transparent
+    );
+    --color-background-success-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(144deg 84% 22%) 12%,
+        transparent
+    );
+    /* Icon buttons -- Warning Variant */
+    --color-text-warning-icon-button: color-mix(
+        in oklch,
+        hsl(37deg 94% 34%) 70%,
+        transparent
+    );
+    --color-text-warning-icon-button-hover: hsl(37deg 94% 34%);
+    --color-text-warning-icon-button-active: color-mix(
+        in oklch,
+        hsl(37deg 94% 34%) 70%,
+        transparent
+    );
+    --color-text-warning-icon-button-square-active: hsl(37deg 94% 34%);
+    --color-background-warning-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(37deg 94% 34%) 10%,
+        transparent
+    );
+    --color-background-warning-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(37deg 94% 34%) 14%,
+        transparent
+    );
+    /* Icon buttons -- Danger Variant */
+    --color-text-danger-icon-button: color-mix(
+        in oklch,
+        hsl(359deg 93% 39%) 70%,
+        transparent
+    );
+    --color-text-danger-icon-button-hover: hsl(359deg 93% 39%);
+    --color-text-danger-icon-button-active: color-mix(
+        in oklch,
+        hsl(359deg 93% 39%) 70%,
+        transparent
+    );
+    --color-text-danger-icon-button-square-active: hsl(359deg 93% 39%);
+    --color-background-danger-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(359deg 93% 39%) 9%,
+        transparent
+    );
+    --color-background-danger-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(359deg 93% 39%) 13%,
+        transparent
+    );
 }
 
 %dark-theme {
@@ -1325,7 +1483,7 @@
     --color-date: hsl(0deg 0% 100% / 75%);
     --color-background-private-message-header: hsl(46deg 15% 20%);
     --color-background-private-message-content: hsl(46deg 7% 16%);
-    --color-background-stream-message-content: hsl(0deg 0% 15%);
+    --color-background-stream-message-content: hsl(0deg 0% 13.5%);
     --color-message-header-icon-non-interactive: hsl(0deg 0% 100% / 30%);
     --color-message-header-icon-interactive: hsl(0deg 0% 100%);
     --color-message-header-contents-border: hsl(0deg 0% 0% / 60%);
@@ -1338,7 +1496,7 @@
     --color-background-widget-input: hsl(225deg 6% 10%);
     --color-background-widget-button: hsl(0deg 0% 0% / 20%);
     --color-background-navbar: hsl(0deg 0% 13%);
-    --color-text-sidebar-row: hsl(0deg 0% 100% / 75%);
+    --color-text-sidebar-row: hsl(0deg 0% 100% / 85%);
     --color-text-active-narrow-filter: hsl(0deg 0% 90%);
     --color-background-active-narrow-filter: color-mix(
         in srgb,
@@ -1443,6 +1601,8 @@
     --color-background-animated-button: hsl(211deg 29% 14%);
     --color-animated-button-text: hsl(0deg 0% 100%);
     --color-background-animated-button-hover: hsl(240deg 96% 68%);
+    --color-invalid-input-border: hsl(3deg 73% 74%);
+    --color-invalid-input-box-shadow: 0 0 2px hsl(3deg 73% 74%);
 
     /* Recent view */
     --color-border-recent-view-row: hsl(0deg 0% 0% / 20%);
@@ -1453,6 +1613,14 @@
     --color-background-recent-view-unread-row-hover: hsl(212deg 30% 22% / 60%);
     --color-recent-view-link: hsl(206deg 89% 74%);
     --color-recent-view-link-hover: hsl(208deg 64% 52%);
+    --color-background-recent-filters-button-focus: hsl(0deg 0% 0% / 50%);
+    --color-background-recent-filters-button-disabled: hsl(0deg 0% 0% / 50%);
+    --color-border-recent-filters-button-disabled: hsl(0deg 0% 0%);
+    --color-recent-view-participant-overflow-text: hsl(0deg 0% 100%);
+    --color-background-recent-view-participant-overflow: hsl(211deg 18% 25%);
+    --color-background-recent-view-selected: hsl(228deg 11% 17%);
+    --color-background-recent-view-table-thead-th: hsl(228deg 11% 17%);
+    --color-background-recent-view-table-thead-sort-header: hsl(211deg 29% 14%);
 
     /* Compose box colors */
     --color-compose-box-background: hsl(228deg 11% 17%);
@@ -1502,7 +1670,7 @@
     --color-border-compose-new-message-button: hsl(0deg 0% 0% / 60%);
     --color-border-compose-new-message-button-hover: hsl(0deg 0% 0% / 60%);
     --color-border-compose-new-message-button-active: hsl(0deg 0% 0% / 60%);
-    --color-background-popover: hsl(212deg 32% 14%);
+    --color-background-popover: hsl(0deg 0% 17%);
     --color-limit-indicator: hsl(38deg 100% 70%);
     --color-limit-indicator-over-limit: hsl(3deg 80% 60%);
     --color-narrow-to-compose-recipients-background: hsl(227deg 80% 60% / 25%);
@@ -1519,15 +1687,16 @@
     --color-message-content-container-border-focus: hsl(0deg 0% 100% / 27%);
     --color-message-content-container-border-over-limit: hsl(0deg 76% 65%);
     --color-compose-control-button-background-hover: hsl(0deg 0% 100% / 5%);
+    --color-compose-formatting-button-divider: hsl(236deg 33% 90% / 25%);
     --color-compose-focus-ring: hsl(0deg 0% 67%);
 
     /* Text colors */
-    --color-text-default: hsl(0deg 0% 85%);
+    --color-text-default: hsl(0deg 0% 87%);
     /* Unlike the light theme, the dark theme renders message
        text in the default color. */
     --color-text-message-default: var(--color-text-default);
-    --color-text-message-view-header: hsl(0deg 0% 100% / 80%);
-    --color-text-message-header: hsl(0deg 0% 100% / 80%);
+    --color-text-message-view-header: hsl(0deg 0% 100% / 85%);
+    --color-text-message-header: hsl(0deg 0% 100% / 85%);
     --color-text-sender-name: hsl(0deg 0% 100% / 85%);
     --color-text-dropdown-input: hsl(0deg 0% 95%);
     --color-text-other-mention: hsl(0deg 0% 100% / 80%);
@@ -1708,8 +1877,8 @@
     --color-message-edit-history-background-deleted: hsl(7deg 54% 62% / 38%);
 
     /* Mention pill colors */
-    --color-background-direct-mention: hsl(240deg 13% 20%);
-    --color-background-group-mention: hsl(180deg 13% 15%);
+    --color-background-direct-mention: hsl(240deg 13% 16%);
+    --color-background-group-mention: hsl(180deg 13% 14%);
     --color-background-text-direct-mention: hsl(240deg 52% 60% / 25%);
     --color-background-text-hover-direct-mention: hsl(240deg 52% 60% / 45%);
     --color-background-text-group-mention: hsl(183deg 52% 40% / 20%);
@@ -2065,6 +2234,151 @@
     --color-background-danger-borderless-action-button-active: color-mix(
         in oklch,
         #f34c3e 17%,
+        transparent
+    );
+
+    /* Icon buttons */
+    /* Icon buttons -- Neutral Variant */
+    --color-text-neutral-icon-button: color-mix(
+        in oklch,
+        hsl(229deg 10% 70%) 70%,
+        transparent
+    );
+    --color-text-neutral-icon-button-hover: hsl(229deg 10% 70%);
+    --color-text-neutral-icon-button-active: color-mix(
+        in oklch,
+        hsl(229deg 10% 70%) 70%,
+        transparent
+    );
+    --color-background-neutral-icon-button-active: color-mix(
+        in oklch,
+        hsl(229deg 10% 70%) 70%,
+        transparent
+    );
+    --color-text-neutral-icon-button-square-active: hsl(229deg 10% 70%);
+    --color-background-neutral-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(230deg 9% 60%) 14%,
+        transparent
+    );
+    --color-background-neutral-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(230deg 9% 60%) 18%,
+        transparent
+    );
+    /* Icon buttons -- Brand Variant */
+    --color-text-brand-icon-button: color-mix(
+        in oklch,
+        hsl(246deg 96 79%) 70%,
+        transparent
+    );
+    --color-text-brand-icon-button-hover: hsl(246deg 96% 79%);
+    --color-text-brand-icon-button-active: color-mix(
+        in oklch,
+        hsl(246deg 96% 79%) 70%,
+        transparent
+    );
+    --color-text-brand-icon-button-square-active: hsl(246deg 96% 79%);
+    --color-background-brand-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(251deg 100% 72%) 14%,
+        transparent
+    );
+    --color-background-brand-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(251deg 100% 72%) 18%,
+        transparent
+    );
+    /* Icon buttons -- Info Variant */
+    --color-text-info-icon-button: color-mix(
+        in oklch,
+        hsl(222deg 97% 75%) 70%,
+        transparent
+    );
+    --color-text-info-icon-button-hover: hsl(222deg 97% 75%);
+    --color-text-info-icon-button-active: color-mix(
+        in oklch,
+        hsl(222deg 97% 75%) 70%,
+        transparent
+    );
+    --color-text-info-icon-button-square-active: hsl(222deg 97% 75%);
+    --color-background-info-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(224deg 98% 65%) 12%,
+        transparent
+    );
+    --color-background-info-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(224deg 98% 65%) 17%,
+        transparent
+    );
+    /* Icon buttons -- Success Variant */
+    --color-text-success-icon-button: color-mix(
+        in oklch,
+        hsl(136deg 47% 55%) 70%,
+        transparent
+    );
+    --color-text-success-icon-button-hover: hsl(136deg 47% 55%);
+    --color-text-success-icon-button-active: color-mix(
+        in oklch,
+        hsl(136deg 47% 55%) 70%,
+        transparent
+    );
+    --color-text-success-icon-button-square-active: hsl(136deg 47% 55%);
+    --color-background-success-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(139deg 54% 40%) 12%,
+        transparent
+    );
+    --color-background-success-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(139deg 54% 40%) 17%,
+        transparent
+    );
+    /* Icon buttons -- Warning Variant */
+    --color-text-warning-icon-button: color-mix(
+        in oklch,
+        hsl(41deg 98% 46%) 70%,
+        transparent
+    );
+    --color-text-warning-icon-button-hover: hsl(41deg 98% 46%);
+    --color-text-warning-icon-button-active: color-mix(
+        in oklch,
+        hsl(41deg 98% 46%) 70%,
+        transparent
+    );
+    --color-text-warning-icon-button-square-active: hsl(41deg 98% 46%);
+    --color-background-warning-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(39deg 88% 42%) 12%,
+        transparent
+    );
+    --color-background-warning-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(39deg 88% 42%) 17%,
+        transparent
+    );
+    /* Icon buttons -- Danger Variant */
+    --color-text-danger-icon-button: color-mix(
+        in oklch,
+        hsl(7deg 100% 74%) 70%,
+        transparent
+    );
+    --color-text-danger-icon-button-hover: hsl(7deg 100% 74%);
+    --color-text-danger-icon-button-active: color-mix(
+        in oklch,
+        hsl(7deg 100% 74%) 70%,
+        transparent
+    );
+    --color-text-danger-icon-button-square-active: hsl(7deg 100% 74%);
+    --color-background-danger-icon-button-square-hover: color-mix(
+        in oklch,
+        hsl(5deg 88% 60%) 12%,
+        transparent
+    );
+    --color-background-danger-icon-button-square-active: color-mix(
+        in oklch,
+        hsl(5deg 88% 60%) 17%,
         transparent
     );
 }

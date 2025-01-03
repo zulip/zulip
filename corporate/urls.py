@@ -219,6 +219,11 @@ landing_page_urls = [
         landing_view,
         {"template_name": "corporate/case-studies/recurse-center-case-study.html"},
     ),
+    path(
+        "case-studies/rush-stack/",
+        landing_view,
+        {"template_name": "corporate/case-studies/rush-stack-case-study.html"},
+    ),
     path("communities/", communities_view),
 ]
 

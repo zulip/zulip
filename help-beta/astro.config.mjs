@@ -100,7 +100,7 @@ export default defineConfig({
                         "mention-a-user-or-group",
                         "link-to-a-message-or-conversation",
                         "format-a-quote",
-                        "quote-and-reply",
+                        "quote-or-forward-a-message",
                         "emoji-and-emoticons",
                         "insert-a-link",
                         "share-and-upload-files",
@@ -239,7 +239,6 @@ export default defineConfig({
                 {
                     label: "Organization basics",
                     items: [
-                        "review-your-organization-settings",
                         "organization-type",
                         "communities-directory",
                         "import-from-mattermost",
@@ -259,7 +258,7 @@ export default defineConfig({
                 {
                     label: "Users",
                     items: [
-                        "roles-and-permissions",
+                        "manage-permissions",
                         "invite-new-users",
                         "restrict-account-creation",
                         "guest-users",
@@ -269,7 +268,7 @@ export default defineConfig({
                         "configure-default-new-user-settings",
                         "configure-organization-language",
                         "manage-user-groups",
-                        "change-a-users-role",
+                        "user-roles",
                         "change-a-users-name",
                         "manage-user-channel-subscriptions",
                         "restrict-name-and-email-changes",
@@ -305,7 +304,7 @@ export default defineConfig({
                         "restrict-moving-messages",
                         "restrict-message-editing-and-deletion",
                         "disable-message-edit-history",
-                        "allow-image-link-previews",
+                        "image-video-and-website-previews",
                         "hide-message-content-in-emails",
                         "message-retention-policy",
                         "digest-emails",

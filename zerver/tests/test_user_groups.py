@@ -706,7 +706,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Frontend team",
         }
-        params[setting_name] = orjson.dumps(1111).decode()
+        params[setting_name] = orjson.dumps(123456).decode()
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "Invalid user group")
 
@@ -732,11 +732,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         params[setting_name] = orjson.dumps(
             {
                 "direct_members": [othello.id],
-                "direct_subgroups": [1111, moderators_group.id],
+                "direct_subgroups": [123456, moderators_group.id],
             }
         ).decode()
         result = self.client_post("/json/user_groups/create", info=params)
-        self.assert_json_error(result, "Invalid user group ID: 1111")
+        self.assert_json_error(result, "Invalid user group ID: 123456")
 
         # Test can_mention_group cannot be set to a deactivated group.
         do_deactivate_user_group(leadership_group, acting_user=None)
@@ -817,7 +817,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         # Test when invalid user group is supplied
         params = {"name": "help"}
-        result = self.client_patch("/json/user_groups/1111", info=params)
+        result = self.client_patch("/json/user_groups/123456", info=params)
         self.assert_json_error(result, "Invalid user group")
 
         lear_realm = get_realm("lear")
@@ -984,7 +984,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             result, f"'{setting_name}' setting cannot be set to 'role:internet' group."
         )
 
-        params[setting_name] = orjson.dumps({"new": 1111}).decode()
+        params[setting_name] = orjson.dumps({"new": 123456}).decode()
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_error(result, "Invalid user group")
 
@@ -1003,12 +1003,12 @@ class UserGroupAPITestCase(UserGroupTestCase):
             {
                 "new": {
                     "direct_members": [prospero.id, othello.id],
-                    "direct_subgroups": [1111, marketing_group.id],
+                    "direct_subgroups": [123456, marketing_group.id],
                 }
             }
         ).decode()
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
-        self.assert_json_error(result, "Invalid user group ID: 1111")
+        self.assert_json_error(result, "Invalid user group ID: 123456")
 
         leadership_group = NamedUserGroup.objects.get(realm=hamlet.realm, name="leadership")
         do_deactivate_user_group(leadership_group, acting_user=None)
@@ -1193,24 +1193,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         params = {
             "can_mention_group": orjson.dumps(
                 {
-                    "new": {
-                        "direct_members": [othello.id],
-                        "direct_subgroups": [moderators_group.id],
-                    },
-                    "old": {
-                        "direct_members": [hamlet.id],
-                        "direct_subgroups": [1111],
-                    },
-                }
-            ).decode()
-        }
-        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
-        self.assert_json_error(result, "'old' value does not match the expected value.")
-
-        params = {
-            "can_mention_group": orjson.dumps(
-                {
-                    "new": 1111,
+                    "new": 123456,
                     "old": {
                         "direct_members": [hamlet.id],
                         "direct_subgroups": [marketing_group.id],
@@ -2915,9 +2898,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_subgroup_membership(lear_test_group, [])
 
         # Invalid subgroup id will raise an error.
-        params = {"add": orjson.dumps([leadership_group.id, 1111]).decode()}
+        params = {"add": orjson.dumps([leadership_group.id, 123456]).decode()}
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
-        self.assert_json_error(result, "Invalid user group ID: 1111")
+        self.assert_json_error(result, "Invalid user group ID: 123456")
         self.assert_subgroup_membership(support_group, [leadership_group])
 
         # Test when nothing is provided
@@ -3222,7 +3205,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_error(result, "No such user")
 
         # Invalid user group ID.
-        result = self.client_get(f"/json/user_groups/1111/members/{iago.id}")
+        result = self.client_get(f"/json/user_groups/123456/members/{iago.id}")
         self.assert_json_error(result, "Invalid user group")
 
         lear_realm = get_realm("lear")
@@ -3290,7 +3273,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.login("iago")
 
         # Test invalid user group id
-        result = self.client_get("/json/user_groups/1111/members")
+        result = self.client_get("/json/user_groups/123456/members")
         self.assert_json_error(result, "Invalid user group")
 
         lear_realm = get_realm("lear")
@@ -3352,7 +3335,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.login("iago")
 
         # Test invalid user group id
-        result = self.client_get("/json/user_groups/1111/subgroups")
+        result = self.client_get("/json/user_groups/123456/subgroups")
         self.assert_json_error(result, "Invalid user group")
 
         lear_realm = get_realm("lear")

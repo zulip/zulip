@@ -256,11 +256,12 @@
                 }
             }
 
-            .user_circle {
-                /* size of the user activity circle */
-                /* 6px at 15px/1em */
-                min-width: 0.4em;
-                height: 0.4em;
+            .user-circle {
+                /* TODO: Refactor inbox rows to use grid, to avoid the
+                   min-width here that holds the other rows to similar
+                   columns. */
+                min-width: 1em;
+                font-size: 0.5333em;
                 margin-right: 5px;
                 top: 0;
             }
@@ -290,12 +291,14 @@
                 }
 
                 .inbox-left-part {
-                    grid-template: auto / min-content auto min-content min-content;
+                    grid-template:
+                        auto / min-content minmax(0, 1fr)
+                        min-content min-content;
                     grid-template-areas: "match_topic_and_dm_start recipient_info unread_mention_info unread_count";
                 }
 
                 .fake-collapse-button,
-                .inbox-topic-container .user_circle {
+                .inbox-topic-container .user-circle {
                     grid-area: match_topic_and_dm_start;
                 }
 
@@ -412,6 +415,17 @@
                 .inbox-group-or-bot-dm {
                     position: relative;
                     left: -3px;
+
+                    /* We don't display status emoji in group DMs,
+                       so prepare an ordinary inline layout... */
+                    .user-status-microlayout {
+                        display: inline;
+                        white-space: collapse;
+                    }
+                    /* ...and hide the status emoji. */
+                    .status-emoji {
+                        display: none;
+                    }
                 }
 
                 .recipients_info {
@@ -419,7 +433,6 @@
                     flex-wrap: wrap;
                     column-gap: 10px;
                     grid-area: recipient_info;
-                    word-break: break-word;
 
                     .user_block {
                         display: flex;

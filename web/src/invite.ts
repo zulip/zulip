@@ -274,7 +274,7 @@ function valid_to(): string {
 
     let time_in_minutes: number;
     if (time_input_value === "custom") {
-        if (!util.validate_custom_time_input(custom_expiration_time_input)) {
+        if (!util.validate_custom_time_input(custom_expiration_time_input, false)) {
             return $t({defaultMessage: "Invalid custom time"});
         }
         time_in_minutes = util.get_custom_time_in_minutes(
@@ -294,7 +294,7 @@ function valid_to(): string {
 }
 
 function set_streams_to_join_list_visibility(): void {
-    const realm_has_default_streams = stream_data.get_default_stream_ids().length !== 0;
+    const realm_has_default_streams = stream_data.get_default_stream_ids().length > 0;
     const hide_streams_list =
         realm_has_default_streams &&
         util.the($<HTMLInputElement>("input#invite_select_default_streams")).checked;
@@ -387,7 +387,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         invite_as_options: settings_config.user_role_values,
         expires_in_options: settings_config.expires_in_values,
         time_choices: settings_config.custom_time_unit_values,
-        show_select_default_streams_option: stream_data.get_default_stream_ids().length !== 0,
+        show_select_default_streams_option: stream_data.get_default_stream_ids().length > 0,
         user_has_email_set: !settings_data.user_email_not_configured(),
         can_subscribe_other_users: settings_data.user_can_subscribe_other_users(),
     });
@@ -452,7 +452,10 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                     .find(".selected")
                     .attr("data-tab-key");
             }
-            const valid_custom_time = util.validate_custom_time_input(custom_expiration_time_input);
+            const valid_custom_time = util.validate_custom_time_input(
+                custom_expiration_time_input,
+                false,
+            );
             const $button = $("#invite-user-modal .dialog_submit_button");
             $button.prop(
                 "disabled",
@@ -477,6 +480,9 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         pills.onTextInputHook(toggle_invite_submit_button);
 
         $expires_in.on("change", () => {
+            if (!util.validate_custom_time_input(custom_expiration_time_input, false)) {
+                custom_expiration_time_input = 0;
+            }
             settings_components.set_custom_time_inputs_visibility(
                 $expires_in,
                 custom_expiration_time_unit,

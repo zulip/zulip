@@ -228,7 +228,7 @@ function update_user_custom_profile_fields(
 
 function update_user_type_field(field: PillUpdateField, pills: UserPillWidget): void {
     const user_ids = user_pill.get_user_ids(pills);
-    if (user_ids.length < 1) {
+    if (user_ids.length === 0) {
         update_user_custom_profile_fields([{id: field.id}], channel.del);
     } else {
         update_user_custom_profile_fields([{id: field.id, value: user_ids}], channel.patch);
@@ -835,6 +835,19 @@ export function set_up(): void {
 
         const data = {timezone: this.value};
 
+        settings_ui.do_settings_change(
+            channel.patch,
+            "/json/settings",
+            data,
+            $(".timezone-setting-status").expectOne(),
+        );
+    });
+
+    $<HTMLInputElement>("#automatically_offer_update_time_zone").on("change", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const data = {web_suggest_update_timezone: this.checked};
         settings_ui.do_settings_change(
             channel.patch,
             "/json/settings",

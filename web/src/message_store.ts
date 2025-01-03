@@ -153,7 +153,7 @@ export type Message = (
     // The original markup for the message, which we'll have if we
     // sent it or if we fetched it (usually, because the current user
     // tried to edit the message).
-    raw_content?: string;
+    raw_content?: string | undefined;
 
     // Added in `message_helper.process_new_message`.
     sent_by_me: boolean;
@@ -169,7 +169,7 @@ export type Message = (
     // `convert_raw_message_to_message_with_booleans`
     flags?: string[];
 
-    small_avatar_url?: string; // Used in `message_avatar.hbs`
+    small_avatar_url?: string | null; // Used in `message_avatar.hbs`
     status_emoji_info?: UserStatusEmojiInfo | undefined; // Used in `message_body.hbs`
 
     local_edit_timestamp?: number; // Used for edited messages
@@ -305,7 +305,7 @@ export function update_sender_full_name(user_id: number, new_name: string): void
     }
 }
 
-export function update_small_avatar_url(user_id: number, new_url: string): void {
+export function update_small_avatar_url(user_id: number, new_url: string | null): void {
     for (const msg of stored_messages.values()) {
         if (msg.sender_id && msg.sender_id === user_id) {
             msg.small_avatar_url = new_url;

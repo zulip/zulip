@@ -66,7 +66,7 @@ Zulip's SCIM integration has the following limitations:
      * **givenName**
      * **familyName**
 
-1. **Optional:** If you'd like to also sync [user role](/help/roles-and-permissions),
+1. **Optional:** If you'd like to also sync [user role](/help/user-roles),
    you can do it by adding a custom attribute in Okta. Go to the **Profile Editor**,
    click into the entry of the SCIM app you've just set up and **Add Attribute**.
    Configure the following:

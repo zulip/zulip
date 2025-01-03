@@ -414,6 +414,8 @@ class CustomerPlan(AbstractCustomerPlan):
         TIER_SELF_HOSTED_ENTERPRISE,
     ]
 
+    COMPLIMENTARY_PLAN_TIERS = [TIER_SELF_HOSTED_LEGACY]
+
     ACTIVE = 1
     DOWNGRADE_AT_END_OF_CYCLE = 2
     FREE_TRIAL = 3
@@ -489,6 +491,9 @@ class CustomerPlan(AbstractCustomerPlan):
 
     def is_free_trial(self) -> bool:
         return self.status == CustomerPlan.FREE_TRIAL
+
+    def is_complimentary_access_plan(self) -> bool:
+        return self.tier in self.COMPLIMENTARY_PLAN_TIERS
 
     def is_a_paid_plan(self) -> bool:
         return self.tier in self.PAID_PLAN_TIERS

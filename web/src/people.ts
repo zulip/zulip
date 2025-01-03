@@ -507,7 +507,7 @@ export function sorted_other_user_ids(user_ids: number[]): number[] {
 
     const other_user_ids = user_ids.filter((user_id) => !is_my_user_id(user_id));
 
-    if (other_user_ids.length >= 1) {
+    if (other_user_ids.length > 0) {
         user_ids = other_user_ids;
     } else {
         user_ids = [my_user_id];
@@ -1664,7 +1664,7 @@ export function set_full_name(person_obj: User, new_full_name: string): void {
 
 export function set_custom_profile_field_data(
     user_id: number,
-    field: {id: number} & ProfileDatum,
+    field: {id: number; value: string | null; rendered_value?: string | undefined},
 ): void {
     if (field.id === undefined) {
         blueslip.error("Trying to set undefined field id");
@@ -1672,10 +1672,15 @@ export function set_custom_profile_field_data(
     }
     const person = get_by_user_id(user_id);
     assert(person.profile_data !== undefined);
-    person.profile_data[field.id] = {
-        value: field.value,
-        rendered_value: field.rendered_value,
-    };
+    if (field.value === null) {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        delete person.profile_data[field.id];
+    } else {
+        person.profile_data[field.id] = {
+            value: field.value,
+            rendered_value: field.rendered_value,
+        };
+    }
 }
 
 export function is_current_user(email?: string | null): boolean {
@@ -1704,7 +1709,7 @@ export function my_current_user_id(): number {
     return my_user_id;
 }
 
-export function my_custom_profile_data(field_id: number): ProfileDatum | null | undefined {
+export function my_custom_profile_data(field_id: number): ProfileDatum | undefined {
     if (field_id === undefined) {
         blueslip.error("Undefined field id");
         return undefined;
@@ -1715,23 +1720,19 @@ export function my_custom_profile_data(field_id: number): ProfileDatum | null | 
 export function get_custom_profile_data(
     user_id: number,
     field_id: number,
-): ProfileDatum | null | undefined {
+): ProfileDatum | undefined {
     const person = get_by_user_id(user_id);
-    const profile_data = person.profile_data;
-    if (profile_data === undefined) {
-        return null;
-    }
-    return profile_data[field_id];
+    return person.profile_data?.[field_id];
 }
 
 export function get_custom_fields_by_type(
     user_id: number,
     field_type: number,
-): (ProfileDatum | undefined)[] | null {
+): (ProfileDatum | undefined)[] | undefined {
     const person = get_by_user_id(user_id);
     const profile_data = person.profile_data;
     if (profile_data === undefined) {
-        return null;
+        return undefined;
     }
     const filteredProfileData: (ProfileDatum | undefined)[] = [];
     for (const field of realm.custom_profile_fields) {
@@ -1759,6 +1760,10 @@ export function sort_but_pin_current_user_on_top(users: User[]): void {
     } else {
         users.sort(compare_by_name);
     }
+}
+
+export function is_displayable_conversation_participant(user_id: number): boolean {
+    return !is_valid_bot_user(user_id) && is_person_active(user_id);
 }
 
 export function initialize(my_user_id: number, params: StateData["people"]): void {

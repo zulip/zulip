@@ -130,13 +130,11 @@ test.set_verbose(files.length === 1);
 
         try {
             await run_one_module(file);
+            blueslip.reset();
         } catch (error) /* istanbul ignore next */ {
             console.error(error);
             exit_code = 1;
-        }
-
-        if (blueslip.reset) {
-            blueslip.reset();
+            blueslip.reset(true);
         }
 
         namespace.finish();

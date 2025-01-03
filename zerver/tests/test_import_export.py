@@ -2214,6 +2214,28 @@ class RealmImportExportTest(ExportFile):
         )
         self.assertEqual(expected_error_message, str(e.exception))
 
+    def test_import_realm_with_identical_but_unsorted_migrations(self) -> None:
+        # Two identical migration sets should pass `check_migrations_status`
+        # regardless of how the list of migrations are ordered in
+        # `migrations_status.json`.
+        realm = get_realm("zulip")
+        with (
+            self.assertLogs(level="INFO"),
+            patch("zerver.lib.export.get_migrations_by_app") as mock_export,
+            patch("zerver.lib.import_realm.get_migrations_by_app") as mock_import,
+        ):
+            mock_export.return_value = self.get_applied_migrations_fixture(
+                "with_unsorted_migrations_list.json"
+            )
+            mock_import.return_value = self.get_applied_migrations_fixture(
+                "with_complete_migrations.json"
+            )
+            self.export_realm_and_create_auditlog(
+                realm,
+                export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
+            )
+            do_import_realm(get_output_dir(), "test-zulip")
+
 
 class SingleUserExportTest(ExportFile):
     def do_files_test(self, is_s3: bool) -> None:

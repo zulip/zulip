@@ -11,18 +11,24 @@ import render_insecure_desktop_app_alert_content from "../templates/navbar_alert
 import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert_wrapper.hbs";
 import render_profile_incomplete_alert_content from "../templates/navbar_alerts/profile_incomplete.hbs";
 import render_server_needs_upgrade_alert_content from "../templates/navbar_alerts/server_needs_upgrade.hbs";
+import render_time_zone_update_offer_content from "../templates/navbar_alerts/time_zone_update_offer.hbs";
 
+import * as channel from "./channel.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
+import * as feedback_widget from "./feedback_widget.ts";
+import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import type {LocalStorage} from "./localstorage.ts";
 import {localstorage} from "./localstorage.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import {current_user, realm} from "./state_data.ts";
+import * as timerender from "./timerender.ts";
 import {should_display_profile_incomplete_alert} from "./timerender.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as unread_ui from "./unread_ui.ts";
+import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 const show_step = function ($process: JQuery, step: number): void {
@@ -147,8 +153,18 @@ export function get_demo_organization_deadline_days_remaining(): number {
     return days_remaining;
 }
 
+export function should_offer_to_update_timezone(): boolean {
+    // This offer is only for logged-in users with the setting enabled.
+    return (
+        !page_params.is_spectator &&
+        user_settings.web_suggest_update_timezone &&
+        !timerender.is_browser_timezone_same_as(user_settings.timezone)
+    );
+}
+
 export function initialize(): void {
     const ls = localstorage();
+    const browser_time_zone = timerender.browser_time_zone();
     if (realm.demo_organization_scheduled_deletion_date) {
         const days_remaining = get_demo_organization_deadline_days_remaining();
         open({
@@ -163,6 +179,13 @@ export function initialize(): void {
             data_process: "insecure-desktop-app",
             custom_class: "red",
             rendered_alert_content_html: render_insecure_desktop_app_alert_content(),
+        });
+    } else if (should_offer_to_update_timezone()) {
+        open({
+            data_process: "time_zone_update_offer",
+            rendered_alert_content_html: render_time_zone_update_offer_content({
+                browser_time_zone,
+            }),
         });
     } else if (realm.server_needs_upgrade) {
         if (should_show_server_upgrade_notification(ls)) {
@@ -250,6 +273,74 @@ export function initialize(): void {
             $(window).trigger("resize");
         },
     );
+
+    $(".time-zone-update").on("click", function (e) {
+        e.preventDefault();
+        void channel.patch({
+            url: "/json/settings",
+            data: {timezone: browser_time_zone},
+            success: () => {
+                $(this).closest(".alert").hide();
+                $(window).trigger("resize");
+                feedback_widget.show({
+                    title_text: $t({defaultMessage: "Time zone updated"}),
+                    populate($container) {
+                        $container.text(
+                            $t(
+                                {
+                                    defaultMessage: "Your time zone was updated to {time_zone}.",
+                                },
+                                {time_zone: browser_time_zone},
+                            ),
+                        );
+                    },
+                });
+            },
+            error() {
+                feedback_widget.show({
+                    title_text: $t({defaultMessage: "Could not update time zone"}),
+                    populate($container) {
+                        $container.text(
+                            $t({defaultMessage: "Unexpected error updating the timezone."}),
+                        );
+                    },
+                });
+            },
+        });
+    });
+
+    $(".time-zone-auto-detect-off").on("click", function (e) {
+        e.preventDefault();
+        void channel.patch({
+            url: "/json/settings",
+            data: {web_suggest_update_timezone: false},
+            success: () => {
+                $(this).closest(".alert").hide();
+                $(window).trigger("resize");
+                feedback_widget.show({
+                    title_text: $t({defaultMessage: "Setting updated"}),
+                    populate($container) {
+                        $container.text(
+                            $t({
+                                defaultMessage:
+                                    "You will no longer be prompted to update your time zone.",
+                            }),
+                        );
+                    },
+                });
+            },
+            error() {
+                feedback_widget.show({
+                    title_text: $t({defaultMessage: "Unable to update setting"}),
+                    populate($container) {
+                        $container.text(
+                            $t({defaultMessage: "There was an error updating the setting."}),
+                        );
+                    },
+                });
+            },
+        });
+    });
 
     // Treat Enter with links in the navbar alerts UI focused like a click.,
     $("#navbar_alerts_wrapper").on("keyup", ".alert-link[role=button]", function (e) {

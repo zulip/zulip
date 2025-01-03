@@ -3,6 +3,9 @@
 {# The app itself. #}
 {# Includes some other templates as tabs. #}
 
+{% set PAGE_TITLE = _("Public view of {org_name} | Zulip team chat").format(org_name=realm_name) %}
+{% set PAGE_DESCRIPTION = _("Browse the publicly accessible channels in {org_name} without logging in.").format(org_name=realm_name)  %}
+
 {% block meta_viewport %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 {% endblock %}

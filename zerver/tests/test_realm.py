@@ -8,6 +8,7 @@ from typing import Any
 from unittest import mock, skipUnless
 
 import orjson
+import time_machine
 from django.conf import settings
 from django.core import mail
 from django.test import override_settings
@@ -36,6 +37,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_authentication_methods,
     do_set_realm_property,
     do_set_realm_user_default_setting,
+    scrub_deactivated_realm,
 )
 from zerver.actions.streams import do_deactivate_stream, merge_streams
 from zerver.actions.user_groups import check_add_user_group
@@ -423,12 +425,17 @@ class RealmTest(ZulipTestCase):
     def test_do_reactivate_realm(self) -> None:
         realm = get_realm("zulip")
         do_deactivate_realm(
-            realm, acting_user=None, deactivation_reason="owner_request", email_owners=False
+            realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
+            deletion_delay_days=15,
         )
         self.assertTrue(realm.deactivated)
 
         do_reactivate_realm(realm)
         self.assertFalse(realm.deactivated)
+        self.assertEqual(realm.scheduled_deletion_date, None)
 
         log_entry = RealmAuditLog.objects.last()
         assert log_entry is not None
@@ -800,6 +807,73 @@ class RealmTest(ZulipTestCase):
         do_deactivate_stream(zulip_update_announcements_stream, acting_user=None)
         self.assertIsNone(realm.get_zulip_update_announcements_stream())
 
+    def test_change_moderation_request_channel(self) -> None:
+        # We need an admin user.
+        self.login("iago")
+
+        disabled_moderation_request_channel_id = -1
+        req = dict(
+            moderation_request_channel_id=orjson.dumps(
+                disabled_moderation_request_channel_id
+            ).decode()
+        )
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.moderation_request_channel, None)
+
+        # Test that admin can set the setting to a private stream.
+        new_moderation_request_channel_id = self.make_stream("private_stream", invite_only=True).id
+        req = dict(
+            moderation_request_channel_id=orjson.dumps(new_moderation_request_channel_id).decode()
+        )
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        assert realm.moderation_request_channel is not None
+        self.assertEqual(realm.moderation_request_channel.id, new_moderation_request_channel_id)
+
+        invalid_moderation_request_channel_id = 4321
+        req = dict(
+            moderation_request_channel_id=orjson.dumps(
+                invalid_moderation_request_channel_id
+            ).decode()
+        )
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "Invalid channel ID")
+        realm = get_realm("zulip")
+        assert realm.moderation_request_channel is not None
+        self.assertNotEqual(
+            realm.moderation_request_channel.id, invalid_moderation_request_channel_id
+        )
+
+        # Test that setting this to public channel should fail.
+        public_moderation_request_channel_id = Stream.objects.get(name="Denmark").id
+        req = dict(
+            moderation_request_channel_id=orjson.dumps(
+                public_moderation_request_channel_id
+            ).decode()
+        )
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "Moderation request channel must be private.")
+        realm = get_realm("zulip")
+        assert realm.moderation_request_channel is not None
+        self.assertNotEqual(
+            realm.moderation_request_channel.id, public_moderation_request_channel_id
+        )
+
+    def test_get_default_moderation_request_channel(self) -> None:
+        realm = get_realm("zulip")
+        verona = get_stream("verona", realm)
+        realm.moderation_request_channel = verona
+        realm.save(update_fields=["moderation_request_channel"])
+
+        moderation_request_channel = realm.get_moderation_request_channel()
+        assert moderation_request_channel is not None
+        self.assertEqual(moderation_request_channel, verona)
+        do_deactivate_stream(moderation_request_channel, acting_user=None)
+        self.assertIsNone(realm.get_moderation_request_channel())
+
     def test_change_realm_default_language(self) -> None:
         # we need an admin user.
         self.login("iago")
@@ -930,6 +1004,99 @@ class RealmTest(ZulipTestCase):
         }
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
+
+    def test_data_deletion_schedule_when_deactivating_realm(self) -> None:
+        self.login("desdemona")
+
+        # settings.MIN_DEACTIVATED_REALM_DELETION_DAYS have default value 14.
+        # So minimum 14 days should be given for data deletion.
+        result = self.client_post("/json/realm/deactivate", {"deletion_delay_days": 12})
+        self.assert_json_error(result, "Data deletion time must be at least 14 days in the future.")
+
+        result = self.client_post("/json/realm/deactivate", {"deletion_delay_days": 17})
+        self.assert_json_success(result)
+
+        do_reactivate_realm(get_realm("zulip"))
+
+        with self.settings(MIN_DEACTIVATED_REALM_DELETION_DAYS=None):
+            self.login("desdemona")
+
+            result = self.client_post("/json/realm/deactivate", {"deletion_delay_days": 12})
+            self.assert_json_success(result)
+
+        do_reactivate_realm(get_realm("zulip"))
+
+        with self.settings(MAX_DEACTIVATED_REALM_DELETION_DAYS=30):
+            self.login("desdemona")
+
+            # None value to deletion_delay_days means data will be never deleted.
+            result = self.client_post(
+                "/json/realm/deactivate", {"deletion_delay_days": orjson.dumps(None).decode()}
+            )
+            self.assert_json_error(
+                result,
+                "Data deletion time must be at most 30 days in the future.",
+            )
+
+            result = self.client_post("/json/realm/deactivate", {"deletion_delay_days": 40})
+            self.assert_json_error(
+                result,
+                "Data deletion time must be at most 30 days in the future.",
+            )
+
+            result = self.client_post("/json/realm/deactivate", {"deletion_delay_days": 25})
+            self.assert_json_success(result)
+
+    def test_scrub_deactivated_realms(self) -> None:
+        zulip = get_realm("zulip")
+        zephyr = get_realm("zephyr")
+        lear = get_realm("lear")
+
+        do_deactivate_realm(
+            zephyr,
+            acting_user=None,
+            deletion_delay_days=3,
+            deactivation_reason="owner_request",
+            email_owners=False,
+        )
+        self.assertTrue(zephyr.deactivated)
+
+        do_deactivate_realm(
+            zulip,
+            acting_user=None,
+            deletion_delay_days=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
+        )
+        self.assertTrue(zulip.deactivated)
+
+        with mock.patch("zerver.actions.realm_settings.do_scrub_realm") as mock_scrub_realm:
+            scrub_deactivated_realm(zephyr)
+            scrub_deactivated_realm(zulip)
+            mock_scrub_realm.assert_not_called()
+
+        with (
+            mock.patch("zerver.actions.realm_settings.do_scrub_realm") as mock_scrub_realm,
+            self.assertLogs(level="INFO"),
+        ):
+            do_deactivate_realm(
+                lear,
+                acting_user=None,
+                deletion_delay_days=0,
+                deactivation_reason="owner_request",
+                email_owners=False,
+            )
+            self.assertTrue(lear.deactivated)
+            mock_scrub_realm.assert_called_once_with(lear, acting_user=None)
+
+        with (
+            time_machine.travel(timezone_now() + timedelta(days=4), tick=False),
+            mock.patch("zerver.actions.realm_settings.do_scrub_realm") as mock_scrub_realm,
+            self.assertLogs(level="INFO"),
+        ):
+            scrub_deactivated_realm(get_realm("zephyr"))
+            scrub_deactivated_realm(get_realm("zulip"))
+            mock_scrub_realm.assert_called_once_with(zephyr, acting_user=None)
 
     def test_initial_plan_type(self) -> None:
         with self.settings(BILLING_ENABLED=True):

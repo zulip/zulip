@@ -12,6 +12,8 @@ FILES_WITH_LEGACY_SUBJECT = {
     # This basically requires a big DB migration:
     "zerver/lib/topic.py",
     "zerver/lib/topic_sqlalchemy.py",
+    # This is tied to legacy events.
+    "zerver/lib/event_types.py",
     # This is for backward compatibility.
     "zerver/tests/test_legacy_subject.py",
     # Other migration-related changes require extreme care.
@@ -117,7 +119,7 @@ js_rules = RuleList(
             "pattern": "subject|SUBJECT",
             "exclude": {
                 "web/src/message_store.ts",
-                "web/src/types.ts",
+                "web/src/server_event_types.ts",
                 "web/src/util.ts",
                 "web/src/message_events_util.ts",
                 "web/src/message_helper.ts",

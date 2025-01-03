@@ -196,7 +196,7 @@ function set_oldest_message_date(msg_list_data: MessageListData): void {
     // We might be loading messages in another narrow before the recent view
     // is shown, so we keep the state updated and update the banner only
     // once it's actually rendered.
-    if ($("#recent-view-content-tbody tr").length) {
+    if ($("#recent-view-content-tbody tr").length > 0) {
         update_load_more_banner();
     }
 }
@@ -496,11 +496,7 @@ function message_to_conversation_unread_count(msg: Message): number {
     return unread.num_unread_for_topic(msg.stream_id, msg.topic);
 }
 
-export function get_pm_tooltip_data(user_ids_string: string): {
-    first_line: string;
-    second_line: string;
-    third_line?: string;
-} {
+export function get_pm_tooltip_data(user_ids_string: string): buddy_data.TitleData {
     const user_id = Number.parseInt(user_ids_string, 10);
     const person = people.get_by_user_id(user_id);
 
@@ -516,6 +512,7 @@ export function get_pm_tooltip_data(user_ids_string: string): {
             return {
                 first_line: person.full_name,
                 second_line: bot_owner_name,
+                third_line: "",
             };
         }
 
@@ -659,8 +656,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
                     status_emoji_info: user_status.get_status_emoji(user.id),
                 }),
             )
-            .sort()
-            .join(", ");
+            .sort();
         const recipient_id = last_msg.recipient_id;
         const pm_url = last_msg.pm_with_url;
         const is_group = last_msg.display_recipient.length > 2;
@@ -694,7 +690,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
 
         dm_context = {
             user_ids_string,
-            rendered_pm_with,
+            rendered_pm_with: util.format_array_as_list(rendered_pm_with, "long", "conjunction"),
             recipient_id,
             pm_url,
             is_group,
@@ -1579,7 +1575,7 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
                 $current_focus_elem = $(post_tab_focus_elem);
             }
 
-            if ($(post_tab_focus_elem).parents("#recent-view-content-table").length) {
+            if ($(post_tab_focus_elem).parents("#recent-view-content-table").length > 0) {
                 $current_focus_elem = "table";
                 const topic_row_index = $(post_tab_focus_elem).closest("tr").index();
                 const col_index = $(post_tab_focus_elem)

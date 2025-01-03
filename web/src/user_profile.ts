@@ -137,9 +137,9 @@ export function update_profile_modal_ui(
     user: User,
     new_data: {
         user_id?: number;
-        bot_owner_id?: string;
-        avatar_url?: string;
-        delivery_email?: string;
+        bot_owner_id?: number;
+        avatar_url?: string | null;
+        delivery_email?: string | null;
         role?: number;
         full_name?: string;
     },
@@ -166,7 +166,7 @@ export function update_profile_modal_ui(
         );
     }
     if (new_data.delivery_email !== undefined) {
-        $("#email").find(".value").text(new_data.delivery_email);
+        $("#email .value").text(new_data.delivery_email ?? "");
     }
     if (new_data.role !== undefined && !user.is_bot) {
         const user_type = settings_config.user_role_map.get(new_data.role);
@@ -348,7 +348,7 @@ function render_user_stream_list(streams: StreamSubscription[], user: User): voi
                 return item?.name.toLocaleLowerCase().includes(value);
             },
             onupdate() {
-                if ($container.find(".empty-table-message").length) {
+                if ($container.find(".empty-table-message").length > 0) {
                     $container.parent().addClass("empty-list");
                 }
             },
@@ -397,7 +397,7 @@ export function get_custom_profile_field_data(
     const field_value = people.get_custom_profile_data(user.user_id, field.id);
     const field_type = field.type;
 
-    if (!field_value) {
+    if (field_value === undefined) {
         return undefined;
     }
     if (!field_value.value) {
@@ -1312,10 +1312,8 @@ export function initialize(): void {
         const $input = $<HTMLInputElement>("#user-profile-streams-tab input.stream-search");
         if ($input.val()!.trim().length > 0) {
             $("#user-profile-streams-tab #clear_stream_search").show();
-            $input.css("margin-right", "-20px");
         } else {
             $("#user-profile-streams-tab #clear_stream_search").hide();
-            $input.css("margin-right", "0");
         }
     });
 

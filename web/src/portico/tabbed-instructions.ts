@@ -57,7 +57,7 @@ export function activate_correct_tab($tabbed_section: JQuery): void {
 
     // if no tab was activated, just activate the first one
     const $active_list_items = $li.filter(".active");
-    if (!$active_list_items.length) {
+    if ($active_list_items.length === 0) {
         $li.first().addClass("active");
         const tab_key = util.the($li.first()).dataset.tabKey;
         if (tab_key) {

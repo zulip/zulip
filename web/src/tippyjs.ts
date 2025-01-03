@@ -230,7 +230,7 @@ export function initialize(): void {
         appendTo: () => document.body,
         onShow(instance) {
             const $container = $(instance.popper).find(".views-tooltip-container");
-            if ($container.data("view-code") === user_settings.web_home_view) {
+            if ($container.attr("data-view-code") === user_settings.web_home_view) {
                 $container.find(".views-tooltip-home-view-note").removeClass("hide");
             }
 
@@ -328,7 +328,7 @@ export function initialize(): void {
             "#filter_streams_tooltip",
             ".error-icon-message-recipient .zulip-icon",
             "#personal-menu-dropdown .status-circle",
-            ".popover-group-menu-member-list .popover_user_presence",
+            ".popover-group-menu-member-list .popover-group-menu-user-presence",
             "#copy_generated_invite_link",
         ].join(","),
         appendTo: () => document.body,
@@ -633,7 +633,7 @@ export function initialize(): void {
         /*
             Status emoji tooltips for most locations in the app. This
             basic tooltip logic is overridden by separate logic in
-            click_handlers.js for the left and right sidebars, to
+            click_handlers.ts for the left and right sidebars, to
             avoid problematic interactions with the main tooltips for
             those regions.
         */

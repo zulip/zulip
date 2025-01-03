@@ -1806,7 +1806,7 @@ export class MessageListView {
             this._rerender_message(message_container, {message_content_edited, is_revealed: false});
         }
 
-        if (current_group.length !== 0) {
+        if (current_group.length > 0) {
             message_groups.push(current_group);
         }
 
@@ -2143,7 +2143,7 @@ export class MessageListView {
             const message_rows = elements_below_sticky_header
                 .filter((element) => element instanceof HTMLElement)
                 .filter((element) => element.classList.contains("message_row"));
-            if (!message_rows.length) {
+            if (message_rows.length === 0) {
                 /* If there is no message row under the header, it means it is not sticky yet,
                    so we just get the message next to the header. */
                 $message_row = $sticky_header.nextAll(".message_row").first();
@@ -2188,11 +2188,11 @@ export class MessageListView {
         });
         // This corner case only occurs when the date is unchanged
         // from the previous recipient row.
-        if ($sticky_header.find(".recipient_row_date.recipient_row_date_unchanged").length) {
+        if ($sticky_header.find(".recipient_row_date.recipient_row_date_unchanged").length > 0) {
             const $prev_recipient_row = $sticky_header
                 .closest(".recipient_row")
                 .prev(".recipient_row");
-            if (!$prev_recipient_row.length) {
+            if ($prev_recipient_row.length === 0) {
                 return;
             }
             const $prev_header_date_row = $prev_recipient_row.find(".recipient_row_date");

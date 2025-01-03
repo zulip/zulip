@@ -20,7 +20,7 @@ from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
 from zerver.lib.compatibility import is_outdated_server
-from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
+from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import get_default_external_accounts
 from zerver.lib.integrations import (
@@ -420,6 +420,12 @@ def fetch_initial_state_data(
             else server_default_jitsi_server_url
         )
 
+        moderation_request_channel = realm.get_moderation_request_channel()
+        if moderation_request_channel:
+            state["realm_moderation_request_channel_id"] = moderation_request_channel.id
+        else:
+            state["realm_moderation_request_channel_id"] = -1
+
         new_stream_announcements_stream = realm.get_new_stream_announcements_stream()
         if new_stream_announcements_stream:
             state["realm_new_stream_announcements_stream_id"] = new_stream_announcements_stream.id
@@ -465,6 +471,14 @@ def fetch_initial_state_data(
         )
 
         state["server_supported_permission_settings"] = get_server_supported_permission_settings()
+
+        state["server_min_deactivated_realm_deletion_days"] = (
+            settings.MIN_DEACTIVATED_REALM_DELETION_DAYS
+        )
+        state["server_max_deactivated_realm_deletion_days"] = (
+            settings.MAX_DEACTIVATED_REALM_DELETION_DAYS
+        )
+
     if want("realm_user_settings_defaults"):
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         state["realm_user_settings_defaults"] = {}
@@ -713,7 +727,7 @@ def fetch_initial_state_data(
             # doesn't have any.
             state["realm_default_streams"] = []
         else:
-            state["realm_default_streams"] = get_default_streams_for_realm_as_dicts(realm.id)
+            state["realm_default_streams"] = list(get_default_stream_ids_for_realm(realm.id))
 
     if want("default_stream_groups"):
         if settings_user.is_guest:
@@ -1020,8 +1034,8 @@ def apply_event(
                     if state["is_guest"]:
                         state["realm_default_streams"] = []
                     else:
-                        state["realm_default_streams"] = get_default_streams_for_realm_as_dicts(
-                            user_profile.realm_id
+                        state["realm_default_streams"] = list(
+                            get_default_stream_ids_for_realm(user_profile.realm_id)
                         )
 
                 for field in ["delivery_email", "email", "full_name", "is_billing_admin"]:

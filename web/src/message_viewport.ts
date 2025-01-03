@@ -23,13 +23,6 @@ const cached_height = new util.CachedValue({compute_value: () => $scroll_contain
 export const width = cached_width.get.bind(cached_width);
 export const height = cached_height.get.bind(cached_height);
 
-// TODO: This function lets us use the DOM API instead of jquery
-// (<10x faster) for condense.js, but we want to eventually do a
-// bigger of refactor `height` and `width` above to do the same.
-export function max_message_height(): number {
-    return document.querySelector("html")!.offsetHeight * 0.65;
-}
-
 // Includes both scroll and arrow events. Negative means scroll up,
 // positive means scroll down.
 export let last_movement_direction = 1;
@@ -56,7 +49,7 @@ export function message_viewport_info(): MessageViewportInfo {
     let visible_top = $element_just_above_us.outerHeight() ?? 0;
 
     const $sticky_header = $(".sticky_header");
-    if ($sticky_header.length) {
+    if ($sticky_header.length > 0) {
         visible_top += $sticky_header.outerHeight() ?? 0;
     }
 
@@ -205,7 +198,7 @@ const top_of_feed = new util.CachedValue({
         let visible_top = $header.outerHeight() ?? 0;
 
         const $sticky_header = $(".sticky_header");
-        if ($sticky_header.length) {
+        if ($sticky_header.length > 0) {
             visible_top += $sticky_header.outerHeight() ?? 0;
         }
         return visible_top;
@@ -522,7 +515,7 @@ export function keep_pointer_in_view(): void {
 export function scroll_to_selected(): void {
     assert(message_lists.current !== undefined);
     const $selected_row = message_lists.current.selected_row();
-    if ($selected_row && $selected_row.length !== 0) {
+    if ($selected_row && $selected_row.length > 0) {
         recenter_view($selected_row);
     }
 }

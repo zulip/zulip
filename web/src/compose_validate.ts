@@ -359,8 +359,13 @@ export function warn_if_topic_resolved(topic_changed: boolean): void {
         };
 
         const new_row_html = render_compose_banner(context);
-        compose_banner.append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
-        compose_state.set_recipient_viewed_topic_resolved_banner(true);
+        const appended = compose_banner.append_compose_banner_to_banner_list(
+            $(new_row_html),
+            $("#compose_banners"),
+        );
+        if (appended) {
+            compose_state.set_recipient_viewed_topic_resolved_banner(true);
+        }
     } else {
         clear_topic_resolved_warning();
     }

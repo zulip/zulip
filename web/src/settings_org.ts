@@ -1,3 +1,4 @@
+import {add} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
@@ -39,6 +40,7 @@ import {current_user, realm, realm_schema} from "./state_data.ts";
 import type {Realm} from "./state_data.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import * as timerender from "./timerender.ts";
 import {group_setting_value_schema} from "./types.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
@@ -435,7 +437,7 @@ export function populate_auth_methods(auth_method_to_bool_map: Record<string, bo
             enabled: value,
             disable_configure_auth_method: !can_configure_auth_methods() || cant_be_enabled,
             // The negated character class regexp serves as an allowlist - the replace() will
-            // remove *all* symbols *but* digits (\d) and lowecase letters (a-z),
+            // remove *all* symbols *but* digits (\d) and lowercase letters (a-z),
             // so that we can make assumptions on this string elsewhere in the code.
             // As a result, the only two "incoming" assumptions on the auth method name are:
             // 1) It contains at least one allowed symbol
@@ -644,8 +646,7 @@ export function discard_stream_property_element_changes(
     update_dependent_subsettings(property_name);
 }
 
-export function discard_group_property_element_changes(elem: HTMLElement, group: UserGroup): void {
-    const $elem = $(elem);
+export function discard_group_property_element_changes($elem: JQuery, group: UserGroup): void {
     const property_name = settings_components.extract_property_name($elem);
     const property_value = settings_components.get_group_property_value(
         user_groups.user_group_schema.keyof().parse(property_name),
@@ -736,7 +737,7 @@ export function discard_group_settings_subsection_changes(
     group: UserGroup,
 ): void {
     for (const elem of settings_components.get_subsection_property_elements($subsection)) {
-        discard_group_property_element_changes(elem, group);
+        discard_group_property_element_changes($(elem), group);
     }
     const $save_button_controls = $subsection.find(".save-button-controls");
     settings_components.change_save_button_state($save_button_controls, "discarded");
@@ -755,24 +756,219 @@ export function deactivate_organization(e: JQuery.Event): void {
     e.stopPropagation();
 
     function do_deactivate_realm(): void {
+        const raw_delete_in = $<HTMLSelectOneElement>(
+            "select:not([multiple])#delete-realm-data-in",
+        ).val()!;
+        let delete_in_days: number | null;
+
+        // See settings_config.realm_deletion_in_values for why we do this conversion.
+        if (raw_delete_in === "null") {
+            delete_in_days = null;
+        } else if (raw_delete_in === "custom") {
+            const deletes_in_minutes = util.get_custom_time_in_minutes(
+                custom_deletion_time_unit,
+                custom_deletion_time_input,
+            );
+            delete_in_days = deletes_in_minutes / (60 * 24);
+        } else {
+            const deletes_in_minutes = Number.parseFloat(raw_delete_in);
+            delete_in_days = deletes_in_minutes / (60 * 24);
+        }
+        const data = {
+            deletion_delay_days: JSON.stringify(delete_in_days),
+        };
+
         channel.post({
             url: "/json/realm/deactivate",
+            data,
             error(xhr) {
                 ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
             },
         });
     }
 
-    const html_body = render_settings_deactivate_realm_modal();
+    let custom_deletion_time_input = realm.server_min_deactivated_realm_deletion_days ?? 0;
+    let custom_deletion_time_unit = settings_config.custom_time_unit_values.days.name;
+
+    function delete_data_in_text(): string {
+        const $delete_in = $<HTMLSelectOneElement>("select:not([multiple])#delete-realm-data-in");
+        const delete_data_value = $delete_in.val()!;
+
+        if (delete_data_value === "null") {
+            return $t({defaultMessage: "Data will not be automatically deleted"});
+        }
+
+        let time_in_minutes: number;
+        if (delete_data_value === "custom") {
+            if (!util.validate_custom_time_input(custom_deletion_time_input)) {
+                return $t({defaultMessage: "Invalid custom time"});
+            }
+            time_in_minutes = util.get_custom_time_in_minutes(
+                custom_deletion_time_unit,
+                custom_deletion_time_input,
+            );
+            if (!is_valid_time_period(time_in_minutes)) {
+                return $t({defaultMessage: "Invalid custom time"});
+            }
+        } else {
+            // These options were already filtered for is_valid_time_period.
+            time_in_minutes = Number.parseFloat(delete_data_value);
+        }
+
+        if (time_in_minutes === 0) {
+            return $t({defaultMessage: "Data will be deleted immediately"});
+        }
+
+        // The below is a duplicate of timerender.get_full_datetime, with a different base string.
+        const valid_to = add(new Date(), {minutes: time_in_minutes});
+        const date = timerender.get_localized_date_or_time_for_format(valid_to, "dayofyear_year");
+        return $t({defaultMessage: "Data will be deleted after {date}"}, {date});
+    }
+
+    const minimum_allowed_days = realm.server_min_deactivated_realm_deletion_days ?? 0;
+    const maximum_allowed_days = realm.server_max_deactivated_realm_deletion_days;
+
+    function is_valid_time_period(time_period: string | number): boolean {
+        if (time_period === "custom") {
+            return true;
+        }
+        if (time_period === "null") {
+            if (maximum_allowed_days === null) {
+                return true;
+            }
+            return false;
+        }
+        if (typeof time_period === "number") {
+            if (maximum_allowed_days === null) {
+                if (time_period >= minimum_allowed_days * 24 * 60) {
+                    return true;
+                }
+            } else {
+                if (
+                    time_period >= minimum_allowed_days * 24 * 60 &&
+                    time_period <= maximum_allowed_days * 24 * 60
+                ) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function get_custom_deletion_input_text(): string {
+        if (maximum_allowed_days === null) {
+            if (minimum_allowed_days === 0) {
+                // If there's no limit at all, avoid showing 0+. It's
+                // not a marginal string for translators, since we use
+                // that string elsewhere.
+                return $t({defaultMessage: "Custom time"});
+            }
+            return $t({defaultMessage: `Custom time ({min}+ days)`}, {min: minimum_allowed_days});
+        }
+        return $t(
+            {defaultMessage: `Custom time ({min}-{max} days)`},
+            {min: minimum_allowed_days, max: maximum_allowed_days},
+        );
+    }
+
+    function toggle_deactivate_submit_button(): void {
+        const $delete_in = $<HTMLSelectOneElement>("select:not([multiple])#delete-realm-data-in");
+        const valid_custom_time =
+            util.validate_custom_time_input(custom_deletion_time_input) &&
+            is_valid_time_period(
+                util.get_custom_time_in_minutes(
+                    custom_deletion_time_unit,
+                    custom_deletion_time_input,
+                ),
+            );
+        $("#deactivate-realm-user-modal .dialog_submit_button").prop(
+            "disabled",
+            $delete_in.val() === "custom" && !valid_custom_time,
+        );
+    }
+
+    function deactivate_realm_modal_post_render(): void {
+        settings_components.set_custom_time_inputs_visibility(
+            $("#delete-realm-data-in"),
+            custom_deletion_time_unit,
+            custom_deletion_time_input,
+        );
+        settings_components.set_time_input_formatted_text(
+            $("#delete-realm-data-in"),
+            delete_data_in_text(),
+        );
+
+        $("#delete-realm-data-in").on("change", () => {
+            // If the user navigates away and back to the custom
+            // time input, we show a better value than "NaN" if
+            // the previous value was invalid.
+            if (!util.validate_custom_time_input(custom_deletion_time_input)) {
+                custom_deletion_time_input = 0;
+            }
+            settings_components.set_custom_time_inputs_visibility(
+                $("#delete-realm-data-in"),
+                custom_deletion_time_unit,
+                custom_deletion_time_input,
+            );
+            settings_components.set_time_input_formatted_text(
+                $("#delete-realm-data-in"),
+                delete_data_in_text(),
+            );
+            toggle_deactivate_submit_button();
+        });
+
+        $("#custom-deletion-time-input").on("keydown", (e) => {
+            if (e.key === "Enter") {
+                // Prevent submitting the realm deactivation form via Enter.
+                e.preventDefault();
+                return;
+            }
+        });
+
+        $("#custom-realm-deletion-time").on(
+            "input propertychange",
+            ".custom-time-input-value, .custom-time-input-unit",
+            () => {
+                custom_deletion_time_input = util.check_time_input(
+                    $<HTMLInputElement>("input#custom-deletion-time-input").val()!,
+                );
+                custom_deletion_time_unit = $<HTMLSelectOneElement>(
+                    "select:not([multiple])#custom-deletion-time-unit",
+                ).val()!;
+                settings_components.set_time_input_formatted_text(
+                    $("#delete-realm-data-in"),
+                    delete_data_in_text(),
+                );
+                toggle_deactivate_submit_button();
+            },
+        );
+    }
+
+    const all_delete_options = Object.values(settings_config.realm_deletion_in_values);
+    const valid_delete_options = all_delete_options.filter((option) =>
+        is_valid_time_period(option.value),
+    );
+    const time_unit_choices = [
+        settings_config.custom_time_unit_values.days,
+        settings_config.custom_time_unit_values.weeks,
+    ];
+
+    const html_body = render_settings_deactivate_realm_modal({
+        delete_in_options: valid_delete_options,
+        custom_deletion_input_label: get_custom_deletion_input_text(),
+        time_choices: time_unit_choices,
+    });
 
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Deactivate organization"}),
         help_link: "/help/deactivate-your-organization",
         html_body,
+        id: "deactivate-realm-user-modal",
         on_click: do_deactivate_realm,
         close_on_submit: false,
         focus_submit_on_open: true,
         html_submit_button: $t_html({defaultMessage: "Confirm"}),
+        post_render: deactivate_realm_modal_post_render,
     });
 }
 
@@ -788,7 +984,7 @@ export function sync_realm_settings(property: string): void {
             break;
     }
     const $element = $(`#id_realm_${CSS.escape(property)}`);
-    if ($element.length) {
+    if ($element.length > 0) {
         const $subsection = $element.closest(".settings-subsection-parent");
         if ($subsection.find(".save-button-controls").hasClass("hide")) {
             discard_realm_property_element_changes(util.the($element));

@@ -56,4 +56,4 @@ organization's structure in Zulip's permissions system.
 * [Create user groups](/help/create-user-groups)
 * [Manage user groups](/help/manage-user-groups)
 * [Moving to Zulip](/help/moving-to-zulip)
-* [Roles and permissions](/help/roles-and-permissions)
+* [User roles](/help/user-roles)

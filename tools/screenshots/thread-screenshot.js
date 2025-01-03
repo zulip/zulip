@@ -91,12 +91,9 @@ async function run() {
         const imageDir = path.dirname(imagePath);
         await fs.promises.mkdir(imageDir, {recursive: true});
         await page.screenshot({path: imagePath, clip});
-    } catch (error) {
-        console.log(error);
-        process.exit(1);
     } finally {
         await browser.close();
     }
 }
 
-run();
+await run();

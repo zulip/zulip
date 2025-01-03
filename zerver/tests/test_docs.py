@@ -282,6 +282,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/case-studies/end-point/", ["Case study: End Point"])
         self._test("/case-studies/atolio/", ["Case study: Atolio"])
         self._test("/case-studies/asciidoctor/", ["Case study: Asciidoctor"])
+        self._test("/case-studies/rush-stack/", ["Case study: Rush Stack"])
 
     def test_oddball_attributions_page(self) -> None:
         # Look elsewhere in the code--this page never allows robots nor does

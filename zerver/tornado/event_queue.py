@@ -61,25 +61,27 @@ def create_heartbeat_event() -> dict[str, str]:
 class ClientDescriptor:
     def __init__(
         self,
+        *,
         user_profile_id: int,
+        user_recipient_id: int | None,
         realm_id: int,
         event_queue: "EventQueue",
         event_types: Sequence[str] | None,
         client_type_name: str,
-        apply_markdown: bool = True,
-        client_gravatar: bool = True,
-        slim_presence: bool = False,
-        all_public_streams: bool = False,
-        lifespan_secs: int = 0,
-        narrow: Collection[Sequence[str]] = [],
-        bulk_message_deletion: bool = False,
-        stream_typing_notifications: bool = False,
-        user_settings_object: bool = False,
-        pronouns_field_type_supported: bool = True,
-        linkifier_url_template: bool = False,
-        user_list_incomplete: bool = False,
-        include_deactivated_groups: bool = False,
-        archived_channels: bool = False,
+        apply_markdown: bool,
+        client_gravatar: bool,
+        slim_presence: bool,
+        all_public_streams: bool,
+        lifespan_secs: int,
+        narrow: Collection[Sequence[str]],
+        bulk_message_deletion: bool,
+        stream_typing_notifications: bool,
+        user_settings_object: bool,
+        pronouns_field_type_supported: bool,
+        linkifier_url_template: bool,
+        user_list_incomplete: bool,
+        include_deactivated_groups: bool,
+        archived_channels: bool,
     ) -> None:
         # TODO: We eventually want to upstream this code to the caller, but
         # serialization concerns make it a bit difficult.
@@ -90,6 +92,7 @@ class ClientDescriptor:
         # added to load_event_queues() to update the restored objects.
         # Additionally, the to_dict and from_dict methods must be updated
         self.user_profile_id = user_profile_id
+        self.user_recipient_id = user_recipient_id
         self.realm_id = realm_id
         self.current_handler_id: int | None = None
         self.current_client_name: str | None = None
@@ -163,25 +166,26 @@ class ClientDescriptor:
             d["slim_presence"] = False
 
         ret = cls(
-            d["user_profile_id"],
-            d["realm_id"],
-            EventQueue.from_dict(d["event_queue"]),
-            d["event_types"],
-            d["client_type_name"],
-            d["apply_markdown"],
-            d["client_gravatar"],
-            d["slim_presence"],
-            d["all_public_streams"],
-            d["queue_timeout"],
-            d.get("narrow", []),
-            d.get("bulk_message_deletion", False),
-            d.get("stream_typing_notifications", False),
-            d.get("user_settings_object", False),
-            d.get("pronouns_field_type_supported", True),
-            d.get("linkifier_url_template", False),
-            d.get("user_list_incomplete", False),
-            d.get("include_deactivated_groups", False),
-            d.get("archived_channels", False),
+            user_profile_id=d["user_profile_id"],
+            user_recipient_id=d.get("user_recipient_id"),
+            realm_id=d["realm_id"],
+            event_queue=EventQueue.from_dict(d["event_queue"]),
+            event_types=d["event_types"],
+            client_type_name=d["client_type_name"],
+            apply_markdown=d["apply_markdown"],
+            client_gravatar=d["client_gravatar"],
+            slim_presence=d["slim_presence"],
+            all_public_streams=d["all_public_streams"],
+            lifespan_secs=d["queue_timeout"],
+            narrow=d.get("narrow", []),
+            bulk_message_deletion=d.get("bulk_message_deletion", False),
+            stream_typing_notifications=d.get("stream_typing_notifications", False),
+            user_settings_object=d.get("user_settings_object", False),
+            pronouns_field_type_supported=d.get("pronouns_field_type_supported", True),
+            linkifier_url_template=d.get("linkifier_url_template", False),
+            user_list_incomplete=d.get("user_list_incomplete", False),
+            include_deactivated_groups=d.get("include_deactivated_groups", False),
+            archived_channels=d.get("archived_channels", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
@@ -705,6 +709,7 @@ async def setup_event_queue(
 
 
 def fetch_events(
+    *,
     queue_id: str | None,
     dont_block: bool,
     last_event_id: int | None,
@@ -1121,7 +1126,11 @@ def process_message_event(
 
     @cache
     def get_client_payload(
-        apply_markdown: bool, client_gravatar: bool, can_access_sender: bool
+        *,
+        apply_markdown: bool,
+        client_gravatar: bool,
+        can_access_sender: bool,
+        is_incoming_1_to_1: bool,
     ) -> dict[str, Any]:
         return MessageDict.finalize_payload(
             wide_dict,
@@ -1129,6 +1138,7 @@ def process_message_event(
             client_gravatar=client_gravatar,
             can_access_sender=can_access_sender,
             realm_host=realm_host,
+            is_incoming_1_to_1=is_incoming_1_to_1,
         )
 
     # Extra user-specific data to include
@@ -1206,7 +1216,10 @@ def process_message_event(
 
         can_access_sender = client.user_profile_id not in user_ids_without_access_to_sender
         message_dict = get_client_payload(
-            client.apply_markdown, client.client_gravatar, can_access_sender
+            apply_markdown=client.apply_markdown,
+            client_gravatar=client.client_gravatar,
+            can_access_sender=can_access_sender,
+            is_incoming_1_to_1=wide_dict["recipient_id"] == client.user_recipient_id,
         )
 
         # Make sure Zephyr mirroring bots know whether stream is invite-only

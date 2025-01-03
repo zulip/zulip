@@ -68,7 +68,7 @@ links:
     #invite
 
 When you click on the links there is a function
-called hashchanged() in web/src/hashchange.js
+called hashchanged() in web/src/hashchange.ts
 that gets invoked.  (We register this as a listener
 for the hashchange event.)  This function then
 launches the appropriate modal for each menu item.
@@ -82,7 +82,7 @@ have a target of "_blank".
 
 The "info:" items use our info overlay system
 in web/src/info_overlay.ts.  They are dispatched
-using a click handler in web/src/click_handlers.js.
+using a click handler in web/src/click_handlers.ts.
 The click handler uses "[data-overlay-trigger]" as
 the selector and then calls browser_history.go_to_location.
 */

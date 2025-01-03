@@ -14,7 +14,7 @@ import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as drafts from "./drafts.ts";
 import * as echo from "./echo.ts";
-import * as message_events from "./message_events.js";
+import * as message_events from "./message_events.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as people from "./people.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";

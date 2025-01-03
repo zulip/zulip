@@ -677,7 +677,7 @@ class UpgradePageContext(TypedDict):
     plan: str
     fixed_price_plan: bool
     pay_by_invoice_payments_page: str | None
-    remote_server_legacy_plan_end_date: str | None
+    complimentary_access_plan_end_date: str | None
     salt: str
     seat_count: int
     signed_seat_count: str
@@ -818,17 +818,14 @@ class BillingSession(ABC):
         setup_payment_by_invoice: bool = False,
     ) -> str:
         customer = self.get_customer()
-        if setup_payment_by_invoice and (
-            customer is None or customer.stripe_customer_id is None
-        ):  # nocoverage
+        if customer is None or customer.stripe_customer_id is None:  # nocoverage
             customer = self.create_stripe_customer()
 
-        assert customer is not None and customer.stripe_customer_id is not None
+        assert customer.stripe_customer_id is not None
 
-        if return_to_billing_page:
+        if return_to_billing_page or tier is None:
             return_url = f"{self.billing_session_url}/billing/"
         else:
-            assert tier is not None
             base_return_url = f"{self.billing_session_url}/upgrade/"
             params = {
                 "manual_license_management": str(manual_license_management).lower(),
@@ -1010,7 +1007,7 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def add_sponsorship_info_to_context(self, context: dict[str, Any]) -> None:
+    def add_org_type_data_to_sponsorship_context(self, context: dict[str, Any]) -> None:
         pass
 
     @abstractmethod
@@ -1039,47 +1036,52 @@ class BillingSession(ABC):
             return True
         return False
 
-    def get_remote_server_legacy_plan(
+    def get_complimentary_access_plan(
         self, customer: Customer | None, status: int = CustomerPlan.ACTIVE
     ) -> CustomerPlan | None:
-        # status = CustomerPlan.ACTIVE means that the legacy plan is not scheduled for an upgrade.
-        # status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END means that the legacy plan is scheduled for an upgrade.
         if customer is None:
             return None
 
+        plan_tier = CustomerPlan.TIER_SELF_HOSTED_LEGACY
+        if isinstance(self, RealmBillingSession):
+            # TODO implement a complimentary access plan/tier for Zulip Cloud.
+            return None
+
+        # status = CustomerPlan.ACTIVE means the plan is not scheduled for an upgrade.
+        # status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END means the plan is scheduled for an upgrade.
         return CustomerPlan.objects.filter(
             customer=customer,
-            tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+            tier=plan_tier,
             status=status,
         ).first()
 
-    def get_formatted_remote_server_legacy_plan_end_date(
+    def get_formatted_complimentary_access_plan_end_date(
         self, customer: Customer | None, status: int = CustomerPlan.ACTIVE
     ) -> str | None:  # nocoverage
-        plan = self.get_remote_server_legacy_plan(customer, status)
-        if plan is None:
+        complimentary_access_plan = self.get_complimentary_access_plan(customer, status)
+        if complimentary_access_plan is None:
             return None
 
-        assert plan.end_date is not None
-        return plan.end_date.strftime("%B %d, %Y")
+        assert complimentary_access_plan.end_date is not None
+        return complimentary_access_plan.end_date.strftime("%B %d, %Y")
 
-    def get_legacy_remote_server_next_plan(self, customer: Customer) -> CustomerPlan | None:
-        legacy_plan = self.get_remote_server_legacy_plan(
+    def get_complimentary_access_next_plan(self, customer: Customer) -> CustomerPlan | None:
+        complimentary_access_plan = self.get_complimentary_access_plan(
             customer, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
         )
-        if legacy_plan is None:
+        if complimentary_access_plan is None:
             return None
 
         # This also asserts that such a plan should exist.
-        assert legacy_plan.end_date is not None
+        assert complimentary_access_plan.end_date is not None
         return CustomerPlan.objects.get(
             customer=customer,
-            billing_cycle_anchor=legacy_plan.end_date,
+            billing_cycle_anchor=complimentary_access_plan.end_date,
             status=CustomerPlan.NEVER_STARTED,
         )
 
-    def get_legacy_remote_server_next_plan_name(self, customer: Customer) -> str | None:
-        next_plan = self.get_legacy_remote_server_next_plan(customer)
+    def get_complimentary_access_next_plan_name(self, customer: Customer) -> str | None:
+        next_plan = self.get_complimentary_access_next_plan(customer)
         if next_plan is None:
             return None
         return next_plan.name
@@ -1315,12 +1317,12 @@ class BillingSession(ABC):
         if plan is not None and plan.tier == customer.required_plan_tier:
             self.apply_discount_to_plan(plan, customer)
 
-        # If the customer has a next plan, apply discount to that plan as well.
-        # Make this a check on CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END status
-        # if we support this for other plans.
-        next_plan = self.get_legacy_remote_server_next_plan(customer)
-        if next_plan is not None and next_plan.tier == customer.required_plan_tier:
-            self.apply_discount_to_plan(next_plan, customer)
+        # If the customer is on a complimentary access plan and has scheduled
+        # an upgrade, apply discount to that plan if set to required_plan_tier.
+        if plan is not None and plan.is_complimentary_access_plan():
+            next_plan = self.get_complimentary_access_next_plan(customer)
+            if next_plan is not None and next_plan.tier == customer.required_plan_tier:
+                self.apply_discount_to_plan(next_plan, customer)
 
         self.write_to_audit_log(
             event_type=BillingSessionEventType.DISCOUNT_CHANGED,
@@ -1348,16 +1350,17 @@ class BillingSession(ABC):
             )
 
         plan = get_current_plan_by_customer(customer)
-        if plan is not None and plan.tier != CustomerPlan.TIER_SELF_HOSTED_LEGACY:
-            raise SupportRequestError(
-                f"Cannot set minimum licenses; active plan already exists for {self.billing_entity_display_name}."
-            )
-
-        next_plan = self.get_legacy_remote_server_next_plan(customer)
-        if next_plan is not None:
-            raise SupportRequestError(
-                f"Cannot set minimum licenses; upgrade to new plan already scheduled for {self.billing_entity_display_name}."
-            )
+        if plan is not None:
+            if plan.is_complimentary_access_plan():
+                next_plan = self.get_complimentary_access_next_plan(customer)
+                if next_plan is not None:
+                    raise SupportRequestError(
+                        f"Cannot set minimum licenses; upgrade to new plan already scheduled for {self.billing_entity_display_name}."
+                    )
+            else:
+                raise SupportRequestError(
+                    f"Cannot set minimum licenses; active plan already exists for {self.billing_entity_display_name}."
+                )
 
         previous_minimum_license_count = customer.minimum_licenses
         customer.minimum_licenses = new_minimum_license_count
@@ -1776,8 +1779,8 @@ class BillingSession(ABC):
         billing_schedule: int,
         charge_automatically: bool,
         free_trial: bool,
-        remote_server_legacy_plan: CustomerPlan | None = None,
-        should_schedule_upgrade_for_legacy_remote_server: bool = False,
+        complimentary_access_plan: CustomerPlan | None = None,
+        upgrade_when_complimentary_access_plan_ends: bool = False,
         stripe_invoice_paid: bool = False,
     ) -> None:
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
@@ -1788,12 +1791,14 @@ class BillingSession(ABC):
         self.ensure_current_plan_is_upgradable(customer, plan_tier)
         billing_cycle_anchor = None
 
-        if remote_server_legacy_plan is not None:
-            # Legacy servers don't get an additional free trial.
+        if complimentary_access_plan is not None:
+            # Customers on a complimentary access plan don't get
+            # an additional free trial.
             free_trial = False
-        if should_schedule_upgrade_for_legacy_remote_server:
-            assert remote_server_legacy_plan is not None
-            billing_cycle_anchor = remote_server_legacy_plan.end_date
+        if upgrade_when_complimentary_access_plan_ends:
+            assert complimentary_access_plan is not None
+            assert complimentary_access_plan.end_date is not None
+            billing_cycle_anchor = complimentary_access_plan.end_date
 
         fixed_price_plan_offer = get_configured_fixed_price_plan_offer(customer, plan_tier)
         if fixed_price_plan_offer is not None:
@@ -1811,7 +1816,7 @@ class BillingSession(ABC):
             free_trial,
             billing_cycle_anchor,
             is_self_hosted_billing,
-            should_schedule_upgrade_for_legacy_remote_server,
+            upgrade_when_complimentary_access_plan_ends,
         )
 
         # TODO: The correctness of this relies on user creation, deactivation, etc being
@@ -1860,17 +1865,18 @@ class BillingSession(ABC):
                         )
 
             event_time = billing_cycle_anchor
-            if should_schedule_upgrade_for_legacy_remote_server:
-                # In this code path, we are currently on a legacy plan
-                # and are scheduling an upgrade to a non-legacy plan
-                # that should occur when the legacy plan expires.
+            if upgrade_when_complimentary_access_plan_ends:
+                # In this code path, the customer is currently on a
+                # complimentary access plan and is scheduling an
+                # upgrade to a paid plan, which should occur when
+                # the complimentary access plan ends.
                 #
-                # We will create a new NEVER_STARTED plan for the
-                # customer, scheduled to start when the current one
-                # expires.
-                assert remote_server_legacy_plan is not None
+                # A new NEVER_STARTED plan for the customer is created,
+                # and scheduled to start when the current one ends.
+                assert complimentary_access_plan is not None
                 if charge_automatically:
-                    # Ensure customers not paying via invoice have a default payment method set.
+                    # Ensure customers not paying via invoice have
+                    # a default payment method set.
                     assert customer.stripe_customer_id is not None  # for mypy
                     stripe_customer = stripe_get_customer(customer.stripe_customer_id)
                     if not stripe_customer_has_credit_card_as_default_payment_method(
@@ -1881,8 +1887,8 @@ class BillingSession(ABC):
                             _("Please add a credit card to schedule upgrade."),
                         )
 
-                # Settings status > CustomerPLan.LIVE_STATUS_THRESHOLD makes sure we don't have
-                # to worry about this plan being used for any other purpose.
+                # Setting status > CustomerPlan.LIVE_STATUS_THRESHOLD makes sure we
+                # don't have to worry about this plan being used for any other purpose.
                 # NOTE: This is the 2nd plan for the customer.
                 plan_params["status"] = CustomerPlan.NEVER_STARTED
                 plan_params["invoicing_status"] = (
@@ -1890,22 +1896,26 @@ class BillingSession(ABC):
                 )
                 event_time = timezone_now().replace(microsecond=0)
 
-                # Schedule switching to the new plan at plan end date.
-                assert remote_server_legacy_plan.end_date == billing_cycle_anchor
+                # Schedule switching to the new paid plan for the complimentary
+                # access plan's end date.
+                assert complimentary_access_plan.end_date == billing_cycle_anchor
                 last_ledger_entry = (
-                    LicenseLedger.objects.filter(plan=remote_server_legacy_plan)
+                    LicenseLedger.objects.filter(plan=complimentary_access_plan)
                     .order_by("-id")
                     .first()
                 )
-                # Update license_at_next_renewal as per new plan.
+                # Update license_at_next_renewal as per new paid plan.
                 assert last_ledger_entry is not None
                 last_ledger_entry.licenses_at_next_renewal = billable_licenses
                 last_ledger_entry.save(update_fields=["licenses_at_next_renewal"])
-                remote_server_legacy_plan.status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
-                remote_server_legacy_plan.save(update_fields=["status"])
-            elif remote_server_legacy_plan is not None:  # nocoverage
-                remote_server_legacy_plan.status = CustomerPlan.ENDED
-                remote_server_legacy_plan.save(update_fields=["status"])
+                complimentary_access_plan.status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+                complimentary_access_plan.save(update_fields=["status"])
+            elif complimentary_access_plan is not None:  # nocoverage
+                # In this code path, the customer is currently on a
+                # complimentary access plan, and has chosen to upgrade
+                # to a paid plan immediately, so we end the current plan.
+                complimentary_access_plan.status = CustomerPlan.ENDED
+                complimentary_access_plan.save(update_fields=["status"])
 
             if fixed_price_plan_offer is not None:
                 # Manual license management is not available for fixed price plan.
@@ -1990,7 +2000,7 @@ class BillingSession(ABC):
                         )
 
         if not stripe_invoice_paid and not (
-            free_trial or should_schedule_upgrade_for_legacy_remote_server
+            free_trial or upgrade_when_complimentary_access_plan_ends
         ):
             # We don't actually expect to ever reach here but this is just a safety net
             # in case any future changes make this possible.
@@ -2081,13 +2091,14 @@ class BillingSession(ABC):
             # Free trial is not available for existing customers.
             free_trial = False
 
-        remote_server_legacy_plan = self.get_remote_server_legacy_plan(customer)
-        should_schedule_upgrade_for_legacy_remote_server = (
-            remote_server_legacy_plan is not None
+        complimentary_access_plan = self.get_complimentary_access_plan(customer)
+        upgrade_when_complimentary_access_plan_ends = (
+            complimentary_access_plan is not None
             and upgrade_request.remote_server_plan_start_date == "billing_cycle_end_date"
         )
-        # Directly upgrade free trial orgs or invoice payment orgs to standard plan.
-        if should_schedule_upgrade_for_legacy_remote_server or free_trial:
+        # Directly upgrade free trial orgs.
+        # Create NEVER_STARTED plan for complimentary access plans.
+        if upgrade_when_complimentary_access_plan_ends or free_trial:
             self.process_initial_upgrade(
                 upgrade_request.tier,
                 licenses,
@@ -2095,8 +2106,8 @@ class BillingSession(ABC):
                 billing_schedule,
                 charge_automatically,
                 free_trial,
-                remote_server_legacy_plan,
-                should_schedule_upgrade_for_legacy_remote_server,
+                complimentary_access_plan,
+                upgrade_when_complimentary_access_plan_ends,
             )
             data["organization_upgrade_successful"] = True
         else:
@@ -2547,10 +2558,10 @@ class BillingSession(ABC):
         else:  # nocoverage
             raise BillingError(f"stripe_customer_id is None for {customer}")
 
-        remote_server_legacy_plan_end_date = self.get_formatted_remote_server_legacy_plan_end_date(
+        complimentary_access_plan_end_date = self.get_formatted_complimentary_access_plan_end_date(
             customer, status=CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
         )
-        legacy_remote_server_next_plan_name = self.get_legacy_remote_server_next_plan_name(customer)
+        complimentary_access_next_plan_name = self.get_complimentary_access_next_plan_name(customer)
         context = {
             "plan_name": plan.name,
             "has_active_plan": True,
@@ -2579,9 +2590,9 @@ class BillingSession(ABC):
             ),
             "discount_percent": plan.discount,
             "is_self_hosted_billing": is_self_hosted_billing,
-            "is_server_on_legacy_plan": remote_server_legacy_plan_end_date is not None,
-            "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
-            "legacy_remote_server_next_plan_name": legacy_remote_server_next_plan_name,
+            "complimentary_access_plan": complimentary_access_plan_end_date is not None,
+            "complimentary_access_plan_end_date": complimentary_access_plan_end_date,
+            "complimentary_access_next_plan_name": complimentary_access_next_plan_name,
             "using_min_licenses_for_plan": using_min_licenses_for_plan,
             "min_licenses_for_plan": min_licenses_for_plan,
             "pre_discount_renewal_cents": cents_to_dollar_string(pre_discount_renewal_cents),
@@ -2661,11 +2672,11 @@ class BillingSession(ABC):
         ]:
             return f"{self.billing_session_url}/sponsorship", None
 
-        remote_server_legacy_plan_end_date = self.get_formatted_remote_server_legacy_plan_end_date(
+        complimentary_access_plan_end_date = self.get_formatted_complimentary_access_plan_end_date(
             customer
         )
-        # Show upgrade page for remote servers on legacy plan.
-        if customer is not None and remote_server_legacy_plan_end_date is None:
+        # Show upgrade page for customers on a complimentary access plan.
+        if customer is not None and complimentary_access_plan_end_date is None:
             customer_plan = get_current_plan_by_customer(customer)
             if customer_plan is not None:
                 return f"{self.billing_session_url}/billing", None
@@ -2748,7 +2759,7 @@ class BillingSession(ABC):
         free_trial_end_date = None
         # Don't show free trial for remote servers on legacy plan.
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
-        if fixed_price is None and remote_server_legacy_plan_end_date is None:
+        if fixed_price is None and complimentary_access_plan_end_date is None:
             free_trial_days = get_free_trial_days(is_self_hosted_billing, tier)
             if self.customer_plan_exists():
                 # Free trial is not available for existing customers.
@@ -2780,7 +2791,7 @@ class BillingSession(ABC):
             "exempt_from_license_number_check": exempt_from_license_number_check,
             "free_trial_end_date": free_trial_end_date,
             "is_demo_organization": customer_specific_context["is_demo_organization"],
-            "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
+            "complimentary_access_plan_end_date": complimentary_access_plan_end_date,
             "manual_license_management": initial_upgrade_request.manual_license_management,
             "page_params": {
                 "page_type": "upgrade",
@@ -3388,13 +3399,16 @@ class BillingSession(ABC):
 
     def get_sponsorship_request_context(self) -> dict[str, Any] | None:
         customer = self.get_customer()
+
+        if customer is not None and customer.sponsorship_pending and self.on_paid_plan():
+            # Redirects to billing page for paid plan, which
+            # includes pending sponsorship request information.
+            return None
+
         is_remotely_hosted = isinstance(
             self, RemoteRealmBillingSession | RemoteServerBillingSession
         )
-
-        plan_name = "Zulip Cloud Free"
-        if is_remotely_hosted:
-            plan_name = "Free"
+        plan_name = "Free" if is_remotely_hosted else "Zulip Cloud Free"
 
         context: dict[str, Any] = {
             "billing_base_url": self.billing_base_url,
@@ -3404,25 +3418,17 @@ class BillingSession(ABC):
             "org_name": self.org_name(),
         }
 
-        if customer is not None and customer.sponsorship_pending:
-            if self.on_paid_plan():
-                return None
-
-            context["is_sponsorship_pending"] = True
-
         if self.is_sponsored():
             context["is_sponsored"] = True
 
         if customer is not None:
+            context["is_sponsorship_pending"] = customer.sponsorship_pending
             plan = get_current_plan_by_customer(customer)
             if plan is not None:
                 context["plan_name"] = plan.name
-                context["free_trial"] = plan.is_free_trial()
-                context["is_server_on_legacy_plan"] = (
-                    plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
-                )
+                context["complimentary_access"] = plan.is_complimentary_access_plan()
 
-        self.add_sponsorship_info_to_context(context)
+        self.add_org_type_data_to_sponsorship_context(context)
         return context
 
     def request_sponsorship(self, form: SponsorshipRequestForm) -> None:
@@ -4205,7 +4211,7 @@ class RealmBillingSession(BillingSession):
         return self.realm.name
 
     @override
-    def add_sponsorship_info_to_context(self, context: dict[str, Any]) -> None:
+    def add_org_type_data_to_sponsorship_context(self, context: dict[str, Any]) -> None:
         context.update(
             realm_org_type=self.realm.org_type,
             sorted_org_types=sorted(
@@ -4649,7 +4655,7 @@ class RemoteRealmBillingSession(BillingSession):
         return self.remote_realm.host
 
     @override
-    def add_sponsorship_info_to_context(self, context: dict[str, Any]) -> None:
+    def add_org_type_data_to_sponsorship_context(self, context: dict[str, Any]) -> None:
         context.update(
             realm_org_type=self.remote_realm.org_type,
             sorted_org_types=sorted(
@@ -5098,7 +5104,9 @@ class RemoteServerBillingSession(BillingSession):
         return self.remote_server.hostname
 
     @override
-    def add_sponsorship_info_to_context(self, context: dict[str, Any]) -> None:  # nocoverage
+    def add_org_type_data_to_sponsorship_context(
+        self, context: dict[str, Any]
+    ) -> None:  # nocoverage
         context.update(
             realm_org_type=self.remote_server.org_type,
             sorted_org_types=sorted(
@@ -5231,7 +5239,7 @@ def compute_plan_parameters(
     free_trial: bool = False,
     billing_cycle_anchor: datetime | None = None,
     is_self_hosted_billing: bool = False,
-    should_schedule_upgrade_for_legacy_remote_server: bool = False,
+    upgrade_when_complimentary_access_plan_ends: bool = False,
 ) -> tuple[datetime, datetime, datetime, int]:
     # Everything in Stripe is stored as timestamps with 1 second resolution,
     # so standardize on 1 second resolution.
@@ -5256,7 +5264,7 @@ def compute_plan_parameters(
             days=assert_is_not_none(get_free_trial_days(is_self_hosted_billing, tier))
         )
         next_invoice_date = period_end
-    if should_schedule_upgrade_for_legacy_remote_server:
+    if upgrade_when_complimentary_access_plan_ends:
         next_invoice_date = billing_cycle_anchor
     return billing_cycle_anchor, next_invoice_date, period_end, price_per_license
 

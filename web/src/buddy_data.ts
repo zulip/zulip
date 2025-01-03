@@ -1,5 +1,8 @@
+import _ from "lodash";
 import assert from "minimalistic-assert";
 
+import * as blueslip from "./blueslip.ts";
+import {ConversationParticipants} from "./conversation_participants.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
@@ -56,11 +59,11 @@ export function get_user_circle_class(user_id: number): string {
 
     switch (status) {
         case "active":
-            return "user_circle_green";
+            return "user-circle-active";
         case "idle":
-            return "user_circle_idle";
+            return "user-circle-idle";
         default:
-            return "user_circle_empty";
+            return "user-circle-offline";
     }
 }
 
@@ -232,16 +235,15 @@ export function info_for(user_id: number): BuddyUserInfo {
     };
 }
 
-export function get_title_data(
-    user_ids_string: string,
-    is_group: boolean,
-): {
+export type TitleData = {
     first_line: string;
     second_line: string | undefined;
     third_line: string;
     show_you?: boolean;
     is_deactivated?: boolean;
-} {
+};
+
+export function get_title_data(user_ids_string: string, is_group: boolean): TitleData {
     if (is_group) {
         // For groups, just return a string with recipient names.
         return {
@@ -433,7 +435,7 @@ function get_filtered_user_id_list(
 
         // We want to always show PM recipients even if they're inactive.
         const pm_ids_set = narrow_state.pm_ids_set();
-        if (pm_ids_set.size) {
+        if (pm_ids_set.size > 0) {
             const base_user_id_set = new Set([...base_user_id_list, ...pm_ids_set]);
             base_user_id_list = [...base_user_id_set];
         }
@@ -461,12 +463,19 @@ export function get_conversation_participants(): Set<number> {
         return participant_ids_set;
     }
     for (const message of message_lists.current.all_messages()) {
-        if (
-            !people.is_valid_bot_user(message.sender_id) &&
-            people.is_person_active(message.sender_id)
-        ) {
+        if (people.is_displayable_conversation_participant(message.sender_id)) {
             participant_ids_set.add(message.sender_id);
         }
+    }
+    const conversation_participants = new ConversationParticipants(
+        message_lists.current.all_messages(),
+    ).visible();
+    if (!_.isEqual(participant_ids_set, conversation_participants)) {
+        /* istanbul ignore next */
+        blueslip.error("Participants calculations disagree", {
+            participant_ids_set,
+            conversation_participants,
+        });
     }
     return participant_ids_set;
 }

@@ -184,6 +184,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     push_notifications_enabled_end_timestamp = models.DateTimeField(default=None, null=True)
 
     date_created = models.DateTimeField(default=timezone_now)
+    scheduled_deletion_date = models.DateTimeField(default=None, db_index=True, null=True)
     demo_organization_scheduled_deletion_date = models.DateTimeField(default=None, null=True)
     deactivated = models.BooleanField(default=False)
 
@@ -378,6 +379,13 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     ZULIP_SANDBOX_CHANNEL_NAME = gettext_lazy("sandbox")
     DEFAULT_NOTIFICATION_STREAM_NAME = gettext_lazy("general")
     STREAM_EVENTS_NOTIFICATION_TOPIC_NAME = gettext_lazy("channel events")
+    moderation_request_channel = models.ForeignKey(
+        "Stream",
+        related_name="+",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
     new_stream_announcements_stream = models.ForeignKey(
         "Stream",
         related_name="+",
@@ -911,6 +919,14 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     def get_bot_domain(self) -> str:
         return get_fake_email_domain(self.host)
 
+    def get_moderation_request_channel(self) -> Optional["Stream"]:
+        if (
+            self.moderation_request_channel is not None
+            and not self.moderation_request_channel.deactivated
+        ):
+            return self.moderation_request_channel
+        return None
+
     def get_new_stream_announcements_stream(self) -> Optional["Stream"]:
         if (
             self.new_stream_announcements_stream is not None
@@ -1148,6 +1164,7 @@ def get_realm_with_settings(realm_id: int) -> Realm:
     # * All the settings that can be set to anonymous groups.
     # * Announcements streams.
     return Realm.objects.select_related(
+        "moderation_request_channel",
         "create_multiuse_invite_group",
         "create_multiuse_invite_group__named_user_group",
         "can_access_all_users_group",

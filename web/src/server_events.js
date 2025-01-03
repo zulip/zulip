@@ -5,7 +5,7 @@ import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as echo from "./echo.ts";
 import * as loading from "./loading.ts";
-import * as message_events from "./message_events.js";
+import * as message_events from "./message_events.ts";
 import {page_params} from "./page_params.ts";
 import * as reload from "./reload.ts";
 import * as reload_state from "./reload_state.ts";
@@ -99,7 +99,7 @@ function get_events_success(events) {
         }
     }
 
-    if (messages.length !== 0) {
+    if (messages.length > 0) {
         // Sort by ID, so that if we get multiple messages back from
         // the server out-of-order, we'll still end up with our
         // message lists in order.
@@ -129,7 +129,7 @@ function get_events_success(events) {
         }
     }
 
-    if (update_message_events.length !== 0) {
+    if (update_message_events.length > 0) {
         try {
             message_events.update_messages(update_message_events);
         } catch (error) {
@@ -303,6 +303,10 @@ export function initialize(params) {
         get_events_failures = 0;
         restart_get_events({dont_block: true});
     });
+    $(".restart_get_events_button").on("click", () => {
+        restart_get_events({dont_block: true});
+    });
+
     get_events();
 }
 

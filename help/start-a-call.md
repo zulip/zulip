@@ -1,6 +1,15 @@
 # Start a call
 
+Zulip makes it convenient to add a video or voice call link to any message,
+using the call provider (Jitsi, Zoom, etc.)
+[configured](#change-your-call-provider) by your organization's administrators.
+
 ## Start a video call
+
+!!! warn ""
+
+    When you join a call, you may need to log in to a separate account for the
+    call provider (Jitsi, Zoom, etc.).
 
 {start_tabs}
 

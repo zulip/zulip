@@ -124,7 +124,7 @@ export class PerStreamHistory {
     }
 
     has_topics(): boolean {
-        return this.topics.size !== 0;
+        return this.topics.size > 0;
     }
 
     update_stream_with_message_id(message_id: number): void {

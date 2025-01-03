@@ -19,7 +19,7 @@ import * as audible_notifications from "./audible_notifications.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import * as channel from "./channel.ts";
-import * as click_handlers from "./click_handlers.js";
+import * as click_handlers from "./click_handlers.ts";
 import * as common from "./common.ts";
 import * as compose from "./compose.js";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
@@ -46,7 +46,7 @@ import * as emojisets from "./emojisets.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as giphy from "./giphy.ts";
 import * as giphy_state from "./giphy_state.ts";
-import * as hashchange from "./hashchange.js";
+import * as hashchange from "./hashchange.ts";
 import * as hotkey from "./hotkey.js";
 import * as i18n from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
@@ -142,7 +142,7 @@ import * as unread_ops from "./unread_ops.ts";
 import * as unread_ui from "./unread_ui.ts";
 import * as upload from "./upload.ts";
 import * as user_card_popover from "./user_card_popover.ts";
-import * as user_group_edit from "./user_group_edit.js";
+import * as user_group_edit from "./user_group_edit.ts";
 import * as user_group_edit_members from "./user_group_edit_members.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 import * as user_groups from "./user_groups.ts";
@@ -267,7 +267,7 @@ export function initialize_kitchen_sink_stuff() {
     // Ignore wheel events in the compose area which weren't already handled above.
     $("#compose").on("wheel", (e) => {
         // Except for the compose banners, which still need scroll events.
-        if ($(e.target).closest("#compose_banners").length) {
+        if ($(e.target).closest("#compose_banners").length > 0) {
             return;
         }
         e.stopPropagation();
@@ -659,7 +659,7 @@ export function initialize_everything(state_data) {
         },
     });
 
-    // All overlays, and also activity_ui, must be initialized before hashchange.js
+    // All overlays, and also activity_ui, must be initialized before hashchange.ts
     hashchange.initialize();
 
     emoji_picker.initialize();

@@ -189,7 +189,7 @@ export function update_settings_button_for_sub(sub: StreamSubscription): void {
     // This is for the Subscribe/Unsubscribe button in the right panel.
     const $settings_button = settings_button_for_sub(sub);
 
-    if (!$settings_button.length) {
+    if ($settings_button.length === 0) {
         // `subscribe` button hasn't been rendered yet while we are processing the event.
         return;
     }
@@ -368,7 +368,7 @@ export function update_notification_setting_checkbox(
 ): void {
     // This is in the right panel (Personal settings).
     const $stream_row = $("#channels_overlay_container .stream-row.active");
-    if (!$stream_row.length) {
+    if ($stream_row.length === 0) {
         return;
     }
     const stream_id = Number($stream_row.attr("data-stream-id"));

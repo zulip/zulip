@@ -12,11 +12,11 @@ your organization. The following options are available on all
 The following options are available for organizations on Zulip Cloud Standard,
 Zulip Cloud Plus, and all self-hosted Zulip servers:
 
-- Oauth2 with Azure Active Directory
+- Oauth2 with Microsoft Entra ID (AzureAD)
 
 The following options are available for organizations on Zulip Cloud Plus, and all self-hosted Zulip servers:
 
-- [SAML authentication](/help/saml-authentication), including Okta, OneLogin, AzureAD, Keycloak, Auth0
+- [SAML authentication](/help/saml-authentication), including Okta, OneLogin, Entra ID (AzureAD), Keycloak, Auth0
 - [SCIM provisioning](/help/scim)
 
 The following authentication and identity management options are available for

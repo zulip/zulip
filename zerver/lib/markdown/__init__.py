@@ -1455,7 +1455,7 @@ class Timestamp(markdown.inlinepatterns.Pattern):
         if timestamp.tzinfo:
             try:
                 timestamp = timestamp.astimezone(timezone.utc)
-            except ValueError:
+            except (ValueError, OverflowError):
                 error_element = Element("span")
                 error_element.set("class", "timestamp-error")
                 error_element.text = markdown.util.AtomicString(

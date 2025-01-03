@@ -78,7 +78,7 @@ export function update_user_full_name(user_id: number, full_name: string): void 
     rerender_messages_view_for_user(user_id);
 }
 
-export function update_avatar(user_id: number, avatar_url: string): void {
+export function update_avatar(user_id: number, avatar_url: string | null): void {
     message_store.update_small_avatar_url(user_id, avatar_url);
     rerender_messages_view_for_user(user_id);
 }

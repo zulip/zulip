@@ -100,7 +100,7 @@ TAB_SECTION_LABELS = {
     "self-hosting": "Self hosting",
     "okta": "Okta",
     "onelogin": "OneLogin",
-    "azuread": "AzureAD",
+    "azuread": "Entra ID (AzureAD)",
     "entraid": "Microsoft Entra ID",
     "keycloak": "Keycloak",
     "auth0": "Auth0",

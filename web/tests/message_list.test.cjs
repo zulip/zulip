@@ -40,6 +40,11 @@ function MessageListView() {
 mock_esm("../src/message_list_view", {
     MessageListView,
 });
+
+mock_esm("../src/people.ts", {
+    maybe_get_user_by_id: noop,
+});
+
 const {Filter} = zrequire("filter");
 const {set_current_user} = zrequire("state_data");
 
@@ -458,7 +463,7 @@ run_test("add_remove_rerender", ({override}) => {
 
     const messages = [{id: 1}, {id: 2}, {id: 3}];
 
-    list.add_messages(messages);
+    list.add_messages(messages, {}, true);
     assert.equal(list.num_items(), 3);
 
     {

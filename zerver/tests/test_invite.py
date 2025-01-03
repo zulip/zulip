@@ -48,10 +48,7 @@ from zerver.actions.user_settings import do_change_full_name
 from zerver.actions.users import change_user_is_active
 from zerver.context_processors import common_context
 from zerver.lib.create_user import create_user
-from zerver.lib.default_streams import (
-    get_default_streams_for_realm_as_dicts,
-    get_slim_realm_default_streams,
-)
+from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.send_email import FromAddress, deliver_scheduled_emails, send_future_email
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
@@ -828,7 +825,7 @@ class InviteUserTest(InviteUserBase):
         self.assert_json_error(result, "Insufficient permission")
 
         # Test that user having permission to manage all groups can
-        # add user to groups through invitiation.
+        # add user to groups through invitation.
         owners_group = NamedUserGroup.objects.get(
             name=SystemGroups.OWNERS, realm=realm, is_system_group=True
         )
@@ -862,7 +859,7 @@ class InviteUserTest(InviteUserBase):
         self.assertTrue(find_key_by_email(invitee))
 
         # Test that user having permission to add members to a group can
-        # add user to that group through invitiation.
+        # add user to that group through invitation.
         do_change_user_group_permission_setting(
             test_group,
             "can_add_members_group",
@@ -883,7 +880,7 @@ class InviteUserTest(InviteUserBase):
         self.assertTrue(find_key_by_email(invitee))
 
         # Test that user having permission to manage a group can
-        # add user to that group through invitiation.
+        # add user to that group through invitation.
         do_change_user_group_permission_setting(
             hamletcharacters_group,
             "can_manage_group",
@@ -3010,7 +3007,7 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = self.assert_json_success(result)["invite_link"]
         self.check_user_able_to_register(self.nonreg_email("alice"), invite_link)
         # User is not subscribed to default streams as well.
-        self.assert_length(get_default_streams_for_realm_as_dicts(self.realm.id), 3)
+        self.assert_length(get_slim_realm_default_streams(self.realm.id), 3)
         self.check_user_subscribed_only_to_streams("alice", [])
 
     def test_create_multiuse_link_with_specified_user_groups_api_call(self) -> None:
@@ -3193,7 +3190,7 @@ class MultiuseInviteTest(ZulipTestCase):
         )
 
         # Test that user having permission to manage all groups can
-        # add users to groups through invitiation.
+        # add users to groups through invitation.
         owners_group = NamedUserGroup.objects.get(
             name=SystemGroups.OWNERS, realm=realm, is_system_group=True
         )
@@ -3220,7 +3217,7 @@ class MultiuseInviteTest(ZulipTestCase):
         check_create_multiuse_invite("desdemona", [test_group.id, hamletcharacters_group.id])
 
         # Test that user having permission to add members to a group can
-        # add user to that group through invitiation.
+        # add user to that group through invitation.
         do_change_user_group_permission_setting(
             test_group,
             "can_add_members_group",
@@ -3237,7 +3234,7 @@ class MultiuseInviteTest(ZulipTestCase):
         check_create_multiuse_invite("shiva", [test_group.id])
 
         # Test that user having permission to manage a group can
-        # add user to that group through invitiation.
+        # add user to that group through invitation.
         do_change_user_group_permission_setting(
             hamletcharacters_group,
             "can_manage_group",

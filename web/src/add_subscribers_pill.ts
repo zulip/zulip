@@ -137,6 +137,7 @@ export function create({
         get_text_from_item,
         get_display_value_from_item,
         generate_pill_html,
+        show_outline_on_invalid_input: true,
     });
     function get_users(): User[] {
         const potential_subscribers = get_potential_subscribers();
@@ -167,6 +168,7 @@ export function create_without_add_button({
         get_text_from_item,
         get_display_value_from_item,
         generate_pill_html,
+        show_outline_on_invalid_input: true,
     });
     function get_users(): User[] {
         const potential_subscribers = get_potential_subscribers();
@@ -254,14 +256,23 @@ export function set_up_handlers({
     }
 
     $parent_container.on("keyup", pill_selector, (e) => {
-        if (keydown_util.is_enter_event(e)) {
+        const pill_widget = get_pill_widget();
+        if (!pill_widget.is_pending() && keydown_util.is_enter_event(e)) {
             e.preventDefault();
             callback();
         }
     });
 
     $parent_container.on("click", button_selector, (e) => {
-        e.preventDefault();
-        callback();
+        const pill_widget = get_pill_widget();
+        if (!pill_widget.is_pending()) {
+            e.preventDefault();
+            callback();
+        } else {
+            // We are not appending any value here, but instead this is
+            // a proxy to invoke the error state for a pill widget
+            // that would usually get triggered on pressing enter.
+            pill_widget.appendValue(pill_widget.getCurrentText()!);
+        }
     });
 }

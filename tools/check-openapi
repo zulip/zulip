@@ -158,11 +158,6 @@ async function checkFile(file) {
     }
 }
 
-(async () => {
-    for (const file of files) {
-        await checkFile(file);
-    }
-})().catch((error) => {
-    console.error(error);
-    process.exit(1);
-});
+for (const file of files) {
+    await checkFile(file);
+}

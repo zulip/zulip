@@ -79,6 +79,7 @@ from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_set_push_notifications_enabled_end_timestamp,
     do_set_realm_authentication_methods,
+    do_set_realm_moderation_request_channel,
     do_set_realm_new_stream_announcements_stream,
     do_set_realm_property,
     do_set_realm_signup_announcements_stream,
@@ -174,8 +175,8 @@ from zerver.lib.event_schema import (
     check_realm_user_add,
     check_realm_user_remove,
     check_realm_user_update,
-    check_saved_snippet_add,
-    check_saved_snippet_remove,
+    check_saved_snippets_add,
+    check_saved_snippets_remove,
     check_scheduled_message_add,
     check_scheduled_message_remove,
     check_scheduled_message_update,
@@ -480,11 +481,11 @@ class BaseAction(ZulipTestCase):
                 print(json.dumps(event, indent=4))
 
             print("\nMISMATCHES:\n")
-            for k in state1:
-                if state1[k] != state2[k]:
+            for k, v1 in state1.items():
+                if v1 != state2[k]:
                     print("\nkey = " + k)
                     try:
-                        self.assertEqual({k: state1[k]}, {k: state2[k]})
+                        self.assertEqual({k: v1}, {k: state2[k]})
                     except AssertionError as e:
                         print(e)
             print(
@@ -1675,14 +1676,14 @@ class NormalActionsTest(BaseAction):
     def test_saved_replies_events(self) -> None:
         with self.verify_action() as events:
             do_create_saved_snippet("Welcome message", "Welcome", self.user_profile)
-        check_saved_snippet_add("events[0]", events[0])
+        check_saved_snippets_add("events[0]", events[0])
 
         saved_snippet_id = (
             SavedSnippet.objects.filter(user_profile=self.user_profile).order_by("id")[0].id
         )
         with self.verify_action() as events:
             do_delete_saved_snippet(saved_snippet_id, self.user_profile)
-        check_saved_snippet_remove("events[0]", events[0])
+        check_saved_snippets_remove("events[0]", events[0])
 
     def test_away_events(self) -> None:
         client = get_client("website")
@@ -2418,6 +2419,22 @@ class NormalActionsTest(BaseAction):
                     acting_user=None,
                 )
             check_realm_update("events[0]", events[0], "zulip_update_announcements_stream_id")
+
+    def test_change_realm_moderation_request_channel(self) -> None:
+        channel = self.make_stream("private_stream", invite_only=True)
+
+        for moderation_request_channel, moderation_request_channel_id in (
+            (channel, channel.id),
+            (None, -1),
+        ):
+            with self.verify_action() as events:
+                do_set_realm_moderation_request_channel(
+                    self.user_profile.realm,
+                    moderation_request_channel,
+                    moderation_request_channel_id,
+                    acting_user=None,
+                )
+            check_realm_update("events[0]", events[0], "moderation_request_channel_id")
 
     def test_change_is_admin(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()

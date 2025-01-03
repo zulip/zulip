@@ -273,14 +273,6 @@
         }
     }
 
-    #message-content-container {
-        &:has(textarea.new_message_textarea.invalid),
-        &:has(textarea.new_message_textarea.invalid:focus) {
-            border-color: hsl(3deg 73% 74%);
-            box-shadow: 0 0 2px hsl(3deg 73% 74%);
-        }
-    }
-
     #stream-actions-menu-popover .sp-container {
         background-color: transparent;
 
@@ -407,10 +399,6 @@
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
-    .compose-control-buttons-container .divider {
-        color: hsl(236deg 33% 90% / 25%);
-    }
-
     .compose_control_button:hover {
         color: inherit;
     }
@@ -504,33 +492,6 @@
         }
     }
 
-    .recent_view_participant_overflow {
-        color: hsl(0deg 0% 100%) !important;
-        background-color: hsl(211deg 18% 25%) !important;
-    }
-
-    .recent_view_container #recent_view_table .button-recent-filters {
-        &:focus {
-            background-color: hsl(0deg 0% 0% / 50%) !important;
-        }
-
-        &.fake_disabled_button {
-            &:hover {
-                background-color: hsl(0deg 0% 0% / 50%);
-                border-color: hsl(0deg 0% 0%);
-            }
-        }
-    }
-
-    .button-recent-selected,
-    #recent_view_table thead th {
-        background-color: hsl(228deg 11% 17%) !important;
-
-        &[data-sort]:hover {
-            background-color: hsl(211deg 29% 14%) !important;
-        }
-    }
-
     #recent_view_table {
         .zulip-icon-user {
             opacity: 0.7;
@@ -563,8 +524,7 @@
     .subscriber-list-box .subscriber_list_container .subscriber-list td,
     .member-list-box,
     .member-list-box .member_list_container .member-list td,
-    #subscription_overlay .settings-radio-input-parent,
-    #recent_view_table table td {
+    #subscription_overlay .settings-radio-input-parent {
         border-color: hsl(0deg 0% 0% / 20%);
     }
 

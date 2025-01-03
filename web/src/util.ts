@@ -3,7 +3,7 @@ import _ from "lodash";
 
 import * as blueslip from "./blueslip.ts";
 import type {MatchedMessage, Message, RawMessage} from "./message_store.ts";
-import type {UpdateMessageEvent} from "./types.ts";
+import type {UpdateMessageEvent} from "./server_event_types.ts";
 import {user_settings} from "./user_settings.ts";
 
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
@@ -414,7 +414,7 @@ export function is_valid_url(url: string, require_absolute = false): boolean {
         // provide a base element with an absolute URL, JavaScript ignores the base element.
         new URL(url, base_url);
     } catch (error) {
-        blueslip.log(`Invalid URL: ${url}.`, error);
+        blueslip.log(`Invalid URL: ${url}.`, {error});
         return false;
     }
     return true;
@@ -499,9 +499,15 @@ export function check_time_input(input_value: string, keep_number_as_float = fal
     return Number.parseInt(input_value, 10);
 }
 
-export function validate_custom_time_input(time_input: number): boolean {
-    if (Number.isNaN(time_input) || time_input < 0) {
-        return false;
+export function validate_custom_time_input(time_input: number, can_be_zero = true): boolean {
+    if (can_be_zero) {
+        if (Number.isNaN(time_input) || time_input < 0) {
+            return false;
+        }
+    } else {
+        if (Number.isNaN(time_input) || time_input <= 0) {
+            return false;
+        }
     }
     return true;
 }

@@ -216,6 +216,7 @@ export function initialize() {
                 // time.
                 compose_state.prevent_draft_restoring();
                 compose.clear_compose_box();
+                compose.clear_preview_area();
                 popover_menus.hide_current_popover_if_visible(instance);
             });
         },

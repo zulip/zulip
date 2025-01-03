@@ -24,12 +24,12 @@ const {run_test, noop} = require("./lib/test.cjs");
 const direct_message_group_data = mock_esm("../src/direct_message_group_data");
 const message_lists = mock_esm("../src/message_lists");
 const message_notifications = mock_esm("../src/message_notifications");
-const message_util = mock_esm("../src/message_util");
 const pm_list = mock_esm("../src/pm_list");
 const stream_list = mock_esm("../src/stream_list");
 const unread_ui = mock_esm("../src/unread_ui");
 const activity = mock_esm("../src/activity");
 
+let added_message = false;
 message_lists.current = {
     data: {
         filter: {
@@ -37,6 +37,9 @@ message_lists.current = {
                 return true;
             },
         },
+    },
+    add_messages() {
+        added_message = true;
     },
 };
 message_lists.all_rendered_message_lists = () => [message_lists.current];
@@ -103,7 +106,6 @@ run_test("insert_message", ({override}) => {
 
     helper.redirect(direct_message_group_data, "process_loaded_messages");
     helper.redirect(message_notifications, "received_messages");
-    helper.redirect(message_util, "add_new_messages");
     helper.redirect(stream_list, "update_streams_sidebar");
     helper.redirect(unread_ui, "update_unread_counts");
     helper.redirect(activity, "set_received_new_messages");
@@ -116,12 +118,12 @@ run_test("insert_message", ({override}) => {
     // comes in:
     assert.deepEqual(helper.events, [
         [direct_message_group_data, "process_loaded_messages"],
-        [message_util, "add_new_messages"],
         [unread_ui, "update_unread_counts"],
         [activity, "set_received_new_messages"],
         [message_notifications, "received_messages"],
         [stream_list, "update_streams_sidebar"],
     ]);
+    assert.ok(added_message);
 
     // Despite all of our stubbing/mocking, the call to
     // insert_new_messages will have created a very important

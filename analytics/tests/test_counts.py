@@ -1836,7 +1836,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
         self.assertTableState(RealmCount, [], [])
 
-    def test_user_unactive_then_activated_same_day(self) -> None:
+    def test_user_inactive_then_activated_same_day(self) -> None:
         self.add_event(AuditLogEventType.USER_DEACTIVATED, 1)
         self.add_event(AuditLogEventType.USER_REACTIVATED, 0.5)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)

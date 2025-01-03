@@ -24,7 +24,7 @@ account.
 
     If you are the only owner in the organization, you cannot
     deactivate your account. You will need to
-    [add another owner](/help/change-a-users-role) first.
+    [add another owner](/help/user-roles#change-a-users-role) first.
 
 {start_tabs}
 

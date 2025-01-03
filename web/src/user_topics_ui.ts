@@ -86,7 +86,7 @@ export function handle_topic_updates(
         // Find the row with the specified stream_id and topic_name
         const $row = $('tr[data-stream-id="' + stream_id + '"][data-topic="' + topic_name + '"]');
 
-        if ($row.length) {
+        if ($row.length > 0) {
             // If the row exists, update the status only.
             // We don't call 'populate_list' in this case as it re-creates the panel (re-sorts by date updated +
             // removes topics with status set to 'Default for channel'), making it hard to review the changes

@@ -324,6 +324,10 @@ def update_stream_backend(
     if proposed_is_private and proposed_is_default_stream:
         raise JsonableError(_("A default channel cannot be private."))
 
+    # Ensure that a moderation request channel isn't set to public.
+    if not proposed_is_private and user_profile.realm.get_moderation_request_channel() == stream:
+        raise JsonableError(_("Moderation request channel must be private."))
+
     if is_private is not None:
         # We require even realm administrators to be actually
         # subscribed to make a private stream public, via this

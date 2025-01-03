@@ -1198,7 +1198,7 @@ label.preferences-radio-choice-label {
 }
 
 .emojiset_choices {
-    width: 350px;
+    width: 25em; /* 350px / 14px em */
 
     .emoji {
         height: 22px;
@@ -1206,14 +1206,13 @@ label.preferences-radio-choice-label {
     }
 }
 
-$right_sidebar_width: 170px;
-$option_title_width: 180px;
-
 .user_list_style_values {
-    max-width: calc($right_sidebar_width + $option_title_width);
+    max-width: 25em; /* 350px / 14px em */
 
     .preferences-radio-choice-label {
-        justify-content: space-between;
+        display: grid;
+        grid-template-columns: 10.7143em auto; /* 150px / 14px em */
+        justify-content: left;
         margin-right: 6px;
 
         .right {
@@ -1222,10 +1221,8 @@ $option_title_width: 180px;
     }
 
     .preview {
-        /* Match the 170px width of the right sidebar region for the name/status,
-           doing something reasonable if the window shrinks. */
-        width: calc(100% - $option_title_width);
         white-space: nowrap;
+        overflow: hidden;
 
         .user-name-and-status-text {
             display: flex;
