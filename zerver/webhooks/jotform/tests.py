@@ -29,6 +29,22 @@ class JotformHookTests(WebhookTestCase):
             content_type="multipart/form-data",
         )
 
+    def test_screenshot_response(self) -> None:
+        expected_title = "Feedback Form"
+        expected_message = """
+* **How often do you use the application?** Daily
+* **How likely are you to recommend it to a friend on a scale of 0-10?** 9
+* **Feedback**: The new personalized recommendations feature is great!
+
+* **Upload images of your customized setup to get featured!**: [frontend setup.jpg](https://www.jotform.com/uploads/kolanuvarun739/243615086540051/6114090137116205381/frontend%20setup.jpg), [workflow.png](https://www.jotform.com/uploads/kolanuvarun739/243615086540051/6114090137116205381/workflow.png)""".strip()
+
+        self.check_webhook(
+            "screenshot_response",
+            expected_title,
+            expected_message,
+            content_type="multipart/form-data",
+        )
+
     def test_bad_payload(self) -> None:
         with self.assertRaisesRegex(AssertionError, "Unable to handle Jotform payload"):
             self.check_webhook("response")
