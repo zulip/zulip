@@ -2403,7 +2403,20 @@ class StreamMessagesTest(ZulipTestCase):
         # Send a message to the stream
         sender = self.example_user("hamlet")
         self.subscribe(sender, stream.name)
-        self.send_stream_message(sender, stream.name)
+        # One message send event and one stream property update event.
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            self.send_stream_message(sender, stream.name, skip_capture_on_commit_callbacks=True)
+
+        has_stream_update_event = False
+        for event in events:
+            if event["event"]["type"] == "stream":
+                stream_update_event = event["event"]
+                has_stream_update_event = True
+                self.assertEqual(stream_update_event["op"], "update")
+                self.assertEqual(stream_update_event["property"], "is_recently_active")
+                self.assertEqual(stream_update_event["value"], True)
+        self.assertTrue(has_stream_update_event)
+
         # The stream should now be active
         stream.refresh_from_db()
         self.assertEqual(stream.is_recently_active, True)
