@@ -385,6 +385,48 @@ class DocPageTest(ZulipTestCase):
         result = self.client_get("/integrations/doc-html/nonexistent_integration", follow=True)
         self.assertEqual(result.status_code, 404)
 
+    def test_integration_doc_images(self) -> None:
+        images_in_docs = set()
+
+        page = self.client_get("/integrations/", subdomain="").content.decode("utf-8")
+        for image in re.findall(r"/static/images/integrations/(logos/.*)\"", page):
+            images_in_docs.add(image)
+
+        for integration in INTEGRATIONS:
+            doc = self.client_get(
+                f"/integrations/doc-html/{integration}",
+                subdomain="",
+                HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            ).content.decode("utf-8")
+            for image in re.findall(r"/static/images/integrations/(.*)\"", doc):
+                images_in_docs.add(image)
+
+        directory = "static/images/integrations"
+        images_in_dir = {
+            image_path
+            for root, _, files in os.walk(directory)
+            for file in files
+            if "bot_avatars"
+            not in (image_path := os.path.relpath(os.path.join(root, file), directory))
+        }
+
+        self.assertEqual(
+            images_in_dir,
+            images_in_docs,
+            (
+                "\n\nThe following images are not used in documentation and can be removed:\n"
+                + "\n".join(extra_images)
+                if (extra_images := images_in_dir - images_in_docs)
+                else ""
+            )
+            + (
+                "\n\nThe following images are used in documentation but do not exist:\n"
+                + "\n".join(missing_images)
+                if (missing_images := images_in_docs - images_in_dir)
+                else ""
+            ),
+        )
+
     def test_electron_detection(self) -> None:
         result = self.client_get("/accounts/password/reset/")
         # TODO: Ideally, this Mozilla would be the specific browser.
