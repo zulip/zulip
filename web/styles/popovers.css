@@ -449,7 +449,7 @@ ul.popover-group-menu-member-list {
     }
 
     .modal__header {
-        justify-content: center;
+        justify-items: center;
     }
 
     .modal__close {
