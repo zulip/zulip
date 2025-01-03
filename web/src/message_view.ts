@@ -181,6 +181,8 @@ function create_and_update_message_list(
         if (!filter.requires_adjustment_for_moved_with_target) {
             const superset_datasets = message_list_data_cache.get_superset_datasets(filter);
             for (const superset_data of superset_datasets) {
+                // Reset properties that might have been set.
+                reset_id_info(id_info);
                 maybe_add_local_messages({
                     id_info,
                     msg_data,
@@ -352,6 +354,20 @@ export type ShowMessageViewOpts = {
     show_more_topics?: boolean;
 };
 
+export function get_id_info(): TargetMessageIdInfo {
+    return {
+        target_id: undefined,
+        final_select_id: undefined,
+        local_select_id: undefined,
+    };
+}
+
+export function reset_id_info(id_info: TargetMessageIdInfo): void {
+    id_info.target_id = undefined;
+    id_info.final_select_id = undefined;
+    id_info.local_select_id = undefined;
+}
+
 export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): void => {
     /* Main entry point for switching to a new view / message list.
 
@@ -453,12 +469,7 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
         data: {raw_terms, trigger: opts.trigger},
     };
     void Sentry.startSpan({...span_data, name: "narrow"}, async (span) => {
-        const id_info: TargetMessageIdInfo = {
-            target_id: undefined,
-            local_select_id: undefined,
-            final_select_id: undefined,
-        };
-
+        const id_info = get_id_info();
         const terms = filter.terms();
 
         // These two narrowing operators specify what message should be
