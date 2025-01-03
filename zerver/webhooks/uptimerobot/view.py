@@ -4,7 +4,7 @@ from django.utils.translation import gettext as _
 
 from zerver.actions.message_send import send_rate_limited_pm_notification_to_bot_owner
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
@@ -88,5 +88,7 @@ def get_body_for_http_request(payload: WildValue, event_type: str) -> str:
             monitor_url=monitor_url,
             alert_details=alert_details,
         )
+    else:
+        raise UnsupportedWebhookEventTypeError(event_type)
 
     return body
