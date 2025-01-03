@@ -686,8 +686,7 @@ export async function build_move_topic_to_stream_popover(
         } else {
             message_text = $t(
                 {
-                    defaultMessage:
-                        "At least {count, plural, one {# message} other {# messages}} will be moved.",
+                    defaultMessage: "{count}+ messages will be moved.",
                 },
                 {count: message_move_count},
             );
