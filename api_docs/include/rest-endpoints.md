@@ -18,6 +18,7 @@
 * [Mark messages in a channel as read](/api/mark-stream-as-read)
 * [Mark messages in a topic as read](/api/mark-topic-as-read)
 * [Get a message's read receipts](/api/get-read-receipts)
+* [Report a message](/api/report-message)
 
 #### Scheduled messages
 
