@@ -30,6 +30,7 @@ from zerver.actions.custom_profile_fields import (
 from zerver.actions.message_send import build_message_send_dict, do_send_messages
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_linkifiers import do_add_linkifier
+from zerver.actions.realm_settings import do_set_realm_moderation_request_channel
 from zerver.actions.scheduled_messages import check_schedule_message
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_groups import create_user_group_in_database
@@ -1009,6 +1010,11 @@ class Command(ZulipBaseCommand):
                 core_team_stream = Stream.objects.get(name="core team", realm=lear_realm)
                 bulk_add_subscriptions(
                     lear_realm, [core_team_stream], [lear_user], acting_user=None
+                )
+
+                core_team_stream = Stream.objects.get(name="core team", realm=zulip_realm)
+                do_set_realm_moderation_request_channel(
+                    zulip_realm, core_team_stream, core_team_stream.id, acting_user=None
                 )
 
             if not options["test_suite"]:

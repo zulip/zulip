@@ -9288,6 +9288,79 @@ paths:
                             "msg": "You don't have permission to delete this message",
                             "result": "error",
                           }
+  /messages/{message_id}/report:
+    post:
+      operationId: report-message
+      summary: Report a message
+      tags: ["messages"]
+      description: |
+        Reports a message to the moderation request channel if the
+        `moderation_request_channel` is configured. Moderators can
+        review the reports and act on the reported content.
+
+        Clients should check for whether the `moderation_request_channel`
+        setting is enabled to decide whether to show the message
+        report option in the UI.
+
+        If the `report_type` for the report is `other`, the `description`
+        parameter will become required. Clients should also enforce and
+        communicate this behavior in the UI.
+
+        **Changes**: New in Zulip 10.0 (feature level 382). This API builds
+        on the `moderation_request_channel` setting (feature 331)
+        which was previously a non-operational realm-level setting.
+      parameters:
+        - $ref: "#/components/parameters/MessageId"
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                report_type:
+                  description: |
+                    The type of moderation request selected by the reporting user.
+                  type: string
+                  enum:
+                    - spam
+                    - harassment
+                    - inappropriate
+                    - norms
+                    - other
+                  example: harassment
+                description:
+                  description: |
+                    The client should provide a text input of maximum length
+                    1000 characters for the reporting user to provide additional
+                    context explaining the report.
+
+                    If the `report_type` for the report is `other`, this field
+                    will become required.
+
+                  type: string
+                  example: "this message is bullying Frodo."
+              required:
+                - report_type
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "Moderation request channel must be specified to enable message reporting.",
+                        "code": "BAD_REQUEST",
+                      }
+                    description: |
+                      An example JSON error response for when trying to report a
+                      message with `moderation_request_channel` disabled:
   /user_uploads:
     post:
       operationId: upload-file

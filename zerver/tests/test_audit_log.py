@@ -660,7 +660,7 @@ class TestRealmAuditLog(ZulipTestCase):
         user = self.example_user("hamlet")
         old_value = realm.moderation_request_channel
         stream = self.make_stream("private_stream", invite_only=True)
-
+        assert old_value is not None
         do_set_realm_moderation_request_channel(realm, stream, stream.id, acting_user=user)
         self.assertEqual(
             RealmAuditLog.objects.filter(
@@ -669,7 +669,10 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_time__gte=now,
                 acting_user=user,
                 extra_data={
-                    RealmAuditLog.OLD_VALUE: old_value,
+                    # `populate_db` configures `moderation_request_channel` for
+                    # API testing purposes, so the `old_value` here is
+                    # not `None`.
+                    RealmAuditLog.OLD_VALUE: old_value.id,
                     RealmAuditLog.NEW_VALUE: stream.id,
                     "property": "moderation_request_channel",
                 },

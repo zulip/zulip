@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 382**
+
+* `POST /message/{message_id}/report`: Added a new endpoint for submitting
+  a moderation request for a message.
+
 **Feature level 381**
 
 * [`POST /reminders`](/api/create-message-reminder): Added a new endpoint to
