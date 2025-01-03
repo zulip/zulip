@@ -6,6 +6,7 @@
 #
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 from collections.abc import Callable
+from pprint import PrettyPrinter
 from typing import cast
 
 from pydantic import BaseModel
@@ -121,9 +122,31 @@ def validate_event_with_model_type(event: dict[str, object], model: EventModel) 
 
 
 def make_checker(base_model: EventModel) -> Callable[[str, dict[str, object]], None]:
-    def f(name: str, event: dict[str, object]) -> None:
-        # Note that we don't use `name` for debugging any more.
-        validate_event_with_model_type(event, base_model)
+    def f(label: str, event: dict[str, object]) -> None:
+        try:
+            validate_event_with_model_type(event, base_model)
+        except Exception as e:  # nocoverage
+            print(f"""
+FAILURE:
+
+The event below fails the check to make sure it has the
+correct "shape" of data:
+
+    {label}
+
+Often this is a symptom that the following type definition
+is either broken or needs to be updated due to other
+changes that you have made:
+
+    {base_model}
+
+A traceback should follow to help you debug this problem.
+
+Here is the event:
+""")
+
+            PrettyPrinter(indent=4).pprint(event)
+            raise e
 
     return f
 
