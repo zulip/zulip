@@ -1409,6 +1409,7 @@ function handle_post_view_change(
     stream_list.handle_narrow_activated(filter, opts.change_hash, opts.show_more_topics);
     pm_list.handle_narrow_activated(filter);
     activity_ui.build_user_sidebar();
+    message_fetch.get_narrow_summary(msg_list.data);
 }
 
 export function rerender_combined_feed(combined_feed_msg_list: MessageList): void {

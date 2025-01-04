@@ -1289,3 +1289,5 @@ SCIM_SERVICE_PROVIDER = {
         },
     ],
 }
+
+TOPIC_SUMMARIZATION_MODEL = "huggingface/meta-llama/Meta-Llama-3-8B-Instruct"
