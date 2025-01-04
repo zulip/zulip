@@ -16,18 +16,29 @@
     user-select: none;
     border: none;
     cursor: pointer;
+    clip-path: inset(-1px);
+    transition: none 0.05s ease-in;
+    transition-property: background-color, clip-path;
 
     &:hover {
         background-color: var(
             --color-background-neutral-quiet-action-button-hover
         );
+        transition: none 0.1s ease-out;
+        transition-property: background-color, clip-path;
     }
 
     &:active {
         background-color: var(
             --color-background-neutral-quiet-action-button-active
         );
-        scale: 0.96;
+        clip-path: inset(1px round 4px);
+    }
+
+    &:focus-visible {
+        outline-offset: 2px;
+        outline-width: 1px;
+        clip-path: inset(-3px);
     }
 }
 
@@ -365,6 +376,24 @@
     cursor: pointer;
     border: none;
     border-radius: 4px;
+    clip-path: inset(-1px);
+    transition: none 0.05s ease-in;
+    transition-property: background-color, clip-path;
+
+    &:hover {
+        transition: none 0.1s ease-out;
+        transition-property: background-color, clip-path;
+    }
+
+    &:active {
+        clip-path: inset(1px round 4px);
+    }
+
+    &:focus-visible {
+        outline-offset: 2px;
+        outline-width: 1px;
+        clip-path: inset(-3px);
+    }
 }
 
 .icon-button-neutral {
