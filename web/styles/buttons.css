@@ -1,14 +1,14 @@
 .action-button {
     display: flex;
-    gap: 0.5ch;
+    gap: 0.75ch;
     justify-content: center;
     align-items: center;
-    line-height: 1.3333;
+    line-height: 1.25;
     font-size: var(--base-font-size-px);
     font-family: "Source Sans 3 VF", sans-serif;
-    font-weight: 550;
+    font-weight: 500;
     letter-spacing: 0.02ch;
-    padding: 0.2667em 0.6667em;
+    padding: 0.25em 0.625em;
     color: var(--color-text-neutral-quiet-action-button);
     background-color: var(--color-background-neutral-quiet-action-button);
     border-radius: 4px;
