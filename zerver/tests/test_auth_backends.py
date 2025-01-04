@@ -30,7 +30,8 @@ from django.http import HttpRequest
 from django.test import override_settings
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
-from django_auth_ldap.backend import LDAPSearch, _LDAPUser
+from django_auth_ldap.backend import LDAPBackend, LDAPSearch, _LDAPUser
+from django_auth_ldap.config import GroupOfUniqueNamesType
 from jwt.exceptions import PyJWTError
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.logout_request import OneLogin_Saml2_Logout_Request
@@ -6762,6 +6763,109 @@ class TestLDAP(ZulipLDAPTestCase):
             self.assertEqual(user_profile.realm.string_id, "zulip")
 
 
+class TestLDAPGroupDescriptions(ZulipLDAPTestCase):
+    def delete_groups_from_ldap_directory(self) -> None:
+        group_ids = [
+            "cn=cool_test_group,ou=groups,dc=zulip,dc=com",
+            "cn=another_test_group,ou=groups,dc=zulip,dc=com",
+        ]
+        for group_id in group_ids:
+            if group_id in self.mock_ldap.directory:
+                del self.mock_ldap.directory[group_id]
+
+    def delete_group_descriptions_from_ldap_directory(self) -> None:
+        groups_with_descriptions = [
+            "cn=cool_test_group,ou=groups,dc=zulip,dc=com",
+            "cn=another_test_group,ou=groups,dc=zulip,dc=com",
+        ]
+        for group_id in groups_with_descriptions:
+            if (
+                group_id in self.mock_ldap.directory
+                and "description" in self.mock_ldap.directory[group_id]
+            ):
+                del self.mock_ldap.directory[group_id]["description"]
+
+    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
+    def test_get_group_descriptions_when_no_ldap_groups(self) -> None:
+        self.delete_groups_from_ldap_directory()
+        realm = get_realm("zulip")
+        backend = LDAPBackend()
+        with self.settings(
+            AUTH_LDAP_GROUP_SEARCH=LDAPSearch(
+                "ou=groups,dc=zulip,dc=com",
+                ldap.SCOPE_ONELEVEL,
+                "(objectClass=groupOfUniqueNames)",
+            ),
+            AUTH_LDAP_GROUP_TYPE=GroupOfUniqueNamesType(),
+            LDAP_GROUP_DESCRIPTION_ATTR="description",
+        ):
+            username = "hamlet"
+            ldap_user = ZulipLDAPUser(backend, username=username, realm=realm)
+            self.assertEqual(ldap_user._get_group_descriptions(), {})
+
+    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
+    def test_get_group_descriptions_when_ldap_groups_exist_with_no_descriptions(self) -> None:
+        self.delete_group_descriptions_from_ldap_directory()
+        realm = get_realm("zulip")
+        backend = LDAPBackend()
+        with self.settings(
+            AUTH_LDAP_GROUP_SEARCH=LDAPSearch(
+                "ou=groups,dc=zulip,dc=com",
+                ldap.SCOPE_ONELEVEL,
+                "(objectClass=groupOfUniqueNames)",
+            ),
+            AUTH_LDAP_GROUP_TYPE=GroupOfUniqueNamesType(),
+            LDAP_GROUP_DESCRIPTION_ATTR="description",
+        ):
+            username = "hamlet"
+            ldap_user = ZulipLDAPUser(backend, username=username, realm=realm)
+            self.assertEqual(
+                ldap_user._get_group_descriptions(),
+                {"cool_test_group": None, "another_test_group": None},
+            )
+
+    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
+    def test_get_group_descriptions_setting_not_configured(
+        self,
+    ) -> None:
+        realm = get_realm("zulip")
+        backend = LDAPBackend()
+        with self.settings(
+            AUTH_LDAP_GROUP_SEARCH=LDAPSearch(
+                "ou=groups,dc=zulip,dc=com",
+                ldap.SCOPE_ONELEVEL,
+                "(objectClass=groupOfUniqueNames)",
+            ),
+            AUTH_LDAP_GROUP_TYPE=GroupOfUniqueNamesType(),
+        ):
+            username = "hamlet"
+            ldap_user = ZulipLDAPUser(backend, username=username, realm=realm)
+            self.assertEqual(ldap_user._get_group_descriptions(), {})
+
+    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
+    def test_get_group_descriptions_when_ldap_groups_exist_with_descriptions(self) -> None:
+        realm = get_realm("zulip")
+        backend = LDAPBackend()
+        with self.settings(
+            AUTH_LDAP_GROUP_SEARCH=LDAPSearch(
+                "ou=groups,dc=zulip,dc=com",
+                ldap.SCOPE_ONELEVEL,
+                "(objectClass=groupOfUniqueNames)",
+            ),
+            AUTH_LDAP_GROUP_TYPE=GroupOfUniqueNamesType(),
+            LDAP_GROUP_DESCRIPTION_ATTR="description",
+        ):
+            username = "hamlet"
+            ldap_user = ZulipLDAPUser(backend, username=username, realm=realm)
+            self.assertEqual(
+                ldap_user._get_group_descriptions(),
+                {
+                    "cool_test_group": "cool_test_group_description",
+                    "another_test_group": "another_test_group_description",
+                },
+            )
+
+
 class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     def test_authenticate(self) -> None:
         backend = ZulipLDAPUserPopulator()
@@ -7918,6 +8022,62 @@ class LDAPGroupSyncTest(ZulipTestCase):
         self.assertIn(
             'DEBUG:django_auth_ldap:Failed to populate user cordelia: search_s("ou=groups,dc=zulip,dc=com", 1, "(&(objectClass=groupOfUniqueNames(uniqueMember=uid=cordelia,ou=users,dc=zulip,dc=com))", "None", 0)',
             django_ldap_log.output,
+        )
+
+        # Now we'll test syncing of group descriptions. If a Zulip group has a
+        # corresponding LDAP group, and the LDAP group has a description, then
+        # the description of the Zulip group should be updated to match the
+        # description of the LDAP group.
+        with (
+            self.settings(
+                AUTH_LDAP_GROUP_SEARCH=LDAPSearch(
+                    "ou=groups,dc=zulip,dc=com",
+                    ldap.SCOPE_ONELEVEL,
+                    "(objectClass=groupOfUniqueNames)",
+                ),
+                LDAP_SYNCHRONIZED_GROUPS_BY_REALM={
+                    "zulip": [
+                        "cool_test_group",
+                    ]
+                },
+                LDAP_GROUP_DESCRIPTION_ATTR="description",
+                LDAP_APPEND_DOMAIN="zulip.com",
+            ),
+            self.assertLogs("zulip.ldap", "DEBUG") as zulip_ldap_log,
+        ):
+            ldap_group_description = self.mock_ldap.directory[
+                "cn=cool_test_group,ou=groups,dc=zulip,dc=com"
+            ]["description"][0]
+            zulip_group_description = NamedUserGroup.objects.get(
+                realm=realm, name="cool_test_group"
+            ).description
+
+            sync_user_from_ldap(hamlet, mock.Mock())
+
+            self.assertEqual(
+                NamedUserGroup.objects.get(realm=realm, name="cool_test_group").description,
+                ldap_group_description,
+            )
+
+            # If the LDAP group has no description, no changes to the Zulip group should be made.
+            del self.mock_ldap.directory["cn=cool_test_group,ou=groups,dc=zulip,dc=com"][
+                "description"
+            ]
+            sync_user_from_ldap(hamlet, mock.Mock())
+            self.assertEqual(
+                NamedUserGroup.objects.get(realm=realm, name="cool_test_group").description,
+                ldap_group_description,
+            )
+
+        self.assertEqual(
+            zulip_ldap_log.output,
+            [
+                f"DEBUG:zulip.ldap:Syncing groups for user: {hamlet.id}",
+                "DEBUG:zulip.ldap:intended groups: {'cool_test_group'}; zulip groups: {'cool_test_group'}",
+                f"DEBUG:zulip.ldap:Updating group description for cool_test_group from {zulip_group_description} to {ldap_group_description}",
+                f"DEBUG:zulip.ldap:Syncing groups for user: {hamlet.id}",
+                "DEBUG:zulip.ldap:intended groups: {'cool_test_group'}; zulip groups: {'cool_test_group'}",
+            ],
         )
 
 
