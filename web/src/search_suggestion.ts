@@ -633,10 +633,29 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
     } else {
         description_html = "All public channels";
     }
+    let archived_description_html;
+    if (page_params.is_spectator || current_user.is_guest) {
+        archived_description_html = "All archived channels that you can view";
+    } else {
+        archived_description_html = "All archived channels";
+    }
     const suggestions: SuggestionAndIncompatiblePatterns[] = [
         {
             search_string,
             description_html,
+            is_people: false,
+            incompatible_patterns: [
+                {operator: "is", operand: "dm"},
+                {operator: "channel"},
+                {operator: "dm-including"},
+                {operator: "dm"},
+                {operator: "in"},
+                {operator: "channels"},
+            ],
+        },
+        {
+            search_string: "channels:archived",
+            description_html: archived_description_html,
             is_people: false,
             incompatible_patterns: [
                 {operator: "is", operand: "dm"},
