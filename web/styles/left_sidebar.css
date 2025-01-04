@@ -1288,6 +1288,12 @@ li.top_left_scheduled_messages {
     }
 }
 
+.topic-markers-and-unreads {
+    .unread_mention_info {
+        display: flex;
+    }
+}
+
 .channel-new-topic-button {
     /* display: flex; is set on visible channels and
        channel-row hovers. */
