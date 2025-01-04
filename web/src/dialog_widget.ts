@@ -92,7 +92,7 @@ export function hide_dialog_spinner(): void {
     const $spinner = $(`${dialog_widget_selector} .modal__spinner`);
     $(`${dialog_widget_selector} .modal__button`).prop("disabled", false);
 
-    loading.hide_spinner($(".dialog_submit_button"), $spinner);
+    loading.hide_button_spinner($(".dialog_submit_button"), $spinner);
 }
 
 export function show_dialog_spinner(): void {
@@ -102,7 +102,7 @@ export function show_dialog_spinner(): void {
 
     const $spinner = $(`${dialog_widget_selector} .modal__spinner`);
 
-    loading.show_spinner($(".dialog_submit_button"), $spinner);
+    loading.show_button_spinner($(".dialog_submit_button"), $spinner);
 }
 
 // Supports a callback to be called once the modal finishes closing.
