@@ -445,6 +445,7 @@ const hamletcharacters = user_group_item({
     creator_id: null,
     date_created: 1596710000,
     description: "Characters of Hamlet",
+    rendered_description: "<p>Characters of Hamlet</p>",
     members: new Set([100, 104]),
     is_system_group: false,
     direct_subgroup_ids: new Set([]),
@@ -463,6 +464,7 @@ const backend = user_group_item({
     creator_id: null,
     date_created: 1596710000,
     description: "Backend team",
+    rendered_description: "<p>Backend team</p>",
     members: new Set([101]),
     is_system_group: false,
     direct_subgroup_ids: new Set([1]),
@@ -481,6 +483,7 @@ const call_center = user_group_item({
     creator_id: null,
     date_created: 1596710000,
     description: "folks working in support",
+    rendered_description: "<p>folks working in support</p>",
     members: new Set([102]),
     is_system_group: false,
     direct_subgroup_ids: new Set([]),
@@ -499,6 +502,7 @@ const support = user_group_item({
     creator_id: null,
     date_created: 1596710000,
     description: "Support team",
+    rendered_description: "<p>Support team</p>",
     members: new Set([]),
     is_system_group: false,
     direct_subgroup_ids: new Set([]),
@@ -1204,8 +1208,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 actual_value = options.highlighter_html(hamletcharacters);
                 expected_value =
                     '    <i class="typeahead-image zulip-icon zulip-icon-triple-users no-presence-circle" aria-hidden="true"></i>\n' +
-                    '<div class="typeahead-text-container">\n' +
-                    '    <strong class="typeahead-strong-section">hamletcharacters</strong>    <span class="autocomplete_secondary">Characters of Hamlet</span>' +
+                    '<div class="typeahead-text-container has_secondary_html">\n' +
+                    '    <strong class="typeahead-strong-section">hamletcharacters</strong>    <span class="autocomplete_secondary rendered_markdown single-line-rendered-markdown">Characters of Hamlet</span>' +
                     "</div>\n";
                 assert.equal(actual_value, expected_value);
 

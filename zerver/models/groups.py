@@ -53,6 +53,7 @@ class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # djang
     )
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_column="name")
     description = models.TextField(default="", db_column="description")
+    rendered_description = models.TextField(default="")
     date_created = models.DateTimeField(default=timezone_now, null=True)
     creator = models.ForeignKey(
         UserProfile, null=True, on_delete=models.SET_NULL, related_name="+", db_column="creator_id"
@@ -82,22 +83,27 @@ class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # djang
         UserProfile.ROLE_REALM_OWNER: {
             "name": SystemGroups.OWNERS,
             "description": "Owners of this organization",
+            "rendered_description": "<p>Owners of this organization</p>",
         },
         UserProfile.ROLE_REALM_ADMINISTRATOR: {
             "name": SystemGroups.ADMINISTRATORS,
             "description": "Administrators of this organization, including owners",
+            "rendered_description": "<p>Administrators of this organization, including owners</p>",
         },
         UserProfile.ROLE_MODERATOR: {
             "name": SystemGroups.MODERATORS,
             "description": "Moderators of this organization, including administrators",
+            "rendered_description": "<p>Moderators of this organization, including administrators</p>",
         },
         UserProfile.ROLE_MEMBER: {
             "name": SystemGroups.MEMBERS,
             "description": "Members of this organization, not including guests",
+            "rendered_description": "<p>Members of this organization, not including guests</p>",
         },
         UserProfile.ROLE_GUEST: {
             "name": SystemGroups.EVERYONE,
             "description": "Everyone in this organization, including guests",
+            "rendered_description": "<p>Everyone in this organization, including guests</p>",
         },
     }
 

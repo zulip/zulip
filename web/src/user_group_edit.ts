@@ -9,6 +9,7 @@ import render_group_info_banner from "../templates/modal_banner/user_group_info_
 import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.hbs";
 import render_cannot_deactivate_group_banner from "../templates/user_group_settings/cannot_deactivate_group_banner.hbs";
 import render_change_user_group_info_modal from "../templates/user_group_settings/change_user_group_info_modal.hbs";
+import render_user_group_description from "../templates/user_group_settings/user_group_description.hbs";
 import render_user_group_membership_status from "../templates/user_group_settings/user_group_membership_status.hbs";
 import render_user_group_settings from "../templates/user_group_settings/user_group_settings.hbs";
 import render_user_group_settings_overlay from "../templates/user_group_settings/user_group_settings_overlay.hbs";
@@ -28,6 +29,7 @@ import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
+import {postprocess_content} from "./postprocess_content.ts";
 import * as scroll_util from "./scroll_util.ts";
 import type {UserGroupUpdateEvent} from "./server_event_types.ts";
 import * as settings_components from "./settings_components.ts";
@@ -799,7 +801,12 @@ export function update_group(event: UserGroupUpdateEvent): void {
     }
 
     if (event.data.description !== undefined) {
-        $group_row.find(".description").text(group.description);
+        const $edit_container = get_edit_container(group);
+        const html = render_user_group_description({
+            rendered_description: postprocess_content(group.rendered_description),
+        });
+        $edit_container.find(".group-description-wrapper").html(html);
+        $group_row.find(".description").html(html);
     }
 
     if (event.data.deactivated) {

@@ -169,6 +169,9 @@ def edit_user_group(
         do_update_user_group_name(user_group, name, acting_user=user_profile)
 
     if description is not None and description != user_group.description:
+        if "\n" in description:
+            # We don't allow newline characters in group descriptions.
+            description = description.replace("\n", " ")
         do_update_user_group_description(user_group, description, acting_user=user_profile)
 
     request_settings_dict = locals()
