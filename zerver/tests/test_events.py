@@ -2142,15 +2142,15 @@ class NormalActionsTest(BaseAction):
 
     def test_change_full_name(self) -> None:
         now = timezone_now()
-        with self.verify_action() as events:
-            do_change_full_name(self.user_profile, "Sir Hamlet", self.user_profile)
+        with self.verify_action(num_events=2) as events:
+            do_change_full_name(self.user_profile, "Sir Hamlet", self.example_user("iago"))
         check_realm_user_update("events[0]", events[0], "full_name")
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=self.user_profile.realm,
                 event_type=AuditLogEventType.USER_FULL_NAME_CHANGED,
                 event_time__gte=now,
-                acting_user=self.user_profile,
+                acting_user=self.example_user("iago"),
             ).count(),
             1,
         )
@@ -2165,7 +2165,7 @@ class NormalActionsTest(BaseAction):
                 event_time__gte=now,
                 acting_user=self.user_profile,
             ).count(),
-            1,
+            0,
         )
 
         self.set_up_db_for_testing_user_access()
