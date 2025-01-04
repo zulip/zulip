@@ -243,8 +243,8 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: There are no messages here.",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
+            "translated: There are no messages in your combined feed.",
+            'translated HTML: Would you like to <a href="#narrow/streams/public">view messages in all public channels</a>?',
         ),
     );
 
