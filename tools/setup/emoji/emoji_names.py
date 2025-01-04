@@ -1194,7 +1194,7 @@ EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
     "1f601": {"canonical_name": "grinning_face_with_smiling_eyes", "aliases": []},
     "1f602": {"canonical_name": "joy", "aliases": ["tears", "laughter_tears"]},
     "1f603": {"canonical_name": "smiley", "aliases": []},
-    "1f604": {"canonical_name": "big_smile", "aliases": []},
+    "1f604": {"canonical_name": "smile", "aliases": []},
     "1f605": {"canonical_name": "sweat_smile", "aliases": []},
     "1f606": {"canonical_name": "laughing", "aliases": ["lol"]},
     "1f607": {"canonical_name": "innocent", "aliases": ["halo"]},
