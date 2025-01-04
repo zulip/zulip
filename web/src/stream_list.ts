@@ -1040,9 +1040,6 @@ export function hide_search_section(): void {
 
 export function initiate_search(): void {
     popovers.hide_all();
-    show_search_section();
-
-    const $filter = $(".stream-list-filter").expectOne();
 
     if (
         // Check if left column is a overlay and is not visible.
@@ -1054,6 +1051,17 @@ export function initiate_search(): void {
     } else if (!sidebar_ui.left_sidebar_expanded_as_overlay) {
         $("body").removeClass("hide-left-sidebar");
     }
+    if (is_zoomed_in()) {
+        $("#filter-topic-input").trigger("focus");
+        return;
+    }
+    if (pm_list.is_zoomed_in()) {
+        $(".direct-messages-list-filter").trigger("focus");
+        return;
+    }
+    show_search_section();
+
+    const $filter = $(".stream-list-filter").expectOne();
     $filter.trigger("focus");
 
     stream_cursor.reset();
