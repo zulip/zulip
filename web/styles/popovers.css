@@ -642,16 +642,15 @@ ul.popover-group-menu-member-list {
         .stream-search {
             grid-column: search-input-start / clear-search-end;
             grid-row: search-input;
-            padding-right: 20px;
+            padding-right: 28px;
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;
             margin-bottom: 0;
         }
 
-        #clear_stream_search {
-            display: none;
-            grid-area: clear-search;
+        .stream-search:placeholder-shown + #clear_stream_search {
+            visibility: hidden;
         }
     }
 
