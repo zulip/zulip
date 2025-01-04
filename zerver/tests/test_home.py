@@ -144,6 +144,8 @@ class HomeTest(ZulipTestCase):
         "realm_create_private_stream_policy",
         "realm_create_public_stream_policy",
         "realm_create_web_public_stream_policy",
+        "realm_welcome_bot_custom_message",
+        "realm_welcome_bot_custom_message_enabled",
         "realm_date_created",
         "realm_default_code_block_language",
         "realm_default_external_accounts",

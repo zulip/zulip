@@ -6,7 +6,7 @@
                 <h3>{{t "Automated messages and emails" }}</h3>
                 {{> settings_save_discard_widget section_name="notifications" }}
             </div>
-            <div class="inline-block organization-settings-parent">
+            <div class="organization-settings-parent">
                 <div class="realm_default_language">
                     {{> language_selection_widget
                       section_name="realm_default_language"
@@ -37,11 +37,6 @@
                   is_checked=realm_message_content_allowed_in_email_notifications
                   label=admin_settings_label.realm_message_content_allowed_in_email_notifications}}
 
-                {{> settings_checkbox
-                  setting_name="realm_send_welcome_emails"
-                  prefix="id_"
-                  is_checked=realm_send_welcome_emails
-                  label=admin_settings_label.realm_send_welcome_emails}}
                 {{#if settings_send_digest_emails }}
                 {{> settings_checkbox
                   setting_name="realm_digest_emails_enabled"
@@ -63,6 +58,29 @@
                         <option value="5">{{t "Saturday" }}</option>
                         <option value="6">{{t "Sunday" }}</option>
                     </select>
+                </div>
+
+                {{> settings_checkbox
+                  setting_name="realm_send_welcome_emails"
+                  prefix="id_"
+                  is_checked=realm_send_welcome_emails
+                  label=admin_settings_label.realm_send_welcome_emails}}
+
+                {{> settings_checkbox
+                  setting_name="realm_welcome_bot_custom_message_enabled"
+                  prefix="id_"
+                  is_checked=realm_welcome_bot_custom_message_enabled
+                  label=admin_settings_label.realm_welcome_bot_custom_message}}
+
+                <div class="input-group" id="welcome_bot_custom_message_container">
+                    <div class="alert" id="welcome_bot_custom_message_status"></div>
+                    <label for="id_realm_welcome_bot_custom_message">{{t "Message text" }}</label>
+                    <textarea id="id_realm_welcome_bot_custom_message" name="realm_welcome_bot_custom_message"
+                      class="admin-realm-welcome-bot-custom-message setting-widget prop-element settings_textarea display-block" maxlength="1000"
+                      data-setting-widget-type="string">{{ realm_welcome_bot_custom_message }}</textarea>
+                    <button class="button rounded sea-green" id="id_send_welcome_bot_custom_message" type="button">
+                        {{t 'Send me a test message'}}
+                    </button>
                 </div>
             </div>
         </div>

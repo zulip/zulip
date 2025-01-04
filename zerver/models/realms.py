@@ -156,6 +156,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     MAX_REALM_DESCRIPTION_LENGTH = 1000
     MAX_REALM_SUBDOMAIN_LENGTH = 40
     MAX_REALM_REDIRECT_URL_LENGTH = 128
+    MAX_REALM_WELCOME_BOT_CUSTOM_MESSAGE_LENGTH = 1000
 
     INVITES_STANDARD_REALM_DAILY_MAX = 3000
     MESSAGE_VISIBILITY_LIMITED = 10000
@@ -218,6 +219,9 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     send_welcome_emails = models.BooleanField(default=True)
     message_content_allowed_in_email_notifications = models.BooleanField(default=True)
+
+    welcome_bot_custom_message_enabled = models.BooleanField(default=False)
+    welcome_bot_custom_message = models.TextField(default="")
 
     mandatory_topics = models.BooleanField(default=False)
 
@@ -632,6 +636,8 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         allow_message_editing=bool,
         avatar_changes_disabled=bool,
         bot_creation_policy=int,
+        welcome_bot_custom_message_enabled=bool,
+        welcome_bot_custom_message=str,
         default_code_block_language=str,
         default_language=str,
         description=str,
