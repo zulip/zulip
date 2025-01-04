@@ -2153,6 +2153,26 @@ class StreamMessagesTest(ZulipTestCase):
         ):
             self.send_stream_message(cordelia, "test_stream", content)
 
+    def test_user_group_mentions_via_subgroup(self) -> None:
+        user_profile = self.example_user("iago")
+        self.subscribe(user_profile, "Denmark")
+        my_group = check_add_user_group(
+            user_profile.realm, "my_group", [user_profile], acting_user=user_profile
+        )
+        my_group_via_subgroup = check_add_user_group(
+            user_profile.realm, "my_group_via_subgroup", [], acting_user=user_profile
+        )
+        add_subgroups_to_user_group(my_group_via_subgroup, [my_group], acting_user=None)
+
+        self.send_stream_message(
+            self.example_user("hamlet"), "Denmark", content="test @*my_group_via_subgroup* mention"
+        )
+
+        message = most_recent_message(user_profile)
+        assert UserMessage.objects.get(
+            user_profile=user_profile, message=message
+        ).flags.mentioned.is_set
+
     def test_user_group_mention_restrictions(self) -> None:
         iago = self.example_user("iago")
         shiva = self.example_user("shiva")
