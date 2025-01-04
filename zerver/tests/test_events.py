@@ -1228,7 +1228,7 @@ class NormalActionsTest(BaseAction):
         with self.verify_action(state_change_expected=False) as events:
             do_invite_users(
                 self.user_profile,
-                ["foo@zulip.com"],
+                [("foo@zulip.com", "")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1260,7 +1260,7 @@ class NormalActionsTest(BaseAction):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 user_profile,
-                ["foo@zulip.com"],
+                [("foo@zulip.com", "")],
                 [],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1283,7 +1283,7 @@ class NormalActionsTest(BaseAction):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 self.user_profile,
-                ["foo@zulip.com"],
+                [("foo@zulip.com", "")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1329,7 +1329,7 @@ class NormalActionsTest(BaseAction):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 self.user_profile,
-                ["foo@zulip.com"],
+                [("foo@zulip.com", "")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,

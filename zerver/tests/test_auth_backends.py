@@ -1546,7 +1546,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 iago,
-                [email],
+                [(email, name)],
                 [],
                 include_realm_default_subscriptions=True,
                 invite_expires_in_minutes=2 * 24 * 60,
@@ -1909,7 +1909,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 iago,
-                [email],
+                [(email, name)],
                 [],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,

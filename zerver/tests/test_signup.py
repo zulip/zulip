@@ -4117,7 +4117,7 @@ class UserSignUpTest(ZulipTestCase):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 admin,
-                [mirror_dummy.delivery_email],
+                [(mirror_dummy.delivery_email, "")],
                 [],
                 invite_expires_in_minutes=None,
                 include_realm_default_subscriptions=True,

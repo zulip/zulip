@@ -184,7 +184,7 @@ def check_invite_limit(realm: Realm, num_invitees: int) -> None:
 @transaction.atomic(durable=True)
 def do_invite_users(
     user_profile: UserProfile,
-    invitee_emails: Collection[str],
+    invitee_emails: Collection[tuple[str, str]],
     streams: Collection[Stream],
     notify_referrer_on_join: bool = True,
     user_groups: Collection[NamedUserGroup] = [],
@@ -224,10 +224,10 @@ def do_invite_users(
                 sent_invitations=False,
             )
 
-    good_emails: set[str] = set()
+    good_emails: set[tuple[str, str]] = set()
     errors: list[tuple[str, str, bool]] = []
     validate_email_allowed_in_realm = get_realm_email_validator(realm)
-    for email in invitee_emails:
+    for email, full_name in invitee_emails:
         if email == "":
             continue
         email_error = validate_email_is_valid(
@@ -238,20 +238,20 @@ def do_invite_users(
         if email_error:
             errors.append((email, email_error, False))
         else:
-            good_emails.add(email)
+            good_emails.add((email, full_name))
 
     """
     good_emails are emails that look ok so far,
     but we still need to make sure they're not
     gonna conflict with existing users
     """
-    error_dict = get_existing_user_errors(realm, good_emails)
+    error_dict = get_existing_user_errors(realm, {email for email, _ in good_emails})
 
     skipped: list[tuple[str, str, bool]] = []
     for email in error_dict:
         msg, deactivated = error_dict[email]
         skipped.append((email, msg, deactivated))
-        good_emails.remove(email)
+        good_emails = {item for item in good_emails if item[0] != email}
 
     validated_emails = list(good_emails)
 
@@ -270,10 +270,11 @@ def do_invite_users(
 
     # Now that we are past all the possible errors, we actually create
     # the PreregistrationUser objects and trigger the email invitations.
-    for email in validated_emails:
+    for email, full_name in validated_emails:
         # The logged in user is the referrer.
         prereg_user = PreregistrationUser(
             email=email,
+            full_name=full_name,
             referred_by=user_profile,
             invited_as=invite_as,
             realm=realm,

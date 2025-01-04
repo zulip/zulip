@@ -135,7 +135,7 @@ class StreamSetupTest(ZulipTestCase):
 
         do_invite_users(
             admin,
-            [new_user_email],
+            [(new_user_email, "")],
             streams,
             include_realm_default_subscriptions=False,
             invite_expires_in_minutes=1000,
@@ -166,7 +166,7 @@ class StreamSetupTest(ZulipTestCase):
 
         do_invite_users(
             admin,
-            [new_user_email],
+            [(new_user_email, "")],
             streams=[],
             user_groups=user_groups,
             include_realm_default_subscriptions=False,
@@ -1880,7 +1880,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 self.user_profile,
-                ["foo@zulip.com"],
+                [("foo@zulip.com", "")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1889,14 +1889,14 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 self.user_profile,
-                ["foo@zulip.com"],
+                [("foo@zulip.com", "")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
             do_invite_users(
                 self.user_profile,
-                ["foo@zulip.com"],
+                [("foo@zulip.com", "")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1908,7 +1908,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 lear_user,
-                ["foo@zulip.com"],
+                [("foo@zulip.com", "")],
                 [],
                 include_realm_default_subscriptions=True,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -2120,35 +2120,35 @@ class InvitationsTestCase(InviteUserBase):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 user_profile,
-                ["TestOne@zulip.com"],
+                [("TestOne@zulip.com", "")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
             do_invite_users(
                 user_profile,
-                ["TestTwo@zulip.com"],
+                [("TestTwo@zulip.com", "")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
             do_invite_users(
                 hamlet,
-                ["TestThree@zulip.com"],
+                [("TestThree@zulip.com", "")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
             do_invite_users(
                 othello,
-                ["TestFour@zulip.com"],
+                [("TestFour@zulip.com", "")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
             do_invite_users(
                 self.mit_user("sipbtest"),
-                ["TestOne@mit.edu"],
+                [("TestOne@mit.edu", "")],
                 [],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -2192,7 +2192,7 @@ class InvitationsTestCase(InviteUserBase):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 user_profile,
-                ["TestOne@zulip.com"],
+                [("TestOne@zulip.com", "")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -2204,7 +2204,7 @@ class InvitationsTestCase(InviteUserBase):
         ):
             do_invite_users(
                 user_profile,
-                ["TestTwo@zulip.com"],
+                [("TestTwo@zulip.com", "")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -2259,14 +2259,14 @@ class InvitationsTestCase(InviteUserBase):
             # after a large amount of days.
             do_invite_users(
                 user_profile,
-                ["TestOne@zulip.com"],
+                [("TestOne@zulip.com", "")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=None,
             )
             do_invite_users(
                 user_profile,
-                ["TestTwo@zulip.com"],
+                [("TestTwo@zulip.com", "")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=100 * 24 * 60,
@@ -2679,30 +2679,44 @@ class InviteeEmailsParserTests(ZulipTestCase):
     @override
     def setUp(self) -> None:
         super().setUp()
-        self.email1 = "email1@zulip.com"
+        self.email1 = "Email <email1@zulip.com>"
         self.email2 = "email2@zulip.com"
-        self.email3 = "email3@zulip.com"
+        self.email3 = "Email 3 <email3@zulip.com>"
 
     def test_if_emails_separated_by_commas_are_parsed_and_striped_correctly(self) -> None:
         emails_raw = f"{self.email1} ,{self.email2}, {self.email3}"
-        expected_set = {self.email1, self.email2, self.email3}
+        expected_set = {
+            ("email1@zulip.com", "Email"),
+            ("email2@zulip.com", ""),
+            ("email3@zulip.com", "Email 3"),
+        }
         self.assertEqual(get_invitee_emails_set(emails_raw), expected_set)
 
     def test_if_emails_separated_by_newlines_are_parsed_and_striped_correctly(self) -> None:
         emails_raw = f"{self.email1}\n {self.email2}\n {self.email3} "
-        expected_set = {self.email1, self.email2, self.email3}
+        expected_set = {
+            ("email1@zulip.com", "Email"),
+            ("email2@zulip.com", ""),
+            ("email3@zulip.com", "Email 3"),
+        }
         self.assertEqual(get_invitee_emails_set(emails_raw), expected_set)
 
     def test_if_emails_from_email_client_separated_by_newlines_are_parsed_correctly(self) -> None:
-        emails_raw = (
-            f"Email One <{self.email1}>\nEmailTwo<{self.email2}>\nEmail Three<{self.email3}>"
-        )
-        expected_set = {self.email1, self.email2, self.email3}
+        emails_raw = "Email One <email1@zulip.com>\nEmailTwo <email2@zulip.com>\nEmail Three <email3@zulip.com>"
+        expected_set = {
+            ("email1@zulip.com", "Email One"),
+            ("email2@zulip.com", "EmailTwo"),
+            ("email3@zulip.com", "Email Three"),
+        }
         self.assertEqual(get_invitee_emails_set(emails_raw), expected_set)
 
     def test_if_emails_in_mixed_style_are_parsed_correctly(self) -> None:
-        emails_raw = f"Email One <{self.email1}>,EmailTwo<{self.email2}>\n{self.email3}"
-        expected_set = {self.email1, self.email2, self.email3}
+        emails_raw = f"Email One <email1@zulip.com>,EmailTwo <email2@zulip.com>\n{self.email3}"
+        expected_set = {
+            ("email1@zulip.com", "Email One"),
+            ("email2@zulip.com", "EmailTwo"),
+            ("email3@zulip.com", "Email 3"),
+        }
         self.assertEqual(get_invitee_emails_set(emails_raw), expected_set)
 
 
