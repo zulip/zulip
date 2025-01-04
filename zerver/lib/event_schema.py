@@ -122,8 +122,13 @@ def validate_event_with_model_type(event: dict[str, object], model: EventModel) 
 
 def make_checker(base_model: EventModel) -> Callable[[str, dict[str, object]], None]:
     def f(name: str, event: dict[str, object]) -> None:
-        # Note that we don't use `name` for debugging any more.
-        validate_event_with_model_type(event, base_model)
+        try:
+            validate_event_with_model_type(event, base_model)
+        except Exception as e:
+            print(f"""
+                We have a problem with {name}
+            """)
+            raise e
 
     return f
 
