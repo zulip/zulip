@@ -42,6 +42,7 @@ import * as util from "./util.ts";
 // that pop up from the left sidebar.
 let stream_widget_value: number | undefined;
 let move_topic_to_stream_topic_typeahead: Typeahead<string> | undefined;
+const last_propagate_mode_for_conversation = new Map<string, string>();
 
 export function stream_sidebar_menu_handle_keyboard(key: string): void {
     if (popover_menus.is_color_picker_popover_displayed()) {
@@ -713,11 +714,26 @@ export async function build_move_topic_to_stream_popover(
         if (!args.from_message_actions_popover) {
             update_move_messages_count_text("change_all");
         } else {
+            // Generate unique key for this conversation
+            const conversation_key = `${current_stream_id}_${topic_name}`;
             let selected_option = String($("#message_move_select_options").val());
+
+            // If a user has changed the smart defaults of `propagate_mode` to "change_one", we
+            // remember that forced change and apply the same default for `propagate_mode` next
+            // time when the user tries to move the message of the same topic to save the time
+            // of user manually selecting "change_one" every time.
+            const previously_used_propagate_mode =
+                last_propagate_mode_for_conversation.get(conversation_key);
+            if (previously_used_propagate_mode === "change_one") {
+                selected_option = "change_one";
+                $("#message_move_select_options").val(selected_option);
+            }
+
             update_move_messages_count_text(selected_option, message?.id);
 
             $("#message_move_select_options").on("change", function () {
                 selected_option = String($(this).val());
+                last_propagate_mode_for_conversation.set(conversation_key, selected_option);
                 update_move_messages_count_text(selected_option, message?.id);
             });
         }
