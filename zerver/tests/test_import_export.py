@@ -562,7 +562,7 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(exported_onboarding_usermessages[0]["realm"], realm.id)
 
         data = read_json("messages-000001.json")
-        um = UserMessage.objects.all()[0]
+        um = UserMessage.objects.first()
         exported_um = self.find_by_id(data["zerver_usermessage"], um.id)
         self.assertEqual(exported_um["message"], um.message_id)
         self.assertEqual(exported_um["user_profile"], um.user_profile_id)
