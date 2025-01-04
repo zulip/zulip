@@ -10,7 +10,7 @@ export type RawPresence = z.infer<typeof presence_schema> & {
 };
 
 export type PresenceStatus = {
-    status: "active" | "idle" | "offline";
+    status: "active" | "idle" | "offline" | "deactivated";
     last_active?: number | undefined;
 };
 
@@ -60,8 +60,15 @@ export function get_status(user_id: number): PresenceStatus["status"] {
         return "offline";
     }
     if (presence_info.has(user_id)) {
+        if (presence_info.get(user_id)!.status === undefined) {
+            return "offline";
+        }
         return presence_info.get(user_id)!.status;
     }
+    if (!people.is_person_active(user_id)) {
+        return "deactivated";
+    }
+
     return "offline";
 }
 
