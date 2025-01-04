@@ -3,6 +3,7 @@ import re
 import string
 from collections.abc import Callable
 
+import requests
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
@@ -44,6 +45,24 @@ def guess_zulip_user_from_jira(jira_username: str, realm: Realm) -> UserProfile 
         return None
 
 
+def fetch_display_name_from_jira(account_id: str) -> str | None:
+    # Fetch the display name for a Jira account ID using Jira's API.
+
+    JIRA_API_URL = "https://your-jira-instance.atlassian.net/rest/api/2/user"
+    JIRA_AUTH = ("your-email@example.com", "your-api-token")  # Replace with actual credentials
+
+    params = {"accountId": account_id}
+    try:
+        response = requests.get(JIRA_API_URL, params=params, auth=JIRA_AUTH)
+        response.raise_for_status()
+        print("Jira API response:", response.json())
+
+        return response.json().get("displayName")
+    except requests.RequestException as e:
+        print(f"Error fetching display name for account ID {account_id}: {e}")
+        return None
+
+
 def convert_jira_markup(content: str, realm: Realm) -> str:
     # Attempt to do some simplistic conversion of Jira
     # formatting to Markdown, for consumption in Zulip
@@ -78,19 +97,31 @@ def convert_jira_markup(content: str, realm: Realm) -> str:
     full_link_re = re.compile(r"\[(?:(?P<title>[^|~]+)\|)(?P<url>[^\]]*)\]")
     content = re.sub(full_link_re, r"[\g<title>](\g<url>)", content)
 
-    # Try to convert a Jira user mention of format [~username] into a
+    # Try to convert a Jira user mention of format [~user_id:id] into a
     # Zulip user mention. We don't know the email, just the Jira username,
     # so we naively guess at their Zulip account using this
-    mention_re = re.compile(r"\[~(.*?)\]")
-    for username in mention_re.findall(content):
-        # Try to look up username
-        user_profile = guess_zulip_user_from_jira(username, realm)
+    mention_re = re.compile(r"\[~accountid:(.*?)\]")
+    account_ids = mention_re.findall(content)
+
+    for account_id in account_ids:
+        # Fetch the display name from Jira
+        display_name = fetch_display_name_from_jira(account_id)
+
+        # Check if display_name is None before passing it to guess_zulip_user_from_jira
+        if display_name:
+            user_profile = guess_zulip_user_from_jira(display_name, realm)
+        else:
+            user_profile = None
+
         if user_profile:
+            # Replace with the Zulip username or full name
             replacement = f"**{user_profile.full_name}**"
         else:
-            replacement = f"**{username}**"
+            # Fallback to the account ID if the display name is not found or invalid
+            replacement = f"**{display_name if display_name else account_id}**"
 
-        content = content.replace(f"[~{username}]", replacement)
+        # Replace each mention in content with the resolved name
+        content = content.replace(f"[~accountid:{account_id}]", replacement)
 
     return content
 
@@ -310,11 +341,16 @@ def normalize_comment(comment: str) -> str:
 
 
 def handle_comment_created_event(payload: WildValue, user_profile: UserProfile) -> str:
+    # Extract the raw comment from the payload and convert Jira-specific markup to Zulip-friendly format.
+    raw_comment = payload["comment"]["body"].tame(check_string)
+    processed_comment = convert_jira_markup(raw_comment, user_profile.realm)
+
+    # Format and return the comment notification string with author, issue details, and processed comment.
     return "{author} commented on {issue_string}\
 \n``` quote\n{comment}\n```\n".format(
         author=payload["comment"]["author"]["displayName"].tame(check_string),
         issue_string=get_issue_string(payload, with_title=True),
-        comment=normalize_comment(payload["comment"]["body"].tame(check_string)),
+        comment=normalize_comment(processed_comment),
     )
 
 
