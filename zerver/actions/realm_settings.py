@@ -725,6 +725,15 @@ def scrub_deactivated_realm(realm_to_scrub: Realm) -> None:
         logging.info("Scrubbed realm %s", realm_to_scrub.id)
 
 
+def clean_deactivated_realm_data() -> None:
+    realms_to_scrub = Realm.objects.filter(
+        deactivated=True,
+        scheduled_deletion_date__lte=timezone_now(),
+    )
+    for realm in realms_to_scrub:
+        scrub_deactivated_realm(realm)
+
+
 @transaction.atomic(durable=True)
 def do_change_realm_org_type(
     realm: Realm,

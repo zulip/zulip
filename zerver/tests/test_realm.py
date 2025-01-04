@@ -24,6 +24,7 @@ from zerver.actions.message_send import (
     internal_send_stream_message,
 )
 from zerver.actions.realm_settings import (
+    clean_deactivated_realm_data,
     do_add_deactivated_redirect,
     do_change_realm_max_invites,
     do_change_realm_org_type,
@@ -37,7 +38,6 @@ from zerver.actions.realm_settings import (
     do_set_realm_authentication_methods,
     do_set_realm_property,
     do_set_realm_user_default_setting,
-    scrub_deactivated_realm,
 )
 from zerver.actions.streams import do_deactivate_stream, merge_streams
 from zerver.actions.user_groups import check_add_user_group
@@ -1071,8 +1071,7 @@ class RealmTest(ZulipTestCase):
         self.assertTrue(zulip.deactivated)
 
         with mock.patch("zerver.actions.realm_settings.do_scrub_realm") as mock_scrub_realm:
-            scrub_deactivated_realm(zephyr)
-            scrub_deactivated_realm(zulip)
+            clean_deactivated_realm_data()
             mock_scrub_realm.assert_not_called()
 
         with (
@@ -1089,13 +1088,14 @@ class RealmTest(ZulipTestCase):
             self.assertTrue(lear.deactivated)
             mock_scrub_realm.assert_called_once_with(lear, acting_user=None)
 
+        do_reactivate_realm(lear)
+
         with (
             time_machine.travel(timezone_now() + timedelta(days=4), tick=False),
             mock.patch("zerver.actions.realm_settings.do_scrub_realm") as mock_scrub_realm,
             self.assertLogs(level="INFO"),
         ):
-            scrub_deactivated_realm(get_realm("zephyr"))
-            scrub_deactivated_realm(get_realm("zulip"))
+            clean_deactivated_realm_data()
             mock_scrub_realm.assert_called_once_with(zephyr, acting_user=None)
 
     def test_initial_plan_type(self) -> None:
