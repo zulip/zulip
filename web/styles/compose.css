@@ -552,11 +552,7 @@
     border: 1px solid;
     display: flex;
     align-items: center;
-    /* Banners should carry at least a minimum
-       legacy font-size of 15px, and a line-height
-       of 18px. 1.2em is 18px at 15px/1em. */
-    font-size: max(15px, var(--base-font-size-px));
-    line-height: max(18px, 1.2em);
+    line-height: 1.2em; /* 18px at 15px/1em. */
 
     .main-view-banner-elements-wrapper {
         display: flex;
@@ -684,13 +680,6 @@
            ::before content where the icon sits. */
         display: flex;
         align-items: center;
-
-        /* Set the font-size for the close button
-           on the ::before element, so that it doesn't
-           impact the em units above. */
-        &::before {
-            font-size: 16px;
-        }
     }
 
     .banner_content + .main-view-banner-close-button {
