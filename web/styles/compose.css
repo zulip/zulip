@@ -336,16 +336,22 @@
     }
 }
 
-#message-content-container:has(.new_message_textarea.over_limit),
-#message-content-container:has(.new_message_textarea.over_limit:focus),
-.edit-content-container:has(.message_edit_content.over_limit),
-.edit-content-container:has(.message_edit_content.over_limit:focus) {
+#message-content-container:has(.new_message_textarea.over-limit),
+.edit-content-container:has(.message_edit_content.over-limit) {
     box-shadow: 0 0 0 1pt
         var(--color-message-content-container-border-over-limit);
 }
 
-#message-content-container:has(.new_message_textarea.over_limit.flash),
-.edit-content-container:has(.message_edit_content.over_limit.flash) {
+#message-content-container:has(.new_message_textarea.approaching-limit),
+.edit-content-container:has(.message_edit_content.approaching-limit) {
+    box-shadow: 0 0 0 1pt
+        var(--color-message-content-container-border-approaching-limit);
+}
+
+#message-content-container:has(.new_message_textarea.over-limit.flash),
+#message-content-container:has(.new_message_textarea.approaching-limit.flash),
+.edit-content-container:has(.message_edit_content.over-limit.flash),
+.edit-content-container:has(.message_edit_content.approaching-limit.flash) {
     animation: message-limit-flash 0.5s ease-in-out 3;
 }
 
@@ -406,6 +412,18 @@
     padding-right: var(--composebox-buttons-width);
     background-color: var(--color-compose-message-content-background);
     color: var(--color-text-default);
+
+    &.over-limit {
+        background-color: var(
+            --color-compose-message-content-background-over-limit
+        );
+    }
+
+    &.approaching-limit {
+        background-color: var(
+            --color-compose-message-content-background-approaching-limit
+        );
+    }
 }
 
 .surround-formatting-buttons-row {
@@ -478,7 +496,7 @@
     margin-top: auto;
     padding: 3px 3px 3px 0;
 
-    &.over_limit {
+    &.over-limit {
         color: var(--color-limit-indicator-over-limit);
         font-weight: bold;
     }
