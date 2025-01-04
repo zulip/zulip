@@ -8,7 +8,7 @@ import * as keydown_util from "./keydown_util.ts";
 // dependencies other than jQuery.
 
 // https://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser
-export function place_caret_at_end(el: HTMLElement): void {
+export let place_caret_at_end = (el: HTMLElement): void => {
     el.focus();
     if (el instanceof HTMLInputElement) {
         el.setSelectionRange(el.value.length, el.value.length);
@@ -20,6 +20,10 @@ export function place_caret_at_end(el: HTMLElement): void {
         sel?.removeAllRanges();
         sel?.addRange(range);
     }
+};
+
+export function rewire_place_caret_at_end(value: typeof place_caret_at_end): void {
+    place_caret_at_end = value;
 }
 
 export function replace_emoji_with_text($element: JQuery): void {
