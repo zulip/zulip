@@ -75,6 +75,32 @@
                 top: -0.5px;
             }
         }
+
+        .recipient_bar_controls {
+            opacity: 0;
+            transition: opacity 0.15s ease-out;
+        }
+
+        .recipient_bar_controls:focus-within {
+            opacity: 1;
+            transition: opacity 0.1s ease-in;
+        }
+
+        /* Show the bar controls on hover with a slight delay */
+        &:hover {
+            .recipient_bar_controls {
+                opacity: 1;
+                transition: opacity 0.15s ease-in 0.1s;
+            }
+        }
+
+        /* Always show controls when header is sticky */
+        &.sticky_header {
+            .recipient_bar_controls {
+                opacity: 1;
+                transition: opacity 0.15s ease-in;
+            }
+        }
     }
 }
 
