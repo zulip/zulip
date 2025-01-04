@@ -1,8 +1,26 @@
-It's easy to send Zulip messages from GitHub Actions! This is useful:
+# Zulip GitHub Actions integration
 
-  * If you want to report the success or failure of an Action to Zulip.
-  * If you want to send output from your actions to Zulip.
+It's easy to send Zulip messages from GitHub Actions!
 
-Instructions are available [here](https://github.com/zulip/github-actions-zulip#readme).
+{start_tabs}
 
-See also the [GitHub integration](/integrations/doc/github).
+1. {!create-a-generic-bot.md!}
+   Note down the bot's email address and API key.
+
+1. To send Zulip notifications whenever your workflow runs, add the
+   `zulip/github-actions-zulip/send-message@v1` action to your GitHub
+   Actions workflow file, and set the input values as specified in the
+   [README][README] of the [Zulip GitHub Actions repository][repo].
+
+{end_tabs}
+
+### Related documentation
+
+* [Zulip GitHub Actions repository][repo]
+
+* [Configuring the Zulip Send Message Action][README]
+
+* [GitHub integration](/integrations/doc/github)
+
+[README]: https://github.com/zulip/github-actions-zulip/blob/main/send-message/README.md
+[repo]: https://github.com/zulip/github-actions-zulip
