@@ -10,6 +10,7 @@ import {MAX_ITEMS, Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -1299,6 +1300,32 @@ function get_header_html(): string | false {
     return `<em>${_.escape(tip_text)}</em>`;
 }
 
+function set_recipient_from_typeahead(item: UserGroupPillData | UserPillData): void {
+    if (item.type === "user_group") {
+        for (const user_id of item.members) {
+            const user = people.get_by_user_id(user_id);
+            // filter out inactive users, inserted users and current user
+            // from pill insertion
+            const inserted_users = user_pill.get_user_ids(compose_pm_pill.widget);
+            const current_user = people.is_current_user(user.email);
+            if (
+                people.is_person_active(user_id) &&
+                !inserted_users.includes(user.user_id) &&
+                !current_user
+            ) {
+                compose_pm_pill.set_from_typeahead(user);
+            }
+        }
+        // clear input pill in the event no pills were added
+        const pill_widget = compose_pm_pill.widget;
+        if (pill_widget.clear_text !== undefined) {
+            pill_widget.clear_text();
+        }
+    } else {
+        compose_pm_pill.set_from_typeahead(item.user);
+    }
+}
+
 export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElement>): void {
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element,
@@ -1348,25 +1375,79 @@ export function initialize({
         type: "input",
     };
     new Typeahead(stream_message_typeahead_input, {
-        source(): string[] {
-            return topics_seen_for(compose_state.stream_id());
+        source(query: string): (UserGroupPillData | UserPillData | string)[] {
+            let people_candidates: (UserGroupPillData | UserPillData)[] = [];
+            if (query && query.length > 3) {
+                people_candidates = get_pm_people(query);
+            }
+            const topics = topics_seen_for(compose_state.stream_id());
+            return [...people_candidates.slice(0, 1), ...topics];
         },
         items: max_num_items,
-        highlighter_html(item: string): string {
-            return typeahead_helper.render_typeahead_item({primary: item});
+        dropup: true,
+        highlighter_html(item: string | UserGroupPillData | UserPillData): string {
+            if (typeof item === "string") {
+                return typeahead_helper.render_typeahead_item({primary: item});
+            }
+            return typeahead_helper.render_person_or_user_group(item);
         },
-        sorter(items: string[], query: string): string[] {
-            const sorted = typeahead_helper.sorter(query, items, (x) => x);
+        matcher(item: UserGroupPillData | UserPillData | string, query: string): boolean {
+            if (typeof item === "string") {
+                return item.toLowerCase().includes(query.toLowerCase());
+            }
+            return true;
+        },
+        sorter(
+            items: (UserGroupPillData | UserPillData | string)[],
+            query: string,
+        ): (UserGroupPillData | UserPillData | string)[] {
+            const topic_items: string[] = [];
+            const people_items: (UserGroupPillData | UserPillData)[] = [];
+            for (const item of items) {
+                if (typeof item === "string") {
+                    topic_items.push(item);
+                } else {
+                    people_items.push(item);
+                }
+            }
+            const sorted = typeahead_helper.sorter(query, topic_items, (x) => x);
             if (sorted.length > 0 && !sorted.includes(query)) {
                 sorted.unshift(query);
             }
-            return sorted;
+
+            return [
+                ...sorted.slice(0, topic_items.length === sorted.length ? 1 : 2),
+                ...people_items,
+                ...sorted.slice(topic_items.length === sorted.length ? 1 : 2),
+            ];
         },
-        option_label(matching_items: string[], item: string): string | false {
+        option_label(
+            matching_items: (UserGroupPillData | UserPillData | string)[],
+            item: UserGroupPillData | UserPillData | string,
+        ): string | false {
             if (!matching_items.includes(item)) {
                 return `<em>${$t({defaultMessage: "New"})}</em>`;
             }
             return false;
+        },
+        updater(item: UserGroupPillData | UserPillData | string): string | undefined {
+            if (typeof item === "string") {
+                return item;
+            }
+            compose_state.set_message_type("private");
+            compose_recipient.update_compose_for_message_type({
+                message_type: "private",
+                trigger: "typeahead",
+                private_message_recipient: "",
+            });
+            $("#compose_recipient_box").hide();
+            $("#compose-direct-recipient").show();
+            $("#stream_toggle").removeClass("active");
+            $("#private_message_toggle").addClass("active");
+            $("#compose-recipient").addClass("compose-recipient-direct-selected");
+
+            set_recipient_from_typeahead(item);
+            return undefined;
         },
         header_html: render_topic_typeahead_hint,
     });
@@ -1389,29 +1470,7 @@ export function initialize({
             return items;
         },
         updater(item: UserGroupPillData | UserPillData): undefined {
-            if (item.type === "user_group") {
-                for (const user_id of item.members) {
-                    const user = people.get_by_user_id(user_id);
-                    // filter out inactive users, inserted users and current user
-                    // from pill insertion
-                    const inserted_users = user_pill.get_user_ids(compose_pm_pill.widget);
-                    const current_user = people.is_current_user(user.email);
-                    if (
-                        people.is_person_active(user_id) &&
-                        !inserted_users.includes(user.user_id) &&
-                        !current_user
-                    ) {
-                        compose_pm_pill.set_from_typeahead(user);
-                    }
-                }
-                // clear input pill in the event no pills were added
-                const pill_widget = compose_pm_pill.widget;
-                if (pill_widget.clear_text !== undefined) {
-                    pill_widget.clear_text();
-                }
-            } else {
-                compose_pm_pill.set_from_typeahead(item.user);
-            }
+            set_recipient_from_typeahead(item);
         },
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
     });
