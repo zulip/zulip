@@ -445,6 +445,7 @@ function bots_create_table(): void {
 
     loading.destroy_indicator($("#admin_page_bots_loading_indicator"));
     $bots_table.show();
+    bot_list_widget.clear_text_filter();
 }
 
 function active_create_table(active_users: number[]): void {
@@ -478,6 +479,17 @@ function active_create_table(active_users: number[]): void {
     loading.destroy_indicator($("#admin_page_users_loading_indicator"));
     set_text_search_value($users_table, active_section.filters.text_search);
     $("#admin_users_table").show();
+}
+
+function handle_clear_button_for_users($tbody: JQuery): void {
+    const $container = $tbody.closest(".user-settings-section");
+    $container.on("click", ".clear-filter", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const $filter = $container.find(".search");
+        set_text_search_value($tbody, "");
+        $filter.trigger("input");
+    });
 }
 
 function deactivated_create_table(deactivated_users: number[]): void {
@@ -712,6 +724,7 @@ function active_handle_events(): void {
     handle_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
+    handle_clear_button_for_users($tbody);
 }
 
 function deactivated_handle_events(): void {
@@ -721,6 +734,7 @@ function deactivated_handle_events(): void {
     handle_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
+    handle_clear_button_for_users($tbody);
 }
 
 function bots_handle_events(): void {

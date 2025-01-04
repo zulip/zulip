@@ -7,7 +7,7 @@
             {{#if is_admin}}
                 <button type="submit" id="show-add-default-streams-modal" class="button rounded sea-green">{{t "Add channel" }}</button>
             {{/if}}
-            <input type="text" class="search filter_text_input" placeholder="{{t 'Filter default channels' }}" aria-label="{{t 'Filter channels' }}"/>
+            {{> filter_text_input placeholder=(t 'Filter default channels') aria_label=(t 'Filter default channels')}}
         </div>
     </div>
 

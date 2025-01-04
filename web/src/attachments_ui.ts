@@ -11,6 +11,7 @@ import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {realm} from "./state_data.ts";
@@ -120,13 +121,15 @@ function sort_mentioned_in(a: Attachment, b: Attachment): number {
     return -1;
 }
 
+let uploaded_files_list_widget: ListWidgetType<Attachment, Attachment>;
+
 function render_attachments_ui(): void {
     set_upload_space_stats();
 
     const $uploaded_files_table = $("#uploaded_files_table").expectOne();
     const $search_input = $<HTMLInputElement>("input#upload_file_search");
 
-    ListWidget.create<Attachment>($uploaded_files_table, attachments, {
+    uploaded_files_list_widget = ListWidget.create<Attachment>($uploaded_files_table, attachments, {
         name: "uploaded-files-list",
         get_item: ListWidget.default_get_item,
         modifier_html(attachment) {
@@ -155,6 +158,7 @@ function render_attachments_ui(): void {
     });
 
     scroll_util.reset_scrollbar($uploaded_files_table.closest(".progressive-table-wrapper"));
+    uploaded_files_list_widget.clear_text_filter();
 }
 
 function format_attachment_data(attachment: ServerAttachment): Attachment {

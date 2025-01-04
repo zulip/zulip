@@ -83,6 +83,7 @@ export type ListWidget<Key, Item = Key> = BaseListWidget & {
     ) => void;
     sort: (sorting_function: string, prop?: string) => void;
     replace_list_data: (list: Key[], should_redraw?: boolean) => void;
+    clear_text_filter: () => void;
 };
 
 const DEFAULTS = {
@@ -579,6 +580,20 @@ export function create<Key, Item = Key>(
             if (should_redraw) {
                 widget.hard_redraw();
             }
+        },
+
+        clear_text_filter() {
+            const $filter = opts.filter?.$element;
+            if (!$filter) {
+                return;
+            }
+            const $container = $filter.parent(".search-container");
+            $container.find(".clear-filter").on("click", (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                $filter.val("");
+                $filter.trigger("input");
+            });
         },
     };
 
