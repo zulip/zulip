@@ -217,7 +217,7 @@ test("videos", ({override}) => {
         assert.match(syntax_to_insert, audio_link_regex);
     })();
 
-    (function test_bbb_video_link_compose_clicked() {
+    (function test_bbb_audio_and_video_links_compose_clicked() {
         let syntax_to_insert;
         let called = false;
 
@@ -237,7 +237,6 @@ test("videos", ({override}) => {
             called = true;
         });
 
-        const handler = $("body").get_on_handler("click", ".video_link");
         $("textarea#compose-textarea").val("");
 
         override(
@@ -254,15 +253,28 @@ test("videos", ({override}) => {
             options.success({
                 result: "success",
                 msg: "",
-                url: "/calls/bigbluebutton/join?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22",
+                url:
+                    "/calls/bigbluebutton/join?meeting_id=%22zulip-1%22&moderator=%22AAAAAAAAAA%22&lock_settings_disable_cam=" +
+                    options.data.voice_only +
+                    "&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22",
             });
         };
 
-        handler(ev);
+        $("textarea#compose-textarea").val("");
+
+        const video_handler = $("body").get_on_handler("click", ".video_link");
+        video_handler(ev);
         const video_link_regex =
-            /\[translated: Join video call\.]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
+            /\[translated: Join video call\.]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&moderator=%22AAAAAAAAAA%22&lock_settings_disable_cam=false&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
+
+        const audio_handler = $("body").get_on_handler("click", ".audio_link");
+        audio_handler(ev);
+        const audio_link_regex =
+            /\[translated: Join voice call\.]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&moderator=%22AAAAAAAAAA%22&lock_settings_disable_cam=true&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
+        assert.ok(called);
+        assert.match(syntax_to_insert, audio_link_regex);
     })();
 });
 
