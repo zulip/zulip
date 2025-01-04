@@ -15,6 +15,7 @@ import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
+import * as util from "./util.ts";
 
 type ScheduledMessageRenderContext = ScheduledMessage &
     (
@@ -109,7 +110,11 @@ function format(
                 formatted_send_at_time,
             };
         } else {
-            const recipients = people.get_recipients(msg.to.join(","));
+            const recipients = util.format_array_as_list(
+                people.get_recipients(msg.to.join(",")),
+                "long",
+                "conjunction",
+            );
             msg_render_context = {
                 ...msg,
                 is_stream: false as const,

@@ -247,7 +247,11 @@ export function get_title_data(user_ids_string: string, is_group: boolean): Titl
     if (is_group) {
         // For groups, just return a string with recipient names.
         return {
-            first_line: people.get_recipients(user_ids_string),
+            first_line: util.format_array_as_list(
+                people.get_recipients(user_ids_string),
+                "long",
+                "conjunction",
+            ),
             second_line: "",
             third_line: "",
         };

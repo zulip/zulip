@@ -454,20 +454,20 @@ function _calc_user_and_other_ids(user_ids_string: string): {
     return {user_ids, other_ids};
 }
 
-export function get_recipients(user_ids_string: string): string {
+export function get_recipients(user_ids_string: string): string[] {
     // See message_store.get_pm_full_names() for a similar function.
 
     const {other_ids} = _calc_user_and_other_ids(user_ids_string);
 
     if (other_ids.length === 0) {
         // direct message with oneself
-        return my_full_name();
+        return [my_full_name()];
     }
 
     const names = get_display_full_names(other_ids);
     const sorted_names = names.sort(util.make_strcmp());
 
-    return sorted_names.join(", ");
+    return sorted_names;
 }
 
 export function pm_reply_user_string(message: Message | MessageWithBooleans): string | undefined {
