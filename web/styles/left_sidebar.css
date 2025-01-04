@@ -1613,8 +1613,10 @@ li.topic-list-item {
     margin: var(--left-sidebar-sections-vertical-gutter)
         var(--left-sidebar-right-margin) 3px 0;
     position: sticky;
-    /* Keep sticky within SimpleBar context. */
-    top: 0;
+    /* Keep sticky within SimpleBar context. The -0.25px
+    offset ensures that no gap is present between the
+    direct-messages-section-header and the streams-header */
+    top: -0.25px;
     z-index: 2;
     background-color: var(--color-background);
 
