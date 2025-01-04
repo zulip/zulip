@@ -62,7 +62,7 @@ def redact_email_address(error_message: str) -> str:
             annotation = " <Missed message address>"
         else:
             try:
-                target_stream_id = decode_stream_email_address(email_address)[0].id
+                target_stream_id = decode_stream_email_address(email_address)[0].channel_id
                 annotation = f" <Address to stream id: {target_stream_id}>"
             except ZulipEmailForwardError:
                 annotation = " <Invalid address>"
@@ -363,17 +363,17 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm, sender: 
     return "\n".join(attachment_links)
 
 
-def decode_stream_email_address(email: str) -> tuple[Stream, dict[str, bool]]:
+def decode_stream_email_address(email: str) -> tuple[ChannelEmailAddress, dict[str, bool]]:
     token, options = decode_email_address(email)
 
     try:
-        channel_email_address = ChannelEmailAddress.objects.select_related("channel").get(
-            email_token=token
-        )
+        channel_email_address = ChannelEmailAddress.objects.select_related(
+            "channel", "sender", "creator", "realm"
+        ).get(email_token=token)
     except ChannelEmailAddress.DoesNotExist:
         raise ZulipEmailForwardError("Bad stream token from email recipient " + email)
 
-    return channel_email_address.channel, options
+    return channel_email_address, options
 
 
 def find_emailgateway_recipient(message: EmailMessage) -> str:
@@ -436,27 +436,35 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
     # that all messages must have a topic.
     subject = subject or _("Email with no subject")
 
-    stream, options = decode_stream_email_address(to)
+    channel_email_address, options = decode_stream_email_address(to)
+
     # Don't remove quotations if message is forwarded, unless otherwise specified:
     if "include_quotes" not in options:
         options["include_quotes"] = is_forwarded(subject_header)
 
-    user_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id)
+    channel = channel_email_address.channel
+    sender = channel_email_address.sender
+    creator = channel_email_address.creator
+    realm = channel_email_address.realm
+    email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
+
+    if sender.id == email_gateway_bot.id and creator is not None:
+        user_for_access_check = creator
+    else:
+        user_for_access_check = sender
 
     try:
-        access_stream_for_send_message(user_profile, stream, forwarder_user_profile=None)
+        access_stream_for_send_message(user_for_access_check, channel, forwarder_user_profile=None)
     except JsonableError as e:
-        logger.info(
-            "Failed to process email to %s (%s): %s", stream.name, stream.realm.string_id, e
-        )
+        logger.info("Failed to process email to %s (%s): %s", channel.name, realm.string_id, e)
         return
 
-    body = construct_zulip_body(message, stream.realm, sender=user_profile, **options)
-    send_zulip(user_profile, stream, subject, body)
+    body = construct_zulip_body(message, realm, sender=sender, **options)
+    send_zulip(sender, channel, subject, body)
     logger.info(
         "Successfully processed email to %s (%s)",
-        stream.name,
-        stream.realm.string_id,
+        channel.name,
+        realm.string_id,
     )
 
 
