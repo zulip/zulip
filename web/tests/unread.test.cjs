@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {JSDOM} = require("jsdom");
 const _ = require("lodash");
 
 const {set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
@@ -89,6 +90,9 @@ test("empty_counts_while_home", () => {
 });
 
 test("changing_topics", () => {
+    const {window} = new JSDOM(`<!DOCTYPE html><html><body></body></html>`);
+    global.document = window.document;
+    global.Element = window.Element;
     // Summary: change the topic of a message from 'lunch'
     // to 'dinner' using update_unread_topics().
     let count = unread.num_unread_for_topic(social.stream_id, "lunch");
@@ -224,6 +228,8 @@ test("changing_topics", () => {
 
     // test coverage
     unread.update_unread_topics(sticky_message, {});
+    delete global.document;
+    delete global.Element;
 });
 
 test("muting", () => {
