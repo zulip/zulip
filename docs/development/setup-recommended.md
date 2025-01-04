@@ -625,6 +625,13 @@ help.
 
 On Windows with WSL 2, you do not need to shut down the environment. Simply
 close your terminal window(s).
+
+Alternatively, you can use a command to terminate/shutdown your WSL2 environment with PowerShell using:
+
+```console
+> wsl --terminate <environment_name>
+```
+
 :::
 
 :::{tab-item} Windows (VM)
