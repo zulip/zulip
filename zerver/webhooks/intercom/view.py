@@ -215,10 +215,10 @@ def get_conversation_admin_single_created_message(payload: WildValue) -> tuple[s
     topic_name = get_topic_for_contacts(user)
     return (topic_name, body)
 
-
+  
 def get_conversation_user_created_message(payload: WildValue) -> tuple[str, str]:
-    user = payload["data"]["item"]["user"]
-    conversation_body = payload["data"]["item"]["conversation_message"]["body"].tame(check_string)
+    user = payload["data"]["item"]["source"]["author"]
+    conversation_body = payload["data"]["item"]["source"]["body"].tame(check_string)
     content = strip_tags(conversation_body)
     body = CONVERSATION_ADMIN_INITIATED_CONVERSATION.format(
         admin_name=user.get("name").tame(check_none_or(check_string)),
@@ -229,7 +229,7 @@ def get_conversation_user_created_message(payload: WildValue) -> tuple[str, str]
 
 
 def get_conversation_user_replied_message(payload: WildValue) -> tuple[str, str]:
-    user = payload["data"]["item"]["user"]
+    user = payload["data"]["item"]["source"]["author"]
     note = payload["data"]["item"]["conversation_parts"]["conversation_parts"][0]
     content = strip_tags(note["body"].tame(check_string))
     body = CONVERSATION_ADMIN_REPLY_TEMPLATE.format(
