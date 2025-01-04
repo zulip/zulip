@@ -280,8 +280,7 @@ h4.user_group_setting_subsection_title {
 }
 
 .subscriptions-container .subscriptions-header .fa-chevron-left,
-.user-groups-container .user-groups-header .fa-chevron-left,
-#settings_overlay_container .settings-header.mobile .fa-chevron-left {
+.user-groups-container .user-groups-header .fa-chevron-left {
     position: relative;
     transform: translate(-50px, 0);
     opacity: 0;
