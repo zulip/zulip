@@ -451,26 +451,26 @@ test_ui("narrowing", ({mock_template}) => {
     topic_list.get_stream_li = noop;
     $("#streams_header").outerHeight = () => 0;
 
-    assert.ok(!$("<devel-sidebar-row-stub>").hasClass("active-filter"));
+    assert.ok(!$("<devel-sidebar-row-stub>").hasClass("top-left-active-filter"));
 
     let filter;
 
     filter = new Filter([{operator: "stream", operand: develSub.stream_id.toString()}]);
     stream_list.handle_narrow_activated(filter);
-    assert.ok($("<devel-sidebar-row-stub>").hasClass("active-filter"));
+    assert.ok($("<devel-sidebar-row-stub>").hasClass("top-left-active-filter"));
 
     filter = new Filter([
         {operator: "stream", operand: carSub.stream_id.toString()},
         {operator: "topic", operand: "sedans"},
     ]);
     stream_list.handle_narrow_activated(filter);
-    assert.ok(!$("ul.filters li").hasClass("active-filter"));
-    assert.ok(!$("<cars-sidebar-row-stub>").hasClass("active-filter")); // false because of topic
+    assert.ok(!$("ul.filters li").hasClass("top-left-active-filter"));
+    assert.ok(!$("<cars-sidebar-row-stub>").hasClass("top-left-active-filter")); // false because of topic
 
     filter = new Filter([{operator: "stream", operand: carSub.stream_id.toString()}]);
     stream_list.handle_narrow_activated(filter);
-    assert.ok(!$("ul.filters li").hasClass("active-filter"));
-    assert.ok($("<cars-sidebar-row-stub>").hasClass("active-filter"));
+    assert.ok(!$("ul.filters li").hasClass("top-left-active-filter"));
+    assert.ok($("<cars-sidebar-row-stub>").hasClass("top-left-active-filter"));
 
     let removed_classes;
     $("ul#stream_filters li").removeClass = (classes) => {
@@ -483,7 +483,7 @@ test_ui("narrowing", ({mock_template}) => {
     };
 
     stream_list.handle_message_view_deactivated();
-    assert.equal(removed_classes, "active-filter stream-expanded");
+    assert.equal(removed_classes, "top-left-active-filter stream-expanded");
     assert.ok(topics_closed);
 });
 

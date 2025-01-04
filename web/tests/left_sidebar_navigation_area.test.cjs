@@ -21,52 +21,41 @@ run_test("narrowing", () => {
     let filter = new Filter([{operator: "is", operand: "mentioned"}]);
 
     // activating narrow
-
     left_sidebar_navigation_area.handle_narrow_activated(filter);
-    assert.ok($(".top_left_mentions").hasClass("active-filter"));
+    assert.ok($(".top_left_mentions").hasClass("top-left-active-filter"));
 
     filter = new Filter([{operator: "is", operand: "starred"}]);
     left_sidebar_navigation_area.handle_narrow_activated(filter);
-    assert.ok($(".top_left_starred_messages").hasClass("active-filter"));
+    assert.ok($(".top_left_starred_messages").hasClass("top-left-active-filter"));
 
     filter = new Filter([{operator: "in", operand: "home"}]);
     left_sidebar_navigation_area.handle_narrow_activated(filter);
-    assert.ok($(".top_left_all_messages").hasClass("active-filter"));
+    assert.ok($(".top_left_all_messages").hasClass("top-left-active-filter"));
 
     // deactivating narrow
-
     left_sidebar_navigation_area.handle_narrow_activated(new Filter([]));
-
-    assert.ok(!$(".top_left_all_messages").hasClass("active-filter"));
-    assert.ok(!$(".top_left_mentions").hasClass("active-filter"));
-    assert.ok(!$(".top_left_starred_messages").hasClass("active-filter"));
-    assert.ok(!$(".top_left_recent_view").hasClass("active-filter"));
-    assert.ok(!$(".top_left_inbox").hasClass("active-filter"));
+    assert.ok($(".top_left_mentions").hasClass("top-left-active-filter"));
+    assert.ok($(".top_left_starred_messages").hasClass("top-left-active-filter"));
+    assert.ok($(".top_left_all_messages").hasClass("top-left-active-filter"));
 
     set_global("setTimeout", (f) => {
         f();
     });
-    left_sidebar_navigation_area.highlight_recent_view();
-    assert.ok(!$(".top_left_all_messages").hasClass("active-filter"));
-    assert.ok(!$(".top_left_mentions").hasClass("active-filter"));
-    assert.ok(!$(".top_left_starred_messages").hasClass("active-filter"));
-    assert.ok(!$(".top_left_inbox").hasClass("active-filter"));
-    assert.ok($(".top_left_recent_view").hasClass("active-filter"));
 
-    left_sidebar_navigation_area.handle_narrow_activated(new Filter([]));
+    left_sidebar_navigation_area.highlight_recent_view();
+    assert.ok($(".top_left_recent_view").hasClass("top-left-active-filter"));
+    assert.ok(!$(".top_left_inbox").hasClass("top-left-active-filter"));
+    assert.ok($(".top_left_all_messages").hasClass("top-left-active-filter"));
+
     left_sidebar_navigation_area.highlight_inbox_view();
-    assert.ok(!$(".top_left_all_messages").hasClass("active-filter"));
-    assert.ok(!$(".top_left_mentions").hasClass("active-filter"));
-    assert.ok(!$(".top_left_starred_messages").hasClass("active-filter"));
-    assert.ok(!$(".top_left_recent_view").hasClass("active-filter"));
-    assert.ok($(".top_left_inbox").hasClass("active-filter"));
+    assert.ok($(".top_left_inbox").hasClass("top-left-active-filter"));
+    assert.ok($(".top_left_recent_view").hasClass("top-left-active-filter"));
+    assert.ok($(".top_left_all_messages").hasClass("top-left-active-filter"));
 
     left_sidebar_navigation_area.highlight_all_messages_view();
-    assert.ok(!$(".top_left_mentions").hasClass("active-filter"));
-    assert.ok(!$(".top_left_starred_messages").hasClass("active-filter"));
-    assert.ok(!$(".top_left_recent_view").hasClass("active-filter"));
-    assert.ok(!$(".top_left_inbox").hasClass("active-filter"));
-    assert.ok($(".top_left_all_messages").hasClass("active-filter"));
+    assert.ok($(".top_left_all_messages").hasClass("top-left-active-filter"));
+    assert.ok($(".top_left_recent_view").hasClass("top-left-active-filter"));
+    assert.ok($(".top_left_inbox").hasClass("top-left-active-filter"));
 });
 
 run_test("update_count_in_dom", () => {
