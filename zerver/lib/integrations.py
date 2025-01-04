@@ -447,7 +447,22 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     ),
     WebhookIntegration("insping", ["monitoring"]),
     WebhookIntegration("intercom", ["customer-support"]),
-    WebhookIntegration("jira", ["project-management"]),
+    WebhookIntegration(
+        "jira",
+        ["project-management"],
+        config_options=[
+            WebhookConfigOption(
+                name="jira_api_token",
+                description="Jira api access token",
+                validator=check_string,
+            ),
+            WebhookConfigOption(
+                name="email",
+                description="Email associated with Jira account",
+                validator=check_string,
+            ),
+        ],
+    ),
     WebhookIntegration("jotform", ["misc"]),
     WebhookIntegration("json", ["misc"], display_name="JSON formatter"),
     WebhookIntegration("librato", ["monitoring"]),
