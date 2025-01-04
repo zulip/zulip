@@ -69,7 +69,7 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-database-name:,postgresql-database-user:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,puppet-classes:,no-overwrite-settings,no-dist-upgrade -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-database-name:,postgresql-database-user:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,puppet-classes:,no-overwrite-settings,no-dist-upgrade,services: -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -140,6 +140,11 @@ while true; do
             NO_DIST_UPGRADE=1
             shift
             ;;
+        --services)
+            SERVICES="$2"
+            shift
+            shift
+            ;;
         --)
             shift
             break
@@ -204,6 +209,72 @@ case "$POSTGRESQL_VERSION" in
         exit 1
         ;;
 esac
+
+# Parse --services option.
+#
+# We set these to Python-style True/False string values, for easy
+# insertion into the settings.py file.
+SERVICE_MOBILE_PUSH="False"
+SERVICE_SUBMIT_USAGE_STATISTICS="False"
+
+if [ -n "$SERVICES" ]; then
+    if [ "$SERVICES" != "none" ]; then
+        IFS=',' read -ra SERVICE_LIST <<<"$SERVICES"
+        for service in "${SERVICE_LIST[@]}"; do
+            case "$service" in
+                mobile_push)
+                    SERVICE_MOBILE_PUSH="True"
+                    ;;
+                submit_usage_statistics)
+                    SERVICE_SUBMIT_USAGE_STATISTICS="True"
+                    ;;
+                *)
+                    echo "Unknown service: $service"
+                    exit 1
+                    ;;
+            esac
+        done
+    fi
+else
+    # Prompt user for each service if --services is not passed
+    echo "No --services option provided. Starting manual configuration."
+
+    read -r -p "Enable mobile_push? [y/n] (default: no): " input
+    case "${input:-n}" in
+        [Yy]*)
+            SERVICE_MOBILE_PUSH="True"
+            ;;
+        [Nn]*)
+            SERVICE_MOBILE_PUSH="False"
+            ;;
+        *)
+            echo "Invalid input. Defaulting to 'no'."
+            SERVICE_MOBILE_PUSH="False"
+            ;;
+    esac
+
+    read -r -p "Enable submit_usage_statistics? [y/n] (default: no): " input
+    case "${input:-n}" in
+        [Yy]*)
+            SERVICE_SUBMIT_USAGE_STATISTICS="True"
+            ;;
+        [Nn]*)
+            SERVICE_SUBMIT_USAGE_STATISTICS="False"
+            ;;
+        *)
+            echo "Invalid input. Defaulting to 'no'."
+            SERVICE_SUBMIT_USAGE_STATISTICS="False"
+            ;;
+    esac
+    # Wait for a bit, so the user can have visual feedback on what they typed in,
+    # potentially including the "Invalid input. Defaulting to ..." message.
+    sleep 1.5
+fi
+
+# Determine if any service is enabled to know if we need to register the server.
+if [ "$SERVICE_MOBILE_PUSH" = "True" ] || [ "$SERVICE_SUBMIT_USAGE_STATISTICS" = "True" ]; then
+    ANY_SERVICE_ENABLED=1
+fi
 
 # Do set -x after option parsing is complete
 set -x
@@ -485,6 +556,19 @@ if has_class "zulip::app_frontend_base"; then
         if [ -n "$ZULIP_ADMINISTRATOR" ]; then
             sed -i "s/^ZULIP_ADMINISTRATOR =.*/ZULIP_ADMINISTRATOR = '$ZULIP_ADMINISTRATOR'/" /etc/zulip/settings.py
         fi
+
+        # Set SERVICE settings based on what the user provided.
+        if grep -q "^#\?\s*ZULIP_SERVICE_PUSH_NOTIFICATIONS = " /etc/zulip/settings.py; then
+            sed -i "s/^#\?\s*ZULIP_SERVICE_PUSH_NOTIFICATIONS = .*/ZULIP_SERVICE_PUSH_NOTIFICATIONS = $SERVICE_MOBILE_PUSH/" /etc/zulip/settings.py
+        else
+            echo "ZULIP_SERVICE_PUSH_NOTIFICATIONS = $SERVICE_MOBILE_PUSH" >>/etc/zulip/settings.py
+        fi
+
+        if grep -q "^#\? ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = " /etc/zulip/settings.py; then
+            sed -i "s/^#\? ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = .*/ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = $SERVICE_SUBMIT_USAGE_STATISTICS/" /etc/zulip/settings.py
+        else
+            echo "ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = $SERVICE_SUBMIT_USAGE_STATISTICS" >>/etc/zulip/settings.py
+        fi
     fi
     ln -nsf /etc/zulip/settings.py "$ZULIP_PATH"/zproject/prod_settings.py
     "$ZULIP_PATH"/scripts/setup/generate_secrets.py --production
@@ -600,10 +684,24 @@ database user, and then run:
 
    su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
    su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'
+
+If you specified you want to enable the push notifications service, you'll also need to
+manually register your server by running:
+
+   su zulip -c '/home/zulip/deployments/current/manage.py register_server'
 EOF
     exit 0
 else
     /home/zulip/deployments/current/scripts/setup/create-database
     su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database --quiet'
+
+    if [ -n "$ANY_SERVICE_ENABLED" ]; then
+        set +x
+        echo "Services enabled, registering server..."
+        echo "You will be prompted to agree to the Terms of Service first."
+        set -x
+        su zulip -c '/home/zulip/deployments/current/manage.py register_server'
+    fi
+
     su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'
 fi
