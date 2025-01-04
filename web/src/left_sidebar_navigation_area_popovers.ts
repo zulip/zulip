@@ -209,7 +209,7 @@ export function initialize(): void {
             assert(instance.reference instanceof HTMLElement);
             ui_util.show_left_sidebar_menu_icon(instance.reference);
             popovers.hide_all();
-            const view_code = settings_config.web_home_view_values.recent_topics.code;
+            const view_code = settings_config.web_home_view_values.recent.code;
             instance.setContent(
                 ui_util.parse_html(
                     render_left_sidebar_recent_view_popover({

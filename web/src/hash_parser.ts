@@ -140,7 +140,6 @@ export function is_spectator_compatible(hash: string): boolean {
         // TODO/compatibility: #recent_topics was renamed to #recent
         // in 2022. We should support the old URL fragment at least
         // until one cannot directly upgrade from Zulip 5.x.
-        "recent_topics",
         "recent",
         "keyboard-shortcuts",
         "message-formatting",
