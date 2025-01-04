@@ -1,6 +1,7 @@
 import assert from "minimalistic-assert";
 
 import * as group_permission_settings from "./group_permission_settings.ts";
+import {localstorage} from "./localstorage.ts";
 import {page_params} from "./page_params.ts";
 import * as settings_config from "./settings_config.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -8,10 +9,21 @@ import type {GroupSettingValue} from "./state_data.ts";
 import * as user_groups from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 
+const ls = localstorage();
+const deactivated_group_visibility_key = "user_group_deactivated_visibility";
+
+const STATES = {
+    SHOW: "show",
+    HIDE: "hide",
+};
 let user_join_date: Date;
 export function initialize(current_user_join_date: Date): void {
     // We keep the `user_join_date` as the present day's date if the user is a spectator
     user_join_date = current_user_join_date;
+}
+
+function save_state(ls_key: string, state: string): void {
+    ls.set(ls_key, state);
 }
 
 /*
@@ -226,6 +238,21 @@ export function can_remove_members_from_user_group(group_id: number): boolean {
     return can_manage_user_group(group_id);
 }
 
+export function show_deactivated_user_groups(): boolean {
+    const ls_deactivated_user_group_visibility_state = ls.get(deactivated_group_visibility_key);
+    if (ls_deactivated_user_group_visibility_state === STATES.SHOW) {
+        return true;
+    }
+    return false;
+}
+
+export function toggle_deactivated_group_visibility(): void {
+    save_state(
+        deactivated_group_visibility_key,
+        show_deactivated_user_groups() ? STATES.HIDE : STATES.SHOW,
+    );
+}
+
 export function can_join_user_group(group_id: number): boolean {
     const group = user_groups.get_user_group_from_id(group_id);
 
@@ -239,7 +266,10 @@ export function can_join_user_group(group_id: number): boolean {
 export function can_leave_user_group(group_id: number): boolean {
     const group = user_groups.get_user_group_from_id(group_id);
 
-    if (user_has_permission_for_group_setting(group.can_leave_group, "can_leave_group", "group")) {
+    if (
+        !group.deactivated &&
+        user_has_permission_for_group_setting(group.can_leave_group, "can_leave_group", "group")
+    ) {
         return true;
     }
 

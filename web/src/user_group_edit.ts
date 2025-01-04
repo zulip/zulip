@@ -1094,6 +1094,7 @@ export function setup_page(callback: () => void): void {
                     item,
                     people.my_current_user_id(),
                 );
+                const is_deactivated = user_groups.get_user_group_from_id(item.id).deactivated;
                 const associated_subgroup_names =
                     user_groups.format_group_list(associated_subgroups);
                 const can_join = settings_data.can_join_user_group(item.id);
@@ -1102,6 +1103,7 @@ export function setup_page(callback: () => void): void {
                     ...item,
                     is_member,
                     is_direct_member,
+                    is_deactivated,
                     associated_subgroup_names,
                     can_join,
                     can_leave,

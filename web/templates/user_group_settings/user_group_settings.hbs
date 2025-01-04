@@ -19,7 +19,17 @@
         <div class="group_general_settings group_setting_section" data-group-section="general">
             <div class="group-header">
                 <div class="group-name-wrapper">
-                    <span class="group-name" title="{{group.name}}">{{group.name}}</span>
+                    <span class="group-name" title="{{group.name}}">{{group.name}}
+
+                        {{#if group.deactivated}}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 16 16">
+                                <g fill="#fff">
+                                    <path d="M14 5.334a2.8 2.8 0 1 1-5.6 0 2.8 2.8 0 0 1 5.6 0ZM11.2 6.8a1.467 1.467 0 1 0 0-2.934 1.467 1.467 0 0 0 0 2.934Zm-8.233 3.515a1.467 1.467 0 0 0-1.1 1.419V12.8a.667.667 0 1 1-1.334 0v-1.067a2.8 2.8 0 0 1 2.1-2.71.667.667 0 0 1 .334 1.292Zm1.134-7.691a.667.667 0 1 1 .331 1.292 1.467 1.467 0 0 0 0 2.841.667.667 0 1 1-.33 1.292 2.8 2.8 0 0 1 0-5.425Zm2.066 7.691a1.467 1.467 0 0 0-1.1 1.419V12.8a.667.667 0 1 1-1.334 0v-1.067a2.8 2.8 0 0 1 2.1-2.71.667.667 0 0 1 .334 1.292Z"/>
+                                    <path d="M7.301 2.624a.667.667 0 1 1 .331 1.292 1.467 1.467 0 0 0 0 2.841.667.667 0 0 1-.33 1.292 2.8 2.8 0 0 1 0-5.425Zm1.919 7.691a1.467 1.467 0 0 0-1.1 1.419V12.8a.667.667 0 1 1-1.333 0v-1.067a2.8 2.8 0 0 1 2.1-2.71.667.667 0 1 1 .333 1.292Zm1.934.014c.26-.26.682-.26.942 0l1.196 1.195 1.195-1.195a.667.667 0 0 1 .943.942l-1.195 1.196 1.195 1.195a.667.667 0 1 1-.943.943l-1.195-1.195-1.196 1.195a.667.667 0 0 1-.942-.943l1.195-1.195-1.195-1.196a.667.667 0 0 1 0-.942Z"/>
+                                </g>
+                            </svg>
+                        {{/if}}
+                    </span>
                 </div>
                 <div class="group_change_property_info alert-notification"></div>
                 <div class="button-group">

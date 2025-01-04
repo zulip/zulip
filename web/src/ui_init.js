@@ -145,6 +145,7 @@ import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_edit from "./user_group_edit.ts";
 import * as user_group_edit_members from "./user_group_edit_members.ts";
 import * as user_group_popover from "./user_group_popover.ts";
+import * as user_group_settings_option_popover from "./user_group_settings_option_popover.ts";
 import * as user_groups from "./user_groups.ts";
 import * as user_profile from "./user_profile.ts";
 import {initialize_user_settings, user_settings} from "./user_settings.ts";
@@ -536,6 +537,7 @@ export function initialize_everything(state_data) {
     stream_create.initialize();
     stream_edit.initialize();
     user_group_edit.initialize();
+    user_group_settings_option_popover.initialize();
     stream_edit_subscribers.initialize();
     stream_data.initialize(state_data.stream_data);
     user_group_edit_members.initialize();
@@ -664,6 +666,7 @@ export function initialize_everything(state_data) {
 
     emoji_picker.initialize();
     user_group_popover.initialize();
+
     user_card_popover.initialize();
     playground_links_popover.initialize();
     personal_menu_popover.initialize();
