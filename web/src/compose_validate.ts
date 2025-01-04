@@ -32,6 +32,10 @@ import * as util from "./util.ts";
 
 let user_acknowledged_stream_wildcard = false;
 let upload_in_progress = false;
+let no_stream_mentioned = false;
+let no_topic_mentioned = false;
+let no_private_recipient = true;
+let no_message_content = false;
 let message_too_long = false;
 let recipient_disallowed = false;
 
@@ -46,6 +50,26 @@ export let wildcard_mention_threshold = 15;
 
 export function set_upload_in_progress(status: boolean): void {
     upload_in_progress = status;
+    update_send_button_status();
+}
+
+function set_no_stream_mentioned(status: boolean): void {
+    no_stream_mentioned = status;
+    update_send_button_status();
+}
+
+function set_no_topic_mentioned(status: boolean): void {
+    no_topic_mentioned = status;
+    update_send_button_status();
+}
+
+function set_no_private_recipient_mentioned(status: boolean): void {
+    no_private_recipient = status;
+    update_send_button_status();
+}
+
+function set_no_message_content(status: boolean): void {
+    no_message_content = status;
     update_send_button_status();
 }
 
@@ -71,14 +95,31 @@ export function set_recipient_disallowed(status: boolean): void {
 }
 
 function update_send_button_status(): void {
-    $(".message-send-controls").toggleClass(
-        "disabled-message-send-controls",
-        message_too_long || upload_in_progress || recipient_disallowed,
-    );
+    if (
+        upload_in_progress ||
+        no_stream_mentioned ||
+        (no_topic_mentioned && compose_state.get_message_type() === "stream") ||
+        (no_private_recipient && compose_state.get_message_type() === "private") ||
+        message_too_long ||
+        recipient_disallowed ||
+        no_message_content
+    ) {
+        $(".message-send-controls").addClass("disabled-message-send-controls");
+    } else {
+        $(".message-send-controls").removeClass("disabled-message-send-controls");
+    }
 }
 
 export function get_disabled_send_tooltip(): string {
-    if (message_too_long) {
+    if (no_stream_mentioned && compose_state.get_message_type() === "stream") {
+        return $t({defaultMessage: "Please specify a channel."});
+    } else if (no_topic_mentioned && compose_state.get_message_type() === "stream") {
+        return $t({defaultMessage: "Topics are required in this organization."});
+    } else if (no_private_recipient && compose_state.get_message_type() === "private") {
+        return $t({defaultMessage: "Please specify a valid recipient."});
+    } else if (no_message_content) {
+        return $t({defaultMessage: "Compose a message."});
+    } else if (message_too_long) {
         return $t(
             {defaultMessage: `Message length shouldn't be greater than {max_length} characters.`},
             {max_length: realm.max_message_length},
@@ -622,16 +663,20 @@ export function validate_stream_message_address_info(sub: StreamSubscription): b
     return false;
 }
 
-function validate_stream_message(scheduling_message: boolean): boolean {
-    const stream_id = compose_state.stream_id();
+function validate_stream_message(scheduling_message: boolean, show_banner = true): boolean {
     const $banner_container = $("#compose_banners");
-    if (stream_id === undefined) {
-        compose_banner.show_error_message(
-            $t({defaultMessage: "Please specify a channel."}),
-            compose_banner.CLASSNAMES.missing_stream,
-            $banner_container,
-            $("#compose_select_recipient_widget_wrapper"),
-        );
+    const stream_id = compose_state.stream_id();
+    const no_stream_mentioned = stream_id === undefined;
+    set_no_stream_mentioned(no_stream_mentioned);
+    if (no_stream_mentioned) {
+        if (show_banner) {
+            compose_banner.show_error_message(
+                $t({defaultMessage: "Please specify a channel."}),
+                compose_banner.CLASSNAMES.missing_stream,
+                $banner_container,
+                $("#compose_select_recipient_widget_wrapper"),
+            );
+        }
         return false;
     }
 
@@ -639,13 +684,17 @@ function validate_stream_message(scheduling_message: boolean): boolean {
         const topic = compose_state.topic();
         // TODO: We plan to migrate the empty topic to only using the
         // `""` representation for i18n reasons, but have not yet done so.
-        if (topic === "" || topic === "(no topic)") {
-            compose_banner.show_error_message(
-                $t({defaultMessage: "Topics are required in this organization."}),
-                compose_banner.CLASSNAMES.topic_missing,
-                $banner_container,
-                $("input#stream_message_recipient_topic"),
-            );
+        const no_topic_mentioned = topic === "" || topic === "(no topic)";
+        set_no_topic_mentioned(no_topic_mentioned);
+        if (no_topic_mentioned) {
+            if (show_banner) {
+                compose_banner.show_error_message(
+                    $t({defaultMessage: "Topics are required in this organization."}),
+                    compose_banner.CLASSNAMES.topic_missing,
+                    $banner_container,
+                    $("input#stream_message_recipient_topic"),
+                );
+            }
             return false;
         }
     }
@@ -688,18 +737,21 @@ function validate_stream_message(scheduling_message: boolean): boolean {
 
 // The function checks whether the recipients are users of the realm or cross realm users (bots
 // for now)
-function validate_private_message(): boolean {
+function validate_private_message(show_banner = true): boolean {
     const user_ids = compose_pm_pill.get_user_ids();
     const user_ids_string = util.sorted_ids(user_ids).join(",");
     const $banner_container = $("#compose_banners");
-
-    if (compose_state.private_message_recipient().length === 0) {
-        compose_banner.show_error_message(
-            $t({defaultMessage: "Please specify at least one valid recipient."}),
-            compose_banner.CLASSNAMES.missing_private_message_recipient,
-            $banner_container,
-            $("#private_message_recipient"),
-        );
+    const no_private_recipient_mentioned = compose_state.private_message_recipient().length === 0;
+    set_no_private_recipient_mentioned(no_private_recipient_mentioned);
+    if (no_private_recipient_mentioned) {
+        if (show_banner) {
+            compose_banner.show_error_message(
+                $t({defaultMessage: "Please specify a valid recipient."}),
+                compose_banner.CLASSNAMES.missing_private_message_recipient,
+                $banner_container,
+                $("#private_message_recipient"),
+            );
+        }
         return false;
     } else if (realm.realm_is_zephyr_mirror_realm) {
         // For Zephyr mirroring realms, the frontend doesn't know which users exist
@@ -764,6 +816,9 @@ export function check_overflow_text($container: JQuery): number {
     const $indicator = $container.find(".message-limit-indicator");
     const is_edit_container = $textarea.closest(".message_row").length > 0;
 
+    const no_message_content = /^\s*$/.test(text);
+    set_no_message_content(no_message_content);
+
     if (text.length > max_length) {
         $indicator.addClass("over_limit");
         $textarea.addClass("over_limit");
@@ -804,22 +859,59 @@ export function check_overflow_text($container: JQuery): number {
     return text.length;
 }
 
-export function validate_message_length($container: JQuery): boolean {
+export function validate_message_length($container: JQuery, show_banner = true): boolean {
     const $textarea = $container.find<HTMLTextAreaElement>(".message-textarea");
     // Match the behavior of compose_state.message_content of trimming trailing whitespace
     const text = $textarea.val()!.trimEnd();
-    if (text.length > realm.max_message_length) {
-        $textarea.addClass("flash");
-        setTimeout(() => $textarea.removeClass("flash"), 1500);
+    const message_too_long_for_compose = text.length > realm.max_message_length;
+    set_message_too_long_for_compose(message_too_long_for_compose);
+    if (message_too_long_for_compose) {
+        if (show_banner) {
+            $textarea.addClass("flash");
+            setTimeout(() => $textarea.removeClass("flash"), 1500);
+
+            const $banner_container = $("#compose_banners");
+            compose_banner.show_error_message(
+                $t({defaultMessage: "Message length shouldn't be greater than 10000 characters."}),
+                compose_banner.CLASSNAMES.exceeded_message_length_limit,
+                $banner_container,
+                $("#message-content-container"),
+            );
+        }
+
         return false;
     }
     return true;
 }
 
-export function validate(scheduling_message: boolean): boolean {
+export function validate(scheduling_message: boolean, show_banner = true): boolean {
     const message_content = compose_state.message_content();
-    if (/^\s*$/.test(message_content)) {
-        $("textarea#compose-textarea").toggleClass("invalid", true);
+    // The validation checks in this function are in a specific priority order. Don't
+    // change their order unless you want to change which priority they're shown in.
+    if (
+        compose_state.get_message_type() !== "private" &&
+        !validate_stream_message(scheduling_message, show_banner)
+    ) {
+        return false;
+    }
+
+    if (compose_state.get_message_type() === "private" && !validate_private_message(show_banner)) {
+        return false;
+    }
+
+    const no_message_content = /^\s*$/.test(message_content);
+    set_no_message_content(no_message_content);
+    if (no_message_content) {
+        if (show_banner) {
+            $("textarea#compose-textarea").toggleClass("invalid", true);
+            const $banner_container = $("#compose_banners");
+            compose_banner.show_error_message(
+                $t({defaultMessage: "Compose a message."}),
+                compose_banner.CLASSNAMES.no_message_content,
+                $banner_container,
+                $("#message-content-container"),
+            );
+        }
         return false;
     }
 
@@ -834,14 +926,10 @@ export function validate(scheduling_message: boolean): boolean {
         );
         return false;
     }
-    if (!validate_message_length($("#send_message_form"))) {
+    if (!validate_message_length($("#send_message_form"), show_banner)) {
         return false;
     }
-
-    if (compose_state.get_message_type() === "private") {
-        return validate_private_message();
-    }
-    return validate_stream_message(scheduling_message);
+    return true;
 }
 
 export function convert_mentions_to_silent_in_direct_messages(
