@@ -245,6 +245,7 @@ export const simple_dropdown_realm_settings_schema = realm_schema.pick({
     realm_invite_to_stream_policy: true,
     realm_wildcard_mention_policy: true,
     realm_org_type: true,
+    realm_message_edit_history_visibility: true,
 });
 export type SimpleDropdownRealmSettings = z.infer<typeof simple_dropdown_realm_settings_schema>;
 

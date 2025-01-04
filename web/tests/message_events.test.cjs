@@ -26,6 +26,7 @@ message_events.rewire_update_views_filtered_on_message_property(() => {});
 const message_helper = zrequire("message_helper");
 const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
+const settings_config = zrequire("settings_config");
 const stream_topic_history = zrequire("stream_topic_history");
 const unread = zrequire("unread");
 const {initialize_user_settings} = zrequire("user_settings");
@@ -118,7 +119,11 @@ run_test("update_messages", ({override}) => {
 
     const helper = test_helper(side_effects);
 
-    override(realm, "realm_allow_edit_history", false);
+    override(
+        realm,
+        "realm_message_edit_history_visibility",
+        settings_config.message_edit_history_visibility_values.never.code,
+    );
 
     const $message_edit_history_modal = $.create("#message-edit-history");
     const $modal = $.create("micromodal").addClass("modal--open");

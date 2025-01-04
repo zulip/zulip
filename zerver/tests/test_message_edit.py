@@ -14,7 +14,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.streams import do_deactivate_stream
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
-from zerver.lib.message import messages_for_ids
+from zerver.lib.message import messages_for_ids, visible_edit_history_for_message
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
@@ -22,7 +22,11 @@ from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Attachment, Message, NamedUserGroup, Realm, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import WildcardMentionPolicyEnum, get_realm
+from zerver.models.realms import (
+    MessageEditHistoryVisibilityEnum,
+    WildcardMentionPolicyEnum,
+    get_realm,
+)
 from zerver.models.streams import get_stream
 
 
@@ -48,7 +52,7 @@ class EditMessageTest(ZulipTestCase):
                 search_fields={},
                 apply_markdown=False,
                 client_gravatar=False,
-                allow_edit_history=True,
+                message_edit_history_visibility=MessageEditHistoryVisibilityEnum.MESSAGE_EDIT_HISTORY_VISIBILITY_ALL,
                 user_profile=None,
                 realm=msg.realm,
             )
@@ -472,7 +476,12 @@ class EditMessageTest(ZulipTestCase):
 
     def test_edit_message_history_disabled(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_set_realm_property(user_profile.realm, "allow_edit_history", False, acting_user=None)
+        do_set_realm_property(
+            user_profile.realm,
+            "message_edit_history_visibility",
+            MessageEditHistoryVisibilityEnum.MESSAGE_EDIT_HISTORY_VISIBILITY_NONE,
+            acting_user=None,
+        )
         self.login("hamlet")
 
         # Single-line edit
@@ -904,6 +913,83 @@ class EditMessageTest(ZulipTestCase):
 
         self.assertEqual(message_history[6]["content"], "content 1")
         self.assertEqual(message_history[6]["topic"], "topic 1")
+
+    def test_visible_edit_history_for_message(self) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        stream_1 = self.make_stream("stream 1")
+        stream_2 = self.make_stream("stream 2")
+        self.subscribe(hamlet, stream_1.name)
+        self.subscribe(hamlet, stream_2.name)
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"),
+            "stream 1",
+            topic_name="editing",
+            content="content before edit",
+        )
+
+        result_1 = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "content only edit",
+            },
+        )
+        self.assert_json_success(result_1)
+
+        result_2 = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "topic": "topic only edit",
+            },
+        )
+        self.assert_json_success(result_2)
+
+        result_3 = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "stream_id": stream_2.id,
+            },
+        )
+        self.assert_json_success(result_3)
+
+        result_4 = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "topic": "topic after second edit",
+                "content": "topic and content edit",
+            },
+        )
+        self.assert_json_success(result_4)
+
+        result_5 = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "topic": "topic after second edit",
+                "stream_id": stream_1.id,
+            },
+        )
+        self.assert_json_success(result_5)
+
+        message_edit_history_response = self.client_get(f"/json/messages/{msg_id}/history")
+        json_response = orjson.loads(message_edit_history_response.content)
+        message_history = json_response["message_history"]
+
+        message_edit_history_none = visible_edit_history_for_message(
+            MessageEditHistoryVisibilityEnum.MESSAGE_EDIT_HISTORY_VISIBILITY_NONE, message_history
+        )
+        self.assert_length(message_edit_history_none, 0)
+
+        message_edit_history_all = visible_edit_history_for_message(
+            MessageEditHistoryVisibilityEnum.MESSAGE_EDIT_HISTORY_VISIBILITY_ALL, message_history
+        )
+        self.assertEqual(message_history, message_edit_history_all)
+
+        message_edit_history_moves_only = visible_edit_history_for_message(
+            MessageEditHistoryVisibilityEnum.MESSAGE_EDIT_HISTORY_VISIBILITY_MOVES_ONLY,
+            message_history,
+        )
+        for edit_history_entry in message_edit_history_moves_only:
+            self.assertNotIn("prev_content", edit_history_entry)
 
     def test_edit_message_content_limit(self) -> None:
         def set_message_editing_params(
