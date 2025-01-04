@@ -33,6 +33,24 @@ export function get_count_of_messages_in_topic_sent_after_current_message(
     return all_messages.filter((msg) => msg.id >= message_id).length;
 }
 
+export function get_messages_in_view_currently_focused(
+    stream_id: number,
+    topic: string,
+): Message[] {
+    const current_view_messages = message_lists.current?.data.all_messages();
+
+    if (!current_view_messages) {
+        return [];
+    }
+
+    return current_view_messages.filter(
+        (x) =>
+            x.type === "stream" &&
+            x.stream_id === stream_id &&
+            x.topic.toLowerCase() === topic.toLowerCase(),
+    );
+}
+
 export function get_messages_in_topic(stream_id: number, topic: string): Message[] {
     return all_messages_data
         .all_messages()

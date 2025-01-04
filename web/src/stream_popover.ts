@@ -639,6 +639,13 @@ export async function build_move_topic_to_stream_popover(
                 message_id,
             );
         }
+
+        const messages_for_currently_focused_view =
+            message_util.get_messages_in_view_currently_focused(current_stream_id, topic_name);
+        if (messages_for_currently_focused_view.length > 0) {
+            return messages_for_currently_focused_view.length;
+        }
+
         return message_util.get_messages_in_topic(current_stream_id, topic_name).length;
     }
 
@@ -679,8 +686,7 @@ export async function build_move_topic_to_stream_popover(
         } else {
             message_text = $t(
                 {
-                    defaultMessage:
-                        "At least {count, plural, one {# message} other {# messages}} will be moved.",
+                    defaultMessage: "{count}+ messages will be moved.",
                 },
                 {count: message_move_count},
             );
