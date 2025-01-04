@@ -83,6 +83,7 @@ from zerver.views.message_flags import (
     update_message_flags,
     update_message_flags_for_narrow,
 )
+from zerver.views.message_report import report_message_backend
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
 from zerver.views.muted_users import mute_user, unmute_user
 from zerver.views.onboarding_steps import mark_onboarding_step_as_read
@@ -382,6 +383,8 @@ v1_api_and_json_patterns = [
     rest_path("messages/<int:message_id>/reactions", POST=add_reaction, DELETE=remove_reaction),
     # read_receipts -> zerver.views.read_receipts
     rest_path("messages/<int:message_id>/read_receipts", GET=read_receipts),
+    # report_message_backend -> zerver.views.message_report
+    rest_path("messages/<int:message_id>/report", POST=report_message_backend),
     # attachments -> zerver.views.attachments
     rest_path("attachments", GET=list_by_user),
     rest_path("attachments/<int:attachment_id>", DELETE=remove),

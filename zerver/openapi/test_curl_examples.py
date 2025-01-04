@@ -35,6 +35,7 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
     default_authentication_line = f"{client.email}:{client.api_key}"
     # A limited Markdown engine that just processes the code example syntax.
     realm = get_realm("zulip")
+
     md_engine = markdown.Markdown(
         extensions=[markdown_extension.makeExtension(api_url=realm.url + "/api")]
     )

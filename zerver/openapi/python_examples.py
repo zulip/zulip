@@ -99,6 +99,30 @@ def validate_message(client: Client, message_id: int, content: Any) -> None:
     assert result["raw_content"] == content
 
 
+def set_moderation_request_channel(client: Client, channel: str | None = "core team") -> None:
+    if channel is None:
+        # Disable moderation request feature
+        channel_id = "-1"
+    else:
+        channel_id = client.get_stream_id(channel)["stream_id"]
+
+    request = dict(moderation_request_channel_id=channel_id)
+    result = client.call_endpoint("/realm", method="PATCH", request=request)
+    assert_success_response(result)
+
+
+def get_users_messages(client: Client, user_id: int) -> list[dict[str, Any]]:
+    request: dict[str, Any] = {
+        "anchor": "newest",
+        "num_before": 100,
+        "num_after": 0,
+        "narrow": [{"operator": "sender", "operand": user_id}],
+    }
+    result = client.get_messages(request)
+    assert_success_response(result)
+    return result["messages"]
+
+
 @openapi_test_function("/users/me/subscriptions:post")
 def add_subscriptions(client: Client) -> None:
     # {code_example|start}
@@ -1402,6 +1426,26 @@ def update_message_flags(client: Client) -> None:
     validate_against_openapi_schema(result, "/messages/flags", "post", "200")
 
 
+@openapi_test_function("/messages/{message_id}/report:post")
+def report_message(client: Client) -> None:
+    set_moderation_request_channel(client)
+    ensure_users([10], ["hamlet"])
+    hamlets_messages = get_users_messages(client, 10)
+    message_id = hamlets_messages[0]["id"]
+    # {code_example|start}
+    # Report a message. Make sure that `message_id` is set to the ID of the
+    # message you wish to report.
+    request = {
+        "reason": "harassment",
+        "explanation": "this message is bullying Frodo.",
+    }
+    result = client.call_endpoint(f"/messages/{message_id}/report", method="POST", request=request)
+    # {code_example|end}
+    assert_success_response(result)
+
+    validate_against_openapi_schema(result, "/messages/{message_id}/report", "post", "200")
+
+
 def register_queue_all_events(client: Client) -> str:
     # Register the queue and get all events.
     # Mainly for verifying schema of /register.
@@ -1771,6 +1815,7 @@ def test_messages(client: Client, nonadmin_client: Client) -> None:
     get_message_history(client, message_id)
     get_read_receipts(client, message_id)
     delete_message(client, message_id)
+    report_message(client)
     mark_all_as_read(client)
     mark_stream_as_read(client)
     mark_topic_as_read(client)
