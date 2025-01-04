@@ -343,6 +343,10 @@ def get_user_messages(user_profile: UserProfile) -> list[Message]:
     return [um.message for um in query]
 
 
+def get_user_sent_messages(user_profile: UserProfile) -> list[Message]:
+    return list(Message.objects.filter(realm_id=user_profile.realm_id, sender=user_profile))
+
+
 class DummyHandler(AsyncDjangoHandler):
     def __init__(self) -> None:
         self.handler_id = allocate_handler_id(self)
