@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 332  # Last bumped for data deletion of deactivated realms.
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (307, 1)  # bumped 2025-01-02 to rebuild emoji_names
+PROVISION_VERSION = (308, 0)  # bumped 2025-01-03 to upgrade @uppy/core and @uppy/tus
