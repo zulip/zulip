@@ -1,43 +1,67 @@
-1. Follow the **Getting Started with Hubot** section of the
-   [Hubot README](https://hubot.github.com/docs/#getting-started-with-hubot)
-   to create your Hubot. You'll have a new directory from
-   which `bin/hubot` starts a vanilla Hubot instance with
-   the shell backend.
+# Zulip Hubot Integration
 
-1. In your Hubot's directory, install the Zulip adapter. Run:
-   `npm install --save hubot-zulip`
+Use Hubot to execute scripts and commands within Zulip!
+
+{start_tabs}
+
+1. Follow the [**Getting Started with Hubot**][getting-started] guide
+   to create your Hubot. You'll have a new directory from which `bin/hubot`
+   starts a vanilla Hubot instance with the shell backend.
+
+1. In your Hubot's directory, install the Zulip adapter by running:
+
+      `npm install --save hubot-zulip`
 
 1. {!create-a-generic-bot.md!}
-   Note its username, API key and full name; you will use them
-   on the next step.
 
-1. To run Hubot locally, first, set the following environment
-   variables by running:
+1. Hubot uses the following environment variables, set them using the
+   information of the bot you created, by running:
 
     ```
     export HUBOT_ZULIP_SITE="{{ api_url }}"
     export HUBOT_ZULIP_BOT="hubot-bot@example.com"
-    export HUBOT_ZULIP_API_KEY="your_key"
+    export HUBOT_ZULIP_API_KEY="<your_key>"
     ```
 
-    Then, run:
+1. Run Hubot:
 
-    `bin/hubot --adapter zulip --name "myhubot"`
+    `bin/hubot --adapter zulip --name "<bot username>"`
 
-    The `--name` parameter must match the name you gave the bot on
-    the settings page.
+!!! tip ""
 
-Hubot will automatically listen for commands on all public streams.
-You can also invite Hubot to private streams.
+    Hubot automatically listens for commands on all public channels. Private
+    channels require an invitation. Hubot's access can be
+    [configured](#configuration-options).
+
+{end_tabs}
 
 To test your Hubot installation, send it an @-notification with a
-basic command, for example `@Hubot pug me`, which should produce a
+basic command, e.g., `@Hubot pug me`, which should produce a
 result like this:
 
 ![Hubot message](/static/images/integrations/hubot/001.png)
 
-[Source code for the hubot-zulip adapter is available on GitHub][1]
-[1]: https://github.com/zulip/hubot-zulip
+### Configuration options
 
-[Check out all integrations available via Hubot][2]
-[2]: https://github.com/hubot-scripts
+* To make Hubot listen only on the channels that it is subscribed to, run:
+
+     `export HUBOT_ZULIP_ONLY_SUBSCRIBED_STREAMS`
+
+### Related documentation
+
+* [GitHub repository for Zulip Hubot adapter][hubot-zulip]
+
+* Zulip Integrations using Hubot: [Assembla](/integrations/doc/assembla) |
+  [Bonusly](/integrations/doc/bonusly) |
+  [Chartbeat](/integrations/doc/chartbeat) |
+  [Dark Sky](/integrations/doc/darksky) |
+  [Instagram](/integrations/doc/instagram) |
+  [Google Translate](/integrations/doc/google-translate) |
+  [MailChimp](/integrations/doc/mailchimp) |
+  [YouTube](/integrations/doc/youtube)
+
+* [Other Hubot adapters][other-adapters]
+
+[hubot-zulip]: https://github.com/zulip/hubot-zulip
+[getting-started]: https://hubot.github.com/docs/#getting-started-with-hubot
+[other-adapters]: https://github.com/search?q=topic%3Ahubot-adapter&type=Repositories
