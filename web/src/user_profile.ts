@@ -787,6 +787,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             processData: false,
             contentType: false,
             success() {
+                $("#bot-edit-form-error").hide();
                 avatar_widget.clear();
                 hide_button_spinner($submit_button);
                 original_values = get_current_values($("#bot-edit-form"));
@@ -1099,6 +1100,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
             url,
             data,
             success() {
+                $("#edit-user-form-error").hide();
                 hide_button_spinner($submit_button);
                 original_values = get_current_values($("#edit-user-form"));
                 toggle_submit_button($("#edit-user-form"));
