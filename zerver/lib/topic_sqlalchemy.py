@@ -16,6 +16,9 @@ def get_resolved_topic_condition_sa() -> ColumnElement[Boolean]:
     resolved_topic_cond = column("subject", Text).startswith(RESOLVED_TOPIC_PREFIX)
     return resolved_topic_cond
 
+def get_unresolved_topic_condition_sa() -> ColumnElement[Boolean]:
+    unresolved_topic_cond = ~column("subject", Text).startswith(RESOLVED_TOPIC_PREFIX)
+    return unresolved_topic_cond
 
 def topic_column_sa() -> ColumnElement[Text]:
     return column("subject", Text)

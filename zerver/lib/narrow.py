@@ -52,6 +52,7 @@ from zerver.lib.streams import (
 from zerver.lib.topic_sqlalchemy import (
     get_followed_topic_condition_sa,
     get_resolved_topic_condition_sa,
+    get_unresolved_topic_condition_sa,
     topic_column_sa,
     topic_match_sa,
 )
@@ -412,6 +413,9 @@ class NarrowBuilder:
             return query.where(maybe_negate(cond))
         elif operand == "resolved":
             cond = get_resolved_topic_condition_sa()
+            return query.where(maybe_negate(cond))
+        elif operand == "unresolved":
+            cond = get_unresolved_topic_condition_sa()
             return query.where(maybe_negate(cond))
         elif operand == "followed":
             cond = get_followed_topic_condition_sa(self.user_profile.id)
@@ -862,7 +866,7 @@ def ok_to_include_history(
         # historical messages in these cases anyway.
         for term in narrow:
             # NOTE: Needs to be in sync with `Filter.is_personal_filter`.
-            if term.operator == "is" and term.operand != "resolved":
+            if term.operator == "is" and term.operand != "resolved" and term.operand != "unresolved":
                 include_history = False
 
     return include_history

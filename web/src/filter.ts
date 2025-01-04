@@ -164,6 +164,8 @@ function message_matches_search_term(message: Message, operator: string, operand
                     return message.unread;
                 case "resolved":
                     return message.type === "stream" && resolved_topic.is_resolved(message.topic);
+                case "unresolved":
+                    return message.type === "stream" && resolved_topic.is_unresolved(message.topic);
                 case "followed":
                     return (
                         message.type === "stream" &&
@@ -548,6 +550,7 @@ export class Filter {
                     "unread",
                     "resolved",
                     "followed",
+                    "unresolved",
                 ].includes(term.operand);
             case "in":
                 return ["home", "all"].includes(term.operand);
@@ -642,6 +645,7 @@ export class Filter {
             "is-dm",
             "is-starred",
             "is-unread",
+            "is-unresolved",
             "is-resolved",
             "is-followed",
             "has-link",
@@ -1062,6 +1066,8 @@ export class Filter {
             "not-is-dm",
             "is-resolved",
             "not-is-resolved",
+            "is-unresolved",
+            "not-is-unresolved",
             "is-followed",
             "not-is-followed",
             "in-home",
@@ -1131,6 +1137,10 @@ export class Filter {
         }
 
         if (_.isEqual(term_types, ["is-resolved"])) {
+            return true;
+        }
+
+        if (_.isEqual(term_types, ["is-unresolved"])) {
             return true;
         }
 
@@ -1243,6 +1253,8 @@ export class Filter {
                     return "/#narrow/dm/" + people.emails_to_slug(this.operands("dm").join(","));
                 case "is-resolved":
                     return "/#narrow/topics/is/resolved";
+                case "is-unresolved":
+                    return "/#narrow/topics/is/unresolved";
                 case "is-followed":
                     return "/#narrow/topics/is/followed";
                 // TODO: It is ambiguous how we want to handle the 'sender' case,
@@ -1398,6 +1410,8 @@ export class Filter {
                     return $t({defaultMessage: "Direct message feed"});
                 case "is-resolved":
                     return $t({defaultMessage: "Topics marked as resolved"});
+                case "is-unresolved":
+                    return $t({defaultMessage: "Unresolved Topics"});
                 case "is-followed":
                     return $t({defaultMessage: "Followed topics"});
                 // These cases return false for is_common_narrow, and therefore are not
