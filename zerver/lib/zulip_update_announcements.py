@@ -456,6 +456,8 @@ def send_zulip_update_announcements_to_realm(
             timezone_now() - level_none_to_initial_auditlog.event_time < timedelta(days=7)
         ):
             new_zulip_update_announcements_level = latest_zulip_update_announcements_level
+    elif realm.zulip_update_announcements_stream.deactivated:
+        new_zulip_update_announcements_level = latest_zulip_update_announcements_level
     else:
         # Wait for 24 hours after sending group DM to allow admins to change the
         # stream for zulip update announcements from it's default value if desired.
