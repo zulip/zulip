@@ -474,19 +474,19 @@ export function format_group_list(user_groups: UserGroup[]): string {
 }
 
 export function is_user_in_setting_group(
-    setting_group: GroupSettingValue,
+    setting_value: GroupSettingValue,
     user_id: number,
 ): boolean {
-    if (typeof setting_group === "number") {
-        return is_user_in_group(setting_group, user_id);
+    if (typeof setting_value === "number") {
+        return is_user_in_group(setting_value, user_id);
     }
 
-    const direct_members = setting_group.direct_members;
+    const direct_members = setting_value.direct_members;
     if (direct_members.includes(user_id)) {
         return true;
     }
 
-    const direct_subgroups = setting_group.direct_subgroups;
+    const direct_subgroups = setting_value.direct_subgroups;
     for (const direct_subgroup_id of direct_subgroups) {
         if (is_user_in_group(direct_subgroup_id, user_id)) {
             return true;
