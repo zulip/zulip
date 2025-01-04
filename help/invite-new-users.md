@@ -88,6 +88,27 @@ users** menu option if you have permission to invite users.
 
 {end_tabs}
 
+## Edit a reusable invitation link
+
+{start_tabs}
+
+1. Click on the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in the upper
+   right corner of the web or desktop app.
+
+1. Select <i class="popover-menu-icon zulip-icon zulip-icon-building" aria-hidden="true"></i> **Organization settings**.
+
+1. Click on the [**<i class="icon fa fa-user-plus" aria-hidden="true"></i> Invitations**](/#organization/invites-list-admin) tab.
+
+1. Click **Edit** (<i class="icon fa fa-pencil" aria-hidden="true"></i>) icon.
+
+1. Select what [role](/help/roles-and-permissions) the users will join as.
+
+1. Configure which streams they will be added to.
+
+1. Click **Save changes**.
+
+{end_tabs}
+
 ## Manage pending invitations
 
 Organization owners can revoke or resend any invitation or reusable
