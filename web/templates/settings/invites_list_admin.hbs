@@ -8,7 +8,10 @@
     <div class="settings_panel_list_header">
         <h3>{{t "Invitations "}}</h3>
         <div class="alert-notification" id="invites-field-status"></div>
-        <input type="text" class="search filter_text_input" placeholder="{{t 'Filter invitations' }}" aria-label="{{t 'Filter invitations' }}"/>
+        {{> clear_search_button
+          placeholder=(t 'Filter invitations')
+          aria-label=(t 'Filter invitations')
+          }}
     </div>
 
     <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">

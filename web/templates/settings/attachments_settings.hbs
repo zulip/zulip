@@ -2,7 +2,11 @@
     <div id="attachment-stats-holder"></div>
     <div class="settings_panel_list_header">
         <h3>{{t "Your uploads"}}</h3>
-        <input id="upload_file_search" class="search filter_text_input" type="text" placeholder="{{t 'Filter uploaded files' }}" aria-label="{{t 'Filter uploads' }}"/>
+        {{> clear_search_button
+          id="upload_file_search"
+          placeholder=(t 'Filter uploaded files')
+          aria-label=(t 'Filter uploads')
+          }}
     </div>
     <div class="clear-float"></div>
     <div class="alert" id="delete-upload-status"></div>
