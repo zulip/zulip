@@ -8566,7 +8566,7 @@ paths:
                           a target message ID of `first_message_id_allowed_to_move`, if the user
                           desires to move only the portion of the topic that they can.
 
-                          Note that in a channel with [protected history](/help/channel-permissions),
+                          Note that in a [private channel with protected history][private-channels],
                           the Zulip security model requires that the above calculations only include
                           messages the acting user has access to. So in the rare case of a user
                           attempting to move a topic that started before the user joined a private
@@ -8575,6 +8575,8 @@ paths:
                           dialog.
 
                           **Changes**: New in Zulip 7.0 (feature level 172).
+
+                          [private-channels]: /help/channel-permissions#private-channels
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -10049,12 +10051,13 @@ paths:
       description: |
         Get all topics the user has access to in a specific channel.
 
-        Note that for private channels with [protected
-        history](/help/channel-permissions), the user will only have access to
-        topics of messages sent after they [subscribed to](/api/subscribe) the
-        channel. Similarly, a user's [bot](/help/bots-overview#bot-type)
-        will only have access to messages sent after the bot was subscribed to
-        the channel, instead of when the user subscribed.
+        Note that for [private channels with
+        protected history](/help/channel-permissions#private-channels),
+        the user will only have access to topics of messages sent after they
+        [subscribed to](/api/subscribe) the channel. Similarly, a user's
+        [bot](/help/bots-overview#bot-type) will only have access to messages
+        sent after the bot was subscribed to the channel, instead of when the
+        user subscribed.
       parameters:
         - $ref: "#/components/parameters/ChannelIdInPath"
       responses:
@@ -10212,7 +10215,8 @@ paths:
         by the optional parameters, like `invite_only`, detailed below.
 
         Note that the ability to subscribe oneself and/or other users to a specified
-        channel depends on the [channel's privacy settings](/help/channel-permissions).
+        channel depends on the [channel's type: private, public, or
+        web-public](/help/channel-permissions).
 
         **Changes**: Before Zulip 8.0 (feature level 208), if a user
         specified by the [`principals`][principals-param] parameter was
@@ -20042,8 +20046,8 @@ paths:
                     newly subscribed members, or users can only access messages
                     they actually received while subscribed to the channel.
 
-                    Corresponds to the [shared history](/help/channel-permissions)
-                    option in documentation.
+                    Corresponds to the shared history option for
+                    [private channels](/help/channel-permissions#private-channels).
 
                     It's an error for this parameter to be false for a public or
                     web-public channel and when is_private is false.
@@ -24631,8 +24635,8 @@ components:
         newly subscribed members, or users can only access messages
         they actually received while subscribed to the channel.
 
-        Corresponds to the [shared history](/help/channel-permissions)
-        option in documentation.
+        Corresponds to the shared history option for
+        [private channels](/help/channel-permissions#private-channels).
       type: boolean
       example: false
     Principals:

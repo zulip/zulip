@@ -4,7 +4,7 @@
 
 Channels can be [web-public](/help/public-access-option), public or private,
 and private channels can have shared or protected history.
-See [channel permissions](/help/channel-permissions) for
+See [channel types and permissions](/help/channel-permissions) for
 details on channel privacy settings.
 
 As an organization administrator, you can always make a public channel
@@ -51,3 +51,9 @@ public.
 
     **Warning**: Be careful making a private channel public. All past messages
     will become accessible, even if the channel previously had protected history.
+
+## Related articles
+
+* [Channel permissions](/help/channel-permissions)
+* [Channel posting policy](/help/channel-posting-policy)
+* [Configure who can administer a channel](/help/configure-who-can-administer-a-channel)

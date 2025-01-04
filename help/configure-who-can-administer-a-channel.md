@@ -39,4 +39,8 @@ channel permissions.
 ## Related articles
 
 * [Channel permissions](/help/channel-permissions)
+* [User roles](/help/user-roles)
+* [User groups](/help/user-groups)
+* [Channel posting policy](/help/channel-posting-policy)
 * [Configure who can unsubscribe other users from a channel](/help/configure-who-can-unsubscribe-others)
+* [Archive a channel](/help/archive-a-channel)
