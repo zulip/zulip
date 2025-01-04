@@ -28,7 +28,7 @@
                     {{/if}}
                     {{#if can_manage_profile}}
                         <div class="user-profile-manage-others-edit-button">
-                            <i class="zulip-icon zulip-icon-edit tippy-zulip-tooltip" data-tippy-content="{{t 'Manage user' }}" aria-hidden="true"></i>
+                            <i class="zulip-icon zulip-icon-edit tippy-zulip-tooltip" data-tippy-content="{{#if is_bot}}{{t 'Manage bot'}}{{else}}{{t 'Manage user' }}{{/if}}" aria-hidden="true"></i>
                         </div>
                     {{/if}}
                 </h1>

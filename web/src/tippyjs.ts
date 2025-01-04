@@ -607,10 +607,10 @@ export function initialize(): void {
         trigger: "mouseenter",
         onShow(instance) {
             if ($(instance.reference).hasClass("deactivate")) {
-                instance.setContent($t({defaultMessage: "Deactivate"}));
+                instance.setContent($t({defaultMessage: "Deactivate user"}));
                 return undefined;
             } else if ($(instance.reference).hasClass("reactivate")) {
-                instance.setContent($t({defaultMessage: "Reactivate"}));
+                instance.setContent($t({defaultMessage: "Reactivate user"}));
                 return undefined;
             }
             return false;

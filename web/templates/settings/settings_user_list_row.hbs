@@ -36,7 +36,7 @@
     <td class="actions">
         <span class="user-status-settings">
             <span {{#if (and is_bot cannot_edit)}}class="tippy-zulip-tooltip"{{/if}} {{#if (and is_bot cannot_edit)}}data-tippy-content="{{t 'This bot cannot be edited.'}}"{{/if}}>
-                <button class="button rounded small button-warning open-user-form tippy-zulip-delayed-tooltip" data-tippy-content="{{#if is_bot}}{{#unless cannot_edit}}{{t 'Edit bot' }}{{/unless}}{{else}}{{t 'Edit user' }}{{/if}}" data-user-id="{{user_id}}" {{#if cannot_edit}}disabled="disabled"{{/if}}>
+                <button class="button rounded small button-warning open-user-form tippy-zulip-delayed-tooltip" data-tippy-content="{{#if is_bot}}{{#unless cannot_edit}}{{t 'Manage bot' }}{{/unless}}{{else}}{{t 'Manage user' }}{{/if}}" data-user-id="{{user_id}}" {{#if cannot_edit}}disabled="disabled"{{/if}}>
                     <i class="fa fa-pencil" aria-hidden="true"></i>
                 </button>
             </span>
