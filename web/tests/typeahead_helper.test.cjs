@@ -956,6 +956,46 @@ test("render_stream", ({mock_template}) => {
     assert.ok(rendered);
 });
 
+test("render_stream_topic", ({mock_template}) => {
+    let rendered = false;
+    const streamData = {
+        invite_only: true,
+        is_web_public: false,
+        color: "blue",
+        name: "Design",
+        description: "Design related discussions.",
+        rendered_description: "",
+        subscribed: true,
+    };
+
+    const topic_object = {
+        topic: "Test topic title",
+        stream_data: {
+            invite_only: true,
+            is_web_public: false,
+            color: "blue",
+            name: "Design",
+            description: "Design related discussions.",
+            rendered_description: "",
+            subscribed: true,
+        },
+        type: "topic_list",
+        is_stream_only: false,
+    };
+
+    mock_template("typeahead_list_item.hbs", false, (args) => {
+        assert.equal(args.topic, "Test topic title");
+        assert.equal(args.type, "topic_list");
+        assert.equal(args.is_stream_only, false);
+        assert.equal(args.is_stream_topic, true);
+        assert.deepEqual(args.stream_data, streamData);
+        rendered = true;
+        return "typeahead-item-stub";
+    });
+    assert.equal(th.render_stream_topic(topic_object), "typeahead-item-stub");
+    assert.ok(rendered);
+});
+
 test("render_emoji", ({mock_template}) => {
     // Test render_emoji with normal emoji.
     let expected_template_data = {
