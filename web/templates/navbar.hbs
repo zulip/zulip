@@ -1,9 +1,19 @@
 <div class="header">
     <nav class="header-main" id="top_navbar">
         <div class="column-left">
-            <a class="left-sidebar-toggle-button {{#if embedded}}hide-streamlist-toggle-visibility{{/if}}" tabindex="0" role="button">
-                <i class="fa fa-reorder" aria-hidden="true"></i>
-                <span class="left-sidebar-toggle-unreadcount">0</span>
+           <a class="left-sidebar-toggle-button {{#if embedded}}hide-streamlist-toggle-visibility{{/if}}" tabindex="0" role="button">
+           <svg id="leftside-open-dot" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panel-left-dashed">
+                <rect width="18" height="18" x="3" y="3" rx="2"/>
+                <path d="M9 14v1"/>
+                <path d="M9 19v2"/>
+                <path d="M9 3v2"/>
+                <path d="M9 9v1"/>
+            </svg>
+            <svg id="leftside-close-solid" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panel-left" style="display: none;">
+                <rect width="18" height="18" x="3" y="3" rx="2"/>
+                <path d="M9 3v18"/>
+            </svg>
+            <span class="left-sidebar-toggle-unreadcount">0</span>
             </a>
             <a href="" class="brand no-style">
                 <img id="realm-navbar-wide-logo" src="" alt="" class="nav-logo no-drag"/>
@@ -41,11 +51,6 @@
                     {{t 'Log in' }}
                 </a>
             </div>
-            <div id="userlist-toggle" class="hidden-for-spectators">
-                <a id="userlist-toggle-button" role="button" class="header-button navbar-item" tabindex="0">
-                    <i class="zulip-icon zulip-icon-user-list"></i>
-                </a>
-            </div>
             <div id="help-menu" class="navbar-item">
                 <a class="header-button tippy-zulip-delayed-tooltip" tabindex="0" role="button" data-tooltip-template-id="help-menu-tooltip-template">
                     <i class="zulip-icon zulip-icon-help-bigger" aria-hidden="true"></i>
@@ -64,6 +69,18 @@
             <div class="spectator_narrow_login_button only-visible-for-spectators" data-tippy-content="{{t 'Log in' }}" data-tippy-placement="bottom">
                 <a id="login_button" class="header-button login_button navbar-item" tabindex="0">
                     <i class="zulip-icon zulip-icon-log-in"></i>
+                </a>
+            </div>
+            <div id="userlist-toggle" class="hidden-for-spectators">
+                <a id="userlist-toggle-button" role="button" class="header-button navbar-item" tabindex="0">
+                    <svg id="rightside-open-dot" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panel-right-dashed">
+                        <rect width="18" height="18" x="3" y="3" rx="2"/>
+                        <path d="M15 14v1"/><path d="M15 19v2"/><path d="M15 3v2"/><path d="M15 9v1"/>
+                    </svg>
+                    <svg id="rightside-close-dot" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panel-right" style="display: none;">
+                        <rect width="18" height="18" x="3" y="3" rx="2"/>
+                        <path d="M15 3v18"/>
+                    </svg>
                 </a>
             </div>
         </div>
