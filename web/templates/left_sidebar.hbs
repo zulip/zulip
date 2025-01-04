@@ -1,4 +1,7 @@
 <div class="left-sidebar" id="left-sidebar" role="navigation">
+    <div class="organization_name {{#unless display_organization_name}}notdisplayed{{/unless}}">
+        {{realm_name}}
+    </div>
     <div id="left-sidebar-navigation-area" class="left-sidebar-navigation-area">
         <div id="views-label-container" class="showing-expanded-navigation {{#if is_spectator}}remove-pointer-for-spectator{{/if}}">
             <i id="toggle-top-left-navigation-area-icon" class="zulip-icon zulip-icon-heading-triangle-right sidebar-heading-icon rotate-icon-down views-tooltip-target hidden-for-spectators" aria-hidden="true" tabindex="0" role="button"></i>

@@ -45,6 +45,7 @@ export const user_settings_schema = stream_notification_settings_schema
         dense_mode: z.boolean(),
         desktop_icon_count_display: z.number(),
         display_emoji_reaction_users: z.boolean(),
+        display_organization_name: z.boolean(),
         email_address_visibility: z.number(),
         email_notifications_batching_period_seconds: z.number(),
         emojiset: z.string(),

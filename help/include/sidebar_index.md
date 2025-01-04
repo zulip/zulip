@@ -57,6 +57,7 @@
 * [Configure home view](/help/configure-home-view)
 * [Enable full width display](/help/enable-full-width-display)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
+* [Display organization name](/help/display-organization-name)
 
 ## Writing messages
 * [Message formatting](/help/format-your-message-using-markdown)
