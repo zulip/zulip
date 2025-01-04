@@ -1656,6 +1656,10 @@ label.preferences-radio-choice-label {
     margin-bottom: var(--margin-bottom-field-description);
 }
 
+.cursor-text {
+    cursor: text;
+}
+
 .profile-field-choices {
     display: inline-block;
 
