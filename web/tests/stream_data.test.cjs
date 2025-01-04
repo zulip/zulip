@@ -557,6 +557,7 @@ test("stream_settings", ({override}) => {
         history_public_to_subscribers: true,
         stream_post_policy: settings_config.stream_post_policy_values.admins.code,
         message_retention_days: 10,
+        mobile_push_notifications_enabled: false,
         can_remove_subscribers_group: admins_group.id,
         can_administer_channel_group: nobody_group.id,
         date_created: 1691057093,
@@ -585,6 +586,7 @@ test("stream_settings", ({override}) => {
         true,
     );
     assert.equal(sub_rows[0].message_retention_days, 10);
+    assert.equal(sub_rows[0].mobile_push_notifications_enabled, false);
 
     const sub = stream_data.get_sub("a");
     stream_data.update_stream_privacy(sub, {
@@ -598,6 +600,7 @@ test("stream_settings", ({override}) => {
         sub,
         moderators_group.id,
     );
+    stream_data.update_mobile_push_notifications_enabled(sub, false);
     stream_data.update_stream_permission_group_setting(
         "can_administer_channel_group",
         sub,
@@ -609,6 +612,7 @@ test("stream_settings", ({override}) => {
     assert.equal(sub.message_retention_days, -1);
     assert.equal(sub.can_remove_subscribers_group, moderators_group.id);
     assert.equal(sub.can_administer_channel_group, moderators_group.id);
+    assert.equal(sub.mobile_push_notifications_enabled, false);
 
     // For guest user only retrieve subscribed streams
     sub_rows = stream_settings_data.get_updated_unsorted_subs();

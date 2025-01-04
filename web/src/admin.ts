@@ -166,6 +166,7 @@ export function build_page(): void {
         realm_waiting_period_threshold: realm.realm_waiting_period_threshold,
         realm_new_stream_announcements_stream_id: realm.realm_new_stream_announcements_stream_id,
         realm_signup_announcements_stream_id: realm.realm_signup_announcements_stream_id,
+        realm_mobile_push_notifications_enabled: realm.realm_mobile_push_notifications_enabled,
         realm_zulip_update_announcements_stream_id:
             realm.realm_zulip_update_announcements_stream_id,
         is_admin: current_user.is_admin,

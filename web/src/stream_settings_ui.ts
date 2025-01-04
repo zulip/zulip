@@ -223,6 +223,14 @@ export function update_stream_permission_group_setting(
     stream_edit_subscribers.rerender_subscribers_list(sub);
 }
 
+export function update_mobile_push_notifications_enabled(
+    sub: StreamSubscription,
+    new_value: boolean,
+): void {
+    stream_data.update_mobile_push_notifications_enabled(sub, new_value);
+    stream_ui_updates.update_setting_element(sub, "mobile_push_notifications_enabled");
+}
+
 export function update_is_default_stream(): void {
     const active_stream_id = stream_settings_components.get_active_data().id;
     if (active_stream_id) {
@@ -731,6 +739,7 @@ function setup_page(callback: () => void): void {
             max_stream_name_length: realm.max_stream_name_length,
             max_stream_description_length: realm.max_stream_description_length,
             is_owner: current_user.is_owner,
+            is_admin: current_user.is_admin,
             stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
             stream_privacy_policy,
             stream_post_policy_values: settings_config.stream_post_policy_values,
@@ -743,6 +752,7 @@ function setup_page(callback: () => void): void {
                 realm.realm_org_type === settings_config.all_org_type_values.business.code,
             disable_message_retention_setting:
                 !realm.zulip_plan_is_not_limited || !current_user.is_owner,
+            realm_mobile_push_notifications_enabled: realm.realm_mobile_push_notifications_enabled,
         };
 
         const rendered = render_stream_settings_overlay(template_data);
