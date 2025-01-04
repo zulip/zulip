@@ -1,0 +1,20 @@
+<div data-process="{{process}}" class="{{custom_classes}} banner banner-{{intent}}">
+    <span class="banner-label">
+        {{label}}
+    </span>
+    <span class="banner-action-buttons">
+        {{#each buttons}}
+            <button class="action-button action-button-{{type}}-{{intent}}" tabindex=0>
+                {{#if icon}}
+                <i class="zulip-icon zulip-icon-{{icon}}"></i>
+                {{/if}}
+                <span class="action-button-label">{{label}}</span>
+            </button>
+        {{/each}}
+    </span>
+    {{#if close_button}}
+    <button class="banner-close-button icon-button icon-button-{{intent}}" tabindex="0">
+        <i class="zulip-icon zulip-icon-close"></i>
+    </button>
+    {{/if}}
+</div>
