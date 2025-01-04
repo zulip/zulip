@@ -2,7 +2,11 @@
 
 const assert = require("node:assert/strict");
 
+const {set_global, with_overrides} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+
+const navigator = {};
+set_global("navigator", navigator);
 
 /*
     Note that the test runner automatically registers
@@ -63,6 +67,21 @@ run_test("popover_hotkey_hints", () => {
     const html = require("./templates/popover_hotkey_hints.hbs")(args);
     const expected_html = `<span class="popover-menu-hotkey-hints"><span class="popover-menu-hotkey-hint">${args.hotkey_one}</span><span class="popover-menu-hotkey-hint">${args.hotkey_two}</span></span>\n`;
     assert.equal(html, expected_html);
+});
+
+run_test("popover_hotkey_hints mac command", () => {
+    const args = {
+        hotkey_one: "Ctrl",
+        hotkey_two: "[",
+    };
+
+    with_overrides(({override}) => {
+        override(navigator, "platform", "MacIntel");
+        const html = require("./templates/popover_hotkey_hints.hbs")(args);
+        const expected_html =
+            '<span class="popover-menu-hotkey-hints"><span class="popover-menu-hotkey-hint"><i class="zulip-icon zulip-icon-mac-command" aria-hidden="true"></i></span><span class="popover-menu-hotkey-hint">[</span></span>\n';
+        assert.equal(html, expected_html);
+    });
 });
 
 run_test("popover_hotkey_hints_shift_hotkey", () => {
