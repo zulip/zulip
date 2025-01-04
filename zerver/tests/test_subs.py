@@ -56,7 +56,7 @@ from zerver.lib.default_streams import (
     get_default_stream_ids_for_realm,
     get_slim_realm_default_streams,
 )
-from zerver.lib.email_mirror_helpers import encode_email_address_helper
+from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
 from zerver.lib.response import json_success
@@ -108,7 +108,6 @@ from zerver.lib.types import (
 from zerver.lib.user_groups import is_user_in_group
 from zerver.models import (
     Attachment,
-    ChannelEmailAddress,
     DefaultStream,
     DefaultStreamGroup,
     Message,
@@ -126,7 +125,12 @@ from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import CommonPolicyEnum, get_realm
 from zerver.models.streams import get_default_stream_groups, get_stream
-from zerver.models.users import active_non_guest_user_ids, get_user, get_user_profile_by_id_in_realm
+from zerver.models.users import (
+    active_non_guest_user_ids,
+    get_system_bot,
+    get_user,
+    get_user_profile_by_id_in_realm,
+)
 from zerver.views.streams import compose_views
 
 if TYPE_CHECKING:
@@ -6308,14 +6312,17 @@ class GetStreamsTest(ZulipTestCase):
         iago = self.example_user("iago")
         polonius = self.example_user("polonius")
         realm = get_realm("zulip")
+        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
         denmark_stream = get_stream("Denmark", realm)
         result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
         json = self.assert_json_success(result)
-        email_token = ChannelEmailAddress.objects.get(channel=denmark_stream).email_token
-        denmark_email = encode_email_address_helper(
+        email_token = get_channel_email_token(
+            denmark_stream, creator=hamlet, sender=email_gateway_bot
+        )
+        hamlet_denmark_email = encode_email_address(
             denmark_stream.name, email_token, show_sender=True
         )
-        self.assertEqual(json["email"], denmark_email)
+        self.assertEqual(json["email"], hamlet_denmark_email)
 
         self.login("polonius")
         result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
@@ -6324,7 +6331,13 @@ class GetStreamsTest(ZulipTestCase):
         self.subscribe(polonius, "Denmark")
         result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
         json = self.assert_json_success(result)
-        self.assertEqual(json["email"], denmark_email)
+        email_token = get_channel_email_token(
+            denmark_stream, creator=polonius, sender=email_gateway_bot
+        )
+        polonius_denmark_email = encode_email_address(
+            denmark_stream.name, email_token, show_sender=True
+        )
+        self.assertEqual(json["email"], polonius_denmark_email)
 
         do_change_stream_permission(
             denmark_stream,
@@ -6336,7 +6349,7 @@ class GetStreamsTest(ZulipTestCase):
         self.login("hamlet")
         result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
         json = self.assert_json_success(result)
-        self.assertEqual(json["email"], denmark_email)
+        self.assertEqual(json["email"], hamlet_denmark_email)
 
         self.unsubscribe(hamlet, "Denmark")
         result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
@@ -6345,7 +6358,13 @@ class GetStreamsTest(ZulipTestCase):
         self.login("iago")
         result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
         json = self.assert_json_success(result)
-        self.assertEqual(json["email"], denmark_email)
+        email_token = get_channel_email_token(
+            denmark_stream, creator=iago, sender=email_gateway_bot
+        )
+        iago_denmark_email = encode_email_address(
+            denmark_stream.name, email_token, show_sender=True
+        )
+        self.assertEqual(json["email"], iago_denmark_email)
 
         self.unsubscribe(iago, "Denmark")
         result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")

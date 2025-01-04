@@ -1,6 +1,8 @@
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
+import type {Bot} from "./bot_data.ts";
+import * as bot_data from "./bot_data.ts";
 import * as color_data from "./color_data.ts";
 import {FoldDict} from "./fold_dict.ts";
 import {page_params} from "./page_params.ts";
@@ -9,7 +11,7 @@ import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import type {GroupSettingValue, StateData} from "./state_data.ts";
+import type {CurrentUser, GroupSettingValue, StateData} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import type {StreamPermissionGroupSetting, StreamPostPolicy} from "./stream_types.ts";
 import * as sub_store from "./sub_store.ts";
@@ -493,10 +495,28 @@ export function can_toggle_subscription(sub: StreamSubscription): boolean {
     );
 }
 
+export function get_current_user_and_their_bots_with_post_messages_permission(
+    sub: StreamSubscription,
+): (User | Bot)[] {
+    const senders_with_post_messages_permission: (User | Bot)[] = [];
+
+    if (can_post_messages_in_stream(sub)) {
+        senders_with_post_messages_permission.push(people.get_by_user_id(current_user.user_id));
+    }
+
+    for (const bot of bot_data.get_all_bots_for_current_user()) {
+        if (bot.is_active && can_post_messages_in_stream(sub, bot)) {
+            senders_with_post_messages_permission.push(bot);
+        }
+    }
+    return senders_with_post_messages_permission;
+}
+
 export function can_access_stream_email(sub: StreamSubscription): boolean {
     return (
-        (sub.subscribed || sub.is_web_public || (!current_user.is_guest && !sub.invite_only)) &&
-        !page_params.is_spectator
+        !page_params.is_spectator &&
+        sub.subscribed &&
+        get_current_user_and_their_bots_with_post_messages_permission(sub).length > 0
     );
 }
 
@@ -596,7 +616,10 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
     );
 }
 
-export let can_post_messages_in_stream = function (stream: StreamSubscription): boolean {
+export let can_post_messages_in_stream = function (
+    stream: StreamSubscription,
+    sender: CurrentUser | Bot = current_user,
+): boolean {
     if (stream.is_archived) {
         return false;
     }
@@ -605,7 +628,9 @@ export let can_post_messages_in_stream = function (stream: StreamSubscription): 
         return false;
     }
 
-    if (current_user.is_admin) {
+    const user: User = people.get_by_user_id(sender.user_id);
+
+    if (user.is_admin) {
         return true;
     }
 
@@ -613,7 +638,7 @@ export let can_post_messages_in_stream = function (stream: StreamSubscription): 
         return false;
     }
 
-    if (current_user.is_moderator) {
+    if (user.is_moderator) {
         return true;
     }
 
@@ -622,16 +647,15 @@ export let can_post_messages_in_stream = function (stream: StreamSubscription): 
     }
 
     if (
-        current_user.is_guest &&
+        user.is_guest &&
         stream.stream_post_policy !== settings_config.stream_post_policy_values.everyone.code
     ) {
         return false;
     }
 
-    const person = people.get_by_user_id(people.my_current_user_id());
     const current_datetime = Date.now();
-    const person_date_joined = new Date(person.date_joined).getTime();
-    const days = (current_datetime - person_date_joined) / 1000 / 86400;
+    const user_date_joined = new Date(user.date_joined).getTime();
+    const days = (current_datetime - user_date_joined) / 1000 / 86400;
     if (
         stream.stream_post_policy ===
             settings_config.stream_post_policy_values.non_new_members.code &&
