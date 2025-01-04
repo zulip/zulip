@@ -1131,6 +1131,7 @@ textarea.new_message_textarea {
 
         .popover-menu-hotkey-hint {
             padding: 2px 5px;
+            display: flex;
         }
     }
 
