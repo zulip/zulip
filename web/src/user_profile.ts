@@ -990,7 +990,9 @@ function get_current_values(
 function toggle_submit_button($edit_form: JQuery): void {
     const current_values = get_current_values($edit_form);
     const $submit_button = $("#user-profile-modal .dialog_submit_button");
-    if (!_.isEqual(original_values, current_values)) {
+    const full_name_value = $edit_form.find("input[name='full_name']").val()!;
+    const is_full_name_valid = full_name_value && full_name_value.toString().trim() !== "";
+    if (!_.isEqual(original_values, current_values) && is_full_name_valid) {
         $submit_button.prop("disabled", false);
     } else {
         $submit_button.prop("disabled", true);
