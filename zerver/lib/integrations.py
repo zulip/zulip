@@ -525,7 +525,6 @@ INTEGRATIONS: dict[str, Integration] = {
         display_name="GIPHY",
         categories=["misc"],
         doc="zerver/integrations/giphy.md",
-        logo="images/integrations/giphy/GIPHY_big_logo.png",
     ),
     "git": Integration(
         "git", ["version-control"], stream_name="commits", doc="zerver/integrations/git.md"
@@ -729,9 +728,9 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "gitlab": [ScreenshotConfig("push_hook__push_local_branch_without_commits.json")],
     "gocd": [ScreenshotConfig("pipeline_with_mixed_job_result.json")],
     "gogs": [ScreenshotConfig("pull_request__opened.json")],
-    "gosquared": [ScreenshotConfig("traffic_spike.json", image_name="000.png")],
+    "gosquared": [ScreenshotConfig("traffic_spike.json")],
     "grafana": [ScreenshotConfig("alert_values_v11.json")],
-    "greenhouse": [ScreenshotConfig("candidate_stage_change.json", image_name="000.png")],
+    "greenhouse": [ScreenshotConfig("candidate_stage_change.json")],
     "groove": [ScreenshotConfig("ticket_started.json")],
     "harbor": [ScreenshotConfig("scanning_completed.json")],
     "hellosign": [
@@ -743,7 +742,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     ],
     "helloworld": [ScreenshotConfig("hello.json")],
     "heroku": [ScreenshotConfig("deploy.txt")],
-    "homeassistant": [ScreenshotConfig("reqwithtitle.json", image_name="003.png")],
+    "homeassistant": [ScreenshotConfig("reqwithtitle.json")],
     "insping": [ScreenshotConfig("website_state_available.json")],
     "intercom": [ScreenshotConfig("conversation_admin_replied.json")],
     "jira": [ScreenshotConfig("created_v1.json")],
@@ -755,13 +754,13 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "mention": [ScreenshotConfig("webfeeds.json")],
     "nagios": [BaseScreenshotConfig("service_notify.json")],
     "netlify": [ScreenshotConfig("deploy_building.json")],
-    "newrelic": [ScreenshotConfig("incident_activated_new_default_payload.json", "001.png")],
+    "newrelic": [ScreenshotConfig("incident_activated_new_default_payload.json")],
     "opencollective": [ScreenshotConfig("one_time_donation.json")],
-    "opsgenie": [ScreenshotConfig("addrecipient.json", image_name="000.png")],
+    "opsgenie": [ScreenshotConfig("addrecipient.json")],
     "pagerduty": [ScreenshotConfig("trigger_v2.json")],
     "papertrail": [ScreenshotConfig("short_post.json", payload_as_query_param=True)],
     "patreon": [ScreenshotConfig("members_pledge_create.json")],
-    "pingdom": [ScreenshotConfig("http_up_to_down.json", image_name="001.png")],
+    "pingdom": [ScreenshotConfig("http_up_to_down.json")],
     "pivotal": [ScreenshotConfig("v5_type_changed.json")],
     "radarr": [ScreenshotConfig("radarr_movie_grabbed.json")],
     "raygun": [ScreenshotConfig("new_error.json")],
@@ -769,10 +768,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "rhodecode": [ScreenshotConfig("push.json")],
     "rundeck": [ScreenshotConfig("start.json")],
     "semaphore": [ScreenshotConfig("pull_request.json")],
-    "sentry": [
-        ScreenshotConfig("event_for_exception_python.json"),
-        ScreenshotConfig("issue_assigned_to_team.json", "002.png"),
-    ],
+    "sentry": [ScreenshotConfig("event_for_exception_python.json")],
     "slack": [ScreenshotConfig("message_with_normal_text.json")],
     "sonarqube": [ScreenshotConfig("error.json")],
     "sonarr": [ScreenshotConfig("sonarr_episode_grabbed.json")],
@@ -780,7 +776,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "statuspage": [ScreenshotConfig("incident_created.json")],
     "stripe": [ScreenshotConfig("charge_succeeded__card.json")],
     "taiga": [ScreenshotConfig("userstory_changed_status.json")],
-    "teamcity": [ScreenshotConfig("success.json"), ScreenshotConfig("personal.json", "002.png")],
+    "teamcity": [ScreenshotConfig("success.json")],
     "thinkst": [ScreenshotConfig("canary_consolidated_port_scan.json")],
     "transifex": [
         ScreenshotConfig(
@@ -803,7 +799,6 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "zendesk": [
         ScreenshotConfig(
             "",
-            "007.png",
             use_basic_auth=True,
             extra_params={
                 "ticket_title": "Hardware Ecosystem Compatibility Inquiry",
