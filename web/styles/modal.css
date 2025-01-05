@@ -445,7 +445,7 @@
 #add-poll-modal {
     /* this height allows 3-4 option rows
     to fit in without need for scrolling */
-    height: 450px;
+    height: 32.1428em; /* 450px / 14px em */
     overflow: hidden;
 
     .modal__content {
