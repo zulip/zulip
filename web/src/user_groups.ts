@@ -140,6 +140,13 @@ export function get_user_group_from_name(name: string): UserGroup | undefined {
     return user_group_name_dict.get(name);
 }
 
+export function realm_has_deactivated_user_groups(): boolean {
+    const realm_user_groups = get_realm_user_groups(true);
+    const deactivated_group_count = realm_user_groups.filter((group) => group.deactivated).length;
+
+    return deactivated_group_count > 0;
+}
+
 export function get_realm_user_groups(include_deactivated = false): UserGroup[] {
     const user_groups = [...user_group_by_id_dict.values()].sort((a, b) => a.id - b.id);
     return user_groups.filter((group) => {
@@ -299,8 +306,11 @@ export function is_setting_group_empty(setting_group: GroupSettingValue): boolea
     return true;
 }
 
-export function get_user_groups_of_user(user_id: number): UserGroup[] {
-    const user_groups_realm = get_realm_user_groups();
+export function get_user_groups_of_user(
+    user_id: number,
+    include_deactivated_groups = false,
+): UserGroup[] {
+    const user_groups_realm = get_realm_user_groups(include_deactivated_groups);
     const groups_of_user = user_groups_realm.filter((group) => is_user_in_group(group.id, user_id));
     return groups_of_user;
 }

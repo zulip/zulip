@@ -1,4 +1,4 @@
-<div class="group-row" data-group-id="{{id}}" data-group-name="{{name}}">
+<div class="group-row {{#if deactivated}}deactivated-group{{/if}}" data-group-id="{{id}}" data-group-name="{{name}}">
     {{#if is_member}}
         <div class="check checked join_leave_button tippy-zulip-tooltip {{#unless can_leave}}disabled{{/unless}} {{#unless is_direct_member}}not-direct-member{{/unless}}" data-tooltip-template-id="{{#if can_leave}}{{#if is_direct_member}}leave-{{name}}-group-tooltip-template{{else}}cannot-leave-{{name}}-because-of-subgroup-tooltip-template{{/if}}{{else}}cannot-leave-{{name}}-group-tooltip-template{{/if}}">
             <template id="leave-{{name}}-group-tooltip-template">
@@ -56,7 +56,11 @@
     {{/if}}
     <div class="group-info-box">
         <div class="top-bar">
-            <div class="group-name">{{name}}</div>
+            <div class="group-name">{{name}}
+                {{#if deactivated}}
+                    <i class="fa fa-ban deactivated-user-icon"></i>
+                {{/if}}
+            </div>
         </div>
         <div class="bottom-bar">
             <div class="description rendered_markdown" data-no-description="{{t 'No description.'}}">{{description}}</div>

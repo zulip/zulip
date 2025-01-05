@@ -647,8 +647,18 @@ h4.user_group_setting_subsection_title {
 .group_name_search_section {
     padding: 8px 10px;
     display: grid;
-    grid-template: "search-input clear-search" auto / minmax(0, 1fr) 30px;
+    grid-template:
+        "search-input clear-search more-options-button" auto / minmax(0, 1fr)
+        30px;
     border-bottom: 1px solid var(--color-border-modal-bar);
+}
+
+#user_group_visibility_settings_widget {
+    grid-area: more-options-button;
+    margin-left: 10px;
+    display: flex;
+    gap: 3px;
+    width: auto;
 }
 
 .user-groups-list,
@@ -662,6 +672,31 @@ h4.user_group_setting_subsection_title {
     When we redesign this area we should make this less brittle. */
     height: calc(100% - 3.4em - 40px);
     width: 100%;
+}
+
+.left .group-name .fa-ban,
+.right .group-name .fa-ban {
+    font-size: 0.8em;
+    opacity: 0.6;
+}
+
+.left .group-name,
+.right .group-name {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.user-groups-list.hide-deactived-user-groups .deactivated-group {
+    display: none;
+}
+
+.user-groups-list.hide-active-user-groups .group-row:not(.deactivated-group) {
+    display: none;
+}
+
+.user_group_visibility_settings-dropdown-list-container .dropdown-list-wrapper {
+    min-width: 11em;
 }
 
 #search_group_name:placeholder-shown + #clear_search_group_name {
