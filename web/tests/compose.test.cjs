@@ -489,11 +489,6 @@ test_ui("finish", ({override, override_rewire}) => {
             assert.equal(classname, "invalid");
             assert.equal(value, true);
         };
-        $("#compose_invite_users").show();
-        $("#compose-send-button").prop("disabled", false);
-        $("#compose-send-button").trigger("focus");
-        $(".compose-submit-button .loader").hide();
-        $("textarea#compose-textarea").off("select");
         $("textarea#compose-textarea").val("");
         override_rewire(compose_ui, "compose_spinner_visible", false);
         const res = compose.finish();
@@ -690,10 +685,6 @@ test_ui("on_events", ({override, override_rewire}) => {
     })();
 
     (function test_markdown_preview_compose_clicked() {
-        // Tests setup
-        $("textarea#compose-textarea").set_height(50);
-        $("#compose .preview_message_area").css = noop;
-
         function setup_visibilities() {
             $("#compose .markdown_preview").show();
             $("#compose .undo_markdown_preview").hide();
