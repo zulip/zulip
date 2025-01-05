@@ -991,11 +991,19 @@ function get_current_values(
 function toggle_submit_button($edit_form: JQuery): void {
     const current_values = get_current_values($edit_form);
     const $submit_button = $("#user-profile-modal .dialog_submit_button");
-    if (!_.isEqual(original_values, current_values)) {
-        $submit_button.prop("disabled", false);
-    } else {
+    const full_name_value = $edit_form.find<HTMLInputElement>("input[name='full_name']").val()!;
+
+    if (full_name_value.trim() === "") {
         $submit_button.prop("disabled", true);
+        return;
     }
+
+    if (_.isEqual(original_values, current_values)) {
+        $submit_button.prop("disabled", true);
+        return;
+    }
+
+    $submit_button.prop("disabled", false);
 }
 
 export function show_edit_user_info_modal(user_id: number, $container: JQuery): void {
