@@ -992,9 +992,9 @@
     );
 
     /* Inbox view constants - Values from Figma design */
-    --height-inbox-search: 26px;
-    --width-inbox-search: 346px;
-    --width-inbox-filters-dropdown: 150px;
+    --height-inbox-search: 1.8571em; /* 26px / 14px em */
+    --width-inbox-search: 24.7142em; /* 346px / 14px em */
+    --width-inbox-filters-dropdown: 10.7142em; /* 150px / 14px em */
     --color-background-inbox-no-unreads-illustration: hsl(147deg 57% 25%);
     --color-background-inbox: var(--color-background);
     --color-icon-search-inbox: hsl(0deg 0% 0%);
