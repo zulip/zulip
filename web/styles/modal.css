@@ -497,6 +497,8 @@
                 }
 
                 .poll-option-input {
+                    /* Overwrite .modal_text_input margin to keep vertical centering. */
+                    margin-bottom: 0;
                     flex-grow: 1;
                 }
             }
