@@ -45,10 +45,10 @@
                 /* We need to position the icon relative to the filters dropdown since its width is variable.
                    To avoid icon from taking width since it is no longer absolute/fixed positioned, we set its width to 0. */
                 width: 0;
-                /* (30px filters height - 15px icon height) / 2)  = 7.5px */
-                top: 7.5px;
-                /* (30px left padding - 15px icon width) / 2)  = 7.5px */
-                left: 7.5px;
+                /* (30px searchbox height - 15px icon height) / 2)  = 7.5px at 14px em */
+                top: 0.5357em;
+                /* (30px left padding - 15px icon width) / 2)  = 7.5px  at 14px em */
+                left: 0.5357em;
                 color: var(--color-icons-inbox);
                 opacity: 0.4;
             }
@@ -101,11 +101,13 @@
             overflow: hidden;
             width: var(--width-inbox-search);
             height: var(--height-inbox-search);
-            padding-right: 28px;
-            padding-left: 30px;
+            /* top/bottom default 1px padding / 14px em */
+            /* left padding 30px / 14px em */
+            /* right padding for 28px icon */
+            padding: 0.0714em 28px 0.0714em 2.1428em;
             font-style: normal;
             font-weight: 400;
-            line-height: 17px;
+            line-height: 1.2142em; /* 17px / 14px em */
             border-radius: 4px;
             background-color: var(--color-background-inbox-search);
             color: var(--color-inbox-search-text);
@@ -530,12 +532,13 @@
 }
 
 #inbox-filter_widget {
-    margin-right: 5px;
-    height: 30px;
+    margin-right: 0.3571em; /* 5px / 14px em */
+    height: 2.1428em; /* 30px / 14px em */
     max-width: var(--width-inbox-filters-dropdown);
     border: 1px solid var(--color-border-inbox-search);
     background-color: var(--color-background-inbox-search);
-    gap: 5px;
+    gap: 0.3571em; /* 5px / 14px em */
+    padding: 0.2857em 0.4285em; /* 4px 6px / 14px em */
 
     &:hover {
         background-color: var(--color-background-inbox-search-hover);
