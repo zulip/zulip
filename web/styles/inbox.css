@@ -35,21 +35,6 @@
             z-index: 1;
         }
 
-        .button-inbox-filter {
-            border: none;
-            height: 30px;
-            border-radius: 5px;
-            background: transparent;
-            color: var(--color-text-default);
-            padding: 5px 10px;
-            margin-left: 10px;
-
-            &:focus {
-                background-color: var(--color-background-button-inbox-focus);
-                outline: 0;
-            }
-        }
-
         .button-inbox-selected {
             background-color: var(--color-background-button-inbox-selected);
         }
