@@ -448,6 +448,10 @@
     height: 32.1428em; /* 450px / 14px em */
     overflow: hidden;
 
+    .modal__title {
+        font-size: 1.375em; /* Replace default rem */
+    }
+
     .modal__content {
         flex-grow: 1;
 
