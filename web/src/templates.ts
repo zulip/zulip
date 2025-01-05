@@ -157,7 +157,12 @@ Handlebars.registerHelper("popover_hotkey_hints", (...args) => {
     common.adjust_mac_hotkey_hints(hotkeys);
     const shift_hotkey_exists = common.adjust_shift_hotkey(hotkeys);
     for (const hotkey of hotkeys) {
-        hotkey_hints += `<span class="popover-menu-hotkey-hint">${hotkey}</span>`;
+        // The ⌘ symbol isn't vertically centered, so we use an icon.
+        if (hotkey === "meow") {
+            hotkey_hints += `<span class="popover-menu-hotkey-hint"><i class="zulip-icon zulip-icon-mac-command" aria-hidden="true"></i></span>`;
+        } else {
+            hotkey_hints += `<span class="popover-menu-hotkey-hint">${hotkey}</span>`;
+        }
     }
     if (shift_hotkey_exists) {
         return new Handlebars.SafeString(

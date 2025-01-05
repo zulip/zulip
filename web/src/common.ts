@@ -14,13 +14,17 @@ export function phrase_match(query: string, phrase: string): boolean {
 const keys_map = new Map([
     ["Backspace", "Delete"],
     ["Enter", "Return"],
-    ["Ctrl", "⌘"],
+    ["Ctrl", "meow"],
     ["Alt", "⌥"],
 ]);
 
-export function has_mac_keyboard(): boolean {
+export let has_mac_keyboard = function (): boolean {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     return /mac/i.test(navigator.platform);
+};
+
+export function rewire_has_mac_keyboard(value: boolean): void {
+    has_mac_keyboard = () => value;
 }
 
 // We convert the <kbd> tags used for keyboard shortcuts to mac equivalent

@@ -42,7 +42,7 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
     const keys_to_test_mac = new Map([
         ["Backspace", "Delete"],
         ["Enter", "Return"],
-        ["Ctrl", "⌘"],
+        ["Ctrl", "meow"],
         ["Alt", "⌥"],
         ["#stream_name", "#stream_name"],
         ["Ctrl+K", "Ctrl+K"],
@@ -101,7 +101,7 @@ run_test("adjust_mac_hotkey_hints mac expected", ({override}) => {
     const keys_to_test_mac = new Map([
         [["Backspace"], ["Delete"]],
         [["Enter"], ["Return"]],
-        [["Ctrl"], ["⌘"]],
+        [["Ctrl"], ["meow"]],
     ]);
 
     override(navigator, "platform", "MacIntel");
@@ -128,11 +128,11 @@ run_test("adjust_mac_hotkey_hints mac random", ({override}) => {
     const keys_to_test_mac = new Map([
         [
             ["Ctrl", "["],
-            ["⌘", "["],
+            ["meow", "["],
         ],
         [
             ["Ctrl", "K"],
-            ["⌘", "K"],
+            ["meow", "K"],
         ],
         [
             ["Shift", "G"],

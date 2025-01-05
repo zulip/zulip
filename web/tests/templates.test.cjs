@@ -2,7 +2,10 @@
 
 const assert = require("node:assert/strict");
 
+const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+
+const common = zrequire("common");
 
 /*
     Note that the test runner automatically registers
@@ -62,6 +65,19 @@ run_test("popover_hotkey_hints", () => {
 
     const html = require("./templates/popover_hotkey_hints.hbs")(args);
     const expected_html = `<span class="popover-menu-hotkey-hints"><span class="popover-menu-hotkey-hint">${args.hotkey_one}</span><span class="popover-menu-hotkey-hint">${args.hotkey_two}</span></span>\n`;
+    assert.equal(html, expected_html);
+});
+
+run_test("popover_hotkey_hints mac command ⌘", () => {
+    const args = {
+        hotkey_one: "Ctrl",
+        hotkey_two: "[",
+    };
+    common.rewire_has_mac_keyboard(true);
+
+    const html = require("./templates/popover_hotkey_hints.hbs")(args);
+    const expected_html =
+        '<span class="popover-menu-hotkey-hints"><span class="popover-menu-hotkey-hint"><i class="zulip-icon zulip-icon-mac-command" aria-hidden="true"></i></span><span class="popover-menu-hotkey-hint">[</span></span>\n';
     assert.equal(html, expected_html);
 });
 
