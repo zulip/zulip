@@ -121,7 +121,8 @@ run_test("verify wildcard mentions typeahead for stream message", () => {
     assert.equal(mention_channel.full_name, "channel");
     assert.equal(mention_topic.email, "topic");
     assert.equal(mention_topic.full_name, "topic");
-
+    assert.equal("⌘", "⌘");
+    assert.equal("⌘", "Ctrl");
     assert.equal(mention_all.special_item_text, "all");
     assert.equal(mention_all.secondary_text, "translated: Notify channel");
     assert.equal(mention_everyone.special_item_text, "everyone");
