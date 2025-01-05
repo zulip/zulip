@@ -24,6 +24,7 @@ import type {Toggle} from "./components.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import type {
     GroupGroupSettingName,
@@ -57,6 +58,7 @@ import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import * as user_profile from "./user_profile.ts";
 import * as util from "./util.ts";
+import * as views_util from "./views_util.ts";
 
 type ActiveData = {
     $row: JQuery | undefined;
@@ -64,8 +66,15 @@ type ActiveData = {
     $tabs: JQuery;
 };
 
+let filters_dropdown_widget: dropdown_widget.DropdownWidget;
+export const FILTERS = {
+    ACTIVE_AND_DEACTIVATED_GROUPS: $t({defaultMessage: "Active and deactivated"}),
+    ACTIVE_GROUPS: $t({defaultMessage: "Active groups"}),
+    DEACTIVATED_GROUPS: $t({defaultMessage: "Deactivated groups"}),
+};
 export let toggler: Toggle;
 export let select_tab = "general";
+const initial_group_filter = FILTERS.ACTIVE_GROUPS;
 
 let group_list_widget: ListWidget.ListWidget<UserGroup, UserGroup>;
 let group_list_toggler: Toggle;
@@ -1321,6 +1330,7 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
     }
 
     if (event.data.deactivated) {
+        $("#user-group-edit-filter-options").show();
         handle_deleted_group(group.id);
         return;
     }
@@ -1393,6 +1403,14 @@ export function change_state(
     if (/\d+/.test(section)) {
         const group_id = Number.parseInt(section, 10);
         const group = user_groups.get_user_group_from_id(group_id);
+        const group_visibility = group.deactivated
+            ? FILTERS.DEACTIVATED_GROUPS
+            : FILTERS.ACTIVE_GROUPS;
+
+        update_displayed_groups(group_visibility);
+        if (filters_dropdown_widget) {
+            filters_dropdown_widget.render(group_visibility);
+        }
         show_right_section();
         select_tab = right_side_tab;
 
@@ -1425,9 +1443,9 @@ function compare_by_name(a: UserGroup, b: UserGroup): number {
 function redraw_left_panel(tab_name: string): void {
     let groups_list_data;
     if (tab_name === "all-groups") {
-        groups_list_data = user_groups.get_realm_user_groups();
+        groups_list_data = user_groups.get_realm_user_groups(true);
     } else if (tab_name === "your-groups") {
-        groups_list_data = user_groups.get_user_groups_of_user(people.my_current_user_id());
+        groups_list_data = user_groups.get_user_groups_of_user(people.my_current_user_id(), true);
     }
     if (groups_list_data === undefined) {
         return;
@@ -1450,6 +1468,7 @@ export function switch_group_tab(tab_name: string): void {
         the group_list_toggler widget.  You may instead want to
         use `group_list_toggler.goto`.
     */
+
     redraw_left_panel(tab_name);
     setup_group_list_tab_hash(tab_name);
 }
@@ -1550,6 +1569,69 @@ export function remove_deactivated_user_from_all_groups(user_id: number): void {
     }
 }
 
+export function update_displayed_groups(filter_id: string): void {
+    if (filter_id === FILTERS.ACTIVE_GROUPS) {
+        $(".user-groups-list").addClass("hide-deactived-user-groups");
+        $(".user-groups-list").removeClass("hide-active-user-groups");
+    } else if (filter_id === FILTERS.DEACTIVATED_GROUPS) {
+        $(".user-groups-list").removeClass("hide-deactived-user-groups");
+        $(".user-groups-list").addClass("hide-active-user-groups");
+    } else {
+        $(".user-groups-list").removeClass("hide-deactived-user-groups");
+        $(".user-groups-list").removeClass("hide-active-user-groups");
+    }
+}
+
+export function filter_click_handler(
+    event: JQuery.TriggeredEvent,
+    dropdown: tippy.Instance,
+    widget: dropdown_widget.DropdownWidget,
+): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const filter_id = z.string().parse(widget.value());
+    update_displayed_groups(filter_id);
+    update_empty_left_panel_message();
+    dropdown.hide();
+    widget.render();
+}
+
+function filters_dropdown_options(current_value: string | number | undefined): {
+    unique_id: string;
+    name: string;
+    bold_current_selection: boolean;
+}[] {
+    return [
+        {
+            unique_id: FILTERS.ACTIVE_GROUPS,
+            name: FILTERS.ACTIVE_GROUPS,
+            bold_current_selection: current_value === FILTERS.ACTIVE_GROUPS,
+        },
+        {
+            unique_id: FILTERS.DEACTIVATED_GROUPS,
+            name: FILTERS.DEACTIVATED_GROUPS,
+            bold_current_selection: current_value === FILTERS.DEACTIVATED_GROUPS,
+        },
+        {
+            unique_id: FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS,
+            name: FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS,
+            bold_current_selection: current_value === FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS,
+        },
+    ];
+}
+
+function setup_dropdown_filters_widget(): void {
+    filters_dropdown_widget = new dropdown_widget.DropdownWidget({
+        ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
+        get_options: filters_dropdown_options,
+        widget_name: "user_group_visibility_settings",
+        item_click_callback: filter_click_handler,
+        $events_container: $("#user-group-edit-filter-options"),
+        default_id: initial_group_filter,
+    });
+    filters_dropdown_widget.setup();
+}
+
 export function setup_page(callback: () => void): void {
     function initialize_components(): void {
         group_list_toggler = components.toggle({
@@ -1563,7 +1645,13 @@ export function setup_page(callback: () => void): void {
             },
         });
 
+        if (user_groups.realm_has_deactivated_user_groups()) {
+            $("#user-group-edit-filter-options").show();
+        } else {
+            $("#user-group-edit-filter-options").hide();
+        }
         group_list_toggler.get().prependTo("#groups_overlay_container .list-toggler-container");
+        setup_dropdown_filters_widget();
     }
 
     function populate_and_fill(): void {
@@ -1583,7 +1671,7 @@ export function setup_page(callback: () => void): void {
             $("#groups_overlay_container"),
         );
         $groups_overlay_container.html(groups_overlay_html);
-
+        update_displayed_groups(initial_group_filter);
         const context = {
             banner_type: compose_banner.INFO,
             classname: "group_info",

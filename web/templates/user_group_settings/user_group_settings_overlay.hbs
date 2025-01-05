@@ -25,6 +25,11 @@
                     <button type="button" class="clear_search_button" id="clear_search_group_name">
                         <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
                     </button>
+                    <span>
+                        <label class="checkbox" id="user-group-edit-filter-options">
+                            {{> ../dropdown_widget widget_name="user_group_visibility_settings"}}
+                        </label>
+                    </span>
                 </div>
                 <div class="no-groups-to-show">
                     <div class="your_groups_tab_empty_text">
