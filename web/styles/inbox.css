@@ -2,8 +2,6 @@
     display: flex;
     flex-direction: column;
     background: var(--color-background-inbox);
-    /* Ensure inbox font-size is at least 15px. */
-    font-size: max(15px, var(--base-font-size-px));
     padding: 0;
     min-height: 100vh;
 
