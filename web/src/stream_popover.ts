@@ -359,13 +359,16 @@ export function get_count_of_messages_to_be_moved(
         return 1;
     }
     if (selected_option === "change_later" && message_id !== undefined) {
-        return message_util.get_count_of_messages_in_topic_sent_after_current_message(
+        return message_util.get_count_of_loaded_messages_in_view_sent_after_current_message(
             current_stream_id,
             topic_name,
             message_id,
         );
     }
-    return message_util.get_count_of_messages_in_topic(current_stream_id, topic_name);
+    return message_util.get_count_of_loaded_messages_in_view_currently_focused(
+        current_stream_id,
+        topic_name,
+    );
 }
 
 export function update_move_messages_count_text(
