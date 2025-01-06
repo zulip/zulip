@@ -167,7 +167,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     let draft_deleted;
     let reify_message_id_checked;
     function reset() {
-        $("textarea#compose-textarea").val("foobarfoobar");
+        $("textarea#compose-textarea").val("default message");
         $("textarea#compose-textarea").trigger("blur");
         $(".compose-submit-button .loader").show();
         draft_deleted = false;
@@ -392,7 +392,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
             return "<banner-stub>";
         });
         stub_state = initialize_state_stub_dict();
-        $("textarea#compose-textarea").val("foobarfoobar");
+        $("textarea#compose-textarea").val("default message");
         $("textarea#compose-textarea").trigger("blur");
         $(".compose-submit-button .loader").show();
         $("textarea#compose-textarea").off("select");
@@ -411,7 +411,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.deepEqual(stub_state, state);
         assert.ok(!echo_error_msg_checked);
         assert.ok(banner_rendered);
-        assert.equal($("textarea#compose-textarea").val(), "foobarfoobar");
+        assert.equal($("textarea#compose-textarea").val(), "default message");
         assert.ok($("textarea#compose-textarea").is_focused());
         assert.ok(!$(".compose-submit-button .loader").visible());
     })();
@@ -498,7 +498,7 @@ test_ui("finish", ({override, override_rewire}) => {
         $("#compose .preview_message_area").show();
         $("#compose .markdown_preview").hide();
         $("#compsoe").addClass("preview_mode");
-        $("textarea#compose-textarea").val("foobarfoobar");
+        $("textarea#compose-textarea").val("default message");
         override_rewire(compose_ui, "compose_spinner_visible", false);
         compose_state.set_message_type("private");
         override(compose_pm_pill, "get_emails", () => "bob@example.com");
@@ -711,10 +711,10 @@ test_ui("on_events", ({override, override_rewire}) => {
             const resp = {
                 msg: "",
                 result: "success",
-                rendered: "Server: foobarfoobar",
+                rendered: "Server: default message",
             };
             success_callback(resp);
-            assert.equal($("#compose .preview_content").html(), "Server: foobarfoobar");
+            assert.equal($("#compose .preview_content").html(), "Server: default message");
         }
 
         function test_post_error(error_callback) {
@@ -766,17 +766,17 @@ test_ui("on_events", ({override, override_rewire}) => {
         assert_visibilities();
 
         let make_indicator_called = false;
-        $("textarea#compose-textarea").val("```foobarfoobar```");
+        $("textarea#compose-textarea").val("```default message```");
         setup_visibilities();
-        setup_mock_markdown_contains_backend_only_syntax("```foobarfoobar```", true);
-        setup_mock_markdown_is_status_message("```foobarfoobar```", false);
+        setup_mock_markdown_contains_backend_only_syntax("```default message```", true);
+        setup_mock_markdown_is_status_message("```default message```", false);
 
         override(loading, "make_indicator", ($spinner) => {
             assert.equal($spinner.selector, "#compose .markdown_preview_spinner");
             make_indicator_called = true;
         });
 
-        current_message = "```foobarfoobar```";
+        current_message = "```default message```";
 
         handler(event);
 
@@ -784,15 +784,15 @@ test_ui("on_events", ({override, override_rewire}) => {
         assert_visibilities();
 
         let render_called = false;
-        $("textarea#compose-textarea").val("foobarfoobar");
+        $("textarea#compose-textarea").val("default message");
         setup_visibilities();
-        setup_mock_markdown_contains_backend_only_syntax("foobarfoobar", false);
-        setup_mock_markdown_is_status_message("foobarfoobar", false);
+        setup_mock_markdown_contains_backend_only_syntax("default message", false);
+        setup_mock_markdown_is_status_message("default message", false);
 
-        current_message = "foobarfoobar";
+        current_message = "default message";
 
         override(markdown, "render", (raw_content) => {
-            assert.equal(raw_content, "foobarfoobar");
+            assert.equal(raw_content, "default message");
             render_called = true;
         });
 
@@ -800,7 +800,7 @@ test_ui("on_events", ({override, override_rewire}) => {
 
         assert.ok(render_called);
         assert_visibilities();
-        assert.equal($("#compose .preview_content").html(), "Server: foobarfoobar");
+        assert.equal($("#compose .preview_content").html(), "Server: default message");
     })();
 
     (function test_undo_markdown_preview_clicked() {
