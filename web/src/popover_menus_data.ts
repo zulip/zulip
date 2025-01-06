@@ -191,7 +191,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
     const should_display_uncollapse =
         !message.locally_echoed && !message.is_me_message && message.collapsed;
 
-    const should_display_quote_message = message.content !== "<p>(deleted)</p>" && not_spectator;
+    const should_display_quote_message = not_spectator;
 
     const conversation_time_url = hash_util.by_conversation_and_time_url(message);
 
