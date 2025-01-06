@@ -851,6 +851,9 @@ def get_count_stats(realm: Realm | None = None) -> dict[str, CountStat]:
             ),
             CountStat.DAY,
         ),
+        # AI credit usage stats for users, in units of $1/10^9, which is safe for
+        # aggregation because we're using bigints for the values.
+        LoggingCountStat("ai_credit_usage::day", UserCount, CountStat.DAY),
         # Counts the number of active users in the UserProfile.is_active sense.
         # Important that this stay a daily stat, so that 'realm_active_humans::day' works as expected.
         CountStat(
