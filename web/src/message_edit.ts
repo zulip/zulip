@@ -1665,6 +1665,8 @@ export function show_preview_area($element: JQuery): void {
         $row.find(".preview_content"),
         content,
     );
+    const edit_height = $msg_edit_content.height();
+    $preview_message_area.css({"min-height": edit_height + "px"});
     $preview_message_area.show();
 }
 
