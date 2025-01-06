@@ -461,13 +461,13 @@
     {
       "name": "only_inline_video",
       "input": "https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4",
-      "expected_output": "<div class=\"message_inline_image message_inline_video\"><a href=\"https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4\"><video data-video-original-url=\"https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4\" preload=\"metadata\" src=\"https://external-content.zulipcdn.net/external_content/785b3eb6f6165491371895ba42ead0e3661ae44b/68747470733a2f2f66696c652d6578616d706c65732d636f6d2e6769746875622e696f2f75706c6f6164732f323031372f30342f66696c655f6578616d706c655f4d50345f3438305f315f354d472e6d7034\"></video></a></div>",
+      "expected_output": "<div class=\"message_inline_image message_inline_video\"><a href=\"https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4\"><video preload=\"metadata\" src=\"https://external-content.zulipcdn.net/external_content/785b3eb6f6165491371895ba42ead0e3661ae44b/68747470733a2f2f66696c652d6578616d706c65732d636f6d2e6769746875622e696f2f75706c6f6164732f323031372f30342f66696c655f6578616d706c655f4d50345f3438305f315f354d472e6d7034\"></video></a></div>",
       "backend_only_rendering": true
     },
     {
       "name": "only_named_inline_video",
       "input": "[Google link](https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4)",
-      "expected_output": "<p><a href=\"https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4\">Google link</a></p>\n<div class=\"message_inline_image message_inline_video\"><a href=\"https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4\" title=\"Google link\"><video data-video-original-url=\"https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4\" preload=\"metadata\" src=\"https://external-content.zulipcdn.net/external_content/785b3eb6f6165491371895ba42ead0e3661ae44b/68747470733a2f2f66696c652d6578616d706c65732d636f6d2e6769746875622e696f2f75706c6f6164732f323031372f30342f66696c655f6578616d706c655f4d50345f3438305f315f354d472e6d7034\"></video></a></div>",
+      "expected_output": "<p><a href=\"https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4\">Google link</a></p>\n<div class=\"message_inline_image message_inline_video\"><a href=\"https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4\" title=\"Google link\"><video preload=\"metadata\" src=\"https://external-content.zulipcdn.net/external_content/785b3eb6f6165491371895ba42ead0e3661ae44b/68747470733a2f2f66696c652d6578616d706c65732d636f6d2e6769746875622e696f2f75706c6f6164732f323031372f30342f66696c655f6578616d706c655f4d50345f3438305f315f354d472e6d7034\"></video></a></div>",
       "backend_only_rendering": true,
       "text_content": "Google link\n"
     },
