@@ -951,6 +951,13 @@ h4.user_group_setting_subsection_title {
         .button-group {
             margin-left: auto;
 
+            /* This icon is narrower in width, we have to explicitly
+               set it's width to 1em so that it vertically aligns with
+               other buttons near it. */
+            .fa-pencil {
+                width: 1em;
+            }
+
             .deactivate {
                 margin-right: 3px;
                 text-decoration: none;
