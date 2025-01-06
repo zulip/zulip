@@ -3,7 +3,7 @@
     height: var(--header-height);
 
     .navbar-search {
-        margin: 3.5px 0;
+        margin: 0.2187em 0; /* 3.5px at 16px em */
         border-radius: 5px;
         position: absolute;
         overflow: hidden;
@@ -13,8 +13,8 @@
         grid-area: search-icon;
         align-self: center;
         text-decoration: none;
-        padding: 0 7px;
-        font-size: 17px;
+        padding: 0 0.4117em; /* 7px at 17px em */
+        font-size: 1.0625em; /* 17px at 16px em */
         border: none;
         background-color: transparent;
         color: var(--color-search-icons);
@@ -33,7 +33,7 @@
 
     .search_close_button {
         grid-area: search-close;
-        width: 28px;
+        width: 1.75em; /* 28px at 16px em */
         height: 100%;
         background: none;
         border: none;
@@ -64,7 +64,7 @@
         display: flex;
         padding: 0;
         flex-wrap: wrap;
-        gap: 2px;
+        gap: 0.125em; /* 2px at 16px em */
         align-self: center;
     }
 
@@ -206,7 +206,8 @@
         border: none;
         grid-template:
             "search-icon search-pills search-close" var(--search-box-height)
-            ". search-pills ." auto / auto minmax(0, 1fr) 28px;
+            ". search-pills ." auto / auto minmax(0, 1fr)
+            1.75em; /* 28px at 16px em */
         align-content: center;
         cursor: pointer;
 
@@ -216,7 +217,7 @@
                color as the search typeahead. */
             background-color: var(--color-background-search);
             /* Maintain only a column gap. */
-            gap: 0 5px;
+            gap: 0 0.3125em; /* 5px at 16px em */
             /* Override padding. */
             padding: 0;
         }

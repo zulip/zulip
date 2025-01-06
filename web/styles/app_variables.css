@@ -167,24 +167,24 @@
     /*
     This is the header, aka the navbar.
     */
-    --header-height: 40px;
+    --header-height: 2.5em; /* 40px at 16px em */
 
     /*
     At 600px, the header starts taking up more than 5%
     of the screen. We make it shorter to leave more space
     to see the rest of the app. */
     @media (height < $short_navbar_cutoff_height) {
-        --header-height: 30px;
+        --header-height: 1.875em; /* 30px at 16px em */
     }
 
     /*
     Height of the search box, which appears in the header.
     */
-    --search-box-height: 32px;
-    --search-box-width: 150px;
+    --search-box-height: 2em; /* 32px at 16px em */
+    --search-box-width: 9.375em; /* 150px at 16px em */
 
     @media (width < $md_min) {
-        --search-box-width: 40px;
+        --search-box-width: 2.5em; /* 40px at 16px em */
     }
 
     /*
@@ -192,7 +192,7 @@
         is reduced to fit the available space.
     */
     @media (height < $short_navbar_cutoff_height) {
-        --search-box-height: 28px;
+        --search-box-height: 1.75em; /* 28px at 16px em */
     }
 
     /*

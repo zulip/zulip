@@ -1058,11 +1058,11 @@ nav {
 
         .nav-logo {
             display: inline-block;
-            height: 20px;
-            max-width: 200px;
+            height: 1.25em; /* 20px at 16px em */
+            max-width: 12.5em; /* 200px at 16px em */
 
             @media (height < $short_navbar_cutoff_height) {
-                height: 15px;
+                height: 0.9375em; /* 15px at 16px em */
             }
         }
 
@@ -1747,8 +1747,8 @@ body:not(.hide-left-sidebar) {
     }
 
     #top_navbar .column-right #personal-menu .header-button-avatar {
-        width: 20px;
-        height: 20px;
+        width: 1.25em; /* 20px at 16px em */
+        height: 1.25em; /* 20px at 16px em */
     }
 }
 
@@ -2018,12 +2018,12 @@ body:not(.hide-left-sidebar) {
     }
 
     .zulip-icon-gear {
-        font-size: 18px;
+        font-size: 1.125em; /* 18px at 16px em */
     }
 
     .zulip-icon-help-bigger,
     .zulip-icon-user-list {
-        font-size: 20px;
+        font-size: 1.25em; /* 20px at 16px em */
     }
 
     .zulip-icon-help {
@@ -2035,8 +2035,8 @@ body:not(.hide-left-sidebar) {
 
 #personal-menu {
     .header-button-avatar {
-        width: 24px;
-        height: 24px;
+        width: 1.5em; /* 24px at 16px em */
+        height: 1.5em; /* 24px at 16px em */
         background-size: cover;
         border-radius: 4px;
         background-color: var(--color-background-image-loader);
