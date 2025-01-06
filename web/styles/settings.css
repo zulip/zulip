@@ -2029,6 +2029,43 @@ label.preferences-radio-choice-label {
         margin-right: auto;
     }
 
+    & .search-container {
+        display: grid;
+        grid-template: "search-input clear-search" auto / minmax(0, 1fr) 30px;
+
+        & input.search {
+            grid-column: search-input-start / clear-search-end;
+            grid-row: search-input;
+            padding-right: 23px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        & .clear-filter {
+            grid-area: clear-search;
+            padding: 0;
+            background: none;
+            color: var(--color-text-clear-search-button);
+            border: none;
+            outline: none;
+            display: grid;
+
+            &:hover {
+                color: var(--color-text-clear-search-button-hover);
+            }
+
+            .zulip-icon-close {
+                align-self: center;
+            }
+        }
+
+        input.search:placeholder-shown + .clear-filter {
+            display: none;
+        }
+    }
+
     & input.search {
         /* Without explicitly mentioning the height, it used be just a little
         bit short of 20px, since we need to maintain the same height with
