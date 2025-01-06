@@ -14,7 +14,6 @@ const message_lists = zrequire("message_lists");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 
-const all_messages_data = mock_esm("../src/all_messages_data");
 const narrow_state = mock_esm("../src/narrow_state");
 
 const alice = make_user({email: "alice@example.com", user_id: 1, full_name: "Alice"});
@@ -40,7 +39,7 @@ for (const msg of messages) {
     message_store.update_message_cache(msg);
 }
 
-run_test("test_get_count_of_messages_to_be_moved", ({override}) => {
+run_test("test_get_count_of_messages_to_be_moved", () => {
     const selected_message_id = 102;
 
     const filter_terms = [
@@ -50,11 +49,7 @@ run_test("test_get_count_of_messages_to_be_moved", ({override}) => {
     ];
 
     message_lists.set_current(make_message_list(filter_terms));
-    override(all_messages_data, "all_messages_data", {
-        all_messages() {
-            return messages;
-        },
-    });
+    message_lists.current.data.all_messages = () => messages;
 
     let count = stream_popover.get_count_of_messages_to_be_moved(
         "change_one",
@@ -90,11 +85,7 @@ run_test("test_update_move_messages_count", ({override}) => {
         {operator: "with", operand: selected_message_id.toString()},
     ];
     message_lists.set_current(make_message_list(filter_terms));
-    override(all_messages_data, "all_messages_data", {
-        all_messages() {
-            return messages;
-        },
-    });
+    message_lists.current.data.all_messages = () => messages;
 
     // Case 1: selected_option === "change_one"
     stream_popover.update_move_messages_count_text(
