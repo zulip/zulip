@@ -423,7 +423,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
     })();
 });
 
-test_ui("enter_with_preview_open", ({override, override_rewire}) => {
+test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
     $("textarea#compose-textarea").toggleClass = noop;
     override_rewire(compose_banner, "clear_message_sent_banners", noop);
@@ -451,7 +451,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
         send_message_called = true;
     });
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
-    compose.enter_with_preview_open();
+    compose.handle_enter_key_with_preview_open();
     assert.ok(!$("#compose .undo_markdown_preview").visible());
     assert.ok(!$("#compose .preview_message_area").visible());
     assert.ok($("#compose .markdown_preview").visible());
@@ -461,7 +461,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
 
     override(user_settings, "enter_sends", false);
     $("textarea#compose-textarea").trigger("blur");
-    compose.enter_with_preview_open();
+    compose.handle_enter_key_with_preview_open();
     assert.ok($("textarea#compose-textarea").is_focused());
 
     // Test sending a message without content.
@@ -469,7 +469,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     $("#compose .preview_message_area").show();
     override(user_settings, "enter_sends", true);
 
-    compose.enter_with_preview_open();
+    compose.handle_enter_key_with_preview_open();
 });
 
 test_ui("finish", ({override, override_rewire}) => {
