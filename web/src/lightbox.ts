@@ -475,6 +475,18 @@ export function show_from_selected_message(): void {
     }
 }
 
+function supports_heic(): boolean {
+    if (!util.is_client_safari()) {
+        return false;
+    }
+    const match = /Version\/(\d+)/.exec(navigator.userAgent);
+    if (!match?.[1]) {
+        return false;
+    }
+    const version = Number.parseInt(match[1], 10);
+    return !Number.isNaN(version) && version >= 17;
+}
+
 // retrieve the metadata from the DOM and store into the asset_map.
 export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Media {
     const canonical_url = canonical_url_of_media(media);
@@ -545,7 +557,12 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
         if ($media.attr("data-src-fullsize")) {
             source = $media.attr("data-src-fullsize");
         } else if (transcoded_image && preview_src) {
-            source = preview_src.replace(/\/[^/]+$/, "/" + transcoded_image);
+            if ($media.attr("data-original-content-type") === "image/heic" && supports_heic()) {
+                // It's an HEIC and we support it -- don't use the transcoded version
+                source = url;
+            } else {
+                source = preview_src.replace(/\/[^/]+$/, "/" + transcoded_image);
+            }
         } else {
             source = url;
         }
