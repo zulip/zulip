@@ -422,25 +422,25 @@ def fetch_initial_state_data(
             else server_default_jitsi_server_url
         )
 
-        moderation_request_channel = realm.get_moderation_request_channel()
+        moderation_request_channel = realm.moderation_request_channel
         if moderation_request_channel:
             state["realm_moderation_request_channel_id"] = moderation_request_channel.id
         else:
             state["realm_moderation_request_channel_id"] = -1
 
-        new_stream_announcements_stream = realm.get_new_stream_announcements_stream()
+        new_stream_announcements_stream = realm.new_stream_announcements_stream
         if new_stream_announcements_stream:
             state["realm_new_stream_announcements_stream_id"] = new_stream_announcements_stream.id
         else:
             state["realm_new_stream_announcements_stream_id"] = -1
 
-        signup_announcements_stream = realm.get_signup_announcements_stream()
+        signup_announcements_stream = realm.signup_announcements_stream
         if signup_announcements_stream:
             state["realm_signup_announcements_stream_id"] = signup_announcements_stream.id
         else:
             state["realm_signup_announcements_stream_id"] = -1
 
-        zulip_update_announcements_stream = realm.get_zulip_update_announcements_stream()
+        zulip_update_announcements_stream = realm.zulip_update_announcements_stream
         if zulip_update_announcements_stream:
             state["realm_zulip_update_announcements_stream_id"] = (
                 zulip_update_announcements_stream.id

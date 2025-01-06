@@ -28,7 +28,6 @@ if TYPE_CHECKING:
     # We use BaseBackend only for typing. Importing it otherwise causes circular dependency.
     from django.contrib.auth.backends import BaseBackend
 
-    from zerver.models import Stream
 
 SECONDS_PER_DAY = 86400
 
@@ -937,38 +936,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     def get_bot_domain(self) -> str:
         return get_fake_email_domain(self.host)
-
-    def get_moderation_request_channel(self) -> Optional["Stream"]:
-        if (
-            self.moderation_request_channel is not None
-            and not self.moderation_request_channel.deactivated
-        ):
-            return self.moderation_request_channel
-        return None
-
-    def get_new_stream_announcements_stream(self) -> Optional["Stream"]:
-        if (
-            self.new_stream_announcements_stream is not None
-            and not self.new_stream_announcements_stream.deactivated
-        ):
-            return self.new_stream_announcements_stream
-        return None
-
-    def get_signup_announcements_stream(self) -> Optional["Stream"]:
-        if (
-            self.signup_announcements_stream is not None
-            and not self.signup_announcements_stream.deactivated
-        ):
-            return self.signup_announcements_stream
-        return None
-
-    def get_zulip_update_announcements_stream(self) -> Optional["Stream"]:
-        if (
-            self.zulip_update_announcements_stream is not None
-            and not self.zulip_update_announcements_stream.deactivated
-        ):
-            return self.zulip_update_announcements_stream
-        return None
 
     @property
     def max_invites(self) -> int:
