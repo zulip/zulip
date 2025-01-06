@@ -521,15 +521,9 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
 
     if (is_inline_video) {
         type = MediaType.InlineVideo;
-        // Render video from original source to reduce load on our own servers.
-        const original_video_url = $media.attr("data-video-original-url");
-        // `data-video-original-url` is only defined for external URLs in
-        // organizations which have camo enabled.
-        if (!original_video_url) {
-            source = preview_src;
-        } else {
-            source = encodeURI(original_video_url);
-        }
+        // Render video from original source to reduce load on our own servers.  The `url` is the
+        // non-Camo'd version; `preview` is the Camo'd URL.
+        source = url;
     } else if (is_youtube_video) {
         type = MediaType.YoutubeVideo;
         source = "https://www.youtube.com/embed/" + $parent.attr("data-id");
