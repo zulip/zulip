@@ -77,7 +77,7 @@ MAX_NUM_RECENT_UNREAD_MESSAGES = 20
 def send_message_to_signup_notification_stream(
     sender: UserProfile, realm: Realm, message: str
 ) -> None:
-    signup_announcements_stream = realm.get_signup_announcements_stream()
+    signup_announcements_stream = realm.signup_announcements_stream
     if signup_announcements_stream is None:
         return
 
