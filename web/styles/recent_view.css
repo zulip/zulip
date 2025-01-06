@@ -581,7 +581,7 @@
 
 #recent-view-filter_widget {
     display: inline-flex;
-    width: 150px;
+    width: 10.7142em; /* 150px at 14px em */
     /* Legacy 5px 10px at 14px/1em. */
     margin: 0 0.3571em 0.7142em 0;
 
