@@ -149,10 +149,10 @@
             border-radius: 5px;
             border: 1px solid hsl(0deg 0% 0% / 20%);
             margin-bottom: var(--max-unmaximized-compose-height);
-            /* margin(5) + search left padding(30) + search right padding (28) + border(2px) = 65px */
+            /* margin(5) + search left padding(30) + search right padding (28) = 63px */
             max-width: calc(
                 var(--width-inbox-search) +
-                    var(--width-inbox-filters-dropdown) + 65px
+                    var(--width-inbox-filters-dropdown) + 63px
             );
 
             .inbox-focus-border {
