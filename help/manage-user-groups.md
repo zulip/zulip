@@ -127,7 +127,7 @@
 
 1. Select a user group.
 
-1. Click the **Deactivate group** (<i class="fa fa-trash-o"></i>) button in the
+1. Click the **Deactivate group** (<i class="zulip-icon zulip-icon-user-group-x"></i>) button in the
    upper right corner of the user group settings panel.
 
 1. Click **Confirm**.
