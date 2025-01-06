@@ -61,15 +61,15 @@
                 align-items: center;
                 border-radius: 2px;
                 cursor: pointer;
-                font-size: 16px;
+                font-size: 1.1428em; /* 16px at 14px em */
                 color: var(--color-icons-inbox);
                 opacity: 0.4;
                 transition: none 140ms;
                 transition-property: background-color, opacity, transform;
                 padding: 5px;
                 margin: 0;
-                /* = -Width of the button. */
-                margin-right: -28px;
+                /* = -Width of the button, 28px at 14px em */
+                margin-right: -2em;
                 position: relative;
                 top: 0;
                 right: 30px;
@@ -103,8 +103,8 @@
             height: var(--height-inbox-search);
             /* top/bottom default 1px padding / 14px em */
             /* left padding 30px / 14px em */
-            /* right padding for 28px icon */
-            padding: 0.0714em 28px 0.0714em 2.1428em;
+            /* right padding for 28px / 14px em (close icon) */
+            padding: 0.0714em 2em 0.0714em 2.1428em;
             font-style: normal;
             font-weight: 400;
             line-height: 1.2142em; /* 17px / 14px em */
@@ -136,10 +136,10 @@
             border-radius: 5px;
             border: 1px solid hsl(0deg 0% 0% / 20%);
             margin-bottom: var(--max-unmaximized-compose-height);
-            /* margin(5) + search left padding(30) + search right padding (28) = 63px */
+            /* margin(5) + search left padding(30) + search right padding (28) = 63px at 14px em */
             max-width: calc(
                 var(--width-inbox-search) +
-                    var(--width-inbox-filters-dropdown) + 63px
+                    var(--width-inbox-filters-dropdown) + 4.5em
             );
 
             .inbox-focus-border {
