@@ -71,6 +71,8 @@ export function show_preview_area() {
         $("#compose .preview_content"),
         content,
     );
+    const edit_height = $compose_textarea.height();
+    $preview_message_area.css({"min-height": edit_height + "px"});
     $preview_message_area.show();
 }
 
