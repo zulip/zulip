@@ -84,6 +84,7 @@ from zerver.views.message_flags import (
     update_message_flags_for_narrow,
 )
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
+from zerver.views.message_summary import get_messages_summary
 from zerver.views.muted_users import mute_user, unmute_user
 from zerver.views.onboarding_steps import mark_onboarding_step_as_read
 from zerver.views.presence import (
@@ -366,6 +367,14 @@ v1_api_and_json_patterns = [
         GET=(json_fetch_raw_message, {"allow_anonymous_user_web"}),
         PATCH=update_message_backend,
         DELETE=delete_message_backend,
+    ),
+    rest_path(
+        "messages/summary",
+        GET=(
+            get_messages_summary,
+            # Not documented since the API details haven't been finalized yet.
+            {"intentionally_undocumented"},
+        ),
     ),
     rest_path("messages/render", POST=render_message_backend),
     rest_path("messages/flags", POST=update_message_flags),

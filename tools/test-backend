@@ -130,6 +130,8 @@ not_yet_fully_covered = [
     "zerver/webhooks/zapier/view.py",
     # This is hard to get test coverage for, and low value to do so
     "zerver/views/sentry.py",
+    # TODO: Add tests when the details are finalized.
+    "zerver/views/message_summary.py",
     # Cannot have coverage, as tests run in a transaction
     "zerver/lib/safe_session_cached_db.py",
     "zerver/lib/singleton_bmemcached.py",
