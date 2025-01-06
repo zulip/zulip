@@ -1349,8 +1349,15 @@ textarea.new_message_textarea {
     }
 
     .compose_help_button {
-        font-size: 20px;
-        line-height: 17px;
+        /* 20px at 16px/1em */
+        font-size: 1.25em;
+        /* 32px at 20px/1em */
+        height: 1.6em;
+        /* 34.2833 at 20px/1em */
+        width: 1.7142em;
+        /* Adhere to the width of this button,
+           despite flexbox context. */
+        flex: 0 0 auto;
     }
 }
 
