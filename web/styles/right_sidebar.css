@@ -142,6 +142,8 @@ $user_status_emoji_width: 24px;
         &.highlighted_user {
             background-color: var(--color-buddy-list-highlighted-user);
             box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+            outline: 2px solid var(--color-outline-focus);
+            outline-offset: -2px;
         }
     }
 

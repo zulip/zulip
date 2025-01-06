@@ -396,6 +396,11 @@
         background-color: var(--color-background-hover-narrow-filter);
     }
 
+    & > .bottom_left_row {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+    }
+
     &.active-filter .topic-list .bottom_left_row {
         background-color: var(--color-background-active-narrow-filter);
     }
