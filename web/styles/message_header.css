@@ -210,11 +210,6 @@
     font-weight: 600;
     overflow: hidden;
 
-    .recipient-row-stream-icon {
-        font-size: 12px;
-        line-height: 12px;
-    }
-
     .zulip-icon.zulip-icon-globe {
         position: relative;
         top: 1px;
