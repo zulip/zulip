@@ -467,6 +467,14 @@ export function create<Key, Item = Key>(
                 widget.set_filter_value(value);
                 widget.hard_redraw();
             });
+
+            opts.filter?.$element?.siblings(".clear-filter").on("click", () => {
+                assert(opts.filter?.$element !== undefined);
+                const $filter = opts.filter?.$element;
+                $filter.val("");
+                widget.set_filter_value("");
+                widget.clean_redraw();
+            });
         },
 
         clear_event_handlers() {
@@ -474,6 +482,7 @@ export function create<Key, Item = Key>(
 
             if (opts.$parent_container) {
                 opts.$parent_container.off("click.list_widget_sort", "[data-sort]");
+                opts.filter?.$element?.siblings(".clear-filter").off("click");
             }
 
             opts.filter?.$element?.off("input.list_widget_filter");

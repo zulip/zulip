@@ -11,8 +11,7 @@
 
     <div class="settings_panel_list_header">
         <h3>{{t "Custom emoji"}}</h3>
-        <input type="text" class="search filter_text_input" placeholder="{{t 'Filter emoji' }}"
-          aria-label="{{t 'Filter emoji' }}"/>
+        {{> filter_text_input placeholder=(t 'Filter emoji') aria_label=(t 'Filter emoji')}}
     </div>
     <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">
         <table class="table table-striped wrapped-table admin_emoji_table">
