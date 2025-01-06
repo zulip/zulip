@@ -405,7 +405,7 @@ run_test("test_get_count_of_messages_to_be_moved", ({override}) => {
     // Case 2: selected_option === "change_later"
     override(
         message_util,
-        "get_count_of_messages_in_topic_sent_after_current_message",
+        "get_count_of_messages_in_view_sent_after_current_message",
         (stream_id, topic, msg_id) => {
             assert.equal(stream_id, current_stream_id);
             assert.equal(topic, topic_name);
@@ -424,11 +424,15 @@ run_test("test_get_count_of_messages_to_be_moved", ({override}) => {
     );
 
     // Case 3: selected_option === "change_all"
-    override(message_util, "get_count_of_messages_in_topic", (stream_id, topic) => {
-        assert.equal(stream_id, current_stream_id);
-        assert.equal(topic, topic_name);
-        return 5;
-    });
+    override(
+        message_util,
+        "get_count_of_messages_in_view_currently_focused",
+        (stream_id, topic) => {
+            assert.equal(stream_id, current_stream_id);
+            assert.equal(topic, topic_name);
+            return 5;
+        },
+    );
     assert.equal(
         stream_popover.get_count_of_messages_to_be_moved(
             "change_all",
@@ -461,7 +465,7 @@ run_test("test_update_move_messages_count_text", ({override}) => {
 
     override(
         message_util,
-        "get_count_of_messages_in_topic_sent_after_current_message",
+        "get_count_of_messages_in_view_sent_after_current_message",
         (stream_id, topic, msg_id) => {
             assert.equal(stream_id, current_stream_id);
             assert.equal(topic, topic_name);
@@ -485,7 +489,7 @@ run_test("test_update_move_messages_count_text", ({override}) => {
 
     override(
         message_util,
-        "get_count_of_messages_in_topic_sent_after_current_message",
+        "get_count_of_messages_in_view_sent_after_current_message",
         (stream_id, topic, msg_id) => {
             assert.equal(stream_id, current_stream_id);
             assert.equal(topic, topic_name);
@@ -511,11 +515,15 @@ run_test("test_update_move_messages_count_text", ({override}) => {
     override(message_lists.current.data.fetch_status, "has_found_newest", () => true);
     override(message_lists.current.data.fetch_status, "has_found_oldest", () => true);
 
-    override(message_util, "get_count_of_messages_in_topic", (stream_id, topic) => {
-        assert.equal(stream_id, current_stream_id);
-        assert.equal(topic, topic_name);
-        return 5;
-    });
+    override(
+        message_util,
+        "get_count_of_messages_in_view_currently_focused",
+        (stream_id, topic) => {
+            assert.equal(stream_id, current_stream_id);
+            assert.equal(topic, topic_name);
+            return 5;
+        },
+    );
 
     stream_popover.update_move_messages_count_text("change_all", current_stream_id, topic_name);
     assert.equal($("#move_messages_count").text(), "translated: 5 messages will be moved.");
@@ -526,11 +534,15 @@ run_test("test_update_move_messages_count_text", ({override}) => {
     override(narrow_state, "stream_id", () => current_stream_id);
     override(narrow_state, "topic", () => "no_test_topic");
 
-    override(message_util, "get_count_of_messages_in_topic", (stream_id, topic) => {
-        assert.equal(stream_id, current_stream_id);
-        assert.equal(topic, topic_name);
-        return 4;
-    });
+    override(
+        message_util,
+        "get_count_of_messages_in_view_currently_focused",
+        (stream_id, topic) => {
+            assert.equal(stream_id, current_stream_id);
+            assert.equal(topic, topic_name);
+            return 4;
+        },
+    );
 
     stream_popover.update_move_messages_count_text("change_all", current_stream_id, topic_name);
     assert.equal($("#move_messages_count").text(), "translated: 4+ messages will be moved.");
@@ -541,11 +553,15 @@ run_test("test_update_move_messages_count_text", ({override}) => {
     override(narrow_state, "stream_id", () => 12);
     override(narrow_state, "topic", () => "no_test_topic");
 
-    override(message_util, "get_count_of_messages_in_topic", (stream_id, topic) => {
-        assert.equal(stream_id, current_stream_id);
-        assert.equal(topic, topic_name);
-        return 4;
-    });
+    override(
+        message_util,
+        "get_count_of_messages_in_view_currently_focused",
+        (stream_id, topic) => {
+            assert.equal(stream_id, current_stream_id);
+            assert.equal(topic, topic_name);
+            return 4;
+        },
+    );
 
     stream_popover.update_move_messages_count_text("change_all", current_stream_id, topic_name);
     assert.equal($("#move_messages_count").text(), "translated: 4+ messages will be moved.");
