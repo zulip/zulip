@@ -16,7 +16,7 @@ Organization administrators can unsubscribe other users from any channel.
 {!select-channel-view-general.md!}
 
 1. Under **Channel permissions**, configure **Who can unsubscribe others from
-   this channel**
+   this channel**.
 
 {!save-changes.md!}
 
