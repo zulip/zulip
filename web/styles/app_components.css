@@ -154,18 +154,8 @@ input::placeholder {
     }
 
     &.small {
-        /* This value was 0.8rem in the past. When using rem,
-               the root font size was 16px when the base font-size was
-               14px. Now, we have two modes, one with 14px base
-               font-size and one with 16px base font-size. We multiply
-               by (16 / 14 * 0.8 = 0.9143) so rem equivalent value
-               will remain the same in the legacy 14px mode, while
-               scaling the size up for 16px mode. The font-size will
-               resolve in pixels.
-               TODO: Refactor this part to either use `em` or `rem`
-               and not this temporary hack of using calc() and
-               variables. */
-        font-size: calc(0.9143 * var(--base-font-size-px));
+        /* 16 / 14 * 0.8 = 0.9143, from original 0.8rem */
+        font-size: 0.9143em;
         min-width: inherit;
         padding: 6px 10px;
     }
