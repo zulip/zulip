@@ -1245,6 +1245,31 @@ EMAIL_GATEWAY_PASSWORD = get_secret("email_gateway_password")
 AUTH_LDAP_BIND_PASSWORD = get_secret("auth_ldap_bind_password", "")
 
 ########################################################################
+# LiteLLM SETTINGS
+########################################################################
+
+# The model name that will used by LiteLLM library to configure
+# parameters to be sent to API.
+# The Llama-3-8B-instruct model is free to use and only requires submitting
+# a small form on the HuggingFace page for the model to gain access.
+# We only support HuggingFace and AWS Bedrock for LLM API requests.
+DEFAULT_TOPIC_SUMMARIZATION_MODEL: str | None = "huggingface/meta-llama/Meta-Llama-3-8B-Instruct"
+if PRODUCTION:
+    DEFAULT_TOPIC_SUMMARIZATION_MODEL = None
+TOPIC_SUMMARIZATION_MODEL = get_secret(
+    "topic_summarization_model", DEFAULT_TOPIC_SUMMARIZATION_MODEL
+)
+
+# Which API key to use will be determined based on TOPIC_SUMMARIZATION_MODEL.
+# HuggingFace access credentials
+HUGGINGFACE_API_KEY = get_secret("huggingface_api_key", None)
+
+# AWS Bedrock access credentials
+AWS_ACCESS_KEY_ID = get_secret("aws_access_key_id", None)
+AWS_SECRET_ACCESS_KEY = get_secret("aws_secret_access_key", None)
+AWS_REGION_NAME = get_secret("aws_region_name", None)
+
+########################################################################
 # MISC SETTINGS
 ########################################################################
 
