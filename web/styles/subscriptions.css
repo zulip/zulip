@@ -911,6 +911,11 @@ h4.user_group_setting_subsection_title {
                     display: flex;
                 }
             }
+
+            /* We need this rule to center the user-group-x icon better */
+            .deactivate-group-button {
+                padding: 8px 10px 4px;
+            }
         }
     }
 
