@@ -147,6 +147,14 @@ $user_status_emoji_width: 24px;
         }
     }
 
+    /* Do not show focus on anchor element when navigating by tab to keep it consistent with keyboard navigation. */
+    & .narrow-filter {
+        a.user-presence-link:focus {
+            outline: none;
+            text-decoration: none;
+        }
+    }
+
     .user-circle {
         grid-area: starting-anchor-element;
         place-self: center center;

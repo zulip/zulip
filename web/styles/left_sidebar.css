@@ -410,6 +410,14 @@
     }
 }
 
+/* Do not show focus on anchor element when navigating by tab to keep it consistent with keyboard navigation. */
+#stream_filters .narrow-filter {
+    a.stream-name:focus {
+        outline: none;
+        text-decoration: none;
+    }
+}
+
 #subscribe-to-more-streams {
     /* --left-sidebar-bottom-scrolling-buffer is to prevent the row from
        being cut off, and --sidebar-bottom-spacing is extra padding. */

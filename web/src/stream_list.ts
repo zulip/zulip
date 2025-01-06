@@ -933,6 +933,11 @@ export function set_event_handlers({
         }
     });
 
+    $("#stream_filters a.stream-name").on("focus blur", (e) => {
+        const stream_id = stream_id_for_elt($(e.target).parents("li.narrow-filter"));
+        stream_cursor.toggle_highlight(stream_id);
+    });
+
     $("#clear_search_stream_button").on("click", clear_search);
 
     $("#streams_header")
