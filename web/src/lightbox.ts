@@ -14,11 +14,17 @@ import * as rows from "./rows.ts";
 import * as util from "./util.ts";
 
 type Payload = {
+    // Sender's full name
     user: string | undefined;
+    // aria-label (or link URL, as fallback) of media
     title: string | undefined;
+    // "image" / "inline-video" / "youtube-video" / "vimeo-video" / "embed-video"
     type: string;
+    // URL to use in message list or carousel
     preview: string;
+    // URL to use for display in the lightbox
     source: string;
+    // URL to the original resource for download
     url: string;
     original_width_px: number | undefined;
     original_height_px: number | undefined;
@@ -303,16 +309,16 @@ function display_image(payload: Payload): void {
         $(".media-description .user").text(payload.user).prop("title", payload.user);
     }
 
-    $(".media-actions .open").attr("href", payload.source);
+    $(".media-actions .open").attr("href", payload.url);
 
-    const url = new URL(payload.source, window.location.href);
+    const url = new URL(payload.url, window.location.href);
     const same_origin = url.origin === window.location.origin;
     if (same_origin && url.pathname.startsWith("/user_uploads/")) {
         // Switch to the "download" handler, so S3 URLs set their Content-Disposition
         url.pathname = "/user_uploads/download/" + url.pathname.slice("/user_uploads/".length);
         $(".media-actions .download").attr("href", url.href);
     } else if (same_origin) {
-        $(".media-actions .download").attr("href", payload.source);
+        $(".media-actions .download").attr("href", payload.url);
     } else {
         // If it's not same-origin, and we don't know how to tell the remote service to put a
         // content-disposition on it, the download can't possibly download, just show -- so hide the
@@ -337,7 +343,7 @@ function display_video(payload: Payload): void {
         $video.attr("controls", "true");
         $(".video-player").empty();
         $(".video-player").append($video);
-        $(".media-actions .open").attr("href", payload.source);
+        $(".media-actions .open").attr("href", payload.url);
 
         const filename = payload.url?.split("/").pop();
         $(".media-description .title")
@@ -350,32 +356,13 @@ function display_video(payload: Payload): void {
         return;
     }
 
-    let source;
-    switch (payload.type) {
-        case "youtube-video":
-            source = "https://www.youtube.com/embed/" + payload.source;
-            break;
-        case "vimeo-video":
-            source = "https://player.vimeo.com/video/" + payload.source;
-            break;
-        case "embed-video":
-            // Use data: to load the player in a unique origin for security.
-            source =
-                "data:text/html," +
-                window.encodeURIComponent(
-                    "<!DOCTYPE html><style>iframe{position:absolute;left:0;top:0;width:100%;height:100%;box-sizing:border-box}</style>" +
-                        payload.source,
-                );
-            break;
-    }
-
     const $iframe = $("<iframe>");
     $iframe.attr(
         "sandbox",
         "allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts",
     );
-    assert(source !== undefined);
-    $iframe.attr("src", source);
+    assert(payload.source !== undefined);
+    $iframe.attr("src", payload.source);
     $iframe.attr("frameborder", 0);
     $iframe.attr("allowfullscreen", "true");
 
@@ -538,13 +525,18 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Pa
         }
     } else if (is_youtube_video) {
         type = "youtube-video";
-        source = $parent.attr("data-id");
+        source = "https://www.youtube.com/embed/" + $parent.attr("data-id");
     } else if (is_vimeo_video) {
         type = "vimeo-video";
-        source = $parent.attr("data-id");
+        source = "https://player.vimeo.com/video/" + $parent.attr("data-id");
     } else if (is_embed_video) {
         type = "embed-video";
-        source = $parent.attr("data-id");
+        source =
+            "data:text/html," +
+            window.encodeURIComponent(
+                "<!DOCTYPE html><style>iframe{position:absolute;left:0;top:0;width:100%;height:100%;box-sizing:border-box}</style>" +
+                    $parent.attr("data-id"),
+            );
     } else {
         type = "image";
         if ($media.attr("data-src-fullsize")) {
