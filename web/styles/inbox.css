@@ -575,7 +575,7 @@
 
 .recent-view-filter-dropdown-list-container .dropdown-list-wrapper,
 .inbox-filter-dropdown-list-container .dropdown-list-wrapper {
-    width: 220px;
+    width: 15.7142em; /* 220px at 14px em */
 }
 
 .recent-view-filter-dropdown-list-container
@@ -603,7 +603,7 @@
 .inbox-filter-dropdown-list-container .dropdown-list-item-description {
     white-space: nowrap;
     font-weight: 400;
-    font-size: 13px;
+    font-size: 0.9285em; /* 13px at 14px em */
     opacity: 0.8;
     padding: 0;
     text-overflow: ellipsis;
