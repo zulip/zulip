@@ -669,17 +669,18 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         verona = get_stream("verona", realm)
 
-        new_stream_announcements_stream = realm.get_new_stream_announcements_stream()
+        new_stream_announcements_stream = realm.new_stream_announcements_stream
         assert new_stream_announcements_stream is not None
         self.assertEqual(new_stream_announcements_stream.id, verona.id)
         do_deactivate_stream(new_stream_announcements_stream, acting_user=None)
-        self.assertIsNone(realm.get_new_stream_announcements_stream())
+        realm.refresh_from_db()
+        self.assertIsNone(realm.new_stream_announcements_stream)
 
     def test_merge_streams(self) -> None:
         realm = get_realm("zulip")
         denmark = get_stream("Denmark", realm)
         cordelia = self.example_user("cordelia")
-        new_stream_announcements_stream = realm.get_new_stream_announcements_stream()
+        new_stream_announcements_stream = realm.new_stream_announcements_stream
         assert new_stream_announcements_stream is not None
         new_stream_announcements_stream_messages_count = Message.objects.filter(
             realm_id=realm.id, recipient=new_stream_announcements_stream.recipient
@@ -699,8 +700,9 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(get_stream("Atlantis", realm).deactivated, True)
 
         stats = merge_streams(realm, denmark, new_stream_announcements_stream)
+        realm.refresh_from_db()
         self.assertEqual(stats, (2, new_stream_announcements_stream_messages_count, 10))
-        self.assertIsNone(realm.get_new_stream_announcements_stream())
+        self.assertIsNone(realm.new_stream_announcements_stream)
 
     def test_change_signup_announcements_stream(self) -> None:
         # We need an admin user.
@@ -760,11 +762,12 @@ class RealmTest(ZulipTestCase):
         realm.signup_announcements_stream = verona
         realm.save(update_fields=["signup_announcements_stream"])
 
-        signup_announcements_stream = realm.get_signup_announcements_stream()
+        signup_announcements_stream = realm.signup_announcements_stream
         assert signup_announcements_stream is not None
         self.assertEqual(signup_announcements_stream, verona)
         do_deactivate_stream(signup_announcements_stream, acting_user=None)
-        self.assertIsNone(realm.get_signup_announcements_stream())
+        realm.refresh_from_db()
+        self.assertIsNone(realm.signup_announcements_stream)
 
     def test_change_zulip_update_announcements_stream(self) -> None:
         # We need an admin user.
@@ -834,11 +837,12 @@ class RealmTest(ZulipTestCase):
         realm.zulip_update_announcements_stream = verona
         realm.save(update_fields=["zulip_update_announcements_stream"])
 
-        zulip_update_announcements_stream = realm.get_zulip_update_announcements_stream()
+        zulip_update_announcements_stream = realm.zulip_update_announcements_stream
         assert zulip_update_announcements_stream is not None
         self.assertEqual(zulip_update_announcements_stream, verona)
         do_deactivate_stream(zulip_update_announcements_stream, acting_user=None)
-        self.assertIsNone(realm.get_zulip_update_announcements_stream())
+        realm.refresh_from_db()
+        self.assertIsNone(realm.zulip_update_announcements_stream)
 
     def test_change_moderation_request_channel(self) -> None:
         # We need an admin user.
@@ -901,11 +905,12 @@ class RealmTest(ZulipTestCase):
         realm.moderation_request_channel = verona
         realm.save(update_fields=["moderation_request_channel"])
 
-        moderation_request_channel = realm.get_moderation_request_channel()
+        moderation_request_channel = realm.moderation_request_channel
         assert moderation_request_channel is not None
         self.assertEqual(moderation_request_channel, verona)
         do_deactivate_stream(moderation_request_channel, acting_user=None)
-        self.assertIsNone(realm.get_moderation_request_channel())
+        realm.refresh_from_db()
+        self.assertIsNone(realm.moderation_request_channel)
 
     def test_change_realm_default_language(self) -> None:
         # we need an admin user.

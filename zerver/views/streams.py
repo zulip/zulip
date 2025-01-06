@@ -321,7 +321,7 @@ def update_stream_backend(
         raise JsonableError(_("A default channel cannot be private."))
 
     # Ensure that a moderation request channel isn't set to public.
-    if not proposed_is_private and user_profile.realm.get_moderation_request_channel() == stream:
+    if not proposed_is_private and user_profile.realm.moderation_request_channel == stream:
         raise JsonableError(_("Moderation request channel must be private."))
 
     if is_private is not None:
@@ -815,7 +815,7 @@ def send_messages_for_new_subscribers(
             )
 
     if announce and len(created_streams) > 0:
-        new_stream_announcements_stream = user_profile.realm.get_new_stream_announcements_stream()
+        new_stream_announcements_stream = user_profile.realm.new_stream_announcements_stream
         if new_stream_announcements_stream is not None:
             with override_language(new_stream_announcements_stream.realm.default_language):
                 if len(created_streams) > 1:

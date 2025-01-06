@@ -75,8 +75,40 @@ from zerver.models import (
 )
 from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
+from zerver.models.realms import get_realm_by_id
 from zerver.models.users import active_non_guest_user_ids, active_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
+
+
+def maybe_set_moderation_or_announcement_channels_none(stream: Stream) -> None:
+    realm = get_realm_by_id(realm_id=stream.realm_id)
+    realm_moderation_or_announcement_channels = (
+        "moderation_request_channel_id",
+        "new_stream_announcements_stream_id",
+        "signup_announcements_stream_id",
+        "zulip_update_announcements_stream_id",
+    )
+    update_realm_moderation_or_announcement_channels = []
+
+    for field in realm_moderation_or_announcement_channels:
+        if getattr(realm, field) == stream.id:
+            setattr(realm, field, None)
+            update_realm_moderation_or_announcement_channels.append(field)
+
+    if update_realm_moderation_or_announcement_channels:
+        realm.save(update_fields=update_realm_moderation_or_announcement_channels)
+
+        event_data: dict[str, int] = {}
+        for field in update_realm_moderation_or_announcement_channels:
+            event_data[field] = -1
+
+        event = dict(
+            type="realm",
+            op="update_dict",
+            property="default",
+            data=event_data,
+        )
+        send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
 @transaction.atomic(savepoint=False)
@@ -94,6 +126,8 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
     stream.save(update_fields=["deactivated"])
 
     ChannelEmailAddress.objects.filter(realm=stream.realm, channel=stream).update(deactivated=True)
+
+    maybe_set_moderation_or_announcement_channels_none(stream)
 
     assert stream.recipient_id is not None
     if was_web_public:
