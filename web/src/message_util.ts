@@ -33,6 +33,10 @@ export function get_count_of_messages_in_topic_sent_after_current_message(
     return all_messages.filter((msg) => msg.id >= message_id).length;
 }
 
+export function get_count_of_messages_in_topic(stream_id: number, topic: string): number {
+    return get_loaded_messages_in_topic(stream_id, topic).length;
+}
+
 export function get_loaded_messages_in_topic(stream_id: number, topic: string): Message[] {
     return all_messages_data
         .all_messages_after_mute_filtering()
