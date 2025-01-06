@@ -270,7 +270,7 @@ export function rewire_send_message(value) {
     send_message = value;
 }
 
-export function enter_with_preview_open(ctrl_pressed = false) {
+export function handle_enter_key_with_preview_open(ctrl_pressed = false) {
     if (
         (user_settings.enter_sends && !ctrl_pressed) ||
         (!user_settings.enter_sends && ctrl_pressed)

@@ -532,7 +532,7 @@ export function process_enter_key(e) {
     }
 
     if ($("#preview_message_area").is(":visible")) {
-        compose.enter_with_preview_open();
+        compose.handle_enter_key_with_preview_open();
         return true;
     }
 
@@ -583,7 +583,7 @@ export function process_enter_key(e) {
 export function process_ctrl_enter_key() {
     if ($("#preview_message_area").is(":visible")) {
         const ctrl_pressed = true;
-        compose.enter_with_preview_open(ctrl_pressed);
+        compose.handle_enter_key_with_preview_open(ctrl_pressed);
         return true;
     }
 
