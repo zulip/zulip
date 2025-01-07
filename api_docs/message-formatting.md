@@ -164,10 +164,106 @@ assume that messages sent prior to the introduction of thumbnailing
 have been re-rendered to use the new format or have thumbnails
 available.
 
-## Mentions
+## Mentions and silent mentions
 
-**Changes**: In Zulip 9.0 (feature level 247), `channel` was added
-to the supported [wildcard][help-mention-all] options used in the
+Zulip markup supports [mentioning](/help/mention-a-user-or-group)
+users, user groups, and a few special "wildcard" mentions (the three
+spellings of a channel wildcard mention: `@**all**`, `@**everyone**`,
+`@**channel**` and the topic wildcard mention `@**topic**`).
+
+Mentions result in a message being highlighted for the target user(s),
+both in the UI and in notifications, and may also result in the target
+user(s) following the conversation, [depending on their
+settings](/help/follow-a-topic#follow-topics-where-you-are-mentioned).
+
+Silent mentions of users or groups have none of those side effects,
+but nonetheless uniquently identify the user or group
+identified. (There's no such thing as a silent wildcard mention).
+
+Permissions for mentioning users work as follows:
+
+- Any user can mention any other user, though mentions by [muted
+users](/help/mute-a-user) are automatically marked as read and thus do
+not trigger notifications or otherwise get highlighted like unread
+mentions.
+
+- Wildcard mentions are permitted except where [organization-level
+restrictions](/help/restrict-wildcard-mentions) apply.
+
+- User groups can be mentioned if and only if the acting user is in
+the `can_mention_group` group for that group. All user groups can be
+silently mentioned by any user.
+
+- System groups, when (silently) mentioned, should be displayed using
+their description, not their `role:nobody` style API names; see the
+main [system group
+documentation](/api/group-setting-values#system-groups) for
+details. System groups can only be silently mentioned right now,
+because they happen to all use the empty `Nobody` group for
+`can_mention_group`; clients should just use `can_mention_group` to
+determine which groups to offer in typeahead in similar contexts.
+
+- Requests to send or edit a message that are impermissible due to
+including a mention where the acting user does not have permission to
+mention the target will return an error. Mention syntax that does not
+correspond to a real user or group is ignored.
+
+Sample markup for `@**Example User**`:
+
+``` html
+<span class="user-mention" data-user-id="31">@Example User</span>
+```
+
+Sample markup for `@_**Example User**`:
+
+``` html
+<span class="user-mention silent" data-user-id="31">Example User</span>
+```
+
+Sample markup for `@**topic**`:
+
+``` html
+<span class="topic-mention">@topic</span>
+```
+
+Sample markup for `@**channel**`:
+
+``` html
+<span class="user-mention channel-wildcard-mention"
+  data-user-id="*">@channel</span>
+```
+
+Sample markup for `@*support*`, assuming "support" is a valid group:
+``` html
+<span class="user-group-mention"
+  data-user-group-id="17">@support</span>
+```
+
+Sample markup for `@_*support*`, assuming "support" is a valid group:
+``` html
+<span class="user-group-mention silent"
+  data-user-group-id="17">support</span>
+```
+
+Sample markup for `@_*role:administrators*`:
+``` html
+<span class="user-group-mention silent"
+  data-user-group-id="5">Administrators</span>
+```
+
+When processing mentions, clients should look up the user or group
+referenced by ID, and update the textual name for the mention to the
+current name for the user or group with that ID. Note that for system
+groups, this requires special logic to look up the user-facing name
+for that group; see [system
+groups](/api/group-setting-values#system-groups) for details.
+
+**Changes**: Prior to Zulip 10.0 (feature level 333), it was not
+possible to silently mention [system
+groups](/api/group-setting-values#system-groups).
+
+In Zulip 9.0 (feature level 247), `channel` was added to the supported
+[wildcard][help-mention-all] options used in the
 [mentions][help-mentions] Markdown message formatting feature.
 
 ## Spoilers
