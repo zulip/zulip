@@ -308,7 +308,6 @@ export class BuddyList extends BuddyListConf {
             this.render_data.hide_headers ? false : this.other_users_is_collapsed,
         );
 
-        this.update_empty_list_placeholders();
         this.fill_screen_with_content();
 
         // This must happen after `fill_screen_with_content`
@@ -317,6 +316,8 @@ export class BuddyList extends BuddyListConf {
         if (!buddy_data.get_is_searching_users()) {
             this.render_view_user_list_links();
         }
+        // This must happen after view user links are rendered
+        this.update_empty_list_placeholders();
         this.display_or_hide_sections();
 
         // `populate` always rerenders all user rows, so we need new load handlers.
@@ -362,32 +363,46 @@ export class BuddyList extends BuddyListConf {
             }
         }
 
-        function add_or_update_empty_list_placeholder(selector: string, message: string): void {
+        function add_or_update_empty_list_placeholder(
+            message: string,
+            list_selector: string,
+            view_all_link_selector?: string,
+        ): void {
+            // If we determined there are inactive users in this list, that aren't
+            // shown but could be visible through a "view more" link, then don't
+            // show the empty list message.
+            if (view_all_link_selector && $(view_all_link_selector).length > 0) {
+                $(`${list_selector} .empty-list-message`).remove();
+                return;
+            }
+
             if (
-                $(selector).children().length === 0 ||
-                $(`${selector} .empty-list-message`).length > 0
+                $(list_selector).children().length === 0 ||
+                $(`${list_selector} .empty-list-message`).length > 0
             ) {
                 const empty_list_widget_html = render_empty_list_widget_for_list({
                     empty_list_message: message,
                 });
-                $(selector).html(empty_list_widget_html);
+                $(list_selector).html(empty_list_widget_html);
             }
         }
 
         add_or_update_empty_list_placeholder(
-            "#buddy-list-users-matching-view",
             matching_view_empty_list_message,
+            "#buddy-list-users-matching-view",
+            ".view-all-subscribers-link",
         );
 
         add_or_update_empty_list_placeholder(
-            "#buddy-list-other-users",
             other_users_empty_list_message,
+            "#buddy-list-other-users",
+            ".view-all-users-link",
         );
 
         if (participants_empty_list_message) {
             add_or_update_empty_list_placeholder(
-                "#buddy-list-participants",
                 participants_empty_list_message,
+                "#buddy-list-participants",
             );
         }
     }
