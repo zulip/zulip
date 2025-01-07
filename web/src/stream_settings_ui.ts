@@ -6,7 +6,6 @@ import render_stream_creation_confirmation_banner from "../templates/modal_banne
 import render_stream_info_banner from "../templates/modal_banner/stream_info_banner.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
 import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
-import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
 import render_stream_settings_overlay from "../templates/stream_settings/stream_settings_overlay.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -260,13 +259,6 @@ export function add_sub_to_table(sub: StreamSubscription): void {
     } else {
         scroll_util.get_content_element($(".streams-list")).append($new_row);
     }
-
-    const settings_html = render_stream_settings({
-        sub: stream_settings_data.get_sub_for_settings(sub),
-    });
-    scroll_util
-        .get_content_element($("#channels_overlay_container .settings"))
-        .append($(settings_html));
 
     if (stream_create.get_name() === sub.name) {
         // This `stream_create.get_name()` check tells us whether the
