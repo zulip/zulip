@@ -519,6 +519,19 @@ export function set_up(): void {
 
         const $new_pw_field = $("#new_password");
         const new_pw = data.new_password;
+        const old_pw = data.old_password;
+        // Check if the new password is the same as the old password
+        if (new_pw === old_pw) {
+            ui_report.error(
+                $t_html({
+                    defaultMessage: "The new password cannot be the same as the current password",
+                }),
+                undefined,
+                $("#dialog_error"),
+            );
+            dialog_widget.hide_dialog_spinner();
+            return;
+        }
         if (new_pw !== "") {
             if (password_quality === undefined) {
                 // password_quality didn't load, for whatever reason.
