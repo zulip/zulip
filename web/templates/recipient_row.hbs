@@ -80,6 +80,9 @@
                     {{/if}}
                 </span>
             {{/if}}
+
+            {{! Topic menu }}
+            <i class="zulip-icon zulip-icon-more-vertical recipient-row-topic-menu recipient_bar_icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}"></i>
         </span>
         <span class="recipient_row_date {{#if (and (not always_display_date) date_unchanged )}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
     </div>
