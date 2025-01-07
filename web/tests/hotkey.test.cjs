@@ -135,8 +135,12 @@ function stubbing(module, func_name_to_stub, test_function) {
     });
 }
 
-// Set up defaults for most tests.
-hotkey.rewire_processing_text(() => false);
+function test_while_not_editing_text(label, f) {
+    run_test(label, (helpers) => {
+        helpers.override_rewire(hotkey, "processing_text", () => false);
+        f(helpers);
+    });
+}
 
 run_test("mappings", () => {
     function map_press(which, shiftKey) {
@@ -265,12 +269,15 @@ function test_normal_typing() {
     assert_unmapped('~!@#$%^*()_+{}:"<>');
 }
 
-run_test("allow normal typing when processing text", ({override, override_rewire}) => {
+test_while_not_editing_text("unmapped keys return false easily", () => {
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
+    // (unless we are editing text)
     assert_unmapped("bfoyz");
     assert_unmapped("BEFHLNOQTWXYZ");
+});
 
+run_test("allow normal typing when editing text", ({override, override_rewire}) => {
     // All letters should return false if we are composing text.
     override_rewire(hotkey, "processing_text", () => true);
 
@@ -290,7 +297,7 @@ run_test("allow normal typing when processing text", ({override, override_rewire
     }
 });
 
-run_test("streams", ({override}) => {
+test_while_not_editing_text("streams", ({override}) => {
     settings_data.user_can_create_private_streams = () => true;
     delete settings_data.user_can_create_public_streams;
     delete settings_data.user_can_create_web_public_streams;
@@ -305,7 +312,7 @@ run_test("streams", ({override}) => {
     assert_unmapped("n");
 });
 
-run_test("basic mappings", () => {
+test_while_not_editing_text("basic mappings", () => {
     assert_mapping("?", browser_history, "go_to_location");
     assert_mapping("/", search, "initiate_search");
     assert_mapping("w", activity_ui, "initiate_search");
@@ -320,19 +327,19 @@ run_test("basic mappings", () => {
     assert_mapping("g", gear_menu, "toggle");
 });
 
-run_test("drafts open", ({override}) => {
+test_while_not_editing_text("drafts open", ({override}) => {
     override(overlays, "any_active", () => true);
     override(overlays, "drafts_open", () => true);
     assert_mapping("d", overlays, "close_overlay");
 });
 
-run_test("drafts closed w/other overlay", ({override}) => {
+test_while_not_editing_text("drafts closed w/other overlay", ({override}) => {
     override(overlays, "any_active", () => true);
     override(overlays, "drafts_open", () => false);
     test_normal_typing();
 });
 
-run_test("drafts closed launch", ({override}) => {
+test_while_not_editing_text("drafts closed launch", ({override}) => {
     override(overlays, "any_active", () => false);
     assert_mapping("d", browser_history, "go_to_location");
 });
@@ -342,7 +349,7 @@ run_test("modal open", ({override}) => {
     test_normal_typing();
 });
 
-run_test("misc", ({override}) => {
+test_while_not_editing_text("misc", ({override}) => {
     // Next, test keys that only work on a selected message.
     const message_view_only_keys = "@+>RjJkKsuvVi:GM";
 
@@ -403,19 +410,19 @@ run_test("misc", ({override}) => {
     assert_mapping("V", read_receipts, "hide_user_list", true, true);
 });
 
-run_test("lightbox overlay open", ({override}) => {
+test_while_not_editing_text("lightbox overlay open", ({override}) => {
     override(overlays, "any_active", () => true);
     override(overlays, "lightbox_open", () => true);
     assert_mapping("v", overlays, "close_overlay");
 });
 
-run_test("lightbox closed w/other overlay open", ({override}) => {
+test_while_not_editing_text("lightbox closed w/other overlay open", ({override}) => {
     override(overlays, "any_active", () => true);
     override(overlays, "lightbox_open", () => false);
     test_normal_typing();
 });
 
-run_test("v w/no overlays", ({override}) => {
+test_while_not_editing_text("v w/no overlays", ({override}) => {
     override(overlays, "any_active", () => false);
     assert_mapping("v", lightbox, "show_from_selected_message");
 });
@@ -425,13 +432,13 @@ run_test("emoji picker", ({override}) => {
     assert_mapping(":", emoji_picker, "navigate", true);
 });
 
-run_test("G/M keys", () => {
+test_while_not_editing_text("G/M keys", () => {
     // TODO: move
     assert_mapping("G", navigate, "to_end");
     assert_mapping("M", user_topics_ui, "toggle_topic_visibility_policy");
 });
 
-run_test("n/p keys", () => {
+test_while_not_editing_text("n/p keys", () => {
     // Test keys that work when a message is selected and
     // also when the message list is empty.
     assert_mapping("n", message_view, "narrow_to_next_topic");
@@ -439,11 +446,11 @@ run_test("n/p keys", () => {
     assert_mapping("n", message_view, "narrow_to_next_topic");
 });
 
-run_test("narrow next unread followed topic", () => {
+test_while_not_editing_text("narrow next unread followed topic", () => {
     assert_mapping("N", message_view, "narrow_to_next_topic", true, true);
 });
 
-run_test("motion_keys", () => {
+test_while_not_editing_text("motion_keys", () => {
     const codes = {
         down_arrow: 40,
         end: 35,
