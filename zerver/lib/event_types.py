@@ -268,6 +268,33 @@ class EventOnboardingSteps(BaseModel):
     id: int
 
 
+class PinnedViewFields(BaseModel):
+    url_hash: str
+    is_pinned: bool
+    name: str | None
+
+
+class EventPinnedViewsAdd(BaseModel):
+    type: Literal["pinned_views"]
+    op: Literal["add"]
+    pinned_view: PinnedViewFields
+    id: int
+
+
+class EventPinnedViewsRemove(BaseModel):
+    type: Literal["pinned_views"]
+    op: Literal["remove"]
+    url_hash: str
+    id: int
+
+
+class EventPinnedViewsUpdate(BaseModel):
+    type: Literal["pinned_views"]
+    op: Literal["update"]
+    pinned_view: PinnedViewFields
+    id: int
+
+
 class Presence(BaseModel):
     status: Literal["active", "idle"]
     timestamp: int

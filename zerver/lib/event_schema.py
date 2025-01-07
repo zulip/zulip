@@ -35,6 +35,9 @@ from zerver.lib.event_types import (
     EventMutedTopics,
     EventMutedUsers,
     EventOnboardingSteps,
+    EventPinnedViewsAdd,
+    EventPinnedViewsRemove,
+    EventPinnedViewsUpdate,
     EventPresence,
     EventReactionAdd,
     EventReactionRemove,
@@ -168,6 +171,9 @@ check_message = make_checker(EventMessage)
 check_muted_topics = make_checker(EventMutedTopics)
 check_muted_users = make_checker(EventMutedUsers)
 check_onboarding_steps = make_checker(EventOnboardingSteps)
+check_pinned_view_add = make_checker(EventPinnedViewsAdd)
+check_pinned_view_remove = make_checker(EventPinnedViewsRemove)
+check_pinned_view_update = make_checker(EventPinnedViewsUpdate)
 check_reaction_add = make_checker(EventReactionAdd)
 check_reaction_remove = make_checker(EventReactionRemove)
 check_realm_bot_delete = make_checker(EventRealmBotDelete)

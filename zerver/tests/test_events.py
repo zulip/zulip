@@ -55,6 +55,11 @@ from zerver.actions.message_edit import do_update_embedded_data, do_update_messa
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
 from zerver.actions.onboarding_steps import do_mark_onboarding_step_as_read
+from zerver.actions.pinned_views import (
+    do_add_pinned_view,
+    do_remove_pinned_view,
+    do_update_pinned_view,
+)
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.reactions import do_add_reaction, do_remove_reaction
 from zerver.actions.realm_domains import (
@@ -154,6 +159,9 @@ from zerver.lib.event_schema import (
     check_muted_topics,
     check_muted_users,
     check_onboarding_steps,
+    check_pinned_view_add,
+    check_pinned_view_remove,
+    check_pinned_view_update,
     check_presence,
     check_reaction_add,
     check_reaction_remove,
@@ -1509,6 +1517,20 @@ class NormalActionsTest(BaseAction):
             do_update_user_custom_profile_data_if_changed(hamlet, [field])
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
+
+    def test_pinned_views_events(self) -> None:
+        with self.verify_action() as events:
+            do_add_pinned_view(self.user_profile, url_hash="inbox", is_pinned=True, name=None)
+        check_pinned_view_add("events[0]", events[0])
+
+        do_add_pinned_view(self.user_profile, url_hash="recent", is_pinned=True, name=None)
+        with self.verify_action() as events:
+            do_update_pinned_view(self.user_profile, url_hash="recent", is_pinned=False)
+        check_pinned_view_update("events[0]", events[0])
+
+        with self.verify_action() as events:
+            do_remove_pinned_view(self.user_profile, "recent")
+        check_pinned_view_remove("events[0]", events[0])
 
     def test_presence_events(self) -> None:
         with self.verify_action(slim_presence=False) as events:
