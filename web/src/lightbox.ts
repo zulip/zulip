@@ -13,13 +13,20 @@ import * as popovers from "./popovers.ts";
 import * as rows from "./rows.ts";
 import * as util from "./util.ts";
 
+enum MediaType {
+    Image = "image",
+    InlineVideo = "inline-video",
+    YoutubeVideo = "youtube-video",
+    VimeoVideo = "vimeo-video",
+    EmbedVideo = "embed-video",
+}
+
 type Media = {
     // Sender's full name
     user: string | undefined;
     // aria-label (or link URL, as fallback) of media
     title: string | undefined;
-    // "image" / "inline-video" / "youtube-video" / "vimeo-video" / "embed-video"
-    type: string;
+    type: MediaType;
     // URL to use in message list or carousel
     preview: string;
     // URL to use for display in the lightbox
@@ -335,7 +342,7 @@ function display_video(payload: Media): void {
     ).hide();
     $(".player-container").show();
 
-    if (payload.type === "inline-video") {
+    if (payload.type === MediaType.InlineVideo) {
         $(".player-container").hide();
         $(".video-player, .media-description").show();
         const $video = $("<video>");
@@ -389,12 +396,11 @@ export function build_open_media_function(
         const payload = parse_media_data(util.the($media));
 
         assert(payload !== undefined);
-        if (payload.type.includes("-video")) {
-            display_video(payload);
-        } else if (payload.type === "image") {
+        if (payload.type === MediaType.Image) {
             display_image(payload);
+        } else {
+            display_video(payload);
         }
-
         if (is_open) {
             return;
         }
@@ -492,7 +498,7 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
     const is_compose_preview_media = $media.closest("#compose .preview_content").length === 1;
 
     const $parent = $media.parent();
-    let type: string;
+    let type: MediaType;
     let source;
     const url = $parent.attr("href");
 
@@ -513,7 +519,7 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
     }
 
     if (is_inline_video) {
-        type = "inline-video";
+        type = MediaType.InlineVideo;
         // Render video from original source to reduce load on our own servers.
         const original_video_url = $media.attr("data-video-original-url");
         // `data-video-original-url` is only defined for external URLs in
@@ -524,13 +530,13 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
             source = encodeURI(original_video_url);
         }
     } else if (is_youtube_video) {
-        type = "youtube-video";
+        type = MediaType.YoutubeVideo;
         source = "https://www.youtube.com/embed/" + $parent.attr("data-id");
     } else if (is_vimeo_video) {
-        type = "vimeo-video";
+        type = MediaType.VimeoVideo;
         source = "https://player.vimeo.com/video/" + $parent.attr("data-id");
     } else if (is_embed_video) {
-        type = "embed-video";
+        type = MediaType.EmbedVideo;
         source =
             "data:text/html," +
             window.encodeURIComponent(
@@ -538,7 +544,7 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
                     $parent.attr("data-id"),
             );
     } else {
-        type = "image";
+        type = MediaType.Image;
         if ($media.attr("data-src-fullsize")) {
             source = $media.attr("data-src-fullsize");
         } else {
