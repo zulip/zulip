@@ -377,7 +377,7 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             assert group_direct_message is not None
             self.assertIn(
                 "These notifications are currently turned off in your organization. "
-                "If you configure a stream within one week, your organization will not miss any update messages.",
+                "If you configure a channel within one week, your organization will not miss any update messages.",
                 group_direct_message.content,
             )
 
