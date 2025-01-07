@@ -304,10 +304,10 @@ def internal_prep_group_direct_message_for_old_realm(
         topic_name = str(realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME)
     if realm.zulip_update_announcements_stream is None:
         content = """
-Zulip now supports [configuring]({organization_settings_url}) a stream where Zulip will
+Zulip now supports [configuring]({organization_settings_url}) a channel where Zulip will
 send [updates]({zulip_update_announcements_help_url}) about new Zulip features.
 These notifications are currently turned off in your organization. If you configure
-a stream within one week, your organization will not miss any update messages.
+a channel within one week, your organization will not miss any update messages.
 """.format(
             zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
             organization_settings_url="/#organization/organization-settings",
@@ -317,7 +317,7 @@ a stream within one week, your organization will not miss any update messages.
 Starting tomorrow, users in your organization will receive [updates]({zulip_update_announcements_help_url})
 about new Zulip features in #**{zulip_update_announcements_stream}>{topic_name}**.
 
-If you like, you can [configure]({organization_settings_url}) a different stream for
+If you like, you can [configure]({organization_settings_url}) a different channel for
 these updates (and [move]({move_content_another_stream_help_url}) any updates sent before the
 configuration change), or [turn this feature off]({organization_settings_url}) altogether.
 """.format(
