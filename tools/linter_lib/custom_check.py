@@ -225,6 +225,11 @@ js_rules = RuleList(
             "pattern": r"allowHTML|(?i:data-tippy-allowHTML)",
             "description": "Never use Tippy.js allowHTML; for an HTML tooltip, get a DocumentFragment with ui_util.parse_html.",
         },
+        {
+            "pattern": r"\.rewire_",
+            "description": "Never call rewire_* functions directly. Use override_rewire.",
+            "include_only": {"web/tests/"},
+        },
         *whitespace_rules,
     ],
 )
