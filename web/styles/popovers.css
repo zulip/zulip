@@ -1506,3 +1506,19 @@ ul.popover-menu-list {
         }
     }
 }
+
+#groups-to-add {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+#user-group-to-add {
+    flex: 1;
+    min-width: 0;
+}
+
+.add-groups-button-wrapper {
+    flex: 0 0 auto;
+}

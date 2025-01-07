@@ -131,6 +131,28 @@
 
                     <div class="tabcontent" id="user-profile-groups-tab">
                         <div class="alert user-profile-group-list-alert"></div>
+                        {{#if show_user_group_container}}
+                            <div class="header-section">
+                                <h3 class="group-tab-element-header">{{t 'Add {full_name} to groups'}}</h3>
+                            </div>
+                            <div id="groups-to-add" class="add-button-container">
+                                <div id="user-group-to-add">
+                                    <div class="add-user-group-container">
+                                        <div class="pill-container">
+                                            <div class="input" contenteditable="true"
+                                              data-placeholder="{{t 'Add user groups' }}">
+                                                {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="add-groups-button-wrapper">
+                                    <button type="button" name="subscribe" class="add-groups-button button small rounded">
+                                        {{t 'Add' }}
+                                    </button>
+                                </div>
+                            </div>
+                        {{/if}}
                         <div class="group-list-top-section">
                             <div class="header-section">
                                 <h3 class="group-tab-element-header">{{t 'Group membership' }}</h3>
