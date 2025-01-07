@@ -31,8 +31,10 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
         generic_sort_functions: noop,
     });
 
-    mock_template("settings/alert_word_settings_item.hbs", false, (args) => {
+    mock_template("settings/alert_word_settings_item.hbs", true, (args, html) => {
         assert.ok(["foo", "bar"].includes(args.alert_word.word));
+        // do a super easy sanity check
+        assert.ok(html.includes("alert_word_listing"));
     });
 
     assert.equal(alert_words_ui.loaded, false);
