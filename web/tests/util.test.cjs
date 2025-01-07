@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const _ = require("lodash");
 const MockDate = require("mockdate");
 
-const {set_global, zrequire} = require("./lib/namespace.cjs");
+const {set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const blueslip = zrequire("blueslip");
@@ -369,12 +369,17 @@ run_test("format_array_as_list", () => {
     );
 
     // when Intl.ListFormat does not exist
-    global.Intl.ListFormat = undefined;
-    assert.equal(util.format_array_as_list(array, "long", "conjunction"), "apple, banana, orange");
-    assert.equal(
-        util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
-        "<b>apple</b>, <b>banana</b>, <b>orange</b>",
-    );
+    with_overrides(({override}) => {
+        override(global.Intl, "ListFormat", undefined);
+        assert.equal(
+            util.format_array_as_list(array, "long", "conjunction"),
+            "apple, banana, orange",
+        );
+        assert.equal(
+            util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
+            "<b>apple</b>, <b>banana</b>, <b>orange</b>",
+        );
+    });
 });
 
 run_test("get_remaining_time", () => {
