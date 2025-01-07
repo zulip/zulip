@@ -28,7 +28,7 @@ function get_conversation(instance: tippy.Instance): {
     let topic_name;
     let url;
 
-    if (instance.reference.classList.contains("inbox-topic-menu")) {
+    if (!instance.reference.classList.contains("topic-sidebar-menu-icon")) {
         const $elt = $(instance.reference);
         stream_id = Number.parseInt($elt.attr("data-stream-id")!, 10);
         topic_name = $elt.attr("data-topic-name")!;
@@ -46,7 +46,7 @@ function get_conversation(instance: tippy.Instance): {
 
 export function initialize(): void {
     popover_menus.register_popover_menu(
-        "#stream_filters .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu",
+        "#stream_filters .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu, .recipient-row-topic-menu",
         {
             ...popover_menus.left_sidebar_tippy_options,
             onShow(instance) {
