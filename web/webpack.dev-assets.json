@@ -15,5 +15,5 @@
         "./src/reload_state.ts",
         "./src/channel.ts"
     ],
-    "dev-testing": ["./src/bundles/design-testing.ts"]
+    "showroom": ["./src/bundles/showroom.ts"]
 }
