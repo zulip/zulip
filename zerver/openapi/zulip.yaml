@@ -20067,120 +20067,79 @@ paths:
                 message_retention_days:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 can_remove_subscribers_group:
-                  description: |
-                    The set of users who have permission to unsubscribe others from this
-                    channel expressed as an [update to a group-setting value][update-group-setting].
+                  allOf:
+                    - description: |
+                        The set of users who have permission to unsubscribe others from this
+                        channel expressed as an [update to a group-setting value][update-group-setting].
 
-                    Administrators can always unsubscribe others from a channel.
+                        Administrators can always unsubscribe others from a channel.
 
-                    Note that a user who is a member of the specified user group must
-                    also [have access](/help/channel-permissions) to the channel in
-                    order to unsubscribe others.
+                        Note that a user who is a member of the specified user group must
+                        also [have access](/help/channel-permissions) to the channel in
+                        order to unsubscribe others.
 
-                    **Changes**: Prior to Zulip 10.0 (feature level 320), this value was
-                    always the integer ID of a system group.
+                        **Changes**: Prior to Zulip 10.0 (feature level 320), this value was
+                        always the integer ID of a system group.
 
-                    Before Zulip 8.0 (feature level 197), the `can_remove_subscribers_group`
-                    setting was named `can_remove_subscribers_group_id`.
+                        Before Zulip 8.0 (feature level 197), the `can_remove_subscribers_group`
+                        setting was named `can_remove_subscribers_group_id`.
 
-                    New in Zulip 7.0 (feature level 161).
-                  type: object
-                  additionalProperties: false
-                  properties:
-                    new:
-                      allOf:
-                        - description: |
-                            The new [group-setting value](/api/group-setting-values) for who would
-                            have the permission to remove subscribers from the channel.
-                        - $ref: "#/components/schemas/GroupSettingValue"
-                    old:
-                      allOf:
-                        - description: |
-                            The expected current [group-setting value](/api/group-setting-values)
-                            for who has the permission to remove subscribers from the channel.
-                        - $ref: "#/components/schemas/GroupSettingValue"
-                  required:
-                    - new
-                  example:
-                    {
-                      "new": {"direct_members": [10], "direct_subgroups": [11]},
-                      "old": 15,
-                    }
+                        New in Zulip 7.0 (feature level 161).
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
                 can_administer_channel_group:
-                  description: |
-                    The set of users who have permission to administer this channel
-                    expressed as an [update to a group-setting value][update-group-setting].
+                  allOf:
+                    - description: |
+                        The set of users who have permission to administer this channel
+                        expressed as an [update to a group-setting value][update-group-setting].
 
-                    Note that a user who is a member of the specified user group must
-                    also [have access](/help/channel-permissions) to the channel in
-                    order to administer the channel.
+                        Note that a user who is a member of the specified user group must
+                        also [have access](/help/channel-permissions) to the channel in
+                        order to administer the channel.
 
-                    Realm admins are allowed to administer a channel they have access to
-                    regardless of whether they are present in this group.
+                        Realm admins are allowed to administer a channel they have access to
+                        regardless of whether they are present in this group.
 
-                    Users in this group can edit channel name and description without
-                    subscribing to the channel, but they need to be subscribed to edit
-                    channel permissions and add users.
+                        Users in this group can edit channel name and description without
+                        subscribing to the channel, but they need to be subscribed to edit
+                        channel permissions and add users.
 
-                    **Changes**: New in Zulip 10.0 (feature level 325). Prior to this
-                    change, the permission to administer channels was limited to realm
-                    administrators.
-                  type: object
-                  additionalProperties: false
-                  properties:
-                    new:
-                      allOf:
-                        - description: |
-                            The new [group-setting value](/api/group-setting-values) for who would
-                            have the permission to administer this channel.
-                        - $ref: "#/components/schemas/CanAdministerChannelGroup"
-                    old:
-                      allOf:
-                        - description: |
-                            The expected current [group-setting value](/api/group-setting-values)
-                            for who has the permission to administer this channel.
-                        - $ref: "#/components/schemas/CanAdministerChannelGroup"
-                  required:
-                    - new
-                  example:
-                    {
-                      "new": {"direct_members": [10], "direct_subgroups": [11]},
-                      "old": 15,
-                    }
+                        **Changes**: New in Zulip 10.0 (feature level 325). Prior to this
+                        change, the permission to administer channels was limited to realm
+                        administrators.
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
                 can_send_message_group:
-                  description: |
-                    The set of users who have permission to post in this channel
-                    expressed as an [update to a group-setting value][update-group-setting].
+                  allOf:
+                    - description: |
+                        The set of users who have permission to post in this channel
+                        expressed as an [update to a group-setting value][update-group-setting].
 
-                    Note that a user who is a member of the specified user group must
-                    also [have access](/help/channel-permissions) to the channel in
-                    order to post in the channel.
+                        Note that a user who is a member of the specified user group must
+                        also [have access](/help/channel-permissions) to the channel in
+                        order to post in the channel.
 
-                    **Changes**: New in Zulip 10.0 (feature level 333). Previously
-                    `stream_post_policy` field used to control the permission to
-                    post in the channel.
-                  type: object
-                  additionalProperties: false
-                  properties:
-                    new:
-                      allOf:
-                        - description: |
-                            The new [group-setting value](/api/group-setting-values) for who would
-                            have the permission to post in this channel.
-                        - $ref: "#/components/schemas/CanSendMessageGroup"
-                    old:
-                      allOf:
-                        - description: |
-                            The expected current [group-setting value](/api/group-setting-values)
-                            for who has the permission to post in this channel.
-                        - $ref: "#/components/schemas/CanSendMessageGroup"
-                  required:
-                    - new
-                  example:
-                    {
-                      "new": {"direct_members": [10], "direct_subgroups": [11]},
-                      "old": 15,
-                    }
+                        **Changes**: New in Zulip 10.0 (feature level 333). Previously
+                        `stream_post_policy` field used to control the permission to
+                        post in the channel.
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
             encoding:
               is_private:
                 contentType: application/json
@@ -20879,214 +20838,130 @@ paths:
                   type: string
                   example: The marketing team.
                 can_add_members_group:
-                  description: |
-                    The set of users who have permission to add members to this user group
-                    expressed as an [update to a group-setting value][update-group-setting].
+                  allOf:
+                    - description: |
+                        The set of users who have permission to add members to this user group
+                        expressed as an [update to a group-setting value][update-group-setting].
 
-                    **Changes**: New in Zulip 10.0 (feature level 305). Previously, this
-                    permission was controlled by the `can_manage_group` setting.
+                        **Changes**: New in Zulip 10.0 (feature level 305). Previously, this
+                        permission was controlled by the `can_manage_group` setting.
 
-                    [update-group-setting]: /api/group-setting-values#updating-group-setting-values
-                    [system-groups]: /api/group-setting-values#system-groups
-                  type: object
-                  additionalProperties: false
-                  properties:
-                    new:
-                      allOf:
-                        - description: |
-                            The new [group-setting value](/api/group-setting-values) for the set of users
-                            who would have the permission to add members to the group.
-                        - $ref: "#/components/schemas/GroupSettingValue"
-                    old:
-                      allOf:
-                        - description: |
-                            The expected current [group-setting value](/api/group-setting-values)
-                            for the set of users who have the permission to add members to the group.
-                        - $ref: "#/components/schemas/GroupSettingValue"
-                  required:
-                    - new
-                  example:
-                    {
-                      "new": {"direct_members": [10], "direct_subgroups": [11]},
-                      "old": 11,
-                    }
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+                        [system-groups]: /api/group-setting-values#system-groups
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 11,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
                 can_join_group:
-                  description: |
-                    The set of users who have permission to join this user group
-                    expressed as an [update to a group-setting value][update-group-setting].
+                  allOf:
+                    - description: |
+                        The set of users who have permission to join this user group
+                        expressed as an [update to a group-setting value][update-group-setting].
 
-                    **Changes**: New in Zulip 10.0 (feature level 301).
+                        **Changes**: New in Zulip 10.0 (feature level 301).
 
-                    [update-group-setting]: /api/group-setting-values#updating-group-setting-values
-                    [system-groups]: /api/group-setting-values#system-groups
-                  type: object
-                  additionalProperties: false
-                  properties:
-                    new:
-                      allOf:
-                        - description: |
-                            The new [group-setting value](/api/group-setting-values) for who would
-                            have the permission to join the group.
-                        - $ref: "#/components/schemas/GroupSettingValue"
-                    old:
-                      allOf:
-                        - description: |
-                            The expected current [group-setting value](/api/group-setting-values)
-                            for who has the permission to join the group.
-                        - $ref: "#/components/schemas/GroupSettingValue"
-                  required:
-                    - new
-                  example:
-                    {
-                      "new": {"direct_members": [10], "direct_subgroups": [11]},
-                      "old": 11,
-                    }
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+                        [system-groups]: /api/group-setting-values#system-groups
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 11,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
                 can_leave_group:
-                  description: |
-                    The set of users who have permission to leave this user group
-                    expressed as an [update to a group-setting value][update-group-setting].
+                  allOf:
+                    - description: |
+                        The set of users who have permission to leave this user group
+                        expressed as an [update to a group-setting value][update-group-setting].
 
-                    **Changes**: New in Zulip 10.0 (feature level 308).
+                        **Changes**: New in Zulip 10.0 (feature level 308).
 
-                    [update-group-setting]: /api/group-setting-values#updating-group-setting-values
-                    [system-groups]: /api/group-setting-values#system-groups
-                  type: object
-                  additionalProperties: false
-                  properties:
-                    new:
-                      allOf:
-                        - description: |
-                            The new [group-setting value](/api/group-setting-values) for who would
-                            have the permission to leave the group.
-                        - $ref: "#/components/schemas/GroupSettingValue"
-                    old:
-                      allOf:
-                        - description: |
-                            The expected current [group-setting value](/api/group-setting-values)
-                            for who has the permission to leave the group.
-                        - $ref: "#/components/schemas/GroupSettingValue"
-                  required:
-                    - new
-                  example:
-                    {
-                      "new": {"direct_members": [10], "direct_subgroups": [11]},
-                      "old": 15,
-                    }
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+                        [system-groups]: /api/group-setting-values#system-groups
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
                 can_manage_group:
-                  description: |
-                    The set of users who have permission to [manage this user group][manage-user-groups]
-                    expressed as an [update to a group-setting value][update-group-setting].
+                  allOf:
+                    - description: |
+                        The set of users who have permission to [manage this user group][manage-user-groups]
+                        expressed as an [update to a group-setting value][update-group-setting].
 
-                    This setting cannot be set to `"role:internet"` and `"role:everyone"`
-                    [system groups][system-groups].
+                        This setting cannot be set to `"role:internet"` and `"role:everyone"`
+                        [system groups][system-groups].
 
-                    **Changes**: New in Zulip 10.0 (feature level 283).
+                        **Changes**: New in Zulip 10.0 (feature level 283).
 
-                    [update-group-setting]: /api/group-setting-values#updating-group-setting-values
-                    [system-groups]: /api/group-setting-values#system-groups
-                    [manage-user-groups]: /help/manage-user-groups
-                  type: object
-                  additionalProperties: false
-                  properties:
-                    new:
-                      allOf:
-                        - description: |
-                            The new [group-setting value](/api/group-setting-values) for who would
-                            have the permission to manage the group.
-                        - $ref: "#/components/schemas/GroupSettingValue"
-                    old:
-                      allOf:
-                        - description: |
-                            The expected current [group-setting value](/api/group-setting-values)
-                            for who has the permission to manage the group.
-                        - $ref: "#/components/schemas/GroupSettingValue"
-                  required:
-                    - new
-                  example:
-                    {
-                      "new": {"direct_members": [10], "direct_subgroups": [11]},
-                      "old": 11,
-                    }
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+                        [system-groups]: /api/group-setting-values#system-groups
+                        [manage-user-groups]: /help/manage-user-groups
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 11,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
                 can_mention_group:
-                  description: |
-                    The set of users who have permission to [mention this group][mentions],
-                    expressed as an [update to a group-setting value][update-group-setting].
+                  allOf:
+                    - description: |
+                        The set of users who have permission to [mention this group][mentions],
+                        expressed as an [update to a group-setting value][update-group-setting].
 
-                    This setting cannot be set to `"role:internet"` and `"role:owners"`
-                    [system groups][system-groups].
+                        This setting cannot be set to `"role:internet"` and `"role:owners"`
+                        [system groups][system-groups].
 
-                    **Changes**: In Zulip 9.0 (feature level 260), this parameter was
-                    updated to only accept an object with the `old` and `new` fields
-                    described below. Prior to this feature level, this parameter could be
-                    either of the two forms of a [group-setting value][setting-values].
+                        **Changes**: In Zulip 9.0 (feature level 260), this parameter was
+                        updated to only accept an object with the `old` and `new` fields
+                        described below. Prior to this feature level, this parameter could be
+                        either of the two forms of a [group-setting value][setting-values].
 
-                    Before Zulip 9.0 (feature level 258), this parameter could only be the
-                    integer form of a [group-setting value][setting-values].
+                        Before Zulip 9.0 (feature level 258), this parameter could only be the
+                        integer form of a [group-setting value][setting-values].
 
-                    Before Zulip 8.0 (feature level 198), this parameter was named
-                    `can_mention_group_id`.
+                        Before Zulip 8.0 (feature level 198), this parameter was named
+                        `can_mention_group_id`.
 
-                    New in Zulip 8.0 (feature level 191). Previously, groups could be
-                    mentioned only if they were not [system groups][system-groups].
+                        New in Zulip 8.0 (feature level 191). Previously, groups could be
+                        mentioned only if they were not [system groups][system-groups].
 
-                    [mentions]: /help/mention-a-user-or-group
-                    [update-group-setting]: /api/group-setting-values#updating-group-setting-values
-                    [system-groups]: /api/group-setting-values#system-groups
-                    [setting-values]: /api/group-setting-values
-                  type: object
-                  additionalProperties: false
-                  properties:
-                    new:
-                      allOf:
-                        - description: |
-                            The new [group-setting value](/api/group-setting-values) for who would
-                            have the permission to mention the group.
-                        - $ref: "#/components/schemas/GroupSettingValue"
-                    old:
-                      allOf:
-                        - description: |
-                            The expected current [group-setting value](/api/group-setting-values)
-                            for who has the permission to mention the group.
-                        - $ref: "#/components/schemas/GroupSettingValue"
-                  required:
-                    - new
-                  example:
-                    {
-                      "new": {"direct_members": [10], "direct_subgroups": [11]},
-                      "old": 11,
-                    }
+                        [mentions]: /help/mention-a-user-or-group
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+                        [system-groups]: /api/group-setting-values#system-groups
+                        [setting-values]: /api/group-setting-values
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 11,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
                 can_remove_members_group:
-                  description: |
-                    The set of users who have permission to remove members from this user group
-                    expressed as an [update to a group-setting value][update-group-setting].
+                  allOf:
+                    - description: |
+                        The set of users who have permission to remove members from this user group
+                        expressed as an [update to a group-setting value][update-group-setting].
 
-                    **Changes**: New in Zulip 10.0 (feature level 324). Previously, this
-                    permission was controlled by the `can_manage_group` setting.
+                        **Changes**: New in Zulip 10.0 (feature level 324). Previously, this
+                        permission was controlled by the `can_manage_group` setting.
 
-                    [update-group-setting]: /api/group-setting-values#updating-group-setting-values
-                    [system-groups]: /api/group-setting-values#system-groups
-                  type: object
-                  additionalProperties: false
-                  properties:
-                    new:
-                      allOf:
-                        - description: |
-                            The new [group-setting value](/api/group-setting-values) for the set of users
-                            who would have the permission to remove members from the group.
-                        - $ref: "#/components/schemas/GroupSettingValue"
-                    old:
-                      allOf:
-                        - description: |
-                            The expected current [group-setting value](/api/group-setting-values) for
-                            the set of users who have the permission to remove members from the group.
-                        - $ref: "#/components/schemas/GroupSettingValue"
-                  required:
-                    - new
-                  example:
-                    {
-                      "new": {"direct_members": [10], "direct_subgroups": [11]},
-                      "old": 11,
-                    }
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+                        [system-groups]: /api/group-setting-values#system-groups
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 11,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
             encoding:
               can_add_members_group:
                 contentType: application/json
@@ -22791,6 +22666,24 @@ components:
                 type: integer
           description: |
             An object with these fields:
+    GroupSettingValueUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        new:
+          allOf:
+            - description: |
+                The new [group-setting value](/api/group-setting-values) for who would
+                have this permission.
+            - $ref: "#/components/schemas/GroupSettingValue"
+        old:
+          allOf:
+            - description: |
+                The expected current [group-setting value](/api/group-setting-values)
+                for who has this permission.
+            - $ref: "#/components/schemas/GroupSettingValue"
+      required:
+        - new
     Invite:
       type: object
       description: |
