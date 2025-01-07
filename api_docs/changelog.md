@@ -886,7 +886,7 @@ No changes; feature level used for Zulip 9.0 release.
 
 **Feature level 247**
 
-* [Markdown message formatting](/api/message-formatting#mentions):
+* [Markdown message formatting](/api/message-formatting#mentions-and-silent-mentions):
   Added `channel` to the supported options for [wildcard
   mentions](/help/mention-a-user-or-group#mention-everyone-on-a-stream).
 
