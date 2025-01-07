@@ -766,7 +766,7 @@ test("update_presence_info", ({override, override_rewire}) => {
     assert.equal(presence.presence_info.get(inaccessible_user_id), undefined);
 });
 
-test("initialize", ({override, override_rewire, mock_template}) => {
+test("initialize", ({override, override_rewire}) => {
     override(pm_list, "update_private_messages", noop);
     override(watchdog, "check_for_unsuspend", noop);
     override(buddy_list, "fill_screen_with_content", noop);
@@ -788,7 +788,6 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         buddy_list.$other_users_list = $("#buddy-list-other-users");
         buddy_list.$other_users_list.append = noop;
         stub_buddy_list_elements();
-        mock_template("empty_list_widget_for_list.hbs", false, () => "<empty-list-stub>");
         clear_buddy_list(buddy_list);
         page_params.presences = {};
     }
