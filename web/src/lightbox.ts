@@ -13,7 +13,7 @@ import * as popovers from "./popovers.ts";
 import * as rows from "./rows.ts";
 import * as util from "./util.ts";
 
-type Payload = {
+type Media = {
     // Sender's full name
     user: string | undefined;
     // aria-label (or link URL, as fallback) of media
@@ -35,7 +35,7 @@ let is_open = false;
 // The asset map is a map of all retrieved images and YouTube videos that are memoized instead of
 // being looked up multiple times.  It is keyed by the asset's "canonical URL," which is likely the
 // `src` used in the message feed, but for thumbnailed images is the full-resolution original URL.
-const asset_map = new Map<string, Payload>();
+const asset_map = new Map<string, Media>();
 
 export class PanZoomControl {
     // Class for both initializing and controlling the
@@ -278,7 +278,7 @@ export function render_lightbox_media_list(): void {
     }
 }
 
-function display_image(payload: Payload): void {
+function display_image(payload: Media): void {
     render_lightbox_media_list();
 
     $(".player-container, .video-player").hide();
@@ -327,7 +327,7 @@ function display_image(payload: Payload): void {
     }
 }
 
-function display_video(payload: Payload): void {
+function display_video(payload: Media): void {
     render_lightbox_media_list();
 
     $(
@@ -470,7 +470,7 @@ export function show_from_selected_message(): void {
 }
 
 // retrieve the metadata from the DOM and store into the asset_map.
-export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Payload {
+export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Media {
     const canonical_url = canonical_url_of_media(media);
     if (asset_map.has(canonical_url)) {
         // Use the cached value
