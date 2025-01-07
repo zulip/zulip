@@ -48,14 +48,7 @@ const Sortable = {create: noop};
 
 mock_esm("sortablejs", {default: Sortable});
 
-mock_esm("../src/list_widget", {
-    generic_sort_functions: noop,
-    create(_container, custom_profile_data, opts) {
-        for (const item of custom_profile_data) {
-            opts.modifier_html(item);
-        }
-    },
-});
+const list_widget = mock_esm("../src/list_widget");
 
 const settings_profile_fields = zrequire("settings_profile_fields");
 const {set_current_user, set_realm} = zrequire("state_data");
@@ -64,6 +57,14 @@ const current_user = {};
 set_current_user(current_user);
 const realm = {};
 set_realm(realm);
+
+function make_list_widget_only_render_items(override) {
+    override(list_widget, "create", (_container, custom_profile_data, opts) => {
+        for (const item of custom_profile_data) {
+            opts.modifier_html(item);
+        }
+    });
+}
 
 function test_populate(opts, template_data) {
     with_overrides(({override}) => {
@@ -84,6 +85,8 @@ function test_populate(opts, template_data) {
 }
 
 run_test("populate_profile_fields", ({mock_template, override}) => {
+    make_list_widget_only_render_items(override);
+
     override(realm, "custom_profile_fields", {});
     override(realm, "realm_default_external_accounts", JSON.stringify({}));
 
