@@ -113,7 +113,7 @@ markdown_whitespace_rules: list["Rule"] = [
 
 
 js_rules = RuleList(
-    langs=["js", "ts"],
+    langs=["cjs", "js", "ts"],
     rules=[
         {
             "pattern": "subject|SUBJECT",
