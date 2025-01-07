@@ -19,26 +19,29 @@ alert_words.initialize({
 run_test("rerender_alert_words_ui", ({mock_template}) => {
     let list_widget_create_called = false;
     alert_words_ui.reset();
-    const ListWidget = mock_esm("../src/list_widget", {
-        modifier_html: noop,
+
+    mock_esm("../src/list_widget", {
         create(_container, words, opts) {
-            const alert_words = [];
-            ListWidget.modifier_html = opts.modifier_html;
+            assert.deepEqual(words, [{word: "foo"}, {word: "bar"}]);
             for (const word of words) {
-                alert_words.push(opts.modifier_html(word));
+                opts.modifier_html(word);
             }
             list_widget_create_called = true;
-            return alert_words;
         },
         generic_sort_functions: noop,
     });
+
     mock_template("settings/alert_word_settings_item.hbs", false, (args) => {
         assert.ok(["foo", "bar"].includes(args.alert_word.word));
     });
+
     assert.equal(alert_words_ui.loaded, false);
-    alert_words_ui.rerender_alert_words_ui();
     assert.equal(list_widget_create_called, false);
+
+    // Invoke list_widget.create indirectly via these calls.
+    alert_words_ui.rerender_alert_words_ui();
     alert_words_ui.set_up_alert_words();
+
     assert.equal(alert_words_ui.loaded, true);
     assert.equal(list_widget_create_called, true);
 });
