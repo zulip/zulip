@@ -15,6 +15,7 @@ export type InputPillConfig = {
     exclude_inaccessible_users?: boolean;
     setting_name?: string;
     setting_type?: "realm" | "stream" | "group";
+    user_id?: number;
 };
 
 type InputPillCreateOptions<ItemType> = {
@@ -68,6 +69,10 @@ export type InputPillContainer<ItemType> = {
     appendValidatedData: (item: ItemType) => void;
     getByElement: (element: HTMLElement) => InputPill<ItemType> | undefined;
     items: () => ItemType[];
+    removePill: (
+        element: HTMLElement,
+        trigger: RemovePillTrigger,
+    ) => InputPill<ItemType> | undefined;
     onPillCreate: (callback: () => void) => void;
     onPillRemove: (
         callback: (pill: InputPill<ItemType>, trigger: RemovePillTrigger) => void,
@@ -480,6 +485,7 @@ export function create<ItemType extends {type: string}>(
         getByElement: funcs.getByElement.bind(funcs),
         getCurrentText: funcs.getCurrentText.bind(funcs),
         items: funcs.items.bind(funcs),
+        removePill: funcs.removePill.bind(funcs),
 
         onPillCreate(callback) {
             store.onPillCreate = callback;
