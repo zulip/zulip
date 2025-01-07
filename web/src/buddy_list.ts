@@ -21,6 +21,7 @@ import * as padded_widget from "./padded_widget.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
+import * as settings_config from "./settings_config.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
@@ -285,6 +286,11 @@ export class BuddyList extends BuddyListConf {
         this.users_matching_view_ids = [];
         this.$other_users_list.empty();
         this.other_user_ids = [];
+        $("#user-list").toggleClass(
+            "with_avatars",
+            user_settings.user_list_style ===
+                settings_config.user_list_style_values.with_avatar.code,
+        );
 
         // Reset data to be relevant for this current view.
         this.render_data = get_render_data();

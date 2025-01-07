@@ -206,10 +206,6 @@
         font-size: 0.875em;
         /* Override .empty-list-message !important styling */
         padding: 0 !important;
-        margin-left: calc(
-            var(--right-sidebar-toggle-width-offset) +
-                var(--right-sidebar-left-spacing)
-        );
         text-align: left;
 
         &:hover {
@@ -326,7 +322,7 @@
 
     .selectable_sidebar_block {
         margin: 4px;
-        margin-left: var(--right-sidebar-header-icon-toggle-width);
+        margin-left: calc(var(--right-sidebar-header-icon-toggle-width) / 2);
     }
 
     .avatar-preload-background {
@@ -574,8 +570,16 @@
     }
 }
 
-.buddy-list-user-link .right-sidebar-wrappable-text-container {
-    margin-left: var(--right-sidebar-header-icon-toggle-width);
+#user-list.with_avatars
+    .buddy-list-user-link
+    .right-sidebar-wrappable-text-container,
+#user-list.with_avatars .buddy-list-section .empty-list-message {
+    margin-left: var(--right-sidebar-text-indent-with-avatar);
+}
+
+.buddy-list-user-link .right-sidebar-wrappable-text-container,
+.buddy-list-section .empty-list-message {
+    margin-left: var(--right-sidebar-text-indent-without-avatar);
 }
 
 .invite-user-shortcut {

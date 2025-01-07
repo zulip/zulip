@@ -323,8 +323,18 @@
     --right-sidebar-heading-left-spacing: 5px;
     --right-sidebar-avatar-width: 2em;
     --right-sidebar-avatar-height: var(--right-sidebar-avatar-width);
-    --right-sidebar-avatar-right-margin: 11px;
+    --right-sidebar-avatar-right-margin: 0.85ch;
     --right-sidebar-presence-circle-width: 1.4285em; /* 20px at 14px em */
+    /* toggle + avatar + avatar margin + 2px border */
+    --right-sidebar-text-indent-with-avatar: calc(
+        var(--right-sidebar-header-icon-toggle-width) / 2 +
+            var(--right-sidebar-avatar-width) +
+            var(--right-sidebar-avatar-right-margin) + 2px
+    );
+    --right-sidebar-text-indent-without-avatar: calc(
+        var(--right-sidebar-toggle-width-offset) +
+            var(--right-sidebar-presence-circle-width)
+    );
 
     /* Tippy popover related values */
     --navbar-popover-menu-min-width: 230px;
