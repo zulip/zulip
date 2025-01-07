@@ -19,7 +19,7 @@ import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_preferences from "./settings_preferences.ts";
 import * as spectators from "./spectators.ts";
-import {current_user} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 
@@ -234,6 +234,8 @@ export function initialize_left_sidebar(): void {
             user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
         hide_unread_counts: settings_data.should_mask_unread_count(false),
         is_spectator: page_params.is_spectator,
+        realm_name: realm.realm_name,
+        display_organization_name: user_settings.display_organization_name,
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);

@@ -40,6 +40,12 @@
       label=settings_label.dense_mode
       prefix=prefix}}
 
+    {{> settings_checkbox
+      setting_name="display_organization_name"
+      is_checked=settings_object.display_organization_name
+      label=settings_label.display_organization_name
+      prefix=prefix}}
+
     <div class="information-density-settings">
         <div class="title">{{t "Information density settings"}}</div>
         {{#each information_density_settings.settings.user_preferences}}

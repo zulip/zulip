@@ -947,6 +947,16 @@ run_test("user_settings", ({override}) => {
     assert_same(user_settings.web_escape_navigates_to_home_view, true);
     assert_same(toggled, ["notdisplayed"]);
 
+    toggled = [];
+    event = event_fixtures.user_settings__display_organization_name;
+    override(user_settings, "display_organization_name", true);
+    $("#left-sidebar .organization_name").toggleClass = (cls) => {
+        toggled.push(cls);
+    };
+    dispatch(event);
+    assert_same(user_settings.display_organization_name, true);
+    assert_same(toggled, ["notdisplayed"]);
+
     let called = false;
     message_lists.current.rerender = () => {
         called = true;

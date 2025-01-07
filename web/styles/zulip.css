@@ -525,6 +525,20 @@ body.has-overlay-scrollbar {
     position: absolute;
     left: 0;
     top: 0;
+
+    & .organization_name {
+        vertical-align: top;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: text;
+        max-width: var(--left-sidebar-width);
+        padding-right: 10px;
+        padding-left: 10px;
+        margin-bottom: 5px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
 }
 
 #message_feed_container,
