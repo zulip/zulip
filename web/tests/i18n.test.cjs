@@ -20,10 +20,6 @@ page_params.translation_data = {
         "<p>Le canal <b>{name}</b> n'existe pas.</p><p>Gérez vos abonnements <z-link>sur votre page canaux</z-link>.</p>",
 };
 
-// Re-register Zulip extensions so extensions registered previously with
-// mocked i18n.ts do not interfere with following tests.
-require("../src/templates.ts");
-
 // All of our other tests stub out i18n activity;
 // here we do a quick sanity check on the engine itself.
 // `i18n.ts` initializes FormatJS and is imported by
