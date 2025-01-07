@@ -24,7 +24,7 @@ def get_svg_filenames() -> list[str]:
     return sorted(icon_names)
 
 
-def dev_buttons_design_testing(request: HttpRequest) -> HttpResponse:
+def showroom_component_buttons(request: HttpRequest) -> HttpResponse:
     context = {
         "background_colors": background_colors,
         "icons": get_svg_filenames(),
@@ -34,10 +34,10 @@ def dev_buttons_design_testing(request: HttpRequest) -> HttpResponse:
         # We set isolated_page to avoid clutter from footer/header.
         "isolated_page": True,
     }
-    return render(request, "zerver/development/design_testing/buttons.html", context)
+    return render(request, "zerver/development/showroom/buttons.html", context)
 
 
-def dev_banners_design_testing(request: HttpRequest) -> HttpResponse:
+def showroom_component_banners(request: HttpRequest) -> HttpResponse:
     context = {
         "background_colors": background_colors,
         "icons": get_svg_filenames(),
@@ -47,4 +47,4 @@ def dev_banners_design_testing(request: HttpRequest) -> HttpResponse:
         # We set isolated_page to avoid clutter from footer/header.
         "isolated_page": True,
     }
-    return render(request, "zerver/development/design_testing/banners.html", context)
+    return render(request, "zerver/development/showroom/banners.html", context)
