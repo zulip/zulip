@@ -6,7 +6,7 @@ from typing_extensions import override
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.webhooks.slack.view import INVALID_SLACK_TOKEN_MESSAGE
 
-EXPECTED_TOPIC = "Message from Slack"
+EXPECTED_TOPIC = "channel: general"
 
 MESSAGE_WITH_NORMAL_TEXT = "Hello, this is a normal text message"
 USER = "John Doe"
@@ -68,8 +68,8 @@ class SlackWebhookTests(WebhookTestCase):
             content_type="application/json",
         )
 
-    def test_slack_channels_map_to_topics_true(self) -> None:
-        self.url = self.build_webhook_url(channels_map_to_topics="1")
+    def test_slack_channel_mapping_options_true(self) -> None:
+        self.url = self.build_webhook_url(map_channel_to_channel="false")
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=MESSAGE_WITH_NORMAL_TEXT)
         expected_topic_name = TOPIC_WITH_CHANNEL.format(channel=CHANNEL)
         self.check_webhook(
@@ -79,9 +79,9 @@ class SlackWebhookTests(WebhookTestCase):
             content_type="application/json",
         )
 
-    def test_slack_channels_map_to_topics_true_and_user_specified_topic(self) -> None:
+    def test_slack_channel_mapping_options_true_and_user_specified_topic(self) -> None:
         expected_topic_name = "test"
-        self.url = self.build_webhook_url(topic=expected_topic_name, channels_map_to_topics="1")
+        self.url = self.build_webhook_url(topic=expected_topic_name, map_channel_to_channel="false")
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=MESSAGE_WITH_NORMAL_TEXT)
         self.check_webhook(
             "message_with_normal_text",
@@ -90,21 +90,21 @@ class SlackWebhookTests(WebhookTestCase):
             content_type="application/json",
         )
 
-    def test_slack_channels_map_to_topics_false(self) -> None:
+    def test_slack_channel_mapping_options_false(self) -> None:
         self.CHANNEL_NAME = CHANNEL
-        self.url = self.build_webhook_url(channels_map_to_topics="0")
+        self.url = self.build_webhook_url(map_channel_to_channel="true")
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=MESSAGE_WITH_NORMAL_TEXT)
         self.check_webhook(
             "message_with_normal_text",
-            EXPECTED_TOPIC,
+            "Message from Slack",
             expected_message,
             content_type="application/json",
         )
 
-    def test_slack_channels_map_to_topics_false_and_user_specified_topic(self) -> None:
+    def test_slack_channel_mapping_options_false_and_user_specified_topic(self) -> None:
         self.CHANNEL_NAME = CHANNEL
         expected_topic_name = "test"
-        self.url = self.build_webhook_url(topic=expected_topic_name, channels_map_to_topics="0")
+        self.url = self.build_webhook_url(topic=expected_topic_name, map_channel_to_channel="true")
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=MESSAGE_WITH_NORMAL_TEXT)
         self.check_webhook(
             "message_with_normal_text",
@@ -112,15 +112,9 @@ class SlackWebhookTests(WebhookTestCase):
             expected_message,
             content_type="application/json",
         )
-
-    def test_invalid_channels_map_to_topics(self) -> None:
-        payload = self.get_body("message_with_normal_text")
-        url = self.build_webhook_url(channels_map_to_topics="abc")
-        result = self.client_post(url, payload, content_type="application/json")
-        self.assert_json_error(result, "Error: channels_map_to_topics parameter other than 0 or 1")
 
     def test_challenge_handshake_payload(self) -> None:
-        url = self.build_webhook_url(channels_map_to_topics="1")
+        url = self.build_webhook_url(map_channel_to_channel="false")
         payload = self.get_body("challenge_handshake_payload")
         result = self.client_post(url, payload, content_type="application/json")
         expected_challenge_response = {
@@ -359,7 +353,7 @@ class SlackLegacyWebhookTests(WebhookTestCase):
     WEBHOOK_DIR_NAME = "slack"
 
     def test_slack_only_stream_parameter(self) -> None:
-        expected_topic_name = "Message from Slack"
+        expected_topic_name = "channel: general"
         expected_message = EXPECTED_MESSAGE.format(user=LEGACY_USER, message="test")
         self.check_webhook(
             "message_info",
@@ -379,8 +373,8 @@ class SlackLegacyWebhookTests(WebhookTestCase):
             content_type="application/x-www-form-urlencoded",
         )
 
-    def test_slack_channels_map_to_topics_true(self) -> None:
-        self.url = self.build_webhook_url(channels_map_to_topics="1")
+    def test_slack_channel_mapping_options_true(self) -> None:
+        self.url = self.build_webhook_url(map_channel_to_channel="false")
         expected_topic_name = "channel: general"
         expected_message = EXPECTED_MESSAGE.format(user=LEGACY_USER, message="test")
         self.check_webhook(
@@ -390,8 +384,8 @@ class SlackLegacyWebhookTests(WebhookTestCase):
             content_type="application/x-www-form-urlencoded",
         )
 
-    def test_slack_channels_map_to_topics_true_and_user_specified_topic(self) -> None:
-        self.url = self.build_webhook_url(topic="test", channels_map_to_topics="1")
+    def test_slack_channel_mapping_options_true_and_user_specified_topic(self) -> None:
+        self.url = self.build_webhook_url(topic="test", map_channel_to_channel="false")
         expected_topic_name = "test"
         expected_message = EXPECTED_MESSAGE.format(user=LEGACY_USER, message="test")
         self.check_webhook(
@@ -401,9 +395,9 @@ class SlackLegacyWebhookTests(WebhookTestCase):
             content_type="application/x-www-form-urlencoded",
         )
 
-    def test_slack_channels_map_to_topics_false(self) -> None:
+    def test_slack_channel_mapping_options_false(self) -> None:
         self.CHANNEL_NAME = "general"
-        self.url = self.build_webhook_url(channels_map_to_topics="0")
+        self.url = self.build_webhook_url(map_channel_to_channel="true")
         expected_topic_name = "Message from Slack"
         expected_message = EXPECTED_MESSAGE.format(user=LEGACY_USER, message="test")
         self.check_webhook(
@@ -413,9 +407,9 @@ class SlackLegacyWebhookTests(WebhookTestCase):
             content_type="application/x-www-form-urlencoded",
         )
 
-    def test_slack_channels_map_to_topics_false_and_user_specified_topic(self) -> None:
+    def test_slack_channel_mapping_options_false_and_user_specified_topic(self) -> None:
         self.CHANNEL_NAME = "general"
-        self.url = self.build_webhook_url(topic="test", channels_map_to_topics="0")
+        self.url = self.build_webhook_url(topic="test", map_channel_to_channel="true")
         expected_topic_name = "test"
         expected_message = EXPECTED_MESSAGE.format(user=LEGACY_USER, message="test")
         self.check_webhook(

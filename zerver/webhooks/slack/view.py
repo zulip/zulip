@@ -4,6 +4,7 @@ from typing import Any, TypeAlias
 from django.http import HttpRequest
 from django.http.response import HttpResponse
 from django.utils.translation import gettext as _
+from pydantic import Json
 
 from zerver.actions.message_send import send_rate_limited_pm_notification_to_bot_owner
 from zerver.data_import.slack import check_token_access, get_slack_api_data
@@ -25,7 +26,6 @@ from zerver.models import UserProfile
 
 FILE_LINK_TEMPLATE = "\n*[{file_name}]({file_link})*"
 ZULIP_MESSAGE_TEMPLATE = "**{sender}**: {text}"
-VALID_OPTIONS = {"SHOULD_NOT_BE_MAPPED": "0", "SHOULD_BE_MAPPED": "1"}
 
 SlackFileListT: TypeAlias = list[dict[str, str]]
 SlackAPIResponseT: TypeAlias = dict[str, Any]
@@ -128,15 +128,10 @@ def handle_slack_webhook_message(
     user_profile: UserProfile,
     content: str,
     channel: str | None,
-    channels_map_to_topics: str | None,
+    map_channel_to_channel: bool,
 ) -> None:
     topic_name = "Message from Slack"
-    if channels_map_to_topics is None:
-        check_send_webhook_message(request, user_profile, topic_name, content)
-    elif channels_map_to_topics == VALID_OPTIONS["SHOULD_BE_MAPPED"]:
-        topic_name = f"channel: {channel}"
-        check_send_webhook_message(request, user_profile, topic_name, content)
-    elif channels_map_to_topics == VALID_OPTIONS["SHOULD_NOT_BE_MAPPED"]:
+    if map_channel_to_channel:
         check_send_webhook_message(
             request,
             user_profile,
@@ -145,7 +140,8 @@ def handle_slack_webhook_message(
             stream=channel,
         )
     else:
-        raise JsonableError(_("Error: channels_map_to_topics parameter other than 0 or 1"))
+        topic_name = f"channel: {channel}"
+        check_send_webhook_message(request, user_profile, topic_name, content)
 
 
 def is_retry_call_from_slack(request: HttpRequest) -> bool:
@@ -182,7 +178,7 @@ def api_slack_webhook(
     user_profile: UserProfile,
     *,
     slack_app_token: str = "",
-    channels_map_to_topics: str | None = None,
+    map_channel_to_channel: Json[bool] = False,
 ) -> HttpResponse:
     if request.content_type != "application/json":
         # Handle Slack's legacy Outgoing Webhook Service payload.
@@ -204,7 +200,7 @@ def api_slack_webhook(
             user_profile,
             text,
             legacy_payload["channel_name"],
-            channels_map_to_topics,
+            map_channel_to_channel,
         )
         return json_success(request)
 
@@ -276,9 +272,7 @@ def api_slack_webhook(
     sender = get_slack_sender_name(user_id, slack_app_token)
     content = get_message_body(text, sender, files)
     channel_id = event_dict.get("channel").tame(check_string)
-    channel = (
-        get_slack_channel_name(channel_id, slack_app_token) if channels_map_to_topics else None
-    )
+    channel = get_slack_channel_name(channel_id, slack_app_token)
 
-    handle_slack_webhook_message(request, user_profile, content, channel, channels_map_to_topics)
+    handle_slack_webhook_message(request, user_profile, content, channel, map_channel_to_channel)
     return json_success(request)
