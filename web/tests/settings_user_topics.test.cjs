@@ -6,9 +6,7 @@ const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
-const list_widget = mock_esm("../src/list_widget", {
-    generic_sort_functions: noop,
-});
+const list_widget = mock_esm("../src/list_widget");
 
 const settings_user_topics = zrequire("settings_user_topics");
 const stream_data = zrequire("stream_data");
@@ -31,7 +29,10 @@ run_test("settings", ({override, override_rewire}) => {
         user_topics.all_visibility_policies.MUTED,
         1577836800,
     );
+
     let populate_list_called = false;
+
+    override(list_widget, "generic_sort_functions", noop);
     override(list_widget, "create", (_$container, list) => {
         assert.deepEqual(list, [
             {
