@@ -369,6 +369,12 @@ export function get_focused_row_message(): Message | undefined {
 
         const $topic_rows = $("#recent-view-content-tbody tr");
         const $topic_row = $topic_rows.eq(row_focus);
+        if ($topic_row.length === 0) {
+            // There are less items in the table than `row_focus`.
+            // We don't reset `row_focus` here since that is not the
+            // purpose of this function.
+            return undefined;
+        }
         const topic_id = $topic_row.attr("id");
         assert(topic_id !== undefined);
         const conversation_id = topic_id.slice(recent_conversation_key_prefix.length);
