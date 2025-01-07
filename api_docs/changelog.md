@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 333**
+
+* [Message formatting](/api/message-formatting): System groups can now
+  be silently mentioned.
+
 **Feature level 332**
 
 * [`POST /register`](/api/register-queue): Added
