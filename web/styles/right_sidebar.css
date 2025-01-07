@@ -185,10 +185,6 @@ $user_status_emoji_width: 24px;
         font-size: 14px;
         /* Override .empty-list-message !important styling */
         padding: 0 !important;
-        margin-left: calc(
-            var(--right-sidebar-toggle-width-offset) +
-                var(--right-sidebar-left-spacing)
-        );
         text-align: left;
 
         &:hover {
@@ -305,7 +301,7 @@ $user_status_emoji_width: 24px;
 
     .selectable_sidebar_block {
         margin: 4px;
-        margin-left: var(--right-sidebar-header-icon-toggle-width);
+        margin-left: calc(var(--right-sidebar-header-icon-toggle-width) / 2);
     }
 
     .avatar-preload-background {
@@ -546,8 +542,23 @@ $user_status_emoji_width: 24px;
     }
 }
 
-.buddy-list-user-link .right-sidebar-wrappable-text-container {
-    margin-left: var(--right-sidebar-header-icon-toggle-width);
+#user-list.with_avatars
+    .buddy-list-user-link
+    .right-sidebar-wrappable-text-container,
+#user-list.with_avatars .buddy-list-section .empty-list-message {
+    margin-left: calc(
+        var(--right-sidebar-header-icon-toggle-width) / 2 +
+            var(--right-sidebar-avatar-width) +
+            var(--right-sidebar-avatar-right-margin)
+    );
+}
+
+.buddy-list-user-link .right-sidebar-wrappable-text-container,
+.buddy-list-section .empty-list-message {
+    margin-left: calc(
+        var(--right-sidebar-toggle-width-offset) - 2px +
+            var(--right-sidebar-presence-circle-width)
+    );
 }
 
 .invite-user-shortcut {

@@ -310,12 +310,24 @@ export class BuddyList extends BuddyListConf {
 
         this.fill_screen_with_content();
 
-        // This must happen after `fill_screen_with_content`
+        // The below must happen after `fill_screen_with_content`
+
+        // This is a bit hacky. Ideally we'd be able to figure this out with looking
+        // at the first user's data, but right now this is the only way the server
+        // sends this information to the client.
+        let is_avatar_view = false;
+        if (this.all_user_ids.length > 0) {
+            const data = this.get_data_from_user_ids([this.all_user_ids[0]!]);
+            is_avatar_view = data[0]!.user_list_style.WITH_AVATAR;
+        }
+        $("#user-list").toggleClass("with_avatars", is_avatar_view);
+
         $("#buddy-list-users-matching-view-container .view-all-subscribers-link").remove();
         $("#buddy-list-other-users-container .view-all-users-link").remove();
         if (!buddy_data.get_is_searching_users()) {
             this.render_view_user_list_links();
         }
+
         // This must happen after view user links are rendered
         this.update_empty_list_placeholders();
         this.display_or_hide_sections();
