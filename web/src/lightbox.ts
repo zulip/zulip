@@ -24,8 +24,8 @@ enum MediaType {
 type Media = {
     // Sender's full name
     user: string | undefined;
-    // aria-label (or link URL, as fallback) of media
-    title: string | undefined;
+    // aria-label (or url, as fallback) of media
+    title: string;
     type: MediaType;
     // URL to use in message list or carousel
     preview: string;
@@ -501,6 +501,7 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
     let type: MediaType;
     let source;
     const url = $parent.attr("href");
+    assert(url !== undefined);
 
     let preview_src = $media.attr("src");
     const is_loading_placeholder = $media.hasClass("image-loading-placeholder");
@@ -566,13 +567,13 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
 
     const payload = {
         user: sender_full_name,
-        title: $parent.attr("aria-label") ?? $parent.attr("href"),
+        title: $parent.attr("aria-label") ?? url,
         type,
         preview: preview_src && util.is_valid_url(preview_src) ? preview_src : "",
         original_width_px,
         original_height_px,
         source: source && util.is_valid_url(source) ? source : "",
-        url: url && util.is_valid_url(url) ? url : "",
+        url: util.is_valid_url(url) ? url : "",
     };
 
     if (!is_loading_placeholder && canonical_url !== "") {
