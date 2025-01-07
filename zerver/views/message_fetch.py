@@ -367,11 +367,12 @@ def messages_in_narrow_backend(
     )
 
     inner_msg_id_col = column("message_id", Integer)
+    updated_narrow = update_narrow_terms_containing_empty_topic_fallback_name(narrow)
     query, is_search = add_narrow_conditions(
         user_profile=user_profile,
         inner_msg_id_col=inner_msg_id_col,
         query=query,
-        narrow=narrow,
+        narrow=updated_narrow,
         is_web_public_query=False,
         realm=user_profile.realm,
     )
