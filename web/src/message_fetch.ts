@@ -565,14 +565,17 @@ export function maybe_load_older_messages(opts: {
         }
 
         if (fetched_substantial_history && found_first_unread) {
-            recent_view_ui.set_backfill_in_progress(false);
-            return;
+            // Once we have fetched enough history, we just do fetches in
+            // `consts.recent_view_fetch_more_batch_size`.
+            opts.cont = () => {
+                recent_view_ui.set_backfill_in_progress(false);
+            };
+        } else {
+            opts.cont = () =>
+                setTimeout(() => {
+                    maybe_load_older_messages(opts);
+                }, consts.catch_up_backfill_delay);
         }
-
-        opts.cont = () =>
-            setTimeout(() => {
-                maybe_load_older_messages(opts);
-            }, consts.catch_up_backfill_delay);
     }
     do_backfill({
         msg_list: opts.msg_list,
