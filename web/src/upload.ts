@@ -270,6 +270,62 @@ export function rewire_upload_files(value: typeof upload_files): void {
     upload_files = value;
 }
 
+// Borrowed from tus-js-client code at
+// https://github.com/tus/tus-js-client/blob/ca63ba254ea8766438b9d422f6f94284911f1fa5/lib/index.d.ts#L79
+// The library does not export this type, hence requiring a copy here.
+type PreviousUpload = {
+    size: number | null;
+    metadata: Record<string, string>;
+    creationTime: string;
+    urlStorageKey: string;
+    uploadUrl: string | null;
+    parallelUploadUrls: string[] | null;
+};
+
+// Parts of it are inspired from WebStorageUrlStorage at
+// https://github.com/tus/tus-js-client/blob/ca63ba254ea8766438b9d422f6f94284911f1fa5/lib/browser/urlStorage.js#L27
+// While there are no async actions happening in any of the methods in
+// this class, UrlStorage interface for tus-js-client requires a Promise
+// to be returned for each of these methods.
+class InMemoryUrlStorage {
+    urlStorage: Map<string, PreviousUpload>;
+
+    constructor() {
+        this.urlStorage = new Map();
+    }
+
+    async findAllUploads(): Promise<PreviousUpload[]> {
+        return await Promise.resolve([...this.urlStorage.values()]);
+    }
+
+    async findUploadsByFingerprint(fingerprint: string): Promise<PreviousUpload[]> {
+        const results = [];
+
+        for (const [key, value] of this.urlStorage) {
+            if (!key.startsWith(`${fingerprint}::`)) {
+                continue;
+            }
+            results.push(value);
+        }
+
+        return await Promise.resolve(results);
+    }
+
+    async removeUpload(urlStorageKey: string): Promise<void> {
+        this.urlStorage.delete(urlStorageKey);
+        await Promise.resolve();
+    }
+
+    async addUpload(fingerprint: string, upload: PreviousUpload): Promise<string> {
+        const id = Math.round(Math.random() * 1e12);
+        const key = `${fingerprint}::${id}`;
+
+        upload.urlStorageKey = key;
+        this.urlStorage.set(key, upload);
+        return await Promise.resolve(key);
+    }
+}
+
 const zulip_upload_response_schema = z.object({
     url: z.string(),
     filename: z.string(),
@@ -301,21 +357,18 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
         // https://uppy.io/docs/tus/#options
         endpoint: "/api/v1/tus/",
         // The tus-js-client fingerprinting feature stores metadata on
-        // previously uploaded files in browser local storage, to
-        // allow resuming the upload / avoiding a repeat upload in
-        // future browser sessions.
-        //
-        // This is not a feature we need across browser sessions. Since these local storage
-        // entries are never garbage-collected, can be accessed via
-        // the browser console even after logging out, and contain
-        // some metadata about previously uploaded files, which seems
-        // like a security risk for using Zulip on a public computer. So we
-        // disable the feature.
-        //
-        // TODO: The better fix would be to define a `urlStorage` that is
-        // backed by a simple JavaScript map, so that the resume/repeat
-        // features are available, but with a duration of the current session.
-        storeFingerprintForResuming: false,
+        // previously uploaded files by default in browser local storage.
+        // Since these local storage entries are never garbage-collected,
+        // they can be accessed via the browser console even after
+        // logging out, and contain some metadata about previously
+        // uploaded files, which seems like a security risk for
+        // using Zulip on a public computer.
+
+        // We use our own implementation of url storage that saves urls
+        // in memory instead. We won't be able to retain this history
+        // across reloads unlike local storage, which is a tradeoff we
+        // are willing to make.
+        urlStorage: new InMemoryUrlStorage(),
         // Number of concurrent uploads
         limit: 5,
     });
