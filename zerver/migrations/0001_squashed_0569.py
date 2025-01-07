@@ -924,7 +924,7 @@ class Migration(migrations.Migration):
                         max_length=20,
                     ),
                 ),
-                ("user_list_style", models.PositiveSmallIntegerField(default=2)),
+                ("user_list_style", models.PositiveSmallIntegerField(default=3)),
                 (
                     "web_stream_unreads_count_display_policy",
                     models.PositiveSmallIntegerField(default=2),
@@ -1654,7 +1654,7 @@ class Migration(migrations.Migration):
                         max_length=20,
                     ),
                 ),
-                ("user_list_style", models.PositiveSmallIntegerField(default=2)),
+                ("user_list_style", models.PositiveSmallIntegerField(default=3)),
                 (
                     "web_stream_unreads_count_display_policy",
                     models.PositiveSmallIntegerField(default=2),
