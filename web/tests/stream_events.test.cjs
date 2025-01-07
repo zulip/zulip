@@ -284,6 +284,12 @@ test("update_property", ({override}) => {
         assert.equal(args.sub.stream_id, stream_id);
         assert.equal(args.val, 3);
     }
+
+    // Test deprecated properties for coverage.
+    {
+        stream_events.update_property(stream_id, "stream_post_policy", 2);
+        stream_events.update_property(stream_id, "is_announcement_only", false);
+    }
 });
 
 test("marked_(un)subscribed (early return)", () => {

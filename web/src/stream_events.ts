@@ -86,6 +86,17 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         return;
     }
 
+    const deprecated_properties = ["is_announcement_only", "stream_post_policy"];
+    if (deprecated_properties.includes(property)) {
+        // Server sends events for updating "is_announcement_only" and
+        // "stream_post_policy" properties which are still used by
+        // legacy API clients. Since we do not have any client capabilities
+        // to control which clients should receive these events, these
+        // events are sent to all clients and we just do nothing on
+        // receiving events for these properties.
+        return;
+    }
+
     if (Object.keys(realm.server_supported_permission_settings.stream).includes(property)) {
         stream_settings_ui.update_stream_permission_group_setting(
             stream_permission_group_settings_schema.parse(property),
