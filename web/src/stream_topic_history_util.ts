@@ -56,6 +56,7 @@ export function update_topic_last_message_id(
             anchor: "newest",
             num_before: 1,
             num_after: 0,
+            allow_empty_topic_name: true,
         },
         success(data) {
             const {messages} = z
