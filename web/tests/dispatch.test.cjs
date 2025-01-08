@@ -321,6 +321,7 @@ run_test("user groups", ({override}) => {
         assert_same(args.event.group_id, event.group_id);
         assert_same(args.event.data.name, event.data.name);
         assert_same(args.event.data.description, event.data.description);
+        assert_same(args.event.data.rendered_description, event.data.rendered_description);
 
         args = user_group_settings_ui_stub.get_args("event");
         assert_same(args.event, event);

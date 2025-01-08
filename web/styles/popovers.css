@@ -273,7 +273,7 @@
     word-break: break-word;
 }
 
-.popover-group-menu-description {
+.popover-group-menu-rendered-description {
     /* 15px at 15px/1em */
     font-size: 1em;
     /* 16px at 15px/1em */
@@ -328,7 +328,7 @@ ul.popover-group-menu-member-list {
     white-space: nowrap;
 }
 
-.popover-group-menu-description,
+.popover-group-menu-rendered-description,
 .popover-group-menu-member-name,
 .popover-group-menu-placeholder {
     color: var(--color-text-popover-menu);
