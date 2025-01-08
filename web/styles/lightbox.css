@@ -54,6 +54,7 @@
 
         color: hsl(0deg 0% 100% / 80%);
         font-size: 2rem;
+        line-height: 1.8rem;
 
         transform: scaleY(0.75);
         font-weight: 300;
@@ -172,7 +173,8 @@
         .arrow {
             padding: 0 10px;
             color: hsl(0deg 0% 100%);
-            font-size: 1.8em;
+            font-size: 1.8rem;
+            line-height: 1.6rem;
             font-weight: 200;
 
             transform: scaleY(2);
