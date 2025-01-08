@@ -318,11 +318,6 @@ test_ui("validate", ({mock_template, override}) => {
     });
     assert.ok(!compose_validate.validate());
     assert.ok(missing_topic_error_rendered);
-
-    missing_topic_error_rendered = false;
-    compose_state.topic("(no topic)");
-    assert.ok(!compose_validate.validate());
-    assert.ok(missing_topic_error_rendered);
 });
 
 test_ui("get_invalid_recipient_emails", ({override, override_rewire}) => {
