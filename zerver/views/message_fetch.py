@@ -21,12 +21,12 @@ from zerver.lib.message import get_first_visible_message_id, messages_for_ids
 from zerver.lib.narrow import (
     NarrowParameter,
     add_narrow_conditions,
+    clean_narrow_for_message_fetch,
     fetch_messages,
     is_spectator_compatible,
     is_web_public_narrow,
     parse_anchor_value,
     update_narrow_terms_containing_empty_topic_fallback_name,
-    update_narrow_terms_containing_with_operator,
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
@@ -146,8 +146,7 @@ def get_messages_backend(
         anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
 
     realm = get_valid_realm_from_request(request)
-    narrow = update_narrow_terms_containing_empty_topic_fallback_name(narrow)
-    narrow = update_narrow_terms_containing_with_operator(realm, maybe_user_profile, narrow)
+    narrow = clean_narrow_for_message_fetch(narrow, realm, maybe_user_profile)
 
     num_of_messages_requested = num_before + num_after
     if client_requested_message_ids is not None:
