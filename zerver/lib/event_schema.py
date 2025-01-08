@@ -719,7 +719,10 @@ def check_user_group_update(var_name: str, event: dict[str, object], fields: set
 
     assert isinstance(event["data"], dict)
 
-    assert set(event["data"].keys()) == fields
+    if fields[0] == "description":
+        assert set(event["data"].keys()) == {"description", "rendered_description"}
+    else:
+        assert set(event["data"].keys()) == fields
 
 
 def check_user_status(var_name: str, event: dict[str, object], fields: set[str]) -> None:

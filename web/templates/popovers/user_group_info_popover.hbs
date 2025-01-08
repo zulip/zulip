@@ -6,8 +6,8 @@
                     <i class="popover-menu-icon zulip-icon zulip-icon-user-group" aria-hidden="true"></i>
                     <span class="popover-group-menu-name">{{group_name}}</span>
                 </div>
-                {{#if group_description}}
-                    <div class="popover-group-menu-description">{{group_description}}</div>
+                {{#if rendered_description}}
+                    <div class="popover-group-menu-rendered-description">{{rendered_markdown rendered_description}}</div>
                 {{/if}}
             </div>
         </li>

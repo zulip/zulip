@@ -47,6 +47,7 @@ class UserGroupDict(TypedDict):
     id: int
     name: str
     description: str
+    rendered_description: str
     members: list[int]
     direct_subgroup_ids: list[int]
     creator_id: int | None
@@ -700,6 +701,7 @@ def user_groups_in_realm_serialized(
             creator_id=creator_id,
             date_created=date_created,
             description=user_group.description,
+            rendered_description=user_group.rendered_description,
             members=sorted(direct_member_ids),
             direct_subgroup_ids=sorted(direct_subgroup_ids),
             is_system_group=user_group.is_system_group,
@@ -992,11 +994,12 @@ def bulk_create_system_user_groups(groups: list[dict[str, str]], realm: Realm) -
         user_group_ids = [id for (id,) in cursor.fetchall()]
 
     rows = [
-        SQL("({},{},{},{},{},{},{},{},{},{},{},{})").format(
+        SQL("({},{},{},{},{},{},{},{},{},{},{},{},{})").format(
             Literal(user_group_ids[idx]),
             Literal(realm.id),
             Literal(group["name"]),
             Literal(group["description"]),
+            Literal(group["rendered_description"]),
             Literal(True),
             Literal(initial_group_setting_value),
             Literal(initial_group_setting_value),
@@ -1010,7 +1013,7 @@ def bulk_create_system_user_groups(groups: list[dict[str, str]], realm: Realm) -
     ]
     query = SQL(
         """
-        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_add_members_group_id, can_join_group_id, can_leave_group_id, can_manage_group_id, can_mention_group_id, can_remove_members_group_id, deactivated)
+        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, rendered_description, is_system_group, can_add_members_group_id, can_join_group_id, can_leave_group_id, can_manage_group_id, can_mention_group_id, can_remove_members_group_id, deactivated)
         VALUES {rows}
         """
     ).format(rows=SQL(", ").join(rows))
@@ -1052,6 +1055,13 @@ def create_system_user_groups_for_realm(realm: Realm) -> dict[str, NamedUserGrou
         NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[UserProfile.ROLE_GUEST],
         everyone_on_internet_group_info,
     ]
+
+    from zerver.actions.user_groups import render_group_description
+
+    for system_group in system_groups_info_list:
+        system_group["rendered_description"] = render_group_description(
+            system_group["description"], realm=realm
+        )
 
     bulk_create_system_user_groups(system_groups_info_list, realm)
 

@@ -10,6 +10,7 @@ export const user_group_update_event_schema = z.object({
     data: z.object({
         name: z.optional(z.string()),
         description: z.optional(z.string()),
+        rendered_description: z.optional(z.string()),
         can_add_members_group: z.optional(group_setting_value_schema),
         can_join_group: z.optional(group_setting_value_schema),
         can_leave_group: z.optional(group_setting_value_schema),

@@ -13,6 +13,7 @@ import render_browse_user_groups_list_item from "../templates/user_group_setting
 import render_cannot_deactivate_group_banner from "../templates/user_group_settings/cannot_deactivate_group_banner.hbs";
 import render_change_user_group_info_modal from "../templates/user_group_settings/change_user_group_info_modal.hbs";
 import render_stream_group_permission_settings from "../templates/user_group_settings/stream_group_permission_settings.hbs";
+import render_user_group_description from "../templates/user_group_settings/user_group_description.hbs";
 import render_user_group_membership_status from "../templates/user_group_settings/user_group_membership_status.hbs";
 import render_user_group_permission_settings from "../templates/user_group_settings/user_group_permission_settings.hbs";
 import render_user_group_settings from "../templates/user_group_settings/user_group_settings.hbs";
@@ -503,7 +504,10 @@ export function handle_member_edit_event(group_id: number, user_ids: number[]): 
 export function update_group_details(group: UserGroup): void {
     const $edit_container = get_edit_container(group);
     $edit_container.find(".group-name").text(user_groups.get_display_group_name(group.name));
-    $edit_container.find(".group-description").text(group.description);
+    const html = render_user_group_description({
+        rendered_description: group.rendered_description,
+    });
+    $edit_container.find(".group-description").html(html);
 }
 
 function update_toggler_for_group_setting(group: UserGroup): void {
@@ -1410,7 +1414,7 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
         return;
     }
 
-    // update left side pane
+    // update left side paneL
     const $group_row = row_for_group_id(group.id);
     if (event.data.name !== undefined) {
         $group_row.find(".group-name").text(user_groups.get_display_group_name(group.name));
@@ -1418,7 +1422,7 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
     }
 
     if (event.data.description !== undefined) {
-        $group_row.find(".description").text(group.description);
+        rerender_group_row(group);
     }
 
     if (event.data.deactivated) {
@@ -1432,7 +1436,7 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
         .filter((setting_name) => event.data[setting_name] !== undefined);
 
     if (get_active_data().id === group.id) {
-        // update right side pane
+        // update right side panel
         update_group_details(group);
         if (event.data.name !== undefined) {
             // update settings title

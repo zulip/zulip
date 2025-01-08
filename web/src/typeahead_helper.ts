@@ -174,10 +174,10 @@ export function rewire_render_person(value: typeof render_person): void {
     render_person = value;
 }
 
-export let render_user_group = (user_group: {name: string; description: string}): string =>
+export let render_user_group = (user_group: {name: string; rendered_description: string}): string =>
     render_typeahead_item({
         primary: user_groups.get_display_group_name(user_group.name),
-        secondary: user_group.description,
+        secondary_html: user_group.rendered_description,
         is_user_group: true,
     });
 
