@@ -116,6 +116,8 @@
     }
 
     .media-description {
+        container: media-description / inline-size;
+
         flex: 1;
         /* setting min-width to an absolute value will make
            sure the text gets truncated in case of overflow */
@@ -231,4 +233,15 @@
     }
 }
 
+/* hide media-description if it has width less than 100px  */
+@container media-description (max-width: 100px) {
+    .media-description {
+        .title {
+            display: none;
+        }
 
+        .user {
+            display: none;
+        }
+    }
+}
