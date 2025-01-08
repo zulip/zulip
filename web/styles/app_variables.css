@@ -585,6 +585,11 @@
     --size-color-swatch: 1em;
     --grid-gap-color-swatch: 1em;
     --padding-color-swatch-list: 0.6666em;
+    --color-background-custom-swatch-gradient: conic-gradient(
+        from 0deg at 50% 50% in oklch longer hue,
+        oklch(70% 0.3 0deg) 0%,
+        oklch(70% 0.3 0deg) 100%
+    );
 
     /* Colors used across the app */
     --color-date: hsl(0deg 0% 15% / 75%);

@@ -12,8 +12,6 @@ import * as stream_settings_api from "./stream_settings_api.ts";
 import * as ui_util from "./ui_util.ts";
 
 const update_color_picker_preview = (color: string, $popper: JQuery): void => {
-    const $custom_color_option_icon = $popper.find(".custom-color-option-icon");
-    $custom_color_option_icon.css("background-color", color);
     const $stream_header = $popper.find(".message_header_stream");
     stream_color.update_stream_recipient_color($stream_header, color);
 };
