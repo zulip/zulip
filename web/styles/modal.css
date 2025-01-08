@@ -491,6 +491,8 @@
                 display: flex;
                 align-items: center;
                 gap: 10px;
+                /* to prevent overlapping of scrollbar and delete buttons */
+                margin-right: 16px;
 
                 .drag-icon {
                     color: hsl(0deg 0% 75%);
