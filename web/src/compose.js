@@ -77,12 +77,6 @@ export function show_preview_area() {
 }
 
 export function create_message_object(message_content = compose_state.message_content()) {
-    // Topics are optional, and we provide a placeholder if one isn't given.
-    let topic = compose_state.topic();
-    if (topic === "") {
-        topic = compose_state.empty_topic_placeholder();
-    }
-
     // Changes here must also be kept in sync with echo.try_deliver_locally
     const message = {
         type: compose_state.get_message_type(),
@@ -110,7 +104,7 @@ export function create_message_object(message_content = compose_state.message_co
             message.to = people.user_ids_string_to_ids_array(message.to_user_ids);
         }
     } else {
-        message.topic = topic;
+        message.topic = compose_state.topic();
         const stream_id = compose_state.stream_id();
         message.stream_id = stream_id;
         message.to = stream_id;
