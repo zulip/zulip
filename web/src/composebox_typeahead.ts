@@ -1633,6 +1633,11 @@ export function initialize({
         },
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
         repeat_key_map,
+        on_show() {
+            private_message_typeahead.instance?.setProps({
+                offset: [0, 6],
+            });
+        },
     });
 
     initialize_compose_typeahead($("textarea#compose-textarea"));
