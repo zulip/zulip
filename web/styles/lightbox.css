@@ -1,13 +1,16 @@
 #lightbox_overlay {
     background-color: hsl(227deg 40% 16%);
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
 
     .image-preview {
+        flex: 1;
         display: flex;
         align-items: center;
         justify-content: center;
         position: relative;
         width: 100%;
-        height: calc(100% - 65px - 95px);
         margin: 0;
         overflow: hidden;
 
@@ -32,9 +35,9 @@
     }
 
     .video-player {
+        flex: 1;
         display: flex;
         width: 100%;
-        height: calc(100% - 65px - 95px);
         align-items: center;
         justify-content: center;
         margin: 0;
@@ -151,7 +154,7 @@
     }
 
     .player-container {
-        height: calc(100% - 65px - 95px);
+        flex: 1;
         display: flex;
         text-align: center;
         justify-content: center;
