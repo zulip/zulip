@@ -114,6 +114,7 @@ IGNORED_PHRASES = [
     r"^moving messages$",
     r"^start a conversation$",
     r"^welcome to Zulip!$",
+    r"^general chat$",
     # These are used as example short names (e.g. an uncapitalized context):
     r"^marketing$",
     r"^cookie$",

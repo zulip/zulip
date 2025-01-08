@@ -9,7 +9,11 @@ const {set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const blueslip = zrequire("blueslip");
+const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
+
+const realm = {};
+set_realm(realm);
 
 set_global("document", {});
 const util = zrequire("util");
@@ -487,4 +491,22 @@ run_test("compare_a_b", () => {
 
     const sorted_by_name = [...unsorted].sort((a, b) => util.compare_a_b(a.name, b.name));
     assert.deepEqual(sorted_by_name, [user2, user4, user3, user1]);
+});
+
+run_test("get_final_topic_display_name", ({override}) => {
+    // When the topic name is not an empty string,
+    // the displayed topic name matches the actual topic name.
+    assert.deepEqual(util.get_final_topic_display_name("not empty string"), "not empty string");
+
+    // When the topic name is an empty string, there are two possible scenarios:
+    // 1. The `realm_empty_topic_display_name` setting has its default value
+    //    "general chat". In this case, the topic is displayed as the translated
+    //    value of "general chat" based on the user's language settings.
+    // 2. The `realm_empty_topic_display_name` setting has been customized by
+    //    an admin. In this case, the topic is displayed using the value of
+    //    `realm_empty_topic_display_name` without any translation.
+    override(realm, "realm_empty_topic_display_name", "general chat");
+    assert.deepEqual(util.get_final_topic_display_name(""), "translated: general chat");
+    override(realm, "realm_empty_topic_display_name", "random topic name");
+    assert.deepEqual(util.get_final_topic_display_name(""), "random topic name");
 });
