@@ -533,55 +533,61 @@ export function initialize(): void {
     }
 
     // BUDDY LIST TOOLTIPS (not displayed on touch devices)
-    $(".buddy-list-section").on("mouseenter", ".selectable_sidebar_block", (e) => {
-        e.stopPropagation();
-        const user_id_string = $(e.currentTarget)
-            .closest(".user_sidebar_entry")
-            .attr("data-user-id")!;
-        const title_data = buddy_data.get_title_data(user_id_string, false);
+    $(".buddy-list-section").on(
+        "mouseenter",
+        ".user_sidebar_entry",
+        function (this: HTMLElement, e) {
+            e.stopPropagation();
+            const $elem = $(this);
 
-        // `target_node` is the `ul` element since it stays in DOM even after updates.
-        function get_target_node(): HTMLElement {
-            return util.the($(e.target).parents(".buddy-list-section"));
-        }
+            const user_id_string = $elem.attr("data-user-id")!;
+            const title_data = buddy_data.get_title_data(user_id_string, false);
 
-        function check_reference_removed(
-            mutation: MutationRecord,
-            instance: tippy.Instance,
-        ): boolean {
-            return Array.prototype.includes.call(
-                mutation.removedNodes,
-                instance.reference.parentElement,
-            );
-        }
-
-        const $elem = $(e.currentTarget)
-            .closest(".user_sidebar_entry")
-            .find(".selectable_sidebar_block");
-        do_render_buddy_list_tooltip($elem, title_data, get_target_node, check_reference_removed);
-
-        /*
-           The following implements a little tooltip giving the name for status emoji
-           when hovering them in the right sidebar. This requires special logic, to avoid
-           conflicting with the main tooltip or showing duplicate tooltips.
-        */
-        $(".user_sidebar_entry .status-emoji-name").off("mouseenter").off("mouseleave");
-        $(".user_sidebar_entry .status-emoji-name").on("mouseenter", () => {
-            const element: tippy.ReferenceElement = util.the($elem);
-            const instance = element._tippy;
-            if (instance?.state.isVisible) {
-                instance.destroy();
+            // `target_node` is the `ul` element since it stays in DOM even after updates.
+            function get_target_node(): HTMLElement {
+                return util.the($(e.target).parents(".buddy-list-section"));
             }
-        });
-        $(".user_sidebar_entry .status-emoji-name").on("mouseleave", () => {
+
+            function check_reference_removed(
+                mutation: MutationRecord,
+                instance: tippy.Instance,
+            ): boolean {
+                return Array.prototype.includes.call(
+                    mutation.removedNodes,
+                    instance.reference.parentElement,
+                );
+            }
+
             do_render_buddy_list_tooltip(
                 $elem,
                 title_data,
                 get_target_node,
                 check_reference_removed,
             );
-        });
-    });
+
+            /*
+            The following implements a little tooltip giving the name for status emoji
+            when hovering them in the right sidebar. This requires special logic, to avoid
+            conflicting with the main tooltip or showing duplicate tooltips.
+            */
+            $(".user_sidebar_entry .status-emoji-name").off("mouseenter").off("mouseleave");
+            $(".user_sidebar_entry .status-emoji-name").on("mouseenter", () => {
+                const element: tippy.ReferenceElement = util.the($elem);
+                const instance = element._tippy;
+                if (instance?.state.isVisible) {
+                    instance.destroy();
+                }
+            });
+            $(".user_sidebar_entry .status-emoji-name").on("mouseleave", () => {
+                do_render_buddy_list_tooltip(
+                    $elem,
+                    title_data,
+                    get_target_node,
+                    check_reference_removed,
+                );
+            });
+        },
+    );
 
     // DIRECT MESSAGE LIST TOOLTIPS (not displayed on touch devices)
     $("body").on("mouseenter", ".dm-user-status", function (this: HTMLElement, e) {
