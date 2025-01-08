@@ -25,6 +25,7 @@ import "../../third/bootstrap/css/bootstrap-btn.css";
 import "../../styles/typeahead.css";
 import "../../styles/app_variables.css";
 import "../../styles/tooltips.css";
+import "../../styles/buttons.css";
 import "../../styles/components.css";
 import "../../styles/app_components.css";
 import "../../styles/rendered_markdown.css";
