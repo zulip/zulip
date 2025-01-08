@@ -263,6 +263,7 @@ export class Typeahead<ItemType extends string | object> {
     // after selecting an option, instead of the default call to lookup().
     hideAfterSelect: () => boolean;
     ignore_keyup?: (() => boolean) | undefined;
+    on_show: (() => void) | undefined;
     hideOnEmptyAfterBackspace: boolean;
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
@@ -305,6 +306,7 @@ export class Typeahead<ItemType extends string | object> {
         this.updateElementContent = options.updateElementContent ?? true;
         this.hideAfterSelect = options.hideAfterSelect ?? (() => true);
         this.ignore_keyup = options.ignore_keyup;
+        this.on_show = options.on_show;
         this.hideOnEmptyAfterBackspace = options.hideOnEmptyAfterBackspace ?? false;
 
         this.listen();
@@ -530,7 +532,10 @@ export class Typeahead<ItemType extends string | object> {
         this.render(final_items.slice(0, this.items), matching_items);
 
         if (!this.shown) {
-            return this.show();
+            this.show();
+            if (this.on_show) {
+                this.on_show();
+            }
         }
 
         return this;
@@ -893,4 +898,5 @@ type TypeaheadOptions<ItemType> = {
     updateElementContent?: boolean;
     hideAfterSelect?: () => boolean;
     ignore_keyup?: () => boolean;
+    on_show?: () => void;
 };
