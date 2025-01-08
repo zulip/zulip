@@ -7,19 +7,19 @@ const $ = require("./zjquery.cjs");
 
 class FakeComposeBox {
     constructor() {
+        this.$content_textarea = $("textarea#compose-textarea");
+        this.$preview_message_area = $("#compose .preview_message_area");
+
         // Simulate DOM relationships
-        // stub_message_row($("textarea#compose-textarea"));
-        $("#send_message_form").set_find_results(
-            ".message-textarea",
-            $("textarea#compose-textarea"),
-        );
+        $("#send_message_form").set_find_results(".message-textarea", this.$content_textarea);
+
         $("#send_message_form").set_find_results(
             ".message-limit-indicator",
             $.create("limit-indicator-stub"),
         );
 
         const $message_row_stub = $.create("message_row_stub");
-        $("textarea#compose-textarea").closest = (selector) => {
+        this.$content_textarea.closest = (selector) => {
             assert.equal(selector, ".message_row");
             $message_row_stub.length = 0;
             return $message_row_stub;
@@ -31,30 +31,31 @@ class FakeComposeBox {
     reset() {
         $("#compose_banners .user_not_subscribed").length = 0;
 
-        $("textarea#compose-textarea").toggleClass = noop;
-        $("textarea#compose-textarea").set_height(50);
-        $("#compose .preview_message_area").css = noop;
-        $("textarea#compose-textarea").val("default message");
-        $("textarea#compose-textarea").trigger("blur");
+        this.$content_textarea.toggleClass = noop;
+        this.$content_textarea.set_height(50);
+        this.$content_textarea.val("default message");
+        this.$content_textarea.trigger("blur");
+
+        this.$preview_message_area.css = noop;
         $(".compose-submit-button .loader").show();
     }
 
     show_message_preview() {
+        this.$preview_message_area.show();
         $("#compose .undo_markdown_preview").show();
-        $("#compose .preview_message_area").show();
         $("#compose .markdown_preview").hide();
         $("#compose").addClass("preview_mode");
     }
 
     hide_message_preview() {
+        this.$preview_message_area.hide();
         $("#compose .markdown_preview").show();
         $("#compose .undo_markdown_preview").hide();
-        $("#compose .preview_message_area").hide();
         $("#compose").removeClass("preview_mode");
     }
 
     textarea_val() {
-        return $("textarea#compose-textarea").val();
+        return this.$content_textarea.val();
     }
 
     preview_content_html() {
@@ -74,11 +75,11 @@ class FakeComposeBox {
     }
 
     set_textarea_val(val) {
-        $("textarea#compose-textarea").val(val);
+        this.$content_textarea.val(val);
     }
 
     blur_textarea() {
-        $("textarea#compose-textarea").trigger("blur");
+        this.$content_textarea.trigger("blur");
     }
 
     show_submit_button_spinner() {
@@ -86,7 +87,7 @@ class FakeComposeBox {
     }
 
     set_textarea_toggle_class_function(f) {
-        $("textarea#compose-textarea").toggleClass = f;
+        this.$content_textarea.toggleClass = f;
     }
 
     is_recipient_not_subscribed_banner_visible() {
@@ -94,7 +95,7 @@ class FakeComposeBox {
     }
 
     is_textarea_focused() {
-        return $("textarea#compose-textarea").is_focused();
+        return this.$content_textarea.is_focused();
     }
 
     is_submit_button_spinner_visible() {
@@ -122,16 +123,16 @@ class FakeComposeBox {
     }
 
     assert_preview_mode_is_off() {
+        assert.ok(!this.$preview_message_area.visible());
         assert.ok(!$("#compose .undo_markdown_preview").visible());
-        assert.ok(!$("#compose .preview_message_area").visible());
         assert.ok($("#compose .markdown_preview").visible());
         assert.ok(!$("#compose").hasClass("preview_mode"));
     }
 
     assert_preview_mode_is_on() {
+        assert.ok(this.$preview_message_area.visible());
         assert.ok(!$("#compose .markdown_preview").visible());
         assert.ok($("#compose .undo_markdown_preview").visible());
-        assert.ok($("#compose .preview_message_area").visible());
         assert.ok($("#compose").hasClass("preview_mode"));
     }
 }
