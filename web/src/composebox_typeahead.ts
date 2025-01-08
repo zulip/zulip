@@ -1543,6 +1543,11 @@ export function initialize({
         },
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
         ignore_keyup,
+        on_show() {
+            private_message_typeahead.instance?.setProps({
+                offset: [0, 6],
+            });
+        },
     });
 
     initialize_compose_typeahead($("textarea#compose-textarea"));
