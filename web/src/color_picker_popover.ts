@@ -110,6 +110,10 @@ export function toggle_color_picker_popover(
                     update_stream_color_debounced(new_color, stream_id, $popper);
                 },
             );
+
+            $popper.on("click", ".color_picker_confirm_button", () => {
+                popover_menus.hide_current_popover_if_visible(instance);
+            });
         },
         onHidden(instance) {
             instance.destroy();
