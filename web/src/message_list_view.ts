@@ -102,6 +102,8 @@ export type MessageGroup = {
           is_archived: boolean;
           subscribed?: boolean;
           topic: string;
+          topic_display_name: string;
+          is_empty_string_topic: boolean;
           topic_is_resolved: boolean;
           topic_links: TopicLink[] | undefined;
           topic_url: string | undefined;
@@ -459,6 +461,8 @@ function populate_group_from_message(
         const invite_only = stream_data.is_invite_only_by_stream_id(message.stream_id);
         const is_web_public = stream_data.is_web_public(message.stream_id);
         const topic = message.topic;
+        const topic_display_name = util.get_final_topic_display_name(topic);
+        const is_empty_string_topic = topic === "";
         const match_topic = util.get_match_topic(message);
         const stream_url = hash_util.by_stream_url(message.stream_id);
         const is_archived = stream_data.is_stream_archived(message.stream_id);
@@ -496,6 +500,8 @@ function populate_group_from_message(
             date_unchanged,
             topic_links,
             topic,
+            topic_display_name,
+            is_empty_string_topic,
             recipient_bar_color,
             stream_privacy_icon_color,
             invite_only,
