@@ -321,6 +321,7 @@ export function quote_message(opts: {
 
     void channel.get({
         url: "/json/messages/" + message_id,
+        data: {allow_empty_topic_name: true},
         success(raw_data) {
             const data = z.object({raw_content: z.string()}).parse(raw_data);
             replace_content(message, data.raw_content);

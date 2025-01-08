@@ -143,6 +143,7 @@ run_test("unstar_all_in_topic", ({override}) => {
             {operator: "topic", operand: "topic"},
             {operator: "is", operand: "starred"},
         ]),
+        allow_empty_topic_name: true,
     });
 
     assert.deepEqual(channel_post_opts.data, {
