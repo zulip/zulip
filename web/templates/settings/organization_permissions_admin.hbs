@@ -10,6 +10,11 @@
                 {{> settings_save_discard_widget section_name="join-settings" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
+                {{> settings_checkbox
+                  setting_name="realm_invite_required"
+                  prefix="id_"
+                  is_checked=realm_invite_required
+                  label=admin_settings_label.realm_invite_required}}
 
                 {{> group_setting_value_pill_input
                   setting_name="realm_can_invite_users_group"
