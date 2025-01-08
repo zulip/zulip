@@ -2,8 +2,10 @@ import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
 
 import * as blueslip from "./blueslip.ts";
+import {$t} from "./i18n.ts";
 import type {MatchedMessage, Message, RawMessage} from "./message_store.ts";
 import type {UpdateMessageEvent} from "./server_event_types.ts";
+import {realm} from "./state_data.ts";
 import {user_settings} from "./user_settings.ts";
 
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
@@ -532,4 +534,14 @@ export function compare_a_b<T>(a: T, b: T): number {
         return 0;
     }
     return -1;
+}
+
+export function get_final_topic_display_name(topic_display_name: string): string {
+    if (topic_display_name === "") {
+        if (realm.realm_empty_topic_display_name === "general chat") {
+            return $t({defaultMessage: "general chat"});
+        }
+        return realm.realm_empty_topic_display_name;
+    }
+    return topic_display_name;
 }
