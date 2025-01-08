@@ -231,45 +231,4 @@
     }
 }
 
-@media only screen and ($ms_min <= width < $md_min) {
-    #lightbox_overlay {
-        .media-actions {
-            width: 100%;
-            padding-left: 15px;
-            margin-top: 0;
-        }
 
-        .media-description {
-            max-width: calc(100% - 100px);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 5px;
-        }
-
-        .center .image-list {
-            max-width: 80vw;
-        }
-
-        .player-container iframe {
-            /* maintain 16:9 ratio. */
-            width: 100%;
-            height: calc((100vw) * 9 / 16);
-            margin: auto;
-        }
-
-        .image-preview {
-            height: calc(100% - 101px - 104px);
-        }
-
-        .media-info-wrapper {
-            align-items: flex-end;
-        }
-
-        .exit {
-            position: absolute;
-            right: 5px;
-            top: 6px;
-        }
-    }
-}
