@@ -1375,6 +1375,16 @@ def post_process_limited_query(
     )
 
 
+def clean_narrow_for_message_fetch(
+    narrow: list[NarrowParameter] | None,
+    realm: Realm,
+    maybe_user_profile: UserProfile | AnonymousUser,
+) -> list[NarrowParameter] | None:
+    narrow = update_narrow_terms_containing_empty_topic_fallback_name(narrow)
+    narrow = update_narrow_terms_containing_with_operator(realm, maybe_user_profile, narrow)
+    return narrow
+
+
 @dataclass
 class FetchedMessages(LimitedMessages[Row]):
     anchor: int | None
