@@ -114,7 +114,10 @@ export function fetch_and_render_message_history(message: Message): void {
     show_loading_indicator();
     void channel.get({
         url: "/json/messages/" + message.id + "/history",
-        data: {message_id: JSON.stringify(message.id)},
+        data: {
+            message_id: JSON.stringify(message.id),
+            allow_empty_topic_name: true,
+        },
         success(raw_data) {
             const data = server_message_history_schema.parse(raw_data);
 

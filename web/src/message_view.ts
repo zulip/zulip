@@ -555,6 +555,7 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                 // for it.
                 channel.get({
                     url: `/json/messages/${id_info.target_id}`,
+                    data: {allow_empty_topic_name: true},
                     success(raw_data) {
                         const data = fetch_message_response_schema.parse(raw_data);
                         // After the message is fetched, we make the

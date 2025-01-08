@@ -709,6 +709,7 @@ $(() => {
                 // Set this to true when stream typing notifications are implemented.
                 stream_typing_notifications: false,
                 user_settings_object: true,
+                empty_topic_name: true,
             }),
             client_gravatar: false,
         };

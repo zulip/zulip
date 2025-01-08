@@ -59,6 +59,7 @@ type MessageFetchAPIParams = {
     num_after: number;
     client_gravatar: boolean;
     narrow?: string;
+    allow_empty_topic_name: boolean;
 };
 
 let first_messages_fetch = true;
@@ -329,6 +330,7 @@ function get_parameters_for_message_fetch_api(opts: MessageFetchOptions): Messag
         num_before: opts.num_before,
         num_after: opts.num_after,
         client_gravatar: true,
+        allow_empty_topic_name: true,
     };
     const msg_list_data = opts.msg_list_data;
 

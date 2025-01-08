@@ -426,6 +426,7 @@ test("ask_server_for_latest_topic_data", () => {
             narrow: '[{"operator":"stream","operand":1080},{"operator":"topic","operand":"Topic1"}]',
             num_after: 0,
             num_before: 1,
+            allow_empty_topic_name: true,
         });
         success_callback = opts.success;
     };

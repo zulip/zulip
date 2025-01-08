@@ -669,6 +669,7 @@ export function start($row: JQuery, edit_box_open_callback?: () => void): void {
     const msg_list = message_lists.current;
     void channel.get({
         url: "/json/messages/" + message.id,
+        data: {allow_empty_topic_name: true},
         success(data) {
             const {raw_content} = z.object({raw_content: z.string()}).parse(data);
             if (message_lists.current === msg_list) {
@@ -1582,6 +1583,7 @@ export function with_first_message_id(
             {operator: "channel", operand: stream_id},
             {operator: "topic", operand: topic_name},
         ]),
+        allow_empty_topic_name: true,
     };
 
     void channel.get({
@@ -1617,6 +1619,7 @@ export function is_message_oldest_or_newest(
             {operator: "channel", operand: stream_id},
             {operator: "topic", operand: topic_name},
         ]),
+        allow_empty_topic_name: true,
     };
 
     void channel.get({
