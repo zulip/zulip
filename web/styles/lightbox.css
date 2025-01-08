@@ -156,10 +156,17 @@
         align-items: center;
 
         & iframe {
-            /* maintain 16:9 ratio. */
-            width: calc((100vh - 65px - 95px) * 16 / 9);
-            height: 100%;
-            margin: auto;
+            aspect-ratio: 16/9;
+            /* for screen_width<=lg_min aspect-ratio will be
+               maintained given portrait mode is used */
+            /* in landscape max-height will prevent overflow,
+               however user will benefit more from using
+               youtube fullscreen at that point */
+            width: 100%;
+            /* maintains the aspect ratio for screen_width>=lg_min. */
+            max-width: $lg_min;
+            /* height(media_info_container) + height(center) < 200px */
+            max-height: calc(100dvh - 200px);
         }
     }
 
