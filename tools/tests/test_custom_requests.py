@@ -1,45 +1,61 @@
+import os
+from collections.abc import Sized
 from unittest import TestCase
 from unittest.mock import patch
-from  lib.test_script import find_js_test_files
+
+from typing_extensions import override
+
+from tools.lib.test_script import find_js_test_files
 
 
 class TestJSTestFiles(TestCase):
+    """Unit tests for JavaScript/TypeScript test file matching logic."""
+
+    @override
     def setUp(self) -> None:
+        """Setup mock test directory and files."""
         self.test_dir = "web/e2e-tests"
-        self.mock_files = [
-            'admin.test.ts',
-            'compose.test.ts',
-            'admin.ts',
-            'settings.test.ts'
-        ]
+        self.mock_files = ["admin.test.ts", "compose.test.ts", "admin.ts", "settings.test.ts"]
+
+    def assert_length(self, items: Sized, expected_length: int, msg: str | None = None) -> None:
+        """Helper method to assert length of a sized object."""
+        actual_length = len(items)
+        if actual_length != expected_length:
+            standardMsg = f"Length is {actual_length}, expected {expected_length}"
+            msg = self._formatMessage(msg, standardMsg)
+            raise self.failureException(msg)
 
     def test_partial_match_resolution(self) -> None:
-        """Tests that partial matches resolve to correct test files."""
-        with patch('os.listdir', return_value=self.mock_files), \
-             patch('os.path.isfile', side_effect=lambda x: x in self.mock_files):
-            result = find_js_test_files(self.test_dir, ['admin'])
+        """Ensure partial matches return the correct test file."""
+        with (
+            patch("os.listdir", return_value=self.mock_files),
+            patch("os.path.isfile", side_effect=lambda x: os.path.basename(x) in self.mock_files),
+        ):
+            result = find_js_test_files(self.test_dir, ["admin"])
+            self.assert_length(result, 1, "Should find exactly one match for partial name")
             self.assertEqual(
-                len(result), 1,
-                "Should find exactly one match for partial name"
-            )
-            self.assertEqual(
-                result[0], 'admin.test.ts',
-                "Should return 'admin.test.ts' as the matching file"
+                os.path.basename(result[0]),
+                "admin.test.ts",
+                "Should return 'admin.test.ts' as the matching file",
             )
 
     def test_non_test_file_error(self) -> None:
-        """Tests error handling when attempting to run non-test files."""
-        with patch('os.listdir', return_value=self.mock_files), \
-             patch('os.path.isfile', side_effect=lambda x: x in self.mock_files):
+        """Ensure an exception is raised for non-test files."""
+        with (
+            patch("os.listdir", return_value=self.mock_files),
+            patch("os.path.isfile", side_effect=lambda x: os.path.basename(x) in self.mock_files),
+        ):
             with self.assertRaises(Exception) as context:
-                find_js_test_files(self.test_dir, ['admin.ts'])
+                find_js_test_files(self.test_dir, ["admin.ts"])
             error_msg = str(context.exception)
-            self.assertIn('admin.test.ts', error_msg)
+            self.assertIn("admin.ts is not a valid test file", error_msg)
 
     def test_missing_file_error(self) -> None:
-        """Tests error handling for non-existent files."""
-        with patch('os.listdir', return_value=self.mock_files), \
-             patch('os.path.isfile', side_effect=lambda x: x in self.mock_files):
+        """Ensure an exception is raised for missing files."""
+        with (
+            patch("os.listdir", return_value=self.mock_files),
+            patch("os.path.isfile", side_effect=lambda x: os.path.basename(x) in self.mock_files),
+        ):
             with self.assertRaises(Exception) as context:
-                find_js_test_files(self.test_dir, ['nonexistent'])
-            self.assertIn('Cannot find a matching test file', str(context.exception))
+                find_js_test_files(self.test_dir, ["nonexistent"])
+            self.assertIn("Cannot find a matching test file", str(context.exception))
