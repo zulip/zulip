@@ -17,7 +17,6 @@ class FakeComposeBox {
             ".message-limit-indicator",
             $.create("limit-indicator-stub"),
         );
-        $("textarea#compose-textarea").toggleClass = noop;
 
         const $message_row_stub = $.create("message_row_stub");
         $("textarea#compose-textarea").closest = (selector) => {
@@ -26,13 +25,15 @@ class FakeComposeBox {
             return $message_row_stub;
         };
 
-        $("textarea#compose-textarea").set_height(50);
-        $("#compose .preview_message_area").css = noop;
-
         this.reset();
     }
 
     reset() {
+        $("#compose_banners .user_not_subscribed").length = 0;
+
+        $("textarea#compose-textarea").toggleClass = noop;
+        $("textarea#compose-textarea").set_height(50);
+        $("#compose .preview_message_area").css = noop;
         $("textarea#compose-textarea").val("default message");
         $("textarea#compose-textarea").trigger("blur");
         $(".compose-submit-button .loader").show();
