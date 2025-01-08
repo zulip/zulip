@@ -37,8 +37,7 @@
     left: 0;
     width: 100%;
     height: 100% !important;
-    opacity: 0 !important;
-    cursor: pointer;
+    visibility: hidden;
 }
 
 .custom-color-swatch-icon {
@@ -50,6 +49,11 @@
     border: none;
 }
 
-.color-picker-popover .stream_label {
-    padding-right: 5px;
+.color_picker_confirm_button {
+    height: 100%;
+
+    &:focus-visible {
+        outline: 1px solid var(--color-outline-focus);
+        outline-offset: -2px;
+    }
 }
