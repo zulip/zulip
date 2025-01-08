@@ -54,7 +54,6 @@
 
         color: hsl(0deg 0% 100% / 80%);
         font-size: 2rem;
-        margin: 6px 20px 0 0;
 
         transform: scaleY(0.75);
         font-weight: 300;
@@ -71,19 +70,19 @@
     }
 
     .media-info-wrapper {
-        background-color: transparent;
         display: flex;
-        flex-flow: row wrap;
+        justify-content: end;
+        align-items: start;
+        gap: 20px;
+        padding: 20px;
+
+        background-color: transparent;
     }
 
-    .media-description,
     .media-actions {
-        margin: 20px;
-    }
-
-    .media-actions {
+        display: flex;
         flex-shrink: 0;
-        margin-left: auto;
+        gap: 10px;
 
         .button {
             font-size: 0.9rem;
@@ -95,7 +94,6 @@
             border-radius: 4px;
             text-decoration: none;
             display: inline-block;
-            margin: 0 5px;
 
             &:hover {
                 background-color: hsl(0deg 0% 100%);
@@ -156,7 +154,6 @@
     .player-container {
         flex: 1;
         display: flex;
-        text-align: center;
         justify-content: center;
         align-items: center;
 
@@ -171,13 +168,12 @@
     .center {
         display: flex;
         justify-content: center;
+        align-items: center;
+        gap: 2px;
+        padding: 12px 20px;
 
         .arrow {
-            display: inline-block;
-            vertical-align: top;
-            margin-top: 25px;
-            padding: 5px 10px;
-
+            padding: 0 10px;
             color: hsl(0deg 0% 100%);
             font-size: 1.8em;
             font-weight: 200;
@@ -196,8 +192,6 @@
         .image-list {
             position: relative;
             display: inline-block;
-            padding: 15px 0 12px;
-            height: 50px;
             font-size: 0;
 
             max-width: 40vw;
