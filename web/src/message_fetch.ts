@@ -98,6 +98,7 @@ const consts = {
     // Parameters for asking for more history in the recent view.
     recent_view_fetch_more_batch_size: 2000,
     recent_view_minimum_load_more_fetch_size: 50000,
+    recent_view_load_more_increment_per_click: 25000,
 };
 
 export function load_messages_around_anchor(
@@ -565,9 +566,11 @@ export function maybe_load_older_messages(opts: {
         }
 
         if (fetched_substantial_history && found_first_unread) {
-            // Once we have fetched enough history, we just do fetches in
-            // `consts.recent_view_fetch_more_batch_size`.
+            // Increase bar for `fetched_substantial_history` for next
+            // `Load more` click.
             opts.cont = () => {
+                consts.recent_view_minimum_load_more_fetch_size +=
+                    consts.recent_view_load_more_increment_per_click;
                 recent_view_ui.set_backfill_in_progress(false);
             };
         } else {
