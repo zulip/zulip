@@ -1026,6 +1026,11 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 return
 
             ldap_group_descriptions_dict = ldap_user._get_group_descriptions()
+            # Hack: We don't have a good way of getting already_synced_group_ids passed
+            # as an argument to our function. For that reason, we attach this information to the
+            # ZulipLDAPUser object itself to be read here.
+            already_synced_group_ids: set[int] = ldap_user.already_synced_group_ids
+
             zulip_group_descriptions_dict = {
                 group.name: group.description
                 for group in NamedUserGroup.objects.filter(
@@ -1034,11 +1039,18 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                     # groups, so they won't be subject to syncing anyway.
                     realm=user_profile.realm,
                     name__in=ldap_group_name_set_for_user,
-                ).only("name", "description")
+                )
+                # If we already synced the group, there's no need to fetch it.
+                # This keeps us from fetching a large amount of groups for every
+                # user we're syncing, in a redundant manner.
+                .exclude(id__in=already_synced_group_ids)
+                .only("name", "description")
             }
 
             for group_name, ldap_description in ldap_group_descriptions_dict.items():
-                if group_name not in ldap_group_name_set_for_user:
+                if group_name not in zulip_group_descriptions_dict:
+                    # For the dict, we only fetched the groups that should be synced.
+                    # Therefore a group being absent here implies it should be skipped.
                     continue
 
                 zulip_description = zulip_group_descriptions_dict.get(group_name)
@@ -1056,6 +1068,9 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                         ldap_description,
                     )
                     do_update_user_group_description(user_group, ldap_description, acting_user=None)
+
+                    # We need to update the cache of already-processed groups.
+                    already_synced_group_ids.add(user_group.id)
 
         except Exception as e:
             raise ZulipLDAPError(str(e)) from e
@@ -1225,11 +1240,22 @@ class ZulipLDAPUser(_LDAPUser):
     populate_user() which will sync the LDAP data with the corresponding
     UserProfile. The realm attribute serves to uniquely identify the UserProfile
     in case the LDAP user is registered to multiple realms.
+
+    Additionally, we can store the already_synced_group_ids attribute, which is
+    used in the sync_ldap_user_data process to avoid re-fetching of groups
+    which have already been processed.
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.realm: Realm = kwargs["realm"]
         del kwargs["realm"]
+
+        already_synced_group_ids: set[int] | None = kwargs.get("already_synced_group_ids")
+        if already_synced_group_ids is None:
+            already_synced_group_ids = set()
+        self.already_synced_group_ids: set[int] = already_synced_group_ids
+
+        kwargs.pop("already_synced_group_ids", None)
 
         super().__init__(*args, **kwargs)
 
@@ -1339,7 +1365,17 @@ def catch_ldap_error(signal: Signal, **kwargs: Any) -> None:
     raise PopulateUserLDAPError(type(kwargs["exception"]).__name__)
 
 
-def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bool:
+def sync_user_from_ldap(
+    user_profile: UserProfile,
+    logger: logging.Logger,
+    # This argument can be passed in from sync_ldap_user_data to track
+    # which groups have already had their descriptions synced to avoid
+    # re-fetching them repeatedly in sync_groups_from_ldap on every
+    # per-user iteration.
+    # The set, if passed in, will be mutated to add to it the new ids
+    # of groups which got processed by this function call.
+    already_synced_group_ids: set[int] | None = None,
+) -> bool:
     backend = ZulipLDAPUserPopulator()
     try:
         ldap_username = backend.django_to_ldap_username(user_profile.delivery_email)
@@ -1371,7 +1407,13 @@ def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bo
     #
     # Ideally, we'd contribute changes to `django-auth-ldap` upstream
     # making this flow possible in a more directly supported fashion.
-    updated_user = ZulipLDAPUser(backend, ldap_username, realm=user_profile.realm).populate_user()
+    ldap_user = ZulipLDAPUser(
+        backend,
+        ldap_username,
+        realm=user_profile.realm,
+        already_synced_group_ids=already_synced_group_ids,
+    )
+    updated_user = ldap_user.populate_user()
     if updated_user:
         logger.info("Updated %s.", user_profile.delivery_email)
         return True

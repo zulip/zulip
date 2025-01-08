@@ -8048,15 +8048,30 @@ class LDAPGroupSyncTest(ZulipTestCase):
             ldap_group_description = self.mock_ldap.directory[
                 "cn=cool_test_group,ou=groups,dc=zulip,dc=com"
             ]["description"][0]
-            zulip_group_description = NamedUserGroup.objects.get(
-                realm=realm, name="cool_test_group"
-            ).description
+            zulip_group = NamedUserGroup.objects.get(realm=realm, name="cool_test_group")
+            zulip_group_description = zulip_group.description
 
-            sync_user_from_ldap(hamlet, mock.Mock())
+            already_synced_groups_cache: set[int] = set()
+            sync_user_from_ldap(hamlet, mock.Mock(), already_synced_groups_cache)
 
+            zulip_group.refresh_from_db()
             self.assertEqual(
-                NamedUserGroup.objects.get(realm=realm, name="cool_test_group").description,
+                zulip_group.description,
                 ldap_group_description,
+            )
+            self.assertEqual(already_synced_groups_cache, {zulip_group.id})
+
+            # Groups which have already been synced should not be synced again.
+            # We can test that by changing the description of the Zulip group and
+            # then running the sync again to verify that the description is not
+            # updated.
+            zulip_group.description = "somevalue"
+            zulip_group.save()
+            sync_user_from_ldap(hamlet, mock.Mock(), already_synced_groups_cache)
+            zulip_group.refresh_from_db()
+            self.assertEqual(
+                zulip_group.description,
+                "somevalue",
             )
 
             # If the LDAP group has no description, no changes to the Zulip group should be made.
@@ -8064,9 +8079,10 @@ class LDAPGroupSyncTest(ZulipTestCase):
                 "description"
             ]
             sync_user_from_ldap(hamlet, mock.Mock())
+            zulip_group.refresh_from_db()
             self.assertEqual(
-                NamedUserGroup.objects.get(realm=realm, name="cool_test_group").description,
-                ldap_group_description,
+                zulip_group.description,
+                "somevalue",
             )
 
         self.assertEqual(
@@ -8075,6 +8091,8 @@ class LDAPGroupSyncTest(ZulipTestCase):
                 f"DEBUG:zulip.ldap:Syncing groups for user: {hamlet.id}",
                 "DEBUG:zulip.ldap:intended groups: {'cool_test_group'}; zulip groups: {'cool_test_group'}",
                 f"DEBUG:zulip.ldap:Updating group description for cool_test_group from {zulip_group_description} to {ldap_group_description}",
+                f"DEBUG:zulip.ldap:Syncing groups for user: {hamlet.id}",
+                "DEBUG:zulip.ldap:intended groups: {'cool_test_group'}; zulip groups: {'cool_test_group'}",
                 f"DEBUG:zulip.ldap:Syncing groups for user: {hamlet.id}",
                 "DEBUG:zulip.ldap:intended groups: {'cool_test_group'}; zulip groups: {'cool_test_group'}",
             ],
