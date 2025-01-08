@@ -29,6 +29,11 @@
         );
         scale: 0.96;
     }
+
+    &:focus {
+        /* Override common button outline style set in zulip.css and dark_theme.css */
+        outline: none;
+    }
 }
 
 .action-button-label {
@@ -365,6 +370,11 @@
     cursor: pointer;
     border: none;
     border-radius: 4px;
+
+    &:focus {
+        /* Override common button outline style set in zulip.css and dark_theme.css */
+        outline: none;
+    }
 }
 
 .icon-button-neutral {
