@@ -37,7 +37,9 @@ const stream_topic_history = zrequire("stream_topic_history");
 const topic_list_data = zrequire("topic_list_data");
 const unread = zrequire("unread");
 
-set_realm({});
+const REALM_EMPTY_TOPIC_DISPLAY_NAME = "test general chat";
+
+set_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME});
 
 const general = {
     stream_id: 556,
@@ -102,6 +104,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         topic_name: "topic 11",
         topic_resolved_prefix: "",
         topic_display_name: "topic 11",
+        is_empty_string_topic: false,
         unread: 0,
         is_zero: true,
         stream_id: 556,
@@ -132,6 +135,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         topic_display_name: "topic 9",
         topic_name: "✔ topic 9",
         topic_resolved_prefix: "✔ ",
+        is_empty_string_topic: false,
         unread: 0,
         url: "#narrow/channel/556-general/topic/.E2.9C.94.20topic.209",
     });
@@ -147,18 +151,44 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         topic_display_name: "topic 8",
         topic_name: "topic 8",
         topic_resolved_prefix: "",
+        is_empty_string_topic: false,
         unread: 0,
         url: "#narrow/channel/556-general/topic/topic.208",
+    });
+
+    // Empty string as topic name.
+    add_topic_message("", 2025);
+
+    list_info = get_list_info();
+    assert.equal(list_info.items.length, 8);
+    assert.equal(list_info.more_topics_unreads, 0);
+    assert.equal(list_info.more_topics_have_unread_mention_messages, false);
+    assert.equal(list_info.num_possible_topics, 11);
+
+    assert.deepEqual(list_info.items[0], {
+        contains_unread_mention: false,
+        is_active_topic: false,
+        is_muted: false,
+        is_followed: false,
+        is_unmuted_or_followed: false,
+        is_zero: true,
+        stream_id: 556,
+        topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME,
+        topic_name: "",
+        topic_resolved_prefix: "",
+        is_empty_string_topic: true,
+        unread: 0,
+        url: "#narrow/channel/556-general/topic/",
     });
 
     // If we zoom in, our results are based on topic filter.
     // If topic search input is empty, we show all 10 topics.
     const zoomed = true;
     list_info = get_list_info(zoomed);
-    assert.equal(list_info.items.length, 10);
+    assert.equal(list_info.items.length, 11);
     assert.equal(list_info.more_topics_unreads, 0);
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
-    assert.equal(list_info.num_possible_topics, 10);
+    assert.equal(list_info.num_possible_topics, 11);
 
     add_topic_message("After Brooklyn", 1008);
     add_topic_message("Catering", 1009);

@@ -2115,3 +2115,7 @@ body:not(.hide-left-sidebar) {
         border: 1px solid var(--color-border-personal-menu-avatar);
     }
 }
+
+.empty-topic-display {
+    font-style: italic;
+}
