@@ -41,13 +41,9 @@
     cursor: pointer;
 }
 
-.custom-color-option-icon {
-    width: 17px;
-    height: 17px;
-    margin-top: 1px;
+.custom-color-swatch-icon {
     border-radius: 50%;
-    border: 1px solid var(--color-border-zulip-button);
-    box-sizing: border-box;
+    background: var(--color-background-custom-swatch-gradient);
 }
 
 .color-picker-popover .message-header-contents {
