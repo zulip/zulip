@@ -139,7 +139,7 @@ exports.server_supported_permission_settings = {
             default_for_system_groups: null,
             allowed_system_groups: [],
         },
-        can_create_groups: {
+        can_create_groups_group: {
             require_system_group: false,
             allow_internet_group: false,
             allow_nobody_group: true,
@@ -216,7 +216,7 @@ exports.server_supported_permission_settings = {
             default_for_system_groups: null,
             allowed_system_groups: [],
         },
-        can_manage_all_groups: {
+        can_manage_all_groups_group: {
             require_system_group: false,
             allow_internet_group: false,
             allow_nobody_group: false,

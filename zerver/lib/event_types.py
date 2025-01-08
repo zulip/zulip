@@ -602,7 +602,7 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     can_add_custom_emoji_group: int | UserGroupMembersDict | None = None
     can_add_subscribers_group: int | UserGroupMembersDict | None = None
     can_create_bots_group: int | UserGroupMembersDict | None = None
-    can_create_groups: int | UserGroupMembersDict | None = None
+    can_create_groups_group: int | UserGroupMembersDict | None = None
     can_create_public_channel_group: int | UserGroupMembersDict | None = None
     can_create_private_channel_group: int | UserGroupMembersDict | None = None
     can_create_web_public_channel_group: int | UserGroupMembersDict | None = None
@@ -610,7 +610,7 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     can_delete_any_message_group: int | UserGroupMembersDict | None = None
     can_delete_own_message_group: int | UserGroupMembersDict | None = None
     can_invite_users_group: int | UserGroupMembersDict | None = None
-    can_manage_all_groups: int | UserGroupMembersDict | None = None
+    can_manage_all_groups_group: int | UserGroupMembersDict | None = None
     can_manage_billing_group: int | UserGroupMembersDict | None = None
     can_mention_many_users_group: int | UserGroupMembersDict | None = None
     can_move_messages_between_channels_group: int | UserGroupMembersDict | None = None

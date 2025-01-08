@@ -4719,7 +4719,7 @@ paths:
                                             to be of type integer and did not accept anonymous user groups.
 
                                             New in Zulip 8.0 (feature level 225).
-                                    can_create_groups:
+                                    can_create_groups_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
                                         - description: |
@@ -4727,7 +4727,10 @@ paths:
                                             the set of users who have permission to create user
                                             groups in this organization.
 
-                                            **Changes**: New in Zulip 10.0 (feature level 299). Previously
+                                            **Changes**: In Zulip 12.0 (feature level ZF-88b3a1), renamed
+                                            `can_create_groups` to `can_create_groups_group`.
+
+                                            New in Zulip 10.0 (feature level 299). Previously
                                             `user_group_edit_policy` field used to control the permission
                                             to create user groups.
                                     can_create_bots_group:
@@ -4927,7 +4930,7 @@ paths:
                                             resolve topics was controlled by the more general
                                             can_move_messages_between_topics_group permission for moving messages.
                                         - $ref: "#/components/schemas/GroupSettingValue"
-                                    can_manage_all_groups:
+                                    can_manage_all_groups_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
                                         - description: |
@@ -4935,7 +4938,10 @@ paths:
                                             defining the set of users who have permission to
                                             administer all existing groups in this organization.
 
-                                            **Changes**: Prior to Zulip 10.0 (feature level 305), only users who
+                                            **Changes**: In Zulip 12.0 (feature level ZF-88b3a1), renamed
+                                            `can_manage_all_groups` to `can_manage_all_groups_group`.
+
+                                            Prior to Zulip 10.0 (feature level 305), only users who
                                             were a member of the group or had the moderator role or above could
                                             exercise the permission on a given group.
 
@@ -18674,7 +18680,7 @@ paths:
                               In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
                               `edit_topic_policy` enum.
                           - $ref: "#/components/schemas/GroupSettingValue"
-                      realm_can_create_groups:
+                      realm_can_create_groups_group:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
                           - description: |
@@ -18684,7 +18690,10 @@ paths:
                               the set of users who have permission to create user
                               groups in this organization.
 
-                              **Changes**: New in Zulip 10.0 (feature level 299). Previously
+                              **Changes**: In Zulip 12.0 (feature level ZF-88b3a1), renamed
+                              `realm_can_create_groups` to `realm_can_create_groups_group`.
+
+                              New in Zulip 10.0 (feature level 299). Previously
                               `realm_user_group_edit_policy` field used to control the
                               permission to create user groups.
                       realm_can_create_bots_group:
@@ -18714,7 +18723,7 @@ paths:
                               **Changes**: New in Zulip 10.0 (feature level 344). Previously, this
                               permission was controlled by the enum `bot_creation_policy`. Values
                               were 1=Members, 2=Generic bots limited to administrators, 3=Administrators.
-                      realm_can_manage_all_groups:
+                      realm_can_manage_all_groups_group:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
                           - description: |
@@ -18724,7 +18733,10 @@ paths:
                               defining the set of users who have permission to
                               administer all existing groups in this organization.
 
-                              **Changes**: Prior to Zulip 10.0 (feature level 305), only users who
+                              **Changes**: In Zulip 12.0 (feature level ZF-88b3a1), renamed
+                              `realm_can_manage_all_groups` to `realm_can_manage_all_groups_group`.
+
+                              Prior to Zulip 10.0 (feature level 305), only users who
                               were a member of the group or had the moderator role or above could
                               exercise the permission on a given group.
 

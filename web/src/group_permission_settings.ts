@@ -44,7 +44,7 @@ export function get_group_permission_settings(): GroupGroupSettingName[] {
 const realm_group_setting_names_supporting_anonymous_groups = [
     "can_add_custom_emoji_group",
     "can_add_subscribers_group",
-    "can_create_groups",
+    "can_create_groups_group",
     "can_create_bots_group",
     "can_create_public_channel_group",
     "can_create_private_channel_group",
@@ -52,7 +52,7 @@ const realm_group_setting_names_supporting_anonymous_groups = [
     "can_delete_any_message_group",
     "can_delete_own_message_group",
     "can_invite_users_group",
-    "can_manage_all_groups",
+    "can_manage_all_groups_group",
     "can_manage_billing_group",
     "can_mention_many_users_group",
     "can_move_messages_between_channels_group",

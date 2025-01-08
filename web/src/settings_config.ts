@@ -736,9 +736,9 @@ export const all_group_setting_labels = {
         direct_message_initiator_group: $t({
             defaultMessage: "Who can start a direct message conversation",
         }),
-        can_manage_all_groups: $t({defaultMessage: "Who can administer all user groups"}),
+        can_manage_all_groups_group: $t({defaultMessage: "Who can administer all user groups"}),
         can_manage_billing_group: $t({defaultMessage: "Who can manage plans and billing"}),
-        can_create_groups: $t({defaultMessage: "Who can create user groups"}),
+        can_create_groups_group: $t({defaultMessage: "Who can create user groups"}),
         can_move_messages_between_topics_group: $t({
             defaultMessage: "Who can edit topics in any channel",
         }),
@@ -836,7 +836,7 @@ export const realm_group_permission_settings: {
     {
         subsection_heading: $t({defaultMessage: "Group permissions"}),
         subsection_key: "org-group-permissions",
-        settings: ["can_manage_all_groups", "can_create_groups"],
+        settings: ["can_manage_all_groups_group", "can_create_groups_group"],
     },
     {
         subsection_heading: $t({defaultMessage: "Direct message permissions"}),
@@ -876,9 +876,9 @@ export const realm_group_permission_settings: {
 ];
 
 export const owner_editable_realm_group_permission_settings = new Set([
-    "can_create_groups",
+    "can_create_groups_group",
     "can_invite_users_group",
-    "can_manage_all_groups",
+    "can_manage_all_groups_group",
     "create_multiuse_invite_group",
 ]);
 
