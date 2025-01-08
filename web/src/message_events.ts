@@ -192,6 +192,7 @@ export let update_views_filtered_on_message_property = (
                 data: {
                     message_ids: JSON.stringify(message_ids),
                     narrow: JSON.stringify(filter.terms()),
+                    allow_empty_topic_name: true,
                 },
                 success(data) {
                     const messages_to_add: Message[] = [];
@@ -216,6 +217,7 @@ export let update_views_filtered_on_message_property = (
                 url: "/json/messages",
                 data: {
                     message_ids: JSON.stringify(messages_to_fetch),
+                    allow_empty_topic_name: true,
                     // We don't filter by narrow here since we can
                     // apply the filter locally and the fetched message
                     // can be used to update other message lists and
