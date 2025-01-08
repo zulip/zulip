@@ -495,6 +495,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("zapier", ["meta-integration"]),
     WebhookIntegration("zendesk", ["customer-support"]),
     WebhookIntegration("zabbix", ["monitoring"]),
+    WebhookIntegration("openproject",["project-management"], display_name="OpenProject"),
 ]
 
 INTEGRATIONS: dict[str, Integration] = {
@@ -812,6 +813,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
             },
         )
     ],
+    "openproject": [ScreenshotConfig("project_created.json")],
 }
 
 
