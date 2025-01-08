@@ -323,6 +323,7 @@
 
     .selectable_sidebar_block {
         margin: 4px;
+        margin-left: var(--right-sidebar-header-icon-toggle-width);
     }
 
     .avatar-preload-background {
@@ -416,13 +417,15 @@
         "row-content ." auto / minmax(0, 1fr) var(--right-sidebar-vdots-width);
     align-content: baseline;
     margin-right: var(--width-simplebar-scroll-hover);
-    margin-left: var(--right-sidebar-toggle-width-offset);
     /* When both the left circle and three dot menu are present, we want
        the space to the left of the circle to be more similar to the space
        to the right of the three dot menu. */
     &:not(.with_avatar) {
-        padding-left: 2px;
-        margin-left: calc(var(--right-sidebar-toggle-width-offset) - 2px);
+        padding-left: calc(var(--right-sidebar-toggle-width-offset) - 2px);
+    }
+
+    &:hover {
+        cursor: pointer;
     }
 
     .user-name-and-status-emoji {
