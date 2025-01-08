@@ -173,7 +173,7 @@ export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
 
         const raw_operand = hash[i + 1];
 
-        if (!raw_operand) {
+        if (raw_operand === undefined) {
             return undefined;
         }
 
@@ -181,6 +181,12 @@ export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
         if (operator.startsWith("-")) {
             negated = true;
             operator = operator.slice(1);
+        }
+
+        // We allow the empty string as a topic name.
+        // Any other operand being empty string is invalid.
+        if (operator !== "topic" && raw_operand === "") {
+            return undefined;
         }
 
         const operand = decode_operand(operator, raw_operand);

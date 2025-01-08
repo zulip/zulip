@@ -190,6 +190,18 @@ run_test("test_parse_narrow", () => {
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "42-bogus"]), [
         {negated: false, operator: "stream", operand: ""},
     ]);
+
+    // Empty string as a topic name is valid.
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "99-frontend", "topic", ""]), [
+        {negated: false, operator: "stream", operand: frontend_id.toString()},
+        {negated: false, operator: "topic", operand: ""},
+    ]);
+
+    // Empty string used as an operand in other cases is invalid.
+    assert.deepEqual(
+        hash_util.parse_narrow(["narrow", "stream", "99-frontend", "topic", "", "near", ""]),
+        undefined,
+    );
 });
 
 run_test("test_channels_settings_edit_url", () => {
