@@ -197,6 +197,9 @@ class FakeComposeBox {
             return $message_row_stub;
         };
 
+        $("textarea#compose-textarea").set_height(50);
+        $("#compose .preview_message_area").css = noop;
+
         this.reset();
     }
 
