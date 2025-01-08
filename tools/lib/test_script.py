@@ -93,7 +93,68 @@ def add_provision_check_override_param(parser: ArgumentParser) -> None:
     )
 
 
+
 def find_js_test_files(test_dir: str, files: Iterable[str]) -> list[str]:
+    """
+    Find test files in the test directory with improved matching and error handling.
+    Supports both direct matches and partial names, with special handling for test files.
+
+    Args:
+        test_dir: Directory containing test files
+        files: Iterable of file names or patterns to match
+
+    Returns:
+        list[str]: List of absolute paths to matching test files
+
+    Raises:
+        Exception: If no matching test files are found with helpful suggestion message
+    """
+    test_files: list[str] = []
+    available_files = os.listdir(test_dir)
+
+    for file in files:
+        # Remove extension if provided
+        base_name, ext = os.path.splitext(file)
+
+        # Check if a valid test file exists
+        matches = [
+            f
+            for f in available_files
+            if f.startswith(base_name) and f.endswith((".test.ts", ".test.js"))
+        ]
+
+        # Raise an error if a file exists but is not a valid test file
+        if not matches:
+            similar_files = [
+                f
+                for f in available_files
+                if f.startswith(base_name) or f.endswith((".test.ts", ".test.js"))
+            ]
+
+            if f"{base_name}.ts" in similar_files or f"{base_name}.js" in similar_files:
+                raise Exception(
+                    f"'{file}' is not a valid test file. Test files must end with '.test.ts' or '.test.js'"
+                )
+
+            error_msg = f"Cannot find a matching test file for '{file}' in '{test_dir}'"
+            if similar_files:
+                error_msg += "\nDid you mean one of these?\n" + "\n".join(
+                    f"- {f}" for f in similar_files if f.endswith((".test.ts", ".test.js"))
+                )
+            raise Exception(error_msg)
+
+        # Add absolute path of matching file
+        test_files.extend(os.path.abspath(os.path.join(test_dir, match)) for match in matches)
+
+    # If no specific files were passed, return all test files in the directory
+    if not files:
+        test_files = sorted(
+            glob.glob(os.path.join(test_dir, "*.test.ts"))
+            + glob.glob(os.path.join(test_dir, "*.test.js"))
+        )
+
+    return test_files
+
     """
     Find test files in the test directory with improved matching and error handling.
     Supports both direct matches and partial names, with special handling for test files.
