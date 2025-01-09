@@ -53,4 +53,10 @@ run_test("Add participants", () => {
     const participants = new ConversationParticipants(all_messages);
     assert.ok(_.isEqual(participants.humans, new Set([user1.user_id, user2.user_id])));
     assert.ok(_.isEqual(participants.bots, new Set([bot1.user_id, bot2.user_id])));
+    // None since they were not added as active users.
+    assert.equal(participants.visible().size, 0);
+
+    // Add user1 as active user.
+    people.add_active_user(user1);
+    assert.ok(_.isEqual(participants.visible(), new Set([user1.user_id])));
 });
