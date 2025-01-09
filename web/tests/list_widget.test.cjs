@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {mock_esm, mock_jquery, zrequire} = require("./lib/namespace.cjs");
+const {SideEffect} = require("./lib/side_effect.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -188,14 +189,14 @@ test_widget("not_scrolling", () => {
 
     const items = [];
 
-    let post_scroll__pre_render_callback_called = false;
+    const post_scroll_side_effect = new SideEffect("call post_scroll__pre_render_callback");
     const post_scroll__pre_render_callback = () => {
-        post_scroll__pre_render_callback_called = true;
+        post_scroll_side_effect.has_happened();
     };
 
-    let get_min_load_count_called = false;
+    const call_to_get_min_load_count = new SideEffect("call get_min_load_count");
     const get_min_load_count = (_offset, load_count) => {
-        get_min_load_count_called = true;
+        call_to_get_min_load_count.has_happened();
         return load_count;
     };
 
@@ -212,7 +213,9 @@ test_widget("not_scrolling", () => {
         get_min_load_count,
     };
 
-    ListWidget.create($container, items, opts);
+    call_to_get_min_load_count.should_happen_during(() => {
+        ListWidget.create($container, items, opts);
+    });
 
     assert.deepEqual($container.$appended_data.html(), items.slice(0, 80).join(""));
 
@@ -223,11 +226,12 @@ test_widget("not_scrolling", () => {
 
     // Since `should_render` is always false, no elements will be
     // added regardless of scrolling.
-    $scroll_container.call_scroll();
+    post_scroll_side_effect.should_happen_during(() => {
+        $scroll_container.call_scroll();
+    });
+
     // $appended_data remains the same.
     assert.deepEqual($container.$appended_data.html(), items.slice(0, 80).join(""));
-    assert.equal(post_scroll__pre_render_callback_called, true);
-    assert.equal(get_min_load_count_called, true);
 });
 
 test_widget("filtering", () => {

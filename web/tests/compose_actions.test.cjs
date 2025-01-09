@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const {mock_banners} = require("./lib/compose_banner.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
+const {SideEffect} = require("./lib/side_effect.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -273,22 +274,28 @@ test("start", ({override, override_rewire, mock_template}) => {
     assert.equal(compose_state.get_message_type(), "private");
     assert.ok(compose_state.composing());
 
-    // Cancel compose.
-    let pill_cleared;
+    const clear_pill = new SideEffect("call compose_pm_pill.clear");
+
     compose_pm_pill.clear = () => {
-        pill_cleared = true;
+        clear_pill.has_happened();
     };
 
-    let abort_xhr_called = false;
+    const invoke_cancel_hook = new SideEffect("get callback for cancel hook");
     compose_actions.register_compose_cancel_hook(() => {
-        abort_xhr_called = true;
+        invoke_cancel_hook.has_happened();
     });
+
     $("textarea#compose-textarea").set_height(50);
 
     assert_hidden("#compose_controls");
-    cancel();
-    assert.ok(abort_xhr_called);
-    assert.ok(pill_cleared);
+
+    // Cancel compose.
+    clear_pill.should_happen_during(() => {
+        invoke_cancel_hook.should_happen_during(() => {
+            cancel();
+        });
+    });
+
     assert_visible("#compose_controls");
     assert_hidden("#compose-direct-recipient");
     assert.ok(!compose_state.composing());
@@ -448,11 +455,13 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     override(message_lists.current, "get", (id) => (id === 100 ? selected_message : undefined));
 
     let expected_replacement;
-    let replaced;
+
+    const call_replace_syntax = new SideEffect("call replace_syntax");
+
     override(compose_ui, "replace_syntax", (syntax, replacement) => {
         assert.equal(syntax, "translated: [Quoting…]");
         assert.equal(replacement, expected_replacement);
-        replaced = true;
+        call_replace_syntax.has_happened();
     });
 
     const denmark_stream = {
@@ -495,32 +504,38 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     $("textarea#compose-textarea").caret = noop;
     $("textarea#compose-textarea").attr("id", "compose-textarea");
 
-    replaced = false;
     expected_replacement =
         "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n```quote\nTesting.\n```";
 
     quote_message(opts);
 
-    success_function({
-        raw_content: "Testing.",
+    call_replace_syntax.should_happen_during(() => {
+        success_function({
+            raw_content: "Testing.",
+        });
     });
-    assert.ok(replaced);
 
     opts = {
         reply_type: "personal",
         message_id: 100,
         forward_message: true,
     };
-    replaced = false;
 
     override(compose_ui, "insert_and_scroll_into_view", noop);
 
     quote_message(opts);
 
-    success_function({
-        raw_content: "Testing.",
+    call_replace_syntax.should_happen_during(() => {
+        success_function({
+            raw_content: "Testing.",
+        });
     });
-    assert.ok(replaced);
+
+    function test_call_to_quote_message() {
+        call_replace_syntax.should_happen_during(() => {
+            quote_message(opts);
+        });
+    }
 
     opts = {
         reply_type: "personal",
@@ -536,19 +551,17 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         raw_content: "Testing.",
     };
 
-    replaced = false;
     disallow(channel, "get");
-    quote_message(opts);
-    assert.ok(replaced);
+
+    test_call_to_quote_message();
 
     opts = {
         reply_type: "personal",
         message_id: 100,
         forward_message: true,
     };
-    replaced = false;
-    quote_message(opts);
-    assert.ok(replaced);
+
+    test_call_to_quote_message();
 
     opts = {
         reply_type: "personal",
@@ -565,19 +578,17 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         raw_content: "```\nmultiline code block\nshoudln't mess with quotes\n```",
     };
 
-    replaced = false;
     expected_replacement =
         "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n````quote\n```\nmultiline code block\nshoudln't mess with quotes\n```\n````";
-    quote_message(opts);
-    assert.ok(replaced);
+
+    test_call_to_quote_message();
 
     opts = {
         reply_type: "personal",
         forward_message: true,
     };
-    replaced = false;
-    quote_message(opts);
-    assert.ok(replaced);
+
+    test_call_to_quote_message();
 });
 
 test("focus_in_empty_compose", () => {
@@ -620,79 +631,95 @@ test("on_narrow", ({override, override_rewire}) => {
     people.add_active_user(bot);
 
     user_groups.initialize({realm_user_groups: [nobody, everyone]});
-    let cancel_called = false;
+
+    const call_cancel = new SideEffect("call cancel");
     override_rewire(compose_actions, "cancel", () => {
-        cancel_called = true;
+        call_cancel.has_happened();
     });
-    compose_actions.on_narrow({
-        force_close: true,
-    });
-    assert.ok(cancel_called);
 
-    let on_topic_narrow_called = false;
+    call_cancel.should_happen_during(() => {
+        compose_actions.on_narrow({
+            force_close: true,
+        });
+    });
+
+    const call_on_topic_narrow = new SideEffect("call on_topic_narrow");
     override_rewire(compose_actions, "on_topic_narrow", () => {
-        on_topic_narrow_called = true;
+        call_on_topic_narrow.has_happened();
     });
-    narrowed_by_topic_reply = true;
-    compose_actions.on_narrow({
-        force_close: false,
-    });
-    assert.ok(on_topic_narrow_called);
 
-    let update_message_list_called = false;
-    narrowed_by_topic_reply = false;
-    compose_fade.update_message_list = () => {
-        update_message_list_called = true;
-    };
-    compose_state.message_content("foo");
-    compose_actions.on_narrow({
-        force_close: false,
+    narrowed_by_topic_reply = true;
+
+    call_on_topic_narrow.should_happen_during(() => {
+        compose_actions.on_narrow({
+            force_close: false,
+        });
     });
-    assert.ok(update_message_list_called);
+
+    narrowed_by_topic_reply = false;
+
+    const call_update_message_list = new SideEffect("call update_message_list");
+    override(compose_fade, "update_message_list", () => {
+        call_update_message_list.has_happened();
+    });
+
+    compose_state.message_content("foo");
+
+    call_update_message_list.should_happen_during(() => {
+        compose_actions.on_narrow({
+            force_close: false,
+        });
+    });
 
     compose_state.message_content("");
-    let start_called = false;
+
+    const call_start = new SideEffect("call start");
     override_rewire(compose_actions, "start", () => {
-        start_called = true;
+        call_start.has_happened();
     });
+
     narrowed_by_pm_reply = true;
     override(realm, "realm_direct_message_permission_group", nobody.id);
     override(realm, "realm_direct_message_initiator_group", everyone.id);
+
     compose_actions.on_narrow({
         force_close: false,
         trigger: "not-search",
         private_message_recipient: "steve@example.com",
     });
-    assert.ok(!start_called);
 
-    compose_actions.on_narrow({
-        force_close: false,
-        trigger: "not-search",
-        private_message_recipient: "bot@example.com",
+    call_start.should_happen_during(() => {
+        compose_actions.on_narrow({
+            force_close: false,
+            trigger: "not-search",
+            private_message_recipient: "bot@example.com",
+        });
     });
-    assert.ok(start_called);
 
     override(realm, "realm_direct_message_permission_group", everyone.id);
     blueslip.expect("warn", "Unknown emails");
-    compose_actions.on_narrow({
-        force_close: false,
-        trigger: "not-search",
-        private_message_recipient: "not@empty.com",
-    });
-    assert.ok(start_called);
 
-    start_called = false;
-    compose_actions.on_narrow({
-        force_close: false,
-        trigger: "search",
-        private_message_recipient: "",
+    call_start.should_happen_during(() => {
+        compose_actions.on_narrow({
+            force_close: false,
+            trigger: "not-search",
+            private_message_recipient: "not@empty.com",
+        });
     });
-    assert.ok(!start_called);
+
+    call_start.should_not_happen_during(() => {
+        compose_actions.on_narrow({
+            force_close: false,
+            trigger: "search",
+            private_message_recipient: "",
+        });
+    });
 
     narrowed_by_pm_reply = false;
-    cancel_called = false;
-    compose_actions.on_narrow({
-        force_close: false,
+
+    call_cancel.should_happen_during(() => {
+        compose_actions.on_narrow({
+            force_close: false,
+        });
     });
-    assert.ok(cancel_called);
 });

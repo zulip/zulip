@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {SideEffect} = require("./lib/side_effect.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
@@ -17,8 +18,9 @@ alert_words.initialize({
 });
 
 run_test("rerender_alert_words_ui", ({mock_template}) => {
-    let list_widget_create_called = false;
     alert_words_ui.reset();
+
+    const list_widget_create_call = new SideEffect("call list_widget.create");
 
     mock_esm("../src/list_widget", {
         create(_container, words, opts) {
@@ -26,7 +28,7 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
             for (const word of words) {
                 opts.modifier_html(word);
             }
-            list_widget_create_called = true;
+            list_widget_create_call.has_happened();
         },
         generic_sort_functions: noop,
     });
@@ -38,14 +40,15 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
     });
 
     assert.equal(alert_words_ui.loaded, false);
-    assert.equal(list_widget_create_called, false);
 
     // Invoke list_widget.create indirectly via these calls.
     alert_words_ui.rerender_alert_words_ui();
-    alert_words_ui.set_up_alert_words();
+
+    list_widget_create_call.should_happen_during(() => {
+        alert_words_ui.set_up_alert_words();
+    });
 
     assert.equal(alert_words_ui.loaded, true);
-    assert.equal(list_widget_create_called, true);
 });
 
 run_test("remove_alert_word", ({override_rewire}) => {

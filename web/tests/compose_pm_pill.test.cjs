@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {SideEffect} = require("./lib/side_effect.cjs");
 const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
@@ -64,30 +65,30 @@ run_test("pills", ({override, override_rewire}) => {
     };
     pills.items = () => [...all_pills.values()];
 
-    let text_cleared;
+    const call_clear_text = new SideEffect("call pills.clear_text");
     pills.clear_text = () => {
-        text_cleared = true;
+        call_clear_text.has_happened();
     };
 
-    let pills_cleared;
+    const call_clear = new SideEffect("call pills.clear");
     pills.clear = () => {
-        pills_cleared = true;
+        call_clear.has_happened();
         pills = {
             pill: {},
         };
         all_pills.clear();
     };
 
-    let appendValue_called;
+    const call_append = new SideEffect("call pills.appendValue");
     pills.appendValue = function (value) {
-        appendValue_called = true;
+        call_append.has_happened();
         assert.equal(value, "othello@example.com");
         this.appendValidatedData(othello);
     };
 
-    let get_by_email_called = false;
+    const call_get_by_email = new SideEffect("call get_by_email");
     override_rewire(people, "get_by_email", (user_email) => {
-        get_by_email_called = true;
+        call_get_by_email.has_happened();
         switch (user_email) {
             case iago.email:
                 return iago;
@@ -99,9 +100,9 @@ run_test("pills", ({override, override_rewire}) => {
         }
     });
 
-    let get_by_user_id_called = false;
+    const call_get_by_user_id = new SideEffect("call get_by_user_id");
     override_rewire(people, "get_by_user_id", (id) => {
-        get_by_user_id_called = true;
+        call_get_by_user_id.has_happened();
         switch (id) {
             case othello.user_id:
                 return othello;
@@ -115,30 +116,31 @@ run_test("pills", ({override, override_rewire}) => {
 
     function test_create_item(handler) {
         (function test_rejection_path() {
-            const item = handler(othello.email, pills.items());
-            assert.ok(get_by_email_called);
-            assert.equal(item, undefined);
+            call_get_by_email.should_happen_during(() => {
+                const item = handler(othello.email, pills.items());
+                assert.equal(item, undefined);
+            });
         })();
 
         (function test_success_path() {
-            get_by_email_called = false;
-            const res = handler(iago.email, pills.items());
-            assert.ok(get_by_email_called);
-            assert.equal(typeof res, "object");
-            assert.equal(res.user_id, iago.user_id);
-            assert.equal(res.full_name, iago.full_name);
+            call_get_by_email.should_happen_during(() => {
+                const res = handler(iago.email, pills.items());
+                assert.equal(typeof res, "object");
+                assert.equal(res.user_id, iago.user_id);
+                assert.equal(res.full_name, iago.full_name);
+            });
         })();
 
         (function test_deactivated_pill() {
             people.deactivate(iago);
-            get_by_email_called = false;
-            const res = handler(iago.email, pills.items());
-            assert.ok(get_by_email_called);
-            assert.equal(typeof res, "object");
-            assert.equal(res.user_id, iago.user_id);
-            assert.equal(res.full_name, iago.full_name);
-            assert.ok(res.deactivated);
-            people.add_active_user(iago);
+            call_get_by_email.should_happen_during(() => {
+                const res = handler(iago.email, pills.items());
+                assert.equal(typeof res, "object");
+                assert.equal(res.user_id, iago.user_id);
+                assert.equal(res.full_name, iago.full_name);
+                assert.ok(res.deactivated);
+                people.add_active_user(iago);
+            });
         })();
     }
 
@@ -159,19 +161,28 @@ run_test("pills", ({override, override_rewire}) => {
         callback();
     };
 
-    let on_pill_create_or_remove_call_count = 0;
-    compose_pm_pill.initialize({
-        on_pill_create_or_remove() {
-            on_pill_create_or_remove_call_count += 1;
-        },
+    const call_on_handler = new SideEffect("call on_pill_create_or_remove");
+
+    call_on_handler.should_happen_during(() => {
+        compose_pm_pill.initialize({
+            on_pill_create_or_remove() {
+                call_on_handler.has_happened();
+            },
+        });
     });
+
     assert.ok(compose_pm_pill.widget);
+
     // Called two times via our overridden onPillCreate and onPillRemove methods.
     // Normally these would be called via `set_from_typeahead` method.
-    assert.equal(on_pill_create_or_remove_call_count, 2);
+    assert.equal(call_on_handler.num_times_met, 2);
 
-    compose_pm_pill.set_from_typeahead(othello);
-    compose_pm_pill.set_from_typeahead(hamlet);
+    call_clear_text.should_happen_during(() => {
+        compose_pm_pill.set_from_typeahead(othello);
+        compose_pm_pill.set_from_typeahead(hamlet);
+    });
+
+    assert.equal(call_clear_text.num_times_met, 2);
 
     let user_ids = compose_pm_pill.get_user_ids();
     assert.deepEqual(user_ids, [othello.user_id, hamlet.user_id]);
@@ -179,8 +190,10 @@ run_test("pills", ({override, override_rewire}) => {
     const user_ids_string = compose_pm_pill.get_user_ids_string();
     assert.equal(user_ids_string, "1,3");
 
-    const emails = compose_pm_pill.get_emails();
-    assert.equal(emails, "othello@example.com,hamlet@example.com");
+    call_get_by_user_id.should_happen_during(() => {
+        const emails = compose_pm_pill.get_emails();
+        assert.equal(emails, "othello@example.com,hamlet@example.com");
+    });
 
     const persons = [othello, iago, hamlet];
     const items = compose_pm_pill.filter_taken_users(persons);
@@ -190,16 +203,20 @@ run_test("pills", ({override, override_rewire}) => {
 
     test_create_item(create_item_handler);
 
-    compose_pm_pill.set_from_emails("othello@example.com");
+    call_clear.should_happen_during(() => {
+        call_append.should_happen_during(() => {
+            compose_pm_pill.set_from_emails("othello@example.com");
+        });
+    });
+
     assert.ok(compose_pm_pill.widget);
 
-    assert.ok(get_by_user_id_called);
-    assert.ok(pills_cleared);
-    assert.ok(appendValue_called);
-    assert.ok(text_cleared);
-
-    compose_pm_pill.set_from_typeahead(me);
-    compose_pm_pill.set_from_typeahead(othello);
+    call_clear.should_happen_during(() => {
+        call_clear_text.should_happen_during(() => {
+            compose_pm_pill.set_from_typeahead(me);
+            compose_pm_pill.set_from_typeahead(othello);
+        });
+    });
 
     user_ids = compose_pm_pill.get_user_ids();
     assert.deepEqual(user_ids, [othello.user_id]);
