@@ -493,7 +493,7 @@ function get_membership_status_context(group: UserGroup): {
         if (is_member) {
             const associated_subgroup_names = user_groups
                 .get_associated_subgroups(group, current_user_id)
-                .map((subgroup) => subgroup.name);
+                .map((subgroup) => user_groups.get_display_group_name(subgroup.name));
             associated_subgroup_names_html = util.format_array_as_list_with_highlighted_elements(
                 associated_subgroup_names,
                 "long",
