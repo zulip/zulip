@@ -48,7 +48,7 @@ tell Jira about the certificate.
 ``` Python
 String zulipEmail = "jira-notifications-bot@example.com"
 String zulipAPIKey = "0123456789abcdef0123456789abcdef"
-String zulipStream = "{{ recommended_channel_name }}"
+String zulipStream = "jira"
 String issueBaseUrl = "https://jira.COMPANY.com/browse/"
 ```
 

@@ -380,7 +380,6 @@ def integration_doc(request: HttpRequest, *, integration_name: PathOnly[str]) ->
 
     context["integration_name"] = integration.name
     context["integration_display_name"] = integration.display_name
-    context["recommended_channel_name"] = integration.stream_name
     if isinstance(integration, WebhookIntegration):
         assert integration.url.startswith("api/")
         context["integration_url"] = integration.url.removeprefix("api")
