@@ -1,5 +1,6 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
@@ -519,6 +520,8 @@ function edit_message($row: JQuery, raw_content: string): void {
         }),
     );
 
+    const $button_bar = $form.find(".compose-scrollable-buttons");
+
     const $message_edit_content = $form.find<HTMLTextAreaElement>("textarea.message_edit_content");
     assert($message_edit_content.length === 1);
     currently_editing_messages.set(message.id, $message_edit_content);
@@ -549,6 +552,13 @@ function edit_message($row: JQuery, raw_content: string): void {
     $form
         .find(".message-edit-feature-group .audio_link")
         .toggle(compose_call.compute_show_audio_chat_button());
+
+    $button_bar.on(
+        "scroll",
+        _.throttle((e: JQuery.ScrollEvent) => {
+            compose_ui.handle_scrolling_formatting_buttons(e);
+        }, 150),
+    );
 
     const $message_edit_countdown_timer = $row.find(".message_edit_countdown_timer");
     const $copy_message = $row.find(".copy_message");
