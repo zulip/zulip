@@ -676,8 +676,6 @@ export function process_hotkey(e, hotkey) {
         case "page_up":
         case "vim_up":
         case "vim_down":
-        case "vim_left":
-        case "vim_right":
         case "tab":
         case "shift_tab":
         case "open_recent_view":

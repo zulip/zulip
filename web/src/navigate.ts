@@ -4,20 +4,50 @@ import * as message_lists from "./message_lists.ts";
 import * as message_view from "./message_view.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as unread_ops from "./unread_ops.ts";
+import * as message_scroll_state from "./message_scroll_state.ts";
 
 function go_to_row(msg_id: number): void {
     assert(message_lists.current !== undefined);
     message_lists.current.select_id(msg_id, {then_scroll: true, from_scroll: true});
 }
 
+function is_message_partially_visible($message_row: JQuery): boolean {
+    const viewport_info = message_viewport.message_viewport_info();
+    const message_top = $message_row.get_offset_to_window().top;
+    const message_bottom = message_top + ($message_row.outerHeight(true) ?? 0);
+
+    return (
+        (message_top >= viewport_info.visible_top && message_top < viewport_info.visible_bottom) ||
+        (message_bottom > viewport_info.visible_top && message_bottom <= viewport_info.visible_bottom)
+    );
+}
+
+function scroll_to_message($message_row: JQuery, position: "top" | "bottom"): void {
+    const viewport_info = message_viewport.message_viewport_info();
+    const message_top = $message_row.get_offset_to_window().top;
+    const message_height = $message_row.outerHeight(true) ?? 0;
+
+    if (position === "top") {
+        message_viewport.set_message_position(message_top, message_height, viewport_info, 0);
+    } else {
+        message_viewport.set_message_position(message_top, message_height, viewport_info, 1);
+    }
+}
+
 export function up(): void {
     assert(message_lists.current !== undefined);
     message_viewport.set_last_movement_direction(-1);
+    const $current_message_row = message_lists.current.selected_row();
     const msg_id = message_lists.current.prev();
     if (msg_id === undefined) {
         return;
     }
-    go_to_row(msg_id);
+
+    if (!is_message_partially_visible($current_message_row)) {
+        scroll_to_message($current_message_row, "top");
+    } else {
+        go_to_row(msg_id);
+    }
 }
 
 export function down(with_centering = false): void {

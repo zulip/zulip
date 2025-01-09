@@ -561,3 +561,15 @@ export function initialize(): void {
         stop_auto_scrolling();
     });
 }
+
+export function scroll_to_message($message_row: JQuery, position: "top" | "bottom"): void {
+    const viewport_info = message_viewport_info();
+    const message_top = $message_row.get_offset_to_window().top;
+    const message_height = $message_row.outerHeight(true) ?? 0;
+
+    if (position === "top") {
+        set_message_position(message_top, message_height, viewport_info, 0);
+    } else {
+        set_message_position(message_top, message_height, viewport_info, 1);
+    }
+}
