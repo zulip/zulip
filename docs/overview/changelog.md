@@ -1285,7 +1285,7 @@ _Released 2023-01-23_
 - Use internationalized form of “at” in message timestamps.
 - Updated translations.
 - Fixed the “custom” value for the
-  “[delay before sending message notification emails](https://zulip.com/help/email-notifications#delay-before-sending-emails)”
+  “[delay before sending message notification emails](https://zulip.com/help/email-notifications)”
   setting.
 - Fixed an error which prevented users from changing
   [stream-specific notification settings](https://zulip.com/help/channel-notifications#configure-notifications-for-a-single-channel).
