@@ -266,10 +266,10 @@ export function rewire_send_message(value) {
     send_message = value;
 }
 
-export function handle_enter_key_with_preview_open(ctrl_pressed = false) {
+export function handle_enter_key_with_preview_open(cmd_or_ctrl_pressed = false) {
     if (
-        (user_settings.enter_sends && !ctrl_pressed) ||
-        (!user_settings.enter_sends && ctrl_pressed)
+        (user_settings.enter_sends && !cmd_or_ctrl_pressed) ||
+        (!user_settings.enter_sends && cmd_or_ctrl_pressed)
     ) {
         // If this enter should send, we attempt to send the message.
         finish();
