@@ -508,15 +508,6 @@ export function show_new_stream_modal(): void {
             );
         }
     }
-    const $add_subscribers_container = $(
-        "#stream_creation_form .subscriber_list_settings",
-    ).expectOne();
-
-    stream_ui_updates.enable_or_disable_add_subscribers_elements(
-        $add_subscribers_container,
-        settings_data.can_subscribe_others_to_all_streams(),
-        true,
-    );
 
     // set default state for "announce stream" and "default stream" option.
     $("#stream_creation_form .default-stream input").prop("checked", false);
