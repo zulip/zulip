@@ -3,6 +3,7 @@ from collections import Counter
 from datetime import datetime, timedelta, timezone
 from email.headerregistry import Address
 from typing import Annotated, Any, TypedDict, TypeVar
+from urllib.parse import urlsplit
 from uuid import UUID
 
 import orjson
@@ -122,8 +123,24 @@ def deactivate_remote_server(
 
 
 def validate_hostname_or_raise_error(hostname: str) -> None:
+    """
+    Validate that the argument is a valid hostname to be registered
+    with the bouncer.
+
+    Note: The hostname is allowed to contain a port number, as some
+    registration do take this form and without the port we wouldn't
+    actually know how to make requests to the server.
+    """
     try:
         # TODO: Ideally we'd not abuse the URL validator this way
+        parsed = urlsplit(f"http://{hostname}")
+
+        if parsed.path or parsed.query or parsed.fragment:
+            raise JsonableError(
+                _("{hostname} contains invalid components (e.g., path, query, fragment).").format(
+                    hostname=hostname
+                )
+            )
         url_validator = URLValidator()
         url_validator("http://" + hostname)
     except ValidationError:

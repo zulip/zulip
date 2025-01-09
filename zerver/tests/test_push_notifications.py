@@ -5207,6 +5207,12 @@ class PushBouncerSignupTest(ZulipTestCase):
         result = self.client_post("/api/v1/remotes/server/register", request)
         self.assert_json_error(result, "invalid-host is not a valid hostname")
 
+        request["hostname"] = "example.com/path"
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_error(
+            result, "example.com/path contains invalid components (e.g., path, query, fragment)."
+        )
+
     def test_push_signup_invalid_zulip_org_id(self) -> None:
         zulip_org_id = "x" * RemoteZulipServer.UUID_LENGTH
         zulip_org_key = get_random_string(64)
