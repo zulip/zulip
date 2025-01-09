@@ -731,6 +731,8 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
     const sub = {
         stream_id: 111,
         name: "random",
+        can_add_subscribers_group: admin.id,
+        can_administer_channel_group: admin.id,
     };
     stream_data.add_sub(sub);
     compose_state.set_stream_id(sub.stream_id);
