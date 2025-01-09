@@ -13,6 +13,7 @@ import * as starred_messages from "./starred_messages.ts";
 import * as sub_store from "./sub_store.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 export function toggle_starred_and_update_server(message: Message): void {
     if (message.locally_echoed) {
@@ -92,7 +93,8 @@ export function confirm_unstar_all_messages_in_topic(stream_id: number, topic: s
 
     const html_body = render_confirm_unstar_all_messages_in_topic({
         stream_name,
-        topic,
+        topic_display_name: util.get_final_topic_display_name(topic),
+        is_empty_string_topic: topic === "",
     });
 
     confirm_dialog.launch({
