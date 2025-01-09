@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 
 import {unresolve_name} from "../shared/src/resolved_topic.ts";
 import render_add_poll_modal from "../templates/add_poll_modal.hbs";
@@ -507,6 +508,13 @@ export function initialize() {
             compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
         }
     });
+
+    $(".compose-scrollable-buttons").on(
+        "scroll",
+        _.throttle((e) => {
+            compose_ui.handle_scrolling_formatting_buttons(e);
+        }, 150),
+    );
 
     $("#compose_recipient_box").on("click", "#recipient_box_clear_topic_button", () => {
         const $input = $("input#stream_message_recipient_topic");
