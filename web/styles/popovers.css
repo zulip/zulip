@@ -526,6 +526,7 @@ ul.popover-group-menu-member-list {
         margin-bottom: 20px;
     }
 
+    .group-tab-element-header,
     .stream-tab-element-header {
         margin: 0;
         display: inline-block;
@@ -565,12 +566,14 @@ ul.popover-group-menu-member-list {
         }
     }
 
+    .group-list-top-section,
     .stream-list-top-section {
         display: flex;
         margin-top: 12px;
         align-items: center;
         margin-bottom: 5px;
 
+        .group-search-container,
         .stream-search-container {
             margin-left: auto;
             display: grid;
@@ -579,6 +582,7 @@ ul.popover-group-menu-member-list {
                 30px;
         }
 
+        .group-search,
         .stream-search {
             grid-column: search-input-start / clear-search-end;
             grid-row: search-input;
@@ -589,6 +593,7 @@ ul.popover-group-menu-member-list {
             margin-bottom: 0;
         }
 
+        .group-search:placeholder-shown + #clear_groups_search,
         .stream-search:placeholder-shown + #clear_stream_search {
             visibility: hidden;
         }
@@ -713,6 +718,7 @@ ul.popover-group-menu-member-list {
     }
 
     #user-profile-modal {
+        .group-list-top-section,
         .stream-list-top-section {
             display: block;
 
@@ -720,10 +726,12 @@ ul.popover-group-menu-member-list {
                 width: 100%;
             }
 
+            .group-search,
             .stream-search {
                 margin-bottom: 8px;
             }
 
+            #clear_groups_search,
             #clear_stream_search {
                 padding-top: 1px;
             }
