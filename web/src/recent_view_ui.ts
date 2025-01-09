@@ -570,6 +570,8 @@ type ConversationContext = {
           invite_only: boolean;
           is_web_public: boolean;
           topic: string;
+          topic_display_name: string;
+          is_empty_string_topic: boolean;
           topic_url: string;
           mention_in_unread: boolean;
           visibility_policy: number | false;
@@ -611,6 +613,8 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         const is_web_public = stream_info.is_web_public;
         // Topic info
         const topic = last_msg.topic;
+        const topic_display_name = util.get_final_topic_display_name(topic);
+        const is_empty_string_topic = topic === "";
         const topic_url = hash_util.by_stream_topic_url(stream_id, topic);
 
         // We hide the row according to filters or if it's muted.
@@ -642,6 +646,8 @@ function format_conversation(conversation_data: ConversationData): ConversationC
             invite_only,
             is_web_public,
             topic,
+            topic_display_name,
+            is_empty_string_topic,
             topic_url,
             mention_in_unread,
             visibility_policy,
