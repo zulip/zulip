@@ -13,6 +13,7 @@ import {current_user} from "./state_data.ts";
 import type {CombinedPillContainer} from "./typeahead_helper.ts";
 import * as user_group_components from "./user_group_components.ts";
 import * as user_group_create_members_data from "./user_group_create_members_data.ts";
+import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 
 export let pill_widget: CombinedPillContainer;
@@ -162,7 +163,7 @@ export function build_widgets(): void {
 
             const item = {
                 group_id: member.id,
-                display_value: member.name,
+                display_value: user_groups.get_display_group_name(member.name),
                 soft_removed: user_group_create_members_data.subgroup_id_in_soft_remove_list(
                     member.id,
                 ),

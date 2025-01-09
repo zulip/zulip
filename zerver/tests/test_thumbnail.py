@@ -22,6 +22,7 @@ from zerver.lib.thumbnail import (
     StoredThumbnailFormat,
     ThumbnailFormat,
     get_image_thumbnail_path,
+    get_transcoded_format,
     missing_thumbnails,
     resize_emoji,
     split_thumbnail_path,
@@ -363,10 +364,10 @@ class TestStoreThumbnail(ZulipTestCase):
             self.assertEqual(thumbnailed_image.get_n_pages(), 2)
 
         with self.thumbnail_formats(ThumbnailFormat("webp", 100, 75, animated=True)):
-            self.assertEqual(ensure_thumbnails(image_attachment), 0)
+            self.assertEqual(ensure_thumbnails(image_attachment, "image/webp"), 0)
 
         with self.thumbnail_formats(ThumbnailFormat("webp", 150, 100, opts="Q=90", animated=False)):
-            self.assertEqual(ensure_thumbnails(image_attachment), 1)
+            self.assertEqual(ensure_thumbnails(image_attachment, "image/webp"), 1)
         self.assert_length(image_attachment.thumbnail_metadata, 2)
 
         bigger_thumbnail = StoredThumbnailFormat(**image_attachment.thumbnail_metadata[1])
@@ -507,10 +508,10 @@ class TestStoreThumbnail(ZulipTestCase):
             thumbnail_metadata=[],
         )
         with self.thumbnail_formats(ThumbnailFormat("webp", 100, 75, animated=False)):
-            self.assert_length(missing_thumbnails(image_attachment), 1)
+            self.assert_length(missing_thumbnails(image_attachment, "image/gif"), 1)
 
             with self.assertLogs("zerver.worker.thumbnail", level="ERROR") as error_log:
-                self.assertEqual(ensure_thumbnails(image_attachment), 0)
+                self.assertEqual(ensure_thumbnails(image_attachment, "image/gif"), 0)
 
         libvips_version = (pyvips.version(0), pyvips.version(1))
         # This error message changed
@@ -532,21 +533,23 @@ class TestStoreThumbnail(ZulipTestCase):
             thumbnail_metadata=[],
         )
         with self.thumbnail_formats():
-            self.assertEqual(missing_thumbnails(image_attachment), [])
+            self.assertEqual(missing_thumbnails(image_attachment, "image/png"), [])
 
         still_webp = ThumbnailFormat("webp", 100, 75, animated=False, opts="Q=90")
         with self.thumbnail_formats(still_webp):
-            self.assertEqual(missing_thumbnails(image_attachment), [still_webp])
+            self.assertEqual(missing_thumbnails(image_attachment, "image/png"), [still_webp])
 
         anim_webp = ThumbnailFormat("webp", 100, 75, animated=True, opts="Q=90")
         with self.thumbnail_formats(still_webp, anim_webp):
             # It's not animated, so the animated format doesn't appear at all
-            self.assertEqual(missing_thumbnails(image_attachment), [still_webp])
+            self.assertEqual(missing_thumbnails(image_attachment, "image/png"), [still_webp])
 
         still_jpeg = ThumbnailFormat("jpeg", 100, 75, animated=False, opts="Q=90")
         with self.thumbnail_formats(still_webp, anim_webp, still_jpeg):
             # But other still formats do
-            self.assertEqual(missing_thumbnails(image_attachment), [still_webp, still_jpeg])
+            self.assertEqual(
+                missing_thumbnails(image_attachment, "image/png"), [still_webp, still_jpeg]
+            )
 
         # If we have a rendered 150x100.webp, then we're not missing it
         rendered_still_webp = StoredThumbnailFormat(
@@ -561,12 +564,94 @@ class TestStoreThumbnail(ZulipTestCase):
         )
         image_attachment.thumbnail_metadata = [asdict(rendered_still_webp)]
         with self.thumbnail_formats(still_webp, anim_webp, still_jpeg):
-            self.assertEqual(missing_thumbnails(image_attachment), [still_jpeg])
+            self.assertEqual(missing_thumbnails(image_attachment, "image/png"), [still_jpeg])
 
         # If we have the still, and it's animated, we do still need the animated
         image_attachment.frames = 10
         with self.thumbnail_formats(still_webp, anim_webp, still_jpeg):
-            self.assertEqual(missing_thumbnails(image_attachment), [anim_webp, still_jpeg])
+            self.assertEqual(
+                missing_thumbnails(image_attachment, "image/png"), [anim_webp, still_jpeg]
+            )
+
+    def test_transcoded_format(self) -> None:
+        image_attachment = ImageAttachment(
+            path_id="example",
+            original_width_px=150,
+            original_height_px=100,
+            frames=1,
+            thumbnail_metadata=[],
+        )
+        still_webp = ThumbnailFormat("webp", 100, 75, animated=False, opts="Q=90")
+        with self.thumbnail_formats(still_webp):
+            # We add a high-resolution transcoded format if the image isn't in INLINE_MIME_TYPES:
+            transcoded = ThumbnailFormat("webp", 4032, 3024, animated=False)
+            self.assertEqual(
+                missing_thumbnails(image_attachment, "image/tiff"), [still_webp, transcoded]
+            )
+
+            # We flip to being portrait if the image is higher than it is wide
+            transcoded = ThumbnailFormat("webp", 3024, 4032, animated=False)
+            image_attachment.original_height_px = 300
+            self.assertEqual(
+                missing_thumbnails(image_attachment, "image/tiff"), [still_webp, transcoded]
+            )
+
+            # The format is not animated, even if the original was
+            image_attachment.original_height_px = 100
+            image_attachment.frames = 10
+            transcoded = ThumbnailFormat("webp", 4032, 3024, animated=False)
+            self.assertEqual(
+                missing_thumbnails(image_attachment, "image/tiff"), [still_webp, transcoded]
+            )
+
+            # We do not store on the image_attachment if we generated
+            # a transcoded version; it just picks the largest format
+            # if one is called for.
+            self.assertEqual(get_transcoded_format(image_attachment, "image/tiff"), None)
+            image_attachment.thumbnail_metadata = [
+                asdict(
+                    StoredThumbnailFormat(
+                        "webp",
+                        100,
+                        75,
+                        animated=False,
+                        content_type="image/webp",
+                        width=100,
+                        height=75,
+                        byte_size=100,
+                    )
+                ),
+                asdict(
+                    StoredThumbnailFormat(
+                        "webp",
+                        840,
+                        560,
+                        animated=False,
+                        content_type="image/webp",
+                        width=747,
+                        height=560,
+                        byte_size=800,
+                    )
+                ),
+                asdict(
+                    StoredThumbnailFormat(
+                        "webp",
+                        4032,
+                        3024,
+                        animated=False,
+                        content_type="image/webp",
+                        width=4032,
+                        height=3024,
+                        byte_size=2000,
+                    )
+                ),
+            ]
+            self.assertEqual(get_transcoded_format(image_attachment, "image/png"), None)
+            self.assertEqual(get_transcoded_format(image_attachment, None), None)
+            self.assertEqual(
+                get_transcoded_format(image_attachment, "image/tiff"),
+                ThumbnailFormat("webp", 4032, 3024, animated=False),
+            )
 
     def test_maybe_thumbnail_from_stream(self) -> None:
         # If we put the file in place directly (e.g. simulating a

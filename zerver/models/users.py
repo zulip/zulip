@@ -158,7 +158,7 @@ class UserBaseSettings(models.Model):
         USER_LIST_STYLE_WITH_STATUS,
         USER_LIST_STYLE_WITH_AVATAR,
     ]
-    user_list_style = models.PositiveSmallIntegerField(default=USER_LIST_STYLE_WITH_STATUS)
+    user_list_style = models.PositiveSmallIntegerField(default=USER_LIST_STYLE_WITH_AVATAR)
 
     # Show unread counts for
     WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_ALL_STREAMS = 1

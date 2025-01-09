@@ -9,12 +9,14 @@ from typing import TypeVar
 import pyvips
 from bs4 import BeautifulSoup
 from bs4.formatter import EntitySubstitution, HTMLFormatter
+from django.db.models import OuterRef, Subquery
 from django.utils.translation import gettext as _
 from typing_extensions import override
 
 from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.mime_types import INLINE_MIME_TYPES
 from zerver.lib.queue import queue_event_on_commit
-from zerver.models import ImageAttachment
+from zerver.models import Attachment, ImageAttachment
 
 DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500
@@ -79,7 +81,7 @@ class StoredThumbnailFormat(BaseThumbnailFormat):
 # Formats that we generate; the first animated and non-animated
 # options on this list are the ones which are written into
 # rendered_content.
-THUMBNAIL_OUTPUT_FORMATS = [
+THUMBNAIL_OUTPUT_FORMATS = (
     # We generate relatively large default "thumbnails", so that
     # clients that do not understand the thumbnailing protocol
     # (e.g. mobile) get something which does not look pixelated.  This
@@ -87,7 +89,13 @@ THUMBNAIL_OUTPUT_FORMATS = [
     # upsized thumbnail while loading the full resolution image.
     ThumbnailFormat("webp", 840, 560, animated=True),
     ThumbnailFormat("webp", 840, 560, animated=False),
-]
+)
+
+# This format is generated, in addition to THUMBNAIL_OUTPUT_FORMATS,
+# for images in THUMBNAIL_ACCEPT_IMAGE_TYPES which are not in
+# INLINE_MIME_TYPES: somewhat-common image types which are not broadly
+# supported by browsers.
+TRANSCODED_IMAGE_FORMAT = ThumbnailFormat("webp", 4032, 3024, animated=False)
 
 
 # These are the image content-types which the server supports parsing
@@ -256,10 +264,31 @@ def resize_emoji(
         return (animated.write_to_buffer(write_file_ext), first_still)
 
 
-def missing_thumbnails(image_attachment: ImageAttachment) -> list[ThumbnailFormat]:
+def missing_thumbnails(
+    image_attachment: ImageAttachment, original_content_type: str | None = None
+) -> list[ThumbnailFormat]:
     seen_thumbnails: set[StoredThumbnailFormat] = set()
     for existing_thumbnail in image_attachment.thumbnail_metadata:
         seen_thumbnails.add(StoredThumbnailFormat(**existing_thumbnail))
+
+    potential_output_formats = list(THUMBNAIL_OUTPUT_FORMATS)
+    if original_content_type is None or original_content_type not in INLINE_MIME_TYPES:
+        if image_attachment.original_width_px >= image_attachment.original_height_px:
+            additional_format = ThumbnailFormat(
+                TRANSCODED_IMAGE_FORMAT.extension,
+                TRANSCODED_IMAGE_FORMAT.max_width,
+                TRANSCODED_IMAGE_FORMAT.max_height,
+                TRANSCODED_IMAGE_FORMAT.animated,
+            )
+        else:
+            additional_format = ThumbnailFormat(
+                TRANSCODED_IMAGE_FORMAT.extension,
+                # Swap width and height to make a portrait-oriented version
+                TRANSCODED_IMAGE_FORMAT.max_height,
+                TRANSCODED_IMAGE_FORMAT.max_width,
+                TRANSCODED_IMAGE_FORMAT.animated,
+            )
+        potential_output_formats.append(additional_format)
 
     # We use the shared `__eq__` method from BaseThumbnailFormat to
     # compare between the StoredThumbnailFormat values pulled from the
@@ -267,7 +296,7 @@ def missing_thumbnails(image_attachment: ImageAttachment) -> list[ThumbnailForma
     # THUMBNAIL_OUTPUT_FORMATS.
     needed_thumbnails = [
         thumbnail_format
-        for thumbnail_format in THUMBNAIL_OUTPUT_FORMATS
+        for thumbnail_format in potential_output_formats
         if thumbnail_format not in seen_thumbnails
     ]
 
@@ -340,6 +369,8 @@ class MarkdownImageMetadata:
     is_animated: bool
     original_width_px: int
     original_height_px: int
+    original_content_type: str | None
+    transcoded_image: StoredThumbnailFormat | None = None
 
 
 def get_user_upload_previews(
@@ -356,11 +387,17 @@ def get_user_upload_previews(
 
     upload_preview_data: dict[str, MarkdownImageMetadata] = {}
 
-    image_attachments = ImageAttachment.objects.filter(
-        realm_id=realm_id, path_id__in=path_ids
-    ).order_by("id")
+    image_attachments = (
+        ImageAttachment.objects.filter(realm_id=realm_id, path_id__in=path_ids)
+        .annotate(
+            original_content_type=Subquery(
+                Attachment.objects.filter(path_id=OuterRef("path_id")).values("content_type")
+            )
+        )
+        .order_by("id")
+    )
     if lock:
-        image_attachments = image_attachments.select_for_update()
+        image_attachments = image_attachments.select_for_update(of=("self",))
     for image_attachment in image_attachments:
         if image_attachment.thumbnail_metadata == []:
             # Image exists, and header of it parsed as a valid image,
@@ -371,6 +408,7 @@ def get_user_upload_previews(
                 is_animated=False,
                 original_width_px=image_attachment.original_width_px,
                 original_height_px=image_attachment.original_height_px,
+                original_content_type=image_attachment.original_content_type,
             )
 
             # We re-queue the row for thumbnailing to make sure that
@@ -388,6 +426,10 @@ def get_user_upload_previews(
                 is_animated=is_animated,
                 original_width_px=image_attachment.original_width_px,
                 original_height_px=image_attachment.original_height_px,
+                original_content_type=image_attachment.original_content_type,
+                transcoded_image=get_transcoded_format(
+                    image_attachment, image_attachment.original_content_type
+                ),
             )
     return upload_preview_data
 
@@ -411,6 +453,25 @@ def get_default_thumbnail_url(image_attachment: ImageAttachment) -> tuple[str, b
         "/user_uploads/" + get_image_thumbnail_path(image_attachment, found_format),
         found_format.animated,
     )
+
+
+def get_transcoded_format(
+    image_attachment: ImageAttachment, original_content_type: str | None
+) -> StoredThumbnailFormat | None:
+    # Returns None if the original content-type is judged to be
+    # renderable inline.  Otherwise, we return the largest thumbnail
+    # that we generated.  Since formats which are thumbnailable but
+    # not in INLINE_MIME_TYPES get an extra large-resolution thumbnail
+    # added to their list of formats, this is thus either None or a
+    # high-resolution thumbnail.
+    if original_content_type is None or original_content_type in INLINE_MIME_TYPES:
+        return None
+
+    thumbs_by_size = sorted(
+        (StoredThumbnailFormat(**d) for d in image_attachment.thumbnail_metadata),
+        key=lambda t: t.width * t.height,
+    )
+    return thumbs_by_size.pop() if thumbs_by_size else None
 
 
 # Like HTMLFormatter.REGISTRY["html5"], this formatter avoids producing
@@ -480,8 +541,11 @@ def rewrite_thumbnailed_images(
             image_tag["data-original-dimensions"] = (
                 f"{image_data.original_width_px}x{image_data.original_height_px}"
             )
+            image_tag["data-original-content-type"] = image_data.original_content_type
             if image_data.is_animated:
                 image_tag["data-animated"] = "true"
+            if image_data.transcoded_image is not None:
+                image_tag["data-transcoded-image"] = str(image_data.transcoded_image)
 
     if changed:
         return parsed_message.encode(

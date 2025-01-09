@@ -577,12 +577,11 @@ class InlineVideoProcessor(markdown.treeprocessors.Treeprocessor):
             if is_static_or_current_realm_url(url, self.zmd.zulip_realm):
                 # Don't rewrite videos on our own site (e.g. user uploads).
                 continue
-            # Pass down both camo generated URL and the original video URL to the client.
-            # Camo URL is only used to generate preview of the video. When user plays the
-            # video, we switch to the source url to fetch the video. This allows playing
-            # the video with no load on our servers.
+            # The href= is still set to the non-Camo'd version, which
+            # is used by clients to play the full video without
+            # imposing load on the Camo server; this src is used to
+            # load the initial thumbnail and metadata (through Camo)
             video.set("src", get_camo_url(url))
-            video.set("data-video-original-url", url)
 
 
 class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
@@ -669,6 +668,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 "data-original-dimensions",
                 f"{metadata.original_width_px}x{metadata.original_height_px}",
             )
+            if metadata.original_content_type:
+                img.set(
+                    "data-original-content-type",
+                    metadata.original_content_type,
+                )
         else:
             img.set("src", image_url)
 
