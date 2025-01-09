@@ -530,6 +530,31 @@ export function make_compose_box_original_size(): void {
     $("textarea#compose-textarea").trigger("focus");
 }
 
+export function handle_scrolling_formatting_buttons(event: JQuery.ScrollEvent): void {
+    event.stopPropagation();
+    const $button_bar = $(event.currentTarget);
+    const $button_container = $button_bar.closest(".compose-scrolling-buttons-container");
+    const button_bar_max_left_scroll = Number(
+        $button_container.attr("data-button-bar-max-left-scroll"),
+    );
+    const button_bar_left_scroll = $button_bar.scrollLeft();
+
+    // If we're within 4px of the start or end of the formatting buttons,
+    // go ahead and hide the respective scrolling button
+    const hide_scroll_button_threshhold_px = 4;
+
+    $button_container.addClass("can-scroll-forward can-scroll-backward");
+
+    assert(typeof button_bar_left_scroll === "number");
+
+    if (button_bar_left_scroll >= button_bar_max_left_scroll - hide_scroll_button_threshhold_px) {
+        $button_container.removeClass("can-scroll-forward");
+    }
+    if (button_bar_left_scroll <= hide_scroll_button_threshhold_px) {
+        $button_container.removeClass("can-scroll-backward");
+    }
+}
+
 export function handle_keydown(
     event: JQuery.KeyboardEventBase,
     $textarea: JQuery<HTMLTextAreaElement>,
