@@ -15,6 +15,7 @@ import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
+import * as util from "./util.ts";
 
 type ScheduledMessageRenderContext = ScheduledMessage &
     (
@@ -25,6 +26,8 @@ type ScheduledMessageRenderContext = ScheduledMessage &
               stream_id: number;
               stream_name: string;
               stream_privacy_icon_color: string;
+              topic_display_name: string;
+              is_empty_string_topic: boolean;
           }
         | {
               is_stream: false;
@@ -107,6 +110,8 @@ function format(
                 recipient_bar_color,
                 stream_privacy_icon_color,
                 formatted_send_at_time,
+                topic_display_name: util.get_final_topic_display_name(msg.topic),
+                is_empty_string_topic: msg.topic === "",
             };
         } else {
             const recipients = people.get_recipients(msg.to.join(","));
