@@ -290,7 +290,7 @@ def get_fixture_and_image_paths(
 
 
 class HubotIntegration(Integration):
-    GIT_URL_TEMPLATE = "https://github.com/hubot-scripts/hubot-{}"
+    GIT_URL_TEMPLATE = "https://github.com/hubot-archive/hubot-{}"
 
     def __init__(
         self,
