@@ -32,10 +32,12 @@
 .modal__header {
     padding: 16px 16px 16px 24px;
     display: grid;
-    /* 25px at 16px/1em = 1.6667
+    /* 1.8em is the shortest round value for heading at which none of
+       the letters of the english alphabet get cut by overflow:hidden
+       at em = 20px
        29px at 16px/1em = 1.8125 */
     grid-template:
-        "heading close-button" 1.6667em "heading ." auto / minmax(0, 1fr)
+        "heading close-button" 1.8em "heading ." auto / minmax(0, 1fr)
         1.8125em;
     grid-column-gap: 4px;
 }
@@ -48,8 +50,10 @@
 }
 
 .modal__title {
+    grid-area: heading;
     margin: 0;
-    font-size: 1.375rem;
+    /* 16 / 14 * 1.375 = 1.5714, from original 1.375rem */
+    font-size: 1.5714em;
     font-weight: 600;
     line-height: 1.25;
     overflow: hidden;
@@ -447,10 +451,6 @@
     to fit in without need for scrolling */
     height: 32.1428em; /* 450px / 14px em */
     overflow: hidden;
-
-    .modal__title {
-        font-size: 1.375em; /* Replace default rem */
-    }
 
     .modal__content {
         flex-grow: 1;
