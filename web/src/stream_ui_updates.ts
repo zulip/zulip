@@ -429,7 +429,7 @@ export function update_add_subscriptions_elements(sub: SettingsSubscription): vo
             });
         } else {
             tooltip_message = $t({
-                defaultMessage: "Only channel members can add users to a private channel.",
+                defaultMessage: "You do not have permission to add other users to this channel.",
             });
         }
         settings_components.initialize_disable_button_hint_popover(
