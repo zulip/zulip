@@ -280,8 +280,8 @@ export function warn_if_mentioning_unsubscribed_user(
         const existing_invites = [...$existing_invites_area].map((user_row) =>
             Number($(user_row).attr("data-user-id")),
         );
-
-        const can_subscribe_other_users = settings_data.can_subscribe_others_to_all_streams();
+        const sub = stream_data.get_sub_by_id(stream_id)!;
+        const can_subscribe_other_users = stream_data.can_subscribe_others(sub);
 
         if (!existing_invites.includes(user_id)) {
             const context = {
