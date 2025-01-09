@@ -314,22 +314,25 @@ parser.add_argument(
     dest="parallel",
     action="store",
     type=int,
-    # Since process startup time is a significant portion of total
-    # runtime, so rather than doing os.cpu_count, we just do a fixed 4
-    # processes by default.
-    default=4,
+    # Running in parallel mode is an advanced option that sometimes
+    # doesn't even speed up things due to things like compilation
+    # duplication between processes. So we default to 1 process.
+    #
+    # We want most developers to run the tests on a single
+    # thread in a very deterministic order, to avoid strange
+    # surprises like coverage tests failing or leaks showing up
+    # only once all the tests run through the same process.
+    default=1,
     help="Specify the number of processes to run the "
-    "tests in. Default is the number of logical CPUs",
+    "tests in. This can speed things up sometimes.",
 )
 options = parser.parse_args()
 individual_files = options.args
 parallel = options.parallel
 
 if options.coverage and parallel > 1:
-    parallel = 1
-    print(
-        BOLDRED + "You cannot use --coverage with parallel tests. Running in serial mode.\n" + ENDC
-    )
+    print(BOLDRED + "You cannot use --coverage with parallel tests.\n" + ENDC)
+    sys.exit(1)
 
 assert_provisioning_status_ok(options.skip_provision_check)
 
