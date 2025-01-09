@@ -210,7 +210,7 @@ function initialize_bot_owner(
 function render_user_profile_subscribe_widget(): void {
     const opts: DropdownWidgetOptions = {
         widget_name: "user_profile_subscribe",
-        get_options: get_user_unsub_streams,
+        get_options: get_user_unsub_streams_for_dropdown,
         item_click_callback: change_state_of_subscribe_button,
         $events_container: $("#user-profile-modal"),
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
@@ -258,14 +258,22 @@ function reset_subscribe_widget(): void {
     }
 }
 
-export function get_user_unsub_streams(): {
+export function get_user_unsub_streams_for_dropdown(): {
     name: string;
     unique_id: number;
     stream: StreamSubscription;
 }[] {
     const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);
+    return get_user_unsub_streams(target_user_id);
+}
+
+export function get_user_unsub_streams(user_id: number): {
+    name: string;
+    unique_id: number;
+    stream: StreamSubscription;
+}[] {
     return stream_data
-        .get_streams_for_user(target_user_id)
+        .get_streams_for_user(user_id)
         .can_subscribe.map((stream) => ({
             name: stream.name,
             unique_id: stream.stream_id,
@@ -537,12 +545,13 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     original_values = {
         user_id: user.user_id.toString(),
     };
+    const user_unsub_streams = get_user_unsub_streams(user.user_id);
     // We only show the subscribe widget if the user is an admin, the user has opened their own profile,
     // or if the user profile belongs to a bot whose owner has opened the user profile. However, we don't
     // want to show the subscribe widget for generic bots since they are system bots and for deactivated users.
     // Therefore, we also check for that condition.
     const show_user_subscribe_widget =
-        (people.can_admin_user(user) || settings_data.can_subscribe_others_to_all_streams()) &&
+        (people.can_admin_user(user) || user_unsub_streams.length > 0) &&
         !user.is_system_bot &&
         people.is_person_active(user.user_id);
     // We currently have the main UI for editing your own profile in
