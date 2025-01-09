@@ -28,6 +28,7 @@ import * as user_status from "./user_status.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as user_topics from "./user_topics.ts";
 import type {AllVisibilityPolicies} from "./user_topics.ts";
+import * as util from "./util.ts";
 
 type ActionPopoverContext = {
     message_id: number;
@@ -50,7 +51,8 @@ type TopicPopoverContext = {
     stream_name: string;
     stream_id: number;
     stream_muted: boolean;
-    topic_name: string;
+    topic_display_name: string;
+    is_empty_string_topic: boolean;
     topic_unmuted: boolean;
     is_spectator: boolean;
     is_topic_empty: boolean;
@@ -255,7 +257,8 @@ export function get_topic_popover_content_context({
         stream_name: sub.name,
         stream_id: sub.stream_id,
         stream_muted: sub.is_muted,
-        topic_name,
+        topic_display_name: util.get_final_topic_display_name(topic_name),
+        is_empty_string_topic: topic_name === "",
         topic_unmuted,
         is_spectator,
         is_topic_empty,
