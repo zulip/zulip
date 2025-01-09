@@ -64,11 +64,14 @@ export function initialize(): void {
             onMount(instance) {
                 const $popper = $(instance.popper);
                 const {stream_id, topic_name, url} = get_conversation(instance);
-                const is_topic_empty = popover_menus_data.get_topic_popover_content_context({
+                const context = popover_menus_data.get_topic_popover_content_context({
                     stream_id,
                     topic_name,
                     url,
-                }).is_topic_empty;
+                });
+                const is_topic_empty = context.is_topic_empty;
+                const topic_display_name = context.topic_display_name;
+                const is_empty_string_topic = context.is_empty_string_topic;
 
                 if (!stream_id) {
                     popover_menus.hide_current_popover_if_visible(instance);
@@ -139,7 +142,10 @@ export function initialize(): void {
                 });
 
                 $popper.one("click", ".sidebar-popover-delete-topic-messages", () => {
-                    const html_body = render_delete_topic_modal({topic_name});
+                    const html_body = render_delete_topic_modal({
+                        topic_display_name,
+                        is_empty_string_topic,
+                    });
 
                     confirm_dialog.launch({
                         html_heading: $t_html({defaultMessage: "Delete topic"}),
