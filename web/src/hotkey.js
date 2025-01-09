@@ -121,6 +121,7 @@ const keydown_ctrl_mappings = {
 };
 
 const keydown_cmd_or_ctrl_mappings = {
+    13: {name: "ctrl_enter", message_view_only: true}, // enter
     67: {name: "copy_with_c", message_view_only: false}, // 'C'
     75: {name: "search_with_k", message_view_only: false}, // 'K'
     83: {name: "star_message", message_view_only: true}, // 'S'
