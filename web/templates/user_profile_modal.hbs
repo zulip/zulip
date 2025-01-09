@@ -131,8 +131,19 @@
 
                     <div class="tabcontent" id="user-profile-groups-tab">
                         <div class="alert user-profile-group-list-alert"></div>
+                        <div class="group-list-top-section">
+                            <div class="header-section">
+                                <h3 class="group-tab-element-header">{{t 'Group membership' }}</h3>
+                            </div>
+                            <div class="group-search-container">
+                                <input type="text" class="group-search modal_text_input" placeholder="{{t 'Filter groups' }}" />
+                                <button type="button" class="clear_search_button" id="clear_groups_search">
+                                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
                         <div class="subscription-group-list empty-list">
-                            <table class="user-group-list" data-empty="{{t 'Not a member of any groups.'}}"></table>
+                            <table class="user-group-list" data-empty="{{t 'Not a member of any groups.'}}" data-search-results-empty="{{t 'No matching user groups' }}"></table>
                         </div>
                     </div>
                     <div class="tabcontent" id="manage-profile-tab"></div>

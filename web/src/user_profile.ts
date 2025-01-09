@@ -378,6 +378,17 @@ function render_user_group_list(groups: UserGroup[], user: User): void {
         modifier_html(item) {
             return format_user_group_list_item_html(item, user);
         },
+        filter: {
+            $element: $("#user-profile-groups-tab .group-search"),
+            predicate(item, value) {
+                return item?.name.toLocaleLowerCase().includes(value);
+            },
+            onupdate() {
+                if ($container.find(".empty-table-message").length > 0) {
+                    $container.parent().addClass("empty-list");
+                }
+            },
+        },
         $simplebar_container: $("#user-profile-modal .modal__body"),
     });
 }
@@ -1315,6 +1326,16 @@ export function initialize(): void {
         e.preventDefault();
     });
 
+    $("body").on("click", "#user-profile-modal #clear_groups_search", (e) => {
+        const $input = $("#user-profile-groups-tab .group-search");
+        $input.val("");
+
+        $input.trigger("input");
+
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     $("body").on(
         "click",
         "#user-profile-modal #name .user-profile-manage-others-edit-button",
@@ -1346,6 +1367,15 @@ export function initialize(): void {
             $("#user-profile-streams-tab #clear_stream_search").show();
         } else {
             $("#user-profile-streams-tab #clear_stream_search").hide();
+        }
+    });
+
+    $("body").on("input", "#user-profile-groups-tab .group-search", () => {
+        const $input = $<HTMLInputElement>("#user-profile-groups-tab input.group-search");
+        if ($input.val()!.trim().length > 0) {
+            $("#user-profile-groups-tab #clear_groups_search").show();
+        } else {
+            $("#user-profile-groups-tab #clear_groups_search").hide();
         }
     });
 
