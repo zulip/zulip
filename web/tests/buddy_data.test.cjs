@@ -427,23 +427,18 @@ test("get_conversation_participants", ({override_rewire}) => {
     message_lists.set_current({
         data: {
             filter,
-        },
-        all_messages() {
-            return [
-                {
-                    sender_id: selma.user_id,
-                    id: rome_sub.stream_id,
-                    content: "example content",
-                    topic: "Foo",
-                    type: "stream",
-                },
-            ];
+            participants: {
+                visible: () => new Set([selma.user_id]),
+            },
         },
     });
     override_rewire(narrow_state, "stream_id", () => rome_sub.stream_id);
     override_rewire(narrow_state, "topic", () => "Foo");
 
-    assert.deepEqual(buddy_data.get_conversation_participants(), new Set([selma.user_id]));
+    assert.deepEqual(
+        buddy_data.get_conversation_participants_callback()(),
+        new Set([selma.user_id]),
+    );
 });
 
 test("level", ({override}) => {

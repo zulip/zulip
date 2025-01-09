@@ -78,7 +78,7 @@ type BuddyListRenderData = {
     total_human_subscribers_count: number;
     other_users_count: number;
     hide_headers: boolean;
-    all_participant_ids: Set<number>;
+    get_all_participant_ids: () => Set<number>;
 };
 
 function get_render_data(): BuddyListRenderData {
@@ -88,7 +88,7 @@ function get_render_data(): BuddyListRenderData {
     const total_human_subscribers_count = get_total_human_subscriber_count(current_sub, pm_ids_set);
     const other_users_count = people.get_active_human_count() - total_human_subscribers_count;
     const hide_headers = should_hide_headers(current_sub, pm_ids_set);
-    const all_participant_ids = buddy_data.get_conversation_participants();
+    const get_all_participant_ids = buddy_data.get_conversation_participants_callback();
 
     return {
         current_sub,
@@ -96,7 +96,7 @@ function get_render_data(): BuddyListRenderData {
         total_human_subscribers_count,
         other_users_count,
         hide_headers,
-        all_participant_ids,
+        get_all_participant_ids,
     };
 }
 
@@ -393,8 +393,8 @@ export class BuddyList extends BuddyListConf {
     }
 
     update_section_header_counts(): void {
-        const {total_human_subscribers_count, other_users_count, all_participant_ids} =
-            this.render_data;
+        const {total_human_subscribers_count, other_users_count} = this.render_data;
+        const all_participant_ids = this.render_data.get_all_participant_ids();
         const subscriber_section_user_count =
             total_human_subscribers_count - all_participant_ids.size;
 
@@ -427,7 +427,8 @@ export class BuddyList extends BuddyListConf {
     }
 
     render_section_headers(): void {
-        const {hide_headers, all_participant_ids} = this.render_data;
+        const {hide_headers} = this.render_data;
+        const all_participant_ids = this.render_data.get_all_participant_ids();
 
         // If we're not changing filters, this just means some users were added or
         // removed but otherwise everything is the same, so we don't need to do a full
@@ -549,9 +550,10 @@ export class BuddyList extends BuddyListConf {
         const other_users = [];
         const current_sub = this.render_data.current_sub;
         const pm_ids_set = narrow_state.pm_ids_set();
+        const all_participant_ids = this.render_data.get_all_participant_ids();
 
         for (const item of items) {
-            if (this.render_data.all_participant_ids.has(item.user_id)) {
+            if (all_participant_ids.has(item.user_id)) {
                 participants.push(item);
                 this.participant_user_ids.push(item.user_id);
             } else if (
@@ -612,12 +614,13 @@ export class BuddyList extends BuddyListConf {
     }
 
     display_or_hide_sections(): void {
-        const {all_participant_ids, hide_headers, total_human_subscribers_count} = this.render_data;
+        const {get_all_participant_ids, hide_headers, total_human_subscribers_count} =
+            this.render_data;
 
         // If we're in the mode of hiding headers, that means we're only showing the "others"
         // section, so hide the other two sections.
         $("#buddy-list-users-matching-view-container").toggleClass("no-display", hide_headers);
-        const hide_participants_list = hide_headers || all_participant_ids.size === 0;
+        const hide_participants_list = hide_headers || get_all_participant_ids().size === 0;
         $("#buddy-list-participants-container").toggleClass("no-display", hide_participants_list);
 
         // This is the case where every subscriber is in the participants list. In this case, we
@@ -835,7 +838,7 @@ export class BuddyList extends BuddyListConf {
                     list_user_id,
                     current_sub,
                     pm_ids_set,
-                    this.render_data.all_participant_ids,
+                    this.render_data.get_all_participant_ids(),
                 ) < 0,
         );
         return i === -1 ? user_id_list.length : i;
@@ -932,7 +935,7 @@ export class BuddyList extends BuddyListConf {
         // TODO: Further optimize this function by clubbing DOM updates from
         // multiple insertions/movements into a single update.
 
-        const all_participant_ids = this.render_data.all_participant_ids;
+        const all_participant_ids = this.render_data.get_all_participant_ids();
         const users = buddy_data.get_items_for_users(user_ids);
         for (const user of users) {
             const user_id = user.user_id;
