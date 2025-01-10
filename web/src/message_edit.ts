@@ -22,7 +22,6 @@ import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_call from "./compose_call.ts";
-import * as compose_state from "./compose_state.ts";
 import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -893,12 +892,13 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     const msg_id = rows.id_for_recipient_row($recipient_row);
     const message = message_lists.current.get(msg_id);
     assert(message?.type === "stream");
-    let topic = message.topic;
-    if (topic === compose_state.empty_topic_placeholder()) {
-        topic = "";
-    }
+    const topic = message.topic;
     const $inline_topic_edit_input = $form.find<HTMLInputElement>("input.inline_topic_edit");
     $inline_topic_edit_input.val(topic).trigger("select").trigger("focus");
+    if (topic === "") {
+        const topic_display_name = util.get_final_topic_display_name(topic);
+        $inline_topic_edit_input.attr("placeholder", topic_display_name);
+    }
     const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
     composebox_typeahead.initialize_topic_edit_typeahead(
         $inline_topic_edit_input,
