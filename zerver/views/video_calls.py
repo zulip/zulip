@@ -160,6 +160,31 @@ def complete_zoom_user_in_realm(
     return render(request, "zerver/close_window.html")
 
 
+def make_user_authenticated_zoom_video_call(
+    request: HttpRequest,
+    user: UserProfile,
+    *,
+    payload: ZoomPayload,
+) -> HttpResponse:
+    oauth = get_zoom_session(user)
+    if not oauth.authorized:
+        raise InvalidZoomTokenError
+
+    try:
+        res = oauth.post("https://api.zoom.us/v2/users/me/meetings", json=payload)
+    except OAuth2Error:
+        do_set_zoom_token(user, None)
+        raise InvalidZoomTokenError
+
+    if res.status_code == 401:
+        do_set_zoom_token(user, None)
+        raise InvalidZoomTokenError
+    elif not res.ok:
+        raise JsonableError(_("Failed to create Zoom call"))
+
+    return json_success(request, data={"url": res.json()["join_url"]})
+
+
 @typed_endpoint
 def make_zoom_video_call(
     request: HttpRequest,
@@ -167,10 +192,6 @@ def make_zoom_video_call(
     *,
     is_video_call: Json[bool] = True,
 ) -> HttpResponse:
-    oauth = get_zoom_session(user)
-    if not oauth.authorized:
-        raise InvalidZoomTokenError
-
     # The meeting host has the ability to configure both their own and
     # participants' default video on/off state for the meeting. That's
     # why when creating a meeting, configure the video on/off default
@@ -187,20 +208,7 @@ def make_zoom_video_call(
         # authentication for all meetings.
         default_password=True,
     )
-
-    try:
-        res = oauth.post("https://api.zoom.us/v2/users/me/meetings", json=payload)
-    except OAuth2Error:
-        do_set_zoom_token(user, None)
-        raise InvalidZoomTokenError
-
-    if res.status_code == 401:
-        do_set_zoom_token(user, None)
-        raise InvalidZoomTokenError
-    elif not res.ok:
-        raise JsonableError(_("Failed to create Zoom call"))
-
-    return json_success(request, data={"url": res.json()["join_url"]})
+    return make_user_authenticated_zoom_video_call(request, user, payload=payload)
 
 
 @csrf_exempt
