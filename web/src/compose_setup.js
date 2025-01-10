@@ -70,6 +70,14 @@ export function initialize() {
         compose_ui.handle_keyup(event, $("textarea#compose-textarea").expectOne());
     });
 
+    $("#compose-send-button").on("mouseenter", () => {
+        compose_validate.validate(false, false);
+        compose_validate.update_send_button_status();
+    });
+    $("#compose-send-button").on("mouseleave", () => {
+        $(".message-send-controls").removeClass("disabled-message-send-controls");
+    });
+
     $("textarea#compose-textarea").on("input propertychange", () => {
         compose_validate.warn_if_topic_resolved(false);
         const compose_text_length = compose_validate.check_overflow_text($("#send_message_form"));
