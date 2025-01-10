@@ -1,6 +1,8 @@
 import hashlib
 import json
+import logging
 import random
+from base64 import b64encode
 from urllib.parse import quote, urlencode, urljoin
 
 import requests
@@ -22,6 +24,11 @@ from typing_extensions import TypedDict
 
 from zerver.actions.video_calls import do_set_zoom_token
 from zerver.decorator import zulip_login_required
+from zerver.lib.cache import (
+    cache_with_key,
+    flush_zoom_server_access_token_cache,
+    zoom_server_access_token_cache_key,
+)
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.partial import partial
@@ -45,6 +52,13 @@ class InvalidZoomTokenError(JsonableError):
 
     def __init__(self) -> None:
         super().__init__(_("Invalid Zoom access token"))
+
+
+class UnknownZoomUserError(JsonableError):
+    code = ErrorCode.UNKNOWN_ZOOM_USER
+
+    def __init__(self) -> None:
+        super().__init__(_("Unknown Zoom user email"))
 
 
 def get_zoom_session(user: UserProfile) -> OAuth2Session:
@@ -185,6 +199,73 @@ def make_user_authenticated_zoom_video_call(
     return json_success(request, data={"url": res.json()["join_url"]})
 
 
+@cache_with_key(zoom_server_access_token_cache_key, timeout=3600 - 240)
+def get_zoom_server_to_server_access_token(account_id: str) -> str:
+    if settings.VIDEO_ZOOM_CLIENT_ID is None:
+        raise JsonableError(_("Zoom credentials have not been configured"))
+
+    client_id = settings.VIDEO_ZOOM_CLIENT_ID.encode("utf-8")
+    client_secret = str(settings.VIDEO_ZOOM_CLIENT_SECRET).encode("utf-8")
+
+    url = "https://zoom.us/oauth/token"
+    data = {"grant_type": "account_credentials", "account_id": account_id}
+
+    client_information = client_id + b":" + client_secret
+    encoded_client = b64encode(client_information).decode("ascii")
+    headers = {"Host": "zoom.us", "Authorization": f"Basic {encoded_client}"}
+
+    response = VideoCallSession().post(url, data, headers=headers)
+    if not response.ok:
+        # {reason: 'Bad request', error: 'invalid_request'} for invalid account ID
+        # {'reason': 'Invalid client_id or client_secret', 'error': 'invalid_client'}
+        raise JsonableError(_("Invalid Zoom credentials"))
+    return response.json()["access_token"]
+
+
+def get_zoom_server_to_server_call(
+    user: UserProfile, access_token: str, payload: ZoomPayload
+) -> str:
+    email = user.delivery_email
+    url = f"https://api.zoom.us/v2/users/{email}/meetings"
+    headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
+    response = VideoCallSession().post(url, json=payload, headers=headers)
+    if not response.ok:
+        response_dict = response.json()
+        zoom_api_error_code = response_dict["code"]
+        if zoom_api_error_code == 1001:
+            # {code: 1001, message: "User does not exist: {email}"}
+            raise UnknownZoomUserError
+        if zoom_api_error_code == 124:
+            # For the error responses below, we flush any
+            # cached access token for the Zoom account.
+            # {code: 124, message: "Invalid access token"}
+            # {code: 124, message: "Access token is expired"}
+            account_id = str(settings.VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID)
+
+            # We are managing expiry ourselves, so this shouldn't
+            # happen. Log an error, and flush the access token from
+            # the cache, so that future requests should proceed.
+            logging.error(
+                "Unexpected Zoom error 124: %s",
+                response_dict.get("message", str(response_dict)),
+            )
+            flush_zoom_server_access_token_cache(account_id)
+        raise JsonableError(_("Failed to create Zoom call"))
+    return response.json()["join_url"]
+
+
+def make_server_authenticated_zoom_video_call(
+    request: HttpRequest,
+    user: UserProfile,
+    *,
+    payload: ZoomPayload,
+) -> HttpResponse:
+    account_id = str(settings.VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID)
+    access_token = get_zoom_server_to_server_access_token(account_id)
+    url = get_zoom_server_to_server_call(user, access_token, payload)
+    return json_success(request, data={"url": url})
+
+
 @typed_endpoint
 def make_zoom_video_call(
     request: HttpRequest,
@@ -208,6 +289,8 @@ def make_zoom_video_call(
         # authentication for all meetings.
         default_password=True,
     )
+    if settings.VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID is not None:
+        return make_server_authenticated_zoom_video_call(request, user, payload=payload)
     return make_user_authenticated_zoom_video_call(request, user, payload=payload)
 
 

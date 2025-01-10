@@ -709,9 +709,10 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ################
 ## Video call integrations.
 ##
-## Controls the Zoom video call integration.  See:
+## Controls the Zoom video call integrations.  See:
 ## https://zulip.readthedocs.io/en/latest/production/video-calls.html
 # VIDEO_ZOOM_CLIENT_ID = "<your Zoom client ID>"
+# VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID = "<your Zoom account ID>"
 
 ## Controls the Jitsi Meet video call integration.  By default, the
 ## integration uses the SaaS https://meet.jit.si server.  You can specify

@@ -590,6 +590,12 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             "name": "BigBlueButton",
             "id": 4,
         },
+        # Only one of the Zoom integrations can be enabled on the server
+        # at a time, so we use the same name for both.
+        "zoom_server_to_server": {
+            "name": "Zoom",
+            "id": 5,
+        },
     }
 
     video_chat_provider = models.PositiveSmallIntegerField(
@@ -973,11 +979,19 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         enabled_video_chat_providers: dict[str, VideoChatProviderDict] = {}
         for provider in self.VIDEO_CHAT_PROVIDERS:
             if provider == "zoom" and (
-                settings.VIDEO_ZOOM_CLIENT_ID is None or settings.VIDEO_ZOOM_CLIENT_SECRET is None
+                settings.VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID is not None
+                or settings.VIDEO_ZOOM_CLIENT_ID is None
+                or settings.VIDEO_ZOOM_CLIENT_SECRET is None
             ):
                 continue
             if provider == "big_blue_button" and (
                 settings.BIG_BLUE_BUTTON_SECRET is None or settings.BIG_BLUE_BUTTON_URL is None
+            ):
+                continue
+            if provider == "zoom_server_to_server" and (
+                settings.VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID is None
+                or settings.VIDEO_ZOOM_CLIENT_ID is None
+                or settings.VIDEO_ZOOM_CLIENT_SECRET is None
             ):
                 continue
             enabled_video_chat_providers[provider] = self.VIDEO_CHAT_PROVIDERS[provider]

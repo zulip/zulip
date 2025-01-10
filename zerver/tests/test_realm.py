@@ -1045,19 +1045,45 @@ class RealmTest(ZulipTestCase):
 
         zoom_provider_id = Realm.VIDEO_CHAT_PROVIDERS["zoom"]["id"]
         req = {"video_chat_provider": f"{zoom_provider_id}"}
-        with self.settings(VIDEO_ZOOM_CLIENT_ID=None):
+        with self.settings(VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID=None, VIDEO_ZOOM_CLIENT_ID=None):
             result = self.client_patch("/json/realm", req)
             self.assert_json_error(result, f"Invalid video_chat_provider {zoom_provider_id}")
 
-        with self.settings(VIDEO_ZOOM_CLIENT_SECRET=None):
+        with self.settings(
+            VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID=None, VIDEO_ZOOM_CLIENT_SECRET=None
+        ):
             result = self.client_patch("/json/realm", req)
             self.assert_json_error(result, f"Invalid video_chat_provider {zoom_provider_id}")
+
+        with self.settings(VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_success(result)
+            self.assertEqual(
+                get_realm("zulip").video_chat_provider,
+                zoom_provider_id,
+            )
+
+        zoom_server_to_server_provider_id = Realm.VIDEO_CHAT_PROVIDERS["zoom_server_to_server"][
+            "id"
+        ]
+        req = {"video_chat_provider": f"{zoom_server_to_server_provider_id}"}
+        with self.settings(VIDEO_ZOOM_CLIENT_ID=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(
+                result, f"Invalid video_chat_provider {zoom_server_to_server_provider_id}"
+            )
+
+        with self.settings(VIDEO_ZOOM_CLIENT_SECRET=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(
+                result, f"Invalid video_chat_provider {zoom_server_to_server_provider_id}"
+            )
 
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
         self.assertEqual(
             get_realm("zulip").video_chat_provider,
-            zoom_provider_id,
+            zoom_server_to_server_provider_id,
         )
 
     def test_data_deletion_schedule_when_deactivating_realm(self) -> None:
