@@ -10,9 +10,28 @@ function go_to_row(msg_id: number): void {
     message_lists.current.select_id(msg_id, {then_scroll: true, from_scroll: true});
 }
 
+function unfocus_navigation_bar_if_focused(): boolean {
+    if (!message_lists.current) {
+        return false;
+    }
+
+    if (
+        message_lists.current.is_navigation_bar_focused() &&
+        !message_lists.current.visibly_empty()
+    ) {
+        message_lists.current.unfocus_navigation_bar();
+        return true;
+    }
+    return false;
+}
+
 export function up(): void {
     assert(message_lists.current !== undefined);
     message_viewport.set_last_movement_direction(-1);
+    if (unfocus_navigation_bar_if_focused()) {
+        return;
+    }
+
     const msg_id = message_lists.current.prev();
     if (msg_id === undefined) {
         return;
@@ -20,7 +39,7 @@ export function up(): void {
     go_to_row(msg_id);
 }
 
-export function down(with_centering = false): void {
+export function down(with_centering = false, from_scroll = false): void {
     assert(message_lists.current !== undefined);
     message_viewport.set_last_movement_direction(1);
 
@@ -35,6 +54,9 @@ export function down(with_centering = false): void {
             unread_ops.process_visible();
         }
 
+        if (!from_scroll) {
+            message_lists.current.focus_navigation_bar();
+        }
         return;
     }
 
@@ -117,6 +139,7 @@ export function page_up(): void {
     } else {
         page_up_the_right_amount();
     }
+    unfocus_navigation_bar_if_focused();
 }
 
 export function page_down(): void {

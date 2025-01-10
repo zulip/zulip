@@ -30,6 +30,7 @@ import * as list_util from "./list_util.ts";
 import * as message_actions_popover from "./message_actions_popover.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_edit_history from "./message_edit_history.ts";
+import * as message_list_navigation from "./message_list_navigation.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_scroll_state from "./message_scroll_state.ts";
 import * as message_view from "./message_view.ts";
@@ -63,6 +64,7 @@ import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_topics_ui from "./user_topics_ui.ts";
+import * as views_util from "./views_util.ts";
 
 function do_narrow_action(action) {
     if (message_lists.current === undefined) {
@@ -702,6 +704,14 @@ export function process_hotkey(e, hotkey) {
             if (inbox_ui.is_in_focus()) {
                 return inbox_ui.change_focused_element(event_name);
             }
+    }
+
+    switch (event_name) {
+        case "right_arrow":
+            if (message_lists.current?.navigation_bar_focused && views_util.is_in_focus()) {
+                return message_list_navigation.handle_right_arrow();
+            }
+            break;
     }
 
     // We handle the most complex keys in their own functions.

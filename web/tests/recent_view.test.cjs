@@ -488,8 +488,6 @@ test("test_recent_view_show", ({override, mock_template}) => {
     });
 
     stub_out_filter_buttons();
-    // We don't test the css calls; we just skip over them.
-    $("#mark_read_on_scroll_state_banner").toggleClass = noop;
 
     rt.clear_for_tests();
     rt.set_filters_for_tests();
