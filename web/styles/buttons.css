@@ -364,6 +364,9 @@
     /* This class should always be used with an icon-button-* class
        defining the color scheme of the button, defined below. */
     display: flex;
+    justify-content: center;
+    align-items: center;
+    aspect-ratio: 1;
     font-size: var(--base-font-size-px);
     background-color: transparent; /* Override button default background color */
     padding: 0.375em;
