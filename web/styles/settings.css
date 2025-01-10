@@ -1284,7 +1284,7 @@ label.preferences-radio-choice-label {
 #settings_page {
     height: 95vh;
     width: 97vw;
-    max-width: 1024px;
+    max-width: 73.1429em; /* 1024px at 14px em */
     margin: 2.5vh auto;
     overflow: hidden;
     border-radius: 4px;
