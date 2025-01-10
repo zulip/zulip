@@ -41,6 +41,11 @@ export function init(): void {
 // WE INITIALIZE DATA STRUCTURES HERE!
 init();
 
+// Ideally this should be included in page params.
+// Like we have realm.max_stream_name_length` and
+// `realm.max_stream_description_length` for streams.
+export const max_user_group_name_length = 100;
+
 export function add(user_group_raw: UserGroupRaw): UserGroup {
     // Reformat the user group members structure to be a set.
     const user_group = {
