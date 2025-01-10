@@ -928,52 +928,58 @@ export class BuddyList extends BuddyListConf {
         this.update_padding();
     }
 
-    insert_or_move(opts: {user_id: number; item: BuddyUserInfo}): void {
-        const user_id = opts.user_id;
-        const item = opts.item;
+    insert_or_move(user_ids: number[]): void {
+        // TODO: Further optimize this function by clubbing DOM updates from
+        // multiple insertions/movements into a single update.
 
-        this.maybe_remove_user_id({user_id});
+        const all_participant_ids = this.render_data.all_participant_ids;
+        const users = buddy_data.get_items_for_users(user_ids);
+        for (const user of users) {
+            const user_id = user.user_id;
 
-        const new_pos_in_all_users = this.find_position({
-            user_id,
-            user_id_list: this.all_user_ids,
-        });
+            this.maybe_remove_user_id({user_id});
 
-        const current_sub = narrow_state.stream_sub();
-        const pm_ids_set = narrow_state.pm_ids_set();
-        const is_subscribed_user = buddy_data.user_matches_narrow(
-            user_id,
-            pm_ids_set,
-            current_sub?.stream_id,
-        );
-        let user_id_list;
-        if (this.render_data.all_participant_ids.has(user_id)) {
-            user_id_list = this.participant_user_ids;
-        } else if (is_subscribed_user) {
-            user_id_list = this.users_matching_view_ids;
-        } else {
-            user_id_list = this.other_user_ids;
+            const new_pos_in_all_users = this.find_position({
+                user_id,
+                user_id_list: this.all_user_ids,
+            });
+
+            const current_sub = narrow_state.stream_sub();
+            const pm_ids_set = narrow_state.pm_ids_set();
+            const is_subscribed_user = buddy_data.user_matches_narrow(
+                user_id,
+                pm_ids_set,
+                current_sub?.stream_id,
+            );
+            let user_id_list;
+            if (all_participant_ids.has(user_id)) {
+                user_id_list = this.participant_user_ids;
+            } else if (is_subscribed_user) {
+                user_id_list = this.users_matching_view_ids;
+            } else {
+                user_id_list = this.other_user_ids;
+            }
+            const new_pos_in_user_list = this.find_position({
+                user_id,
+                user_id_list,
+            });
+
+            // Order is important here--get the new_user_id
+            // before mutating our list.  An undefined value
+            // corresponds to appending.
+            const new_user_id = user_id_list[new_pos_in_user_list];
+
+            user_id_list.splice(new_pos_in_user_list, 0, user_id);
+            this.all_user_ids.splice(new_pos_in_all_users, 0, user_id);
+
+            const html = this.item_to_html({item: user});
+            this.insert_new_html({
+                html,
+                new_user_id,
+                is_subscribed_user,
+                is_participant_user: all_participant_ids.has(user_id),
+            });
         }
-        const new_pos_in_user_list = this.find_position({
-            user_id,
-            user_id_list,
-        });
-
-        // Order is important here--get the new_user_id
-        // before mutating our list.  An undefined value
-        // corresponds to appending.
-        const new_user_id = user_id_list[new_pos_in_user_list];
-
-        user_id_list.splice(new_pos_in_user_list, 0, user_id);
-        this.all_user_ids.splice(new_pos_in_all_users, 0, user_id);
-
-        const html = this.item_to_html({item});
-        this.insert_new_html({
-            html,
-            new_user_id,
-            is_subscribed_user,
-            is_participant_user: this.render_data.all_participant_ids.has(user_id),
-        });
     }
 
     fill_screen_with_content(): void {
