@@ -54,7 +54,7 @@ from zerver.lib.send_email import FromAddress, deliver_scheduled_emails, send_fu
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import find_key_by_email
-from zerver.lib.user_groups import get_direct_user_groups
+from zerver.lib.user_groups import get_direct_user_groups, is_user_in_group
 from zerver.models import (
     DefaultStream,
     Message,
@@ -956,7 +956,8 @@ class InviteUserTest(InviteUserBase):
     def test_successful_invite_users_with_specified_streams(self) -> None:
         invitee = self.nonreg_email("alice")
         realm = get_realm("zulip")
-        self.login("hamlet")
+        current_user = self.example_user("hamlet")
+        self.login_user(current_user)
 
         stream_names = ["Rome", "Scotland", "Venice"]
         streams = {get_stream(stream_name, realm) for stream_name in stream_names}
@@ -1006,6 +1007,59 @@ class InviteUserTest(InviteUserBase):
         # passed in streams list.
         self.submit_reg_form_for_user(invitee, "password")
         self.check_user_subscribed_only_to_streams("test1", {denmark, sandbox, verona, zulip})
+
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+
+        do_change_stream_group_based_setting(
+            denmark, "can_add_subscribers_group", admins_group, acting_user=None
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_add_subscribers_group", nobody_group, acting_user=None
+        )
+        # This is not a default stream, so we are making sure that the
+        # user has the permission to add subscribers to this channel.
+        do_change_stream_group_based_setting(
+            verona, "can_add_subscribers_group", members_group, acting_user=None
+        )
+        invitee = self.nonreg_email("newguy")
+        self.assertEqual(is_user_in_group(admins_group, current_user), False)
+        self.assert_json_success(
+            self.invite(
+                invitee,
+                [denmark.name, sandbox.name, verona.name],
+                include_realm_default_subscriptions=False,
+            )
+        )
+        self.assertTrue(find_key_by_email(invitee))
+        # Check that the user is subscribed to default streams
+        # regardless of whether they have permission to add subscribers
+        # to them when inviting them.
+        self.submit_reg_form_for_user(invitee, "password")
+        self.check_user_subscribed_only_to_streams("newguy", {denmark, sandbox, verona})
+
+        invitee = self.nonreg_email("newuser")
+        self.assertEqual(get_slim_realm_default_streams(realm.id), {denmark, sandbox, zulip})
+        self.assert_json_success(
+            self.invite(
+                invitee, [sandbox.name, verona.name], include_realm_default_subscriptions=False
+            )
+        )
+        self.assertTrue(find_key_by_email(invitee))
+        # Sandbox is no longer a default stream, but since it was a
+        # default stream when creating the invite, invitee should be
+        # subscribed to that stream
+        do_remove_default_stream(sandbox)
+        self.assertEqual(get_slim_realm_default_streams(realm.id), {denmark, zulip})
+        self.submit_reg_form_for_user(invitee, "password")
+        self.check_user_subscribed_only_to_streams("newuser", {sandbox, verona})
 
     def test_successful_invite_users_with_specified_user_groups(self) -> None:
         invitee = self.nonreg_email("bob")

@@ -32,6 +32,9 @@ format used by the Zulip server that they are interacting with.
   `can_add_subscribers_group` parameter to support setting and
   changing the user group whose members can add other subscribers
   to the specified stream.
+* [`POST /invites`](/api/send-invites), [`POST
+  /invites/multiuse`](/api/create-invite-link): Users can now always
+  include default channels in an invite's initial subscriptions.
 
 **Feature level 341**
 

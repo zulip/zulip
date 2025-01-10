@@ -10,12 +10,6 @@
             {{#*inline "z-link"}}<a href="/help/demo-organizations#configure-email-for-demo-organization-owner" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
         {{/tr}}
     </div>
-    {{else if (not can_subscribe_other_users)}}
-    <div class="invite-stream-notice">
-        {{#tr}}The users you invite will be automatically added to <z-link>default channels</z-link> for this organization, as you do not have permission to configure which channels new users join.
-        {{#*inline "z-link"}}<a target="_blank" rel="noopener noreferrer" href="#organization/default-channels-list">{{> @partial-block}}</a>{{/inline}}
-        {{/tr}}
-    </div>
     {{/if}}
     <div class="input-group">
         <div id="invite_users_option_tabs_container"></div>
@@ -68,7 +62,6 @@
             {{/if}}
         </select>
     </div>
-    {{#if can_subscribe_other_users}}
     <div class="input-group">
         <label>{{t "Channels they should join" }}</label>
         <div id="streams_to_add">
@@ -93,7 +86,6 @@
     </div>
     <div id="guest_visible_users_container" class="input-group" style="display: none;">
     </div>
-    {{/if}}
     {{#if show_group_pill_container}}
         <div class="input-group">
             <label class="modal-field-label">{{t "User groups they should join" }} {{> help_link_widget link="/help/user-groups"}}</label>

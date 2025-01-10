@@ -94,7 +94,7 @@ def access_streams_for_invite(stream_ids: list[int], user_profile: UserProfile) 
         streams.append(stream)
 
     streams_to_which_user_cannot_add_subscribers = get_streams_to_which_user_cannot_add_subscribers(
-        streams, user_profile
+        streams, user_profile, allow_default_streams=True
     )
     if len(streams_to_which_user_cannot_add_subscribers) > 0:
         raise JsonableError(_("You do not have permission to subscribe other users to channels."))
