@@ -1137,7 +1137,6 @@ li.top_left_scheduled_messages {
     padding: 8px 10px;
     display: grid;
     grid-template: "search-input clear-search" auto / minmax(0, 1fr) 30px;
-    border-bottom: 1px solid var(--color-border-modal-bar);
 }
 
 .topic-box .zero_count {
