@@ -8,7 +8,6 @@ import * as compose_tooltips from "./compose_tooltips.ts";
 import type {MessageListData} from "./message_list_data.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import {MessageListView} from "./message_list_view.ts";
-import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import * as narrow_banner from "./narrow_banner.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -216,6 +215,7 @@ export class MessageList {
 
         if (interior_messages.length > 0) {
             this.view.rerender_preserving_scrolltop(true);
+            this.update_user_sidebar_participants();
             return {need_user_to_scroll: true};
         }
         if (top_messages.length > 0) {
@@ -244,11 +244,7 @@ export class MessageList {
             this.select_id(first_unread_message_id, {then_scroll: true, use_closest: true});
         }
 
-        // Rebuild message list, since we might need to shuffle around the participant users.
-        if (this === message_lists.current && narrow_state.stream_sub() && narrow_state.topic()) {
-            activity_ui.build_user_sidebar();
-        }
-
+        this.update_user_sidebar_participants();
         return render_info;
     }
 
@@ -503,14 +499,16 @@ export class MessageList {
 
     remove_and_rerender(message_ids: number[]): void {
         const should_rerender = this.data.remove(message_ids);
+        this.update_user_sidebar_participants();
         if (!should_rerender) {
             return;
         }
         this.rerender();
-        // Rebuild message list if we're deleting messages from the current list,
-        // since we might need to remove a participant user.
+    }
+
+    update_user_sidebar_participants(): void {
         if (this.is_current_message_list()) {
-            activity_ui.build_user_sidebar();
+            activity_ui.rerender_user_sidebar_participants();
         }
     }
 
@@ -616,6 +614,11 @@ export class MessageList {
         // But in any case, we need to rerender the list for user muting,
         // to make sure only the right messages are hidden.
         this.rerender();
+
+        // While this can have changed the conversation's visible
+        // participants, we don't need to call
+        // this.update_user_sidebar_participants, because changing a
+        // muted user's state already does a full sidebar redraw.
     }
 
     all_messages(): Message[] {
