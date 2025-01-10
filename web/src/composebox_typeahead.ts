@@ -341,7 +341,7 @@ function handle_keydown(
             target_sel = `#${CSS.escape(target_id)}`;
         }
 
-        const on_topic = target_sel === "input#stream_message_recipient_topic";
+        const on_topic = target_sel === "#stream_message_recipient_topic";
         const on_pm = target_sel === "#private_message_recipient";
         const on_compose = target_sel === "#compose-textarea";
 

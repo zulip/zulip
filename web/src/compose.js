@@ -395,3 +395,7 @@ function schedule_message_to_custom_date() {
         error,
     });
 }
+
+export function is_topic_input_focused() {
+    return $("#stream_message_recipient_topic").is(":focus");
+}
