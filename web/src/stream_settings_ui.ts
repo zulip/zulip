@@ -138,7 +138,9 @@ export function update_stream_name(sub: StreamSubscription, new_name: string): v
     message_view_header.maybe_rerender_title_area_for_stream(sub);
 
     // Update the create stream error if needed
-    stream_create.maybe_update_error_message();
+    if (overlays.streams_open()) {
+        stream_create.maybe_update_error_message();
+    }
 }
 
 export function update_stream_description(
