@@ -372,6 +372,16 @@ run_test("format_array_as_list", () => {
         "<b>apple</b>, <b>banana</b>, and <b>orange</b>",
     );
 
+    // Conjunction format
+    assert.equal(
+        util.format_array_as_list_with_conjuction(array, "narrow"),
+        "apple, banana, orange",
+    );
+    assert.equal(
+        util.format_array_as_list_with_conjuction(array, "long"),
+        "apple, banana, and orange",
+    );
+
     // when Intl.ListFormat does not exist
     with_overrides(({override}) => {
         override(global.Intl, "ListFormat", undefined);
@@ -382,6 +392,15 @@ run_test("format_array_as_list", () => {
         assert.equal(
             util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
             "<b>apple</b>, <b>banana</b>, <b>orange</b>",
+        );
+
+        assert.equal(
+            util.format_array_as_list_with_conjuction(array, "narrow"),
+            "apple, banana, orange",
+        );
+        assert.equal(
+            util.format_array_as_list_with_conjuction(array, "long"),
+            "apple, banana, orange",
         );
     });
 });

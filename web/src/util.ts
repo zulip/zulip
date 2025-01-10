@@ -441,6 +441,14 @@ export function format_array_as_list(
     return list_formatter.format(array);
 }
 
+export function format_array_as_list_with_conjuction(
+    array: string[],
+    // long uses "and", narrow uses commas.
+    join_strategy: "long" | "narrow",
+): string {
+    return format_array_as_list(array, join_strategy, "conjunction");
+}
+
 export function format_array_as_list_with_highlighted_elements(
     array: string[],
     style: Intl.ListFormatStyle,
