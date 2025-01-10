@@ -13627,12 +13627,20 @@ paths:
                     be subscribed to based on the `include_realm_default_subscriptions`
                     parameter.
 
+                    Requested channels must either be default channels for the
+                    organization, or ones the acting user has permission to add
+                    subscribers to.
+
                     This list must be empty if the current user has the unlikely
                     configuration of being able to send invitations while lacking
                     permission to [subscribe other users to channels][can-subscribe-others].
 
-                    **Changes**: Before Zulip 7.0 (feature level 180), specifying `stream_ids`
-                    as an empty list resulted in an error.
+                    **Changes**: Prior to Zulip 10.0 (feature level 342), default channels
+                    that the acting user did not directly have permission to add
+                    subscribers to would be rejected.
+
+                    Before Zulip 7.0 (feature level 180), specifying `stream_ids` as an
+                    empty list resulted in an error.
 
                     [can-subscribe-others]: /help/configure-who-can-invite-to-channels
                   type: array
@@ -13821,10 +13829,18 @@ paths:
                     be subscribed to based on the `include_realm_default_subscriptions`
                     parameter.
 
+                    Requested channels must either be default channels for the
+                    organization, or ones the acting user has permission to add
+                    subscribers to.
+
                     This list must be empty if the current user has the unlikely
                     configuration of being able to create reusable invitation links while
                     lacking permission to [subscribe other users to
                     channels][can-subscribe-others].
+
+                    **Changes**: Prior to Zulip 10.0 (feature level 342), default channels
+                    that the acting user did not directly have permission to add
+                    subscribers to would be rejected.
 
                     [can-subscribe-others]: /help/configure-who-can-invite-to-channels
                   type: array

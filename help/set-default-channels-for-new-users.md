@@ -28,6 +28,14 @@ that default set.
 
 {end_tabs}
 
+!!! tip ""
+
+    A user with permission to invite other users will be able to subscribe those
+    users to these default channel at the time of invitation irrespective of
+    whether they have individual permission to subscribe other users to that channel.
+    This will only apply at the time of invitation and not once the invited user has
+    become a member.
+
 ## Related articles
 
 * [User roles](/help/user-roles)

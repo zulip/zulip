@@ -780,7 +780,10 @@ def can_remove_subscribers_from_stream(
 
 
 def get_streams_to_which_user_cannot_add_subscribers(
-    streams: list[Stream], user_profile: UserProfile
+    streams: list[Stream],
+    user_profile: UserProfile,
+    *,
+    allow_default_streams: bool = False,
 ) -> list[Stream]:
     # IMPORTANT: This function expects its callers to have already
     # checked that the user can access the provided channels, and thus
@@ -800,7 +803,17 @@ def get_streams_to_which_user_cannot_add_subscribers(
     user_recursive_group_ids = set(
         get_recursive_membership_groups(user_profile).values_list("id", flat=True)
     )
+    if allow_default_streams:
+        default_stream_ids = get_default_stream_ids_for_realm(user_profile.realm_id)
+
     for stream in streams:
+        # We only allow this exception for the invite code path and not
+        # for other code paths, since a user should be able to add the
+        # invited users to default channels regardless of their permission
+        # for that individual channel.
+        if allow_default_streams and stream.id in default_stream_ids:
+            continue
+
         group_allowed_to_administer_channel_id = stream.can_administer_channel_group_id
         assert group_allowed_to_administer_channel_id is not None
         if group_allowed_to_administer_channel_id in user_recursive_group_ids:
