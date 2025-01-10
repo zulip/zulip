@@ -1862,6 +1862,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     }
     assert_typeahead_equals("#**Sweden>more ice", typed_topics(["more ice", "even more ice"]));
     assert_typeahead_equals("#**Sweden>totally new topic", typed_topics(["totally new topic"]));
+    assert_typeahead_equals("#**Sweden>\n\nmore ice", typed_topics([]));
 
     // time_jump
     const time_jump = [
