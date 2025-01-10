@@ -2,6 +2,7 @@ import $ from "jquery";
 import {z} from "zod";
 
 import * as channel from "./channel.ts";
+import * as compose_banner from "./compose_banner.ts";
 import * as compose_call from "./compose_call.ts";
 import {get_recipient_label} from "./compose_closed_ui.ts";
 import * as compose_ui from "./compose_ui.ts";
@@ -58,11 +59,13 @@ export function generate_and_insert_audio_or_video_call_link(
     }
 
     const available_providers = realm.realm_available_video_chat_providers;
+    const provider_is_zoom =
+        available_providers.zoom && realm.realm_video_chat_provider === available_providers.zoom.id;
+    const provider_is_zoom_server_to_server =
+        available_providers.zoom_server_to_server &&
+        realm.realm_video_chat_provider === available_providers.zoom_server_to_server.id;
 
-    if (
-        available_providers.zoom &&
-        realm.realm_video_chat_provider === available_providers.zoom.id
-    ) {
+    if (provider_is_zoom || provider_is_zoom_server_to_server) {
         compose_call.abort_video_callbacks(edit_message_id);
         const key = edit_message_id ?? "";
 
@@ -85,16 +88,21 @@ export function generate_and_insert_audio_or_video_call_link(
                 },
                 error(xhr, status) {
                     compose_call.video_call_xhrs.delete(key);
-                    let parsed;
+                    const parsed = z.object({code: z.string()}).safeParse(xhr.responseJSON);
                     if (
                         status === "error" &&
-                        (parsed = z.object({code: z.string()}).safeParse(xhr.responseJSON))
-                            .success &&
+                        parsed.success &&
                         parsed.data.code === "INVALID_ZOOM_TOKEN"
                     ) {
                         current_user.has_zoom_token = false;
                     }
-                    if (status !== "abort") {
+                    if (
+                        status === "error" &&
+                        parsed.success &&
+                        parsed.data.code === "UNKNOWN_ZOOM_USER"
+                    ) {
+                        compose_banner.show_unknown_zoom_user_error(current_user.delivery_email);
+                    } else if (status !== "abort") {
                         ui_report.generic_embed_error(
                             $t_html({defaultMessage: "Failed to create video call."}),
                         );
@@ -106,7 +114,7 @@ export function generate_and_insert_audio_or_video_call_link(
             }
         };
 
-        if (current_user.has_zoom_token) {
+        if (current_user.has_zoom_token || provider_is_zoom_server_to_server) {
             make_zoom_call();
         } else {
             compose_call.zoom_token_callbacks.set(key, make_zoom_call);

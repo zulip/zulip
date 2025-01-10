@@ -5259,11 +5259,20 @@ paths:
 
                                         - 0 = None
                                         - 1 = Jitsi Meet
-                                        - 3 = Zoom
+                                        - 3 = Zoom (User OAuth integration)
                                         - 4 = BigBlueButton
+                                        - 5 = Zoom (Server to Server OAuth integration)
 
-                                        **Changes**: None added as an option in Zulip 3.0 (feature level 1)
+                                        Note that only one of the [Zoom integrations][zoom-video-calls] can
+                                        be configured on a Zulip server.
+
+                                        **Changes**: In Zulip 10.0 (feature level 353), added the Zoom Server
+                                        to Server OAuth option.
+
+                                        In Zulip 3.0 (feature level 1), added the None option
                                         to disable video call UI.
+
+                                        [zoom-video-calls]: https://zulip.readthedocs.io/en/latest/production/video-calls.html#zoom
                                     waiting_period_threshold:
                                       type: integer
                                       description: |
@@ -17368,18 +17377,25 @@ paths:
                       realm_video_chat_provider:
                         type: integer
                         description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
                           The configured [video call provider](/help/start-a-call) for the
                           organization.
 
                           - 0 = None
                           - 1 = Jitsi Meet
-                          - 3 = Zoom
+                          - 3 = Zoom (User OAuth integration)
                           - 4 = BigBlueButton
+                          - 5 = Zoom (Server to Server OAuth integration)
 
-                          **Changes**: None added as an option in Zulip 3.0 (feature level 1)
+                          Note that only one of the [Zoom integrations][zoom-video-calls] can
+                          be configured on a Zulip server.
+
+                          **Changes**: In Zulip 10.0 (feature level 353), added the Zoom Server
+                          to Server OAuth option.
+
+                          In Zulip 3.0 (feature level 1), added the None option
                           to disable video call UI.
+
+                          [zoom-video-calls]: https://zulip.readthedocs.io/en/latest/production/video-calls.html#zoom
                       realm_jitsi_server_url:
                         type: string
                         nullable: true

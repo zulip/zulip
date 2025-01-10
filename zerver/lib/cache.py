@@ -678,6 +678,14 @@ def open_graph_description_cache_key(content: bytes, request_url: str) -> str:
     return f"open_graph_description_path:{hashlib.sha1(request_url.encode()).hexdigest()}"
 
 
+def zoom_server_access_token_cache_key(account_id: str) -> str:
+    return f"zoom_server_to_server_access_token:{account_id}"
+
+
+def flush_zoom_server_access_token_cache(account_id: str) -> None:
+    cache_delete(zoom_server_access_token_cache_key(account_id))
+
+
 def flush_message(*, instance: "Message", **kwargs: object) -> None:
     message = instance
     cache_delete(to_dict_cache_key_id(message.id))

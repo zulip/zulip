@@ -119,6 +119,7 @@ SOCIAL_AUTH_SYNC_ATTRS_DICT: dict[str, dict[str, dict[str, str]]] = {}
 SSO_APPEND_DOMAIN: str | None = None
 CUSTOM_HOME_NOT_LOGGED_IN: str | None = None
 
+VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID = get_secret("video_zoom_account_id", development_only=True)
 VIDEO_ZOOM_CLIENT_ID = get_secret("video_zoom_client_id", development_only=True)
 VIDEO_ZOOM_CLIENT_SECRET = get_secret("video_zoom_client_secret")
 

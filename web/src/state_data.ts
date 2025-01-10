@@ -288,6 +288,7 @@ export const realm_schema = z.object({
         disabled: z.object({name: z.string(), id: z.number()}),
         jitsi_meet: z.object({name: z.string(), id: z.number()}),
         zoom: z.optional(z.object({name: z.string(), id: z.number()})),
+        zoom_server_to_server: z.optional(z.object({name: z.string(), id: z.number()})),
         big_blue_button: z.optional(z.object({name: z.string(), id: z.number()})),
     }),
     realm_avatar_changes_disabled: z.boolean(),

@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 353**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  `PATCH /realm`: Zoom Server to Server OAuth integration added as an option
+  for the realm setting `video_chat_provider`.
+
 **Feature level 352**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),
