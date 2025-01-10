@@ -1,12 +1,16 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import render_change_user_group_info_modal from "../templates/user_group_settings/change_user_group_info_modal.hbs";
+
 import * as channel from "./channel.ts";
+import * as dialog_widget from "./dialog_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import * as settings_components from "./settings_components.ts";
+import * as settings_data from "./settings_data.ts";
 import {realm} from "./state_data.ts";
 import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
 import * as ui_report from "./ui_report.ts";
@@ -38,6 +42,11 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["can_remove_members_group", null],
 ]);
 
+export function maybe_update_error_message(): void {
+    const group_name = $<HTMLInputElement>("input#create_user_group_name").val()!.trim();
+    user_group_name_error.pre_validate(group_name);
+}
+
 class UserGroupMembershipError {
     report_no_members_to_user_group(): void {
         $("#user_group_membership_error").text(
@@ -53,15 +62,16 @@ class UserGroupMembershipError {
 const user_group_membership_error = new UserGroupMembershipError();
 
 class UserGroupNameError {
-    report_already_exists(): void {
-        $("#user_group_name_error").text(
-            $t({defaultMessage: "A user group with this name already exists."}),
-        );
+    report_already_exists(error?: string): void {
+        const error_message =
+            error ?? $t({defaultMessage: "A user group with this name already exists."});
+        $("#user_group_name_error").text(error_message);
         $("#user_group_name_error").show();
     }
 
     clear_errors(): void {
         $("#user_group_name_error").hide();
+        $("#deactivated_group_rename").hide();
     }
 
     report_empty_user_group(): void {
@@ -75,9 +85,25 @@ class UserGroupNameError {
         $("#create_user_group_name").trigger("focus").trigger("select");
     }
 
+    rename_deactivated_group(group_id: number): void {
+        $("#deactivated_group_rename").text($t({defaultMessage: "Rename deactivated user group"}));
+        $("#deactivated_group_rename").attr("data-group-id", group_id);
+        $("#deactivated_group_rename").show();
+    }
+
     pre_validate(user_group_name: string): void {
-        if (user_group_name && user_groups.get_user_group_from_name(user_group_name)) {
-            this.report_already_exists();
+        const user_group = user_groups.get_user_group_from_name(user_group_name);
+        if (user_group_name && user_group) {
+            let error;
+            if (user_group.deactivated) {
+                error = $t({
+                    defaultMessage: "A deactivated user group with this name already exists.",
+                });
+                if (settings_data.can_manage_user_group(user_group.id)) {
+                    this.rename_deactivated_group(user_group.id);
+                }
+            }
+            this.report_already_exists(error);
             return;
         }
 
@@ -91,8 +117,15 @@ class UserGroupNameError {
             return false;
         }
 
-        if (user_groups.get_user_group_from_name(user_group_name)) {
-            this.report_already_exists();
+        const group = user_groups.get_user_group_from_name(user_group_name);
+        if (group) {
+            let error;
+            if (group.deactivated) {
+                error = $t({
+                    defaultMessage: "A deactivated user group with this name already exists.",
+                });
+            }
+            this.report_already_exists(error);
             this.select();
             return false;
         }
@@ -282,5 +315,54 @@ export function set_up_handlers(): void {
             setting_name,
         });
         group_setting_widget_map.set(setting_name, widget);
+    }
+
+    $container.on("click", "#deactivated_group_rename", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const group_id = Number.parseInt($("#deactivated_group_rename").attr("data-group-id")!, 10);
+        const group = user_groups.get_user_group_from_id(group_id);
+        assert(group !== undefined);
+
+        const template_data = {
+            group_name: group.name,
+            max_user_group_name_length: user_groups.max_user_group_name_length,
+            allow_editing_description: false,
+        };
+        const change_user_group_info_modal = render_change_user_group_info_modal(template_data);
+        dialog_widget.launch({
+            html_heading: $t_html(
+                {defaultMessage: "Rename {group_name} (<i>deactivated</i>)"},
+                {group_name: group.name},
+            ),
+            html_body: change_user_group_info_modal,
+            id: "change_group_info_modal",
+            loading_spinner: true,
+            on_click: save_group_info,
+            post_render() {
+                $("#change_group_info_modal .dialog_submit_button")
+                    .addClass("save-button")
+                    .attr("data-group-id", group_id);
+            },
+            update_submit_disabled_state_on_change: true,
+        });
+    });
+
+    function save_group_info(): void {
+        const group_id = Number.parseInt($("#deactivated_group_rename").attr("data-group-id")!, 10);
+        const group = user_groups.get_user_group_from_id(group_id);
+        assert(group !== undefined);
+        const url = `/json/user_groups/${group.id}`;
+        let name;
+        const new_name = $<HTMLInputElement>("#change_user_group_name").val()!.trim();
+
+        if (new_name !== group.name) {
+            name = new_name;
+        }
+
+        const data = {
+            name,
+        };
+        dialog_widget.submit_api_request(channel.patch, url, data);
     }
 }

@@ -791,6 +791,7 @@ export function update_group(event: UserGroupUpdateEvent): void {
     const $group_row = row_for_group_id(group_id);
     if (event.data.name !== undefined) {
         $group_row.find(".group-name").text(group.name);
+        user_group_create.maybe_update_error_message();
     }
 
     if (event.data.description !== undefined) {
@@ -1219,6 +1220,7 @@ export function initialize(): void {
                 group_name: user_group.name,
                 group_description: user_group.description,
                 max_user_group_name_length: user_groups.max_user_group_name_length,
+                allow_editing_description: true,
             };
             const change_user_group_info_modal = render_change_user_group_info_modal(template_data);
             dialog_widget.launch({
