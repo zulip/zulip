@@ -319,11 +319,6 @@ export function get_title_data(user_ids_string: string, is_group: boolean): Titl
     };
 }
 
-export function get_item(user_id: number): BuddyUserInfo {
-    const info = info_for(user_id);
-    return info;
-}
-
 export function get_items_for_users(user_ids: number[]): BuddyUserInfo[] {
     const user_info = user_ids.map((user_id) => info_for(user_id));
     return user_info;

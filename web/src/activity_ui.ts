@@ -92,12 +92,7 @@ export function redraw_user(user_id: number): void {
         return;
     }
 
-    const info = buddy_data.get_item(user_id);
-
-    buddy_list.insert_or_move({
-        user_id,
-        item: info,
-    });
+    buddy_list.insert_or_move([user_id]);
     update_presence_indicators();
 }
 
