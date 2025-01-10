@@ -1,6 +1,6 @@
 :root {
     /* The width of the settings sidebar. */
-    --settings-sidebar-width: 255px;
+    --settings-sidebar-width: 18.2142em; /* 255px at 14px/em */
 }
 
 label {
