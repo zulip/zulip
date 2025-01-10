@@ -52,7 +52,7 @@ const current_user = {};
 set_current_user(current_user);
 
 run_test("basics", ({override}) => {
-    override(activity_ui, "build_user_sidebar", noop);
+    override(activity_ui, "rerender_user_sidebar_participants", noop);
     const filter = new Filter([]);
 
     const list = new MessageList({
@@ -451,7 +451,7 @@ run_test("bookend", ({override}) => {
 });
 
 run_test("add_remove_rerender", ({override}) => {
-    override(activity_ui, "build_user_sidebar", noop);
+    override(activity_ui, "rerender_user_sidebar_participants", noop);
 
     const filter = new Filter([]);
     const list = new MessageList({
