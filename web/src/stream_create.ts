@@ -65,9 +65,8 @@ export function should_show_first_stream_created_modal(): boolean {
 }
 
 export function maybe_update_error_message(): void {
-    if ($("#stream_name_error").is(":visible") && $("#archived_stream_rename").is(":visible")) {
-        $("#create_stream_name").trigger("input");
-    }
+    const stream_name = $<HTMLInputElement>("input#create_stream_name").val()!.trim();
+    stream_name_error.pre_validate(stream_name);
 }
 
 const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
