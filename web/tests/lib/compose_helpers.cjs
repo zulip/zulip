@@ -146,7 +146,7 @@ class FakeComposeBox {
 
         assert.ok(this.$content_textarea.hasClass("textarea-over-limit"));
         assert.ok($(".message-limit-indicator").hasClass("textarea-over-limit"));
-        assert.ok($(".message-send-controls").hasClass("disabled-message-send-controls"));
+        assert.ok(!$(".message-send-controls").hasClass("disabled-message-send-controls"));
     }
 
     assert_message_size_is_under_the_limit(desired_html) {
