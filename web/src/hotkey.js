@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 import * as activity from "./activity.ts";
 import * as activity_ui from "./activity_ui.ts";
 import * as browser_history from "./browser_history.ts";
+import * as color_picker_popover from "./color_picker_popover.ts";
 import * as common from "./common.ts";
 import * as compose from "./compose.js";
 import * as compose_actions from "./compose_actions.ts";
@@ -74,7 +75,17 @@ function do_narrow_action(action) {
 }
 
 // For message actions and user profile menu.
-const menu_dropdown_hotkeys = new Set(["down_arrow", "up_arrow", "vim_up", "vim_down", "enter"]);
+const menu_dropdown_hotkeys = new Set([
+    "down_arrow",
+    "up_arrow",
+    "left_arrow",
+    "right_arrow",
+    "vim_up",
+    "vim_down",
+    "vim_left",
+    "vim_right",
+    "enter",
+]);
 
 // Note that multiple keys can map to the same event_name, which
 // we'll do in cases where they have the exact same semantics.
@@ -407,6 +418,11 @@ function handle_popover_events(event_name) {
 
     if (popover_menus.is_stream_actions_popover_displayed()) {
         stream_popover.stream_sidebar_menu_handle_keyboard(event_name);
+        return true;
+    }
+
+    if (popover_menus.is_color_picker_popover_displayed()) {
+        color_picker_popover.handle_keyboard(event_name);
         return true;
     }
 

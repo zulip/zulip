@@ -21,9 +21,11 @@
     <ul role="menu" class="popover-menu-list">
         <li role="none">
             <div role="group" class="color-swatch-list" aria-label="{{t 'Stream color' }}">
-                {{#each stream_color_palette as |hex_color|}}
-                    <input type="radio" id="color-{{hex_color}}" class="color-swatch-input" name="color-picker-select" data-swatch-color="{{hex_color}}" {{#if (eq hex_color ../stream_color )}}checked{{/if}} />
-                    <label role="menuitemradio" class="color-swatch-label tippy-zulip-delayed-tooltip" for="color-{{hex_color}}" style="background-color: {{hex_color}};" aria-label="{{hex_color}}" data-tippy-content="{{hex_color}}" tabindex="0"></label>
+                {{#each stream_color_palette as |row|}}
+                    {{#each row as |hex_color|}}
+                        <input type="radio" id="color-{{hex_color}}" class="color-swatch-input" name="color-picker-select" data-swatch-color="{{hex_color}}" {{#if (eq hex_color ../stream_color )}}checked{{/if}} />
+                        <label role="menuitemradio" class="color-swatch-label tippy-zulip-delayed-tooltip" for="color-{{hex_color}}" style="background-color: {{hex_color}};" aria-label="{{hex_color}}" data-tippy-content="{{hex_color}}" data-swatch-color="{{hex_color}}" data-row="{{@../index}}" data-column="{{@index}}" tabindex="0"></label>
+                    {{/each}}
                 {{/each}}
             </div>
         </li>
