@@ -108,6 +108,16 @@ class StateDict(TypedDict):
     sid: str
 
 
+class ZoomVideoSettings(TypedDict):
+    host_video: bool
+    participant_video: bool
+
+
+class ZoomPayload(TypedDict):
+    settings: ZoomVideoSettings
+    default_password: bool
+
+
 @never_cache
 @typed_endpoint
 def complete_zoom_user(
@@ -166,19 +176,17 @@ def make_zoom_video_call(
     # why when creating a meeting, configure the video on/off default
     # according to the desired call type. Each Zoom user can still have
     # their own personal setting to not start video by default.
-    payload = {
-        "settings": {
-            "host_video": is_video_call,
-            "participant_video": is_video_call,
-        },
+    video_settings = ZoomVideoSettings(host_video=is_video_call, participant_video=is_video_call)
+    payload = ZoomPayload(
+        settings=video_settings,
         # Generate a default password depending on the user settings. This will
         # result in the password being appended to the returned Join URL.
         #
         # If we don't request a password to be set, the waiting room will be
         # forcibly enabled in Zoom organizations that require some kind of
         # authentication for all meetings.
-        "default_password": True,
-    }
+        default_password=True,
+    )
 
     try:
         res = oauth.post("https://api.zoom.us/v2/users/me/meetings", json=payload)
