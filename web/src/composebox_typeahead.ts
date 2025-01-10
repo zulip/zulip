@@ -920,7 +920,7 @@ export function get_candidates(
         }
 
         // Matches '#**stream name>some text' at the end of a split.
-        const stream_topic_regex = /#\*\*([^*>]+)>([^*]*)$/;
+        const stream_topic_regex = /#\*\*([^*>]+)>([^*\n]*)$/;
         const should_begin_typeahead = stream_topic_regex.test(split[0]);
         if (should_begin_typeahead) {
             completing = "topic_list";
