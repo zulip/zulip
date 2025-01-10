@@ -22,7 +22,6 @@ import * as email_pill from "./email_pill.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as input_pill from "./input_pill.ts";
 import * as invite_stream_picker_pill from "./invite_stream_picker_pill.ts";
-import * as invite_user_group_picker_pill from "./invite_user_group_picker_pill.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
 import * as settings_components from "./settings_components.ts";
@@ -34,6 +33,7 @@ import * as stream_pill from "./stream_pill.ts";
 import * as timerender from "./timerender.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
+import * as user_group_picker_pill from "./user_group_picker_pill.ts";
 import * as user_group_pill from "./user_group_pill.ts";
 import * as util from "./util.ts";
 
@@ -374,7 +374,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     e.preventDefault();
 
     const show_group_pill_container =
-        invite_user_group_picker_pill.get_user_groups_allowed_to_add_members().length > 0;
+        user_group_picker_pill.get_user_groups_allowed_to_add_members().length > 0;
 
     const html_body = render_invite_user_modal({
         is_admin: current_user.is_admin,
@@ -416,9 +416,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         if (show_group_pill_container) {
             const $user_group_pill_container = $("#invite-user-group-container .pill-container");
-            user_group_pill_widget = invite_user_group_picker_pill.create(
-                $user_group_pill_container,
-            );
+            user_group_pill_widget = user_group_picker_pill.create($user_group_pill_container);
         }
 
         $("#invite_streams_container .input, #invite_select_default_streams").on(
