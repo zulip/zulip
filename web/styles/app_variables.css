@@ -1145,7 +1145,7 @@
     /* Actions buttons */
     --color-inner-shadow-action-button: color-mix(
         in oklch,
-        #000 10%,
+        #000 20%,
         transparent
     );
     /* Action buttons -- Neutral Variant */
@@ -2036,6 +2036,12 @@
     );
     --color-typeahead-option-label: var(--grey-400);
 
+    /* Action buttons */
+    --color-inner-shadow-action-button: color-mix(
+        in oklch,
+        #fff 21%,
+        transparent
+    );
     /* Action buttons -- Neutral Variant */
     --color-text-neutral-primary-action-button: color-mix(
         in oklch,
