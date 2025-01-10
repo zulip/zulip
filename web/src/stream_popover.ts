@@ -319,8 +319,12 @@ export async function build_move_topic_to_stream_popover(
 ): Promise<void> {
     const current_stream_name = sub_store.get(current_stream_id)!.name;
     const stream = sub_store.get(current_stream_id);
+    const topic_display_name = util.get_final_topic_display_name(topic_name);
+    const is_empty_string_topic = topic_name === "";
     const args: {
         topic_name: string;
+        topic_display_name: string;
+        is_empty_string_topic: boolean;
         current_stream_id: number;
         notify_new_thread: boolean;
         notify_old_thread: boolean;
@@ -331,6 +335,8 @@ export async function build_move_topic_to_stream_popover(
         stream: sub_store.StreamSubscription | undefined;
     } = {
         topic_name,
+        topic_display_name,
+        is_empty_string_topic,
         current_stream_id,
         stream,
         notify_new_thread: message_edit.notify_new_thread_default,
@@ -355,7 +361,8 @@ export async function build_move_topic_to_stream_popover(
             {
                 "z-stream-or-topic": () =>
                     render_inline_stream_or_topic_reference({
-                        topic_name,
+                        topic_display_name,
+                        is_empty_string_topic,
                         stream,
                         show_colored_icon: true,
                     }),
@@ -367,7 +374,8 @@ export async function build_move_topic_to_stream_popover(
             {
                 "z-stream-or-topic": () =>
                     render_inline_stream_or_topic_reference({
-                        topic_name,
+                        topic_display_name,
+                        is_empty_string_topic,
                         stream,
                         show_colored_icon: true,
                     }),
@@ -382,7 +390,8 @@ export async function build_move_topic_to_stream_popover(
                 "z-stream-or-topic": () =>
                     render_inline_stream_or_topic_reference({
                         stream,
-                        topic_name,
+                        topic_display_name,
+                        is_empty_string_topic,
                         show_colored_icon: true,
                     }),
             },

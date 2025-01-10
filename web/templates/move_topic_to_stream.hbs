@@ -8,7 +8,7 @@
         {{/unless}}
         <div class="input-group">
             <label for="move-topic-new-topic-name" class="modal-field-label">New topic</label>
-            <input id="move-topic-new-topic-name" name="new_topic_name" type="text" class="move_messages_edit_topic modal_text_input" autocomplete="off" value="{{topic_name}}" {{#if disable_topic_input}}disabled{{/if}} />
+            <input id="move-topic-new-topic-name" name="new_topic_name" type="text" class="move_messages_edit_topic modal_text_input" autocomplete="off" {{#if is_empty_string_topic}}placeholder="{{topic_display_name}}"{{/if}} value="{{topic_name}}" {{#if disable_topic_input}}disabled{{/if}} />
         </div>
         <input name="old_topic_name" type="hidden" value="{{topic_name}}" />
         <input name="current_stream_id" type="hidden" value="{{current_stream_id}}" />
