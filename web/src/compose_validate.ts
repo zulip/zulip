@@ -33,6 +33,10 @@ import * as util from "./util.ts";
 
 let user_acknowledged_stream_wildcard = false;
 let upload_in_progress = false;
+let no_channel_selected = false;
+let missing_topic = false;
+let no_private_recipient = true;
+let no_message_content = false;
 let message_too_long = false;
 let recipient_disallowed = false;
 
@@ -63,9 +67,24 @@ export function set_upload_in_progress(status: boolean): void {
     update_send_button_status();
 }
 
+function set_no_channel_selected(status: boolean): void {
+    no_channel_selected = status;
+}
+
+function set_missing_topic(status: boolean): void {
+    missing_topic = status;
+}
+
+function set_missing_direct_message_recipient(status: boolean): void {
+    no_private_recipient = status;
+}
+
+function set_no_message_content(status: boolean): void {
+    no_message_content = status;
+}
+
 function set_message_too_long_for_compose(status: boolean): void {
     message_too_long = status;
-    update_send_button_status();
 }
 
 function set_message_too_long_for_edit(status: boolean, $container: JQuery): void {
@@ -81,18 +100,33 @@ function set_message_too_long_for_edit(status: boolean, $container: JQuery): voi
 
 export function set_recipient_disallowed(status: boolean): void {
     recipient_disallowed = status;
-    update_send_button_status();
 }
 
-function update_send_button_status(): void {
+export function update_send_button_status(): void {
+    const recipient_type = compose_state.get_message_type();
     $(".message-send-controls").toggleClass(
         "disabled-message-send-controls",
-        message_too_long || upload_in_progress || recipient_disallowed,
+        upload_in_progress ||
+            no_channel_selected ||
+            (missing_topic && recipient_type === "stream") ||
+            (no_private_recipient && recipient_type === "private") ||
+            message_too_long ||
+            recipient_disallowed ||
+            no_message_content,
     );
 }
 
 export function get_disabled_send_tooltip(): string {
-    if (message_too_long) {
+    const recipient_type = compose_state.get_message_type();
+    if (no_channel_selected && recipient_type === "stream") {
+        return NO_CHANNEL_SELECTED_ERROR_MESSAGE;
+    } else if (missing_topic && recipient_type === "stream") {
+        return TOPICS_REQUIRED_ERROR_MESSAGE;
+    } else if (no_private_recipient && recipient_type === "private") {
+        return NO_PRIVATE_RECIPIENT_ERROR_MESSAGE;
+    } else if (no_message_content) {
+        return NO_MESSAGE_CONTENT_ERROR_MESSAGE;
+    } else if (message_too_long) {
         return get_message_too_long_for_compose_error();
     } else if (upload_in_progress) {
         return $t({defaultMessage: "Cannot send message while files are being uploaded."});
@@ -649,16 +683,18 @@ export function validate_stream_message_address_info(sub: StreamSubscription): b
     return false;
 }
 
-function validate_stream_message(scheduling_message: boolean): boolean {
-    const stream_id = compose_state.stream_id();
+function validate_stream_message(scheduling_message: boolean, show_banner = true): boolean {
     const $banner_container = $("#compose_banners");
+    const stream_id = compose_state.stream_id();
     const no_channel_selected = stream_id === undefined;
+    set_no_channel_selected(no_channel_selected);
     if (no_channel_selected) {
-        compose_banner.show_error_message(
+        report_validation_error(
             NO_CHANNEL_SELECTED_ERROR_MESSAGE,
             compose_banner.CLASSNAMES.missing_stream,
             $banner_container,
             $("#compose_select_recipient_widget_wrapper"),
+            show_banner,
         );
         return false;
     }
@@ -666,12 +702,14 @@ function validate_stream_message(scheduling_message: boolean): boolean {
     if (realm.realm_mandatory_topics) {
         const topic = compose_state.topic();
         const missing_topic = topic === "";
+        set_missing_topic(missing_topic);
         if (missing_topic) {
-            compose_banner.show_error_message(
+            report_validation_error(
                 TOPICS_REQUIRED_ERROR_MESSAGE,
                 compose_banner.CLASSNAMES.topic_missing,
                 $banner_container,
                 $("input#stream_message_recipient_topic"),
+                show_banner,
             );
             return false;
         }
@@ -715,18 +753,20 @@ function validate_stream_message(scheduling_message: boolean): boolean {
 
 // The function checks whether the recipients are users of the realm or cross realm users (bots
 // for now)
-function validate_private_message(): boolean {
+function validate_private_message(show_banner = true): boolean {
     const user_ids = compose_pm_pill.get_user_ids();
     const user_ids_string = util.sorted_ids(user_ids).join(",");
     const $banner_container = $("#compose_banners");
     const missing_direct_message_recipient = compose_state.private_message_recipient().length === 0;
 
+    set_missing_direct_message_recipient(missing_direct_message_recipient);
     if (missing_direct_message_recipient) {
-        compose_banner.show_error_message(
+        report_validation_error(
             NO_PRIVATE_RECIPIENT_ERROR_MESSAGE,
             compose_banner.CLASSNAMES.missing_private_message_recipient,
             $banner_container,
             $("#private_message_recipient"),
+            show_banner,
         );
         return false;
     } else if (realm.realm_is_zephyr_mirror_realm) {
@@ -837,7 +877,7 @@ export function check_overflow_text($container: JQuery): number {
     return text.length;
 }
 
-export function validate_message_length($container: JQuery): boolean {
+export function validate_message_length($container: JQuery, trigger_flash = true): boolean {
     const $textarea = $container.find<HTMLTextAreaElement>(".message-textarea");
     // Match the behavior of compose_state.message_content of trimming trailing whitespace
     const text = $textarea.val()!.trimEnd();
@@ -848,33 +888,53 @@ export function validate_message_length($container: JQuery): boolean {
     set_message_too_long_for_compose(message_too_long_for_compose);
 
     if (message_too_long_for_compose) {
-        $textarea.addClass("flash");
-        setTimeout(() => $textarea.removeClass("flash"), 1500);
+        if (trigger_flash) {
+            $textarea.addClass("flash");
+            setTimeout(() => $textarea.removeClass("flash"), 1500);
+        }
         return false;
     }
     return true;
 }
 
-export function validate(scheduling_message: boolean): boolean {
+function report_validation_error(
+    message: string,
+    classname: string,
+    $container: JQuery,
+    $bad_input: JQuery,
+    show_banner: boolean,
+    precursor?: () => void,
+): void {
+    if (show_banner) {
+        if (precursor) {
+            precursor();
+        }
+        compose_banner.show_error_message(message, classname, $container, $bad_input);
+    }
+}
+export function validate(scheduling_message: boolean, show_banner = true): boolean {
     const message_content = compose_state.message_content();
     // The validation checks in this function are in a specific priority order. Don't
     // change their order unless you want to change which priority they're shown in.
 
     if (
         compose_state.get_message_type() !== "private" &&
-        !validate_stream_message(scheduling_message)
+        !validate_stream_message(scheduling_message, show_banner)
     ) {
         return false;
     }
 
-    if (compose_state.get_message_type() === "private" && !validate_private_message()) {
+    if (compose_state.get_message_type() === "private" && !validate_private_message(show_banner)) {
         return false;
     }
 
     const no_message_content = /^\s*$/.test(message_content);
+    set_no_message_content(no_message_content);
     if (no_message_content) {
-        $("textarea#compose-textarea").toggleClass("invalid", true);
-        $("textarea#compose-textarea").trigger("focus");
+        if (show_banner) {
+            $("textarea#compose-textarea").toggleClass("invalid", true);
+            $("textarea#compose-textarea").trigger("focus");
+        }
         return false;
     }
 
@@ -889,7 +949,9 @@ export function validate(scheduling_message: boolean): boolean {
         );
         return false;
     }
-    if (!validate_message_length($("#send_message_form"))) {
+    // TODO: This doesn't actually show a banner, it triggers a flash
+    const trigger_flash = show_banner;
+    if (!validate_message_length($("#send_message_form"), trigger_flash)) {
         return false;
     }
 
