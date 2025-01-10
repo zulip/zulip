@@ -275,6 +275,12 @@ export function initialize(): void {
         target: ".disabled-message-send-controls",
         // 350px at 14px/1em
         maxWidth: "25em",
+        onTrigger(instance) {
+            instance.setContent(
+                compose_recipient.get_posting_policy_error_message() ||
+                    compose_validate.get_disabled_send_tooltip(),
+            );
+        },
         content: () =>
             compose_recipient.get_posting_policy_error_message() ||
             compose_validate.get_disabled_send_tooltip(),
