@@ -1553,6 +1553,10 @@ li.topic-list-item {
     padding-top: var(--left-sidebar-sections-vertical-gutter);
     color: hsl(0deg 0% 43%);
     background-color: var(--color-background);
+    /* With quiet unreads, we want the BACK TO CHANNELS
+       and unread count to share a common baseline. */
+    line-height: var(--line-height-sidebar-row);
+    align-items: baseline;
 
     .show-all-streams {
         grid-area: topics-content-area;
