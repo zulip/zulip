@@ -163,7 +163,7 @@ export function is_color_picker_popover_displayed(): boolean | undefined {
     return popover_instances.color_picker_popover?.state.isVisible;
 }
 
-function get_popover_items_for_instance(instance: tippy.Instance): JQuery | undefined {
+export function get_popover_items_for_instance(instance: tippy.Instance): JQuery | undefined {
     const $current_elem = $(instance.popper);
     const class_name = $current_elem.attr("class");
 
