@@ -275,10 +275,10 @@ const update_buttons = (buttons: ActionButton[]): void => {
 };
 
 function update_banner(): void {
-    $("#dev_navbar_alerts_wrapper").html(banner_html(current_banner));
-    $("#dev_normal_banner_wrapper").html(banner_html(custom_normal_banner));
+    $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
+    $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
 
-    $("#banner_select_intent").val(current_banner.intent);
+    $("#showroom_component_banner_select_intent").val(current_banner.intent);
     $("#banner_label").val(current_banner.label.toString());
     update_buttons(current_banner.buttons);
     if (current_banner.close_button) {
@@ -292,7 +292,7 @@ let current_banner = alert_banners["custom-banner"]!;
 
 $(window).on("load", () => {
     // Code for /devtools/buttons design testing page.
-    $("input[name='dark-theme-select']").on("change", (e) => {
+    $("input[name='showroom-dark-theme-select']").on("change", (e) => {
         if ($(e.target).data("theme") === "dark") {
             $(":root").addClass("dark-theme");
         } else {
@@ -341,12 +341,12 @@ $(window).on("load", () => {
         $banner_select.append($("<option>").val(key).text(key));
     }
 
-    const $banner_intent_select = $("#banner_select_intent");
+    const $banner_intent_select = $("#showroom_component_banner_select_intent");
     for (const intent of component_intents) {
         $banner_intent_select.append($("<option>").val(intent).text(intent));
     }
 
-    $("#banner_select_intent").on("change", function (this: HTMLElement) {
+    $("#showroom_component_banner_select_intent").on("change", function (this: HTMLElement) {
         const selected_intent = $(this).val()?.toString();
         if (selected_intent === undefined) {
             return;
@@ -361,9 +361,9 @@ $(window).on("load", () => {
             for (const button of custom_normal_banner.buttons) {
                 button.intent = custom_normal_banner.intent;
             }
-            $("#dev_normal_banner_wrapper").html(banner_html(custom_normal_banner));
+            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
         }
-        $("#dev_navbar_alerts_wrapper").html(banner_html(current_banner));
+        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
     });
 
     $banner_select.on("change", function (this: HTMLElement) {
@@ -381,20 +381,20 @@ $(window).on("load", () => {
         } else {
             current_banner.close_button = false;
         }
-        $("#dev_navbar_alerts_wrapper").html(banner_html(current_banner));
+        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
             custom_normal_banner.close_button = current_banner.close_button;
-            $("#dev_normal_banner_wrapper").html(banner_html(custom_normal_banner));
+            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
         }
     });
 
     $("#banner_label").on("input", function (this: HTMLElement) {
         const banner_label = $(this).val()?.toString() ?? "";
         current_banner.label = banner_label;
-        $("#dev_navbar_alerts_wrapper").html(banner_html(current_banner));
+        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
             custom_normal_banner.label = banner_label;
-            $("#dev_normal_banner_wrapper").html(banner_html(custom_normal_banner));
+            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
         }
     });
 
@@ -423,10 +423,10 @@ $(window).on("load", () => {
             );
         }
         sortButtons(current_banner.buttons);
-        $("#dev_navbar_alerts_wrapper").html(banner_html(current_banner));
+        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
             custom_normal_banner.buttons = current_banner.buttons;
-            $("#dev_normal_banner_wrapper").html(banner_html(custom_normal_banner));
+            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
         }
     });
 
@@ -440,10 +440,10 @@ $(window).on("load", () => {
         } else {
             delete primary_button.icon;
         }
-        $("#dev_navbar_alerts_wrapper").html(banner_html(current_banner));
+        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
             custom_normal_banner.buttons = current_banner.buttons;
-            $("#dev_normal_banner_wrapper").html(banner_html(custom_normal_banner));
+            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
         }
     });
 
@@ -456,10 +456,10 @@ $(window).on("load", () => {
             return;
         }
         primary_button.icon = $(this).val()?.toString() ?? "";
-        $("#dev_navbar_alerts_wrapper").html(banner_html(current_banner));
+        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
             custom_normal_banner.buttons = current_banner.buttons;
-            $("#dev_normal_banner_wrapper").html(banner_html(custom_normal_banner));
+            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
         }
     });
 
@@ -469,10 +469,10 @@ $(window).on("load", () => {
             return;
         }
         primary_button.label = $(this).val()?.toString() ?? "";
-        $("#dev_navbar_alerts_wrapper").html(banner_html(current_banner));
+        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
             custom_normal_banner.buttons = current_banner.buttons;
-            $("#dev_normal_banner_wrapper").html(banner_html(custom_normal_banner));
+            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
         }
     });
 
@@ -501,10 +501,10 @@ $(window).on("load", () => {
                 (button) => button.type !== "quiet",
             );
         }
-        $("#dev_navbar_alerts_wrapper").html(banner_html(current_banner));
+        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
             custom_normal_banner.buttons = current_banner.buttons;
-            $("#dev_normal_banner_wrapper").html(banner_html(custom_normal_banner));
+            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
         }
     });
 
@@ -518,10 +518,10 @@ $(window).on("load", () => {
         } else {
             delete quiet_button.icon;
         }
-        $("#dev_navbar_alerts_wrapper").html(banner_html(current_banner));
+        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
             custom_normal_banner.buttons = current_banner.buttons;
-            $("#dev_normal_banner_wrapper").html(banner_html(custom_normal_banner));
+            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
         }
     });
 
@@ -534,10 +534,10 @@ $(window).on("load", () => {
             return;
         }
         quiet_button.icon = $(this).val()?.toString() ?? "";
-        $("#dev_navbar_alerts_wrapper").html(banner_html(current_banner));
+        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
             custom_normal_banner.buttons = current_banner.buttons;
-            $("#dev_normal_banner_wrapper").html(banner_html(custom_normal_banner));
+            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
         }
     });
 
@@ -547,10 +547,10 @@ $(window).on("load", () => {
             return;
         }
         quiet_button.label = $(this).val()?.toString() ?? "";
-        $("#dev_navbar_alerts_wrapper").html(banner_html(current_banner));
+        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
             custom_normal_banner.buttons = current_banner.buttons;
-            $("#dev_normal_banner_wrapper").html(banner_html(custom_normal_banner));
+            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
         }
     });
 
@@ -579,10 +579,10 @@ $(window).on("load", () => {
                 (button) => button.type !== "borderless",
             );
         }
-        $("#dev_navbar_alerts_wrapper").html(banner_html(current_banner));
+        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
             custom_normal_banner.buttons = current_banner.buttons;
-            $("#dev_normal_banner_wrapper").html(banner_html(custom_normal_banner));
+            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
         }
     });
 
@@ -598,10 +598,10 @@ $(window).on("load", () => {
         } else {
             delete borderless_button.icon;
         }
-        $("#dev_navbar_alerts_wrapper").html(banner_html(current_banner));
+        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
             custom_normal_banner.buttons = current_banner.buttons;
-            $("#dev_normal_banner_wrapper").html(banner_html(custom_normal_banner));
+            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
         }
     });
 
@@ -616,10 +616,10 @@ $(window).on("load", () => {
             return;
         }
         borderless_button.icon = $(this).val()?.toString() ?? "";
-        $("#dev_navbar_alerts_wrapper").html(banner_html(current_banner));
+        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
             custom_normal_banner.buttons = current_banner.buttons;
-            $("#dev_normal_banner_wrapper").html(banner_html(custom_normal_banner));
+            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
         }
     });
 
@@ -631,10 +631,10 @@ $(window).on("load", () => {
             return;
         }
         borderless_button.label = $(this).val()?.toString() ?? "";
-        $("#dev_navbar_alerts_wrapper").html(banner_html(current_banner));
+        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
             custom_normal_banner.buttons = current_banner.buttons;
-            $("#dev_normal_banner_wrapper").html(banner_html(custom_normal_banner));
+            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
         }
     });
 });

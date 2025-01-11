@@ -17,14 +17,14 @@ body {
     background-color: var(--color-background);
 }
 
-.design-testing-wrapper {
+.showroom-wrapper {
     display: flex;
     flex-flow: column;
     gap: 20px;
     padding: 40px 20px;
 }
 
-.design-controls-section {
+.showroom-controls-section {
     display: grid;
     grid-template-columns: [control-name-start] max-content [control-name-end control-input-start] 1fr [control-input-end];
     gap: 10px;
@@ -32,7 +32,7 @@ body {
     width: min(100%, 500px);
 }
 
-.design-testing-controls {
+.showroom-controls {
     display: grid;
     grid-template-columns: subgrid;
     grid-column: control-name-start / control-input-end;
@@ -44,29 +44,29 @@ body {
     width: 100%;
 }
 
-.design-testing-control {
+.showroom-control {
     display: grid;
     grid-template-columns: subgrid;
     grid-column: control-name-start / control-input-end;
     gap: 10px;
 }
 
-.design-testing-control-element {
+.showroom-control-element {
     font-size: inherit;
     font-family: inherit;
 }
 
-.control-label {
+.showroom-control-label {
     cursor: pointer;
     grid-column: control-name-start / control-name-end;
     align-self: center;
 }
 
-.control-setting {
+.showroom-control-setting {
     grid-column: control-input-start / control-input-end;
 }
 
-.control-setting-multiple {
+.showroom-control-setting-multiple {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -76,60 +76,60 @@ body {
     display: none !important;
 }
 
-.design-testing-controls-label {
+.showroom-controls-label {
     grid-column: control-name-start / control-input-end;
     margin-top: 10px;
     font-size: 1.4em;
     font-weight: 600;
 }
 
-.dev-buttons-grid {
+.showroom-button-grid {
     display: grid;
-    grid-template-areas: "dev-buttons-variant-name dev-action-buttons-group dev-icon-buttons-group";
+    grid-template-areas: "showroom-component-button-intent-label showroom-component-action-button-group showroom-component-icon-button-group";
     grid-template-columns: repeat(3, max-content);
     gap: 15px 30px;
 }
 
-.dev-buttons-variant-group {
+.showroom-component-button-intent-group {
     display: grid;
     grid-template-columns: subgrid;
     grid-column: 1 / -1;
     place-items: center start;
 }
 
-.dev-buttons-variant-label {
-    grid-area: dev-buttons-variant-name;
+.showroom-component-button-intent-label {
+    grid-area: showroom-component-button-intent-label;
 }
 
-.dev-action-buttons-group,
-.dev-action-buttons-label {
-    grid-area: dev-action-buttons-group;
+.showroom-component-action-button-group,
+.showroom-component-action-button-label {
+    grid-area: showroom-component-action-button-group;
 }
 
-.dev-icon-buttons-group,
-.dev-icon-buttons-label {
-    grid-area: dev-icon-buttons-group;
+.showroom-component-icon-button-group,
+.showroom-component-icon-button-label {
+    grid-area: showroom-component-icon-button-group;
 }
 
-.dev-action-buttons-group,
-.dev-icon-buttons-group {
+.showroom-component-action-button-group,
+.showroom-component-icon-button-group {
     display: flex;
     flex-flow: row wrap;
     gap: 15px;
 }
 
-.dev-buttons-variant-label,
-.dev-action-buttons-label,
-.dev-icon-buttons-label {
+.showroom-component-button-intent-label,
+.showroom-component-action-button-label,
+.showroom-component-icon-button-label {
     font-size: 1.1em;
     font-weight: 500;
 }
 
-#banner_select_intent {
+#showroom_component_banner_select_intent {
     text-transform: capitalize;
 }
 
-#dev_normal_banner_wrapper {
+#showroom_component_banner_default_wrapper {
     width: min(100%, 800px);
     margin: 0 auto;
 }
