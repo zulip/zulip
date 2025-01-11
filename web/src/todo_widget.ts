@@ -25,7 +25,7 @@ export const todo_widget_extra_data_schema = z
 
 const todo_widget_inbound_data = z.intersection(
     z.object({
-        type: z.enum(["new_task", "new_task_list_title", "strike"]),
+        type: z.enum(["new_task", "new_task_list_title", "strike", "reorder"]),
     }),
     z.record(z.string(), z.unknown()),
 );
@@ -211,6 +211,31 @@ export class TaskData {
                 }
 
                 item.completed = !item.completed;
+            },
+        },
+
+        reorder: {
+            inbound: (_sender_id: number, raw_data: unknown): void => {
+                const task_reorder_inbound_data_schema = z.object({
+                    type: z.literal("reorder"),
+                    from: z.number(),
+                    to: z.number(),
+                });
+                const parsed = task_reorder_inbound_data_schema.safeParse(raw_data);
+                if (!parsed.success) {
+                    blueslip.warn("todo widget: bad type for inbound reorder data", {
+                        error: parsed.error,
+                    });
+                    return;
+                }
+
+                const tasks = [...this.task_map.entries()];
+                const [movedTask] = tasks.splice(parsed.data.from, 1);
+                if (!movedTask) {
+                    return;
+                }
+                tasks.splice(parsed.data.to, 0, movedTask);
+                this.task_map = new Map(tasks);
             },
         },
     };
