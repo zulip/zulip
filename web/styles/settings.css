@@ -1328,10 +1328,7 @@ label.preferences-radio-choice-label {
 
             @media (width >= $md_min) {
                 .tab-switcher {
-                    position: absolute;
                     display: flex;
-                    left: 10px;
-                    z-index: 1;
 
                     .ind-tab {
                         width: auto;
