@@ -6,13 +6,13 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     font-weight: 600;
-    font-size: calc(15em / 14);
-    line-height: 120%;
     position: relative;
     z-index: 0;
     background-color: var(--color-background);
 
     .message-header-contents {
+        font-size: 1.0714em; /* 15px at 14px em */
+        line-height: 1.2;
         display: flex;
         align-items: center;
         justify-content: space-between;
