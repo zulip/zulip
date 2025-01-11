@@ -594,21 +594,21 @@
     /* Banner grid layout variables */
     --banner-horizontal-padding: 13px;
     --banner-vertical-padding: 5px;
-    --banner-grid-template-areas-lg: ". . . . . . banner-close-btn banner-close-btn"
-        ". . banner-label . banner-btns . banner-close-btn banner-close-btn"
-        ". . . . . . banner-close-btn banner-close-btn";
+    --banner-grid-template-areas-lg: ". . . . . . banner-close-button banner-close-button"
+        ". . banner-label . banner-action-buttons . banner-close-button banner-close-button"
+        ". . . . . . banner-close-button banner-close-button";
     --banner-grid-template-columns-lg: var(--banner-horizontal-padding) 0 auto
         minmax(0, 1fr) auto 0 minmax(0, auto) var(--banner-horizontal-padding);
     --banner-grid-template-rows-lg: 5px auto 5px;
-    --banner-grid-template-areas-md: ". . . . banner-close-btn banner-close-btn"
-        ". . banner-label banner-label banner-close-btn banner-close-btn"
-        ". banner-btns banner-btns banner-btns . .";
+    --banner-grid-template-areas-md: ". . . . banner-close-button banner-close-button"
+        ". . banner-label banner-label banner-close-button banner-close-button"
+        ". banner-action-buttons banner-action-buttons banner-action-buttons . .";
     --banner-grid-template-columns-md: var(--banner-horizontal-padding) 0
         minmax(auto, 1fr) 0 minmax(0, auto) var(--banner-horizontal-padding);
     --banner-grid-template-rows-md: 5px auto auto 5px;
-    --banner-grid-template-areas-sm: ". . . . banner-close-btn banner-close-btn"
-        ". . banner-label banner-label banner-close-btn banner-close-btn"
-        ". banner-btns banner-btns banner-btns banner-btns .";
+    --banner-grid-template-areas-sm: ". . . . banner-close-button banner-close-button"
+        ". . banner-label banner-label banner-close-button banner-close-button"
+        ". banner-action-buttons banner-action-buttons banner-action-buttons banner-action-buttons .";
 
     /* Colors used across the app */
     --color-date: hsl(0deg 0% 15% / 75%);
