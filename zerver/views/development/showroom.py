@@ -28,8 +28,8 @@ def showroom_component_buttons(request: HttpRequest) -> HttpResponse:
     context = {
         "background_colors": background_colors,
         "icons": get_svg_filenames(),
-        "page_is_design_testing": True,
-        "design_component": "buttons",
+        "page_is_showroom": True,
+        "showroom_component": "buttons",
         "doc_root_title": "Button styles browser",
         # We set isolated_page to avoid clutter from footer/header.
         "isolated_page": True,
@@ -41,8 +41,8 @@ def showroom_component_banners(request: HttpRequest) -> HttpResponse:
     context = {
         "background_colors": background_colors,
         "icons": get_svg_filenames(),
-        "page_is_design_testing": True,
-        "design_component": "banners",
+        "page_is_showroom": True,
+        "showroom_component": "banners",
         "doc_root_title": "Banner styles browser",
         # We set isolated_page to avoid clutter from footer/header.
         "isolated_page": True,
