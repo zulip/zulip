@@ -26,7 +26,7 @@
 }
 
 .banner-action-buttons {
-    grid-area: banner-btns;
+    grid-area: banner-action-buttons;
     display: flex;
     gap: 8px;
     margin-left: 6px;
@@ -34,7 +34,7 @@
 
 .banner-close-button {
     display: flex;
-    grid-area: banner-close-btn;
+    grid-area: banner-close-button;
     padding: 0.6875em;
     margin-left: 5px;
 }
