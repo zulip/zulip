@@ -78,6 +78,7 @@ export function show_userlist_sidebar(): void {
 export function show_streamlist_sidebar(): void {
     $(".app-main .column-left").addClass("expanded");
     updateLeftSidebarIcon();
+    toggleUnreadCount();
     resize.resize_stream_filters_container();
     left_sidebar_expanded_as_overlay = true;
 }
@@ -85,9 +86,17 @@ export function show_streamlist_sidebar(): void {
 export function hide_streamlist_sidebar(): void {
     $(".app-main .column-left").removeClass("expanded");
     updateLeftSidebarIcon();
+    toggleUnreadCount();
     left_sidebar_expanded_as_overlay = false;
 }
-
+// Function to toggle unread count visibility
+function toggleUnreadCount(): void {
+    if ($(".app-main .column-left").hasClass("expanded")) {
+        $(".column-middle .left-sidebar-toggle-unreadcount").hide();
+    } else {
+        $(".column-middle .left-sidebar-toggle-unreadcount").show();
+    }
+}
 export function any_sidebar_expanded_as_overlay(): boolean {
     return left_sidebar_expanded_as_overlay || right_sidebar_expanded_as_overlay;
 }
