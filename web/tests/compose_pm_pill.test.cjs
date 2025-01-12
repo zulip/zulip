@@ -226,3 +226,14 @@ run_test("has_unconverted_data", ({override}) => {
     // we have some unconverted data.
     assert.equal(compose_pm_pill.has_unconverted_data(), true);
 });
+
+run_test("resetting input on firefox restores the placeholder", () => {
+    const $input_div = $("#private_message_recipient");
+    $input_div.html("<br>");
+    $input_div.text("");
+    assert.equal($input_div.html(), "<br>");
+    // This should remove the <br> tag that FF inserts when you backspace all the text in a
+    // contenteditable div if and only if the div has no text node(s)
+    compose_pm_pill.restore_placeholder_in_firefox_for_no_input();
+    assert.equal($input_div.html(), "");
+});

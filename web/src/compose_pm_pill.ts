@@ -26,6 +26,8 @@ export function initialize_pill(): UserPillWidget {
         generate_pill_html: (item: UserPill) => user_pill.generate_pill_html(item, true),
     });
 
+    $("#private_message_recipient").on("input", restore_placeholder_in_firefox_for_no_input);
+
     return pill;
 }
 
@@ -48,6 +50,12 @@ export function initialize({
 
 export function clear(): void {
     widget.clear();
+}
+
+export function restore_placeholder_in_firefox_for_no_input(): void {
+    if ($("#private_message_recipient").text().trim() === "") {
+        $("#private_message_recipient").empty();
+    }
 }
 
 export function set_from_typeahead(person: User): void {
