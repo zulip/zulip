@@ -752,6 +752,7 @@
         hsl(0deg 0% 80%),
         hsl(0deg 0% 0% / 60%)
     );
+    --color-background-hover-todo-item: hsl(0deg 0% 97%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: light-dark(
         hsl(0deg 0% 80%),
@@ -2561,6 +2562,7 @@
         hsl(0deg 0% 97%) 8%,
         hsl(0deg 0% 11%)
     );
+    --color-background-hover-todo-item: hsl(0deg 0% 21%);
     --color-recipient-bar-controls-spinner: hsl(0deg 0% 100%);
     --box-shadow-unread-counter-normal: none;
 

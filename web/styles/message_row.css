@@ -154,7 +154,6 @@
         min-height: 17px;
         display: block;
         position: relative;
-        overflow: hidden;
 
         &:empty {
             display: none;
