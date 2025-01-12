@@ -452,13 +452,33 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
         return sort_people_for_relevance(items, current_stream_id, current_topic);
     }
 
+    function filter_broadcast(users: UserType[]): UserType[] {
+        return users.filter((user) => user.type === "broadcast");
+    }
+    function filter_users(users: UserType[]): UserType[] {
+        return users.filter((user) => user.type === "user");
+    }
+    function filter_bots(users: UserType[]): UserType[] {
+        return users.filter((item) => item.type === "user" && item.user.is_bot);
+    }
+    function filter_non_bots_users(users: UserType[]): UserType[] {
+        return users.filter((item) => item.type === "user" && !item.user.is_bot);
+    }
+
     const users_name_results = typeahead.triage_raw(query, users, (p) => p.user.full_name);
     const users_name_good_matches = [
         ...users_name_results.exact_matches,
         ...users_name_results.begins_with_case_sensitive_matches,
         ...users_name_results.begins_with_case_insensitive_matches,
     ];
+    const broadcast_good_matches = filter_broadcast(users_name_good_matches);
+    const bots_good_matches = filter_bots(filter_users(users_name_good_matches));
+
+    const normal_users_good_matches = filter_non_bots_users(filter_users(users_name_good_matches));
     const users_name_okay_matches = [...users_name_results.word_boundary_matches];
+    const broadcast_okay_matches = filter_broadcast(users_name_okay_matches);
+    const bots_okay_matches = filter_bots(filter_users(users_name_okay_matches));
+    const normal_users_okay_matches = filter_non_bots_users(filter_users(users_name_okay_matches));
 
     const email_results = typeahead.triage_raw(
         query,
@@ -470,8 +490,14 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
         ...email_results.begins_with_case_sensitive_matches,
         ...email_results.begins_with_case_insensitive_matches,
     ];
-    const email_okay_matches = [...email_results.word_boundary_matches];
+    const broadcast_email_good_matches = filter_broadcast(email_good_matches);
+    const bots_email_good_matches = filter_bots(filter_users(email_good_matches));
+    const normal_users_email_good_matches = filter_non_bots_users(filter_users(email_good_matches));
 
+    const email_okay_matches = [...email_results.word_boundary_matches];
+    const broadcast_email_okay_matches = filter_broadcast(email_okay_matches);
+    const bots_email_okay_matches = filter_bots(filter_users(email_okay_matches));
+    const normal_users_email_okay_matches = filter_non_bots_users(filter_users(email_okay_matches));
     const groups_results = typeahead.triage_raw(query, groups, (g) => g.name);
     const groups_good_matches = [
         ...groups_results.exact_matches,
@@ -481,15 +507,39 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
     const groups_okay_matches = [...groups_results.word_boundary_matches];
 
     const best_users = (): UserType[] => [
-        ...sort_relevance(users_name_good_matches),
-        ...sort_relevance(users_name_okay_matches),
+        ...sort_relevance(normal_users_good_matches),
+        ...sort_relevance(normal_users_okay_matches),
+    ];
+    const best_broadcasts = (): UserType[] => [
+        ...sort_relevance(broadcast_good_matches),
+        ...sort_relevance(broadcast_okay_matches),
+    ];
+    const best_bots = (): UserType[] => [
+        ...sort_relevance(bots_good_matches),
+        ...sort_relevance(bots_okay_matches),
     ];
     const best_groups = (): UserGroupPillData[] => [...groups_good_matches, ...groups_okay_matches];
     const ok_users = (): UserType[] => [
-        ...sort_relevance(email_good_matches),
-        ...sort_relevance(email_okay_matches),
+        ...sort_relevance(normal_users_email_good_matches),
+        ...sort_relevance(normal_users_email_okay_matches),
     ];
-    const worst_users = (): UserType[] => sort_relevance(email_results.no_matches);
+    const ok_broadcasts = (): UserType[] => [
+        ...sort_relevance(broadcast_email_good_matches),
+        ...sort_relevance(broadcast_email_okay_matches),
+    ];
+    const ok_bots = (): UserType[] => [
+        ...sort_relevance(bots_email_good_matches),
+        ...sort_relevance(bots_email_okay_matches),
+    ];
+    const worst_users = (): UserType[] => [
+        ...sort_relevance(filter_non_bots_users(filter_users(email_results.no_matches))),
+    ];
+    const worst_broadcasts = (): UserType[] => [
+        ...sort_relevance(filter_broadcast(email_results.no_matches)),
+    ];
+    const worst_bots = (): UserType[] => [
+        ...sort_relevance(filter_bots(filter_users(email_results.no_matches))),
+    ];
     const worst_groups = (): UserGroupPillData[] => groups_results.no_matches;
 
     const getters: (
@@ -507,10 +557,6 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
             type: "users",
         },
         {
-            getter: best_groups,
-            type: "groups",
-        },
-        {
             getter: ok_users,
             type: "users",
         },
@@ -519,8 +565,36 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
             type: "users",
         },
         {
+            getter: best_groups,
+            type: "groups",
+        },
+        {
             getter: worst_groups,
             type: "groups",
+        },
+        {
+            getter: best_broadcasts,
+            type: "users",
+        },
+        {
+            getter: ok_broadcasts,
+            type: "users",
+        },
+        {
+            getter: worst_broadcasts,
+            type: "users",
+        },
+        {
+            getter: best_bots,
+            type: "users",
+        },
+        {
+            getter: ok_bots,
+            type: "users",
+        },
+        {
+            getter: worst_bots,
+            type: "users",
         },
     ];
 
@@ -530,17 +604,33 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
     let stream_wildcard_mention_included = false;
 
     function add_user_recipients(items: UserType[]): void {
+        const users: UserType[] = [];
+        const broadcasts: UserType[] = [];
+        const bots: UserType[] = [];
+
         for (const item of items) {
-            if (
-                item.type !== "broadcast" ||
-                item.user.email === "topic" ||
-                !stream_wildcard_mention_included
-            ) {
-                recipients.push(item);
-                if (item.type === "broadcast" && item.user.email !== "topic") {
+            if (item.type === "user" && !item.user?.is_bot) {
+                users.push(item);
+            } else if (item.type === "broadcast") {
+                broadcasts.push(item);
+            } else if (item.type === "user" && item.user?.is_bot) {
+                bots.push(item);
+            }
+        }
+
+        for (const user of users) {
+            recipients.push(user);
+        }
+        for (const broadcast of broadcasts) {
+            if (broadcast.user.email === "topic" || !stream_wildcard_mention_included) {
+                recipients.push(broadcast);
+                if (broadcast.user.email !== "topic") {
                     stream_wildcard_mention_included = true;
                 }
             }
+        }
+        for (const bot of bots) {
+            recipients.push(bot);
         }
     }
 
