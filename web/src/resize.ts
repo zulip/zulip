@@ -5,6 +5,7 @@ import assert from "minimalistic-assert";
 import * as blueslip from "./blueslip.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
+import {media_breakpoints_num} from "./css_variables.ts";
 import * as message_viewport from "./message_viewport.ts";
 
 function get_bottom_whitespace_height(): number {
@@ -178,9 +179,24 @@ export function resize_sidebars(): void {
     $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
 }
 
-export function update_recent_view_filters_height(): void {
-    const recent_view_filters_height = $("#recent_view_filter_buttons").outerHeight(true) ?? 0;
+export function update_recent_view(): void {
+    const $recent_view_filter_container = $("#recent_view_filter_buttons");
+    const recent_view_filters_height = $recent_view_filter_container.outerHeight(true) ?? 0;
     $("html").css("--recent-topics-filters-height", `${recent_view_filters_height}px`);
+
+    // Update max avatars to prevent participant avatars from overflowing.
+    // These numbers are just based on speculation.
+    const recent_view_filters_width = $recent_view_filter_container.outerWidth(true) ?? 0;
+    if (!recent_view_filters_width) {
+        return;
+    }
+    const num_avatars_narrow_window = 2;
+    const num_avatars_max = 4;
+    if (recent_view_filters_width < media_breakpoints_num.md) {
+        $("html").css("--recent-view-max-avatars", num_avatars_narrow_window);
+    } else {
+        $("html").css("--recent-view-max-avatars", num_avatars_max);
+    }
 }
 
 function resize_navbar_alerts(): void {
