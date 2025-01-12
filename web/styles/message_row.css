@@ -167,6 +167,12 @@
             );
         }
 
+        &:has(.todo-widget) {
+            /* The reason for this is that we need to show the drag
+               icon on hovering over the task in todo widget. */
+            overflow: visible;
+        }
+
         &:empty {
             display: none;
         }
