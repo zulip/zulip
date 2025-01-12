@@ -20,10 +20,20 @@ from zerver.tornado.django_api import send_event_on_commit
 def notify_reaction_update(
     user_profile: UserProfile, message: Message, reaction: Reaction, op: str
 ) -> None:
+    user_dict = {
+        "user_id": user_profile.id,
+        "email": user_profile.email,
+        "full_name": user_profile.full_name,
+    }
+
     event: dict[str, Any] = {
         "type": "reaction",
         "op": op,
         "user_id": user_profile.id,
+        # TODO: We plan to remove this redundant user_dict object once
+        # clients are updated to support accessing use user_id.  See
+        # https://github.com/zulip/zulip/pull/14711 for details.
+        "user": user_dict,
         "message_id": message.id,
         "emoji_name": reaction.emoji_name,
         "emoji_code": reaction.emoji_code,
