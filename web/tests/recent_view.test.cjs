@@ -187,7 +187,7 @@ mock_esm("../src/unread", {
     topic_has_any_unread_mentions: () => false,
 });
 mock_esm("../src/resize", {
-    update_recent_view_filters_height: noop,
+    update_recent_view: noop,
 });
 const dropdown_widget = mock_esm("../src/dropdown_widget", {
     DataTypes: {NUMBER: "number", STRING: "string"},
@@ -456,7 +456,7 @@ function stub_out_filter_buttons() {
 function test(label, f) {
     run_test(label, (helpers) => {
         page_params.development_environment = true;
-
+        page_params.is_node_test = true;
         messages = sample_messages.map((message) => ({...message}));
         f(helpers);
     });

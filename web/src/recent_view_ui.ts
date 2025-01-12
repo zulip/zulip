@@ -57,7 +57,7 @@ let filters_dropdown_widget: dropdown_widget.DropdownWidget;
 export let is_backfill_in_progress = false;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
-const MAX_AVATAR = 4;
+let max_avatars = 4;
 const MAX_EXTRA_SENDERS = 10;
 
 // Use this to set the focused element.
@@ -632,10 +632,10 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         // we provide our handlebars with senders in opposite order.
         // Display in most recent sender first order.
         all_senders = recent_senders.get_topic_recent_senders(stream_id, topic).reverse();
-        senders = all_senders.slice(-MAX_AVATAR);
+        senders = all_senders.slice(-max_avatars);
 
         // Collect extra sender fullname for tooltip
-        extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
+        extra_sender_ids = all_senders.slice(0, -max_avatars);
         displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
 
         stream_context = {
@@ -695,9 +695,9 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         // styling, but it's important to not destroy the information of "who's actually
         // talked".
         all_senders = recent_senders.get_pm_recent_senders(user_ids_string).participants.reverse();
-        senders = all_senders.slice(-MAX_AVATAR);
+        senders = all_senders.slice(-max_avatars);
         // Collect extra senders fullname for tooltip.
-        extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
+        extra_sender_ids = all_senders.slice(0, -max_avatars);
         displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
 
         dm_context = {
@@ -711,7 +711,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         };
     }
 
-    extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
+    extra_sender_ids = all_senders.slice(0, -max_avatars);
     const displayed_other_names = people.get_display_full_names(displayed_other_senders.reverse());
 
     if (extra_sender_ids.length > MAX_EXTRA_SENDERS) {
@@ -737,7 +737,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         unread_count,
         last_msg_time,
         senders: people.sender_info_for_recent_view_row(senders),
-        other_senders_count: Math.max(0, all_senders.length - MAX_AVATAR),
+        other_senders_count: Math.max(0, all_senders.length - max_avatars),
         other_sender_names_html: displayed_other_names.map((name) => _.escape(name)).join("<br />"),
         last_msg_url: hash_util.by_conversation_and_time_url(last_msg),
         is_spectator: page_params.is_spectator,
@@ -1296,6 +1296,10 @@ function get_list_data_for_widget(): ConversationData[] {
 export function complete_rerender(): void {
     if (!recent_view_util.is_visible()) {
         return;
+    }
+
+    if (!page_params.is_node_test) {
+        max_avatars = Number.parseInt($("html").css("--recent-view-max-avatars"), 10);
     }
 
     // Show topics list
