@@ -48,7 +48,7 @@ class TestJSTestFiles(TestCase):
             with self.assertRaises(Exception) as context:
                 find_js_test_files(self.test_dir, ["admin.ts"])
             error_msg = str(context.exception)
-            self.assertIn("admin.ts is not a valid test file", error_msg)
+            self.assertIn("'admin.ts' is not a valid test file. Test files must end with '.test.ts' or '.test.js'", error_msg)
 
     def test_missing_file_error(self) -> None:
         """Ensure an exception is raised for missing files."""
