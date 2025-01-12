@@ -42,7 +42,7 @@ class TestJSTestFiles(TestCase):
     def test_non_test_file_error(self) -> None:
         """Ensure an exception is raised for non-test files."""
         with (
-            patch("os.listdir", return_value=self.mock_files),
+            patch("os.listdir", return_value=["compose.test.ts", "admin.ts", "settings.test.ts"]),
             patch("os.path.isfile", side_effect=lambda x: os.path.basename(x) in self.mock_files),
         ):
             with self.assertRaises(Exception) as context:
