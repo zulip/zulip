@@ -99,15 +99,6 @@ const zoe = {
     full_name: "Zoe Yang",
 };
 
-people.add_active_user(alice);
-people.add_active_user(fred);
-people.add_active_user(jill);
-people.add_active_user(mark);
-people.add_active_user(norbert);
-people.add_active_user(zoe);
-people.add_active_user(me);
-people.initialize_current_user(me.user_id);
-
 const $alice_stub = $.create("alice stub");
 const $fred_stub = $.create("fred stub");
 
@@ -137,6 +128,16 @@ function test(label, f) {
 
         stub_buddy_list_elements();
         helpers.override(buddy_list, "render_view_user_list_links", noop);
+
+        people.init();
+        people.add_active_user({...alice});
+        people.add_active_user({...fred});
+        people.add_active_user({...jill});
+        people.add_active_user({...mark});
+        people.add_active_user({...norbert});
+        people.add_active_user({...zoe});
+        people.add_active_user({...me});
+        people.initialize_current_user(me.user_id);
 
         presence.presence_info.set(alice.user_id, {status: "active"});
         presence.presence_info.set(fred.user_id, {status: "active"});
@@ -629,9 +630,6 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({
     activity_ui.redraw_user(fred_with_new_name.user_id);
     assert.ok(fred_removed);
     assert.ok($users_matching_view_appended.selector.includes('data-user-id="2"'));
-
-    // restore old Fred data
-    people.add_active_user(fred);
 });
 
 test("insert_fred_then_alice_then_rename, both as other users", ({
@@ -687,9 +685,6 @@ test("insert_fred_then_alice_then_rename, both as other users", ({
     activity_ui.redraw_user(fred_with_new_name.user_id);
     assert.ok(fred_removed);
     assert.ok($other_users_appended.selector.includes('data-user-id="2"'));
-
-    // restore old Fred data
-    people.add_active_user(fred);
 });
 
 test("insert_unfiltered_user_with_filter", () => {
