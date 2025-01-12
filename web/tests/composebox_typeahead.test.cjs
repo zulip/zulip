@@ -1656,7 +1656,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals(
         "test @_*h",
         mentions_with_silent_marker(
-            [harry_item, hal_item, hamlet_item, hamletcharacters, cordelia_item, othello_item],
+            [harry_item, hal_item, hamlet_item, cordelia_item, othello_item, hamletcharacters],
             true,
         ),
     );
@@ -2054,7 +2054,7 @@ test("filter_and_sort_mentions (normal)", ({override}) => {
     const mention_all = broadcast_item(ct.broadcast_mentions()[0]);
     assert.deepEqual(
         suggestions,
-        possibly_silent_list([mention_all, ali_item, alice_item, hal_item, call_center], is_silent),
+        possibly_silent_list([ali_item, alice_item, hal_item, call_center, mention_all], is_silent),
     );
 
     // call_center group is shown in typeahead even when user is member of
@@ -2063,7 +2063,7 @@ test("filter_and_sort_mentions (normal)", ({override}) => {
     suggestions = ct.filter_and_sort_mentions(is_silent, "al");
     assert.deepEqual(
         suggestions,
-        possibly_silent_list([mention_all, ali_item, alice_item, hal_item, call_center], is_silent),
+        possibly_silent_list([ali_item, alice_item, hal_item, call_center, mention_all], is_silent),
     );
 
     // call_center group is not shown in typeahead when user is neither
@@ -2073,7 +2073,7 @@ test("filter_and_sort_mentions (normal)", ({override}) => {
     suggestions = ct.filter_and_sort_mentions(is_silent, "al");
     assert.deepEqual(
         suggestions,
-        possibly_silent_list([mention_all, ali_item, alice_item, hal_item], is_silent),
+        possibly_silent_list([ali_item, alice_item, hal_item, mention_all], is_silent),
     );
 });
 
@@ -2225,7 +2225,6 @@ test("typeahead_results", ({override}) => {
     // Here, we suggest only "everyone" instead of both the matching
     // "everyone" and "stream" wildcard mentions.
     assert_mentions_matches("e", [
-        not_silent(mention_everyone),
         not_silent(hal_item),
         not_silent(alice_item),
         not_silent(cordelia_item),
@@ -2235,6 +2234,7 @@ test("typeahead_results", ({override}) => {
         not_silent(othello_item),
         not_silent(hamletcharacters),
         not_silent(call_center),
+        not_silent(mention_everyone),
     ]);
 
     // Verify we suggest both 'the first matching stream wildcard' and
@@ -2243,9 +2243,9 @@ test("typeahead_results", ({override}) => {
     // Here, we suggest both "everyone" and "topic".
     assert_mentions_matches("o", [
         not_silent(othello_item),
+        not_silent(cordelia_item),
         not_silent(mention_everyone),
         not_silent(mention_topic),
-        not_silent(cordelia_item),
     ]);
 
     // Autocomplete by slash commands.
@@ -2332,7 +2332,7 @@ test("muted users excluded from results", () => {
     // or user group mentions.
     results = ct.get_person_suggestions("all", opts);
     const mention_all = broadcast_item(ct.broadcast_mentions()[0]);
-    assert.deepEqual(results, [mention_all, call_center]);
+    assert.deepEqual(results, [call_center, mention_all]);
 });
 
 test("direct message recipients sorted according to stream / topic being viewed", ({

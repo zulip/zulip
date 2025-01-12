@@ -490,20 +490,20 @@ test("sort_recipients", () => {
         "b_user_1@zulip.net",
         "b_user_2@zulip.net",
         "b_user_3@zulip.net",
-        "b_bot@example.com",
-        "a_bot@zulip.com",
         "a_user@zulip.org",
         "zman@test.net",
+        "b_bot@example.com",
+        "a_bot@zulip.com",
     ]);
 
     // Typeahead for direct message [query, "", ""]
     assert.deepEqual(get_typeahead_result("a", "", ""), [
         "a_user@zulip.org",
-        "a_bot@zulip.com",
         "b_user_1@zulip.net",
         "b_user_2@zulip.net",
         "b_user_3@zulip.net",
         "zman@test.net",
+        "a_bot@zulip.com",
         "b_bot@example.com",
     ]);
 
@@ -542,13 +542,13 @@ test("sort_recipients", () => {
 
     // Typeahead for stream message [query, stream-id, topic-name]
     assert.deepEqual(get_typeahead_result("b", dev_sub.stream_id, "Dev topic"), [
-        subscriber_email_3,
         subscriber_email_2,
         subscriber_email_1,
         "b_user_1@zulip.net",
-        "a_bot@zulip.com",
         "zman@test.net",
         "a_user@zulip.org",
+        subscriber_email_3,
+        "a_bot@zulip.com",
     ]);
 
     recent_senders.process_stream_message({
@@ -569,9 +569,9 @@ test("sort_recipients", () => {
         "zman@test.net",
         "b_user_3@zulip.net",
         "a_user@zulip.org",
-        "b_bot@example.com",
         "b_user_1@zulip.net",
         "b_user_2@zulip.net",
+        "b_bot@example.com",
         "a_bot@zulip.com",
     ]);
 });
@@ -595,13 +595,13 @@ test("sort_recipients all mention", () => {
     });
 
     assertSameEmails(results, [
-        broadcast_item(all_obj),
         a_user_item,
-        a_bot_item,
         b_user_1_item,
         b_user_2_item,
         b_user_3_item,
         zman_item,
+        broadcast_item(all_obj),
+        a_bot_item,
         b_bot_item,
     ]);
 });
@@ -618,11 +618,11 @@ test("sort_recipients pm counts", () => {
     assert.deepEqual(get_typeahead_result("b"), [
         "b_user_2@zulip.net",
         "b_user_1@zulip.net",
-        "b_bot@example.com",
         "b_user_3@zulip.net",
-        "a_bot@zulip.com",
         "a_user@zulip.org",
         "zman@test.net",
+        "b_bot@example.com",
+        "a_bot@zulip.com",
     ]);
 
     // Now prioritize stream membership over pm counts.
@@ -632,10 +632,10 @@ test("sort_recipients pm counts", () => {
         "b_user_3@zulip.net",
         "b_user_2@zulip.net",
         "b_user_1@zulip.net",
-        "b_bot@example.com",
-        "a_bot@zulip.com",
         "a_user@zulip.org",
         "zman@test.net",
+        "b_bot@example.com",
+        "a_bot@zulip.com",
     ]);
 
     /* istanbul ignore next */
@@ -668,11 +668,11 @@ test("sort_recipients dup bots", () => {
         "b_user_1@zulip.net",
         "b_user_2@zulip.net",
         "b_user_3@zulip.net",
+        "a_user@zulip.org",
+        "zman@test.net",
         "b_bot@example.com",
         "a_bot@zulip.com",
         "a_bot@zulip.com",
-        "a_user@zulip.org",
-        "zman@test.net",
     ];
     assert.deepEqual(recipients_email, expected);
 });
@@ -690,7 +690,7 @@ test("sort_recipients dup alls", () => {
         current_topic: "Linux topic",
     });
 
-    const expected = [all_obj_item, a_user_item];
+    const expected = [a_user_item, all_obj_item];
     assertSameEmails(recipients, expected);
 });
 
@@ -1047,6 +1047,8 @@ test("compare_language", () => {
 // should be filled out more. This case was added for codecov.
 test("compare_by_pms", () => {
     assert.equal(th.compare_by_pms(a_user, a_user), 0);
+    assert.equal(th.compare_by_pms(a_user, b_bot), -1);
+    assert.equal(th.compare_by_pms(b_bot, a_user), 1);
 });
 
 test("sort_group_setting_options", ({override_rewire}) => {
