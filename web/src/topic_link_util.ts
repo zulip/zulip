@@ -49,6 +49,7 @@ export function get_fallback_markdown_link(
     topic_name?: string,
     message_id?: string,
 ): string {
+    stream_name = unescape_invalid_stream_topic_characters(stream_name);
     const stream = stream_data.get_sub(stream_name);
     const stream_id = stream?.stream_id;
     assert(stream_id !== undefined);
