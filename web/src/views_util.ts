@@ -111,7 +111,7 @@ export function show(opts: {
 
     // Misc.
     if (opts.is_recent_view) {
-        resize.update_recent_view_filters_height();
+        resize.update_recent_view();
     }
 }
 
