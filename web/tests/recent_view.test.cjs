@@ -455,7 +455,6 @@ function stub_out_filter_buttons() {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        $(".header").css = noop;
         page_params.development_environment = true;
 
         messages = sample_messages.map((message) => ({...message}));
