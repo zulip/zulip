@@ -5359,7 +5359,13 @@ class PushBouncerSignupTest(ZulipTestCase):
             contact_email="server-admin@zulip.com",
         )
         result = self.client_post("/api/v1/remotes/server/register", request)
-        self.assert_json_error(result, "A server with hostname example.com already exists")
+        self.assert_json_error(
+            result,
+            "A server with hostname example.com already exists. "
+            "If you control the hostname "
+            "and want to transfer the registration to this server, you can run manage.py register_server "
+            "with the --registration-takeover flag.",
+        )
 
     def test_register_contact_email_validation_rules(self) -> None:
         zulip_org_id = str(uuid.uuid4())
