@@ -260,7 +260,11 @@ def register_remote_server(
 
     if remote_server is None and RemoteZulipServer.objects.filter(hostname=hostname).exists():
         raise JsonableError(
-            _("A server with hostname {hostname} already exists").format(hostname=hostname)
+            _(
+                "A server with hostname {hostname} already exists. If you control the hostname "
+                "and want to transfer the registration to this server, you can run manage.py register_server "
+                "with the --registration-takeover flag."
+            ).format(hostname=hostname)
         )
 
     with transaction.atomic(durable=True):
