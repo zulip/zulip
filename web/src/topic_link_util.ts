@@ -31,6 +31,19 @@ export function html_escape_markdown_syntax_characters(text: string): string {
     return text.replaceAll(invalid_stream_topic_regex, escape_invalid_stream_topic_characters);
 }
 
+const escaped_to_original_mapping: Record<string, string> = {
+    "&#96;": "`",
+    "&gt;": ">",
+    "&#42;": "*",
+    "&amp;": "&",
+    "&#36;&#36;": "$$",
+};
+
+export function unescape_invalid_stream_topic_characters(text: string): string {
+    const unescape_regex = new RegExp(Object.keys(escaped_to_original_mapping).join("|"), "g");
+    return text.replaceAll(unescape_regex, (match) => escaped_to_original_mapping[match] ?? match);
+}
+
 export function get_fallback_markdown_link(
     stream_name: string,
     topic_name?: string,
