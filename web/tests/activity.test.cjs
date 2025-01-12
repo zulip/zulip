@@ -775,15 +775,6 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     override(buddy_list, "fill_screen_with_content", noop);
     override_rewire(activity_ui, "update_presence_indicators", noop);
 
-    let payload;
-    override(channel, "post", (arg) => {
-        if (payload === undefined) {
-            // This "if" block is added such that we can execute "success"
-            // function when want_redraw is true.
-            payload = arg;
-        }
-    });
-
     function clear() {
         $.clear_all_elements();
         buddy_list.$users_matching_view_list = $("#buddy-list-users-matching-view");
@@ -803,10 +794,6 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         start_scroll_handler.has_happened();
     };
 
-    activity.mark_client_idle();
-
-    $(window).off("focus");
-
     const call_setTimeout = new SideEffect("call setTimeout");
     set_global("setTimeout", (func) => {
         if (call_setTimeout.num_times_met > 0) {
@@ -817,59 +804,78 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         func();
     });
 
-    activity.initialize();
+    {
+        $(window).off("focus");
 
-    start_scroll_handler.should_happen_during(() => {
-        call_setTimeout.should_happen_during(() => {
+        let payload;
+        override(channel, "post", (arg) => {
+            if (payload === undefined) {
+                // This "if" block is added such that we can execute "success"
+                // function when want_redraw is true.
+                payload = arg;
+            }
+        });
+
+        activity.mark_client_idle();
+        activity.initialize();
+
+        start_scroll_handler.should_happen_during(() => {
+            call_setTimeout.should_happen_during(() => {
+                activity_ui.initialize({narrow_by_email() {}});
+            });
+        });
+
+        payload.success({
+            zephyr_mirror_active: true,
+            presences: {},
+            msg: "",
+            result: "success",
+            server_timestamp: 0,
+            presence_last_update_id: -1,
+        });
+        $(window).trigger("focus");
+
+        assert.ok(!activity.new_user_input);
+        assert.ok(!$("#zephyr-mirror-error").hasClass("show"));
+        assert.equal(activity.compute_active_status(), "active");
+    }
+
+    clear();
+
+    {
+        $(window).idle = (params) => {
+            params.onIdle();
+        };
+        let payload;
+
+        override(channel, "post", (arg) => {
+            payload = arg;
+        });
+
+        $(window).off("focus");
+        activity.initialize();
+
+        start_scroll_handler.should_happen_during(() => {
             activity_ui.initialize({narrow_by_email() {}});
         });
-    });
 
-    payload.success({
-        zephyr_mirror_active: true,
-        presences: {},
-        msg: "",
-        result: "success",
-        server_timestamp: 0,
-        presence_last_update_id: -1,
-    });
-    $(window).trigger("focus");
-    clear();
+        payload.success({
+            zephyr_mirror_active: false,
+            presences: {},
+            msg: "",
+            result: "success",
+            server_timestamp: 0,
+            presence_last_update_id: -1,
+        });
 
-    assert.ok(!activity.new_user_input);
-    assert.ok(!$("#zephyr-mirror-error").hasClass("show"));
-    assert.equal(activity.compute_active_status(), "active");
+        assert.ok($("#zephyr-mirror-error").hasClass("show"));
+        assert.ok(!activity.new_user_input);
+        assert.equal(activity.compute_active_status(), "idle");
 
-    $(window).idle = (params) => {
-        params.onIdle();
-    };
-    payload = undefined;
-
-    $(window).off("focus");
-    activity.initialize();
-
-    start_scroll_handler.should_happen_during(() => {
-        activity_ui.initialize({narrow_by_email() {}});
-    });
-
-    payload.success({
-        zephyr_mirror_active: false,
-        presences: {},
-        msg: "",
-        result: "success",
-        server_timestamp: 0,
-        presence_last_update_id: -1,
-    });
-
-    assert.ok($("#zephyr-mirror-error").hasClass("show"));
-    assert.ok(!activity.new_user_input);
-    assert.equal(activity.compute_active_status(), "idle");
-
-    // Exercise the mousemove handler, which just
-    // sets a flag.
-    $("html").get_on_handler("mousemove")();
-
-    clear();
+        // Exercise the mousemove handler, which just
+        // sets a flag.
+        $("html").get_on_handler("mousemove")();
+    }
 });
 
 test("electron_bridge", ({override_rewire}) => {
