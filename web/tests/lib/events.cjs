@@ -238,6 +238,11 @@ exports.fixtures = {
         emoji_name: "airplane",
         emoji_code: "2708",
         user_id: test_user.user_id,
+        user: {
+            email: test_user.email,
+            full_name: test_user.full_name,
+            user_id: test_user.user_id,
+        },
     },
 
     reaction__remove: {
@@ -248,6 +253,11 @@ exports.fixtures = {
         emoji_name: "8ball",
         emoji_code: "1f3b1",
         user_id: test_user.user_id,
+        user: {
+            email: test_user.email,
+            full_name: test_user.full_name,
+            user_id: test_user.user_id,
+        },
     },
 
     realm__deactivated: {

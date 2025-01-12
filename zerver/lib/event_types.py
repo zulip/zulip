@@ -288,6 +288,15 @@ class EventPresence(EventPresenceCore):
     email: str | None = None
 
 
+# Type for the legacy user field; the `user_id` field is intended to
+# replace this and we expect to remove this once clients have migrated
+# to support the modern API.
+class ReactionLegacyUserType(BaseModel):
+    email: str
+    full_name: str
+    user_id: int
+
+
 class EventReactionAdd(BaseModel):
     type: Literal["reaction"]
     op: Literal["add"]
@@ -296,6 +305,7 @@ class EventReactionAdd(BaseModel):
     emoji_code: str
     reaction_type: Literal["realm_emoji", "unicode_emoji", "zulip_extra_emoji"]
     user_id: int
+    user: ReactionLegacyUserType
     id: int
 
 
@@ -307,6 +317,7 @@ class EventReactionRemove(BaseModel):
     emoji_code: str
     reaction_type: Literal["realm_emoji", "unicode_emoji", "zulip_extra_emoji"]
     user_id: int
+    user: ReactionLegacyUserType
     id: int
 
 
