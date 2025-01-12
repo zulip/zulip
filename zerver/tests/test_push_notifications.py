@@ -5138,15 +5138,17 @@ class PushBouncerSignupTest(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        # Set up a MX lookup mock for all the tests, so that they don't have to
+        # Set up a DNS lookup mock for all the tests, so that they don't have to
         # worry about it failing, unless they intentionally want to set it up
         # to happen.
-        self.mxlookup_patcher = mock.patch("DNS.mxlookup", return_value=[(0, "")])
-        self.mxlookup_mock = self.mxlookup_patcher.start()
+        self.dns_resolver_patcher = mock.patch(
+            "zilencer.views.dns_resolver.Resolver.resolve", return_value=["whee"]
+        )
+        self.dns_resolver_mock = self.dns_resolver_patcher.start()
 
     @override
     def tearDown(self) -> None:
-        self.mxlookup_patcher.stop()
+        self.dns_resolver_patcher.stop()
 
     def test_deactivate_remote_server(self) -> None:
         zulip_org_id = str(uuid.uuid4())
