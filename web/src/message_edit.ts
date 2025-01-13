@@ -981,7 +981,8 @@ export function try_save_inline_topic_edit($row: JQuery): void {
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Merge with another topic?"}),
             html_body: render_confirm_merge_topics_with_rename({
-                topic_name: new_topic,
+                topic_display_name: util.get_final_topic_display_name(new_topic),
+                is_empty_string_topic: new_topic === "",
             }),
             on_click() {
                 do_save_inline_topic_edit($row, message, new_topic);
