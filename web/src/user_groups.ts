@@ -358,6 +358,36 @@ export function get_recursive_group_members(target_user_group: UserGroup): Set<n
     return members;
 }
 
+export function is_group_larger_than(target_user_group: UserGroup, max_size: number): boolean {
+    // Optimized function to check if a group's recursive membership
+    // can possibly be large, with runtime `O(max_size +
+    // total_subgroups)`, critically not having runtime scaling with
+    // the total users in the group or its subgroups.
+    if (target_user_group.members.size > max_size) {
+        return true;
+    }
+
+    const members = new Set(target_user_group.members);
+    const subgroup_ids = get_recursive_subgroups(target_user_group);
+    if (subgroup_ids === undefined) {
+        return false;
+    }
+
+    for (const subgroup_id of subgroup_ids) {
+        const subgroup = user_group_by_id_dict.get(subgroup_id);
+        assert(subgroup !== undefined);
+        for (const member of subgroup.members) {
+            members.add(member);
+        }
+
+        if (members.size > max_size) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 export function check_group_can_be_subgroup(
     subgroup: UserGroup,
     target_user_group: UserGroup,
