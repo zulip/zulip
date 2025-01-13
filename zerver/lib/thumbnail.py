@@ -22,8 +22,11 @@ DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500
 DEFAULT_EMOJI_SIZE = 64
 
-# We refuse to deal with any image whose total pixelcount exceeds this.
+# We refuse to deal with any image whose total pixelcount exceeds
+# this.  This is chosen to be around a quarter of a gigabyte for a
+# 24-bit (3bpp) image.
 IMAGE_BOMB_TOTAL_PIXELS = 90000000
+IMAGE_MAX_ANIMATED_PIXELS = IMAGE_BOMB_TOTAL_PIXELS / 3
 
 # Reject emoji which, after resizing, have stills larger than this
 MAX_EMOJI_GIF_FILE_SIZE_BYTES = 128 * 1024  # 128 kb
@@ -146,7 +149,9 @@ class BadImageError(JsonableError):
 
 
 @contextmanager
-def libvips_check_image(image_data: bytes | pyvips.Source) -> Iterator[pyvips.Image]:
+def libvips_check_image(
+    image_data: bytes | pyvips.Source, truncated_animation: bool = False
+) -> Iterator[pyvips.Image]:
     # The primary goal of this is to verify that the image is valid,
     # and raise BadImageError otherwise.  The yielded `source_image`
     # may be ignored, since calling `thumbnail_buffer` is faster than
@@ -161,11 +166,34 @@ def libvips_check_image(image_data: bytes | pyvips.Source) -> Iterator[pyvips.Im
     except pyvips.Error:
         raise BadImageError(_("Could not decode image; did you upload an image file?"))
 
-    if (
-        source_image.width * source_image.height * source_image.get_n_pages()
-        > IMAGE_BOMB_TOTAL_PIXELS
-    ):
-        raise BadImageError(_("Image size exceeds limit."))
+    if not truncated_animation:
+        # For places where we do not truncate animations (e.g. emoji,
+        # where the original is never served to clients, so we must
+        # preserve the full animation) we count total pixels across
+        # all frames for the limit.
+        if (
+            source_image.width * source_image.height * source_image.get_n_pages()
+            > IMAGE_BOMB_TOTAL_PIXELS
+        ):
+            raise BadImageError(_("Image size exceeds limit."))
+    else:
+        # When thumbnailing image uploads, we truncate thumbnailed
+        # animations, so we have different checks for animated vs
+        # still images.
+        if source_image.get_n_pages() == 1:
+            if source_image.width * source_image.height > IMAGE_BOMB_TOTAL_PIXELS:
+                raise BadImageError(_("Image size exceeds limit."))
+
+        else:
+            # For animated images, we have an additional limit -- we
+            # want to be able to render at least 3 frames, and spend
+            # no more than 1/3 of that IMAGE_BOMB_TOTAL_PIXELS budget
+            # in doing so.
+            if (
+                source_image.width * source_image.height * min(3, source_image.get_n_pages())
+                > IMAGE_MAX_ANIMATED_PIXELS
+            ):
+                raise BadImageError(_("Image size exceeds limit."))
 
     try:
         yield source_image
@@ -320,7 +348,7 @@ def maybe_thumbnail(
         return None
     try:
         # This only attempts to read the header, not the full image content
-        with libvips_check_image(content) as image:
+        with libvips_check_image(content, truncated_animation=True) as image:
             # "original_width_px" and "original_height_px" here are
             # _as rendered_, after applying the orientation
             # information which the image may contain.
@@ -548,8 +576,9 @@ def rewrite_thumbnailed_images(
                 image_tag["data-transcoded-image"] = str(image_data.transcoded_image)
 
     if changed:
-        return parsed_message.encode(
-            formatter=html_formatter
-        ).decode().strip(), remaining_thumbnails
+        return (
+            parsed_message.encode(formatter=html_formatter).decode().strip(),
+            remaining_thumbnails,
+        )
     else:
         return None, remaining_thumbnails
