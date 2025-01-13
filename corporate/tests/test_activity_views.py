@@ -325,7 +325,7 @@ class ActivityTest(ZulipTestCase):
                     realm_date_created=datetime(2023, 12, 1, tzinfo=timezone.utc),
                 )
 
-        # Remote server on legacy plan
+        # Remote server on complimentary access plan
         server = RemoteZulipServer.objects.get(hostname="zulip-1.example.com")
         customer = Customer.objects.create(remote_server=server)
         add_plan(customer, tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY)
