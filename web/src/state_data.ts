@@ -296,6 +296,7 @@ export const realm_schema = z.object({
     realm_bot_domain: z.string(),
     realm_can_access_all_users_group: z.number(),
     realm_can_add_custom_emoji_group: group_setting_value_schema,
+    realm_can_add_subscribers_group: group_setting_value_schema,
     realm_can_create_groups: group_setting_value_schema,
     realm_can_create_public_channel_group: group_setting_value_schema,
     realm_can_create_private_channel_group: group_setting_value_schema,
