@@ -1011,8 +1011,14 @@ export function content_highlighter_html(item: TypeaheadSuggestion): string | un
             return typeahead_helper.render_typeahead_item({primary: item.language});
         case "topic_jump":
             return typeahead_helper.render_typeahead_item({primary: item.message});
-        case "topic_list":
-            return typeahead_helper.render_typeahead_item({primary: item.topic});
+        case "topic_list": {
+            const topic_display_name = util.get_final_topic_display_name(item.topic);
+            const is_empty_string_topic = item.topic === "";
+            return typeahead_helper.render_typeahead_item({
+                primary: topic_display_name,
+                is_empty_string_topic,
+            });
+        }
         case "time_jump":
             return typeahead_helper.render_typeahead_item({primary: item.message});
         default:
