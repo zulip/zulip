@@ -14,11 +14,11 @@
 </form>
 {% if not plan_data.current_plan and remote_support_view %}
 <form method="POST" class="support-form">
-    <b>Configure temporary courtesy plan:</b><br />
-    <i>Once created, the end date for the temporary courtesy plan can be extended.</i><br />
+    <b>Configure complimentary access plan:</b><br />
+    <i>Once created, the end date for the complimentary access plan can be extended.</i><br />
     {{ csrf_input }}
     <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
-    <input type="date" name="temporary_courtesy_plan" required />
+    <input type="date" name="complimentary_access_plan" required />
     <button type="submit" class="support-submit-button">Create</button>
 </form>
 {% endif %}

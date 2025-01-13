@@ -578,7 +578,7 @@ class SupportType(Enum):
     update_required_plan_tier = 8
     configure_fixed_price_plan = 9
     delete_fixed_price_next_plan = 10
-    configure_temporary_courtesy_plan = 11
+    configure_complimentary_access_plan = 11
 
 
 class SupportViewRequest(TypedDict, total=False):
@@ -1419,27 +1419,28 @@ class BillingSession(ABC):
             plan_tier_name = CustomerPlan.name_from_tier(new_plan_tier)
         return f"Required plan tier for {self.billing_entity_display_name} set to {plan_tier_name}."
 
-    def configure_temporary_courtesy_plan(self, end_date_string: str) -> str:
+    def configure_complimentary_access_plan(self, end_date_string: str) -> str:
         plan_end_date = datetime.strptime(end_date_string, "%Y-%m-%d").replace(tzinfo=timezone.utc)
         if plan_end_date.date() <= timezone_now().date():
             raise SupportRequestError(
-                f"Cannot configure a courtesy plan for {self.billing_entity_display_name} to end on {end_date_string}."
+                f"Cannot configure a complimentary access plan for {self.billing_entity_display_name} to end on {end_date_string}."
             )
         customer = self.get_customer()
         if customer is not None:
             plan = get_current_plan_by_customer(customer)
             if plan is not None:
                 raise SupportRequestError(
-                    f"Cannot configure a courtesy plan for {self.billing_entity_display_name} because of current plan."
+                    f"Cannot configure a complimentary access plan for {self.billing_entity_display_name} because of current plan."
                 )
         plan_anchor_date = timezone_now()
         if isinstance(self, RealmBillingSession):
+            # TODO implement a complimentary access plan/tier for Zulip Cloud.
             raise SupportRequestError(
-                f"Cannot currently configure a courtesy plan for {self.billing_entity_display_name}."
+                f"Cannot currently configure a complimentary access plan for {self.billing_entity_display_name}."
             )  # nocoverage
 
         self.create_complimentary_access_plan(plan_anchor_date, plan_end_date)
-        return f"Temporary courtesy plan for {self.billing_entity_display_name} configured to end on {end_date_string}."
+        return f"Complimentary access plan for {self.billing_entity_display_name} configured to end on {end_date_string}."
 
     def configure_fixed_price_plan(self, fixed_price: int, sent_invoice_id: str | None) -> str:
         customer = self.get_customer()
@@ -3561,10 +3562,10 @@ class BillingSession(ABC):
             new_fixed_price = support_request["fixed_price"]
             sent_invoice_id = support_request["sent_invoice_id"]
             success_message = self.configure_fixed_price_plan(new_fixed_price, sent_invoice_id)
-        elif support_type == SupportType.configure_temporary_courtesy_plan:
+        elif support_type == SupportType.configure_complimentary_access_plan:
             assert support_request["plan_end_date"] is not None
             temporary_plan_end_date = support_request["plan_end_date"]
-            success_message = self.configure_temporary_courtesy_plan(temporary_plan_end_date)
+            success_message = self.configure_complimentary_access_plan(temporary_plan_end_date)
         elif support_type == SupportType.update_billing_modality:
             assert support_request["billing_modality"] is not None
             charge_automatically = support_request["billing_modality"] == "charge_automatically"
