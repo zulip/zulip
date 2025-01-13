@@ -1605,7 +1605,9 @@ test("begins_typeahead", ({override, override_rewire}) => {
         // alphabetical
         hamletcharacters, // "Characters of Hamlet"
         backend,
-        call_center, // "folks working in support"
+        call_center, // "folks working in support",
+        admins,
+        members,
     ];
     const mention_everyone = broadcast_item(ct.broadcast_mentions()[1]);
     function mentions_with_silent_marker(mentions, is_silent) {
@@ -1631,7 +1633,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     );
     assert_typeahead_equals(
         "test @_**o",
-        mentions_with_silent_marker([othello_item, cordelia_item], true),
+        mentions_with_silent_marker([othello_item, cordelia_item, admins], true),
     );
     assert_typeahead_equals(
         "test @*o",
@@ -1698,6 +1700,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
                 twin1_item,
                 twin2_item,
                 othello_item,
+                admins,
             ],
             true,
         ),
@@ -1749,7 +1752,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     );
     assert_typeahead_equals(
         "test @_o",
-        mentions_with_silent_marker([othello_item, cordelia_item], true),
+        mentions_with_silent_marker([othello_item, cordelia_item, admins], true),
     );
     assert_typeahead_equals("test @z", []);
     assert_typeahead_equals("test @_z", []);
