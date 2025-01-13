@@ -12,6 +12,7 @@ from typing_extensions import override
 from zerver.actions.message_edit import do_update_embedded_data
 from zerver.lib.mime_types import guess_type
 from zerver.lib.thumbnail import (
+    IMAGE_MAX_ANIMATED_PIXELS,
     MarkdownImageMetadata,
     StoredThumbnailFormat,
     get_default_thumbnail_url,
@@ -95,7 +96,16 @@ def ensure_thumbnails(
                 # one of them if we're outputting to a static format,
                 # otherwise we load them all.
                 if thumbnail_format.animated:
-                    load_opts = "n=-1"
+                    # We compute how many frames to thumbnail based on
+                    # how many frames it will take us to get to
+                    # IMAGE_MAX_ANIMATED_PIXELS
+                    pixels_per_frame = (
+                        image_attachment.original_width_px * image_attachment.original_height_px
+                    )
+                    if pixels_per_frame * image_attachment.frames < IMAGE_MAX_ANIMATED_PIXELS:
+                        load_opts = "n=-1"
+                    else:
+                        load_opts = f"n={IMAGE_MAX_ANIMATED_PIXELS // pixels_per_frame}"
                 else:
                     load_opts = "n=1"
             resized = pyvips.Image.thumbnail_buffer(
