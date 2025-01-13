@@ -681,7 +681,7 @@ class StripeTestCase(ZulipTestCase):
             not existing_customer
         ):
             # Upgrade already happened for free trial, invoice realms or schedule
-            # upgrade for legacy remote servers.
+            # upgrade for customers on complimentary access plan.
             return upgrade_json_response
 
         last_sent_invoice = Invoice.objects.last()
@@ -7170,9 +7170,10 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
     @responses.activate
     @mock_stripe()
     def test_upgrade_user_to_basic_plan_free_trial_fails_special_case(self, *mocks: Mock) -> None:
-        # Here we test if server had a legacy plan but never it ended before we could ever migrate
-        # it to remote realm resulting in the upgrade for remote realm creating a new customer which
-        # doesn't have any legacy plan associated with it. In this case, free trail should not be offered.
+        # Here we test if server had a complimentary access plan that ended before we could migrate
+        # it to a remote realm resulting in the upgrade for remote realm creating a new customer which
+        # doesn't have any complimentary access plan associated with it. In this case, a free trial
+        # should not be offered.
         with self.settings(SELF_HOSTING_FREE_TRIAL_DAYS=30):
             self.login("hamlet")
             hamlet = self.example_user("hamlet")
@@ -7201,7 +7202,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
                 result,
             )
 
-            # Add ended legacy plan for remote realm server.
+            # Add ended complimentary access plan for remote realm server.
             new_server_customer = Customer.objects.create(remote_server=self.remote_realm.server)
             CustomerPlan.objects.create(
                 customer=new_server_customer,
@@ -8710,8 +8711,8 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         with time_machine.travel(end_date, tick=False):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
             invoice_plans_as_needed()
-            # 'invoice_plan()' is called with both legacy & new plan, but
-            # invoice is created only for new plan. The legacy plan only goes
+            # 'invoice_plan()' is called with both complimentary access & new plan, but
+            # invoice is created only for new plan. The complimentary access plan only goes
             # through the end of cycle updates.
 
         realm_legacy_plan.refresh_from_db()
@@ -10210,11 +10211,11 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             time_machine.travel(plan_end_date, tick=False),
         ):
             invoice_plans_as_needed()
-            # Verify that for legacy plan with no next plan scheduled,
-            # invoice overdue email is not sent even if the last audit log
-            # update was 3 months ago.
+            # Verify that for complimentary access plan with no next plan scheduled,
+            # invoice overdue email is not sent even if the last audit log update was
+            # 3 months ago.
             send_email.assert_not_called()
-            # The legacy plan is downgraded, no invoice created.
+            # The complimentary access plan is downgraded, no invoice created.
             invoice_create.assert_not_called()
 
         plan.refresh_from_db()
@@ -10279,16 +10280,16 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             time_machine.travel(end_date, tick=False),
         ):
             invoice_plans_as_needed()
-            # Verify that for legacy plan with next plan scheduled, invoice
-            # overdue email is sent if the last audit log is stale.
+            # Verify that for complimentary access plan with next plan scheduled,
+            # invoice overdue email is sent if the last audit log is stale.
             send_email.assert_called()
             invoice_create.assert_not_called()
 
         with time_machine.travel(end_date, tick=False):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
             invoice_plans_as_needed()
-            # 'invoice_plan()' is called with both legacy & new plan, but
-            # invoice is created only for new plan. The legacy plan only
+            # 'invoice_plan()' is called with both complimentary access & new plan, but
+            # invoice is created only for new plan. The complimentary access plan only
             # goes through the end of cycle updates.
 
         legacy_plan.refresh_from_db()
