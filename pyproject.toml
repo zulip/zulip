@@ -149,7 +149,6 @@ ignore = [
     "E402", # Module level import not at top of file
     "E501", # Line too long
     "E731", # Do not assign a lambda expression, use a def
-    "ISC001", # Implicitly concatenated string literals on one line
     "N802", # Function name should be lowercase
     "N806", # Variable in function should be lowercase
     "PERF203", # `try`-`except` within a loop incurs performance overhead
