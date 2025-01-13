@@ -272,9 +272,9 @@ def register_remote_push_device(
 
     if realm_uuid is not None:
         # Servers 8.0+ also send the realm.uuid of the user.
-        assert isinstance(
-            user_uuid, str
-        ), "Servers new enough to send realm_uuid, should also have user_uuid"
+        assert isinstance(user_uuid, str), (
+            "Servers new enough to send realm_uuid, should also have user_uuid"
+        )
         remote_realm = get_remote_realm_helper(request, server, realm_uuid, user_uuid)
         if remote_realm is not None:
             # We want to associate the RemotePushDeviceToken with the RemoteRealm.
@@ -547,9 +547,9 @@ def remote_server_notify_push(
     realm_uuid = payload.realm_uuid
     remote_realm = None
     if realm_uuid is not None:
-        assert isinstance(
-            user_uuid, str
-        ), "Servers new enough to send realm_uuid, should also have user_uuid"
+        assert isinstance(user_uuid, str), (
+            "Servers new enough to send realm_uuid, should also have user_uuid"
+        )
         remote_realm = get_remote_realm_helper(request, server, realm_uuid, user_uuid)
 
     push_status = get_push_status_for_remote_request(server, remote_realm)

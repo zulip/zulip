@@ -63,9 +63,9 @@ def do_set_realm_property(
     value to update and the user who initiated the update.
     """
     property_type = Realm.property_types[name]
-    assert isinstance(
-        value, property_type
-    ), f"Cannot update {name}: {value} is not an instance of {property_type}"
+    assert isinstance(value, property_type), (
+        f"Cannot update {name}: {value} is not an instance of {property_type}"
+    )
 
     old_value = getattr(realm, name)
     if old_value == value:
@@ -718,9 +718,9 @@ def scrub_deactivated_realm(realm_to_scrub: Realm) -> None:
         realm_to_scrub.scheduled_deletion_date is not None
         and realm_to_scrub.scheduled_deletion_date <= timezone_now()
     ):
-        assert (
-            realm_to_scrub.deactivated
-        ), "Non-deactivated realm unexpectedly scheduled for deletion."
+        assert realm_to_scrub.deactivated, (
+            "Non-deactivated realm unexpectedly scheduled for deletion."
+        )
         do_scrub_realm(realm_to_scrub, acting_user=None)
         logging.info("Scrubbed realm %s", realm_to_scrub.id)
 

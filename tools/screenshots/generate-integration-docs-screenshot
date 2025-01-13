@@ -244,9 +244,9 @@ def generate_screenshot_from_config(
     bot = create_integration_bot(integration, screenshot_config.bot_name)
     create_integration_stream(integration, bot)
     if isinstance(integration, WebhookIntegration):
-        assert isinstance(
-            screenshot_config, ScreenshotConfig
-        ), "Webhook integrations require ScreenshotConfig"
+        assert isinstance(screenshot_config, ScreenshotConfig), (
+            "Webhook integrations require ScreenshotConfig"
+        )
         message_sent = send_bot_payload_message(bot, integration, fixture_path, screenshot_config)
     else:
         send_bot_mock_message(bot, integration, fixture_path, screenshot_config)
