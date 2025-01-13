@@ -70,44 +70,48 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 requested_plan=plan,
             )
 
-        def upgrade_legacy_plan(legacy_plan: CustomerPlan) -> None:
+        def upgrade_complimentary_access_plan(complimentary_access_plan: CustomerPlan) -> None:
             billed_licenses = 10
-            assert legacy_plan.end_date is not None
+            assert complimentary_access_plan.end_date is not None
             last_ledger_entry = (
-                LicenseLedger.objects.filter(plan=legacy_plan).order_by("-id").first()
+                LicenseLedger.objects.filter(plan=complimentary_access_plan).order_by("-id").first()
             )
             assert last_ledger_entry is not None
             last_ledger_entry.licenses_at_next_renewal = billed_licenses
             last_ledger_entry.save(update_fields=["licenses_at_next_renewal"])
-            legacy_plan.status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
-            legacy_plan.save(update_fields=["status"])
+            complimentary_access_plan.status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+            complimentary_access_plan.save(update_fields=["status"])
             plan_params = {
                 "automanage_licenses": True,
                 "charge_automatically": False,
                 "price_per_license": 100,
-                "billing_cycle_anchor": legacy_plan.end_date,
+                "billing_cycle_anchor": complimentary_access_plan.end_date,
                 "billing_schedule": CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                 "tier": CustomerPlan.TIER_SELF_HOSTED_BASIC,
                 "status": CustomerPlan.NEVER_STARTED,
             }
             CustomerPlan.objects.create(
-                customer=legacy_plan.customer, next_invoice_date=legacy_plan.end_date, **plan_params
+                customer=complimentary_access_plan.customer,
+                next_invoice_date=complimentary_access_plan.end_date,
+                **plan_params,
             )
 
-        def add_legacy_plan(name: str, upgrade: bool) -> None:
-            legacy_anchor = datetime(2050, 1, 1, tzinfo=timezone.utc)
+        def add_complimentary_access_plan(name: str, upgrade: bool) -> None:
+            complimentary_access_plan_anchor = datetime(2050, 1, 1, tzinfo=timezone.utc)
             next_plan_anchor = datetime(2050, 2, 1, tzinfo=timezone.utc)
             remote_realm = RemoteRealm.objects.get(name=name)
             billing_session = RemoteRealmBillingSession(remote_realm)
 
-            billing_session.migrate_customer_to_legacy_plan(legacy_anchor, next_plan_anchor)
+            billing_session.create_complimentary_access_plan(
+                complimentary_access_plan_anchor, next_plan_anchor
+            )
             customer = billing_session.get_customer()
             assert customer is not None
             complimentary_access_plan = billing_session.get_complimentary_access_plan(customer)
             assert complimentary_access_plan is not None
             assert complimentary_access_plan.end_date is not None
             if upgrade:
-                upgrade_legacy_plan(complimentary_access_plan)
+                upgrade_complimentary_access_plan(complimentary_access_plan)
 
         super().setUp()
 
@@ -158,11 +162,11 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             plan=SponsoredPlanTypes.COMMUNITY.value,
         )
 
-        # Add expected legacy customer and plan data:
+        # Add expected customer and plan data:
         # with upgrade scheduled
-        add_legacy_plan(name="realm-name-4", upgrade=True)
+        add_complimentary_access_plan(name="realm-name-4", upgrade=True)
         # without upgrade scheduled
-        add_legacy_plan(name="realm-name-5", upgrade=False)
+        add_complimentary_access_plan(name="realm-name-5", upgrade=False)
 
         # Add billing users
         remote_realm = RemoteRealm.objects.get(name="realm-name-3")
