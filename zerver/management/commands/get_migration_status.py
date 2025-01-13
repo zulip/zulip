@@ -7,7 +7,7 @@ from typing_extensions import override
 
 from scripts.lib.zulip_tools import get_dev_uuid_var_path
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.test_fixtures import get_migration_status
+from zerver.lib.migration_status import get_migration_status
 
 
 class Command(ZulipBaseCommand):
