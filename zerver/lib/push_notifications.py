@@ -286,9 +286,9 @@ def send_apple_push_notification(
     if have_missing_app_id:
         devices = [device for device in devices if device.ios_app_id is not None]
 
-    async def send_all_notifications() -> (
-        Iterable[tuple[DeviceToken, aioapns.common.NotificationResult | BaseException]]
-    ):
+    async def send_all_notifications() -> Iterable[
+        tuple[DeviceToken, aioapns.common.NotificationResult | BaseException]
+    ]:
         requests = [
             aioapns.NotificationRequest(
                 apns_topic=device.ios_app_id,
