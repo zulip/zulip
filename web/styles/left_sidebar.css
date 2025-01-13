@@ -1605,7 +1605,6 @@ li.topic-list-item {
     top: 0;
     z-index: 2;
     background-color: var(--color-background);
-    border-radius: 4px;
 
     &.showing-stream-search-section {
         /* Open up the stream-search rows. The 10px
@@ -1671,6 +1670,10 @@ li.topic-list-item {
 
     &:hover,
     &.showing-streams-popover {
+        /* We only set the border radius on the hover/popover states,
+           so as to prevent the background on highlighted channels
+           from bleeding through. */
+        border-radius: 4px;
         background-color: var(--color-background-opaque-hover-narrow-filter);
         box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
 
