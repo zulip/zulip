@@ -112,6 +112,12 @@ export function rewire_max_num_items(value: typeof max_num_items): void {
     max_num_items = value;
 }
 
+export let max_group_size_for_dm = 20;
+
+export function rewire_max_group_size_for_dm(value: typeof max_group_size_for_dm): void {
+    max_group_size_for_dm = value;
+}
+
 export let emoji_collection: Emoji[] = [];
 
 // This has mostly been replaced with `type` fields on
@@ -603,7 +609,7 @@ export function get_pm_people(query: string): (UserGroupPillData | UserPillData)
         filter_pills: true,
         stream_id: compose_state.stream_id(),
         topic: compose_state.topic(),
-        filter_groups_for_guests: true,
+        filter_groups_for_dm: true,
     };
     const suggestions = get_person_suggestions(query, opts);
     const current_user_ids = compose_pm_pill.get_user_ids();
@@ -633,7 +639,7 @@ type PersonSuggestionOpts = {
     filter_pills: boolean;
     stream_id: number | undefined;
     topic: string | undefined;
-    filter_groups_for_guests?: boolean;
+    filter_groups_for_dm?: boolean;
     filter_groups_for_mention?: boolean;
 };
 
@@ -674,9 +680,22 @@ export function get_person_suggestions(
     let groups: UserGroup[];
     if (opts.filter_groups_for_mention) {
         groups = user_groups.get_user_groups_allowed_to_mention();
-    } else if (opts.filter_groups_for_guests && !settings_data.user_can_access_all_other_users()) {
-        groups = user_groups.get_realm_user_groups().filter((group) => {
-            const group_members = group.members;
+    } else if (opts.filter_groups_for_dm) {
+        const can_access_all_users = settings_data.user_can_access_all_other_users();
+        groups = user_groups.get_all_realm_user_groups().filter((group) => {
+            if (user_groups.is_group_larger_than(group, max_group_size_for_dm)) {
+                // We do not want user trying to DM more than 20 users
+                // together.
+                return false;
+            }
+
+            if (can_access_all_users) {
+                return true;
+            }
+
+            const group_members = user_groups.get_recursive_group_members(group);
+            // If user cannot access all other users we only show groups,
+            // all of whose members can be accessed by the user.
             for (const user_id of group_members) {
                 const person = people.maybe_get_user_by_id(user_id, true);
                 if (person === undefined || person.is_inaccessible_user) {
