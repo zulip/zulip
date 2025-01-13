@@ -530,10 +530,7 @@ run_test("realm settings", ({override}) => {
         assert.equal(realm[parameter_name], 1);
     }
 
-    let event = event_fixtures.realm__update__invite_to_stream_policy;
-    test_realm_integer(event, "realm_invite_to_stream_policy");
-
-    event = event_fixtures.realm__update__bot_creation_policy;
+    let event = event_fixtures.realm__update__bot_creation_policy;
     test_realm_integer(event, "realm_bot_creation_policy");
 
     event = event_fixtures.realm__update__invite_required;
@@ -601,6 +598,7 @@ run_test("realm settings", ({override}) => {
     override(realm, "realm_message_content_edit_limit_seconds", 0);
     override(realm, "realm_authentication_methods", {Google: {enabled: false, available: true}});
     override(realm, "realm_can_add_custom_emoji_group", 1);
+    override(realm, "realm_can_add_subscribers_group", 1);
     override(realm, "realm_can_create_public_channel_group", 1);
     override(realm, "realm_can_invite_users_group", 1);
     override(realm, "realm_can_move_messages_between_topics_group", 1);
@@ -617,6 +615,7 @@ run_test("realm settings", ({override}) => {
         Google: {enabled: true, available: true},
     });
     assert_same(realm.realm_can_add_custom_emoji_group, 3);
+    assert_same(realm.realm_can_add_subscribers_group, 3);
     assert_same(realm.realm_can_create_public_channel_group, 3);
     assert_same(realm.realm_can_invite_users_group, 3);
     assert_same(realm.realm_can_move_messages_between_topics_group, 3);
