@@ -705,7 +705,7 @@ export function get_person_suggestions(
             return true;
         });
     } else {
-        groups = user_groups.get_realm_user_groups();
+        groups = user_groups.get_all_realm_user_groups();
     }
 
     const group_pill_data: UserGroupPillData[] = groups.map((group) => ({
