@@ -444,7 +444,10 @@ function remove_member({
         });
 
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Leave {group_name}"}, {group_name: group.name}),
+            html_heading: $t_html(
+                {defaultMessage: "Leave {group_name}"},
+                {group_name: user_groups.get_display_group_name(group.name)},
+            ),
             html_body,
             on_click: do_remove_user_from_group,
         });

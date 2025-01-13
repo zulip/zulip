@@ -31,7 +31,8 @@ export const show_user_group_settings_pane = {
         $("#groups_overlay .nothing-selected, #user-group-creation").hide();
         $("#groups_overlay .settings").show();
         set_active_group_id(group.id);
-        $("#groups_overlay .user-group-info-title").text(group.name);
+        const group_name = user_groups.get_display_group_name(group.name);
+        $("#groups_overlay .user-group-info-title").text(group_name);
     },
     create_user_group(container_name = "configure_user_group_settings", group_name?: string) {
         $(".user_group_creation").hide();
