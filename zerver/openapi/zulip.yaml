@@ -23445,7 +23445,7 @@ components:
 
                 Deprecated and to be removed in a future release once core
                 clients have migrated to use the adjacent `user_id` field, which
-                was introduced in Zulip 3.0 (feature level 2).  Clients
+                was introduced in Zulip 3.0 (feature level 2). Clients
                 supporting older Zulip server versions should use the user ID
                 mentioned in the description above as they would the `user_id`
                 field.
