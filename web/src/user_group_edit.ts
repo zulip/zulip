@@ -468,7 +468,7 @@ export function handle_member_edit_event(group_id: number, user_ids: number[]): 
 
 export function update_group_details(group: UserGroup): void {
     const $edit_container = get_edit_container(group);
-    $edit_container.find(".group-name").text(group.name);
+    $edit_container.find(".group-name").text(user_groups.get_display_group_name(group.name));
     $edit_container.find(".group-description").text(group.description);
 }
 
@@ -519,6 +519,7 @@ function update_membership_status_text(group: UserGroup): void {
 export function show_settings_for(group: UserGroup): void {
     const html = render_user_group_settings({
         group,
+        group_name: user_groups.get_display_group_name(group.name),
         date_created_string: timerender.get_localized_date_or_time_for_format(
             // We get timestamp in seconds from the API but timerender
             // needs milliseconds.
@@ -790,7 +791,7 @@ export function update_group(event: UserGroupUpdateEvent): void {
     // update left side pane
     const $group_row = row_for_group_id(group_id);
     if (event.data.name !== undefined) {
-        $group_row.find(".group-name").text(group.name);
+        $group_row.find(".group-name").text(user_groups.get_display_group_name(group.name));
         user_group_create.maybe_update_error_message();
     }
 
@@ -808,7 +809,9 @@ export function update_group(event: UserGroupUpdateEvent): void {
         update_group_details(group);
         if (event.data.name !== undefined) {
             // update settings title
-            $("#groups_overlay .user-group-info-title").text(group.name);
+            $("#groups_overlay .user-group-info-title").text(
+                user_groups.get_display_group_name(group.name),
+            );
         }
         if (event.data.can_mention_group !== undefined) {
             sync_group_permission_setting("can_mention_group", group);
@@ -1190,7 +1193,10 @@ function parse_args_for_deactivation_banner(
             assert(typeof group_id === "number");
             const group = user_groups.get_user_group_from_id(group_id);
             const setting_url = hash_util.group_edit_url(group, "general");
-            args.groups_using_group_for_setting.push({group_name: group.name, setting_url});
+            args.groups_using_group_for_setting.push({
+                group_name: user_groups.get_display_group_name(group.name),
+                setting_url,
+            });
             continue;
         }
 
@@ -1217,7 +1223,7 @@ export function initialize(): void {
             const user_group_id = get_user_group_id(this);
             const user_group = user_groups.get_user_group_from_id(user_group_id);
             const template_data = {
-                group_name: user_group.name,
+                group_name: user_groups.get_display_group_name(user_group.name),
                 group_description: user_group.description,
                 max_user_group_name_length: user_groups.max_user_group_name_length,
                 allow_editing_description: true,
@@ -1226,7 +1232,7 @@ export function initialize(): void {
             dialog_widget.launch({
                 html_heading: $t_html(
                     {defaultMessage: "Edit {group_name}"},
-                    {group_name: user_group.name},
+                    {group_name: user_groups.get_display_group_name(user_group.name)},
                 ),
                 html_body: change_user_group_info_modal,
                 id: "change_group_info_modal",
@@ -1289,17 +1295,13 @@ export function initialize(): void {
             });
         }
 
+        const group_name = user_groups.get_display_group_name(user_group.name);
         const html_body = render_confirm_delete_user({
-            group_name: user_group.name,
+            group_name,
         });
 
-        const user_group_name = user_group.name;
-
         confirm_dialog.launch({
-            html_heading: $t_html(
-                {defaultMessage: "Deactivate {user_group_name}?"},
-                {user_group_name},
-            ),
+            html_heading: $t_html({defaultMessage: "Deactivate {group_name}?"}, {group_name}),
             html_body,
             on_click: deactivate_user_group,
             close_on_submit: false,

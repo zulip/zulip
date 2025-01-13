@@ -314,12 +314,12 @@ function format_user_group_list_item_html(group: UserGroup, user: User): string 
                 .filter((subgroup) =>
                     user_groups.is_user_in_group(subgroup.id, user.user_id, false),
                 )
-                .map((subgroup) => subgroup.name),
+                .map((subgroup) => user_groups.get_display_group_name(subgroup.name)),
         );
     }
     return render_user_group_list_item({
         group_id: group.id,
-        name: group.name,
+        name: user_groups.get_display_group_name(group.name),
         group_edit_url: hash_util.group_edit_url(group, "general"),
         is_guest: current_user.is_guest,
         is_direct_member,
@@ -1258,15 +1258,16 @@ export function initialize(): void {
 
         function removal_failure(): void {
             let error_message;
+            const group_name = user_groups.get_display_group_name(target_user_group.name);
             if (people.is_my_user_id(target_user_id)) {
                 error_message = $t(
                     {defaultMessage: "Error leaving group {group_name}"},
-                    {group_name: target_user_group.name},
+                    {group_name},
                 );
             } else {
                 error_message = $t(
                     {defaultMessage: "Error removing user from group {group_name}"},
-                    {group_name: target_user_group.name},
+                    {group_name},
                 );
             }
 
