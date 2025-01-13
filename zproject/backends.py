@@ -850,9 +850,9 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         true_values = ["TRUE", "YES"]
         false_values = ["FALSE", "NO"]
         attr_value_upper = attr_value.upper()
-        assert (
-            attr_value_upper in true_values or attr_value_upper in false_values
-        ), f"Invalid value '{attr_value}' in the LDAP attribute mapped to deactivated"
+        assert attr_value_upper in true_values or attr_value_upper in false_values, (
+            f"Invalid value '{attr_value}' in the LDAP attribute mapped to deactivated"
+        )
         return attr_value_upper in true_values
 
     def is_account_realm_access_forbidden(self, ldap_user: _LDAPUser, realm: Realm) -> bool:
@@ -1444,9 +1444,9 @@ class ExternalAuthResult:
             data_dict = {}
 
         if login_token is not None:
-            assert (not data_dict) and (
-                user_profile is None
-            ), "Passing in data_dict or user_profile with login_token is disallowed."
+            assert (not data_dict) and (user_profile is None), (
+                "Passing in data_dict or user_profile with login_token is disallowed."
+            )
             assert request is not None, "Passing in request with login_token is required."
             self.instantiate_with_token(request, login_token, delete_stored_data)
         else:
