@@ -50,7 +50,7 @@
                         </a>
                         {% elif complimentary_access_plan %}
                         <a href="{{ billing_base_url }}/plans/">
-                        Zulip Basic
+                        {{ plan_name.replace(" (complimentary)", "") -}}
                         </a>
                         <i>(complimentary access)</i>
                         {% else %}
