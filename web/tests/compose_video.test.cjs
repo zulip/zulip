@@ -245,7 +245,7 @@ test("videos", ({override}) => {
             realm_available_video_chat_providers.big_blue_button.id,
         );
 
-        override(compose_closed_ui, "get_recipient_label", () => "a");
+        override(compose_closed_ui, "get_recipient_label", () => ({label_text: "a"}));
 
         channel.get = (options) => {
             assert.equal(options.url, "/json/calls/bigbluebutton/create");
