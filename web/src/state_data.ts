@@ -362,7 +362,6 @@ export const realm_schema = z.object({
     realm_inline_image_preview: z.boolean(),
     realm_inline_url_embed_preview: z.boolean(),
     realm_invite_required: z.boolean(),
-    realm_invite_to_stream_policy: z.number(),
     realm_is_zephyr_mirror_realm: z.boolean(),
     realm_jitsi_server_url: z.nullable(z.string()),
     realm_linkifiers: z.array(realm_linkifier_schema),

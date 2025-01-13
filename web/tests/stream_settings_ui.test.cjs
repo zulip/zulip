@@ -23,6 +23,15 @@ mock_esm("../src/browser_history", {
 mock_esm("../src/hash_parser", {
     get_current_hash_section: () => denmark_stream_id,
 });
+
+mock_esm("../src/group_permission_settings", {
+    get_group_permission_setting_config() {
+        return {
+            allow_everyone_group: false,
+        };
+    },
+});
+
 set_global("page_params", {});
 
 const {set_current_user, set_realm} = zrequire("state_data");
@@ -31,7 +40,8 @@ const stream_settings_ui = zrequire("stream_settings_ui");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
-set_realm({});
+const realm = {};
+set_realm(realm);
 set_current_user({});
 initialize_user_settings({user_settings: {}});
 
@@ -53,8 +63,9 @@ const initialize_user_groups = () => {
     user_groups.initialize({realm_user_groups: [admins_group, nobody_group]});
 };
 
-run_test("redraw_left_panel", ({mock_template}) => {
+run_test("redraw_left_panel", ({override, mock_template}) => {
     initialize_user_groups();
+    override(realm, "realm_can_add_subscribers_group", admins_group.id);
 
     // set-up sub rows stubs
     const denmark = {

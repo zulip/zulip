@@ -8,12 +8,6 @@ import type {GroupSettingValue} from "./state_data.ts";
 import * as user_groups from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 
-let user_join_date: Date;
-export function initialize(current_user_join_date: Date): void {
-    // We keep the `user_join_date` as the present day's date if the user is a spectator
-    user_join_date = current_user_join_date;
-}
-
 /*
     This is a close cousin of settings_config,
     but this has a bit more logic, and we
@@ -58,38 +52,6 @@ export function user_can_change_logo(): boolean {
     return current_user.is_admin && realm.zulip_plan_is_not_limited;
 }
 
-function user_has_permission(policy_value: number): boolean {
-    if (current_user.is_admin) {
-        return true;
-    }
-
-    if (page_params.is_spectator || current_user.is_guest) {
-        return false;
-    }
-
-    if (policy_value === settings_config.common_policy_values.by_admins_only.code) {
-        return false;
-    }
-
-    if (current_user.is_moderator) {
-        return true;
-    }
-
-    if (policy_value === settings_config.common_policy_values.by_moderators_only.code) {
-        return false;
-    }
-
-    if (policy_value === settings_config.common_policy_values.by_members.code) {
-        return true;
-    }
-
-    const current_datetime = new Date();
-    const person_date_joined = new Date(user_join_date);
-    const user_join_days =
-        (current_datetime.getTime() - person_date_joined.getTime()) / 1000 / 86400;
-    return user_join_days >= realm.realm_waiting_period_threshold;
-}
-
 export function user_has_permission_for_group_setting(
     setting_value: GroupSettingValue,
     setting_name: string,
@@ -129,7 +91,11 @@ export function user_can_create_multiuse_invite(): boolean {
 }
 
 export function user_can_subscribe_other_users(): boolean {
-    return user_has_permission(realm.realm_invite_to_stream_policy);
+    return user_has_permission_for_group_setting(
+        realm.realm_can_add_subscribers_group,
+        "can_add_subscribers_group",
+        "realm",
+    );
 }
 
 export function user_can_create_private_streams(): boolean {

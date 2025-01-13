@@ -308,13 +308,6 @@ exports.fixtures = {
         value: false,
     },
 
-    realm__update__invite_to_stream_policy: {
-        type: "realm",
-        op: "update",
-        property: "invite_to_stream_policy",
-        value: 2,
-    },
-
     realm__update__name: {
         type: "realm",
         op: "update",
@@ -369,6 +362,7 @@ exports.fixtures = {
                 Google: {enabled: true, available: true},
             },
             can_add_custom_emoji_group: 3,
+            can_add_subscribers_group: 3,
             can_create_public_channel_group: 3,
             can_invite_users_group: 3,
             can_move_messages_between_topics_group: 3,
