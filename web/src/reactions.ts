@@ -468,9 +468,11 @@ export let remove_reaction_from_view = (
     }
 
     if (reaction_count === 0) {
-        // If this user was the only one reacting for this emoji, we simply
-        // remove the reaction and exit.
-        $reaction.remove();
+        // If this user was the only one reacting for this emoji, we
+        // remove the entire `message_reaction` template outer
+        // container, and then update vote text in case we now have
+        // few enough reactions to display names again.
+        $reaction.parent(".message_reaction_container").remove();
         update_vote_text_on_message(message);
         return;
     }
