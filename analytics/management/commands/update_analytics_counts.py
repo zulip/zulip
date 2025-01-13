@@ -26,8 +26,7 @@ class Command(ZulipBaseCommand):
         parser.add_argument(
             "--time",
             "-t",
-            help="Update stat tables from current state to "
-            "--time. Defaults to the current time.",
+            help="Update stat tables from current state to --time. Defaults to the current time.",
             default=timezone_now().isoformat(),
         )
         parser.add_argument("--utc", action="store_true", help="Interpret --time in UTC.")
