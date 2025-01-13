@@ -62,9 +62,9 @@ def do_set_realm_property(
     value to update and and the user who initiated the update.
     """
     property_type = Realm.property_types[name]
-    assert isinstance(
-        value, property_type
-    ), f"Cannot update {name}: {value} is not an instance of {property_type}"
+    assert isinstance(value, property_type), (
+        f"Cannot update {name}: {value} is not an instance of {property_type}"
+    )
 
     old_value = getattr(realm, name)
     if old_value == value:

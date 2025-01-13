@@ -112,9 +112,9 @@ def convert_non_ascii_chars(name: str) -> str:
     }
     for before, after in replacements.items():
         name = name.replace(before, after)
-    assert (
-        name.isascii()
-    ), f"{name} still contains non-ascii characters. Add them to convert_non_ascii_chars."
+    assert name.isascii(), (
+        f"{name} still contains non-ascii characters. Add them to convert_non_ascii_chars."
+    )
     return name
 
 

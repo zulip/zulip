@@ -176,12 +176,12 @@ class _REQ(Generic[ResultT]):
         self.documentation_pending = documentation_pending
         self.path_only = path_only
 
-        assert converter is None or (
-            json_validator is None and str_validator is None
-        ), "converter and json_validator are mutually exclusive"
-        assert (
-            json_validator is None or str_validator is None
-        ), "json_validator and str_validator are mutually exclusive"
+        assert converter is None or (json_validator is None and str_validator is None), (
+            "converter and json_validator are mutually exclusive"
+        )
+        assert json_validator is None or str_validator is None, (
+            "json_validator and str_validator are mutually exclusive"
+        )
 
 
 # This factory function ensures that mypy can correctly analyze REQ.
