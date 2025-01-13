@@ -56,6 +56,7 @@ class ErrorCode(Enum):
     SYSTEM_GROUP_REQUIRED = auto()
     CANNOT_DEACTIVATE_GROUP_IN_USE = auto()
     CANNOT_ADMINISTER_CHANNEL = auto()
+    PERMISSION_DENIED = auto()
 
 
 class JsonableError(Exception):
@@ -753,3 +754,18 @@ class CannotManageDefaultChannelError(JsonableError):
     @override
     def msg_format() -> str:
         return _("You do not have permission to change default channels.")
+
+
+class CannotAccessChannelError(JsonableError):
+    code = ErrorCode.PERMISSION_DENIED
+    data_fields = []
+
+    def __init__(self, channel_name: str) -> None:
+        self._msg = _("Unable to access channel ({channel_name}).").format(
+            channel_name=channel_name
+        )
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return "{_msg}"

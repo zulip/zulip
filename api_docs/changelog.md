@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 338**
+
+* [`POST /users/me/subscriptions`](/api/subscribe): Added
+  `PERMISSION_DENIED` code for specificifying the error when a user
+  tries to access a channel they don't have permission to access.
+
 **Feature level 337**
 
 * `POST /calls/bigbluebutton/create`: Added a `voice_only` parameter
