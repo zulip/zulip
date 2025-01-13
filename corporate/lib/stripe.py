@@ -1787,7 +1787,7 @@ class BillingSession(ABC):
             if next_plan is not None:  # nocoverage
                 return f"Customer scheduled for upgrade to {next_plan.name}. Please cancel upgrade before approving sponsorship!"
 
-            # It is fine to end legacy plan not scheduled for an upgrade.
+            # It is fine to end a complimentary access plan not scheduled for an upgrade.
             if current_plan.tier != CustomerPlan.TIER_SELF_HOSTED_LEGACY:
                 return f"Customer on plan {current_plan.name}. Please end current plan before approving sponsorship!"
 
@@ -2791,7 +2791,7 @@ class BillingSession(ABC):
 
         free_trial_days = None
         free_trial_end_date = None
-        # Don't show free trial for remote servers on legacy plan.
+        # Don't show free trial for customers on a complimentary access plan.
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
         if fixed_price is None and complimentary_access_plan_end_date is None:
             free_trial_days = get_free_trial_days(is_self_hosted_billing, tier)
@@ -3842,8 +3842,8 @@ class BillingSession(ABC):
 
         customer = self.update_or_create_customer()
         plan = get_current_plan_by_customer(customer)
-        # Only plan that can be active is legacy plan. Which is already
-        # ended by the support path from which is this function is called.
+        # The only plan that could be active is a complimentary access plan, which
+        # was already ended by the support path from which is this function is called.
         assert plan is None
         now = timezone_now()
         community_plan_params = {
@@ -5411,8 +5411,9 @@ def get_plan_renewal_or_end_date(plan: CustomerPlan, event_time: datetime) -> da
 def invoice_plans_as_needed(event_time: datetime | None = None) -> None:
     if event_time is None:
         event_time = timezone_now()
-    # For self hosted legacy plan with status SWITCH_PLAN_TIER_AT_PLAN_END, we need
-    # to invoice legacy plan followed by new plan on the same day, hence ordered by ID.
+    # For complimentary access plans with status SWITCH_PLAN_TIER_AT_PLAN_END, we need
+    # to invoice the complimentary access plan followed by the new plan on the same day,
+    # hence ordering by ID.
     for plan in CustomerPlan.objects.filter(next_invoice_date__lte=event_time).order_by("id"):
         remote_server: RemoteZulipServer | None = None
         if plan.customer.realm is not None:
