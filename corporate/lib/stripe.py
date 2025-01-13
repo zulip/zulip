@@ -1438,7 +1438,7 @@ class BillingSession(ABC):
                 f"Cannot currently configure a courtesy plan for {self.billing_entity_display_name}."
             )  # nocoverage
 
-        self.migrate_customer_to_legacy_plan(plan_anchor_date, plan_end_date)
+        self.create_complimentary_access_plan(plan_anchor_date, plan_end_date)
         return f"Temporary courtesy plan for {self.billing_entity_display_name} configured to end on {end_date_string}."
 
     def configure_fixed_price_plan(self, fixed_price: int, sent_invoice_id: str | None) -> str:
@@ -3775,23 +3775,22 @@ class BillingSession(ABC):
         # needs the updated plan for a correct LicenseLedger update.
         return plan
 
-    def migrate_customer_to_legacy_plan(
+    def create_complimentary_access_plan(
         self,
         renewal_date: datetime,
         end_date: datetime,
     ) -> None:
-        assert not isinstance(self, RealmBillingSession)
+        plan_tier = CustomerPlan.TIER_SELF_HOSTED_LEGACY
+        if isinstance(self, RealmBillingSession):  # nocoverage
+            # TODO implement a complimentary access plan/tier for Zulip Cloud.
+            return None
         customer = self.update_or_create_customer()
 
-        # Customers on a legacy plan that is scheduled to be upgraded have 2 plans.
-        # This plan is used to track the current status of SWITCH_PLAN_TIER_AT_PLAN_END
-        # and will not charge the customer. The other plan is used to track the new plan
-        # the customer will move to the end of this plan.
-        legacy_plan_anchor = renewal_date
-        legacy_plan_params = {
-            "billing_cycle_anchor": legacy_plan_anchor,
+        complimentary_access_plan_anchor = renewal_date
+        complimentary_access_plan_params = {
+            "billing_cycle_anchor": complimentary_access_plan_anchor,
             "status": CustomerPlan.ACTIVE,
-            "tier": CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+            "tier": plan_tier,
             # end_date and next_invoice_date should always be the same for these plans.
             "end_date": end_date,
             "next_invoice_date": end_date,
@@ -3802,30 +3801,32 @@ class BillingSession(ABC):
             "billing_schedule": CustomerPlan.BILLING_SCHEDULE_ANNUAL,
             "automanage_licenses": True,
         }
-        legacy_plan = CustomerPlan.objects.create(
+        complimentary_access_plan = CustomerPlan.objects.create(
             customer=customer,
-            **legacy_plan_params,
+            **complimentary_access_plan_params,
         )
 
         try:
-            billed_licenses = self.get_billable_licenses_for_customer(customer, legacy_plan.tier)
+            billed_licenses = self.get_billable_licenses_for_customer(
+                customer, complimentary_access_plan.tier
+            )
         except MissingDataError:
             billed_licenses = 0
 
-        # Create a ledger entry for the legacy plan for tracking purposes.
+        # Create a ledger entry for the complimentary access plan for tracking purposes.
         ledger_entry = LicenseLedger.objects.create(
-            plan=legacy_plan,
+            plan=complimentary_access_plan,
             is_renewal=True,
-            event_time=legacy_plan_anchor,
+            event_time=complimentary_access_plan_anchor,
             licenses=billed_licenses,
             licenses_at_next_renewal=billed_licenses,
         )
-        legacy_plan.invoiced_through = ledger_entry
-        legacy_plan.save(update_fields=["invoiced_through"])
+        complimentary_access_plan.invoiced_through = ledger_entry
+        complimentary_access_plan.save(update_fields=["invoiced_through"])
         self.write_to_audit_log(
             event_type=BillingSessionEventType.CUSTOMER_PLAN_CREATED,
-            event_time=legacy_plan_anchor,
-            extra_data=legacy_plan_params,
+            event_time=complimentary_access_plan_anchor,
+            extra_data=complimentary_access_plan_params,
         )
 
         self.do_change_plan_type(tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY, is_sponsored=False)

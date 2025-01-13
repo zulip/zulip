@@ -729,7 +729,7 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         )
 
     @responses.activate
-    def test_transfer_legacy_plan_scheduled_for_upgrade_from_server_to_realm(
+    def test_transfer_complimentary_access_plan_scheduled_for_upgrade_from_server_to_realm(
         self,
     ) -> None:
         self.login("desdemona")
@@ -741,9 +741,9 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         start_date = timezone_now()
         end_date = add_months(timezone_now(), 10)
 
-        # Migrate server to legacy to plan.
+        # Migrate server to complimentary access plan.
         server_billing_session = RemoteServerBillingSession(self.server)
-        server_billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+        server_billing_session.create_complimentary_access_plan(start_date, end_date)
 
         server_customer = server_billing_session.get_customer()
         assert server_customer is not None
@@ -1151,11 +1151,11 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         # Server still has no plan.
         self.assertIsNone(get_current_plan_by_customer(server_customer))
 
-        # CASE: Server has legacy plan but all realms are deactivated.
+        # CASE: Server has complimentary access plan but all realms are deactivated.
         start_date = timezone_now()
         end_date = add_months(timezone_now(), 10)
         server_billing_session = RemoteServerBillingSession(self.server)
-        server_billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+        server_billing_session.create_complimentary_access_plan(start_date, end_date)
         # All realms are deactivated.
         Realm.objects.all().update(deactivated=True)
 

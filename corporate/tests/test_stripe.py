@@ -8048,11 +8048,11 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         remote_realm = RemoteRealm.objects.get(uuid=hamlet.realm.uuid)
         remote_realm_billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
 
-        # Migrate realm to legacy plan.
+        # Create complimentary access plan for realm.
         with time_machine.travel(self.now, tick=False):
             start_date = timezone_now()
             end_date = add_months(start_date, months=3)
-            remote_realm_billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+            remote_realm_billing_session.create_complimentary_access_plan(start_date, end_date)
 
         self.add_mock_response()
         with time_machine.travel(self.now, tick=False):
@@ -8382,11 +8382,11 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         remote_server = RemoteZulipServer.objects.get(hostname="demo.example.com")
         server_billing_session = RemoteServerBillingSession(remote_server=remote_server)
 
-        # Migrate server to legacy plan.
+        # Create complimentary access plan for server.
         with time_machine.travel(self.now, tick=False):
             start_date = timezone_now()
             end_date = add_months(start_date, months=3)
-            server_billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+            server_billing_session.create_complimentary_access_plan(start_date, end_date)
 
         server_customer = server_billing_session.get_customer()
         assert server_customer is not None
@@ -8659,11 +8659,11 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         remote_realm = RemoteRealm.objects.get(uuid=hamlet.realm.uuid)
         remote_realm_billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
 
-        # Migrate realm to legacy plan.
+        # Create complimentary access plan for realm.
         with time_machine.travel(self.now, tick=False):
             start_date = timezone_now()
             end_date = add_months(start_date, months=3)
-            remote_realm_billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+            remote_realm_billing_session.create_complimentary_access_plan(start_date, end_date)
 
         # Upload data.
         self.add_mock_response()
@@ -9011,11 +9011,11 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             self.add_mock_response()
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
-        # Migrate server to legacy plan.
+        # Create complimentary access plan for server.
         with time_machine.travel(self.now, tick=False):
             start_date = timezone_now()
             end_date = add_months(start_date, months=3)
-            self.billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+            self.billing_session.create_complimentary_access_plan(start_date, end_date)
 
         customer = self.billing_session.get_customer()
         assert customer is not None
@@ -9107,9 +9107,9 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
 
             with time_machine.travel(self.now, tick=False):
                 send_server_data_to_push_bouncer(consider_usage_statistics=False)
-                # Test that free trial is not available for customers with active legacy plan.
+                # Free trial is not available for customers with active complimentary access plan.
                 end_date = add_months(self.now, months=3)
-                self.billing_session.migrate_customer_to_legacy_plan(self.now, end_date)
+                self.billing_session.create_complimentary_access_plan(self.now, end_date)
 
             result = self.execute_remote_billing_authentication_flow(
                 hamlet.delivery_email, hamlet.full_name
@@ -9151,9 +9151,9 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
 
             with time_machine.travel(self.now, tick=False):
                 send_server_data_to_push_bouncer(consider_usage_statistics=False)
-                # Test that free trial is not available for customers with active legacy plan.
+                # Free trial is not available for customers with active complimentary access plan.
                 end_date = add_months(self.now, months=3)
-                self.billing_session.migrate_customer_to_legacy_plan(self.now, end_date)
+                self.billing_session.create_complimentary_access_plan(self.now, end_date)
                 CustomerPlan.objects.filter(customer__remote_server=self.remote_server).update(
                     status=CustomerPlan.ENDED
                 )
@@ -9904,9 +9904,9 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         self.login("hamlet")
         hamlet = self.example_user("hamlet")
 
-        # Migrate server to legacy plan.
+        # Create complimentary access plan for server.
         end_date = add_months(self.now, months=3)
-        self.billing_session.migrate_customer_to_legacy_plan(self.now, end_date)
+        self.billing_session.create_complimentary_access_plan(self.now, end_date)
 
         self.add_mock_response()
         with time_machine.travel(self.now, tick=False):
@@ -10190,9 +10190,9 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
         plan_end_date = add_months(self.now, 3)
-        self.billing_session.migrate_customer_to_legacy_plan(self.now, plan_end_date)
+        self.billing_session.create_complimentary_access_plan(self.now, plan_end_date)
 
-        # Legacy plan ends on plan end date.
+        # Complimentary access plan ends on plan end date.
         customer = self.billing_session.get_customer()
         assert customer is not None
         plan = get_current_plan_by_customer(customer)
@@ -10231,11 +10231,11 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         with time_machine.travel(self.now, tick=False):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
-        # Migrate server to legacy plan.
+        # Create complimentary access plan for server.
         with time_machine.travel(self.now, tick=False):
             start_date = timezone_now()
             end_date = add_months(start_date, months=3)
-            self.billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+            self.billing_session.create_complimentary_access_plan(start_date, end_date)
 
         customer = self.billing_session.get_customer()
         assert customer is not None
