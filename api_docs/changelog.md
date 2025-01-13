@@ -23,10 +23,10 @@ format used by the Zulip server that they are interacting with.
 **Feature level 339**
 
 * [`GET /events`](/api/get-events): Added `user` field back in
-  `reaction` events, reverting part of the [feature level 328
-  changes](#feature-level-328). Note that this field was only restored
-  in the events API, and remains deprecated, pending core clients
-  fully migrating away from accessing it.
+  `reaction` events, reverting part of the feature level 328
+  changes. Note that this field was only restored in the events API,
+  and remains deprecated, pending core clients fully migrating away
+  from accessing it.
 
 **Feature level 338**
 
