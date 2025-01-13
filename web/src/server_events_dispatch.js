@@ -213,6 +213,7 @@ export function dispatch_normal_event(event) {
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
                 bot_creation_policy: settings_bots.update_bot_permissions_ui,
                 can_add_custom_emoji_group: noop,
+                can_add_subscribers_group: noop,
                 can_create_groups: noop,
                 can_create_private_channel_group: noop,
                 can_create_public_channel_group: noop,
