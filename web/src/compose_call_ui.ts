@@ -120,7 +120,7 @@ export function generate_and_insert_audio_or_video_call_link(
         available_providers.big_blue_button &&
         realm.realm_video_chat_provider === available_providers.big_blue_button.id
     ) {
-        const meeting_name = get_recipient_label() + " meeting";
+        const meeting_name = `${get_recipient_label()?.label_text ?? ""} meeting`;
         const request = {
             meeting_name,
             voice_only: is_audio_call,

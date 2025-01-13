@@ -1,20 +1,33 @@
 import $ from "jquery";
 
 import * as compose_actions from "./compose_actions.ts";
-import {$t} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
 import * as stream_data from "./stream_data.ts";
+import * as util from "./util.ts";
 
-function format_stream_recipient_label(stream_id: number, topic: string): string {
+type RecipientLabel = {
+    label_text: string;
+    has_empty_string_topic?: boolean;
+    stream_name?: string;
+};
+
+function get_stream_recipient_label(stream_id: number, topic: string): RecipientLabel | undefined {
     const stream = stream_data.get_sub_by_id(stream_id);
+    const topic_display_name = util.get_final_topic_display_name(topic);
     if (stream) {
-        return "#" + stream.name + " > " + topic;
+        const recipient_label: RecipientLabel = {
+            label_text: "#" + stream.name + " > " + topic_display_name,
+            has_empty_string_topic: topic === "",
+            stream_name: stream.name,
+        };
+        return recipient_label;
     }
-    return "";
+    return undefined;
 }
 
 type ComposeClosedMessage = {
@@ -23,13 +36,13 @@ type ComposeClosedMessage = {
     display_reply_to?: string | undefined;
 };
 
-export function get_recipient_label(message?: ComposeClosedMessage): string {
+export function get_recipient_label(message?: ComposeClosedMessage): RecipientLabel | undefined {
     // TODO: This code path is bit of a type-checking disaster; we mix
     // actual message objects with fake objects containing just a
     // couple fields, both those constructed here and potentially
     // passed in.
     if (message_lists.current === undefined) {
-        return "";
+        return undefined;
     }
 
     if (message === undefined) {
@@ -40,10 +53,10 @@ export function get_recipient_label(message?: ComposeClosedMessage): string {
             const stream_id = narrow_state.stream_sub()?.stream_id;
             const topic = narrow_state.topic();
             if (stream_id !== undefined && topic !== undefined) {
-                return format_stream_recipient_label(stream_id, topic);
+                return get_stream_recipient_label(stream_id, topic);
             } else if (narrow_state.pm_ids_string()) {
                 const user_ids = people.user_ids_string_to_ids_array(narrow_state.pm_ids_string()!);
-                return message_store.get_pm_full_names(user_ids);
+                return {label_text: message_store.get_pm_full_names(user_ids)};
             }
         } else {
             message = message_lists.current.selected_message();
@@ -51,13 +64,13 @@ export function get_recipient_label(message?: ComposeClosedMessage): string {
     }
 
     if (message) {
-        if (message.stream_id && message.topic) {
-            return format_stream_recipient_label(message.stream_id, message.topic);
+        if (message.stream_id !== undefined && message.topic !== undefined) {
+            return get_stream_recipient_label(message.stream_id, message.topic);
         } else if (message.display_reply_to) {
-            return message.display_reply_to;
+            return {label_text: message.display_reply_to};
         }
     }
-    return "";
+    return undefined;
 }
 
 // Exported for tests
@@ -157,10 +170,25 @@ export function set_standard_text_for_reply_button(): void {
 
 export function update_reply_recipient_label(message?: ComposeClosedMessage): void {
     const recipient_label = get_recipient_label(message);
-    if (recipient_label) {
-        set_reply_button_label(
-            $t({defaultMessage: "Message {recipient_label}"}, {recipient_label}),
-        );
+    if (recipient_label !== undefined) {
+        if (!recipient_label.has_empty_string_topic) {
+            const recipient_label_text = recipient_label.label_text;
+            set_reply_button_label(
+                $t({defaultMessage: "Message {recipient_label_text}"}, {recipient_label_text}),
+            );
+        } else {
+            const topic_display_name = util.get_final_topic_display_name("");
+            const recipient_label_html = $t_html(
+                {
+                    defaultMessage: "Message <z-recipient-label></z-recipient-label>",
+                },
+                {
+                    "z-recipient-label": () =>
+                        `#${recipient_label.stream_name} > <span class="empty-topic-display">${topic_display_name}</span>`,
+                },
+            );
+            $("#left_bar_compose_reply_button_big").html(recipient_label_html);
+        }
     } else {
         set_standard_text_for_reply_button();
     }
