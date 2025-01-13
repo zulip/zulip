@@ -965,7 +965,7 @@ export function try_save_inline_topic_edit($row: JQuery): void {
     const old_topic = message.topic;
     const new_topic = $row.find<HTMLInputElement>("input.inline_topic_edit").val()?.trim();
     assert(new_topic !== undefined);
-    const topic_changed = new_topic !== old_topic && new_topic !== "";
+    const topic_changed = new_topic !== old_topic;
 
     if (!topic_changed) {
         // this means the inline_topic_edit was opened and submitted without
