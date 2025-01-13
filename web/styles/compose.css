@@ -576,6 +576,21 @@
     pointer-events: all;
 }
 
+/* Hide the scroller buttons when someone has reached
+   the formatting bar via Tab. Scroller-button state
+   silently updates despite their being hidden, and
+   scroller buttons reappear once focus has moved out
+   of the formatting bar. */
+.compose-scrolling-buttons-container:has(
+        .compose-scrollable-buttons:focus-within
+    ) {
+    .formatting-scroller-backward,
+    .formatting-scroller-forward {
+        opacity: 0;
+        pointer-events: none;
+    }
+}
+
 .message-limit-indicator:not(:empty) {
     font-size: 12px;
     color: var(--color-limit-indicator);
