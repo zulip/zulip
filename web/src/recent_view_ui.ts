@@ -547,6 +547,15 @@ type AvatarsContext = {
 };
 
 function get_avatars_context(all_senders: number[]): AvatarsContext {
+    // Show the all avatars rather than `max_avatars` + 1.
+    const max_space_for_avatars = max_avatars + 1;
+    if (all_senders.length <= max_space_for_avatars) {
+        return {
+            senders: people.sender_info_for_recent_view_row(all_senders),
+            other_sender_names_html: "",
+            other_senders_count: 0,
+        };
+    }
     const senders = all_senders.slice(-max_avatars);
     const extra_sender_ids = all_senders.slice(0, -max_avatars);
     const displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
