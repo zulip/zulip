@@ -86,7 +86,7 @@ class MessageThread(BaseModel):
 
 
 def create_user(full_name: str, avatar_filename: str | None) -> None:
-    email = f'{full_name.replace(" ", "")}@zulip.com'
+    email = f"{full_name.replace(' ', '')}@zulip.com"
     try:
         user = UserProfile.objects.get(realm=realm, full_name=full_name)
     except UserProfile.DoesNotExist:

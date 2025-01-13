@@ -273,9 +273,7 @@ class HomepageForm(forms.Form):
         if not from_multiuse_invite and realm.invite_required:
             raise ValidationError(
                 _(
-                    "Please request an invite for {email} "
-                    "from the organization "
-                    "administrator."
+                    "Please request an invite for {email} from the organization administrator."
                 ).format(email=email)
             )
 

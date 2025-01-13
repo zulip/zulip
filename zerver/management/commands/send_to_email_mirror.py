@@ -53,8 +53,7 @@ Example:
         parser.add_argument(
             "-s",
             "--stream",
-            help="The name of the stream to which you'd like to send "
-            "the message. Default: Denmark",
+            help="The name of the stream to which you'd like to send the message. Default: Denmark",
         )
         parser.add_argument(
             "--sender-id",
