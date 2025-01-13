@@ -286,11 +286,11 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 result,
             )
 
-        def check_legacy_plan_with_upgrade(result: "TestHttpResponse") -> None:
+        def check_complimentary_access_plan_with_upgrade(result: "TestHttpResponse") -> None:
             self.assert_in_success_response(
                 [
                     "Current plan information:",
-                    "<b>Plan name</b>: Free (legacy plan)<br />",
+                    "<b>Plan name</b>: Zulip Basic (complimentary)<br />",
                     "<b>Status</b>: New plan scheduled<br />",
                     "<b>End date</b>: 01 February 2050<br />",
                     "⏱️ Next plan information:",
@@ -305,11 +305,11 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 result,
             )
 
-        def check_legacy_plan_without_upgrade(result: "TestHttpResponse") -> None:
+        def check_complimentary_access_plan_without_upgrade(result: "TestHttpResponse") -> None:
             self.assert_in_success_response(
                 [
                     "Current plan information:",
-                    "<b>Plan name</b>: Free (legacy plan)<br />",
+                    "<b>Plan name</b>: Zulip Basic (complimentary)<br />",
                     "<b>Status</b>: Active<br />",
                     "<b>End date</b>: 01 February 2050<br />",
                 ],
@@ -414,14 +414,14 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         assert_server_details_in_response(result, f"zulip-{server}.example.com")
         assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
         check_no_sponsorship_request(result)
-        check_legacy_plan_with_upgrade(result)
+        check_complimentary_access_plan_with_upgrade(result)
 
         server = 5
         result = self.client_get("/activity/remote/support", {"q": f"zulip-{server}.example.com"})
         assert_server_details_in_response(result, f"zulip-{server}.example.com")
         assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
         check_no_sponsorship_request(result)
-        check_legacy_plan_without_upgrade(result)
+        check_complimentary_access_plan_without_upgrade(result)
 
         # search for UUIDs
         remote_server = RemoteZulipServer.objects.get(hostname=f"zulip-{server}.example.com")
