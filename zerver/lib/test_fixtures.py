@@ -123,6 +123,7 @@ class Database:
             previous_migration_status = f.read()
 
         current_migration_status = get_migration_status(settings=settings)
+        connections.close_all()
         all_curr_migrations = extract_migrations_as_list(current_migration_status)
         all_prev_migrations = extract_migrations_as_list(previous_migration_status)
 

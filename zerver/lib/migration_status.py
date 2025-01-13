@@ -8,7 +8,7 @@ from typing import Any
 def get_migration_status(**options: Any) -> str:
     from django.apps import apps
     from django.core.management import call_command
-    from django.db import DEFAULT_DB_ALIAS, connections
+    from django.db import DEFAULT_DB_ALIAS
     from django.utils.module_loading import module_has_submodule
 
     verbosity = options.get("verbosity", 1)
@@ -35,7 +35,6 @@ def get_migration_status(**options: Any) -> str:
         traceback=options.get("traceback", True),
         verbosity=verbosity,
     )
-    connections.close_all()
     out.seek(0)
     output = out.read()
     return re.sub(r"\x1b\[(1|0)m", "", output)
