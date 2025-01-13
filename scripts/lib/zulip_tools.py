@@ -94,8 +94,7 @@ def parse_cache_script_args(description: str) -> argparse.Namespace:
         "--no-print-headings",
         dest="no_headings",
         action="store_true",
-        help="If specified then script will not print headings for "
-        "what will be deleted/kept back.",
+        help="If specified then script will not print headings for what will be deleted/kept back.",
     )
 
     args = parser.parse_args()

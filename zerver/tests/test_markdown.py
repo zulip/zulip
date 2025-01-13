@@ -753,7 +753,7 @@ class MarkdownEmbedsTest(ZulipTestCase):
 
     @override_settings(EXTERNAL_URI_SCHEME="https://")
     def test_static_image_preview_skip_camo(self) -> None:
-        content = f"{ settings.STATIC_URL }/thing.jpeg"
+        content = f"{settings.STATIC_URL}/thing.jpeg"
 
         thumbnail_img = f"""<div class="message_inline_image"><a href="{content}"><img src="{content}"></a></div>"""
         converted = markdown_convert_wrapper(content)
@@ -761,15 +761,15 @@ class MarkdownEmbedsTest(ZulipTestCase):
 
     @override_settings(EXTERNAL_URI_SCHEME="https://")
     def test_realm_image_preview_skip_camo(self) -> None:
-        content = f"https://zulip.{ settings.EXTERNAL_HOST }/thing.jpeg"
+        content = f"https://zulip.{settings.EXTERNAL_HOST}/thing.jpeg"
         converted = markdown_convert_wrapper(content)
         self.assertNotIn(converted, get_camo_url(content))
 
     @override_settings(EXTERNAL_URI_SCHEME="https://")
     def test_cross_realm_image_preview_use_camo(self) -> None:
-        content = f"https://otherrealm.{ settings.EXTERNAL_HOST }/thing.jpeg"
+        content = f"https://otherrealm.{settings.EXTERNAL_HOST}/thing.jpeg"
 
-        thumbnail_img = f"""<div class="message_inline_image"><a href="{ content }"><img src="{ get_camo_url(content) }"></a></div>"""
+        thumbnail_img = f"""<div class="message_inline_image"><a href="{content}"><img src="{get_camo_url(content)}"></a></div>"""
         converted = markdown_convert_wrapper(content)
         self.assertIn(converted, thumbnail_img)
 
@@ -870,7 +870,7 @@ class MarkdownEmbedsTest(ZulipTestCase):
         self.assertEqual(converted.rendered_content, expected)
 
         urls.append("https://www.google.com/images/srpr/logo4w.png")
-        content = f"{urls[0]}\n\n" f">{urls[1]}\n\n" f"* {urls[2]}\n" f"* {urls[3]}"
+        content = f"{urls[0]}\n\n>{urls[1]}\n\n* {urls[2]}\n* {urls[3]}"
         expected = (
             f'<div class="message_inline_image"><a href="{urls[0]}"><img src="{get_camo_url(urls[0])}"></a></div>'
             f'<blockquote>\n<p><a href="{urls[1]}">{urls[1]}</a></p>\n</blockquote>\n'
@@ -2284,9 +2284,7 @@ class MarkdownMentionTest(ZulipTestCase):
         rendering_result = render_message_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
-            '<p><span class="user-mention silent" '
-            f'data-user-id="{user_id}">'
-            "King Hamlet</span></p>",
+            f'<p><span class="user-mention silent" data-user-id="{user_id}">King Hamlet</span></p>',
         )
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
@@ -2305,9 +2303,7 @@ class MarkdownMentionTest(ZulipTestCase):
         rendering_result = render_message_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
-            '<p><span class="user-mention silent" '
-            f'data-user-id="{user_id}">'
-            "King Hamlet</span></p>",
+            f'<p><span class="user-mention silent" data-user-id="{user_id}">King Hamlet</span></p>',
         )
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
@@ -2326,9 +2322,7 @@ class MarkdownMentionTest(ZulipTestCase):
         rendering_result = render_message_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
-            '<p><span class="user-mention silent" '
-            f'data-user-id="{user_id}">'
-            "King Hamlet</span></p>",
+            f'<p><span class="user-mention silent" data-user-id="{user_id}">King Hamlet</span></p>',
         )
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
@@ -2685,9 +2679,7 @@ class MarkdownMentionTest(ZulipTestCase):
         rendering_result = render_message_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
-            '<p><span class="user-mention" '
-            f'data-user-id="{test_user.id}">'
-            "@Atomic #123</span></p>",
+            f'<p><span class="user-mention" data-user-id="{test_user.id}">@Atomic #123</span></p>',
         )
         self.assertEqual(rendering_result.mentions_user_ids, {test_user.id})
         content = "@_**Atomic #123**"

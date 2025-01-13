@@ -301,8 +301,7 @@ class Command(ZulipBaseCommand):
         parser.add_argument(
             "--test-suite",
             action="store_true",
-            help="Configures populate_db to create a deterministic "
-            "data set for the backend tests.",
+            help="Configures populate_db to create a deterministic data set for the backend tests.",
         )
 
     @override
