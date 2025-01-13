@@ -711,7 +711,6 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         };
     }
 
-    extra_sender_ids = all_senders.slice(0, -max_avatars);
     const displayed_other_names = people.get_display_full_names(displayed_other_senders.reverse());
 
     if (extra_sender_ids.length > MAX_EXTRA_SENDERS) {
