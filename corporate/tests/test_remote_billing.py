@@ -819,8 +819,8 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
             ["zephyr.testserver", "lear.testserver"],
         )
 
-        # Check legacy CustomerPlan exists for the one non-deactivated "real" realm
-        # and does not for the bot realm.
+        # Check complimentary access CustomerPlan exists for the one non-deactivated
+        # "real" realm and does not for the bot realm.
 
         # Sanity check that the setup for this test is the way we think it is.
         self.assertEqual(RemoteRealm.objects.filter(realm_deactivated=False).count(), 2)
@@ -1486,8 +1486,7 @@ class LegacyServerLoginTest(RemoteServerTestCase):
         self.assertEqual(result["Location"], f"/server/{self.uuid}/sponsorship/")
 
         result = self.client_get(result["Location"], subdomain="selfhosting")
-        # TODO Update the string when we have a complete sponsorship page for legacy servers.
-        self.assert_in_success_response(["Request Zulip", "sponsorship"], result)
+        self.assert_in_success_response(["Request Zulip", "sponsorship", "Community"], result)
 
     def test_server_login_next_page_in_form_persists(self) -> None:
         result = self.client_get("/serverlogin/?next_page=billing", subdomain="selfhosting")
