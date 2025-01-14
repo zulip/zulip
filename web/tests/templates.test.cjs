@@ -34,7 +34,7 @@ run_test("or", () => {
 run_test("rendered_markdown", () => {
     const html = require("./templates/rendered_markdown.hbs")();
     const expected_html =
-        '<a href="http://example.com" target="_blank" rel="noopener noreferrer" title="http://example.com/">good</a>\n';
+        '<a href="http://example.com" target="_blank" rel="noopener noreferrer" data-message-link-type="external_inline_url">good</a>\n';
     assert.equal(html, expected_html);
 });
 
