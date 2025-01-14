@@ -329,11 +329,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
-    # Who in the organization is allowed to invite other users to streams.
-    invite_to_stream_policy = models.PositiveSmallIntegerField(
-        default=CommonPolicyEnum.MEMBERS_ONLY
-    )
-
     # UserGroup which is allowed to add subscribers to channels.
     can_add_subscribers_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
