@@ -987,9 +987,9 @@
     --color-vdots-visible: hsl(240deg 30% 40%);
     --color-vdots-hover: hsl(240deg 100% 15%);
     --color-tab-picker-icon: hsl(200deg 100% 40%);
-    --color-user-circle-active: hsl(106deg 74% 44%);
-    --color-user-circle-idle: hsl(29deg 84% 51%);
-    --color-user-circle-offline: hsl(0deg 0% 50%);
+    --color-user-circle-active: #43a35e;
+    --color-user-circle-idle: #f5b266;
+    --color-user-circle-offline: #c1c6d7;
     /* hsl(229deg 9% 36%) corresponds to --grey-600.
        We use the hsl() equivalent directly since postcss-color-mix-function
        cannot dynamically resolve var() arguments. */
@@ -2003,6 +2003,9 @@
         --color-left-sidebar-navigation-icon
     );
     --color-tab-picker-icon: hsl(0deg 0% 80%);
+    --color-user-circle-active: #4cdc75;
+    --color-user-circle-idle: #ae640a;
+    --color-user-circle-offline: #454854;
     /* hsl(229deg 10% 70%) corresponds to --grey-400.
        We use the hsl() equivalent directly since postcss-color-mix-function
        cannot dynamically resolve var() arguments. */
