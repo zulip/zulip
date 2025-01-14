@@ -28,19 +28,15 @@ from zerver.actions.realm_settings import do_change_realm_plan_type
 from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.bulk_create import bulk_set_users_or_streams_recipient_fields
-from zerver.lib.export import (
-    DATE_FIELDS,
-    Field,
-    Path,
-    Record,
-    TableData,
-    TableName,
-    get_migrations_by_app,
-)
+from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, TableName
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
-from zerver.lib.migration_status import MigrationStatusJson
+from zerver.lib.migration_status import (
+    MigrationStatusJson,
+    get_migration_status,
+    parse_migration_status,
+)
 from zerver.lib.mime_types import guess_type
 from zerver.lib.partial import partial
 from zerver.lib.push_notifications import sends_notifications_directly
@@ -2145,9 +2141,19 @@ ZULIP_CLOUD_ONLY_APP_NAMES = ["zilencer", "corporate"]
 
 
 def check_migration_status(exported_migration_status: MigrationStatusJson) -> None:
+    """
+    This function checks the compatibility of an exported realm with the local
+    server's migration status. It asserts that the two realms have identical
+    migration statuses for both applied and on-disk migrations.
+
+    However, it does not explicitly check the exact details of individual
+    migrations, such as their dependencies, replacements (if any), or whether
+    custom migrations are identical.
+    """
     mismatched_migrations_log: dict[str, str] = {}
+    local_showmigrations = get_migration_status(close_connection_when_done=False)
     local_migration_status = MigrationStatusJson(
-        migrations_by_app=get_migrations_by_app(), zulip_version=ZULIP_VERSION
+        migrations_by_app=parse_migration_status(local_showmigrations), zulip_version=ZULIP_VERSION
     )
 
     # Different major versions are the most common form of mismatch

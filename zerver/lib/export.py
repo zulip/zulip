@@ -33,7 +33,11 @@ from analytics.models import RealmCount, StreamCount, UserCount
 from scripts.lib.zulip_tools import overwrite_symlink
 from version import ZULIP_VERSION
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
-from zerver.lib.migration_status import AppMigrations, MigrationStatusJson
+from zerver.lib.migration_status import (
+    MigrationStatusJson,
+    get_migration_status,
+    parse_migration_status,
+)
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload.s3 import get_bucket
@@ -2606,21 +2610,11 @@ def get_realm_exports_serialized(realm: Realm) -> list[dict[str, Any]]:
     return sorted(exports_dict.values(), key=lambda export_dict: export_dict["id"])
 
 
-def get_migrations_by_app() -> AppMigrations:
-    from django.db import DEFAULT_DB_ALIAS, connections
-    from django.db.migrations.recorder import MigrationRecorder
-
-    recorder = MigrationRecorder(connections[DEFAULT_DB_ALIAS])
-    applied = recorder.applied_migrations()
-    migrations_by_app: AppMigrations = {}
-    for app_name, migration_name in applied:
-        migrations_by_app.setdefault(app_name, []).append(migration_name)
-    return migrations_by_app
-
-
 def export_migration_status(output_dir: str) -> None:
+    export_showmigration = get_migration_status(close_connection_when_done=False)
     migration_status_json = MigrationStatusJson(
-        migrations_by_app=get_migrations_by_app(), zulip_version=ZULIP_VERSION
+        migrations_by_app=parse_migration_status(export_showmigration),
+        zulip_version=ZULIP_VERSION,
     )
     output_file = os.path.join(output_dir, "migration_status.json")
     with open(output_file, "wb") as f:
