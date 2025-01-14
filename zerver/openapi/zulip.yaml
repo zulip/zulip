@@ -4780,11 +4780,6 @@ paths:
                                       type: boolean
                                       description: |
                                         Whether an invitation is required to join this organization.
-                                    invite_to_stream_policy:
-                                      type: integer
-                                      description: |
-                                        The [policy](/api/roles-and-permissions#permission-levels)
-                                        for which users can add other users to channels in this organization.
                                     jitsi_server_url:
                                       type: string
                                       nullable: true
@@ -16843,13 +16838,6 @@ paths:
                           **Changes**: Added in Zulip 5.0 (feature level 103).
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
-                      realm_invite_to_stream_policy:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          The [policy](/api/roles-and-permissions#permission-levels)
-                          for which users can add other users to channels in this organization.
                       realm_wildcard_mention_policy:
                         type: integer
                         description: |

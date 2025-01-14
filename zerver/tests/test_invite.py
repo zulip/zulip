@@ -67,7 +67,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import CommonPolicyEnum, get_realm
+from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
 from zerver.views.invite import INVITATION_LINK_VALIDITY_MINUTES, get_invitee_emails_set
@@ -1645,8 +1645,11 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
     def test_invite_without_permission_to_subscribe_others(self) -> None:
         realm = get_realm("zulip")
-        do_set_realm_property(
-            realm, "invite_to_stream_policy", CommonPolicyEnum.ADMINS_ONLY, acting_user=None
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_add_subscribers_group", admins_group, acting_user=None
         )
 
         invitee = self.nonreg_email("alice")
@@ -1690,8 +1693,11 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.check_sent_emails([invitee])
         mail.outbox.pop()
 
-        do_set_realm_property(
-            realm, "invite_to_stream_policy", CommonPolicyEnum.MEMBERS_ONLY, acting_user=None
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_add_subscribers_group", members_group, acting_user=None
         )
         self.login("hamlet")
         invitee = self.nonreg_email("test")
@@ -3066,8 +3072,11 @@ class MultiuseInviteTest(ZulipTestCase):
         do_change_realm_permission_group_setting(
             realm, "create_multiuse_invite_group", members_group, acting_user=None
         )
-        do_set_realm_property(
-            realm, "invite_to_stream_policy", CommonPolicyEnum.ADMINS_ONLY, acting_user=None
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_add_subscribers_group", admins_group, acting_user=None
         )
 
         self.login("hamlet")
@@ -3109,8 +3118,8 @@ class MultiuseInviteTest(ZulipTestCase):
         )
         self.assert_json_success(result)
 
-        do_set_realm_property(
-            realm, "invite_to_stream_policy", CommonPolicyEnum.MEMBERS_ONLY, acting_user=None
+        do_change_realm_permission_group_setting(
+            realm, "can_add_subscribers_group", members_group, acting_user=None
         )
         self.login("hamlet")
         result = self.client_post(

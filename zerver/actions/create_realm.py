@@ -37,7 +37,6 @@ from zerver.models import (
 from zerver.models.groups import SystemGroups
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import CommonPolicyEnum
 from zproject.backends import all_default_backend_names
 
 
@@ -97,27 +96,6 @@ def do_change_realm_subdomain(
 
     # Sessions can't be deleted inside a transaction.
     delete_realm_user_sessions(realm)
-
-
-def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
-    """This function implements overrides for the default configuration
-    for new organizations when the administrator selected specific
-    organization types.
-
-    This substantially simplifies our /help/ advice for folks setting
-    up new organizations of these types.
-    """
-
-    # Custom configuration for educational organizations.  The present
-    # defaults are designed for a single class, not a department or
-    # larger institution, since those are more common.
-    if realm.org_type in (
-        Realm.ORG_TYPES["education_nonprofit"]["id"],
-        Realm.ORG_TYPES["education"]["id"],
-    ):
-        # Don't allow members (students) to manage user groups or
-        # stream subscriptions.
-        realm.invite_to_stream_policy = CommonPolicyEnum.MODERATORS_ONLY
 
 
 @transaction.atomic(savepoint=False)
@@ -241,8 +219,6 @@ def do_create_realm(
                 days=settings.DEMO_ORG_DEADLINE_DAYS
             )
 
-        set_realm_permissions_based_on_org_type(realm)
-
         # For now a dummy value of -1 is given to groups fields which
         # is changed later before the transaction is committed.
         for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
@@ -280,6 +256,10 @@ def do_create_realm(
         create_system_user_groups_for_realm(realm)
 
         group_settings_defaults_for_org_types = {
+            "can_add_subscribers_group": {
+                Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.MODERATORS,
+                Realm.ORG_TYPES["education"]["id"]: SystemGroups.MODERATORS,
+            },
             "can_create_public_channel_group": {
                 Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.ADMINISTRATORS,
                 Realm.ORG_TYPES["education"]["id"]: SystemGroups.ADMINISTRATORS,

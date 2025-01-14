@@ -6,7 +6,6 @@ import subprocess
 import tempfile
 from collections.abc import Callable, Collection, Iterator, Mapping, Sequence
 from contextlib import contextmanager
-from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Union, cast
 from unittest import TestResult, mock, skipUnless
 from urllib.parse import parse_qs, quote, urlencode
@@ -42,10 +41,7 @@ from typing_extensions import override
 
 from corporate.models import Customer, CustomerPlan, LicenseLedger
 from zerver.actions.message_send import check_send_message, check_send_stream_message
-from zerver.actions.realm_settings import (
-    do_change_realm_permission_group_setting,
-    do_set_realm_property,
-)
+from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscriptions
 from zerver.decorator import do_two_factor_login
 from zerver.lib.cache import bounce_key_prefix_for_testing
@@ -1740,98 +1736,6 @@ Output:
         """
         # See email_display_from, above.
         return email_message.from_email
-
-    def check_has_permission_policies(
-        self, policy: str, validation_func: Callable[[UserProfile], bool]
-    ) -> None:
-        realm = get_realm("zulip")
-
-        owner = "desdemona"
-        admin = "iago"
-        moderator = "shiva"
-        member = "hamlet"
-        new_member = "othello"
-        guest = "polonius"
-
-        def set_age(user_name: str, age: int) -> None:
-            user = self.example_user(user_name)
-            user.date_joined = timezone_now() - timedelta(days=age)
-            user.save()
-
-        do_set_realm_property(realm, "waiting_period_threshold", 1000, acting_user=None)
-        set_age(member, age=realm.waiting_period_threshold + 1)
-        set_age(new_member, age=realm.waiting_period_threshold - 1)
-
-        def allow(user_name: str) -> None:
-            # Fetch a clean object for the user.
-            user = self.example_user(user_name)
-            with self.assert_database_query_count(0):
-                self.assertTrue(validation_func(user))
-
-        def prevent(user_name: str) -> None:
-            # Fetch a clean object for the user.
-            user = self.example_user(user_name)
-            with self.assert_database_query_count(0):
-                self.assertFalse(validation_func(user))
-
-        def set_policy(level: int) -> None:
-            do_set_realm_property(realm, policy, level, acting_user=None)
-
-        set_policy(Realm.POLICY_NOBODY)
-        prevent(owner)
-        prevent(admin)
-        prevent(moderator)
-        prevent(member)
-        prevent(new_member)
-        prevent(guest)
-
-        set_policy(Realm.POLICY_OWNERS_ONLY)
-        allow(owner)
-        prevent(admin)
-        prevent(moderator)
-        prevent(member)
-        prevent(new_member)
-        prevent(guest)
-
-        set_policy(Realm.POLICY_ADMINS_ONLY)
-        allow(owner)
-        allow(admin)
-        prevent(moderator)
-        prevent(member)
-        prevent(new_member)
-        prevent(guest)
-
-        set_policy(Realm.POLICY_MODERATORS_ONLY)
-        allow(owner)
-        allow(admin)
-        allow(moderator)
-        prevent(member)
-        prevent(new_member)
-        prevent(guest)
-
-        set_policy(Realm.POLICY_FULL_MEMBERS_ONLY)
-        allow(owner)
-        allow(admin)
-        allow(moderator)
-        allow(member)
-        prevent(new_member)
-        prevent(guest)
-
-        set_policy(Realm.POLICY_MEMBERS_ONLY)
-        allow(owner)
-        allow(admin)
-        allow(moderator)
-        allow(member)
-        allow(new_member)
-        prevent(guest)
-
-        set_policy(Realm.POLICY_EVERYONE)
-        allow(owner)
-        allow(admin)
-        allow(moderator)
-        allow(member)
-        allow(new_member)
-        allow(guest)
 
     def subscribe_realm_to_manual_license_management_plan(
         self, realm: Realm, licenses: int, licenses_at_next_renewal: int, billing_schedule: int
