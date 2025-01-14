@@ -450,7 +450,6 @@
            to -0.12em produces a slightly more pleasing result, which makes sense
            because mathematical centering and the perception of center don't
            always match. */
-        
         font-size: var(--font-size-sidebar-action-heading);
         font-weight: var(--font-weight-sidebar-action-heading);
         font-variant: var(--font-variant-sidebar-action-heading);
