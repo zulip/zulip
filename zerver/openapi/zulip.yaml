@@ -21063,6 +21063,15 @@ paths:
       description: |
         Update the name, description or any of the permission settings
         of a [user group](/help/user-groups).
+
+        Note that while permissions settings of deactivated groups can
+        be edited by this API endpoint, and those permissions settings
+        do affect the ability to modify the deactivated group and its
+        membership, the deactivated group itself cannot be mentioned
+        or used in the value of any permission without first being reactivated.
+
+        **Changes**: Prior to Zulip 10.0 (feature level 340), only the name field
+        of deactivated groups could be modified.
       parameters:
         - $ref: "#/components/parameters/UserGroupId"
       requestBody:

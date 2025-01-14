@@ -153,17 +153,6 @@ def edit_user_group(
         user_group_id, user_profile, permission_setting="can_manage_group", allow_deactivated=True
     )
 
-    if user_group.deactivated and (
-        description is not None
-        or can_add_members_group is not None
-        or can_join_group is not None
-        or can_leave_group is not None
-        or can_mention_group is not None
-        or can_manage_group is not None
-        or can_remove_members_group is not None
-    ):
-        raise JsonableError(_("You can only change name of deactivated user groups"))
-
     if name is not None and name != user_group.name:
         name = check_user_group_name(name)
         do_update_user_group_name(user_group, name, acting_user=user_profile)
