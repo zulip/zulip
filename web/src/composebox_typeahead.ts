@@ -1396,7 +1396,9 @@ export function initialize({
         },
         updater(item: UserGroupPillData | UserPillData): undefined {
             if (item.type === "user_group") {
-                for (const user_id of item.members) {
+                const user_group = user_groups.get_user_group_from_id(item.id);
+                const group_members = user_groups.get_recursive_group_members(user_group);
+                for (const user_id of group_members) {
                     const user = people.get_by_user_id(user_id);
                     // filter out inactive users, inserted users and current user
                     // from pill insertion
