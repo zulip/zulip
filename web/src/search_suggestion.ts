@@ -589,12 +589,29 @@ function get_special_filter_suggestions(
     // Negating suggestions on is_search_operand_negated is required for
     // suggesting negated terms.
     if (last.negated === true || is_search_operand_negated) {
-        suggestions = suggestions.map((suggestion) => ({
-            search_string: "-" + suggestion.search_string,
-            description_html: "exclude " + suggestion.description_html,
-            incompatible_patterns: suggestion.incompatible_patterns,
-            is_people: false,
-        }));
+        suggestions = suggestions
+            .map((suggestion) => {
+                // If the search_string is "is:resolved", we want to suggest "Unresolved topics"
+                // instead of "Exclude resolved topics".
+                if (suggestion.search_string === "is:resolved") {
+                    return {
+                        ...suggestion,
+                        search_string: "-" + suggestion.search_string,
+                        description_html: "unresolved topics",
+                    };
+                } else if (suggestion.search_string === "-is:resolved") {
+                    return null;
+                }
+                return {
+                    ...suggestion,
+                    search_string: "-" + suggestion.search_string,
+                    description_html: "exclude " + suggestion.description_html,
+                };
+            })
+            .filter(
+                (suggestion): suggestion is SuggestionAndIncompatiblePatterns =>
+                    suggestion !== null,
+            );
     }
 
     const last_string = Filter.unparse([last]).toLowerCase();
@@ -705,6 +722,17 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
         {
             search_string: "is:resolved",
             description_html: "resolved topics",
+            is_people: false,
+            incompatible_patterns: [
+                {operator: "is", operand: "resolved"},
+                {operator: "is", operand: "dm"},
+                {operator: "dm"},
+                {operator: "dm-including"},
+            ],
+        },
+        {
+            search_string: "-is:resolved",
+            description_html: "unresolved topics",
             is_people: false,
             incompatible_patterns: [
                 {operator: "is", operand: "resolved"},

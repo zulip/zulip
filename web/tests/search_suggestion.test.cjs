@@ -377,6 +377,7 @@ test("empty_query_suggestions", () => {
         "is:alerted",
         "is:unread",
         "is:resolved",
+        "-is:resolved",
         "sender:myself@zulip.com",
         `channel:${devel_id}`,
         `channel:${office_id}`,
@@ -518,7 +519,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     assert.equal(describe("-is:mentioned"), "Exclude @-mentions");
     assert.equal(describe("-is:alerted"), "Exclude alerted messages");
     assert.equal(describe("-is:unread"), "Exclude unread messages");
-    assert.equal(describe("-is:resolved"), "Exclude topics marked as resolved");
+    assert.equal(describe("-is:resolved"), "Unresolved topics");
     assert.equal(describe("-is:followed"), "Exclude followed topics");
 
     // operand suggestions follow.
