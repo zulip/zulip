@@ -82,7 +82,6 @@ class HomeTest(ZulipTestCase):
         "can_create_streams",
         "can_create_web_public_streams",
         "can_invite_others_to_realm",
-        "can_subscribe_other_users",
         "cross_realm_bots",
         "custom_profile_field_types",
         "custom_profile_fields",
