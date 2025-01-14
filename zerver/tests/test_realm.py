@@ -64,7 +64,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import CommonPolicyEnum, get_realm
+from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 
@@ -115,11 +115,11 @@ class RealmTest(ZulipTestCase):
         )
         self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
 
-        self.assertEqual(realm.invite_to_stream_policy, CommonPolicyEnum.MODERATORS_ONLY)
         realm = get_realm("test_education_non_profit")
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
+        self.assertEqual(realm.can_add_subscribers_group.id, moderators_group.id)
         self.assertEqual(realm.can_create_groups.id, moderators_group.id)
         self.assertEqual(realm.can_invite_users_group.id, admins_group.id)
         self.assertEqual(realm.can_move_messages_between_channels_group.id, moderators_group.id)
@@ -136,11 +136,11 @@ class RealmTest(ZulipTestCase):
         )
         self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
 
-        self.assertEqual(realm.invite_to_stream_policy, CommonPolicyEnum.MODERATORS_ONLY)
         realm = get_realm("test_education_for_profit")
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
+        self.assertEqual(realm.can_add_subscribers_group.id, moderators_group.id)
         self.assertEqual(realm.can_create_groups.id, moderators_group.id)
         self.assertEqual(realm.can_invite_users_group.id, admins_group.id)
         self.assertEqual(realm.can_move_messages_between_channels_group.id, moderators_group.id)
@@ -947,7 +947,6 @@ class RealmTest(ZulipTestCase):
 
         invalid_values = dict(
             bot_creation_policy=10,
-            invite_to_stream_policy=10,
             message_retention_days=10,
             video_chat_provider=10,
             giphy_rating=10,
@@ -1881,7 +1880,6 @@ class RealmAPITest(ZulipTestCase):
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[10, 20],
-            invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
             bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
             video_chat_provider=[
