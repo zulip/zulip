@@ -37,4 +37,4 @@ def get_migration_status(**options: Any) -> str:
     )
     out.seek(0)
     output = out.read()
-    return re.sub(r"\x1b\[(1|0)m", "", output)
+    return re.sub(r"\x1b\[[0-9;]*m", "", output)
