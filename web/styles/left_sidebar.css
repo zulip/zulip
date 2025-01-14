@@ -1211,7 +1211,7 @@ li.top_left_scheduled_messages {
 
 .topic-list-filter {
     box-shadow: none;
-    padding-right: 28px;
+    padding-right: var(--line-height-sidebar-row-prominent);
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -1744,7 +1744,7 @@ li.topic-list-item {
         /* Pad the entire clear-button area,
            so that input text does not bleed
            into there. */
-        padding-right: 30px;
+        padding-right: var(--line-height-sidebar-row-prominent);
     }
 
     .clear_search_button {
