@@ -1229,7 +1229,7 @@ li.top_left_scheduled_messages {
 }
 
 #filter-topic-input:placeholder-shown + #clear_search_topic_button {
-    display: none;
+    visibility: hidden;
 }
 
 .searching-for-more-topics img {
@@ -1745,11 +1745,11 @@ li.topic-list-item {
 .direct-messages-search-section {
     .direct-messages-list-filter:placeholder-shown
         + #clear-direct-messages-search-button {
-        display: none;
+        visibility: hidden;
     }
 
     .stream-list-filter:placeholder-shown + #clear_search_stream_button {
-        display: none;
+        visibility: hidden;
     }
 }
 
