@@ -86,7 +86,7 @@
                 </a>
             </li>
             {{/if}}
-            {{#if can_rename_topic}}
+            {{#if (and can_rename_topic (not is_empty_string_topic))}}
             <li role="none" class="link-item popover-menu-list-item">
                 <a role="menuitem" class="sidebar-popover-toggle-resolved popover-menu-link" tabindex="0">
                     {{# if topic_is_resolved }}
