@@ -1,0 +1,343 @@
+{
+    "action": "attachment:created",
+    "attachment": {
+      "_type": "Attachment",
+      "id": 3,
+      "fileName": "a.out",
+      "fileSize": 20144,
+      "description": {
+        "format": "plain",
+        "raw": "",
+        "html": ""
+      },
+      "status": "uploaded",
+      "contentType": "application/x-pie-executable",
+      "digest": {
+        "algorithm": "md5",
+        "hash": "f9d1a2d6c97e33acc10b858001bc0ea1"
+      },
+      "createdAt": "2025-01-01T21:27:50.230Z",
+      "_embedded": {
+        "author": {
+          "_type": "User",
+          "id": 4,
+          "name": "Nirved Mishra",
+          "createdAt": "2024-12-31T12:52:44.786Z",
+          "updatedAt": "2025-01-01T18:28:20.852Z",
+          "login": "nirved431@gmail.com",
+          "admin": true,
+          "firstName": "Nirved",
+          "lastName": "Mishra",
+          "email": "nirved431@gmail.com",
+          "avatar": "https://secure.gravatar.com/avatar/aef06c318f044c985140e4ecae344c4a?default=404&secure=true",
+          "status": "active",
+          "identityUrl": null,
+          "language": "en",
+          "_links": {
+            "self": {
+              "href": "/api/v3/users/4",
+              "title": "Nirved Mishra"
+            },
+            "memberships": {
+              "href": "/api/v3/memberships?filters=%5B%7B%22principal%22%3A%7B%22operator%22%3A%22%3D%22%2C%22values%22%3A%5B%224%22%5D%7D%7D%5D",
+              "title": "Memberships"
+            },
+            "showUser": {
+              "href": "/users/4",
+              "type": "text/html"
+            },
+            "updateImmediately": {
+              "href": "/api/v3/users/4",
+              "title": "Update nirved431@gmail.com",
+              "method": "patch"
+            },
+            "lock": {
+              "href": "/api/v3/users/4/lock",
+              "title": "Set lock on nirved431@gmail.com",
+              "method": "post"
+            },
+            "delete": {
+              "href": "/api/v3/users/4",
+              "title": "Delete nirved431@gmail.com",
+              "method": "delete"
+            }
+          }
+        },
+        "container": {
+          "_type": "WorkPackage",
+          "id": 39,
+          "lockVersion": 1,
+          "subject": "task2",
+          "description": {
+            "format": "markdown",
+            "raw": "x vxcv x\n\n<br>",
+            "html": "<p class=\"op-uc-p\">x vxcv x</p>\n<br>"
+          },
+          "scheduleManually": false,
+          "startDate": null,
+          "dueDate": null,
+          "derivedStartDate": null,
+          "derivedDueDate": null,
+          "estimatedTime": null,
+          "derivedEstimatedTime": null,
+          "derivedRemainingTime": null,
+          "duration": null,
+          "ignoreNonWorkingDays": false,
+          "spentTime": "PT0S",
+          "percentageDone": null,
+          "derivedPercentageDone": null,
+          "createdAt": "2025-01-01T20:44:41.255Z",
+          "updatedAt": "2025-01-01T21:27:53.926Z",
+          "readonly": false,
+          "laborCosts": "0.00 EUR",
+          "materialCosts": "0.00 EUR",
+          "overallCosts": "0.00 EUR",
+          "_links": {
+            "attachments": {
+              "href": "/api/v3/work_packages/39/attachments"
+            },
+            "prepareAttachment": {
+              "href": "/api/v3/work_packages/39/attachments/prepare",
+              "method": "post"
+            },
+            "addAttachment": {
+              "href": "/api/v3/work_packages/39/attachments",
+              "method": "post"
+            },
+            "fileLinks": {
+              "href": "/api/v3/work_packages/39/file_links"
+            },
+            "addFileLink": {
+              "href": "/api/v3/work_packages/39/file_links",
+              "method": "post"
+            },
+            "self": {
+              "href": "/api/v3/work_packages/39",
+              "title": "task2"
+            },
+            "update": {
+              "href": "/api/v3/work_packages/39/form",
+              "method": "post"
+            },
+            "schema": {
+              "href": "/api/v3/work_packages/schemas/4-1"
+            },
+            "updateImmediately": {
+              "href": "/api/v3/work_packages/39",
+              "method": "patch"
+            },
+            "delete": {
+              "href": "/api/v3/work_packages/39",
+              "method": "delete"
+            },
+            "logTime": {
+              "href": "/api/v3/time_entries",
+              "title": "Log time on work package 'task2'"
+            },
+            "move": {
+              "href": "/work_packages/39/move/new",
+              "type": "text/html",
+              "title": "Move work package 'task2'"
+            },
+            "copy": {
+              "href": "/work_packages/39/copy",
+              "type": "text/html",
+              "title": "Copy work package 'task2'"
+            },
+            "pdf": {
+              "href": "/work_packages/39.pdf",
+              "type": "application/pdf",
+              "title": "Export as PDF"
+            },
+            "atom": {
+              "href": "/work_packages/39.atom",
+              "type": "application/rss+xml",
+              "title": "Atom feed"
+            },
+            "availableRelationCandidates": {
+              "href": "/api/v3/work_packages/39/available_relation_candidates",
+              "title": "Potential work packages to relate to"
+            },
+            "customFields": {
+              "href": "/projects/project-2/settings/custom_fields",
+              "type": "text/html",
+              "title": "Custom fields"
+            },
+            "configureForm": {
+              "href": "/types/1/edit?tab=form_configuration",
+              "type": "text/html",
+              "title": "Configure form"
+            },
+            "activities": {
+              "href": "/api/v3/work_packages/39/activities"
+            },
+            "availableWatchers": {
+              "href": "/api/v3/work_packages/39/available_watchers"
+            },
+            "relations": {
+              "href": "/api/v3/work_packages/39/relations"
+            },
+            "revisions": {
+              "href": "/api/v3/work_packages/39/revisions"
+            },
+            "watchers": {
+              "href": "/api/v3/work_packages/39/watchers"
+            },
+            "addWatcher": {
+              "href": "/api/v3/work_packages/39/watchers",
+              "method": "post",
+              "payload": {
+                "user": {
+                  "href": "/api/v3/users/{user_id}"
+                }
+              },
+              "templated": true
+            },
+            "removeWatcher": {
+              "href": "/api/v3/work_packages/39/watchers/{user_id}",
+              "method": "delete",
+              "templated": true
+            },
+            "addRelation": {
+              "href": "/api/v3/work_packages/39/relations",
+              "method": "post",
+              "title": "Add relation"
+            },
+            "addChild": {
+              "href": "/api/v3/projects/project-2/work_packages",
+              "method": "post",
+              "title": "Add child of task2"
+            },
+            "changeParent": {
+              "href": "/api/v3/work_packages/39",
+              "method": "patch",
+              "title": "Change parent of task2"
+            },
+            "addComment": {
+              "href": "/api/v3/work_packages/39/activities",
+              "method": "post",
+              "title": "Add comment"
+            },
+            "previewMarkup": {
+              "href": "/api/v3/render/markdown?context=/api/v3/work_packages/39",
+              "method": "post"
+            },
+            "timeEntries": {
+              "href": "/api/v3/time_entries?filters=%5B%7B%22work_package_id%22%3A%7B%22operator%22%3A%22%3D%22%2C%22values%22%3A%5B%2239%22%5D%7D%7D%5D",
+              "title": "Time entries"
+            },
+            "ancestors": [],
+            "category": {
+              "href": null
+            },
+            "type": {
+              "href": "/api/v3/types/1",
+              "title": "Task"
+            },
+            "priority": {
+              "href": "/api/v3/priorities/8",
+              "title": "Normal"
+            },
+            "project": {
+              "href": "/api/v3/projects/4",
+              "title": "Project 2"
+            },
+            "status": {
+              "href": "/api/v3/statuses/1",
+              "title": "New"
+            },
+            "author": {
+              "href": "/api/v3/users/4",
+              "title": "Nirved Mishra"
+            },
+            "responsible": {
+              "href": null
+            },
+            "assignee": {
+              "href": "/api/v3/users/4",
+              "title": "Nirved Mishra"
+            },
+            "version": {
+              "href": null
+            },
+            "parent": {
+              "href": null,
+              "title": null
+            },
+            "customActions": [],
+            "logCosts": {
+              "href": "/work_packages/39/cost_entries/new",
+              "type": "text/html",
+              "title": "Log costs on task2"
+            },
+            "showCosts": {
+              "href": "/projects/4/cost_reports?fields%5B%5D=WorkPackageId&operators%5BWorkPackageId%5D=%3D&set_filter=1&values%5BWorkPackageId%5D=39",
+              "type": "text/html",
+              "title": "Show cost entries"
+            },
+            "costsByType": {
+              "href": "/api/v3/work_packages/39/summarized_costs_by_type"
+            },
+            "meetings": {
+              "href": "/work_packages/39/tabs/meetings",
+              "title": "meetings"
+            },
+            "github": {
+              "href": "/work_packages/39/tabs/github",
+              "title": "github"
+            },
+            "github_pull_requests": {
+              "href": "/api/v3/work_packages/39/github_pull_requests",
+              "title": "GitHub pull requests"
+            },
+            "gitlab": {
+              "href": "/work_packages/39/tabs/gitlab",
+              "title": "gitlab"
+            },
+            "gitlab_merge_requests": {
+              "href": "/api/v3/work_packages/39/gitlab_merge_requests",
+              "title": "Gitlab merge requests"
+            },
+            "gitlab_issues": {
+              "href": "/api/v3/work_packages/39/gitlab_issues",
+              "title": "Gitlab Issues"
+            },
+            "convertBCF": {
+              "href": "/api/bcf/2.1/projects/project-2/topics",
+              "title": "Convert to BCF",
+              "payload": {
+                "reference_links": [
+                  "/api/v3/work_packages/39"
+                ]
+              },
+              "method": "post"
+            }
+          }
+        }
+      },
+      "_links": {
+        "self": {
+          "href": "/api/v3/attachments/3",
+          "title": "a.out"
+        },
+        "author": {
+          "href": "/api/v3/users/4",
+          "title": "Nirved Mishra"
+        },
+        "container": {
+          "href": "/api/v3/work_packages/39",
+          "title": "task2"
+        },
+        "staticDownloadLocation": {
+          "href": "/api/v3/attachments/3/content"
+        },
+        "downloadLocation": {
+          "href": "https://saas-openproject-aws-de-trials2-20241119125120412800000002.s3.eu-central-1.amazonaws.com/1735649550_8932652_b7d27008_3959_4391_8bd2_083b23bbd9d0/attachment/file/3/a.out?response-content-disposition=attachment&X-Amz-Expires=600&X-Amz-Date=20250101T212754Z&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAUF2KCI5YK2B2YLH6%2F20250101%2Feu-central-1%2Fs3%2Faws4_request&X-Amz-SignedHeaders=host&X-Amz-Signature=ce1ce0ece048498ed44704da6d4eab8aabbe34b38a67780fea218628b91e4e46"
+        },
+        "delete": {
+          "href": "/api/v3/attachments/3",
+          "method": "delete"
+        }
+      }
+    }
+  }
