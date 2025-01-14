@@ -27,6 +27,8 @@ format used by the Zulip server that they are interacting with.
   Added `can_add_subscribers_group` realm setting which is a
   [group-setting value](/api/group-setting-values) describing the set of users
   with permission to add subscribers to channels in the organization.
+* [`POST /register`](/api/register-queue): Removed
+  `can_subscribe_other_users` boolean field from the response.
 
 **Feature level 340**
 
