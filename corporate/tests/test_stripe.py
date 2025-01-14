@@ -2456,6 +2456,7 @@ class StripeTest(StripeTestCase):
             "website": "invalid-url",
             "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
             "expected_total_users": "10 users",
+            "plan_to_use_zulip": "For communication on moon.",
             "paid_users_count": "1 user",
             "paid_users_description": "We have 1 paid user.",
         }
@@ -2472,6 +2473,7 @@ class StripeTest(StripeTestCase):
             "website": "",
             "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
             "expected_total_users": "10 users",
+            "plan_to_use_zulip": "For communication on moon.",
             "paid_users_count": "1 user",
             "paid_users_description": "We have 1 paid user.",
         }
@@ -2570,6 +2572,7 @@ class StripeTest(StripeTestCase):
             "website": "https://infinispan.org/",
             "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
             "expected_total_users": "10 users",
+            "plan_to_use_zulip": "For communication on moon.",
             "paid_users_count": "1 user",
             "paid_users_description": "We have 1 paid user.",
         }
@@ -8299,6 +8302,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             "website": "https://infinispan.org/",
             "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
             "expected_total_users": "10 users",
+            "plan_to_use_zulip": "For communication on moon.",
             "paid_users_count": "1 user",
             "paid_users_description": "We have 1 paid user.",
             "requested_plan": "Community",
@@ -8926,6 +8930,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             "website": "https://infinispan.org/",
             "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
             "expected_total_users": "10 users",
+            "plan_to_use_zulip": "For communication on moon.",
             "paid_users_count": "1 user",
             "paid_users_description": "We have 1 paid user.",
             "requested_plan": "Community",

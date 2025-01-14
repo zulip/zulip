@@ -696,6 +696,7 @@ class SponsorshipRequestForm(forms.Form):
     organization_type = forms.IntegerField()
     description = forms.CharField(widget=forms.Textarea)
     expected_total_users = forms.CharField(widget=forms.Textarea)
+    plan_to_use_zulip = forms.CharField(widget=forms.Textarea)
     paid_users_count = forms.CharField(widget=forms.Textarea)
     paid_users_description = forms.CharField(widget=forms.Textarea, required=False)
     requested_plan = forms.ChoiceField(
@@ -3498,6 +3499,7 @@ class BillingSession(ABC):
                 org_description=form.cleaned_data["description"],
                 org_type=form.cleaned_data["organization_type"],
                 expected_total_users=form.cleaned_data["expected_total_users"],
+                plan_to_use_zulip=form.cleaned_data["plan_to_use_zulip"],
                 paid_users_count=form.cleaned_data["paid_users_count"],
                 paid_users_description=form.cleaned_data["paid_users_description"],
                 requested_plan=form.cleaned_data["requested_plan"],
@@ -3526,6 +3528,7 @@ class BillingSession(ABC):
             "website": sponsorship_request.org_website,
             "description": sponsorship_request.org_description,
             "expected_total_users": sponsorship_request.expected_total_users,
+            "plan_to_use_zulip": sponsorship_request.plan_to_use_zulip,
             "paid_users_count": sponsorship_request.paid_users_count,
             "paid_users_description": sponsorship_request.paid_users_description,
             "requested_plan": sponsorship_request.requested_plan,

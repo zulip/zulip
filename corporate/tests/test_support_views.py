@@ -65,6 +65,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 org_website=website,
                 org_description="We help people.",
                 expected_total_users="20-35",
+                plan_to_use_zulip="For communication on moon.",
                 paid_users_count=paid_users,
                 paid_users_description="",
                 requested_plan=plan,
