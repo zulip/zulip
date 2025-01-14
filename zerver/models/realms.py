@@ -652,7 +652,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         inline_image_preview=bool,
         inline_url_embed_preview=bool,
         invite_required=bool,
-        invite_to_stream_policy=int,
         jitsi_server_url=(str, type(None)),
         mandatory_topics=bool,
         message_content_allowed_in_email_notifications=bool,

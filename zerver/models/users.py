@@ -818,55 +818,17 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         from zerver.lib.user_groups import user_has_permission_for_group_setting
         from zerver.models import Realm
 
-        if (
-            policy_name not in Realm.REALM_PERMISSION_GROUP_SETTINGS
-            and policy_name != "invite_to_stream_policy"
-        ):
+        if policy_name not in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             raise AssertionError("Invalid policy")
 
-        if policy_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
-            if realm is None:
-                # realm is passed by the caller only when we optimize
-                # the number of database queries by fetching the group
-                # setting fields using select_related.
-                realm = self.realm
-            allowed_user_group = getattr(realm, policy_name)
-            setting_config = Realm.REALM_PERMISSION_GROUP_SETTINGS[policy_name]
-            return user_has_permission_for_group_setting(allowed_user_group, self, setting_config)
-
-        policy_value = getattr(self.realm, policy_name)
-        if policy_value == Realm.POLICY_NOBODY:
-            return False
-
-        if policy_value == Realm.POLICY_EVERYONE:
-            return True
-
-        if self.is_realm_owner:
-            return True
-
-        if policy_value == Realm.POLICY_OWNERS_ONLY:
-            return False
-
-        if self.is_realm_admin:
-            return True
-
-        if policy_value == Realm.POLICY_ADMINS_ONLY:
-            return False
-
-        if self.is_moderator:
-            return True
-
-        if policy_value == Realm.POLICY_MODERATORS_ONLY:
-            return False
-
-        if self.is_guest:
-            return False
-
-        if policy_value == Realm.POLICY_MEMBERS_ONLY:
-            return True
-
-        assert policy_value == Realm.POLICY_FULL_MEMBERS_ONLY
-        return not self.is_provisional_member
+        if realm is None:
+            # realm is passed by the caller only when we optimize
+            # the number of database queries by fetching the group
+            # setting fields using select_related.
+            realm = self.realm
+        allowed_user_group = getattr(realm, policy_name)
+        setting_config = Realm.REALM_PERMISSION_GROUP_SETTINGS[policy_name]
+        return user_has_permission_for_group_setting(allowed_user_group, self, setting_config)
 
     def can_create_public_streams(self, realm: Optional["Realm"] = None) -> bool:
         return self.has_permission("can_create_public_channel_group", realm)
@@ -883,7 +845,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         return self.is_realm_admin
 
     def can_subscribe_other_users(self) -> bool:
-        return self.has_permission("invite_to_stream_policy")
+        return self.has_permission("can_add_subscribers_group")
 
     def can_invite_users_by_email(self, realm: Optional["Realm"] = None) -> bool:
         return self.has_permission("can_invite_users_group", realm)

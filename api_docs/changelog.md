@@ -29,6 +29,10 @@ format used by the Zulip server that they are interacting with.
   with permission to add subscribers to channels in the organization.
 * [`POST /register`](/api/register-queue): Removed
   `can_subscribe_other_users` boolean field from the response.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `invite_to_stream_policy` property, as the permission to subscribe
+  other users to channels in the organization is now controlled by the
+  `can_add_subscribers_group` setting.
 
 **Feature level 340**
 

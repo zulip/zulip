@@ -122,7 +122,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import CommonPolicyEnum, get_realm
+from zerver.models.realms import get_realm
 from zerver.models.streams import get_default_stream_groups, get_stream
 from zerver.models.users import (
     active_non_guest_user_ids,
@@ -4946,8 +4946,11 @@ class SubscriptionAPITest(ZulipTestCase):
         invitee_user_id = user_profile.id
         realm = user_profile.realm
 
-        do_set_realm_property(
-            realm, "invite_to_stream_policy", CommonPolicyEnum.ADMINS_ONLY, acting_user=None
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_add_subscribers_group", admins_group, acting_user=None
         )
         do_change_user_role(self.test_user, UserProfile.ROLE_MODERATOR, acting_user=None)
         result = self.common_subscribe_to_streams(
@@ -4963,8 +4966,11 @@ class SubscriptionAPITest(ZulipTestCase):
             self.test_user, ["stream1"], {"principals": orjson.dumps([invitee_user_id]).decode()}
         )
 
-        do_set_realm_property(
-            realm, "invite_to_stream_policy", CommonPolicyEnum.MODERATORS_ONLY, acting_user=None
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_add_subscribers_group", moderators_group, acting_user=None
         )
         do_change_user_role(self.test_user, UserProfile.ROLE_MEMBER, acting_user=None)
         # Make sure that we are checking the permission with a full member,
@@ -4984,8 +4990,11 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.unsubscribe(user_profile, "stream2")
 
-        do_set_realm_property(
-            realm, "invite_to_stream_policy", CommonPolicyEnum.MEMBERS_ONLY, acting_user=None
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_add_subscribers_group", members_group, acting_user=None
         )
         do_change_user_role(self.test_user, UserProfile.ROLE_GUEST, acting_user=None)
         result = self.common_subscribe_to_streams(
@@ -5004,11 +5013,11 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.unsubscribe(user_profile, "stream2")
 
-        do_set_realm_property(
-            realm,
-            "invite_to_stream_policy",
-            CommonPolicyEnum.FULL_MEMBERS_ONLY,
-            acting_user=None,
+        full_members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_add_subscribers_group", full_members_group, acting_user=None
         )
         do_set_realm_property(realm, "waiting_period_threshold", 100000, acting_user=None)
         result = self.common_subscribe_to_streams(
@@ -5023,17 +5032,37 @@ class SubscriptionAPITest(ZulipTestCase):
         self.common_subscribe_to_streams(
             self.test_user, ["stream2"], {"principals": orjson.dumps([invitee_user_id]).decode()}
         )
+        self.unsubscribe(user_profile, "stream2")
 
-    def test_can_subscribe_other_users(self) -> None:
-        """
-        You can't subscribe other people to streams if you are a guest or your account is not old
-        enough.
-        """
+        named_user_group = check_add_user_group(
+            realm, "named_user_group", [self.test_user], acting_user=self.test_user
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_add_subscribers_group",
+            named_user_group,
+            acting_user=None,
+        )
+        self.common_subscribe_to_streams(
+            self.test_user,
+            ["stream2"],
+            {"principals": orjson.dumps([invitee_user_id]).decode()},
+        )
+        self.unsubscribe(user_profile, "stream2")
+        anonymous_group = self.create_or_update_anonymous_group_for_setting([self.test_user], [])
 
-        def validation_func(user_profile: UserProfile) -> bool:
-            return user_profile.can_subscribe_other_users()
-
-        self.check_has_permission_policies("invite_to_stream_policy", validation_func)
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_add_subscribers_group",
+            anonymous_group,
+            acting_user=None,
+        )
+        self.common_subscribe_to_streams(
+            self.test_user,
+            ["stream2"],
+            {"principals": orjson.dumps([invitee_user_id]).decode()},
+        )
+        self.unsubscribe(user_profile, "stream2")
 
     def test_subscriptions_add_invalid_stream(self) -> None:
         """
@@ -5102,7 +5131,7 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_sub = ["multi_user_stream"]
         with (
             self.capture_send_event_calls(expected_num_events=5) as events,
-            self.assert_database_query_count(42),
+            self.assert_database_query_count(44),
         ):
             self.common_subscribe_to_streams(
                 self.test_user,
@@ -5560,7 +5589,7 @@ class SubscriptionAPITest(ZulipTestCase):
         test_user_ids = [user.id for user in test_users]
 
         with (
-            self.assert_database_query_count(19),
+            self.assert_database_query_count(21),
             self.assert_memcached_count(3),
             mock.patch("zerver.views.streams.send_messages_for_new_subscribers"),
         ):
@@ -5928,7 +5957,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(42):
+        with self.assert_database_query_count(44):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[0]],
@@ -5936,7 +5965,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(46):
+        with self.assert_database_query_count(48):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[1]],
@@ -5948,7 +5977,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(53):
+        with self.assert_database_query_count(55):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[2]],
@@ -6446,7 +6475,7 @@ class GetSubscribersTest(ZulipTestCase):
             polonius.id,
         ]
 
-        with self.assert_database_query_count(47):
+        with self.assert_database_query_count(49):
             self.common_subscribe_to_streams(
                 self.user_profile,
                 streams,
