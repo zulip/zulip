@@ -605,7 +605,6 @@ def fetch_initial_state_data(
             or state["can_create_public_streams"]
             or state["can_create_web_public_streams"]
         )
-        state["can_subscribe_other_users"] = settings_user.can_subscribe_other_users()
         state["can_invite_others_to_realm"] = (
             realm.can_invite_users_group_id in settings_user_recursive_group_ids
         )
@@ -1031,7 +1030,6 @@ def apply_event(
                         or state["can_create_public_streams"]
                         or state["can_create_web_public_streams"]
                     )
-                    state["can_subscribe_other_users"] = user_profile.can_subscribe_other_users()
                     state["can_invite_others_to_realm"] = user_profile.can_invite_users_by_email()
 
                     if state["is_guest"]:
@@ -1321,11 +1319,6 @@ def apply_event(
                     else state["server_jitsi_server_url"]
                 )
 
-            if (
-                event["property"] == "invite_to_stream_policy"
-                and "can_subscribe_other_users" in state
-            ):
-                state["can_subscribe_other_users"] = user_profile.has_permission(event["property"])
         elif event["op"] == "update_dict":
             for key, value in event["data"].items():
                 if key == "max_file_upload_size_mib":
