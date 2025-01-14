@@ -92,7 +92,7 @@
         }
 
         #inbox-search:placeholder-shown + #inbox-clear-search {
-            display: none;
+            visibility: hidden;
         }
 
         #inbox-search {
