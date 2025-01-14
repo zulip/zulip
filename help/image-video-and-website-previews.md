@@ -9,8 +9,11 @@ also disable previews altogether.
 
 In the desktop and web apps, you can configure previews of animated images to
 always show the animation, show it when you hover over the image with your
-mouse, or not show it at all. You can always see the animated image by opening
-it in the [image viewer](/help/view-images-and-videos).
+mouse, or not show it at all. For large animated images, only the first part of
+the animation will be shown in the preview.
+
+You can always see the full animated image by opening it in the [image
+viewer](/help/view-images-and-videos).
 
 !!! warn ""
 
