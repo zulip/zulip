@@ -541,6 +541,7 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     create_multiuse_invite_group: int | AnonymousSettingGroupDict | None = None
     can_access_all_users_group: int | AnonymousSettingGroupDict | None = None
     can_add_custom_emoji_group: int | AnonymousSettingGroupDict | None = None
+    can_add_subscribers_group: int | AnonymousSettingGroupDict | None = None
     can_create_groups: int | AnonymousSettingGroupDict | None = None
     can_create_public_channel_group: int | AnonymousSettingGroupDict | None = None
     can_create_private_channel_group: int | AnonymousSettingGroupDict | None = None
