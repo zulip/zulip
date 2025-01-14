@@ -477,8 +477,6 @@ INVITES_NEW_REALM_DAYS = 7
 
 # Controls for which links are published in portico footers/headers/etc.
 REGISTER_LINK_DISABLED: bool | None = None
-LOGIN_LINK_DISABLED = False
-FIND_TEAM_LINK_DISABLED = True
 
 # What domains to treat like the root domain
 ROOT_SUBDOMAIN_ALIASES = ["www"]
