@@ -96,8 +96,7 @@ class FrontHookTests(WebhookTestCase):
     def test_mention_all(self) -> None:
         expected_topic_name = "cnv_keo696"
         expected_message = (
-            "**Leela Turanga** left a comment:\n"
-            "```quote\n@all Could someone else take this?\n```"
+            "**Leela Turanga** left a comment:\n```quote\n@all Could someone else take this?\n```"
         )
 
         self.check_webhook(
@@ -177,8 +176,7 @@ class FrontHookTests(WebhookTestCase):
     def test_mention(self) -> None:
         expected_topic_name = "cnv_keocka"
         expected_message = (
-            "**Leela Turanga** left a comment:\n"
-            "```quote\n@bender Could you take it from here?\n```"
+            "**Leela Turanga** left a comment:\n```quote\n@bender Could you take it from here?\n```"
         )
 
         self.check_webhook(

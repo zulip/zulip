@@ -526,13 +526,13 @@ def deprecated_note_in_description(description: str) -> bool:
 def check_deprecated_consistency(deprecated: bool, description: str) -> None:
     # Test to make sure deprecated parameters are marked so.
     if deprecated_note_in_description(description):
-        assert (
-            deprecated
-        ), f"Missing `deprecated: true` despite being described as deprecated:\n\n{description}\n"
+        assert deprecated, (
+            f"Missing `deprecated: true` despite being described as deprecated:\n\n{description}\n"
+        )
     if deprecated:
-        assert deprecated_note_in_description(
-            description
-        ), f"Marked as `deprecated: true`, but changes documentation doesn't properly explain as **Deprecated** in the standard format\n\n:{description}\n"
+        assert deprecated_note_in_description(description), (
+            f"Marked as `deprecated: true`, but changes documentation doesn't properly explain as **Deprecated** in the standard format\n\n:{description}\n"
+        )
 
 
 # Skip those JSON endpoints whose query parameters are different from

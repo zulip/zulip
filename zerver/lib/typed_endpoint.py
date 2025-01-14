@@ -229,9 +229,9 @@ def parse_single_parameter(
             # This prohibits the use of `Optional[Annotated[T, ApiParamConfig(...)]] = None`
             # and encourages `Annotated[Optional[T], ApiParamConfig(...)] = None`
             # to avoid confusion when the parameter metadata is unintentionally nested.
-            assert not has_api_param_config or is_optional(
-                annotated_type
-            ), API_PARAM_CONFIG_USAGE_HINT.format(param_name=param_name, param_type=param_type)
+            assert not has_api_param_config or is_optional(annotated_type), (
+                API_PARAM_CONFIG_USAGE_HINT.format(param_name=param_name, param_type=param_type)
+            )
             param_type = inner_type
 
     param_config: ApiParamConfig | None = None
@@ -454,16 +454,16 @@ def typed_endpoint(
             view_func_name=endpoint_info.view_func_full_name
         )
     else:
-        assert (
-            len(endpoint_info.parameters) != 0
-        ), UNEXPECTEDLY_MISSING_KEYWORD_ONLY_PARAMETERS.format(
-            view_func_name=endpoint_info.view_func_full_name
+        assert len(endpoint_info.parameters) != 0, (
+            UNEXPECTEDLY_MISSING_KEYWORD_ONLY_PARAMETERS.format(
+                view_func_name=endpoint_info.view_func_full_name
+            )
         )
     for func_param in endpoint_info.parameters:
         if func_param.path_only:
-            assert (
-                func_param.default is NotSpecified
-            ), f"Path-only parameter {func_param.param_name} should not have a default value"
+            assert func_param.default is NotSpecified, (
+                f"Path-only parameter {func_param.param_name} should not have a default value"
+            )
         # Record arguments that should be documented so that our
         # automated OpenAPI docs tests can compare these against the code.
         if (
@@ -485,9 +485,9 @@ def typed_endpoint(
                 # the URL, so there's no need for us to do anything.
                 #
                 # TODO: Run validators for path_only parameters for NewType.
-                assert (
-                    parameter.param_name in kwargs
-                ), f"Path-only variable {parameter.param_name} should be passed already"
+                assert parameter.param_name in kwargs, (
+                    f"Path-only variable {parameter.param_name} should be passed already"
+                )
             if parameter.param_name in kwargs:
                 # Skip parameters that are already supplied by the caller.
                 continue

@@ -153,9 +153,9 @@ if services is not None and set(services).intersection(
     {"submit_usage_statistics", "security_alerts", "mobile_push"}
 ):
     # None of these make sense enabled without ZULIP_SERVICES_URL.
-    assert (
-        ZULIP_SERVICES_URL is not None
-    ), "ZULIP_SERVICES_URL is required when any services are enabled."
+    assert ZULIP_SERVICES_URL is not None, (
+        "ZULIP_SERVICES_URL is required when any services are enabled."
+    )
 
 ANALYTICS_DATA_UPLOAD_LEVEL = max(
     [service_name_to_required_upload_level[service] for service in (services or [])],

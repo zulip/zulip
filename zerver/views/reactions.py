@@ -45,10 +45,7 @@ def remove_reaction(
     if emoji_code is None:
         if emoji_name is None:
             raise JsonableError(
-                _(
-                    "At least one of the following arguments "
-                    "must be present: emoji_name, emoji_code"
-                )
+                _("At least one of the following arguments must be present: emoji_name, emoji_code")
             )
         # A correct full Zulip client implementation should always
         # pass an emoji_code, because of the corner cases discussed in

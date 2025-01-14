@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 339  # Last bumped for reaction events.
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (309, 0)  # bumped 2024-01-07 to remove spectrum-colorpicker
+PROVISION_VERSION = (310, 0)  # bumped 2024-01-13 to upgrade Python requirements
