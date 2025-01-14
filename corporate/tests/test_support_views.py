@@ -1647,7 +1647,7 @@ class TestSupportEndpoint(ZulipTestCase):
             },
         )
         self.assert_in_success_response(
-            ["Fixed price offer deleted"],
+            ["Fixed-price plan offer deleted"],
             result,
         )
         customer.refresh_from_db()
@@ -1795,6 +1795,21 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assertEqual(next_plan.billing_cycle_anchor, plan.end_date)
         self.assertEqual(next_plan.charge_automatically, plan.charge_automatically)
         self.assertTrue(next_plan.automanage_licenses)
+
+        # Test deleting the fixed-price next plan via support.
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "delete_fixed_price_next_plan": "true",
+            },
+        )
+        self.assert_in_success_response(
+            ["Fixed-price scheduled plan deleted"],
+            result,
+        )
+        next_plan = billing_session.get_next_plan(plan)
+        self.assertIsNone(next_plan)
 
     def test_approve_sponsorship_deactivated_realm(self) -> None:
         support_admin = self.example_user("iago")

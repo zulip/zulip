@@ -1553,6 +1553,28 @@ class BillingSession(ABC):
         )
         return f"Customer can now buy a fixed price {required_plan_tier_name} plan."
 
+    def delete_fixed_price_plan(self) -> str:
+        # See configure_fixed_price_plan above for how these CustomerPlan
+        # and CustomerPlanOffer objects are created for fixed-price plans.
+        customer = self.get_customer()
+        assert customer is not None
+        current_plan = get_current_plan_by_customer(customer)
+        if current_plan is None:
+            fixed_price_offer = CustomerPlanOffer.objects.filter(
+                customer=customer, status=CustomerPlanOffer.CONFIGURED
+            ).first()
+            assert fixed_price_offer is not None
+            fixed_price_offer.delete()
+            return "Fixed-price plan offer deleted"
+        fixed_price_next_plan = CustomerPlan.objects.filter(
+            customer=customer,
+            status=CustomerPlan.NEVER_STARTED,
+            fixed_price__isnull=False,
+        ).first()
+        assert fixed_price_next_plan is not None
+        fixed_price_next_plan.delete()
+        return "Fixed-price scheduled plan deleted"
+
     def update_customer_sponsorship_status(self, sponsorship_pending: bool) -> str:
         customer = self.get_customer()
         if customer is None:
@@ -3556,14 +3578,7 @@ class BillingSession(ABC):
                 new_plan_tier = support_request["new_plan_tier"]
                 success_message = self.do_change_plan_to_new_tier(new_plan_tier)
         elif support_type == SupportType.delete_fixed_price_next_plan:
-            customer = self.get_customer()
-            assert customer is not None
-            fixed_price_offer = CustomerPlanOffer.objects.filter(
-                customer=customer, status=CustomerPlanOffer.CONFIGURED
-            ).first()
-            assert fixed_price_offer is not None
-            fixed_price_offer.delete()
-            success_message = "Fixed price offer deleted"
+            success_message = self.delete_fixed_price_plan()
 
         return success_message
 
