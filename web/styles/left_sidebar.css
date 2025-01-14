@@ -1134,9 +1134,12 @@ li.top_left_scheduled_messages {
 }
 
 .topic_search_section {
-    padding: 8px 10px;
     display: grid;
-    grid-template: "search-input clear-search" auto / minmax(0, 1fr) 30px;
+    grid-template-columns:
+        var(--left-sidebar-toggle-width-offset) 0 0
+        [filter-box-start] minmax(0, 1fr)
+        minmax(0, max-content)
+        [filter-box-end clear-button] 0;
 }
 
 .topic-box .zero_count {
@@ -1212,8 +1215,7 @@ li.top_left_scheduled_messages {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    grid-column: search-input-start / clear-search-end;
-    grid-row: search-input;
+    grid-column: filter-box;
 }
 
 #filter-topic-input:placeholder-shown + #clear_search_topic_button {
@@ -1728,6 +1730,7 @@ li.topic-list-item {
     }
 }
 
+.topic_search_section,
 .stream_search_section,
 .direct-messages-search-section {
     .stream-list-filter,
@@ -1751,6 +1754,7 @@ li.topic-list-item {
         place-items: center;
         width: 30px;
         margin-left: -30px;
+        grid-column: clear-button;
     }
 
     .direct-messages-list-filter:placeholder-shown
