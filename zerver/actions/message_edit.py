@@ -121,6 +121,12 @@ def validate_message_edit_payload(
     if propagate_mode != "change_one" and topic_name is None and stream_id is None:
         raise JsonableError(_("Invalid propagate_mode without topic edit"))
 
+    if topic_name in {
+        RESOLVED_TOPIC_PREFIX.strip(),
+        f"{RESOLVED_TOPIC_PREFIX}{Message.EMPTY_TOPIC_FALLBACK_NAME}",
+    }:
+        raise JsonableError(_("General chat cannot be marked as resolved"))
+
     if topic_name is not None:
         check_stream_topic(topic_name)
 

@@ -1757,3 +1757,17 @@ class MessageMoveTopicTest(ZulipTestCase):
             topic_messages[0].content,
             f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
         )
+
+    def test_resolve_empty_string_topic(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        message_id = self.send_stream_message(hamlet, "Denmark", topic_name="")
+        result = self.resolve_topic_containing_message(hamlet, target_message_id=message_id)
+        self.assert_json_error(result, "General chat cannot be marked as resolved")
+
+        # Verification for old clients that don't support empty string topic.
+        message_id = self.send_stream_message(
+            hamlet, "Denmark", topic_name=Message.EMPTY_TOPIC_FALLBACK_NAME
+        )
+        result = self.resolve_topic_containing_message(hamlet, target_message_id=message_id)
+        self.assert_json_error(result, "General chat cannot be marked as resolved")

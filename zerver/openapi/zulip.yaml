@@ -8515,6 +8515,10 @@ paths:
                     the [POST /register](/api/register-queue) response is used for this
                     parameter, it is interpreted as an empty string.
 
+                    You can [resolve topics](/help/resolve-a-topic) by editing the topic to
+                    `✔ {original_topic}` with the `propagate_mode` parameter set to
+                    `"change_all"`. The empty string topic cannot be marked as resolved.
+
                     **Changes**: Before Zulip 10.0 (feature level 334), empty string
                     was not a valid topic name for channel messages.
 
