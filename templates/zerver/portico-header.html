@@ -34,8 +34,7 @@
             {% if user_is_authenticated %}
                 {% include 'zerver/portico-header-dropdown.html' %}
             {% else %}
-                {% if login_link_disabled %}
-                {% elif not only_sso %}
+                {% if not only_sso %}
                 <a href="{{login_url}}">{{ _('Log in') }}</a>
                 {% endif %}
             {% endif %}
@@ -50,8 +49,7 @@
                 {% endif %}
             {% endif %}
 
-            {% if not is_self_hosting_management_page and not find_team_link_disabled %}
-            <a class= "find-accounts-link" href="{{ root_domain_url }}/accounts/find/">{{ _('Find accounts') }}</a>
+            {% if not is_self_hosting_management_page and non_realm_specific_page %}
             <a href="{{ root_domain_url }}/new/">{{ _('New organization') }}</a>
             {% endif %}
         </div>
