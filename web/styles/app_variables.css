@@ -1514,9 +1514,9 @@
     --color-vdots-visible: light-dark(hsl(240deg 30% 40%), hsl(240deg 35% 68%));
     --color-vdots-hover: light-dark(hsl(240deg 100% 15%), hsl(240deg 100% 90%));
     --color-tab-picker-icon: light-dark(hsl(200deg 100% 40%), hsl(0deg 0% 80%));
-    --color-user-circle-active: hsl(106deg 74% 44%);
-    --color-user-circle-idle: hsl(29deg 84% 51%);
-    --color-user-circle-offline: hsl(0deg 0% 50%);
+    --color-user-circle-active: light-dark(#43a35e, #4cdc75);
+    --color-user-circle-idle: light-dark(#f5b266, #ae640a);
+    --color-user-circle-offline: light-dark(#c1c6d7, #454854);
     --color-user-circle-deactivated: hsl(0deg 0% 50%);
     --color-copy-button: light-dark(
         /* hsl(229deg 9% 36%) corresponds to --grey-600.
