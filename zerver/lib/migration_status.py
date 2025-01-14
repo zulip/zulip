@@ -4,6 +4,50 @@ from importlib import import_module
 from io import StringIO
 from typing import Any
 
+STALE_MIGRATIONS = [
+    # Ignore django-guardian, which we installed until 1.7.0~3134
+    ("guardian", "0001_initial"),
+    # Ignore django.contrib.sites, which we installed until 2.0.0-rc1~984.
+    ("sites", "0001_initial"),
+    ("sites", "0002_alter_domain_unique"),
+    # These migrations (0002=>0028) were squashed into 0001, in 6fbddf578a6e
+    # through a21f2d771553, 1.7.0~3135.
+    ("zerver", "0002_django_1_8"),
+    ("zerver", "0003_custom_indexes"),
+    ("zerver", "0004_userprofile_left_side_userlist"),
+    ("zerver", "0005_auto_20150920_1340"),
+    ("zerver", "0006_zerver_userprofile_email_upper_idx"),
+    ("zerver", "0007_userprofile_is_bot_active_indexes"),
+    ("zerver", "0008_preregistrationuser_upper_email_idx"),
+    ("zerver", "0009_add_missing_migrations"),
+    ("zerver", "0010_delete_streamcolor"),
+    ("zerver", "0011_remove_guardian"),
+    ("zerver", "0012_remove_appledevicetoken"),
+    ("zerver", "0013_realmemoji"),
+    ("zerver", "0014_realm_emoji_url_length"),
+    ("zerver", "0015_attachment"),
+    ("zerver", "0016_realm_create_stream_by_admins_only"),
+    ("zerver", "0017_userprofile_bot_type"),
+    ("zerver", "0018_realm_emoji_message"),
+    ("zerver", "0019_preregistrationuser_realm_creation"),
+    ("zerver", "0020_add_tracking_attachment"),
+    ("zerver", "0021_migrate_attachment_data"),
+    ("zerver", "0022_subscription_pin_to_top"),
+    ("zerver", "0023_userprofile_default_language"),
+    ("zerver", "0024_realm_allow_message_editing"),
+    ("zerver", "0025_realm_message_content_edit_limit"),
+    ("zerver", "0026_delete_mituser"),
+    ("zerver", "0027_realm_default_language"),
+    ("zerver", "0028_userprofile_tos_version"),
+    # This migration was in python-social-auth, and was mistakenly removed
+    # from its `replaces` in
+    # https://github.com/python-social-auth/social-app-django/pull/25
+    ("default", "0005_auto_20160727_2333"),
+    # This was a typo (twofactor for two_factor) corrected in
+    # https://github.com/jazzband/django-two-factor-auth/pull/642
+    ("twofactor", "0001_squashed_0008_delete_phonedevice"),
+]
+
 
 def get_migration_status(**options: Any) -> str:
     from django.apps import apps
