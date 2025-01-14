@@ -95,11 +95,11 @@
     .user-profile-manage-own-edit-button,
     .user-profile-manage-others-edit-button,
     .user-profile-manage-own-copy-link-button {
-        color:  #002652b2;
+        color: rgba(0, 38, 82, 0.699);
         cursor: pointer;
         
         &:hover {
-            color:#0071bd;
+            color: rgb(0, 113, 189);
         }
     }
 }
