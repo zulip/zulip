@@ -358,15 +358,28 @@ class ExportFile(ZulipTestCase):
         # This function asserts that the generated migration_status.json
         # is structurally familiar for it to be used for assertion at
         # import_realm.py. Hence, it doesn't really matter if the individual
-        # apps' migrations in migration_status.json fixture are outdated.
+        # apps' migrations in migration_status.json fixture are outdated as
+        # long as they have the same format.
         exported: MigrationStatusJson = read_json("migration_status.json")
-        fixture: MigrationStatusJson = orjson.loads(
-            self.fixture_data("migration_status.json", "import_fixtures")
+
+        applied_migrations_fixtures = os.listdir(
+            self.fixture_file_name("", "import_fixtures/applied_migrations_fixtures")
         )
-        for app, migrations in fixture["migrations_by_app"].items():
-            self.assertTrue(
-                set(migrations).issubset(set(exported["migrations_by_app"].get(app, []))),
-            )
+
+        for fixture in applied_migrations_fixtures:
+            migration_by_app: AppMigrations = self.get_applied_migrations_fixture(fixture)
+            with self.subTest(migration_fixture=fixture):
+                self.assertTrue(
+                    set(migration_by_app).issubset(set(exported["migrations_by_app"])),
+                    f"""
+                    Please make sure the `{fixture}` fixture represents the actual
+                    `migration_status.json` file. If the format for the same migration
+                    status differs, this fixture is probably stale and needs
+                    updating.
+
+                    If this variation is needed for testing purposes feel free to
+                    exempt the fixture from this test.""",
+                )
 
 
 class RealmImportExportTest(ExportFile):
