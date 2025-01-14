@@ -647,9 +647,12 @@ ul.popover-group-menu-member-list {
                         padding-right: 10px;
                     }
 
-                    &.remove_subscription,
+                    &.remove_subscription {
+                        float: right;
+                    }
+
                     &.remove_member {
-                        text-align: right;
+                        float: right;
                     }
                 }
             }
