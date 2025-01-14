@@ -130,23 +130,20 @@ def zulip_default_context(request: HttpRequest) -> dict[str, Any]:
 
     skip_footer = False
     register_link_disabled = settings.REGISTER_LINK_DISABLED
-    login_link_disabled = settings.LOGIN_LINK_DISABLED
-    find_team_link_disabled = settings.FIND_TEAM_LINK_DISABLED
     allow_search_engine_indexing = False
+    non_realm_specific_page = False
 
     if (
         settings.ROOT_DOMAIN_LANDING_PAGE
         and get_subdomain(request) == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
     ):
         register_link_disabled = True
-        login_link_disabled = True
-        find_team_link_disabled = False
         allow_search_engine_indexing = True
+        non_realm_specific_page = True
     elif realm is None:
         register_link_disabled = True
-        login_link_disabled = True
-        find_team_link_disabled = False
         skip_footer = True
+        non_realm_specific_page = True
 
     apps_page_web = settings.ROOT_DOMAIN_URI + "/accounts/go/"
 
@@ -177,7 +174,6 @@ def zulip_default_context(request: HttpRequest) -> dict[str, Any]:
         "root_domain_landing_page": settings.ROOT_DOMAIN_LANDING_PAGE,
         "custom_logo_url": settings.CUSTOM_LOGO_URL,
         "register_link_disabled": register_link_disabled,
-        "login_link_disabled": login_link_disabled,
         "terms_of_service": settings.TERMS_OF_SERVICE_VERSION is not None,
         "login_url": settings.HOME_NOT_LOGGED_IN,
         "only_sso": settings.ONLY_SSO,
@@ -193,7 +189,6 @@ def zulip_default_context(request: HttpRequest) -> dict[str, Any]:
         "development_environment": settings.DEVELOPMENT,
         "support_email": support_email,
         "support_email_html_tag": support_email_html_tag,
-        "find_team_link_disabled": find_team_link_disabled,
         "password_min_length": settings.PASSWORD_MIN_LENGTH,
         "password_max_length": settings.PASSWORD_MAX_LENGTH,
         "password_min_guesses": settings.PASSWORD_MIN_GUESSES,
@@ -209,6 +204,7 @@ def zulip_default_context(request: HttpRequest) -> dict[str, Any]:
         "skip_footer": skip_footer,
         "default_page_params": default_page_params,
         "corporate_enabled": corporate_enabled,
+        "non_realm_specific_page": non_realm_specific_page,
     }
 
     if settings.SENTRY_FRONTEND_DSN is not None:
