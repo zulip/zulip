@@ -2070,8 +2070,8 @@ class RealmImportExportTest(ExportFile):
         with (
             self.assertRaises(Exception) as e,
             self.assertLogs(level="INFO"),
-            patch("zerver.lib.export.get_migrations_by_app") as mock_export,
-            patch("zerver.lib.import_realm.get_migrations_by_app") as mock_import,
+            patch("zerver.lib.export.parse_migration_status") as mock_export,
+            patch("zerver.lib.import_realm.parse_migration_status") as mock_import,
         ):
             mock_export.return_value = self.get_applied_migrations_fixture(
                 "with_unapplied_migrations.json"
@@ -2096,8 +2096,8 @@ class RealmImportExportTest(ExportFile):
         with (
             self.assertRaises(Exception) as e,
             self.assertLogs(level="INFO"),
-            patch("zerver.lib.export.get_migrations_by_app") as mock_export,
-            patch("zerver.lib.import_realm.get_migrations_by_app") as mock_import,
+            patch("zerver.lib.export.parse_migration_status") as mock_export,
+            patch("zerver.lib.import_realm.parse_migration_status") as mock_import,
         ):
             mock_export.return_value = self.get_applied_migrations_fixture(
                 "with_complete_migrations.json"
@@ -2121,8 +2121,8 @@ class RealmImportExportTest(ExportFile):
         with (
             self.settings(BILLING_ENABLED=False),
             self.assertLogs(level="WARNING") as mock_log,
-            patch("zerver.lib.export.get_migrations_by_app") as mock_export,
-            patch("zerver.lib.import_realm.get_migrations_by_app") as mock_import,
+            patch("zerver.lib.export.parse_migration_status") as mock_export,
+            patch("zerver.lib.import_realm.parse_migration_status") as mock_import,
         ):
             mock_export.return_value = self.get_applied_migrations_fixture(
                 "with_complete_migrations.json"
@@ -2148,8 +2148,8 @@ class RealmImportExportTest(ExportFile):
         with (
             self.settings(BILLING_ENABLED=False),
             self.assertLogs(level="WARNING") as mock_log,
-            patch("zerver.lib.export.get_migrations_by_app") as mock_export,
-            patch("zerver.lib.import_realm.get_migrations_by_app") as mock_import,
+            patch("zerver.lib.export.parse_migration_status") as mock_export,
+            patch("zerver.lib.import_realm.parse_migration_status") as mock_import,
         ):
             mock_export.return_value = self.get_applied_migrations_fixture("with_missing_apps.json")
             mock_import.return_value = self.get_applied_migrations_fixture(
@@ -2178,8 +2178,8 @@ class RealmImportExportTest(ExportFile):
         with (
             self.settings(BILLING_ENABLED=False),
             self.assertLogs(level="INFO"),
-            patch("zerver.lib.export.get_migrations_by_app") as mock_export,
-            patch("zerver.lib.import_realm.get_migrations_by_app") as mock_import,
+            patch("zerver.lib.export.parse_migration_status") as mock_export,
+            patch("zerver.lib.import_realm.parse_migration_status") as mock_import,
         ):
             mock_export.return_value = self.get_applied_migrations_fixture(
                 "with_complete_migrations.json"
@@ -2240,8 +2240,8 @@ class RealmImportExportTest(ExportFile):
         realm = get_realm("zulip")
         with (
             self.assertLogs(level="INFO"),
-            patch("zerver.lib.export.get_migrations_by_app") as mock_export,
-            patch("zerver.lib.import_realm.get_migrations_by_app") as mock_import,
+            patch("zerver.lib.export.parse_migration_status") as mock_export,
+            patch("zerver.lib.import_realm.parse_migration_status") as mock_import,
         ):
             mock_export.return_value = self.get_applied_migrations_fixture(
                 "with_unsorted_migrations_list.json"
