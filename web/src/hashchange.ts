@@ -562,9 +562,8 @@ export function initialize(): void {
     hashchanged(true);
 
     $("body").on("click", "a", function (this: HTMLAnchorElement, e: JQuery.ClickEvent) {
-        const href = this.href;
-        if (href === window.location.hash && href.includes("/near/")) {
-            // The clicked on a link, perhaps a "said" reference, that
+        if (this.hash === window.location.hash && this.hash.includes("/near/")) {
+            // User clicked on a link, perhaps a "said" reference, that
             // matches the current view. Such a click doesn't trigger
             // a hashchange event, so we manually trigger one in order
             // to ensure the app scrolls to the correct message.
