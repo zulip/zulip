@@ -7730,7 +7730,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             support_type=SupportType.delete_fixed_price_next_plan,
         )
         success_message = billing_session.process_support_view_request(support_request)
-        self.assertEqual(success_message, "Fixed price offer deleted")
+        self.assertEqual(success_message, "Fixed-price plan offer deleted")
         result = self.client_get("/activity/remote/support", {"q": "example.com"})
         self.assert_not_in_success_response(["Next plan information:"], result)
         self.assert_in_success_response(
