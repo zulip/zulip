@@ -417,7 +417,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                 self.assertIn(
                     function_schema_type,
                     (int, bool),
-                    f'\nUnexpected content type {actual_param_schema["contentMediaType"]} on function parameter {actual_param.param_name}, which does not match the OpenAPI definition.',
+                    f"\nUnexpected content type {actual_param_schema['contentMediaType']} on function parameter {actual_param.param_name}, which does not match the OpenAPI definition.",
                 )
             function_params.add(
                 (actual_param.request_var_name, schema_type(actual_param_schema, defs_mapping))

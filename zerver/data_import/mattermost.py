@@ -339,7 +339,7 @@ def process_message_attachments(
         attachment_full_path = os.path.join(mattermost_data_dir, "data", attachment_path)
 
         file_name = attachment_path.split("/")[-1]
-        file_ext = f'.{file_name.split(".")[-1]}'
+        file_ext = f".{file_name.split('.')[-1]}"
 
         if file_ext.lower() in IMAGE_EXTENSIONS:
             has_image = True

@@ -235,9 +235,9 @@ def remote_realm_billing_finalize_login(
     user_email = user_dict["user_email"]
     user_uuid = user_dict["user_uuid"]
 
-    assert (
-        settings.TERMS_OF_SERVICE_VERSION is not None
-    ), "This is only run on the bouncer, which has ToS"
+    assert settings.TERMS_OF_SERVICE_VERSION is not None, (
+        "This is only run on the bouncer, which has ToS"
+    )
 
     try:
         remote_user = RemoteRealmBillingUser.objects.get(

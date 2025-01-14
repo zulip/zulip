@@ -555,9 +555,7 @@ class EditMessageTest(ZulipTestCase):
             content="content before edit, line 1\n\ncontent before edit, line 3",
         )
         new_content_2 = (
-            "content before edit, line 1\n"
-            "content after edit, line 2\n"
-            "content before edit, line 3"
+            "content before edit, line 1\ncontent after edit, line 2\ncontent before edit, line 3"
         )
         result_2 = self.client_patch(
             f"/json/messages/{msg_id_2}",

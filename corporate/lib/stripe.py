@@ -347,7 +347,7 @@ def get_idempotency_key(ledger_entry: LicenseLedger) -> str | None:
 
 
 def cents_to_dollar_string(cents: int) -> str:
-    return f"{cents / 100.:,.2f}"
+    return f"{cents / 100.0:,.2f}"
 
 
 # Should only be called if the customer is being charged automatically

@@ -438,8 +438,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
         with patch("zerver.models.Recipient.label", return_value="recip"):
             self.assertEqual(
                 repr(message),
-                "<Message: recip /  / "
-                f"<UserProfile: {user_profile.email} {user_profile.realm!r}>>",
+                f"<Message: recip /  / <UserProfile: {user_profile.email} {user_profile.realm!r}>>",
             )
 
             user_message = most_recent_usermessage(user_profile)
