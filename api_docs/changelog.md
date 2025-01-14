@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 340**
+
+[`PATCH /user_groups/{user_group_id}`](/api/update-user-group): All
+the permission settings and description can now be updated for
+deactivated groups.
+
 **Feature level 339**
 
 * [`GET /events`](/api/get-events): Added `user` field back in

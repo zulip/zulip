@@ -861,7 +861,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         do_deactivate_user_group(user_group, acting_user=None)
         params = {"description": "Troubleshooting and support team"}
         result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
-        self.assert_json_error(result, "You can only change name of deactivated user groups")
+        self.assert_json_success(result)
+        user_group = NamedUserGroup.objects.get(id=user_group.id)
+        self.assertEqual(user_group.description, "Troubleshooting and support team")
 
         params = {"name": "Support team"}
         result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
@@ -1028,9 +1030,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_error(result, "User group is deactivated.")
 
-        params[setting_name] = orjson.dumps({"new": moderators_group.id}).decode()
+        params[setting_name] = orjson.dumps({"new": marketing_group.id}).decode()
         result = self.client_patch(f"/json/user_groups/{leadership_group.id}", info=params)
-        self.assert_json_error(result, "You can only change name of deactivated user groups")
+        self.assert_json_success(result)
+        leadership_group = NamedUserGroup.objects.get(realm=hamlet.realm, name="leadership")
+        self.assertEqual(getattr(leadership_group, setting_name).id, marketing_group.id)
 
         leadership_group.deactivated = False
         leadership_group.save()
