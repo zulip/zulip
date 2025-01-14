@@ -50,6 +50,7 @@ class SponsorshipRequestDict(TypedDict):
     org_type: str
     org_website: str
     org_description: str
+    plan_to_use_zulip: str
     total_users: str
     paid_users: str
     paid_users_description: str
@@ -185,6 +186,7 @@ def get_customer_sponsorship_data(customer: Customer) -> SponsorshipData:
                 org_website=website,
                 org_description=last_sponsorship_request.org_description,
                 total_users=last_sponsorship_request.expected_total_users,
+                plan_to_use_zulip=last_sponsorship_request.plan_to_use_zulip,
                 paid_users=last_sponsorship_request.paid_users_count,
                 paid_users_description=last_sponsorship_request.paid_users_description,
                 requested_plan=last_sponsorship_request.requested_plan,

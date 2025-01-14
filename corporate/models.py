@@ -576,6 +576,7 @@ class ZulipSponsorshipRequest(models.Model):
 
     org_description = models.TextField(default="")
     expected_total_users = models.TextField(default="")
+    plan_to_use_zulip = models.TextField(default="")
     paid_users_count = models.TextField(default="")
     paid_users_description = models.TextField(default="")
 
