@@ -4524,6 +4524,16 @@ paths:
                                             boolean setting controlled this permission; `true` corresponded to `Admins`,
                                             and `false` to `Everyone`.
                                         - $ref: "#/components/schemas/GroupSettingValue"
+                                    can_add_subscribers_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to add subscribers to channels in the organization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 341). Previously, this
+                                            permission was controlled by the enum `invite_to_stream_policy`. Values
+                                            were 1=Members, 2=Admins, 3=Full members, 4=Moderators.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_delete_any_message_group:
                                       allOf:
                                         - description: |
@@ -16579,6 +16589,16 @@ paths:
                               Before Zulip 5.0 (feature level 85), the `realm_add_emoji_by_admins_only`
                               boolean setting controlled this permission; `true` corresponded to `Admins`,
                               and `false` to `Everyone`.
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                      realm_can_add_subscribers_group:
+                        allOf:
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to add subscribers to channels in the organization.
+
+                              **Changes**: New in Zulip 10.0 (feature level 341). Previously, this
+                              permission was controlled by the enum `invite_to_stream_policy`. Values
+                              were 1=Members, 2=Admins, 3=Full members, 4=Moderators.
                           - $ref: "#/components/schemas/GroupSettingValue"
                       realm_can_delete_any_message_group:
                         allOf:
