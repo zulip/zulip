@@ -131,6 +131,7 @@ class HomeTest(ZulipTestCase):
         "realm_bots",
         "realm_can_access_all_users_group",
         "realm_can_add_custom_emoji_group",
+        "realm_can_add_subscribers_group",
         "realm_can_create_groups",
         "realm_can_create_private_channel_group",
         "realm_can_create_public_channel_group",

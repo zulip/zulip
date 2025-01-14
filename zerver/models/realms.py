@@ -334,6 +334,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         default=CommonPolicyEnum.MEMBERS_ONLY
     )
 
+    # UserGroup which is allowed to add subscribers to channels.
+    can_add_subscribers_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # UserGroup which is allowed to move messages between streams.
     can_move_messages_between_channels_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
@@ -682,6 +687,13 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
             allowed_system_groups=[SystemGroups.EVERYONE, SystemGroups.MEMBERS],
+        ),
+        can_add_subscribers_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.MEMBERS,
         ),
         can_add_custom_emoji_group=GroupPermissionSetting(
             require_system_group=False,
@@ -1171,6 +1183,8 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "can_access_all_users_group__named_user_group",
         "can_add_custom_emoji_group",
         "can_add_custom_emoji_group__named_user_group",
+        "can_add_subscribers_group",
+        "can_add_subscribers_group__named_user_group",
         "can_create_groups",
         "can_create_groups__named_user_group",
         "can_create_public_channel_group",

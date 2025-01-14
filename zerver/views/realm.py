@@ -104,6 +104,7 @@ def update_realm(
     inline_image_preview: Json[bool] | None = None,
     inline_url_embed_preview: Json[bool] | None = None,
     can_add_custom_emoji_group: Json[GroupSettingChangeRequest] | None = None,
+    can_add_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_delete_any_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_delete_own_message_group: Json[GroupSettingChangeRequest] | None = None,
     message_content_delete_limit_seconds_raw: Annotated[
