@@ -275,7 +275,7 @@ export function validate_group_settings_hash(hash: string): string {
 
         const group_name = hash_components[2];
         let right_side_tab = hash_components[3];
-        const valid_right_side_tab_values = new Set(["general", "members"]);
+        const valid_right_side_tab_values = new Set(["general", "members", "permissions"]);
         if (
             group.name === group_name &&
             right_side_tab !== undefined &&

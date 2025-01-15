@@ -295,6 +295,18 @@ export function dispatch_normal_event(event) {
                                 }
 
                                 if (
+                                    Object.keys(
+                                        realm.server_supported_permission_settings.realm,
+                                    ).includes(key)
+                                ) {
+                                    const $elem = $(`#id_group_permission_${CSS.escape(key)}`);
+                                    user_group_edit.update_setting_in_group_permissions_panel(
+                                        $elem,
+                                        value,
+                                    );
+                                }
+
+                                if (
                                     key === "create_multiuse_invite_group" ||
                                     key === "can_invite_users_group"
                                 ) {

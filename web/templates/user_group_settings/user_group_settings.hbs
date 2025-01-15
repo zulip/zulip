@@ -43,7 +43,7 @@
                     {{> ../settings/settings_save_discard_widget section_name="group-permissions" }}
                 </div>
 
-                {{> group_permissions prefix="id_" group_setting_labels=group_setting_labels}}
+                {{> group_permissions prefix="id_" group_setting_labels=group_setting_labels.group}}
             </div>
 
             <div class="group_detail_box">
@@ -65,6 +65,18 @@
         <div class="group_member_settings group_setting_section" data-group-section="members">
             <div class="edit_members_for_user_group">
                 {{> user_group_members .}}
+            </div>
+        </div>
+
+        <div class="group_setting_section" data-group-section="permissions">
+            <div class="group-assigned-permissions">
+                {{#if group_has_no_permissions}}
+                    <span class="no-permissions-for-group-text">
+                        {{t 'This group has no assigned permissions.'}}
+                    </span>
+                {{else}}
+                    {{> group_permission_settings .}}
+                {{/if}}
             </div>
         </div>
     </div>

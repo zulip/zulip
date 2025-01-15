@@ -1,6 +1,7 @@
 import Handlebars from "handlebars/runtime.js";
 
 import {page_params} from "./base_page_params.ts";
+import type {RealmGroupSettingName} from "./group_permission_settings.ts";
 import {$t, $t_html} from "./i18n.ts";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults.ts";
 import {realm} from "./state_data.ts";
@@ -701,6 +702,55 @@ export const group_setting_labels = {
         can_remove_members_group: $t({defaultMessage: "Who can remove members from this group"}),
     },
 };
+
+// Order of subsections and its settings is important here as
+// this object is used for rendering the assigned permissions
+// in group permissions panel.
+export const realm_group_permission_settings: {
+    subsection_heading: string;
+    settings: RealmGroupSettingName[];
+}[] = [
+    {
+        subsection_heading: $t({defaultMessage: "Joining the organization"}),
+        settings: ["can_invite_users_group", "create_multiuse_invite_group"],
+    },
+    {
+        subsection_heading: $t({defaultMessage: "Channel permissions"}),
+        settings: [
+            "can_create_public_channel_group",
+            "can_create_web_public_channel_group",
+            "can_create_private_channel_group",
+            "can_add_subscribers_group",
+        ],
+    },
+    {
+        subsection_heading: $t({defaultMessage: "Group permissions"}),
+        settings: ["can_manage_all_groups", "can_create_groups"],
+    },
+    {
+        subsection_heading: $t({defaultMessage: "Direct message permissions"}),
+        settings: ["direct_message_permission_group", "direct_message_initiator_group"],
+    },
+    {
+        subsection_heading: $t({defaultMessage: "Moving messages"}),
+        settings: [
+            "can_move_messages_between_topics_group",
+            "can_move_messages_between_channels_group",
+        ],
+    },
+    {
+        subsection_heading: $t({defaultMessage: "Message deletion"}),
+        settings: ["can_delete_any_message_group", "can_delete_own_message_group"],
+    },
+    {
+        subsection_heading: $t({defaultMessage: "Guests"}),
+        settings: ["can_access_all_users_group"],
+    },
+    {
+        subsection_heading: $t({defaultMessage: "Other permissions"}),
+        settings: ["can_add_custom_emoji_group"],
+    },
+];
 
 // NOTIFICATIONS
 

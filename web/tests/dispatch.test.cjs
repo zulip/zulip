@@ -605,7 +605,13 @@ run_test("realm settings", ({override}) => {
     override(realm, "realm_plan_type", 2);
     override(realm, "realm_upload_quota_mib", 5000);
     override(realm, "max_file_upload_size_mib", 10);
+    override(realm, "server_supported_permission_settings", {
+        realm: {
+            create_multiuse_invite_group: {},
+        },
+    });
     override(settings_org, "populate_auth_methods", noop);
+    override(user_group_edit, "update_setting_in_group_permissions_panel", noop);
     dispatch(event);
     assert_same(realm.realm_create_multiuse_invite_group, 3);
     assert_same(realm.realm_allow_message_editing, true);
