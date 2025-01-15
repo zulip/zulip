@@ -125,6 +125,9 @@ class Stream(models.Model):
     # is referenced by the respective setting. We are not using PROTECT
     # since we want to allow deletion of user groups when the realm
     # itself is deleted.
+    can_add_subscribers_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
     can_administer_channel_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
@@ -144,6 +147,13 @@ class Stream(models.Model):
     is_recently_active = models.BooleanField(default=True, db_default=True)
 
     stream_permission_group_settings = {
+        "can_add_subscribers_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.NOBODY,
+        ),
         "can_administer_channel_group": GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
@@ -205,6 +215,7 @@ class Stream(models.Model):
         "message_retention_days",
         "name",
         "rendered_description",
+        "can_add_subscribers_group_id",
         "can_administer_channel_group_id",
         "can_send_message_group_id",
         "can_remove_subscribers_group_id",
