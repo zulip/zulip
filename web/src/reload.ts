@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
 import * as compose_state from "./compose_state.ts";
 import {csrf_token} from "./csrf.ts";
 import * as drafts from "./drafts.ts";
@@ -16,6 +17,8 @@ import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
+
+let server_reachable_check_failures = 0;
 
 const token_metadata_schema = z.object({url: z.string(), timestamp: z.number()});
 
@@ -200,76 +203,133 @@ export function initiate({
     send_after_reload = false,
     message_html = "Reloading ...",
 }): void {
-    if (immediate) {
-        do_reload_app(send_after_reload, save_compose, message_html);
-    }
-
-    if (reload_state.is_pending() || reload_state.is_in_progress()) {
+    if (reload_state.is_in_progress()) {
+        // If we're already attempting to reload, there's nothing to do.
         return;
     }
-    reload_state.set_state_to_pending();
 
-    // We're now planning to execute a reload of the browser, usually
-    // to get an updated version of the Zulip web app code.  Because in
-    // most cases all browsers will be receiving this notice at the
-    // same or similar times, we need to randomize the time that we do
-    // this in order to avoid a thundering herd overloading the server.
-    //
-    // Additionally, we try to do this reload at a time the user will
-    // not notice.  So completely idle clients will reload first;
-    // those will an open compose box will wait until the message has
-    // been sent (or until it's clear the user isn't likely to send it).
-    //
-    // And then we unconditionally reload sometime after 30 minutes
-    // even if there is continued activity, because we don't support
-    // old JavaScript versions against newer servers and eventually
-    // letting that situation continue will lead to users seeing bugs.
-    //
-    // It's a little odd that how this timeout logic works with
-    // compose box resets including the random variance, but that
-    // makes it simple to reason about: We know that reloads will be
-    // spread over at least 5 minutes in all cases.
-
-    let idle_control: ReturnType<JQuery["idle"]>;
-    const random_variance = util.random_int(0, 1000 * 60 * 5);
-    const unconditional_timeout = 1000 * 60 * 30 + random_variance;
-    const composing_idle_timeout = 1000 * 60 * 7 + random_variance;
-    const basic_idle_timeout = 1000 * 60 * 1 + random_variance;
-
-    function reload_from_idle(): void {
-        do_reload_app(false, save_compose, message_html);
+    if (reload_state.is_pending() && !immediate) {
+        // If we're already pending and the caller is not requesting
+        // an immediate reload, there's nothing to do.
+        return;
     }
 
-    // Make sure we always do a reload eventually after
-    // unconditional_timeout.  Because we save cursor location and
-    // compose state when reloading, we expect this to not be
-    // particularly disruptive.
-    setTimeout(reload_from_idle, unconditional_timeout);
+    // In order to avoid races with the user's device connecting to
+    // the internet due to a network change while the device was
+    // suspended, we fetch a cheap unauthenticated API endpoint and
+    // only initiate the reload if we get a success response from the
+    // server.
+    void channel.get({
+        url: "/compatibility",
+        success() {
+            server_reachable_check_failures = 0;
+            if (immediate) {
+                do_reload_app(send_after_reload, save_compose, message_html);
+                // We don't expect do_reload_app to return, but if it
+                // does, the fallthrough logic seems fine.
+            }
 
-    function compose_done_handler(): void {
-        // If the user sends their message or otherwise closes
-        // compose, we return them to the not-composing timeouts.
-        idle_control.cancel();
-        idle_control = $(document).idle({idle: basic_idle_timeout, onIdle: reload_from_idle});
-        $(document).off("compose_canceled.zulip compose_finished.zulip", compose_done_handler);
-        $(document).on("compose_started.zulip", compose_started_handler);
-    }
-    function compose_started_handler(): void {
-        // If the user stops being idle and starts composing a
-        // message, switch to the compose-open timeouts.
-        idle_control.cancel();
-        idle_control = $(document).idle({idle: composing_idle_timeout, onIdle: reload_from_idle});
-        $(document).off("compose_started.zulip", compose_started_handler);
-        $(document).on("compose_canceled.zulip compose_finished.zulip", compose_done_handler);
-    }
+            if (reload_state.is_pending()) {
+                // If we're already pending, don't set the timers a second time.
+                return;
+            }
 
-    if (compose_state.composing()) {
-        idle_control = $(document).idle({idle: composing_idle_timeout, onIdle: reload_from_idle});
-        $(document).on("compose_canceled.zulip compose_finished.zulip", compose_done_handler);
-    } else {
-        idle_control = $(document).idle({idle: basic_idle_timeout, onIdle: reload_from_idle});
-        $(document).on("compose_started.zulip", compose_started_handler);
-    }
+            reload_state.set_state_to_pending();
+
+            // We're now planning to execute a reload of the browser, usually
+            // to get an updated version of the Zulip web app code.  Because in
+            // most cases all browsers will be receiving this notice at the
+            // same or similar times, we need to randomize the time that we do
+            // this in order to avoid a thundering herd overloading the server.
+            //
+            // Additionally, we try to do this reload at a time the user will
+            // not notice.  So completely idle clients will reload first;
+            // those will an open compose box will wait until the message has
+            // been sent (or until it's clear the user isn't likely to send it).
+            //
+            // And then we unconditionally reload sometime after 30 minutes
+            // even if there is continued activity, because we don't support
+            // old JavaScript versions against newer servers and eventually
+            // letting that situation continue will lead to users seeing bugs.
+            //
+            // It's a little odd that how this timeout logic works with
+            // compose box resets including the random variance, but that
+            // makes it simple to reason about: We know that reloads will be
+            // spread over at least 5 minutes in all cases.
+
+            let idle_control: ReturnType<JQuery["idle"]>;
+            const random_variance = util.random_int(0, 1000 * 60 * 5);
+            const unconditional_timeout = 1000 * 60 * 30 + random_variance;
+            const composing_idle_timeout = 1000 * 60 * 7 + random_variance;
+            const basic_idle_timeout = 1000 * 60 * 1 + random_variance;
+
+            function reload_from_idle(): void {
+                do_reload_app(false, save_compose, message_html);
+            }
+
+            // Make sure we always do a reload eventually after
+            // unconditional_timeout.  Because we save cursor location and
+            // compose state when reloading, we expect this to not be
+            // particularly disruptive.
+            setTimeout(reload_from_idle, unconditional_timeout);
+
+            function compose_done_handler(): void {
+                // If the user sends their message or otherwise closes
+                // compose, we return them to the not-composing timeouts.
+                idle_control.cancel();
+                idle_control = $(document).idle({
+                    idle: basic_idle_timeout,
+                    onIdle: reload_from_idle,
+                });
+                $(document).off(
+                    "compose_canceled.zulip compose_finished.zulip",
+                    compose_done_handler,
+                );
+                $(document).on("compose_started.zulip", compose_started_handler);
+            }
+            function compose_started_handler(): void {
+                // If the user stops being idle and starts composing a
+                // message, switch to the compose-open timeouts.
+                idle_control.cancel();
+                idle_control = $(document).idle({
+                    idle: composing_idle_timeout,
+                    onIdle: reload_from_idle,
+                });
+                $(document).off("compose_started.zulip", compose_started_handler);
+                $(document).on(
+                    "compose_canceled.zulip compose_finished.zulip",
+                    compose_done_handler,
+                );
+            }
+
+            if (compose_state.composing()) {
+                idle_control = $(document).idle({
+                    idle: composing_idle_timeout,
+                    onIdle: reload_from_idle,
+                });
+                $(document).on(
+                    "compose_canceled.zulip compose_finished.zulip",
+                    compose_done_handler,
+                );
+            } else {
+                idle_control = $(document).idle({
+                    idle: basic_idle_timeout,
+                    onIdle: reload_from_idle,
+                });
+                $(document).on("compose_started.zulip", compose_started_handler);
+            }
+        },
+        error(xhr) {
+            server_reachable_check_failures += 1;
+            const retry_delay_secs = util.get_retry_backoff_seconds(
+                xhr,
+                server_reachable_check_failures,
+            );
+            setTimeout(() => {
+                initiate({immediate, save_compose, send_after_reload, message_html});
+            }, retry_delay_secs * 1000);
+        },
+    });
 }
 
 window.addEventListener("beforeunload", () => {
