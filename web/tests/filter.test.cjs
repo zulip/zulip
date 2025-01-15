@@ -1414,8 +1414,17 @@ test("parse", () => {
 
     string = `channel: ${foo_stream_id} topic: "separated with space"`;
     terms = [
-        {operator: "channel", operand: foo_stream_id.toString()},
-        {operator: "topic", operand: "separated with space"},
+        {operator: "channel", operand: ""},
+        {operator: "search", operand: foo_stream_id.toString()},
+        {operator: "topic", operand: ""},
+        {operator: "search", operand: '"separated with space"'},
+    ];
+    _test();
+
+    string = `topic: is:starred`;
+    terms = [
+        {operator: "topic", operand: ""},
+        {operator: "is", operand: "starred"},
     ];
     _test();
 });
@@ -1478,18 +1487,18 @@ test("unparse", () => {
     assert_same_terms(Filter.parse(string), terms);
 });
 
-test("describe", ({mock_template}) => {
+test("describe", ({mock_template, override}) => {
     let narrow;
     let string;
     mock_template("search_description.hbs", true, (_data, html) => html);
 
     narrow = [{operator: "channels", operand: "public"}];
     string = "channels public";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "channels", operand: "public", negated: true}];
     string = "exclude channels public";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     const devel_id = new_stream_id();
     make_sub("devel", devel_id);
@@ -1499,7 +1508,7 @@ test("describe", ({mock_template}) => {
         {operator: "is", operand: "starred"},
     ];
     string = "channel devel, starred messages";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     const river_id = new_stream_id();
     make_sub("river", river_id);
@@ -1508,100 +1517,100 @@ test("describe", ({mock_template}) => {
         {operator: "is", operand: "unread"},
     ];
     string = "channel river, unread messages";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
         {operator: "channel", operand: devel_id.toString()},
         {operator: "topic", operand: "JS"},
     ];
     string = "channel devel > JS";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
         {operator: "is", operand: "dm"},
         {operator: "search", operand: "lunch"},
     ];
     string = "direct messages, search for lunch";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "id", operand: 99}];
     string = "message ID 99";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "in", operand: "home"}];
     string = "messages in home";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "is", operand: "mentioned"}];
     string = "@-mentions";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "is", operand: "alerted"}];
     string = "alerted messages";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "is", operand: "resolved"}];
     string = "topics marked as resolved";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "is", operand: "followed"}];
     string = "followed topics";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "is", operand: "something_we_do_not_support"}];
     string = "invalid something_we_do_not_support operand for is operator";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     // this should be unreachable, but just in case
     narrow = [{operator: "bogus", operand: "foo"}];
     string = "unknown operator";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
         {operator: "channel", operand: devel_id.toString()},
         {operator: "topic", operand: "JS", negated: true},
     ];
     string = "channel devel, exclude topic JS";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
         {operator: "is", operand: "dm"},
         {operator: "search", operand: "lunch", negated: true},
     ];
     string = "direct messages, exclude lunch";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
         {operator: "channel", operand: devel_id.toString()},
         {operator: "is", operand: "starred", negated: true},
     ];
     string = "channel devel, exclude starred messages";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
         {operator: "channel", operand: devel_id.toString()},
         {operator: "has", operand: "image", negated: true},
     ];
     string = "channel devel, exclude messages with images";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
         {operator: "has", operand: "abc", negated: true},
         {operator: "channel", operand: devel_id.toString()},
     ];
     string = "invalid abc operand for has operator, channel devel";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
         {operator: "has", operand: "image", negated: true},
         {operator: "channel", operand: devel_id.toString()},
     ];
     string = "exclude messages with images, channel devel";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [];
     string = "combined feed";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     // canonical version of the operator is used in description
     narrow = [
@@ -1609,7 +1618,32 @@ test("describe", ({mock_template}) => {
         {operator: "subject", operand: "JS", negated: true},
     ];
     string = "channel devel, exclude topic JS";
-    assert.equal(Filter.search_description_as_html(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    // Empty string topic involved.
+    override(realm, "realm_empty_topic_display_name", "general chat");
+    narrow = [
+        {operator: "channel", operand: devel_id.toString()},
+        {operator: "topic", operand: ""},
+    ];
+    string = 'channel devel > <span class="empty-topic-display">translated: general chat</span>';
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    narrow = [
+        {operator: "topic", operand: ""},
+        {operator: "is", operand: "starred"},
+    ];
+    string =
+        'topic <span class="empty-topic-display">translated: general chat</span>, starred messages';
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    narrow = [{operator: "topic", operand: ""}];
+    string = `topic <span class="empty-topic-display">translated: general chat</span>`;
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    narrow = [{operator: "topic", operand: ""}];
+    string = "topic ";
+    assert.equal(Filter.search_description_as_html(narrow, true), string);
 });
 
 test("can_bucket_by", () => {
@@ -1807,23 +1841,23 @@ test("is_valid_search_term", () => {
     stream_data.add_sub(denmark);
 
     const test_data = [
-        ["has: image", true],
-        ["has: nonsense", false],
-        ["is: unread", true],
-        ["is: nonsense", false],
-        ["in: home", true],
-        ["in: nowhere", false],
-        ["id: 4", true],
-        ["near: home", false],
-        ["channel: " + denmark.stream_id, true],
-        [`channel: ${invalid_sub_id}`, false],
-        ["channels: public", true],
-        ["channels: private", false],
-        ["topic: GhostTown", true],
-        ["dm-including: alice@example.com", true],
-        ["sender: ghost@zulip.com", false],
-        ["dm: alice@example.com,ghost@example.com", false],
-        ["dm: alice@example.com,joe@example.com", true],
+        ["has:image", true],
+        ["has:nonsense", false],
+        ["is:unread", true],
+        ["is:nonsense", false],
+        ["in:home", true],
+        ["in:nowhere", false],
+        ["id:4", true],
+        ["near:home", false],
+        ["channel:" + denmark.stream_id, true],
+        [`channel:${invalid_sub_id}`, false],
+        ["channels:public", true],
+        ["channels:private", false],
+        ["topic:GhostTown", true],
+        ["dm-including:alice@example.com", true],
+        ["sender:ghost@zulip.com", false],
+        ["dm:alice@example.com,ghost@example.com", false],
+        ["dm:alice@example.com,joe@example.com", true],
     ];
     for (const [search_term_string, expected_is_valid] of test_data) {
         assert.equal(

@@ -1037,10 +1037,4 @@ test("queries_with_spaces", () => {
     suggestions = get_suggestions(query);
     expected = [`channel:${dev_help_id}`];
     assert.deepEqual(suggestions.strings, expected);
-
-    // test extra space after operator still works
-    query = "channel: offi";
-    suggestions = get_suggestions(query);
-    expected = [`channel:${office_id}`];
-    assert.deepEqual(suggestions.strings, expected);
 });
