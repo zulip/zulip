@@ -353,15 +353,6 @@ ul.popover-group-menu-member-list {
     line-height: 1;
 }
 
-.bot-owner-name {
-    text-decoration: underline;
-
-    &:hover {
-        cursor: pointer;
-        color: hsl(200deg 100% 40%);
-    }
-}
-
 .popover-avatar {
     height: 240px;
     width: 240px;
