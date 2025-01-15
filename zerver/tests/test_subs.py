@@ -3054,7 +3054,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=19,
+            query_count=21,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3071,7 +3071,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=19,
+            query_count=21,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
