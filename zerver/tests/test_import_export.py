@@ -44,15 +44,9 @@ from zerver.lib import upload
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.bot_lib import StateHandler
-from zerver.lib.export import (
-    AppMigrations,
-    MigrationStatusJson,
-    Record,
-    do_export_realm,
-    do_export_user,
-    export_usermessages_batch,
-)
+from zerver.lib.export import Record, do_export_realm, do_export_user, export_usermessages_batch
 from zerver.lib.import_realm import do_import_realm, get_incoming_message_ids
+from zerver.lib.migration_status import STALE_MIGRATIONS, AppMigrations, MigrationStatusJson
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -380,6 +374,15 @@ class ExportFile(ZulipTestCase):
                     If this variation is needed for testing purposes feel free to
                     exempt the fixture from this test.""",
                 )
+
+        # Make sure export doesn't produce a migration_status.json with stale
+        # migrations.
+        stale_migrations = []
+        for app, stale_migration in STALE_MIGRATIONS:
+            installed_app = exported["migrations_by_app"].get(app)
+            if installed_app:
+                stale_migrations = [mig for mig in installed_app if mig.endswith(stale_migration)]
+        self.assert_length(stale_migrations, 0)
 
 
 class RealmImportExportTest(ExportFile):
@@ -2251,6 +2254,20 @@ class RealmImportExportTest(ExportFile):
                 export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
             )
             do_import_realm(get_output_dir(), "test-zulip")
+
+    def test_clean_up_migration_status_json(self) -> None:
+        user = self.example_user("hamlet")
+        with (
+            patch("zerver.lib.export.get_migration_status") as mock_export,
+        ):
+            mock_export.return_value = self.fixture_data(
+                "with_stale_migrations.txt", "import_fixtures/showmigrations_fixtures"
+            )
+
+            realm = user.realm
+        self.export_realm_and_create_auditlog(realm)
+
+        self.verify_migration_status_json()
 
 
 class SingleUserExportTest(ExportFile):
