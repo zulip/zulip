@@ -21061,7 +21061,8 @@ paths:
       summary: Update a user group
       tags: ["users"]
       description: |
-        Update the name or description of a [user group](/help/user-groups).
+        Update the name, description or any of the permission settings
+        of a [user group](/help/user-groups).
       parameters:
         - $ref: "#/components/parameters/UserGroupId"
       requestBody:
