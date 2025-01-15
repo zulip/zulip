@@ -75,7 +75,7 @@ export function get_active_or_idle_user_ids(): number[] {
         .map((entry) => entry[0]);
 }
 
-export function status_from_raw(raw: RawPresence): PresenceStatus {
+export function status_from_raw(raw: RawPresence, user_id: number): PresenceStatus {
     /*
         Example of `raw`:
 
@@ -116,7 +116,9 @@ export function status_from_raw(raw: RawPresence): PresenceStatus {
     }
 
     if (age(idle_timestamp) < offline_threshold_secs) {
-        last_active = idle_timestamp;
+        // idle_timestamp >= active_timestamp usually, but it's
+        // harmless to just take the maximum for readability.
+        last_active = Math.max(active_timestamp ?? 0, idle_timestamp ?? 0);
         return {
             status: "idle",
             last_active,
@@ -124,14 +126,19 @@ export function status_from_raw(raw: RawPresence): PresenceStatus {
     }
 
     /*
-        We always want to prioritize the last time the user
-        was active 'active_timestamp' to be displayed in the
-        popover. This since it is the most relevant information
-        for other users and matches the formatting of the string
-        in the popover.
+        We always want to prioritize the last time the user was active
+        'active_timestamp' to be displayed in the popover. This since
+        it is the most relevant information for other users and
+        matches the formatting of the string in the popover. For users
+        who've never logged in, we fall back to when they joined.
     */
 
-    last_active = active_timestamp ?? idle_timestamp;
+    const user = people.get_by_user_id(user_id);
+    let date_joined_timestamp = 0;
+    if (user?.date_joined) {
+        date_joined_timestamp = new Date(user.date_joined).getTime() / 1000;
+    }
+    last_active = Math.max(active_timestamp ?? 0, date_joined_timestamp);
 
     return {
         status: "offline",
@@ -182,7 +189,7 @@ export function update_info_from_event(
 
     raw_info.set(user_id, raw);
 
-    const status = status_from_raw(raw);
+    const status = status_from_raw(raw, user_id);
     presence_info.set(user_id, status);
 }
 
@@ -249,7 +256,7 @@ export function set_info(
 
         raw_info.set(user_id, raw);
 
-        const status = status_from_raw(raw);
+        const status = status_from_raw(raw, user_id);
         presence_info.set(user_id, status);
     }
     for (const user_id of all_active_or_idle_user_ids) {
