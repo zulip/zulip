@@ -153,6 +153,7 @@ class RawStreamDict(TypedDict):
     are needed to encode the stream for the API.
     """
 
+    can_add_subscribers_group_id: int
     can_administer_channel_group_id: int
     can_send_message_group_id: int
     can_remove_subscribers_group_id: int
@@ -197,6 +198,7 @@ class SubscriptionStreamDict(TypedDict):
     """
 
     audible_notifications: bool | None
+    can_add_subscribers_group: int | AnonymousSettingGroupDict
     can_administer_channel_group: int | AnonymousSettingGroupDict
     can_send_message_group: int | AnonymousSettingGroupDict
     can_remove_subscribers_group: int | AnonymousSettingGroupDict
@@ -229,6 +231,7 @@ class SubscriptionStreamDict(TypedDict):
 
 class NeverSubscribedStreamDict(TypedDict):
     is_archived: bool
+    can_add_subscribers_group: int | AnonymousSettingGroupDict
     can_administer_channel_group: int | AnonymousSettingGroupDict
     can_send_message_group: int | AnonymousSettingGroupDict
     can_remove_subscribers_group: int | AnonymousSettingGroupDict
@@ -257,6 +260,7 @@ class DefaultStreamDict(TypedDict):
     """
 
     is_archived: bool
+    can_add_subscribers_group: int | AnonymousSettingGroupDict
     can_administer_channel_group: int | AnonymousSettingGroupDict
     can_send_message_group: int | AnonymousSettingGroupDict
     can_remove_subscribers_group: int | AnonymousSettingGroupDict

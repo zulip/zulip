@@ -78,6 +78,7 @@ class StreamDict(TypedDict, total=False):
     stream_post_policy: int
     history_public_to_subscribers: bool | None
     message_retention_days: int | None
+    can_add_subscribers_group: UserGroup | None
     can_administer_channel_group: UserGroup | None
     can_send_message_group: UserGroup | None
     can_remove_subscribers_group: UserGroup | None
@@ -186,6 +187,7 @@ def create_stream_if_needed(
     history_public_to_subscribers: bool | None = None,
     stream_description: str = "",
     message_retention_days: int | None = None,
+    can_add_subscribers_group: UserGroup | None = None,
     can_administer_channel_group: UserGroup | None = None,
     can_send_message_group: UserGroup | None = None,
     can_remove_subscribers_group: UserGroup | None = None,
@@ -288,6 +290,7 @@ def create_streams_if_needed(
             history_public_to_subscribers=stream_dict.get("history_public_to_subscribers"),
             stream_description=stream_dict.get("description", ""),
             message_retention_days=stream_dict.get("message_retention_days", None),
+            can_add_subscribers_group=stream_dict.get("can_add_subscribers_group", None),
             can_administer_channel_group=stream_dict.get("can_administer_channel_group", None),
             can_send_message_group=stream_dict.get("can_send_message_group", None),
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
@@ -1029,10 +1032,14 @@ def stream_to_dict(
         stream_weekly_traffic = None
 
     if setting_groups_dict is not None:
+        can_add_subscribers_group = setting_groups_dict[stream.can_add_subscribers_group_id]
         can_administer_channel_group = setting_groups_dict[stream.can_administer_channel_group_id]
         can_send_message_group = setting_groups_dict[stream.can_send_message_group_id]
         can_remove_subscribers_group = setting_groups_dict[stream.can_remove_subscribers_group_id]
     else:
+        can_add_subscribers_group = get_group_setting_value_for_api(
+            stream.can_add_subscribers_group
+        )
         can_administer_channel_group = get_group_setting_value_for_api(
             stream.can_administer_channel_group
         )
@@ -1047,6 +1054,7 @@ def stream_to_dict(
 
     return APIStreamDict(
         is_archived=stream.deactivated,
+        can_add_subscribers_group=can_add_subscribers_group,
         can_administer_channel_group=can_administer_channel_group,
         can_send_message_group=can_send_message_group,
         can_remove_subscribers_group=can_remove_subscribers_group,
