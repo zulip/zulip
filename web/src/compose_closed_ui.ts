@@ -1,7 +1,9 @@
 import $ from "jquery";
 
+import render_reply_recipient_label from "../templates/reply_recipient_label.hbs";
+
 import * as compose_actions from "./compose_actions.ts";
-import {$t, $t_html} from "./i18n.ts";
+import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import * as message_util from "./message_util.ts";
@@ -172,24 +174,14 @@ export function set_standard_text_for_reply_button(): void {
 export function update_reply_recipient_label(message?: ComposeClosedMessage): void {
     const recipient_label = get_recipient_label(message);
     if (recipient_label !== undefined) {
-        if (!recipient_label.has_empty_string_topic) {
-            const recipient_label_text = recipient_label.label_text;
-            set_reply_button_label(
-                $t({defaultMessage: "Message {recipient_label_text}"}, {recipient_label_text}),
-            );
-        } else {
-            const topic_display_name = util.get_final_topic_display_name("");
-            const recipient_label_html = $t_html(
-                {
-                    defaultMessage: "Message <z-recipient-label></z-recipient-label>",
-                },
-                {
-                    "z-recipient-label": () =>
-                        `#${recipient_label.stream_name} > <span class="empty-topic-display">${topic_display_name}</span>`,
-                },
-            );
-            $("#left_bar_compose_reply_button_big").html(recipient_label_html);
-        }
+        const empty_string_topic_display_name = util.get_final_topic_display_name("");
+        const rendered_recipient_label = render_reply_recipient_label({
+            has_empty_string_topic: recipient_label.has_empty_string_topic,
+            channel_name: recipient_label.stream_name,
+            empty_string_topic_display_name,
+            label_text: recipient_label.label_text,
+        });
+        $("#left_bar_compose_reply_button_big").html(rendered_recipient_label);
     } else {
         set_standard_text_for_reply_button();
     }
