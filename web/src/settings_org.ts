@@ -21,9 +21,9 @@ import * as realm_logo from "./realm_logo.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
 import {
     type MessageMoveTimeLimitSetting,
-    type RealmGroupSettingName,
+    type RealmGroupSettingNameSupportingAnonymousGroups,
     type SettingOptionValueWithKey,
-    realm_group_setting_name_schema,
+    realm_group_setting_name_supporting_anonymous_groups_schema,
     realm_setting_property_schema,
     realm_user_settings_default_properties_schema,
     simple_dropdown_realm_settings_schema,
@@ -1269,11 +1269,12 @@ export let initialize_group_setting_widgets = (): void => {
 
         const opts: {
             $pill_container: JQuery;
-            setting_name: RealmGroupSettingName;
+            setting_name: RealmGroupSettingNameSupportingAnonymousGroups;
             pill_update_callback?: () => void;
         } = {
             $pill_container: $(`#id_realm_${CSS.escape(setting_name)}`),
-            setting_name: realm_group_setting_name_schema.parse(setting_name),
+            setting_name:
+                realm_group_setting_name_supporting_anonymous_groups_schema.parse(setting_name),
         };
         if (setting_name === "direct_message_permission_group") {
             opts.pill_update_callback = check_disable_direct_message_initiator_group_widget;

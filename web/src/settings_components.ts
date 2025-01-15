@@ -1621,23 +1621,14 @@ export function create_group_setting_widget({
     return pill_widget;
 }
 
-export const realm_group_setting_name_schema = z.enum([
-    "can_add_custom_emoji_group",
-    "can_add_subscribers_group",
-    "can_create_groups",
-    "can_create_public_channel_group",
-    "can_create_private_channel_group",
-    "can_delete_any_message_group",
-    "can_delete_own_message_group",
-    "can_invite_users_group",
-    "can_manage_all_groups",
-    "can_move_messages_between_channels_group",
-    "can_move_messages_between_topics_group",
-    "create_multiuse_invite_group",
-    "direct_message_initiator_group",
-    "direct_message_permission_group",
-]);
-export type RealmGroupSettingName = z.infer<typeof realm_group_setting_name_schema>;
+export const realm_group_setting_name_supporting_anonymous_groups_schema =
+    group_permission_settings.realm_group_setting_name_schema.exclude([
+        "can_access_all_users_group",
+        "can_create_web_public_channel_group",
+    ]);
+export type RealmGroupSettingNameSupportingAnonymousGroups = z.infer<
+    typeof realm_group_setting_name_supporting_anonymous_groups_schema
+>;
 
 export function create_realm_group_setting_widget({
     $pill_container,
@@ -1645,7 +1636,7 @@ export function create_realm_group_setting_widget({
     pill_update_callback,
 }: {
     $pill_container: JQuery;
-    setting_name: RealmGroupSettingName;
+    setting_name: RealmGroupSettingNameSupportingAnonymousGroups;
     pill_update_callback?: () => void;
 }): void {
     const pill_widget = group_setting_pill.create_pills($pill_container, setting_name, "realm");
