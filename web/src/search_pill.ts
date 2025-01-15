@@ -120,6 +120,13 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
             if (item.type === "search_user") {
                 return render_search_user_pill(item);
             }
+            if (item.operator === "topic" && item.operand === "") {
+                return render_input_pill({
+                    is_empty_string_topic: true,
+                    sign: item.negated ? "-" : "",
+                    topic_display_name: util.get_final_topic_display_name(""),
+                });
+            }
             const display_value = get_search_string_from_item(item);
             return render_input_pill({
                 display_value,
@@ -180,9 +187,20 @@ export function set_search_bar_contents(
         // Instead, we keep the partial pill to the end of the
         // search box as text input, which will update the
         // typeahead to show operand suggestions.
+        // Note: We make a pill for `topic:` as it represents empty string topic
+        // except the case where it suggests `topic` operator.
         if (input.at(-1) === ":" && term.operand === "" && term === search_terms.at(-1)) {
-            partial_pill = input;
-            continue;
+            const is_topic_operator_suggestion = (): boolean => {
+                const is_typeahead_visible = $("#searchbox_form .typeahead").is(":visible");
+                return (
+                    is_typeahead_visible &&
+                    $("#searchbox_form .typeahead-item.active .empty-topic-display").length === 0
+                );
+            };
+            if (term.operator !== "topic" || is_topic_operator_suggestion()) {
+                partial_pill = input;
+                continue;
+            }
         }
 
         if (!Filter.is_valid_search_term(term)) {
@@ -222,6 +240,9 @@ function get_search_operand(item: SearchPill, for_display: boolean): string {
     }
     if (for_display && item.operator === "channel") {
         return stream_data.get_valid_sub_by_id_string(item.operand).name;
+    }
+    if (for_display && item.operator === "topic") {
+        return util.get_final_topic_display_name(item.operand);
     }
     return item.operand;
 }
