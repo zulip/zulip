@@ -16,6 +16,7 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
+import * as util from "./util.ts";
 
 export type UserPillItem = {
     id: number;
@@ -96,9 +97,9 @@ function check_validity(
     return true;
 }
 
-function format_as_suggestion(terms: NarrowTerm[]): Suggestion {
+function format_as_suggestion(terms: NarrowTerm[], is_operator_suggestion = false): Suggestion {
     return {
-        description_html: Filter.search_description_as_html(terms),
+        description_html: Filter.search_description_as_html(terms, is_operator_suggestion),
         search_string: Filter.unparse(terms),
         // TODO: This isn't actually always false. We should
         // treat terms with emails (dm, sender, etc) as `is_people`
@@ -450,7 +451,8 @@ export function get_topic_suggestions_from_candidates({
     // soon as we find enough matches.
     const topics: string[] = [];
     for (const topic of candidate_topics) {
-        if (common.phrase_match(guess, topic)) {
+        const topic_display_name = util.get_final_topic_display_name(topic);
+        if (common.phrase_match(guess, topic_display_name)) {
             topics.push(topic);
             if (topics.length >= max_num_topics) {
                 break;
@@ -847,7 +849,7 @@ function get_operator_suggestions(last: NarrowTerm): Suggestion[] {
             choice = "channel";
         }
         const op = [{operator: choice, operand: "", negated}];
-        return format_as_suggestion(op);
+        return format_as_suggestion(op, true);
     });
 }
 
@@ -870,7 +872,7 @@ function suggestion_search_string(suggestion_line: SuggestionLine): string {
 }
 
 function suggestions_for_current_filter(): SuggestionLine[] {
-    if (narrow_state.stream_id() && narrow_state.topic() !== "") {
+    if (narrow_state.stream_id() && narrow_state.topic() !== undefined) {
         return [
             get_default_suggestion_line([
                 {
