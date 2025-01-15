@@ -804,7 +804,8 @@ export function topic_in_search_results(
     if (keyword === "") {
         return true;
     }
-    const text = (stream_name + " " + topic).toLowerCase();
+    const topic_display_name = util.get_final_topic_display_name(topic);
+    const text = (stream_name + " " + topic_display_name).toLowerCase();
     return typeahead.query_matches_string_in_any_order(keyword, text, " ");
 }
 
