@@ -31,7 +31,6 @@ from zerver.lib.bulk_create import bulk_set_users_or_streams_recipient_fields
 from zerver.lib.export import (
     DATE_FIELDS,
     Field,
-    MigrationStatusJson,
     Path,
     Record,
     TableData,
@@ -41,6 +40,7 @@ from zerver.lib.export import (
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
+from zerver.lib.migration_status import MigrationStatusJson
 from zerver.lib.mime_types import guess_type
 from zerver.lib.partial import partial
 from zerver.lib.push_notifications import sends_notifications_directly
