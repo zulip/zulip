@@ -261,6 +261,7 @@ def update_stream_backend(
     is_web_public: Json[bool] | None = None,
     new_name: str | None = None,
     message_retention_days: Json[str] | Json[int] | None = None,
+    can_add_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_administer_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
@@ -577,6 +578,7 @@ def add_subscriptions_backend(
     is_default_stream: Json[bool] = False,
     history_public_to_subscribers: Json[bool] | None = None,
     message_retention_days: Json[str] | Json[int] = RETENTION_DEFAULT,
+    can_add_subscribers_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_administer_channel_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_send_message_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_remove_subscribers_group: Json[int | AnonymousSettingGroupDict] | None = None,
@@ -638,6 +640,9 @@ def add_subscriptions_backend(
         stream_dict_copy["message_retention_days"] = parse_message_retention_days(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
+        stream_dict_copy["can_add_subscribers_group"] = group_settings_map[
+            "can_add_subscribers_group"
+        ]
         stream_dict_copy["can_administer_channel_group"] = group_settings_map[
             "can_administer_channel_group"
         ]
