@@ -1,5 +1,6 @@
 import re
 from itertools import zip_longest
+from re import Match
 from typing import Any, Literal, TypeAlias, TypedDict, cast
 
 from zerver.lib.types import Validator
@@ -138,8 +139,9 @@ def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
     2. For bold formatting: This maps Slack's '*bold*' to Zulip's '**bold**'
     3. For italic formatting: This maps Slack's '_italic_' to Zulip's '*italic*'
     """
-    for match in re.finditer(regex, text, re.VERBOSE):
-        converted_token = (
+
+    def replace_slack_format(match: Match[str]) -> str:
+        return (
             match.group(1)
             + zulip_keyword
             + match.group(3)
@@ -147,8 +149,8 @@ def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
             + zulip_keyword
             + match.group(6)
         )
-        text = text.replace(match.group(0), converted_token)
-    return text
+
+    return re.sub(regex, replace_slack_format, text, flags=re.VERBOSE)
 
 
 def convert_slack_workspace_mentions(text: str) -> str:
