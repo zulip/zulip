@@ -72,7 +72,7 @@
         & button.user-status-value:focus {
             /* Important is required for generic night them styling to not
                have precedence over this. */
-            color: hsl(200deg 100% 40%) !important;
+            color: var(--color-text-url) !important;
         }
 
         .user-status-value {
