@@ -772,7 +772,8 @@ function filter_should_hide_stream_row({
         return true;
     }
 
-    const text = (sub.name + " " + topic).toLowerCase();
+    const topic_display_name = util.get_final_topic_display_name(topic);
+    const text = (sub.name + " " + topic_display_name).toLowerCase();
 
     if (!row_in_search_results(search_keyword, text)) {
         return true;
