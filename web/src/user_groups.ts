@@ -477,6 +477,25 @@ export function is_user_in_group(
     return false;
 }
 
+export function group_has_permission(setting_value: GroupSettingValue, group_id: number): boolean {
+    if (typeof setting_value === "number") {
+        return setting_value === group_id;
+    }
+
+    const direct_subgroup_ids = setting_value.direct_subgroups;
+    if (direct_subgroup_ids.includes(group_id)) {
+        return true;
+    }
+
+    for (const direct_subgroup_id of direct_subgroup_ids) {
+        if (is_subgroup_of_target_group(direct_subgroup_id, group_id)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 export function is_user_in_any_group(
     user_group_ids: number[],
     user_id: number,

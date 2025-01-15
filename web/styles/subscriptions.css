@@ -293,6 +293,35 @@ h4.user_group_setting_subsection_title {
     opacity: 1;
 }
 
+.group-assigned-permissions {
+    .subsection-header {
+        display: inline;
+
+        h3 {
+            font-size: 1.5em;
+            font-weight: normal;
+            line-height: 1.5;
+            display: inline;
+        }
+    }
+
+    .subsection-settings {
+        margin-top: 10px;
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+    }
+
+    .no-permissions-for-group-text {
+        font-size: 1.5em;
+    }
+
+    .inline {
+        display: inline;
+    }
+}
+
 .user-groups-container,
 .subscriptions-container {
     position: relative;

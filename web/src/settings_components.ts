@@ -10,7 +10,7 @@ import * as blueslip from "./blueslip.ts";
 import * as compose_banner from "./compose_banner.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
-import type {GroupSettingName} from "./group_permission_settings.ts";
+import type {AssignedGroupPermission, GroupSettingName} from "./group_permission_settings.ts";
 import * as group_setting_pill from "./group_setting_pill.ts";
 import {$t} from "./i18n.ts";
 import {
@@ -1767,4 +1767,34 @@ export function set_custom_time_inputs_visibility(
     } else {
         $time_select_elem.parent().find(".custom-time-input-container").hide();
     }
+}
+
+export function get_group_assigned_realm_permissions(group: UserGroup): {
+    subsection_heading: string;
+    assigned_permissions: AssignedGroupPermission[];
+}[] {
+    const group_assigned_realm_permissions = [];
+    for (const {subsection_heading, settings} of settings_config.realm_group_permission_settings) {
+        const assigned_permission_objects = [];
+        for (const setting_name of settings) {
+            const setting_value = realm[realm_schema.keyof().parse("realm_" + setting_name)];
+            const assigned_permission_object =
+                group_permission_settings.get_assigned_permission_object(
+                    group_setting_value_schema.parse(setting_value),
+                    setting_name,
+                    group.id,
+                    current_user.is_admin,
+                );
+            if (assigned_permission_object !== undefined) {
+                assigned_permission_objects.push(assigned_permission_object);
+            }
+        }
+        if (assigned_permission_objects.length > 0) {
+            group_assigned_realm_permissions.push({
+                subsection_heading,
+                assigned_permissions: assigned_permission_objects,
+            });
+        }
+    }
+    return group_assigned_realm_permissions;
 }
