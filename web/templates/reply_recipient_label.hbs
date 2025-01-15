@@ -1,0 +1,10 @@
+{{#tr}}
+    Message <z-recipient-label></z-recipient-label>
+    {{#*inline "z-recipient-label"}}
+        {{#if has_empty_string_topic~}}
+        #{{channel_name}} &gt; <span class="empty-topic-display">{{empty_string_topic_display_name}}</span>
+        {{~else~}}
+        {{label_text}}
+        {{~/if}}
+    {{~/inline}}
+{{/tr}}

@@ -38,8 +38,8 @@ set_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME});
 
 // Helper test function
 function test_reply_label(expected_label) {
-    const label = $("#left_bar_compose_reply_button_big").text();
-    const prepend_text_length = "translated: Message ".length;
+    const label = $("#left_bar_compose_reply_button_big").html();
+    const prepend_text_length = "Message ".length;
     assert.equal(
         label.slice(prepend_text_length),
         expected_label,
@@ -111,10 +111,10 @@ run_test("reply_label", () => {
     );
 
     const expected_labels = [
-        "#first_stream > first_topic",
-        "#first_stream > second_topic",
-        "#second_stream > third_topic",
-        "#second_stream > second_topic",
+        "#first_stream &gt; first_topic",
+        "#first_stream &gt; second_topic",
+        "#second_stream &gt; third_topic",
+        "#second_stream &gt; second_topic",
         "some user",
         "some user, other user",
     ];
@@ -138,7 +138,7 @@ run_test("reply_label", () => {
     list.select_id(list.next());
     const label_html = $("#left_bar_compose_reply_button_big").html();
     assert.equal(
-        `translated HTML: Message #second_stream > <span class="empty-topic-display">translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}</span>`,
+        `Message #second_stream &gt; <span class="empty-topic-display">translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}</span>`,
         label_html,
     );
 });
@@ -154,7 +154,7 @@ run_test("test_custom_message_input", () => {
         stream_id: stream.stream_id,
         topic: "topic test",
     });
-    test_reply_label("#stream test > topic test");
+    test_reply_label("#stream test &gt; topic test");
 });
 
 run_test("empty_narrow", () => {
