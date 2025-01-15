@@ -1,9 +1,10 @@
 import {z} from "zod";
 
+import {$t} from "./i18n.ts";
 import {page_params} from "./page_params.ts";
 import * as settings_config from "./settings_config.ts";
 import {realm} from "./state_data.ts";
-import type {GroupPermissionSetting} from "./state_data.ts";
+import type {GroupPermissionSetting, GroupSettingValue} from "./state_data.ts";
 import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 
@@ -122,4 +123,79 @@ export function get_realm_user_groups_for_dropdown_list_widget(
             unique_id: group.id,
         };
     });
+}
+
+export type AssignedGroupPermission = {
+    setting_name: RealmGroupSettingName;
+    can_edit: boolean;
+    tooltip_message?: string;
+};
+
+export function get_assigned_permission_object(
+    setting_value: GroupSettingValue,
+    setting_name: RealmGroupSettingName,
+    group_id: number,
+    can_edit_settings: boolean,
+): AssignedGroupPermission | undefined {
+    const assigned_permission_object: AssignedGroupPermission = {
+        setting_name,
+        can_edit: can_edit_settings,
+    };
+
+    if (!can_edit_settings) {
+        assigned_permission_object.tooltip_message = $t({
+            defaultMessage: "You are not allowed to remove this permission.",
+        });
+    }
+
+    if (typeof setting_value === "number") {
+        if (setting_value === group_id) {
+            return assigned_permission_object;
+        }
+
+        if (user_groups.is_subgroup_of_target_group(setting_value, group_id)) {
+            if (can_edit_settings) {
+                assigned_permission_object.can_edit = false;
+                const supergroup = user_groups.get_user_group_from_id(setting_value);
+                assigned_permission_object.tooltip_message = $t(
+                    {
+                        defaultMessage:
+                            "This group has this permission because it's a subgroup of {supergroup_name}.",
+                    },
+                    {
+                        supergroup_name: user_groups.get_display_group_name(supergroup.name),
+                    },
+                );
+            }
+            return assigned_permission_object;
+        }
+
+        return undefined;
+    }
+
+    const direct_subgroup_ids = setting_value.direct_subgroups;
+    if (direct_subgroup_ids.includes(group_id)) {
+        return assigned_permission_object;
+    }
+
+    for (const direct_subgroup_id of direct_subgroup_ids) {
+        if (user_groups.is_subgroup_of_target_group(direct_subgroup_id, group_id)) {
+            if (can_edit_settings) {
+                assigned_permission_object.can_edit = false;
+                const supergroup = user_groups.get_user_group_from_id(direct_subgroup_id);
+                assigned_permission_object.tooltip_message = $t(
+                    {
+                        defaultMessage:
+                            "This group has this permission because it's a subgroup of {supergroup_name}.",
+                    },
+                    {
+                        supergroup_name: user_groups.get_display_group_name(supergroup.name),
+                    },
+                );
+            }
+            return assigned_permission_object;
+        }
+    }
+
+    return undefined;
 }

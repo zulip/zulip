@@ -1,0 +1,26 @@
+<div class="group-permissions">
+    <div class="realm-group-permissions {{#unless group_assigned_realm_permissions.length}}hide{{/unless}}">
+        <h3>{{t "Organization permissions"}}</h3>
+
+        {{#each group_assigned_realm_permissions}}
+            <div class="settings-subsection-parent {{#unless assigned_permissions.length}}hide{{/unless}}">
+                <div class="subsection-header">
+                    <h3>{{subsection_heading}}</h3>
+                    {{> ../settings/settings_save_discard_widget show_only_indicator=false }}
+                </div>
+
+                <div class="subsection-settings">
+                    {{#each assigned_permissions}}
+                        {{> ../settings/settings_checkbox
+                          setting_name=setting_name
+                          prefix="id_group_permission_"
+                          is_checked=true
+                          label=(lookup ../../group_setting_labels.realm setting_name)
+                          is_disabled=(not can_edit)
+                          tooltip_message=tooltip_message}}
+                    {{/each}}
+                </div>
+            </div>
+        {{/each}}
+    </div>
+</div>
