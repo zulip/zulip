@@ -33,6 +33,7 @@ from analytics.models import RealmCount, StreamCount, UserCount
 from scripts.lib.zulip_tools import overwrite_symlink
 from version import ZULIP_VERSION
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
+from zerver.lib.migration_status import AppMigrations, MigrationStatusJson
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload.s3 import get_bucket
@@ -98,18 +99,11 @@ SourceFilter: TypeAlias = Callable[[Record], bool]
 
 CustomFetch: TypeAlias = Callable[[TableData, Context], None]
 
-AppMigrations: TypeAlias = dict[str, list[str]]
-
 
 class MessagePartial(TypedDict):
     zerver_message: list[Record]
     zerver_userprofile_ids: list[int]
     realm_id: int
-
-
-class MigrationStatusJson(TypedDict):
-    migrations_by_app: AppMigrations
-    zulip_version: str
 
 
 MESSAGE_BATCH_CHUNK_SIZE = 1000
