@@ -450,7 +450,7 @@
            to -0.12em produces a slightly more pleasing result, which makes sense
            because mathematical centering and the perception of center don't
            always match. */
-        margin-top: -0.12em;
+        margin-top: 0;
         font-size: var(--font-size-sidebar-action-heading);
         font-weight: var(--font-weight-sidebar-action-heading);
         font-variant: var(--font-variant-sidebar-action-heading);
@@ -458,6 +458,8 @@
             --font-feature-settings-sidebar-action-heading
         );
         text-transform: var(--text-transform-sidebar-action-heading);
+        display: flex;
+        align-items: center;
     }
 }
 
@@ -1090,6 +1092,8 @@ li.top_left_scheduled_messages {
         .zulip-icon.zulip-icon-globe {
             /* 12px at 14px/1em */
             font-size: 0.8571em;
+            position: relative;
+            top: 0.05em;
         }
 
         .zulip-icon.zulip-icon-hashtag {
