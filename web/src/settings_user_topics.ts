@@ -42,7 +42,8 @@ export function populate_list(): void {
         filter: {
             $element: $search_input,
             predicate(item, value) {
-                return item.topic.toLocaleLowerCase().includes(value);
+                const topic_display_name = util.get_final_topic_display_name(item.topic);
+                return topic_display_name.toLocaleLowerCase().includes(value);
             },
             onupdate() {
                 scroll_util.reset_scrollbar(
