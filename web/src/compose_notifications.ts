@@ -19,6 +19,7 @@ import * as people from "./people.ts";
 import * as stream_data from "./stream_data.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_topics from "./user_topics.ts";
+import * as util from "./util.ts";
 
 export function notify_unmute(muted_narrow: string, stream_id: number, topic_name: string): void {
     const $unmute_notification = $(
@@ -38,12 +39,25 @@ export function notify_unmute(muted_narrow: string, stream_id: number, topic_nam
     );
 }
 
+type MessageRecipient =
+    | {
+          message_type: "channel";
+          channel_name: string;
+          topic_display_name: string;
+          is_empty_string_topic: boolean;
+      }
+    | {
+          message_type: "direct";
+          recipient_text: string;
+      };
+
 export function notify_above_composebox(
     banner_text: string,
     classname: string,
     above_composebox_narrow_url: string | null,
     link_msg_id: number,
-    link_text: string,
+    message_recipient: MessageRecipient | null,
+    link_text: string | null,
 ): void {
     const $notification = $(
         render_message_sent_banner({
@@ -51,6 +65,7 @@ export function notify_above_composebox(
             classname,
             above_composebox_narrow_url,
             link_msg_id,
+            message_recipient,
             link_text,
         }),
     );
@@ -66,14 +81,17 @@ export function notify_automatic_new_visibility_policy(
 ): void {
     const followed =
         data.automatic_new_visibility_policy === user_topics.all_visibility_policies.FOLLOWED;
-    const stream_topic = get_message_header(message);
     const narrow_url = get_above_composebox_narrow_url(message);
+    const message_recipient = get_message_recipient(message);
+    assert(message_recipient.message_type === "channel");
     const $notification = $(
         render_automatic_new_visibility_policy_banner({
             banner_type: compose_banner.SUCCESS,
             classname: compose_banner.CLASSNAMES.automatic_new_visibility_policy,
             link_msg_id: data.id,
-            channel_topic: stream_topic,
+            channel_name: message_recipient.channel_name,
+            topic_display_name: message_recipient.topic_display_name,
+            is_empty_string_topic: message_recipient.is_empty_string_topic,
             narrow_url,
             followed,
             button_text: $t({defaultMessage: "Change setting"}),
@@ -86,24 +104,38 @@ export function notify_automatic_new_visibility_policy(
 
 // Note that this returns values that are not HTML-escaped, for use in
 // Handlebars templates that will do further escaping.
-function get_message_header(message: Message): string {
+function get_message_recipient(message: Message): MessageRecipient {
     if (message.type === "stream") {
-        const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-        return `#${stream_name} > ${message.topic}`;
+        const channel_message_recipient: MessageRecipient = {
+            message_type: "channel",
+            channel_name: stream_data.get_stream_name_from_id(message.stream_id),
+            topic_display_name: util.get_final_topic_display_name(message.topic),
+            is_empty_string_topic: message.topic === "",
+        };
+        return channel_message_recipient;
     }
+    const direct_message_recipient: MessageRecipient = {
+        message_type: "direct",
+        recipient_text: "",
+    };
     if (message.display_recipient.length > 2) {
-        return $t(
+        direct_message_recipient.recipient_text = $t(
             {defaultMessage: "group direct messages with {recipient}"},
             {recipient: message.display_reply_to},
         );
+        return direct_message_recipient;
     }
     if (people.is_current_user(message.reply_to)) {
-        return $t({defaultMessage: "direct messages with yourself"});
+        direct_message_recipient.recipient_text = $t({
+            defaultMessage: "direct messages with yourself",
+        });
+        return direct_message_recipient;
     }
-    return $t(
+    direct_message_recipient.recipient_text = $t(
         {defaultMessage: "direct messages with {recipient}"},
         {recipient: message.display_reply_to},
     );
+    return direct_message_recipient;
 }
 
 export function get_muted_narrow(message: Message): string | undefined {
@@ -225,6 +257,7 @@ export function notify_local_mixes(
                     // Don't display a URL on hover for the "Scroll to bottom" link.
                     null,
                     link_msg_id,
+                    null,
                     link_text,
                 );
                 compose_banner.set_scroll_to_message_banner_message_id(link_msg_id);
@@ -239,16 +272,13 @@ export function notify_local_mixes(
             const banner_text = $t({
                 defaultMessage: "Sent! Your message is outside your current view.",
             });
-            const link_text = $t(
-                {defaultMessage: "Go to {message_recipient}"},
-                {message_recipient: get_message_header(message)},
-            );
             notify_above_composebox(
                 banner_text,
                 compose_banner.CLASSNAMES.narrow_to_recipient,
                 get_above_composebox_narrow_url(message),
                 link_msg_id,
-                link_text,
+                get_message_recipient(message),
+                null,
             );
             continue;
         }
@@ -291,16 +321,13 @@ export function notify_messages_outside_current_search(messages: Message[]): voi
             continue;
         }
         const above_composebox_narrow_url = get_above_composebox_narrow_url(message);
-        const link_text = $t(
-            {defaultMessage: "Narrow to {message_recipient}"},
-            {message_recipient: get_message_header(message)},
-        );
         notify_above_composebox(
             $t({defaultMessage: "Sent! Your message is outside your current view."}),
             compose_banner.CLASSNAMES.narrow_to_recipient,
             above_composebox_narrow_url,
             message.id,
-            link_text,
+            get_message_recipient(message),
+            null,
         );
     }
 }
