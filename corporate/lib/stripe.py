@@ -2312,7 +2312,6 @@ class BillingSession(ABC):
                 )
 
             if plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:  # nocoverage
-                self.validate_plan_license_management(plan, licenses_at_next_renewal)
                 plan.status = CustomerPlan.ENDED
                 plan.save(update_fields=["status"])
 
@@ -2322,6 +2321,7 @@ class BillingSession(ABC):
                     billing_cycle_anchor=plan.end_date,
                     status=CustomerPlan.NEVER_STARTED,
                 )
+                self.validate_plan_license_management(new_plan, licenses_at_next_renewal)
                 new_plan.status = CustomerPlan.ACTIVE
                 new_plan.save(update_fields=["status"])
                 self.do_change_plan_type(tier=new_plan.tier, background_update=True)
