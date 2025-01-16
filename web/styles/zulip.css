@@ -944,7 +944,6 @@ div.focused-message-list.is-conversation-view .recipient_row {
     margin: 0 5px 5px 0;
     align-self: center;
     width: 100%;
-    white-space: nowrap;
 
     & label.checkbox {
         /* Place the checkboxes on their own lines. */
