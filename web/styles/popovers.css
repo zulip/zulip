@@ -843,12 +843,13 @@ ul.popover-group-menu-member-list {
 
     #move_topic_to_stream_widget_wrapper {
         display: flex;
+        width: 50%;
 
         .dropdown-widget-button {
             outline: none;
             /* 24px at 16px/1em */
             line-height: 1.5em;
-            width: 50%;
+            width: 100%;
         }
 
         .dropdown_widget_value {
