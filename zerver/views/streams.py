@@ -657,16 +657,6 @@ def add_subscriptions_backend(
     if len(principals) > 0 and not all(user_id == user_profile.id for user_id in principals):
         is_subscribing_other_users = True
 
-    if is_subscribing_other_users:
-        if not user_profile.can_subscribe_other_users():
-            # Guest users case will not be handled here as it will
-            # be handled by the decorator above.
-            raise JsonableError(_("Insufficient permission"))
-        subscribers = bulk_principals_to_user_profiles(principals, user_profile)
-
-    else:
-        subscribers = {user_profile}
-
     # Validation of the streams arguments, including enforcement of
     # can_create_streams policy and check_stream_name policy is inside
     # list_to_streams.
@@ -677,15 +667,20 @@ def add_subscriptions_backend(
         is_default_stream=is_default_stream,
         setting_groups_dict=setting_groups_dict,
     )
-    authorized_streams, unauthorized_streams = filter_stream_authorization(
-        user_profile, existing_streams
-    )
+    (
+        authorized_streams,
+        unauthorized_streams,
+        streams_to_which_user_cannot_add_subscribers,
+    ) = filter_stream_authorization(user_profile, existing_streams, is_subscribing_other_users)
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
         raise JsonableError(
             _("Unable to access channel ({channel_name}).").format(
                 channel_name=unauthorized_streams[0].name,
             )
         )
+    if len(streams_to_which_user_cannot_add_subscribers) > 0:
+        raise JsonableError(_("Insufficient permission"))
+
     # Newly created streams are also authorized for the creator
     streams = authorized_streams + created_streams
 
@@ -697,6 +692,11 @@ def add_subscriptions_backend(
         raise JsonableError(
             _("You can only invite other Zephyr mirroring users to private channels.")
         )
+
+    if is_subscribing_other_users:
+        subscribers = bulk_principals_to_user_profiles(principals, user_profile)
+    else:
+        subscribers = {user_profile}
 
     if is_default_stream:
         for stream in created_streams:

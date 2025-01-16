@@ -20,7 +20,7 @@ from zerver.actions.invites import (
 from zerver.decorator import require_member_or_admin
 from zerver.lib.exceptions import InvitationError, JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.response import json_success
-from zerver.lib.streams import access_stream_by_id
+from zerver.lib.streams import access_stream_by_id, get_streams_to_which_user_cannot_add_subscribers
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_int_in_validator
 from zerver.lib.user_groups import access_user_group_for_update
@@ -81,6 +81,7 @@ def access_multiuse_invite_by_id(user_profile: UserProfile, invite_id: int) -> M
 
 def access_streams_for_invite(stream_ids: list[int], user_profile: UserProfile) -> list[Stream]:
     streams: list[Stream] = []
+
     for stream_id in stream_ids:
         try:
             (stream, sub) = access_stream_by_id(user_profile, stream_id)
@@ -92,7 +93,10 @@ def access_streams_for_invite(stream_ids: list[int], user_profile: UserProfile) 
             )
         streams.append(stream)
 
-    if len(streams) and not user_profile.can_subscribe_other_users():
+    streams_to_which_user_cannot_add_subscribers = get_streams_to_which_user_cannot_add_subscribers(
+        streams, user_profile
+    )
+    if len(streams_to_which_user_cannot_add_subscribers) > 0:
         raise JsonableError(_("You do not have permission to subscribe other users to channels."))
 
     return streams

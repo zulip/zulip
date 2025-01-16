@@ -43,6 +43,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_plan_type,
     do_set_realm_property,
 )
+from zerver.actions.streams import do_change_stream_group_based_setting
 from zerver.actions.user_groups import check_add_user_group, do_change_user_group_permission_setting
 from zerver.actions.user_settings import do_change_full_name
 from zerver.actions.users import change_user_is_active
@@ -1645,6 +1646,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
     def test_invite_without_permission_to_subscribe_others(self) -> None:
         realm = get_realm("zulip")
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
         admins_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
@@ -1653,12 +1657,39 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         )
 
         invitee = self.nonreg_email("alice")
+        stream_names = ["Denmark", "Scotland"]
 
         self.login("hamlet")
-        result = self.invite(invitee, ["Denmark", "Scotland"])
+        result = self.invite(invitee, stream_names)
         self.assert_json_error(
             result, "You do not have permission to subscribe other users to channels."
         )
+
+        # Changing permission of just one of the channel out of two
+        # should still give an error.
+        do_change_stream_group_based_setting(
+            get_stream("Denmark", realm),
+            "can_add_subscribers_group",
+            members_group,
+            acting_user=None,
+        )
+        result = self.invite(invitee, stream_names)
+        self.assert_json_error(
+            result, "You do not have permission to subscribe other users to channels."
+        )
+
+        # Changing permission of both the channels out of two should
+        # result in success.
+        do_change_stream_group_based_setting(
+            get_stream("Scotland", realm),
+            "can_add_subscribers_group",
+            members_group,
+            acting_user=None,
+        )
+        result = self.invite(invitee, stream_names)
+        self.assert_json_success(result)
+        self.check_sent_emails([invitee])
+        mail.outbox.pop()
 
         # User will be subscribed to default streams even when the
         # referrer does not have permission to subscribe others.
@@ -1688,20 +1719,17 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         self.login("iago")
         invitee = self.nonreg_email("bob")
-        result = self.invite(invitee, ["Denmark", "Scotland"])
+        result = self.invite(invitee, stream_names)
         self.assert_json_success(result)
         self.check_sent_emails([invitee])
         mail.outbox.pop()
 
-        members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
-        )
         do_change_realm_permission_group_setting(
             realm, "can_add_subscribers_group", members_group, acting_user=None
         )
         self.login("hamlet")
         invitee = self.nonreg_email("test")
-        result = self.invite(invitee, ["Denmark", "Scotland"])
+        result = self.invite(invitee, stream_names)
         self.assert_json_success(result)
         self.check_sent_emails([invitee])
         mail.outbox.pop()

@@ -4937,7 +4937,7 @@ class SubscriptionAPITest(ZulipTestCase):
             # Other streams that weren't created using the api should have no creator.
             self.assertIsNone(stream["creator_id"])
 
-    def test_user_settings_for_subscribing_other_users(self) -> None:
+    def test_realm_settings_for_subscribing_other_users(self) -> None:
         """
         You can't subscribe other people to streams if you are a guest or your account is not old
         enough.
@@ -4952,15 +4952,48 @@ class SubscriptionAPITest(ZulipTestCase):
         do_change_realm_permission_group_setting(
             realm, "can_add_subscribers_group", admins_group, acting_user=None
         )
+
+        # User should be allowed to add subscribers when creating the
+        # channel even if they don't have realm wide permission to
+        # add other subscribers to a channel.
         do_change_user_role(self.test_user, UserProfile.ROLE_MODERATOR, acting_user=None)
         result = self.common_subscribe_to_streams(
             self.test_user,
             ["stream1"],
-            {"principals": orjson.dumps([invitee_user_id]).decode()},
+            # Creator will be part of `can_administer_channel_group` by
+            # default for a new channel. We set it to admin, so that we
+            # can test for errors in the next piece of this test.
+            {
+                "principals": orjson.dumps([invitee_user_id]).decode(),
+                "can_administer_channel_group": admins_group.id,
+            },
+            allow_fail=True,
+        )
+        self.assert_json_success(result)
+
+        result = self.common_subscribe_to_streams(
+            self.test_user,
+            ["stream1"],
+            {"principals": orjson.dumps([self.example_user("aaron").id]).decode()},
             allow_fail=True,
         )
         self.assert_json_error(result, "Insufficient permission")
 
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_add_subscribers_group", nobody_group, acting_user=None
+        )
+        do_change_stream_group_based_setting(
+            get_stream("stream1", realm),
+            "can_add_subscribers_group",
+            nobody_group,
+            acting_user=None,
+        )
+        # Admins have a special permission to administer every channel
+        # they have access to. This also grants them access to add
+        # subscribers.
         do_change_user_role(self.test_user, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.common_subscribe_to_streams(
             self.test_user, ["stream1"], {"principals": orjson.dumps([invitee_user_id]).decode()}
@@ -4976,6 +5009,11 @@ class SubscriptionAPITest(ZulipTestCase):
         # Make sure that we are checking the permission with a full member,
         # as full member is the user just below moderator in the role hierarchy.
         self.assertFalse(self.test_user.is_provisional_member)
+        # User will be able to add subscribers to a newly created
+        # stream without any realm wide permissions. We create this
+        # stream programmatically so that we can test for errors for an
+        # existing stream.
+        self.make_stream("stream2")
         result = self.common_subscribe_to_streams(
             self.test_user,
             ["stream2"],
@@ -5064,6 +5102,176 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.unsubscribe(user_profile, "stream2")
 
+    def test_stream_settings_for_subscribing_other_users(self) -> None:
+        user_profile = self.example_user("cordelia")
+        invitee_user_id = user_profile.id
+        realm = user_profile.realm
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_add_subscribers_group", nobody_group, acting_user=None
+        )
+
+        # User will be able to add subscribers to a newly created
+        # stream without any realm wide permissions. We create this
+        # stream programmatically so that we can test for errors for an
+        # existing stream.
+        do_change_stream_group_based_setting(
+            self.make_stream("stream1"), "can_add_subscribers_group", nobody_group, acting_user=None
+        )
+        result = self.common_subscribe_to_streams(
+            self.test_user,
+            ["stream1"],
+            {"principals": orjson.dumps([invitee_user_id]).decode()},
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        # Admins have a special permission to administer every channel
+        # they have access to. This also grants them access to add
+        # subscribers.
+        do_change_user_role(self.test_user, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        result = self.common_subscribe_to_streams(
+            self.test_user, ["stream1"], {"principals": orjson.dumps([invitee_user_id]).decode()}
+        )
+        self.assert_json_success(result)
+
+        do_change_user_role(self.test_user, UserProfile.ROLE_MEMBER, acting_user=None)
+        # Make sure that we are checking the permission with a full member,
+        # as full member is the user just below moderator in the role hierarchy.
+        self.assertFalse(self.test_user.is_provisional_member)
+
+        # User will be able to add subscribers to a newly created
+        # stream without any realm wide permissions. We create this
+        # stream programmatically so that we can test for errors for an
+        # existing stream.
+        stream2 = self.make_stream("stream2")
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream2, "can_add_subscribers_group", moderators_group, acting_user=None
+        )
+        result = self.common_subscribe_to_streams(
+            self.test_user,
+            ["stream2"],
+            {"principals": orjson.dumps([invitee_user_id]).decode()},
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        do_change_user_role(self.test_user, UserProfile.ROLE_MODERATOR, acting_user=None)
+        self.common_subscribe_to_streams(
+            self.test_user, ["stream2"], {"principals": orjson.dumps([invitee_user_id]).decode()}
+        )
+        self.unsubscribe(user_profile, "stream2")
+
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream2, "can_add_subscribers_group", members_group, acting_user=None
+        )
+        do_change_user_role(self.test_user, UserProfile.ROLE_GUEST, acting_user=None)
+        result = self.common_subscribe_to_streams(
+            self.test_user,
+            ["stream2"],
+            {"principals": orjson.dumps([invitee_user_id]).decode()},
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Not allowed for guest users")
+
+        do_change_user_role(self.test_user, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.common_subscribe_to_streams(
+            self.test_user,
+            ["stream2"],
+            {"principals": orjson.dumps([self.test_user.id, invitee_user_id]).decode()},
+        )
+        self.unsubscribe(user_profile, "stream2")
+
+        # User should be able to subscribe other users if they have
+        # permissions to administer the channel.
+        do_change_stream_group_based_setting(
+            stream2, "can_add_subscribers_group", nobody_group, acting_user=None
+        )
+        do_change_stream_group_based_setting(
+            stream2, "can_administer_channel_group", members_group, acting_user=None
+        )
+        self.common_subscribe_to_streams(
+            self.test_user,
+            ["stream2"],
+            {"principals": orjson.dumps([self.test_user.id, invitee_user_id]).decode()},
+        )
+        self.unsubscribe(user_profile, "stream2")
+        do_change_stream_group_based_setting(
+            stream2, "can_administer_channel_group", nobody_group, acting_user=None
+        )
+
+        full_members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream2, "can_add_subscribers_group", full_members_group, acting_user=None
+        )
+        do_set_realm_property(realm, "waiting_period_threshold", 100000, acting_user=None)
+        result = self.common_subscribe_to_streams(
+            self.test_user,
+            ["stream2"],
+            {"principals": orjson.dumps([invitee_user_id]).decode()},
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
+        self.common_subscribe_to_streams(
+            self.test_user, ["stream2"], {"principals": orjson.dumps([invitee_user_id]).decode()}
+        )
+        self.unsubscribe(user_profile, "stream2")
+
+        named_user_group = check_add_user_group(
+            realm, "named_user_group", [self.test_user], acting_user=self.test_user
+        )
+        do_change_stream_group_based_setting(
+            stream2,
+            "can_add_subscribers_group",
+            named_user_group,
+            acting_user=None,
+        )
+        self.common_subscribe_to_streams(
+            self.test_user,
+            ["stream2"],
+            {"principals": orjson.dumps([invitee_user_id]).decode()},
+        )
+        self.unsubscribe(user_profile, "stream2")
+        anonymous_group = self.create_or_update_anonymous_group_for_setting([self.test_user], [])
+
+        do_change_stream_group_based_setting(
+            stream2,
+            "can_add_subscribers_group",
+            anonymous_group,
+            acting_user=None,
+        )
+        self.common_subscribe_to_streams(
+            self.test_user,
+            ["stream2"],
+            {"principals": orjson.dumps([invitee_user_id]).decode()},
+        )
+        self.unsubscribe(user_profile, "stream2")
+
+        private_stream = self.make_stream("private_stream", invite_only=True)
+        do_change_stream_group_based_setting(
+            private_stream, "can_add_subscribers_group", members_group, acting_user=None
+        )
+        result = self.common_subscribe_to_streams(
+            self.test_user,
+            ["private_stream"],
+            {"principals": orjson.dumps([invitee_user_id]).decode()},
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Unable to access channel (private_stream).")
+
     def test_subscriptions_add_invalid_stream(self) -> None:
         """
         Calling POST /json/users/me/subscriptions on a stream whose name is invalid (as
@@ -5131,7 +5339,7 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_sub = ["multi_user_stream"]
         with (
             self.capture_send_event_calls(expected_num_events=5) as events,
-            self.assert_database_query_count(44),
+            self.assert_database_query_count(42),
         ):
             self.common_subscribe_to_streams(
                 self.test_user,
@@ -5316,12 +5524,18 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # Verify the internal checks also block guest users.
         stream = get_stream("Denmark", guest_user.realm)
-        self.assertEqual(filter_stream_authorization(guest_user, [stream]), ([], [stream]))
+        self.assertEqual(
+            filter_stream_authorization(guest_user, [stream]),
+            ([], [stream], []),
+        )
 
         stream = self.make_stream("private_stream", invite_only=True)
         result = self.common_subscribe_to_streams(guest_user, ["private_stream"], allow_fail=True)
         self.assert_json_error(result, "Not allowed for guest users")
-        self.assertEqual(filter_stream_authorization(guest_user, [stream]), ([], [stream]))
+        self.assertEqual(
+            filter_stream_authorization(guest_user, [stream]),
+            ([], [stream], []),
+        )
 
         web_public_stream = self.make_stream("web_public_stream", is_web_public=True)
         public_stream = self.make_stream("public_stream", invite_only=False)
@@ -5337,7 +5551,7 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_sub = [web_public_stream, public_stream, private_stream]
         self.assertEqual(
             filter_stream_authorization(guest_user, streams_to_sub),
-            ([web_public_stream], [public_stream, private_stream]),
+            ([web_public_stream], [public_stream, private_stream], []),
         )
 
         # Guest can be subscribed by other users.
@@ -5957,7 +6171,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(44):
+        with self.assert_database_query_count(42):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[0]],
@@ -5965,7 +6179,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(48):
+        with self.assert_database_query_count(46):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[1]],
@@ -5977,7 +6191,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(55):
+        with self.assert_database_query_count(53):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[2]],
