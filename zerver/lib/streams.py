@@ -25,6 +25,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import AnonymousSettingGroupDict, APIStreamDict
 from zerver.lib.user_groups import (
     get_group_setting_value_for_api,
+    get_recursive_membership_groups,
     get_role_based_system_groups_dict,
     user_has_permission_for_group_setting,
 )
@@ -428,6 +429,10 @@ def check_stream_access_for_delete_or_update(
     if stream.realm_id != user_profile.realm_id:
         raise JsonableError(error)
 
+    # Optimization for the organization administrator code path. We
+    # don't explicitly grant realm admins this permission, but admins
+    # implicitly have the can_administer_channel_group permission for
+    # all accessible channels.
     if user_profile.is_realm_admin:
         return
 
@@ -758,6 +763,10 @@ def can_remove_subscribers_from_stream(
     if not check_basic_stream_access(user_profile, stream, sub, allow_realm_admin=True):
         return False
 
+    # Optimization for the organization administrator code path. We
+    # don't explicitly grant realm admins this permission, but admins
+    # implicitly have the can_administer_channel_group permission for
+    # all accessible channels.
     if user_profile.is_realm_admin:
         return True
 
@@ -768,6 +777,42 @@ def can_remove_subscribers_from_stream(
         user_profile,
         Stream.stream_permission_group_settings["can_remove_subscribers_group"],
     )
+
+
+def get_streams_to_which_user_cannot_add_subscribers(
+    streams: list[Stream], user_profile: UserProfile
+) -> list[Stream]:
+    # IMPORTANT: This function expects its callers to have already
+    # checked that the user can access the provided channels, and thus
+    # does not waste database queries re-checking that.
+    result: list[Stream] = []
+
+    if user_profile.can_subscribe_others_to_all_streams():
+        return []
+
+    # Optimization for the organization administrator code path. We
+    # don't explicitly grant realm admins this permission, but admins
+    # implicitly have the can_administer_channel_group permission for
+    # all accessible channels.
+    if user_profile.is_realm_admin:
+        return []
+
+    user_recursive_group_ids = set(
+        get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+    )
+    for stream in streams:
+        group_allowed_to_administer_channel_id = stream.can_administer_channel_group_id
+        assert group_allowed_to_administer_channel_id is not None
+        if group_allowed_to_administer_channel_id in user_recursive_group_ids:
+            continue
+
+        group_allowed_to_add_subscribers_id = stream.can_add_subscribers_group_id
+        assert group_allowed_to_add_subscribers_id is not None
+
+        if group_allowed_to_add_subscribers_id not in user_recursive_group_ids:
+            result.append(stream)
+
+    return result
 
 
 def can_administer_channel(channel: Stream, user_profile: UserProfile) -> bool:
@@ -781,8 +826,11 @@ def can_administer_channel(channel: Stream, user_profile: UserProfile) -> bool:
 
 
 def filter_stream_authorization(
-    user_profile: UserProfile, streams: Collection[Stream]
-) -> tuple[list[Stream], list[Stream]]:
+    user_profile: UserProfile, streams: Collection[Stream], is_subscribing_other_users: bool = False
+) -> tuple[list[Stream], list[Stream], list[Stream]]:
+    if len(streams) == 0:
+        return [], [], []
+
     recipient_ids = [stream.recipient_id for stream in streams]
     subscribed_recipient_ids = set(
         Subscription.objects.filter(
@@ -791,6 +839,12 @@ def filter_stream_authorization(
     )
 
     unauthorized_streams: list[Stream] = []
+    streams_to_which_user_cannot_add_subscribers: list[Stream] = []
+    if is_subscribing_other_users:
+        streams_to_which_user_cannot_add_subscribers = (
+            get_streams_to_which_user_cannot_add_subscribers(list(streams), user_profile)
+        )
+
     for stream in streams:
         # Deactivated streams are not accessible
         if stream.deactivated:
@@ -815,8 +869,13 @@ def filter_stream_authorization(
         stream
         for stream in streams
         if stream.id not in {stream.id for stream in unauthorized_streams}
+        and stream.id not in {stream.id for stream in streams_to_which_user_cannot_add_subscribers}
     ]
-    return authorized_streams, unauthorized_streams
+    return (
+        authorized_streams,
+        unauthorized_streams,
+        streams_to_which_user_cannot_add_subscribers,
+    )
 
 
 def list_to_streams(
