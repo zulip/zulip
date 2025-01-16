@@ -626,7 +626,7 @@ test("set_up", ({override, override_rewire}) => {
     );
 
     // Make our plan not limited so we don't have to stub all the
-    // elements involved in disabling the can_create_groups input.
+    // elements involved in disabling the can_create_groups_group input.
     override(realm, "zulip_plan_is_not_limited", true);
 
     override_rewire(settings_components, "get_input_element_value", (elem) => {

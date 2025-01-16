@@ -141,8 +141,8 @@ export function enable_or_disable_group_permission_settings(): void {
         // related settings.
         const owner_editable_settings = [
             "realm_create_multiuse_invite_group",
-            "realm_can_create_groups",
-            "realm_can_manage_all_groups",
+            "realm_can_create_groups_group",
+            "realm_can_manage_all_groups_group",
         ];
         for (const setting_name of owner_editable_settings) {
             const $permission_pill_container = $(`#id_${CSS.escape(setting_name)}`);
@@ -354,7 +354,7 @@ function set_create_web_public_stream_dropdown_visibility(): void {
 function disable_create_user_groups_if_on_limited_plan(): void {
     if (!realm.zulip_plan_is_not_limited) {
         settings_components.disable_group_permission_setting(
-            $("#id_realm_can_create_groups").closest(".input-group"),
+            $("#id_realm_can_create_groups_group").closest(".input-group"),
         );
     }
 }
@@ -519,13 +519,13 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
             );
             break;
         case "realm_can_add_custom_emoji_group":
-        case "realm_can_create_groups":
+        case "realm_can_create_groups_group":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
         case "realm_can_delete_any_message_group":
         case "realm_can_delete_own_message_group":
         case "realm_can_invite_users_group":
-        case "realm_can_manage_all_groups":
+        case "realm_can_manage_all_groups_group":
         case "realm_can_move_messages_between_channels_group":
         case "realm_can_move_messages_between_topics_group":
         case "realm_create_multiuse_invite_group":

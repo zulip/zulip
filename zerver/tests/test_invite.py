@@ -801,7 +801,7 @@ class InviteUserTest(InviteUserBase):
         # the group.
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             nobody_group,
             acting_user=None,
         )
@@ -831,7 +831,7 @@ class InviteUserTest(InviteUserBase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             owners_group,
             acting_user=None,
         )
@@ -3168,7 +3168,7 @@ class MultiuseInviteTest(ZulipTestCase):
         # the group.
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             nobody_group,
             acting_user=None,
         )
@@ -3196,7 +3196,7 @@ class MultiuseInviteTest(ZulipTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             owners_group,
             acting_user=None,
         )

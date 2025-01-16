@@ -67,7 +67,7 @@ with test_server_running(
         name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
     )
     do_change_realm_permission_group_setting(
-        realm, "can_manage_all_groups", admins_group, acting_user=None
+        realm, "can_manage_all_groups_group", admins_group, acting_user=None
     )
 
     # Required to test can_create_users and can_change_user_emails endpoints.

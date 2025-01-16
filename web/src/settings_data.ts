@@ -170,8 +170,8 @@ export function user_can_move_messages_between_streams(): boolean {
 
 export function user_can_manage_all_groups(): boolean {
     return user_has_permission_for_group_setting(
-        realm.realm_can_manage_all_groups,
-        "can_manage_all_groups",
+        realm.realm_can_manage_all_groups_group,
+        "can_manage_all_groups_group",
         "realm",
     );
 }
@@ -248,8 +248,8 @@ export function can_leave_user_group(group_id: number): boolean {
 
 export function user_can_create_user_groups(): boolean {
     return user_has_permission_for_group_setting(
-        realm.realm_can_create_groups,
-        "can_create_groups",
+        realm.realm_can_create_groups_group,
+        "can_create_groups_group",
         "realm",
     );
 }

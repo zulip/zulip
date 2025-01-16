@@ -120,7 +120,7 @@ class RealmTest(ZulipTestCase):
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
-        self.assertEqual(realm.can_create_groups.id, moderators_group.id)
+        self.assertEqual(realm.can_create_groups_group.id, moderators_group.id)
         self.assertEqual(realm.can_invite_users_group.id, admins_group.id)
         self.assertEqual(realm.can_move_messages_between_channels_group.id, moderators_group.id)
 
@@ -141,7 +141,7 @@ class RealmTest(ZulipTestCase):
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
-        self.assertEqual(realm.can_create_groups.id, moderators_group.id)
+        self.assertEqual(realm.can_create_groups_group.id, moderators_group.id)
         self.assertEqual(realm.can_invite_users_group.id, admins_group.id)
         self.assertEqual(realm.can_move_messages_between_channels_group.id, moderators_group.id)
 
@@ -2536,13 +2536,13 @@ class RealmAPITest(ZulipTestCase):
         self.assertEqual(getattr(realm, setting_name).id, admins_group.id)
 
     def test_can_create_groups_setting_requires_owner(self) -> None:
-        self.do_test_changing_groups_setting_by_owners_only("can_create_groups")
+        self.do_test_changing_groups_setting_by_owners_only("can_create_groups_group")
 
     def test_can_invite_users_group_setting_requires_owner(self) -> None:
         self.do_test_changing_groups_setting_by_owners_only("can_invite_users_group")
 
     def test_can_manage_all_groups_setting_requires_owner(self) -> None:
-        self.do_test_changing_groups_setting_by_owners_only("can_manage_all_groups")
+        self.do_test_changing_groups_setting_by_owners_only("can_manage_all_groups_group")
 
     def test_enable_spectator_access_for_limited_plan_realms(self) -> None:
         self.login("iago")
@@ -2560,7 +2560,7 @@ class RealmAPITest(ZulipTestCase):
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
 
         members_group = NamedUserGroup.objects.get(name="role:members", realm=realm)
-        req = {"can_create_groups": orjson.dumps({"new": members_group.id}).decode()}
+        req = {"can_create_groups_group": orjson.dumps({"new": members_group.id}).decode()}
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "Available on Zulip Cloud Standard. Upgrade to access.")
 

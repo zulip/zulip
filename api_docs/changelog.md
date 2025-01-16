@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 340**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events): Renamed `can_create_groups`
+  to `can_create_groups_group`.
+* [`POST /register`](/api/register-queue): Renamed `realm_can_create_groups`
+  to `realm_can_create_groups_group`.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Renamed `can_manage_all_groups`
+  to `can_manage_all_groups_group`.
+* [`POST /register`](/api/register-queue): Renamed `realm_can_manage_all_groups`
+  to `realm_can_manage_all_groups_group`.
+
 **Feature level 339**
 
 * [`GET /events`](/api/get-events): Added `user` field back in

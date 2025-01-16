@@ -895,10 +895,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         return self.has_permission("can_move_messages_between_channels_group")
 
     def can_create_user_groups(self) -> bool:
-        return self.has_permission("can_create_groups")
+        return self.has_permission("can_create_groups_group")
 
     def can_manage_all_groups(self) -> bool:
-        return self.has_permission("can_manage_all_groups")
+        return self.has_permission("can_manage_all_groups_group")
 
     def can_move_messages_to_another_topic(self) -> bool:
         return self.has_permission("can_move_messages_between_topics_group")

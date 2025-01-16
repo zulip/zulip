@@ -284,7 +284,7 @@ def do_create_realm(
                 Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.ADMINISTRATORS,
                 Realm.ORG_TYPES["education"]["id"]: SystemGroups.ADMINISTRATORS,
             },
-            "can_create_groups": {
+            "can_create_groups_group": {
                 Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.MODERATORS,
                 Realm.ORG_TYPES["education"]["id"]: SystemGroups.MODERATORS,
             },

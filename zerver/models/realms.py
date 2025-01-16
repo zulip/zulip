@@ -322,10 +322,12 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     # UserGroup which is allowed to create groups.
-    can_create_groups = models.ForeignKey("UserGroup", on_delete=models.RESTRICT, related_name="+")
+    can_create_groups_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
 
     # UserGroup which is allowed to manage all groups.
-    can_manage_all_groups = models.ForeignKey(
+    can_manage_all_groups_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
@@ -690,7 +692,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
         ),
-        can_create_groups=GroupPermissionSetting(
+        can_create_groups_group=GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
             allow_nobody_group=True,
@@ -745,7 +747,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
         ),
-        can_manage_all_groups=GroupPermissionSetting(
+        can_manage_all_groups_group=GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
             allow_nobody_group=False,
@@ -1171,8 +1173,8 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "can_access_all_users_group__named_user_group",
         "can_add_custom_emoji_group",
         "can_add_custom_emoji_group__named_user_group",
-        "can_create_groups",
-        "can_create_groups__named_user_group",
+        "can_create_groups_group",
+        "can_create_groups_group__named_user_group",
         "can_create_public_channel_group",
         "can_create_public_channel_group__named_user_group",
         "can_create_private_channel_group",
@@ -1185,8 +1187,8 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "can_delete_own_message_group__named_user_group",
         "can_invite_users_group",
         "can_invite_users_group__named_user_group",
-        "can_manage_all_groups",
-        "can_manage_all_groups__named_user_group",
+        "can_manage_all_groups_group",
+        "can_manage_all_groups_group__named_user_group",
         "can_move_messages_between_channels_group",
         "can_move_messages_between_channels_group__named_user_group",
         "can_move_messages_between_topics_group",
