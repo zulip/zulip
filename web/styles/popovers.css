@@ -843,7 +843,8 @@ ul.popover-group-menu-member-list {
 
     #move_topic_to_stream_widget_wrapper {
         display: flex;
-        width: 50%;
+        /* 230px at 16px/1em */
+        max-width: 14.375em;
 
         .dropdown-widget-button {
             outline: none;
