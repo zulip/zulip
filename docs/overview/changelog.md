@@ -7,6 +7,29 @@ up-to-date list of all changes.
 
 ## Zulip Server 9.x series
 
+### Zulip Server 9.4
+
+_Released 2025-01-16_
+
+- CVE-2024-56136: Fixed a bug where servers hosting multiple organizations could
+  leak information to an unauthenticated attacker about which email addresses
+  were in use. Servers hosting only a single organization are unaffected by
+  this vulnerability.
+- Upgraded the Slack integration to support Slack’s Events API (while still
+  supporting their legacy outgoing webhook API). Installations using the Slack
+  integration should consider recreating their integration with the more modern
+  API, as Slack will eventually remove the legacy API and some planned
+  improvements to the integration are only possible with Slack’s modern API.
+- Merged two Traditional Chinese localizations into each other.
+- Improved support for bot avatars in Slack imports.
+- Fixed localization of the integrations page for some languages.
+- Fixed a bug where users would be shown the UI for changing another user’s
+  avatar, even if they did not have that permission.
+- Updated the requirements documentation to suggest allocating swap space for
+  hosts with less than 5GB of RAM.
+- Updated python dependencies.
+- Updated translations.
+
 ### Zulip Server 9.3
 
 _Released 2024-11-22_
