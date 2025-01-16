@@ -898,7 +898,10 @@ class StripeTest(StripeTestCase):
 
         # Check Charges in Stripe
         [charge] = iter(stripe.Charge.list(customer=stripe_customer.id))
-        self.assertEqual(charge.amount, 12000 * self.seat_count)
+        licenses_purchased = self.billing_session.min_licenses_for_plan(
+            CustomerPlan.TIER_CLOUD_PLUS
+        )
+        self.assertEqual(charge.amount, 12000 * licenses_purchased)
         self.assertEqual(charge.description, "Payment for Invoice")
         self.assertEqual(charge.receipt_email, user.delivery_email)
         self.assertEqual(charge.statement_descriptor, "Zulip Cloud Plus")
@@ -907,12 +910,12 @@ class StripeTest(StripeTestCase):
         self.assertIsNotNone(invoice.status_transitions.finalized_at)
         invoice_params = {
             # auto_advance is False because the invoice has been paid
-            "amount_due": 72000,
-            "amount_paid": 72000,
+            "amount_due": 120000,
+            "amount_paid": 120000,
             "auto_advance": False,
             "collection_method": "charge_automatically",
             "status": "paid",
-            "total": 72000,
+            "total": 120000,
         }
         self.assertIsNotNone(invoice.charge)
         for key, value in invoice_params.items():
@@ -920,7 +923,7 @@ class StripeTest(StripeTestCase):
         # Check Line Items on Stripe Invoice
         [item0] = iter(invoice.lines)
         line_item_params = {
-            "amount": 12000 * self.seat_count,
+            "amount": 12000 * licenses_purchased,
             "description": "Zulip Cloud Plus",
             "discountable": False,
             # There's no unit_amount on Line Items, probably because it doesn't show up on the
@@ -928,7 +931,7 @@ class StripeTest(StripeTestCase):
             # but testing the amount and quantity seems sufficient.
             "plan": None,
             "proration": False,
-            "quantity": self.seat_count,
+            "quantity": licenses_purchased,
             "period": {
                 "start": datetime_to_timestamp(self.now),
                 "end": datetime_to_timestamp(add_months(self.now, 12)),
@@ -956,8 +959,8 @@ class StripeTest(StripeTestCase):
             plan=plan,
             is_renewal=True,
             event_time=self.now,
-            licenses=self.seat_count,
-            licenses_at_next_renewal=self.seat_count,
+            licenses=licenses_purchased,
+            licenses_at_next_renewal=licenses_purchased,
         )
         # Check RealmAuditLog
         audit_log_entries = list(
@@ -999,12 +1002,12 @@ class StripeTest(StripeTestCase):
         self.assert_not_in_success_response(["Pay annually"], response)
         for substring in [
             "Zulip Cloud Plus",
-            str(self.seat_count),
+            str(licenses_purchased),
             "Number of licenses",
-            f"{self.seat_count}",
+            f"{licenses_purchased}",
             "Your plan will automatically renew on",
             "January 2, 2013",
-            f"${120 * self.seat_count}.00",
+            "$1,200.00",
             "Visa ending in 4242",
             "Update card",
         ]:

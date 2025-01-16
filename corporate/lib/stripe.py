@@ -2240,12 +2240,23 @@ class BillingSession(ABC):
     def validate_plan_license_management(
         self, plan: CustomerPlan, renewal_license_count: int
     ) -> None:
-        if plan.automanage_licenses or plan.customer.exempt_from_license_number_check:
-            return
+        if plan.customer.exempt_from_license_number_check:
+            return  # nocoverage
 
         # TODO: Enforce manual license management for all paid plans.
         if plan.tier not in [CustomerPlan.TIER_CLOUD_STANDARD, CustomerPlan.TIER_CLOUD_PLUS]:
             return  # nocoverage
+
+        min_licenses = self.min_licenses_for_plan(plan.tier)
+        if min_licenses > renewal_license_count:  # nocoverage
+            # If we are renewing less licenses than the minimum required for the plan, we need to
+            # adjust `license_at_next_renewal` for the customer.
+            raise BillingError(
+                f"Renewal licenses ({renewal_license_count}) less than minimum licenses ({min_licenses}) required for plan {plan.name}."
+            )
+
+        if plan.automanage_licenses:
+            return
 
         if self.current_count_for_billed_licenses() > renewal_license_count:
             raise BillingError(
@@ -2891,6 +2902,9 @@ class BillingSession(ABC):
             )
         if tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
             return 25
+
+        if tier == CustomerPlan.TIER_CLOUD_PLUS:
+            return 10
         return 1
 
     def downgrade_at_the_end_of_billing_cycle(self, plan: CustomerPlan | None = None) -> None:
