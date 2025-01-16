@@ -894,10 +894,6 @@ ul.popover-group-menu-member-list {
     }
 
     .topic_stream_edit_header {
-        display: flex;
-        flex-flow: column wrap;
-        justify-content: flex-start;
-
         #select_stream_id {
             border-left: 0;
             padding-left: 0;
