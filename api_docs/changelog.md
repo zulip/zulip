@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 340**
+
+* [`POST /users/me/subscriptions`](/api/get-subscriptions): Added setting
+`send_notification_to_new_users` which determines whether the users newly added
+to a channel are sent a Notification Bot DM to let them know that they have been
+added to the channel.
+
 **Feature level 339**
 
 * [`GET /events`](/api/get-events): Added `user` field back in

@@ -10,6 +10,7 @@ import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 import {$t} from "./i18n.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
+import * as stream_create_subscribers from "./stream_create_subscribers.ts";
 import * as stream_data from "./stream_data.ts";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
@@ -808,6 +809,28 @@ export function initialize(): void {
         content: $t({defaultMessage: "Delete snippet"}),
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".send_notification_to_new_subscribers_container.disabled",
+        trigger: "mouseenter",
+        placement: "top",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const content = $t(
+                {
+                    defaultMessage:
+                        "Notification message cannot be sent when adding more than {max_users} users.",
+                },
+                {
+                    max_users: stream_create_subscribers.MAX_SUBS_FOR_NOTIFICATION,
+                },
+            );
+            instance.setContent(content);
+        },
         onHidden(instance) {
             instance.destroy();
         },

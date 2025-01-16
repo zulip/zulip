@@ -103,6 +103,8 @@ export function generate_pill_html(item: CombinedPill): string {
 export function set_up_handlers_for_add_button_state(
     pill_widget: CombinedPillContainer,
     $pill_container: JQuery,
+    onPillCreateAction?: (pill_user_ids: number[]) => void,
+    onPillRemoveAction?: (pill_user_ids: number[]) => void,
 ): void {
     const $pill_widget_input = $pill_container.find(".input");
     const $pill_widget_button = $pill_container.parent().find(".add-users-button");
@@ -110,10 +112,20 @@ export function set_up_handlers_for_add_button_state(
     // Disable the add button first time the pill container is created.
     $pill_widget_button.prop("disabled", true);
 
-    // If all the pills are removed, disable the add button.
-    pill_widget.onPillRemove(() =>
-        $pill_widget_button.prop("disabled", pill_widget.items().length === 0),
-    );
+    if (onPillCreateAction) {
+        pill_widget.onPillCreate(() => {
+            onPillCreateAction(get_pill_user_ids(pill_widget));
+        });
+    }
+
+    pill_widget.onPillRemove(() => {
+        if (onPillRemoveAction) {
+            onPillRemoveAction(get_pill_user_ids(pill_widget));
+        }
+        // If all the pills are removed, disable the add button.
+        $pill_widget_button.prop("disabled", pill_widget.items().length === 0);
+    });
+
     // Disable the add button when there is no pending text that can be converted
     // into a pill and the number of existing pills is zero.
     $pill_widget_input.on("input", () =>
@@ -127,9 +139,13 @@ export function set_up_handlers_for_add_button_state(
 export function create({
     $pill_container,
     get_potential_subscribers,
+    onPillCreateAction,
+    onPillRemoveAction,
 }: {
     $pill_container: JQuery;
     get_potential_subscribers: () => User[];
+    onPillCreateAction?: (pill_user_ids: number[]) => void;
+    onPillRemoveAction?: (pill_user_ids: number[]) => void;
 }): CombinedPillContainer {
     const pill_widget = input_pill.create<CombinedPill>({
         $container: $pill_container,
@@ -146,7 +162,12 @@ export function create({
 
     set_up_pill_typeahead({pill_widget, $pill_container, get_users});
 
-    set_up_handlers_for_add_button_state(pill_widget, $pill_container);
+    set_up_handlers_for_add_button_state(
+        pill_widget,
+        $pill_container,
+        onPillCreateAction,
+        onPillRemoveAction,
+    );
 
     return pill_widget;
 }

@@ -399,6 +399,7 @@ function create_stream(): void {
         history_public_to_subscribers: JSON.stringify(history_public_to_subscribers),
         is_default_stream: JSON.stringify(default_stream),
         message_retention_days: JSON.stringify(message_retention_selection),
+        send_notification_to_new_users: $("#send_notification_to_new_subscribers").is(":checked"),
         announce: JSON.stringify(announce),
         principals,
         ...group_setting_values,
