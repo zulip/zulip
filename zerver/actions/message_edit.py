@@ -571,19 +571,21 @@ def do_update_message(
             "flags": um.flags_list(),
         }
 
-    if isinstance(message_edit_request, StreamMessageEditRequest):
-        stream_topic: StreamTopicTarget | None = StreamTopicTarget(
-            stream_id=message_edit_request.orig_stream.id,
-            topic_name=message_edit_request.target_topic_name,
-        )
-    else:
-        stream_topic = None
-
     if message_edit_request.is_content_edited:
         assert rendering_result is not None
 
         # mention_data is required if there's a content edit.
         assert mention_data is not None
+
+        if isinstance(message_edit_request, StreamMessageEditRequest):
+            # We do not allow changing content and stream together,
+            # so we use ID of orig_stream.
+            stream_topic: StreamTopicTarget | None = StreamTopicTarget(
+                stream_id=message_edit_request.orig_stream.id,
+                topic_name=message_edit_request.target_topic_name,
+            )
+        else:
+            stream_topic = None
 
         update_message_content(
             user_profile,
