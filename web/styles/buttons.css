@@ -42,6 +42,10 @@
     overflow: hidden;
 }
 
+.action-button-padding {
+    padding: 7.85px 14.85px;
+}
+
 /* Action buttons -- Neutral Intent */
 .action-button-primary-neutral {
     color: var(--color-text-neutral-primary-action-button);
