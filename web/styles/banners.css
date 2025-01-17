@@ -56,7 +56,7 @@
 }
 
 @container (width >= 44em) and (width < 63em) {
-    .navbar-alert-banner[data-process="notifications"] {
+    .navbar-alert-banner[data-process="desktop-notifications"] {
         grid-template: var(--banner-grid-template-rows-md) / var(
                 --banner-grid-template-columns-md
             );
