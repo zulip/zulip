@@ -4912,10 +4912,11 @@ class StripeTest(StripeTestCase):
 
         # There are 9 licenses and the realm is on the Standard monthly plan.
         # Therefore, the customer has already paid 800 * 9 = 7200 = $72 for
-        # the month. Once they upgrade to Plus, the new price for their 9
-        # licenses will be 1200 * 9 = 10800 = $108. Since the customer has
-        # already paid $72 for a month, -7200 = -$72 will be credited to the
-        # customer's balance.
+        # the month. Once they upgrade to Plus, they will have to pay for 10
+        # licenses as that is the minimum licenses for that plan.
+        # The new price for their 10 licenses will be 1200 * 10 = 12000 = $120.
+        # Since the customer has already paid $72 for a month, -7200 = -$72 will
+        # be credited to the customer's balance.
         stripe_customer_id = customer.stripe_customer_id
         assert stripe_customer_id is not None
         _, cb_txn = iter(stripe.Customer.list_balance_transactions(stripe_customer_id))
@@ -4926,10 +4927,10 @@ class StripeTest(StripeTestCase):
         )
         self.assertEqual(cb_txn.type, "adjustment")
 
-        # The customer now only pays the difference 10800 - 7200 = 3600 = $36,
+        # The customer now only pays the difference 12000 - 7200 = 4800 = $48,
         # since the unused proration is for the whole month.
         (invoice,) = iter(stripe.Invoice.list(customer=stripe_customer_id))
-        self.assertEqual(invoice.amount_due, 3600)
+        self.assertEqual(invoice.amount_due, 4800)
 
     @mock_stripe()
     def test_customer_has_credit_card_as_default_payment_method(self, *mocks: Mock) -> None:

@@ -3163,7 +3163,17 @@ class BillingSession(ABC):
             LicenseLedger.objects.filter(plan=current_plan).order_by("id").last()
         )
         assert current_plan_last_ledger is not None
-        licenses_for_new_plan = current_plan_last_ledger.licenses_at_next_renewal
+
+        old_plan_licenses_at_next_renewal = current_plan_last_ledger.licenses_at_next_renewal
+        assert old_plan_licenses_at_next_renewal is not None
+        licenses_for_new_plan = self.get_billable_licenses_for_customer(
+            current_plan.customer,
+            new_plan_tier,
+            old_plan_licenses_at_next_renewal,
+        )
+        if not new_plan.automanage_licenses:  # nocoverage
+            licenses_for_new_plan = max(old_plan_licenses_at_next_renewal, licenses_for_new_plan)
+
         assert licenses_for_new_plan is not None
         LicenseLedger.objects.create(
             plan=new_plan,
