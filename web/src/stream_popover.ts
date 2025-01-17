@@ -34,6 +34,7 @@ import * as stream_settings_ui from "./stream_settings_ui.ts";
 import * as sub_store from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
 import * as ui_util from "./ui_util.ts";
+import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
@@ -100,11 +101,15 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
     const show_go_to_channel_feed =
         user_settings.web_channel_default_view !==
         web_channel_default_view_values.channel_feed.code;
+    const stream_unread = unread.unread_count_info_for_stream(stream_id);
+    const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
+    const has_unread_messages = stream_unread_count > 0;
     const content = render_left_sidebar_stream_actions_popover({
         stream: {
             ...sub_store.get(stream_id),
             url: browser_history.get_full_url(stream_hash),
         },
+        has_unread_messages,
         show_go_to_channel_feed,
     });
 
@@ -170,6 +175,14 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
                 const sub = stream_popover_sub(e);
                 hide_stream_popover(instance);
                 unread_ops.mark_stream_as_read(sub.stream_id);
+                e.stopPropagation();
+            });
+
+            // Mark all messages in stream as unread
+            $popper.on("click", ".mark_stream_as_unread", (e) => {
+                const sub = stream_popover_sub(e);
+                hide_stream_popover(instance);
+                unread_ops.mark_stream_as_unread(sub.stream_id);
                 e.stopPropagation();
             });
 

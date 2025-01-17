@@ -613,6 +613,13 @@ export function mark_stream_as_read(stream_id: number): void {
     );
 }
 
+export function mark_stream_as_unread(stream_id: number): void {
+    bulk_update_read_flags_for_narrow(
+        [{operator: "channel", operand: stream_id.toString()}],
+        "remove",
+    );
+}
+
 export function mark_topic_as_read(stream_id: number, topic: string): void {
     bulk_update_read_flags_for_narrow(
         [
