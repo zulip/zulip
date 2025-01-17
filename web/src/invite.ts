@@ -84,7 +84,7 @@ function get_common_invitation_data(): {
     let include_realm_default_subscriptions = false;
     if (
         $("#invite_select_default_streams").prop("checked") ||
-        !settings_data.user_can_subscribe_other_users()
+        !settings_data.can_subscribe_others_to_all_streams()
     ) {
         include_realm_default_subscriptions = true;
     } else {
@@ -389,7 +389,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         time_choices: settings_config.custom_time_unit_values,
         show_select_default_streams_option: stream_data.get_default_stream_ids().length > 0,
         user_has_email_set: !settings_data.user_email_not_configured(),
-        can_subscribe_other_users: settings_data.user_can_subscribe_other_users(),
+        can_subscribe_other_users: settings_data.can_subscribe_others_to_all_streams(),
     });
 
     function invite_user_modal_post_render(): void {
@@ -414,7 +414,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         const valid_to_text = valid_to();
         settings_components.set_time_input_formatted_text($expires_in, valid_to_text);
 
-        if (settings_data.user_can_subscribe_other_users()) {
+        if (settings_data.can_subscribe_others_to_all_streams()) {
             set_streams_to_join_list_visibility();
             const $stream_pill_container = $("#invite_streams_container .pill-container");
             stream_pill_widget = invite_stream_picker_pill.create($stream_pill_container);
