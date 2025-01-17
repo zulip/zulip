@@ -5,7 +5,6 @@ import assert from "minimalistic-assert";
 import render_bankruptcy_alert_content from "../templates/navbar_alerts/bankruptcy.hbs";
 import render_configure_email_alert_content from "../templates/navbar_alerts/configure_outgoing_email.hbs";
 import render_demo_organization_deadline_content from "../templates/navbar_alerts/demo_organization_deadline.hbs";
-import render_desktop_notifications_alert_content from "../templates/navbar_alerts/desktop_notifications.hbs";
 import render_empty_required_profile_fields from "../templates/navbar_alerts/empty_required_profile_fields.hbs";
 import render_insecure_desktop_app_alert_content from "../templates/navbar_alerts/insecure_desktop_app.hbs";
 import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert_wrapper.hbs";
@@ -13,6 +12,8 @@ import render_profile_incomplete_alert_content from "../templates/navbar_alerts/
 import render_server_needs_upgrade_alert_content from "../templates/navbar_alerts/server_needs_upgrade.hbs";
 import render_time_zone_update_offer_content from "../templates/navbar_alerts/time_zone_update_offer.hbs";
 
+import * as banners from "./banners.ts";
+import type {AlertBanner} from "./banners.ts";
 import * as channel from "./channel.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
 import * as feedback_widget from "./feedback_widget.ts";
@@ -39,11 +40,7 @@ const show_step = function ($process: JQuery, step: number): void {
         .show();
 };
 
-const get_step = function ($process: JQuery): number {
-    return Number($process.find("[data-step]:visible").attr("data-step"));
-};
-
-export function should_show_notifications(ls: LocalStorage): boolean {
+export function should_show_desktop_notifications_banner(ls: LocalStorage): boolean {
     // if the user said to never show banner on this computer again, it will
     // be stored as `true` so we want to negate that.
     if (localstorage.supported() && ls.get("dontAskForNotifications") === true) {
@@ -162,6 +159,34 @@ export function should_offer_to_update_timezone(): boolean {
     );
 }
 
+const DESKTOP_NOTIFICATIONS_BANNER: AlertBanner = {
+    process: "desktop-notifications",
+    intent: "brand",
+    label: $t({
+        defaultMessage:
+            "Zulip needs your permission to enable desktop notifications for important messages.",
+    }),
+    buttons: [
+        {
+            type: "primary",
+            label: $t({defaultMessage: "Enable notifications"}),
+            custom_classes: "request-desktop-notifications",
+        },
+        {
+            type: "quiet",
+            label: $t({defaultMessage: "Customize notifications"}),
+            custom_classes: "customize-desktop-notifications",
+        },
+        {
+            type: "borderless",
+            label: $t({defaultMessage: "Never ask on this computer"}),
+            custom_classes: "reject-desktop-notifications",
+        },
+    ],
+    close_button: true,
+    custom_classes: "navbar-alert-banner",
+};
+
 export function initialize(): void {
     const ls = localstorage();
     const browser_time_zone = timerender.browser_time_zone();
@@ -203,11 +228,8 @@ export function initialize(): void {
             custom_class: "red",
             rendered_alert_content_html: render_configure_email_alert_content(),
         });
-    } else if (should_show_notifications(ls)) {
-        open({
-            data_process: "notifications",
-            rendered_alert_content_html: render_desktop_notifications_alert_content(),
-        });
+    } else if (should_show_desktop_notifications_banner(ls)) {
+        banners.open(DESKTOP_NOTIFICATIONS_BANNER, $("#navbar_alerts_wrapper"));
     } else if (unread_ui.should_display_bankruptcy_banner()) {
         const old_unreads_missing = unread.old_unreads_missing;
         const unread_msgs_count = unread.get_unread_message_count();
@@ -229,18 +251,29 @@ export function initialize(): void {
     }
 
     // Configure click handlers.
-    $(".request-desktop-notifications").on("click", function (e) {
-        e.preventDefault();
-        $(this).closest(".alert").hide();
-        desktop_notifications.request_desktop_notifications_permission();
-        $(window).trigger("resize");
+    $("#navbar_alerts_wrapper").on(
+        "click",
+        ".request-desktop-notifications",
+        function (this: HTMLElement) {
+            const $banner = $(this).closest(".banner");
+            banners.close($banner);
+            desktop_notifications.request_desktop_notifications_permission();
+        },
+    );
+
+    $("#navbar_alerts_wrapper").on("click", ".customize-desktop-notifications", () => {
+        window.location.hash = "#settings/notifications";
     });
 
-    $(".reject-notifications").on("click", function () {
-        $(this).closest(".alert").hide();
-        ls.set("dontAskForNotifications", true);
-        $(window).trigger("resize");
-    });
+    $("#navbar_alerts_wrapper").on(
+        "click",
+        ".reject-desktop-notifications",
+        function (this: HTMLElement) {
+            const $banner = $(this).closest(".banner");
+            banners.close($banner);
+            ls.set("dontAskForNotifications", true);
+        },
+    );
 
     $(".accept-bankruptcy").on("click", function (e) {
         e.preventDefault();
@@ -262,13 +295,9 @@ export function initialize(): void {
         function (this: HTMLElement, e) {
             e.stopPropagation();
             const $process = $(this).closest("[data-process]");
-            if (get_step($process) === 1 && $process.attr("data-process") === "notifications") {
-                show_step($process, 2);
-            } else {
-                $(this).closest(".alert").hide();
-                if ($process.attr("data-process") !== "profile-missing-required") {
-                    maybe_show_empty_required_profile_fields_alert();
-                }
+            $(this).closest(".alert").hide();
+            if ($process.attr("data-process") !== "profile-missing-required") {
+                maybe_show_empty_required_profile_fields_alert();
             }
             $(window).trigger("resize");
         },

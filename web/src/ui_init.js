@@ -16,6 +16,7 @@ import * as add_stream_options_popover from "./add_stream_options_popover.ts";
 import * as alert_words from "./alert_words.ts";
 import {all_messages_data} from "./all_messages_data.ts";
 import * as audible_notifications from "./audible_notifications.ts";
+import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import * as channel from "./channel.ts";
@@ -515,6 +516,7 @@ export function initialize_everything(state_data) {
     emojisets.initialize();
     scroll_bar.initialize();
     message_viewport.initialize();
+    banners.initialize();
     navbar_alerts.initialize();
     message_list_hover.initialize();
     initialize_kitchen_sink_stuff();
