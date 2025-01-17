@@ -547,7 +547,7 @@ export function can_subscribe_others(sub: StreamSubscription): boolean {
     return (
         !current_user.is_guest &&
         (!sub.invite_only || sub.subscribed) &&
-        settings_data.user_can_subscribe_other_users()
+        settings_data.can_subscribe_others_to_all_streams()
     );
 }
 

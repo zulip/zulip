@@ -514,7 +514,7 @@ export function show_new_stream_modal(): void {
 
     stream_ui_updates.enable_or_disable_add_subscribers_elements(
         $add_subscribers_container,
-        settings_data.user_can_subscribe_other_users(),
+        settings_data.can_subscribe_others_to_all_streams(),
         true,
     );
 
