@@ -51,21 +51,21 @@ SLACK_USERMENTION_REGEX = r"""
 SLACK_STRIKETHROUGH_REGEX = r"""
                              (^|[ -(]|[+-/]|\*|\_|[:-?]|\{|\[|\||\^)     # Start after specified characters
                              (\~)                                  # followed by an asterisk
-                                 ([ -)+-}—]*)([ -}]+)              # any character except asterisk
+                                 ([ -}]+)              # any character except asterisk
                              (\~)                                  # followed by an asterisk
                              ($|[ -']|[+-/]|[:-?]|\*|\_|\}|\)|\]|\||\^)  # ends with specified characters
                              """
 SLACK_ITALIC_REGEX = r"""
                       (^|[ -*]|[+-/]|[:-?]|\{|\[|\||\^|~)
                       (\_)
-                          ([ -^`~—]*)([ -^`-~]+)                  # any character
+                          ([ -^`-~]+)                  # any character
                       (\_)
                       ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\*|\||\^|~)
                       """
 SLACK_BOLD_REGEX = r"""
                     (^|[ -(]|[+-/]|[:-?]|\{|\[|\_|\||\^|~)
                     (\*)
-                        ([ -)+-~—]*)([ -)+-~]+)                   # any character
+                        ([ -)+-~]+)                   # any character
                     (\*)
                     ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\_|\||\^|~)
                     """
@@ -141,14 +141,7 @@ def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
     """
 
     def replace_slack_format(match: Match[str]) -> str:
-        return (
-            match.group(1)
-            + zulip_keyword
-            + match.group(3)
-            + match.group(4)
-            + zulip_keyword
-            + match.group(6)
-        )
+        return match.group(1) + zulip_keyword + match.group(3) + zulip_keyword + match.group(5)
 
     return re.sub(regex, replace_slack_format, text, flags=re.VERBOSE | re.MULTILINE)
 
