@@ -215,6 +215,8 @@ POLICIES_DIRECTORY: str = "zerver/policies_absent"
 # Security
 ENABLE_FILE_LINKS = False
 ENABLE_GRAVATAR = True
+## Overrides the above setting for individual realms, by integer ID.
+GRAVATAR_REALM_OVERRIDE: dict[int, bool] = {}
 INLINE_IMAGE_PREVIEW = True
 INLINE_URL_EMBED_PREVIEW = True
 NAME_CHANGES_DISABLED = False
