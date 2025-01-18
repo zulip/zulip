@@ -70,6 +70,10 @@
         opacity: 1;
     }
 
+    .zulip-icon.zulip-icon-close {
+        font-size: 1.5rem;
+    }
+
     .media-info-wrapper {
         display: flex;
         justify-content: end;
