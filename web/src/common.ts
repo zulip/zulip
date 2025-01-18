@@ -58,6 +58,14 @@ export function adjust_mac_kbd_tags(kbd_elem_class: string): void {
             const $kbd_elem = $("<kbd>").text(following_key);
             $(this).after($("<span>").text(" + ").contents(), $kbd_elem);
         }
+
+        // The ⌘ symbol isn't vertically centered, so we use an icon.
+        if (key_text === "⌘") {
+            const $icon = $("<i>")
+                .addClass("zulip-icon zulip-icon-mac-command")
+                .attr("aria-label", key_text);
+            $(this).empty().append($icon); // Use .append() to safely add the icon
+        }
     });
 }
 
