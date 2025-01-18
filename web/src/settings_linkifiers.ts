@@ -23,10 +23,16 @@ type RealmLinkifiers = typeof realm.realm_linkifiers;
 
 const meta = {
     loaded: false,
+    is_reordering: false,
 };
+
+let current_linkifier_ids: number[] = [];
+const reorder_debounce_timeout = 100; // ms
 
 export function reset(): void {
     meta.loaded = false;
+    meta.is_reordering = false;
+    current_linkifier_ids = [];
 }
 
 export function maybe_disable_widgets(): void {
@@ -108,6 +114,14 @@ function open_linkifier_edit_form(linkifier_id: number): void {
             ui_util.place_caret_at_end(util.the($("#edit-linkifier-pattern")));
         },
     });
+}
+
+function initialize_linkifier_state(): void {
+    current_linkifier_ids = $("#admin_linkifiers_table tr.linkifier_row")
+        .map(function () {
+            return Number.parseInt($(this).attr("data-linkifier-id")!, 10);
+        })
+        .get();
 }
 
 function update_linkifiers_order(): void {
@@ -194,6 +208,7 @@ export function populate_linkifiers(linkifiers_data: RealmLinkifiers): void {
     });
 
     if (current_user.is_admin) {
+        initialize_linkifier_state();
         new SortableJS(util.the($linkifiers_table), {
             onUpdate: update_linkifiers_order,
             handle: ".move-handle",
