@@ -1,8 +1,8 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import SortableJS from "sortablejs";
 import {z} from "zod";
-import _ from "lodash";
 
 import render_confirm_delete_linkifier from "../templates/confirm_dialog/confirm_delete_linkifier.hbs";
 import render_admin_linkifier_edit_form from "../templates/settings/admin_linkifier_edit_form.hbs";
@@ -128,8 +128,19 @@ function initialize_linkifier_state(): void {
 function reload_linkifiers(): void {
     void channel.get({
         url: "/json/realm/linkifiers",
-        success(data: unknown) {
-            populate_linkifiers((data as {linkifiers: RealmLinkifiers}).linkifiers);
+        success(data) {
+            const response = z
+                .object({
+                    linkifiers: z.array(
+                        z.object({
+                            id: z.number(),
+                            pattern: z.string(),
+                            url_template: z.string(),
+                        }),
+                    ),
+                })
+                .parse(data);
+            populate_linkifiers(response.linkifiers);
         },
     });
 }
@@ -255,8 +266,8 @@ export function populate_linkifiers(linkifiers_data: RealmLinkifiers): void {
             handle: ".move-handle",
             filter: "input",
             preventOnFilter: false,
-            delay: 50,  // Add delay to improve drag accuracy
-            multiDrag: false,  // Disable multiple drag operations
+            delay: 50, // Add delay to improve drag accuracy
+            multiDrag: false, // Disable multiple drag operations
         });
     }
 }
