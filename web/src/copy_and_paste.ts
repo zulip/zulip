@@ -385,15 +385,53 @@ export function is_white_space_pre(paste_html: string): boolean {
     );
 }
 
-function is_single_image(paste_html: string): boolean {
+function is_from_excel(html_fragment: HTMLBodyElement): boolean {
+    const html_tag = html_fragment.parentElement;
+    if (!html_tag || html_tag.nodeName !== "HTML") {
+        return false;
+    }
+
+    const excel_namespaces = [
+        "urn:schemas-microsoft-com:office:excel",
+        "urn:schemas-microsoft-com:office:office",
+    ];
+
+    const has_excel_metadata = [...html_tag.querySelectorAll("meta")].some(
+        (meta) =>
+            (meta.name === "ProgId" && meta.content === "Excel.Sheet") ||
+            (meta.name === "Generator" && meta.content?.includes("Microsoft Excel")),
+    );
+    if (!has_excel_metadata) {
+        return false;
+    }
+
+    if (!html_tag.querySelector("[class^='xl']")) {
+        return false;
+    }
+
+    const html_outer = html_tag.outerHTML;
+
+    if (!html_outer.includes("<!--StartFragment-->")) {
+        return false;
+    }
+
+    if (!excel_namespaces.some((ns) => html_outer.includes(ns))) {
+        return false;
+    }
+
+    return true;
+}
+
+export function is_single_image(paste_html: string): boolean {
     const html_fragment = new DOMParser()
         .parseFromString(paste_html, "text/html")
         .querySelector("body");
     assert(html_fragment !== null);
     return (
-        html_fragment.childNodes.length === 1 &&
-        html_fragment.firstElementChild !== null &&
-        html_fragment.firstElementChild.nodeName === "IMG"
+        is_from_excel(html_fragment) ||
+        (html_fragment.childNodes.length === 1 &&
+            html_fragment.firstElementChild !== null &&
+            html_fragment.firstElementChild.nodeName === "IMG")
     );
 }
 
