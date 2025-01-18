@@ -1203,10 +1203,24 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             redirect_url = response["Location"]
             self.assertEqual(redirect_url, str(avatar_url(cordelia)) + "&foo=bar")
 
+        with self.settings(
+            ENABLE_GRAVATAR=False, GRAVATAR_REALM_OVERRIDE={get_realm("zulip").id: True}
+        ):
+            response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
+            redirect_url = response["Location"]
+            self.assertTrue("gravatar" in redirect_url)
+
         with self.settings(ENABLE_GRAVATAR=False):
             response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
             redirect_url = response["Location"]
             self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "&foo=bar"))
+
+        with self.settings(
+            ENABLE_GRAVATAR=True, GRAVATAR_REALM_OVERRIDE={get_realm("zulip").id: False}
+        ):
+            response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
+            redirect_url = response["Location"]
+            self.assertTrue("gravatar" not in redirect_url)
 
     def test_get_settings_avatar(self) -> None:
         self.login("hamlet")

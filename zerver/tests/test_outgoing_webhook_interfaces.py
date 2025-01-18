@@ -76,6 +76,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         gravatar_url = get_gravatar_url(
             othello.delivery_email,
             othello.avatar_version,
+            get_realm("zulip").id,
         )
 
         expected_message_data = {

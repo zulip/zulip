@@ -406,7 +406,7 @@ def avatar_by_email(
     except UserProfile.DoesNotExist:
         # If there is no such user, treat it as a new gravatar
         avatar_version = 1
-        url = get_gravatar_url(email, avatar_version, medium)
+        url = get_gravatar_url(email, avatar_version, realm.id, medium)
 
     assert url is not None
     if request.META["QUERY_STRING"]:
