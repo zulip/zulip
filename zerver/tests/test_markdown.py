@@ -3357,6 +3357,52 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
         )
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
+    def test_stream_in_url(self) -> None:
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        sender_user_profile = self.example_user("othello")
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        content = "[denmark stream](#**Denmark**)"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            f'<p><a href="/#narrow/channel/{denmark.id}-Denmark">denmark stream</a></p>',
+        )
+
+    def test_stream_topic_in_url(self) -> None:
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        sender_user_profile = self.example_user("othello")
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        content = "[topic 1]( #**Denmark>some topic**)"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            f'<p><a href="/#narrow/channel/{denmark.id}-Denmark/topic/some.20topic">topic 1</a></p>',
+        )
+
+    def test_stream_topic_message_in_url(self) -> None:
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        sender_user_profile = self.example_user("othello")
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        content = "As mentioned in [this message](#**Denmark>danish@123**)"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            "<p>As mentioned in "
+            f"<a "
+            f'href="/#narrow/channel/{denmark.id}-{denmark.name}/topic/danish/near/123">'
+            f"this message</a>"
+            "</p>",
+        )
+
     def test_image_preview_title(self) -> None:
         msg = "[My favorite image](https://example.com/testimage.png)"
         converted = markdown_convert_wrapper(msg)

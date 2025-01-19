@@ -153,11 +153,15 @@ def verbose_compile(pattern: str) -> Pattern[str]:
     )
 
 
+BASE_STREAM_LINK_REGEX = r"""
+                     \#\*\*                                 # Hash sign followed by double asterisks
+                         (?P<stream_name>[^\*]+)            # stream name can contain anything except '*'
+                     \*\*                                   # ends by double asterisks
+                    """
+
 STREAM_LINK_REGEX = rf"""
-                     {BEFORE_MENTION_ALLOWED_REGEX} # Start after whitespace or specified chars
-                     \#\*\*                         # and after hash sign followed by double asterisks
-                         (?P<stream_name>[^\*]+)    # stream name can contain anything
-                     \*\*                           # ends by double asterisks
+                     {BEFORE_MENTION_ALLOWED_REGEX}         # Start after whitespace or specified chars
+                     {BASE_STREAM_LINK_REGEX}
                     """
 
 
@@ -169,18 +173,25 @@ def get_compiled_stream_link_regex() -> Pattern[str]:
     # With new InlineProcessor these extra patterns
     # are not required.
     return re.compile(
-        STREAM_LINK_REGEX,
+        rf"""
+            ({BEFORE_MENTION_ALLOWED_REGEX}|\]\(\s*)        # Start with specified characters or ']('
+            {BASE_STREAM_LINK_REGEX}
+        """,
         re.DOTALL | re.VERBOSE,
     )
 
 
-STREAM_TOPIC_LINK_REGEX = rf"""
-                     {BEFORE_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
-                     \#\*\*                          # and after hash sign followed by double asterisks
+BASE_STREAM_TOPIC_LINK_REGEX = r"""
+                     \#\*\*                          # Hash sign followed by double asterisks
                          (?P<stream_name>[^\*>]+)    # stream name can contain anything except >
                          >                           # > acts as separator
                          (?P<topic_name>[^\*]*)      # topic name can be an empty string or contain anything
                      \*\*                            # ends by double asterisks
+                   """
+
+STREAM_TOPIC_LINK_REGEX = rf"""
+                     {BEFORE_MENTION_ALLOWED_REGEX}         # Start after whitespace or specified chars
+                     {BASE_STREAM_TOPIC_LINK_REGEX}
                    """
 
 
@@ -192,20 +203,27 @@ def get_compiled_stream_topic_link_regex() -> Pattern[str]:
     # With new InlineProcessor these extra patterns
     # are not required.
     return re.compile(
-        STREAM_TOPIC_LINK_REGEX,
+        rf"""
+            ({BEFORE_MENTION_ALLOWED_REGEX}|\]\(\s*)        # Start specified chars or ']('
+            {BASE_STREAM_TOPIC_LINK_REGEX}
+        """,
         re.DOTALL | re.VERBOSE,
     )
 
 
-STREAM_TOPIC_MESSAGE_LINK_REGEX = rf"""
-                     {BEFORE_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
+BASE_STREAM_TOPIC_MESSAGE_LINK_REGEX = r"""
                      \#\*\*                          # and after hash sign followed by double asterisks
                          (?P<stream_name>[^\*>]+)    # stream name can contain anything except >
                          >                           # > acts as separator
                          (?P<topic_name>[^\*]*)      # topic name can be an empty string or contain anything
                          @
-                         (?P<message_id>\d+)         # message id
-                     \*\*                            # ends by double asterisks
+                         (?P<message_id>\d+)                # message id
+                     \*\*                                   # ends by double asterisks
+                   """
+
+STREAM_TOPIC_MESSAGE_LINK_REGEX = rf"""
+                     {BEFORE_MENTION_ALLOWED_REGEX}         # Start after whitespace or specified chars
+                     {BASE_STREAM_TOPIC_MESSAGE_LINK_REGEX}
                    """
 
 
@@ -217,7 +235,10 @@ def get_compiled_stream_topic_message_link_regex() -> Pattern[str]:
     # With new InlineProcessor these extra patterns
     # are not required.
     return re.compile(
-        STREAM_TOPIC_MESSAGE_LINK_REGEX,
+        rf"""
+            ({BEFORE_MENTION_ALLOWED_REGEX}|\]\(\s*)        # Start after whitespace or specified chars
+            {BASE_STREAM_TOPIC_MESSAGE_LINK_REGEX}
+        """,
         re.DOTALL | re.VERBOSE,
     )
 
@@ -2035,16 +2056,23 @@ class StreamPattern(StreamTopicMessageProcessor):
         stream_id = self.find_stream_id(name)
         if stream_id is None:
             return None, None, None
-        el = Element("a")
-        el.set("class", "stream")
-        el.set("data-stream-id", str(stream_id))
         # TODO: We should quite possibly not be specifying the
         # href here and instead having the browser auto-add the
         # href when it processes a message with one of these, to
         # provide more clarity to API clients.
         # Also do the same for StreamTopicPattern.
         stream_url = encode_stream(stream_id, name)
-        el.set("href", f"/#narrow/channel/{stream_url}")
+        link = f"/#narrow/channel/{stream_url}"
+
+        # Return the plain link text if the prettified URL is
+        # placed in URL placeholder of markdown hyperlink syntax.
+        if data[m.start() : m.start() + 2] == "](":
+            return link, m.start() + 2, m.end()
+
+        el = Element("a")
+        el.set("class", "stream")
+        el.set("data-stream-id", str(stream_id))
+        el.set("href", link)
         text = f"#{name}"
         el.text = markdown.util.AtomicString(text)
         return el, m.start(), m.end()
@@ -2068,9 +2096,7 @@ class StreamTopicPattern(StreamTopicMessageProcessor):
         stream_id = self.find_stream_id(stream_name)
         if stream_id is None or topic_name is None:
             return None, None, None
-        el = Element("a")
-        el.set("class", "stream-topic")
-        el.set("data-stream-id", str(stream_id))
+
         stream_url = encode_stream(stream_id, stream_name)
         topic_url = hash_util_encode(topic_name)
         channel_topic_object = ChannelTopicInfo(stream_name, topic_name)
@@ -2080,6 +2106,14 @@ class StreamTopicPattern(StreamTopicMessageProcessor):
         else:
             link = f"/#narrow/channel/{stream_url}/topic/{topic_url}"
 
+        # Return the plain link text if the prettified URL is
+        # placed in URL placeholder of markdown hyperlink syntax.
+        if data[m.start() : m.start() + 2] == "](":
+            return link, m.start() + 2, m.end()
+
+        el = Element("a")
+        el.set("class", "stream-topic")
+        el.set("data-stream-id", str(stream_id))
         el.set("href", link)
 
         if topic_name == "":
@@ -2106,11 +2140,18 @@ class StreamTopicMessagePattern(StreamTopicMessageProcessor):
         stream_id = self.find_stream_id(stream_name)
         if stream_id is None or topic_name is None:
             return None, None, None
-        el = Element("a")
-        el.set("class", "message-link")
+
         stream_url = encode_stream(stream_id, stream_name)
         topic_url = hash_util_encode(topic_name)
         link = f"/#narrow/channel/{stream_url}/topic/{topic_url}/near/{message_id}"
+
+        # Return the plain link text if the prettified URL is
+        # placed in URL placeholder of markdown hyperlink syntax.
+        if data[m.start() : m.start() + 2] == "](":
+            return link, m.start() + 2, m.end()
+
+        el = Element("a")
+        el.set("class", "message-link")
         el.set("href", link)
 
         if topic_name == "":
