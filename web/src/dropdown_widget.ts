@@ -235,12 +235,21 @@ export class DropdownWidget {
     }
 
     setup(): void {
+        let keyboard_action: boolean;
         this.init();
         const delegate_container = util.the(this.$events_container);
 
         if (this.disable_for_spectators && page_params.is_spectator) {
             return;
         }
+
+        $(this.widget_selector).on("mousedown", () => {
+            keyboard_action = false;
+        });
+
+        $(this.widget_selector).on("keydown", () => {
+            keyboard_action = true;
+        });
 
         tippy.delegate(delegate_container, {
             ...popover_menus.default_popover_props,
@@ -294,6 +303,26 @@ export class DropdownWidget {
                 $search_input.on("input.list_widget_filter", () => {
                     this.show_empty_if_no_items($popper);
                 });
+
+                if (!keyboard_action && this.hide_search_box) {
+                    const first_item = this.list_widget.get_current_list()[0];
+                    if (first_item) {
+                        const $element = $popper.find(
+                            `.list-item[data-unique-id="${first_item.unique_id}"]`,
+                        );
+                        this.$events_container.one(
+                            "keydown",
+                            `${this.widget_selector}, ${this.widget_wrapper_id}`,
+                            (e) => {
+                                if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                                    $element.trigger("focus");
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                }
+                            },
+                        );
+                    }
+                }
 
                 // Keyboard handler
                 $popper.on("keydown", (e) => {
@@ -459,10 +488,17 @@ export class DropdownWidget {
                     this.item_click_callback(event, instance, this, true);
                 });
 
-                // Set focus on first element when dropdown opens.
+                const $selected_item = $dropdown_list_body.find(
+                    `.list-item[data-unique-id="${this.current_value}"]`,
+                );
+                $selected_item.addClass("active");
+
+                // Adjust focus based on how the dropdown was opened
                 setTimeout(() => {
                     if (this.hide_search_box) {
-                        $dropdown_list_body.find(".list-item:first-child").trigger("focus");
+                        if (keyboard_action) {
+                            $selected_item.trigger("focus");
+                        }
                     } else {
                         $search_input.trigger("focus");
                     }

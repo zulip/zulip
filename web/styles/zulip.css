@@ -1898,6 +1898,12 @@ body:not(.hide-left-sidebar) {
     color: var(--color-dropdown-item);
 
     &:focus {
+        border-radius: 4px;
+        outline: 1px solid var(--color-outline-focus) !important;
+        outline-offset: -1px;
+    }
+
+    &.active {
         background-color: var(--background-color-active-dropdown-item);
         outline: none;
     }
