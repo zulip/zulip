@@ -64,6 +64,7 @@ import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_topics_ui from "./user_topics_ui.ts";
+import {transpileModule} from "typescript";
 
 function do_narrow_action(action) {
     if (message_lists.current === undefined) {
@@ -132,6 +133,7 @@ const keydown_ctrl_mappings = {
 };
 
 const keydown_cmd_or_ctrl_mappings = {
+    13: {name: "ctrl_enter", message_view_only: true}, // enter
     67: {name: "copy_with_c", message_view_only: false}, // 'C'
     75: {name: "search_with_k", message_view_only: false}, // 'K'
     83: {name: "star_message", message_view_only: true}, // 'S'
@@ -596,10 +598,11 @@ export function process_enter_key(e) {
     return true;
 }
 
-export function process_ctrl_enter_key() {
+export function process_cmd_or_ctrl_enter_key() {
     if ($("#preview_message_area").is(":visible")) {
-        const ctrl_pressed = true;
-        compose.handle_enter_key_with_preview_open(ctrl_pressed);
+        const cmd_or_ctrl_pressed = true;
+        compose.handle_enter_key_with_preview_open(cmd_or_ctrl_pressed);
+
         return true;
     }
 
@@ -727,7 +730,7 @@ export function process_hotkey(e, hotkey) {
         case "enter":
             return process_enter_key(e);
         case "ctrl_enter":
-            return process_ctrl_enter_key(e);
+            return process_cmd_or_ctrl_enter_key(e);
         case "tab":
             return process_tab_key();
         case "shift_tab":
