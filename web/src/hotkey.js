@@ -1,8 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import "./activity.ts";
-
+import * as activity from "./activity.ts";
 import * as activity_ui from "./activity_ui.ts";
 import * as browser_history from "./browser_history.ts";
 import * as color_picker_popover from "./color_picker_popover.ts";
@@ -65,7 +64,6 @@ import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_topics_ui from "./user_topics_ui.ts";
-import {transpileModule} from "typescript";
 
 function do_narrow_action(action) {
     if (message_lists.current === undefined) {
