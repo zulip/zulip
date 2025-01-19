@@ -1193,7 +1193,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                     `    <span class="zulip-icon zulip-icon-user-circle-offline user-circle-offline user-circle"></span>\n` +
                     `    <img class="typeahead-image" src="/avatar/${othello.user_id}" />\n` +
                     '<div class="typeahead-text-container">\n' +
-                    '    <strong class="typeahead-strong-section">Othello, the Moor of Venice</strong>    <span class="autocomplete_secondary">othello@zulip.com</span>' +
+                    '    <strong class="typeahead-strong-section">Othello, the Moor of...</strong>    <span class="autocomplete_secondary">othello@zulip.com</span>' +
                     "</div>\n";
                 assert.equal(actual_value, expected_value);
                 // Reset the email such that this does not affect further tests.

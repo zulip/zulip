@@ -143,8 +143,13 @@ export let render_person = (person: UserPillData | UserOrMentionPillData): strin
 
     const pronouns = pronouns_list?.[0]?.value;
 
+    const primary_name =
+        person.user.full_name.length > 20
+            ? person.user.full_name.slice(0, 20) + "..."
+            : person.user.full_name;
+
     const typeahead_arguments = {
-        primary: person.user.full_name,
+        primary: primary_name,
         img_src: avatar_url,
         user_circle_class,
         is_person: true,

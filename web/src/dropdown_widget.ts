@@ -35,6 +35,11 @@ export type Option = {
     stream?: StreamSubscription;
 };
 
+type StreamItem = {
+    stream?: {
+        name: string;
+    };
+};
 export type DropdownWidgetOptions = {
     widget_name: string;
     // You can bold the selected `option` by setting `option.bold_current_selection` to `true`.
@@ -270,13 +275,27 @@ export class DropdownWidget {
                 const $search_input = $popper.find<HTMLInputElement>(
                     "input.dropdown-list-search-input",
                 );
-
+                const new_get_item = <T extends StreamItem>(item: T): T => {
+                    const modifiedItem = {
+                        ...item,
+                        stream: item.stream
+                            ? {
+                                  ...item.stream,
+                                  name:
+                                      item.stream.name.length > 20
+                                          ? item.stream.name.slice(0, 20) + "..."
+                                          : item.stream.name,
+                              }
+                            : undefined,
+                    };
+                    return ListWidget.default_get_item(modifiedItem);
+                };
                 this.list_widget = ListWidget.create(
                     $dropdown_list_body,
                     this.get_options(this.current_value),
                     {
                         name: `${CSS.escape(this.widget_name)}-list-widget`,
-                        get_item: ListWidget.default_get_item,
+                        get_item: new_get_item,
                         modifier_html(item) {
                             return render_dropdown_list({item});
                         },
