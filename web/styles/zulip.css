@@ -2179,6 +2179,23 @@ body:not(.spectator-view) {
     }
 }
 
+.inbox-filter-dropdown-list-container,
+.recent-view-filter-dropdown-list-container {
+    .list-item {
+        &:focus {
+            border-radius: 4px;
+            outline: 1px solid var(--color-outline-focus) !important;
+            outline-offset: -1px;
+            background-color: transparent;
+        }
+
+        &.active {
+            background-color: var(--background-color-active-dropdown-item);
+            outline: none;
+        }
+    }
+}
+
 .dropdown-list-container .dropdown-list .dropdown-list-item-common-styles {
     position: relative;
     display: flex;
