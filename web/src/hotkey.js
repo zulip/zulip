@@ -1,7 +1,8 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import * as activity from "./activity.ts";
+import "./activity.ts";
+
 import * as activity_ui from "./activity_ui.ts";
 import * as browser_history from "./browser_history.ts";
 import * as color_picker_popover from "./color_picker_popover.ts";
