@@ -22,8 +22,9 @@
                 {{/tr}}
             {{else}}
                 {{#tr}}
-                    You are not subscribed to <z-stream-name></z-stream-name>.
+                    You are not subscribed to <z-stream-name></z-stream-name>. <subscribe-link></subscribe-link>
                     {{#*inline "z-stream-name"}}{{> stream_privacy . }} {{stream_name}}{{/inline}}
+                    {{#*inline "subscribe-link"}}  <a class="stream_sub_unsub_button"> {{t 'Subscribe' }}</a>{{/inline}}
                 {{/tr}}
             {{/if}}
         </span>
