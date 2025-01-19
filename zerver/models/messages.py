@@ -21,6 +21,7 @@ from zerver.models.realms import Realm
 from zerver.models.recipients import Recipient
 from zerver.models.users import UserProfile
 
+from collections import Counter
 
 class AbstractMessage(models.Model):
     id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
@@ -345,6 +346,7 @@ class AbstractEmoji(models.Model):
     # there may be multiple accepted names for a given emoji; this
     # field encodes which one the user selected.
     emoji_name = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
     UNICODE_EMOJI = "unicode_emoji"
     REALM_EMOJI = "realm_emoji"
@@ -380,6 +382,9 @@ class AbstractEmoji(models.Model):
 
     class Meta:
         abstract = True
+        indexes = [
+            models.Index(fields=['user_profile', '-created_at']),
+        ]
 
 
 class AbstractReaction(AbstractEmoji):
@@ -403,11 +408,36 @@ class Reaction(AbstractReaction):
             "emoji_code",
             "reaction_type",
             "user_profile_id",
+            "created_at",
         ]
         # The ordering is important here, as it makes it convenient
         # for clients to display reactions in order without
         # client-side sorting code.
         return Reaction.objects.filter(message_id__in=needed_ids).values(*fields).order_by("id")
+
+    @classmethod
+    def get_frequent_from_recent(cls, user_profile, n_recent=50, top_k=6):
+        #Get top K most frequently used emojis from N most recent reactions
+        recent_reactions = cls.objects.filter(
+            user_profile=user_profile,
+            reaction_type=cls.UNICODE_EMOJI
+        ).order_by('-created_at')[:n_recent]
+
+        emoji_counter = Counter()
+        for reaction in recent_reactions:
+            key = (reaction.emoji_name, reaction.emoji_code)
+            emoji_counter[key] += 1
+
+        top_emojis = [
+            {
+                'emoji_name': emoji_name,
+                'emoji_code': emoji_code,
+                'count': count
+            }
+            for (emoji_name, emoji_code), count in emoji_counter.most_common(top_k)
+        ]
+
+        return top_emojis
 
 
 class ArchivedReaction(AbstractReaction):
