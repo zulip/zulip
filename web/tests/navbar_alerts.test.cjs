@@ -9,6 +9,7 @@ const {run_test} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 const desktop_notifications = mock_esm("../src/desktop_notifications");
+const unread = mock_esm("../src/unread");
 const util = mock_esm("../src/util");
 const timerender = mock_esm("../src/timerender");
 
@@ -65,6 +66,31 @@ test("should_show_desktop_notifications_banner", ({override}) => {
     // Don't ask for permission if user is a spectator.
     page_params.is_spectator = true;
     assert.equal(navbar_alerts.should_show_desktop_notifications_banner(ls), false);
+});
+
+test("should_show_bankruptcy_banner", ({override}) => {
+    // Show bankruptcy banner when following conditions are suitable:
+    // - The user has read at least one message, i.e., furthest_read_time is defined.
+    // - The user has more than 500 unread messages.
+    // - The user has not read any message in the last 2 days.
+    const start_time = new Date("2024-01-01T10:00:00.000Z"); // Wednesday 1/1/2024 10:00:00 AM (UTC+0)
+    override(page_params, "furthest_read_time", start_time.getTime() / 1000);
+    override(Date, "now", () => addDays(start_time, 3).getTime()); // Saturday 1/4/2024 10:00:00 AM (UTC+0)
+    override(unread, "get_unread_message_count", () => 501);
+    assert.equal(navbar_alerts.should_show_bankruptcy_banner(), true);
+
+    // Don't show bankruptcy banner if user has not read any message.
+    override(page_params, "furthest_read_time", undefined);
+    assert.equal(navbar_alerts.should_show_bankruptcy_banner(), false);
+    override(page_params, "furthest_read_time", start_time.getTime() / 1000);
+
+    // Don't show bankruptcy banner if user has read any message in the last 2 days.
+    override(Date, "now", () => addDays(start_time, 1).getTime()); // Thursday 1/2/2024 10:00:00 AM (UTC+0)
+    assert.equal(navbar_alerts.should_show_bankruptcy_banner(), false);
+
+    // Don't show bankruptcy banner if user has less <= 500 unread messages.
+    override(unread, "get_unread_message_count", () => 500);
+    assert.equal(navbar_alerts.should_show_bankruptcy_banner(), false);
 });
 
 test("profile_incomplete_alert", ({override}) => {
