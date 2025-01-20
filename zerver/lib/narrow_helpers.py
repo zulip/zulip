@@ -20,24 +20,31 @@ from users:
 
 import os
 from collections.abc import Collection, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from django.conf import settings
 
 
 @dataclass
 class NarrowTerm:
-    # In our current use case we don't yet handle negated narrow terms.
     operator: str
     operand: str
+    negated: bool
 
 
-def narrow_dataclasses_from_tuples(tups: Collection[Sequence[str]]) -> Collection[NarrowTerm]:
+@dataclass
+class NeverNegatedNarrowTerm(NarrowTerm):
+    negated: bool = field(default=False, init=False)
+
+
+def narrow_dataclasses_from_tuples(
+    tups: Collection[Sequence[str]],
+) -> Collection[NeverNegatedNarrowTerm]:
     """
     This method assumes that the callers are in our event-handling codepath, and
     therefore as of summer 2023, they do not yet support the "negated" flag.
     """
-    return [NarrowTerm(operator=tup[0], operand=tup[1]) for tup in tups]
+    return [NeverNegatedNarrowTerm(operator=tup[0], operand=tup[1]) for tup in tups]
 
 
 stop_words_list: list[str] | None = None
