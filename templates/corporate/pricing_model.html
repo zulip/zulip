@@ -225,7 +225,7 @@
                         <div class="bottom">
                             <div class="text-content">
                                 <div class="standard-price-box">
-                                    {% if (is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_BASIC)
+                                    {% if (has_scheduled_upgrade and scheduled_upgrade_plan.tier == scheduled_upgrade_plan.TIER_SELF_HOSTED_BASIC)
                                       or (is_self_hosted_realm and sponsorship_pending and requested_sponsorship_plan == "Basic")
                                       or (is_self_hosted_realm and customer_plan and customer_plan.tier != customer_plan.TIER_SELF_HOSTED_LEGACY)%}
                                     <div class="price"><span class="currency-symbol">$</span>3.50</div>
@@ -246,7 +246,7 @@
                                     </div>
                                     {% endif %}
                                 </div>
-                                {% if is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_BASIC %}
+                                {% if has_scheduled_upgrade and scheduled_upgrade_plan.tier == scheduled_upgrade_plan.TIER_SELF_HOSTED_BASIC %}
                                 <a href="{{ billing_base_url }}/billing/" class="button current-plan-button">
                                     Upgrade is scheduled
                                 </a>
@@ -310,7 +310,7 @@
                         <div class="bottom">
                             <div class="text-content">
                                 <div class="standard-price-box">
-                                    {% if (is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_BUSINESS)
+                                    {% if (has_scheduled_upgrade and scheduled_upgrade_plan.tier == scheduled_upgrade_plan.TIER_SELF_HOSTED_BUSINESS)
                                       or (is_self_hosted_realm and sponsorship_pending and requested_sponsorship_plan == "Business")
                                       or (is_self_hosted_realm and customer_plan and customer_plan.tier != customer_plan.TIER_SELF_HOSTED_LEGACY)%}
                                     <div class="price"><span class="currency-symbol">$</span>6.67</div>
@@ -333,7 +333,7 @@
                                     </div>
                                     {% endif %}
                                 </div>
-                                {% if is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_BUSINESS %}
+                                {% if has_scheduled_upgrade and scheduled_upgrade_plan.tier == scheduled_upgrade_plan.TIER_SELF_HOSTED_BUSINESS %}
                                 <a href="{{ billing_base_url }}/billing/" class="button current-plan-button">
                                     Upgrade is scheduled
                                 </a>
@@ -389,7 +389,7 @@
                         </div>
                         <div class="bottom">
                             <div class="text-content">
-                                {% if is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_ENTERPRISE %}
+                                {% if has_scheduled_upgrade and scheduled_upgrade_plan.tier == scheduled_upgrade_plan.TIER_SELF_HOSTED_ENTERPRISE %}
                                 <a href="{{ billing_base_url }}/billing/" class="button current-plan-button">
                                     Upgrade is scheduled
                                 </a>
