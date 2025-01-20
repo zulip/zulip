@@ -1,8 +1,8 @@
 import {addDays} from "date-fns";
+import Handlebars from "handlebars";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_demo_organization_deadline_content from "../templates/navbar_alerts/demo_organization_deadline.hbs";
 import render_empty_required_profile_fields from "../templates/navbar_alerts/empty_required_profile_fields.hbs";
 import render_insecure_desktop_app_alert_content from "../templates/navbar_alerts/insecure_desktop_app.hbs";
 import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert_wrapper.hbs";
@@ -15,7 +15,7 @@ import type {AlertBanner} from "./banners.ts";
 import * as channel from "./channel.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
 import * as feedback_widget from "./feedback_widget.ts";
-import {$t} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import type {LocalStorage} from "./localstorage.ts";
 import {localstorage} from "./localstorage.ts";
@@ -263,18 +263,37 @@ const bankruptcy_banner = (): AlertBanner => {
     };
 };
 
+const demo_organization_deadline_banner = (): AlertBanner => {
+    const days_remaining = get_demo_organization_deadline_days_remaining();
+    return {
+        process: "demo-organization-deadline",
+        intent: days_remaining <= 7 ? "danger" : "info",
+        label: new Handlebars.SafeString(
+            $t_html(
+                {
+                    defaultMessage:
+                        "This <z-demo-link>demo organization</z-demo-link> will be automatically deleted in {days_remaining} days, unless it's <z-convert-link>converted into a permanent organization</z-convert-link>.",
+                },
+                {
+                    "z-demo-link": (content_html) =>
+                        `<a class="banner__link" href="https://zulip.com/help/demo-organizations" target="_blank" rel="noopener noreferrer">${content_html.join("")}</a>`,
+                    "z-convert-link": (content_html) =>
+                        `<a class="banner__link" href="https://zulip.com/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization" target="_blank" rel="noopener noreferrer">${content_html.join("")}</a>`,
+                    days_remaining,
+                },
+            ),
+        ),
+        buttons: [],
+        close_button: true,
+        custom_classes: "navbar-alert-banner",
+    };
+};
+
 export function initialize(): void {
     const ls = localstorage();
     const browser_time_zone = timerender.browser_time_zone();
     if (realm.demo_organization_scheduled_deletion_date) {
-        const days_remaining = get_demo_organization_deadline_days_remaining();
-        open({
-            data_process: "demo-organization-deadline",
-            custom_class: days_remaining <= 7 ? "red" : "",
-            rendered_alert_content_html: render_demo_organization_deadline_content({
-                days_remaining,
-            }),
-        });
+        banners.open(demo_organization_deadline_banner(), $("#navbar_alerts_wrapper"));
     } else if (page_params.insecure_desktop_app) {
         open({
             data_process: "insecure-desktop-app",
