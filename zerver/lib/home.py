@@ -14,7 +14,7 @@ from zerver.lib.i18n import (
     get_language_list,
     get_language_translation_data,
 )
-from zerver.lib.narrow_helpers import NarrowTerm
+from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm
 from zerver.lib.realm_description import get_realm_rendered_description
 from zerver.lib.request import RequestNotes
 from zerver.models import Message, Realm, Stream, UserProfile
@@ -121,7 +121,7 @@ def build_page_params_for_home_page_load(
     user_profile: UserProfile | None,
     realm: Realm,
     insecure_desktop_app: bool,
-    narrow: list[NarrowTerm],
+    narrow: list[NeverNegatedNarrowTerm],
     narrow_stream: Stream | None,
     narrow_topic_name: str | None,
 ) -> tuple[int, dict[str, object]]:
