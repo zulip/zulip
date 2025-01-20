@@ -129,24 +129,15 @@ test("server_upgrade_alert hide_duration_expired", ({override}) => {
     assert.equal(navbar_alerts.should_show_server_upgrade_notification(ls), false);
 });
 
-test("demo_organization_days_remaining", ({override}) => {
-    const start_time = new Date(1620327447050); // Thursday 06/5/2021 07:02:27 AM (UTC+0)
+test("get_demo_organization_deadline_days_remaining", ({override}) => {
+    const start_time = new Date("2024-01-01T10:00:00.000Z"); // Wednesday 1/1/2024 10:00:00 AM (UTC+0)
+    override(Date, "now", () => start_time);
 
-    const high_priority_deadline = addDays(start_time, 5);
+    const demo_organization_scheduled_deletion_date = addDays(start_time, 7); // Wednesday 1/8/2024 10:00:00 AM (UTC+0)
     override(
         realm,
         "demo_organization_scheduled_deletion_date",
-        Math.trunc(high_priority_deadline / 1000),
+        Math.trunc(demo_organization_scheduled_deletion_date / 1000),
     );
-    override(Date, "now", () => start_time);
-    assert.equal(navbar_alerts.get_demo_organization_deadline_days_remaining(), 5);
-
-    const low_priority_deadline = addDays(start_time, 10);
-    override(
-        realm,
-        "demo_organization_scheduled_deletion_date",
-        Math.trunc(low_priority_deadline / 1000),
-    );
-    override(Date, "now", () => start_time);
-    assert.equal(navbar_alerts.get_demo_organization_deadline_days_remaining(), 10);
+    assert.equal(navbar_alerts.get_demo_organization_deadline_days_remaining(), 7);
 });
