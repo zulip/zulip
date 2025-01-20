@@ -940,31 +940,6 @@ div.focused-message-list.is-conversation-view .recipient_row {
     outline: none;
 }
 
-.topic_move_breadcrumb_messages {
-    margin: 0 5px 5px 0;
-    align-self: center;
-    width: 100%;
-
-    & label.checkbox {
-        /* Place the checkboxes on their own lines. */
-        display: block;
-
-        & input {
-            margin: 0;
-            vertical-align: baseline;
-        }
-
-        & + label.checkbox {
-            margin-top: 10px;
-        }
-    }
-
-    & label {
-        display: inline-block;
-        margin-right: 10px;
-    }
-}
-
 .message_length_controller {
     .message_length_toggle {
         width: 100%;
