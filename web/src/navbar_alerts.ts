@@ -4,7 +4,6 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_empty_required_profile_fields from "../templates/navbar_alerts/empty_required_profile_fields.hbs";
-import render_insecure_desktop_app_alert_content from "../templates/navbar_alerts/insecure_desktop_app.hbs";
 import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert_wrapper.hbs";
 import render_profile_incomplete_alert_content from "../templates/navbar_alerts/profile_incomplete.hbs";
 import render_server_needs_upgrade_alert_content from "../templates/navbar_alerts/server_needs_upgrade.hbs";
@@ -217,6 +216,24 @@ const CONFIGURE_OUTGOING_MAIL_BANNER: AlertBanner = {
     custom_classes: "navbar-alert-banner",
 };
 
+const INSECURE_DESKTOP_APP_BANNER: AlertBanner = {
+    process: "insecure-desktop-app",
+    intent: "danger",
+    label: $t({
+        defaultMessage:
+            "You are using an old version of the Zulip desktop app with known security bugs.",
+    }),
+    buttons: [
+        {
+            type: "quiet",
+            label: $t({defaultMessage: "Download the latest version"}),
+            custom_classes: "download-latest-zulip-version",
+        },
+    ],
+    close_button: true,
+    custom_classes: "navbar-alert-banner",
+};
+
 const bankruptcy_banner = (): AlertBanner => {
     const old_unreads_missing = unread.old_unreads_missing;
     const unread_msgs_count = unread.get_unread_message_count();
@@ -295,11 +312,7 @@ export function initialize(): void {
     if (realm.demo_organization_scheduled_deletion_date) {
         banners.open(demo_organization_deadline_banner(), $("#navbar_alerts_wrapper"));
     } else if (page_params.insecure_desktop_app) {
-        open({
-            data_process: "insecure-desktop-app",
-            custom_class: "red",
-            rendered_alert_content_html: render_insecure_desktop_app_alert_content(),
-        });
+        banners.open(INSECURE_DESKTOP_APP_BANNER, $("#navbar_alerts_wrapper"));
     } else if (should_offer_to_update_timezone()) {
         open({
             data_process: "time_zone_update_offer",
@@ -378,6 +391,10 @@ export function initialize(): void {
             "_blank",
             "noopener,noreferrer",
         );
+    });
+
+    $("#navbar_alerts_wrapper").on("click", ".download-latest-zulip-version", () => {
+        window.open("https://zulip.com/download", "_blank", "noopener,noreferrer");
     });
 
     $(".dismiss-upgrade-nag").on("click", (e: JQuery.ClickEvent) => {
