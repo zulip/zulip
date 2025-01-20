@@ -936,6 +936,9 @@ export function process_hotkey(e, hotkey) {
         } else if (overlays.streams_open()) {
             stream_settings_ui.toggle_view(event_name);
             return true;
+        } else if (compose_state.focus_in_formatting_buttons()) {
+            // Allow left arrow to scroll the formatting buttons backward
+            return false;
         }
 
         message_edit.edit_last_sent_message();
