@@ -291,6 +291,7 @@ def get_fixture_and_image_paths(
 
 class HubotIntegration(Integration):
     GIT_URL_TEMPLATE = "https://github.com/hubot-archive/hubot-{}"
+    SECONDARY_LINE_TEXT = "(Hubot script)"
 
     def __init__(
         self,
@@ -309,6 +310,7 @@ class HubotIntegration(Integration):
             name,
             categories,
             logo=logo,
+            secondary_line_text=self.SECONDARY_LINE_TEXT,
             display_name=display_name,
             doc="zerver/integrations/hubot_common.md",
             legacy=legacy,
