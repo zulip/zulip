@@ -40,7 +40,7 @@ from zerver.lib.message import (
     remove_message_id_from_unread_mgs,
 )
 from zerver.lib.muted_users import get_user_mutes
-from zerver.lib.narrow_helpers import NarrowTerm, read_stop_words
+from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm, read_stop_words
 from zerver.lib.narrow_predicate import check_narrow_for_events
 from zerver.lib.onboarding_steps import get_next_onboarding_steps
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
@@ -1787,7 +1787,7 @@ def do_events_register(
     include_subscribers: bool = True,
     include_streams: bool = True,
     client_capabilities: ClientCapabilities = DEFAULT_CLIENT_CAPABILITIES,
-    narrow: Collection[NarrowTerm] = [],
+    narrow: Collection[NeverNegatedNarrowTerm] = [],
     fetch_event_types: Collection[str] | None = None,
     spectator_requested_language: str | None = None,
     pronouns_field_type_supported: bool = True,
