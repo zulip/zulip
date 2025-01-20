@@ -1,4 +1,4 @@
-<div class="popover-menu" id="stream-actions-menu-popover" data-simplebar data-simplebar-tab-index="-1">
+<div class="popover-menu no-auto-hide-left-sidebar-overlay" id="stream-actions-menu-popover" data-simplebar data-simplebar-tab-index="-1">
     <ul role="menu" class="popover-menu-list" data-stream-id="{{ stream.stream_id }}" data-name="{{ stream.name }}">
         <li role="none" class="popover-stream-header text-item popover-menu-list-item">
             <span class="stream-privacy-original-color-{{stream.stream_id}} stream-privacy filter-icon" style="color: {{stream.color}}">
@@ -65,7 +65,7 @@
             </a>
         </li>
         <li role="separator" class="popover-menu-separator hidden-for-spectators"></li>
-        <li role="none" class="link-item popover-menu-list-item hidden-for-spectators no-auto-hide-left-sidebar-overlay">
+        <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
             <a role="menuitem" class="choose_stream_color popover-menu-link" data-stream-id="{{ stream.stream_id }}" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-pipette" aria-hidden="true"></i>
                 <span class="popover-menu-label">{{t "Change color"}}</span>
