@@ -210,6 +210,13 @@ export function initialize(): void {
 
             if (
                 left_sidebar_expanded_as_overlay &&
+                $elt.closest(".auto-hide-left-sidebar-overlay").length > 0
+            ) {
+                hide_streamlist_sidebar();
+            }
+
+            if (
+                left_sidebar_expanded_as_overlay &&
                 $elt.closest(".no-auto-hide-left-sidebar-overlay").length === 0
             ) {
                 const $left_column = $(".app-main .column-left");
