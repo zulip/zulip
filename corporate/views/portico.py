@@ -78,8 +78,8 @@ class PlansPageContext:
     is_new_customer: bool = False
     on_free_tier: bool = False
     customer_plan: CustomerPlan | None = None
-    is_legacy_server_with_scheduled_upgrade: bool = False
-    legacy_server_new_plan: CustomerPlan | None = None
+    has_scheduled_upgrade: bool = False
+    scheduled_upgrade_plan: CustomerPlan | None = None
     requested_sponsorship_plan: str | None = None
 
     billing_base_url: str = ""
@@ -123,6 +123,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
                 context.on_free_tier = not context.is_sponsored
             else:
                 context.on_free_trial = is_customer_on_free_trial(context.customer_plan)
+                # TODO implement a complimentary access plan/tier for Zulip Cloud.
 
     context.is_new_customer = (
         not context.on_free_tier and context.customer_plan is None and not context.is_sponsored
@@ -178,15 +179,18 @@ def remote_realm_plans_page(
                 and not context.is_sponsored
             )
             context.on_free_trial = is_customer_on_free_trial(context.customer_plan)
-            context.is_legacy_server_with_scheduled_upgrade = (
-                context.customer_plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
-            )
-            if context.is_legacy_server_with_scheduled_upgrade:
+            if context.customer_plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
                 assert context.customer_plan.end_date is not None
-                context.legacy_server_new_plan = CustomerPlan.objects.get(
+                context.scheduled_upgrade_plan = CustomerPlan.objects.get(
                     customer=customer,
                     billing_cycle_anchor=context.customer_plan.end_date,
                     status=CustomerPlan.NEVER_STARTED,
+                )
+                # Fixed-price plan renewals have a CustomerPlan.status of
+                # SWITCH_PLAN_TIER_AT_PLAN_END, so we check to see if there is
+                # a CustomerPlan.tier change for the scheduled upgrade note.
+                context.has_scheduled_upgrade = (
+                    context.customer_plan.tier != context.scheduled_upgrade_plan.tier
                 )
 
     if billing_session.customer_plan_exists():
@@ -243,15 +247,18 @@ def remote_server_plans_page(
                 CustomerPlan.TIER_SELF_HOSTED_BASE,
             )
             context.on_free_trial = is_customer_on_free_trial(context.customer_plan)
-            context.is_legacy_server_with_scheduled_upgrade = (
-                context.customer_plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
-            )
-            if context.is_legacy_server_with_scheduled_upgrade:
+            if context.customer_plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
                 assert context.customer_plan.end_date is not None
-                context.legacy_server_new_plan = CustomerPlan.objects.get(
+                context.scheduled_upgrade_plan = CustomerPlan.objects.get(
                     customer=customer,
                     billing_cycle_anchor=context.customer_plan.end_date,
                     status=CustomerPlan.NEVER_STARTED,
+                )
+                # Fixed-price plan renewals have a CustomerPlan.status of
+                # SWITCH_PLAN_TIER_AT_PLAN_END, so we check to see if there is
+                # a CustomerPlan.tier change for the scheduled upgrade note.
+                context.has_scheduled_upgrade = (
+                    context.customer_plan.tier != context.scheduled_upgrade_plan.tier
                 )
 
         if billing_session.customer_plan_exists():
