@@ -2,7 +2,6 @@ import {addDays} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_configure_email_alert_content from "../templates/navbar_alerts/configure_outgoing_email.hbs";
 import render_demo_organization_deadline_content from "../templates/navbar_alerts/demo_organization_deadline.hbs";
 import render_empty_required_profile_fields from "../templates/navbar_alerts/empty_required_profile_fields.hbs";
 import render_insecure_desktop_app_alert_content from "../templates/navbar_alerts/insecure_desktop_app.hbs";
@@ -200,6 +199,24 @@ const DESKTOP_NOTIFICATIONS_BANNER: AlertBanner = {
     custom_classes: "navbar-alert-banner",
 };
 
+const CONFIGURE_OUTGOING_MAIL_BANNER: AlertBanner = {
+    process: "configure-outgoing-mail",
+    intent: "warning",
+    label: $t({
+        defaultMessage:
+            "Zulip needs to send email to confirm users' addresses and send notifications.",
+    }),
+    buttons: [
+        {
+            type: "quiet",
+            label: $t({defaultMessage: "Configuration instructions"}),
+            custom_classes: "configure-outgoing-mail-instructions",
+        },
+    ],
+    close_button: true,
+    custom_classes: "navbar-alert-banner",
+};
+
 const bankruptcy_banner = (): AlertBanner => {
     const old_unreads_missing = unread.old_unreads_missing;
     const unread_msgs_count = unread.get_unread_message_count();
@@ -282,11 +299,7 @@ export function initialize(): void {
     } else if (page_params.warn_no_email === true && current_user.is_admin) {
         // if email has not been set up and the user is the admin,
         // display a warning to tell them to set up an email server.
-        open({
-            data_process: "email-server",
-            custom_class: "red",
-            rendered_alert_content_html: render_configure_email_alert_content(),
-        });
+        banners.open(CONFIGURE_OUTGOING_MAIL_BANNER, $("#navbar_alerts_wrapper"));
     } else if (should_show_desktop_notifications_banner(ls)) {
         banners.open(DESKTOP_NOTIFICATIONS_BANNER, $("#navbar_alerts_wrapper"));
     } else if (should_show_bankruptcy_banner()) {
@@ -338,6 +351,14 @@ export function initialize(): void {
         setTimeout(() => {
             banners.close($banner);
         }, 2000);
+    });
+
+    $("#navbar_alerts_wrapper").on("click", ".configure-outgoing-mail-instructions", () => {
+        window.open(
+            "https://zulip.readthedocs.io/en/latest/production/email.html",
+            "_blank",
+            "noopener,noreferrer",
+        );
     });
 
     $(".dismiss-upgrade-nag").on("click", (e: JQuery.ClickEvent) => {
