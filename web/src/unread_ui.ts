@@ -8,7 +8,6 @@ import render_mark_as_read_turned_off_banner from "../templates/unread_banner/ma
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
-import {page_params} from "./page_params.ts";
 import {web_mark_read_on_scroll_policy_values} from "./settings_config.ts";
 import * as unread from "./unread.ts";
 import type {FullUnreadCountsData} from "./unread.ts";
@@ -102,29 +101,6 @@ export function update_unread_counts(skip_animations = false): void {
 
     // Set the unread indicator on the toggle for the left sidebar
     set_count_toggle_button($(".left-sidebar-toggle-unreadcount"), res.home_unread_messages);
-}
-
-export function should_display_bankruptcy_banner(): boolean {
-    // Until we've handled possibly declaring bankruptcy, don't show
-    // unread counts since they only consider messages that are loaded
-    // client side and may be different from the numbers reported by
-    // the server.
-
-    if (!page_params.furthest_read_time) {
-        // We've never read a message.
-        return false;
-    }
-
-    const now = Date.now() / 1000;
-    if (
-        unread.get_unread_message_count() > 500 &&
-        now - page_params.furthest_read_time > 60 * 60 * 24 * 2
-    ) {
-        // 2 days.
-        return true;
-    }
-
-    return false;
 }
 
 export function initialize({

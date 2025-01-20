@@ -2,7 +2,6 @@ import {addDays} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_bankruptcy_alert_content from "../templates/navbar_alerts/bankruptcy.hbs";
 import render_configure_email_alert_content from "../templates/navbar_alerts/configure_outgoing_email.hbs";
 import render_demo_organization_deadline_content from "../templates/navbar_alerts/demo_organization_deadline.hbs";
 import render_empty_required_profile_fields from "../templates/navbar_alerts/empty_required_profile_fields.hbs";
@@ -28,17 +27,8 @@ import * as timerender from "./timerender.ts";
 import {should_display_profile_incomplete_alert} from "./timerender.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
-import * as unread_ui from "./unread_ui.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
-
-const show_step = function ($process: JQuery, step: number): void {
-    $process
-        .find("[data-step]")
-        .hide()
-        .filter("[data-step=" + step + "]")
-        .show();
-};
 
 export function should_show_desktop_notifications_banner(ls: LocalStorage): boolean {
     // if the user said to never show banner on this computer again, it will
@@ -60,6 +50,29 @@ export function should_show_desktop_notifications_banner(ls: LocalStorage): bool
         // if permission is allowed to be requested (e.g. not in "denied" state).
         desktop_notifications.permission_state() !== "denied"
     );
+}
+
+export function should_show_bankruptcy_banner(): boolean {
+    // Until we've handled possibly declaring bankruptcy, don't show
+    // unread counts since they only consider messages that are loaded
+    // client side and may be different from the numbers reported by
+    // the server.
+
+    if (!page_params.furthest_read_time) {
+        // We've never read a message.
+        return false;
+    }
+
+    const now = Date.now() / 1000;
+    if (
+        unread.get_unread_message_count() > 500 &&
+        now - page_params.furthest_read_time > 60 * 60 * 24 * 2
+    ) {
+        // 2 days.
+        return true;
+    }
+
+    return false;
 }
 
 export function should_show_server_upgrade_notification(ls: LocalStorage): boolean {
@@ -187,6 +200,52 @@ const DESKTOP_NOTIFICATIONS_BANNER: AlertBanner = {
     custom_classes: "navbar-alert-banner",
 };
 
+const bankruptcy_banner = (): AlertBanner => {
+    const old_unreads_missing = unread.old_unreads_missing;
+    const unread_msgs_count = unread.get_unread_message_count();
+    let label = "";
+    if (old_unreads_missing) {
+        label = $t(
+            {
+                defaultMessage:
+                    "Welcome back! You have at least {unread_msgs_count} unread messages. Do you want to mark them all as read?",
+            },
+            {
+                unread_msgs_count,
+            },
+        );
+    } else {
+        label = $t(
+            {
+                defaultMessage:
+                    "Welcome back! You have {unread_msgs_count} unread messages. Do you want to mark them all as read?",
+            },
+            {
+                unread_msgs_count,
+            },
+        );
+    }
+    return {
+        process: "bankruptcy",
+        intent: "info",
+        label,
+        buttons: [
+            {
+                type: "quiet",
+                label: $t({defaultMessage: "Yes, please!"}),
+                custom_classes: "accept-bankruptcy",
+            },
+            {
+                type: "borderless",
+                label: $t({defaultMessage: "No, I'll catch up."}),
+                custom_classes: "banner-close-action",
+            },
+        ],
+        close_button: true,
+        custom_classes: "navbar-alert-banner",
+    };
+};
+
 export function initialize(): void {
     const ls = localstorage();
     const browser_time_zone = timerender.browser_time_zone();
@@ -230,17 +289,8 @@ export function initialize(): void {
         });
     } else if (should_show_desktop_notifications_banner(ls)) {
         banners.open(DESKTOP_NOTIFICATIONS_BANNER, $("#navbar_alerts_wrapper"));
-    } else if (unread_ui.should_display_bankruptcy_banner()) {
-        const old_unreads_missing = unread.old_unreads_missing;
-        const unread_msgs_count = unread.get_unread_message_count();
-        open({
-            data_process: "bankruptcy",
-            custom_class: "bankruptcy",
-            rendered_alert_content_html: render_bankruptcy_alert_content({
-                old_unreads_missing,
-                unread_msgs_count,
-            }),
-        });
+    } else if (should_show_bankruptcy_banner()) {
+        banners.open(bankruptcy_banner(), $("#navbar_alerts_wrapper"));
     } else if (check_profile_incomplete()) {
         open({
             data_process: "profile-incomplete",
@@ -280,12 +330,14 @@ export function initialize(): void {
         },
     );
 
-    $(".accept-bankruptcy").on("click", function (e) {
-        e.preventDefault();
-        const $process = $(this).closest("[data-process]");
-        show_step($process, 2);
-        setTimeout(unread_ops.mark_all_as_read, 1000);
-        $(window).trigger("resize");
+    $("#navbar_alerts_wrapper").on("click", ".accept-bankruptcy", function (this: HTMLElement) {
+        const $accept_button = $(this);
+        $accept_button.prop("disabled", true).css("pointer-events", "none");
+        const $banner = $(this).closest(".banner");
+        unread_ops.mark_all_as_read();
+        setTimeout(() => {
+            banners.close($banner);
+        }, 2000);
     });
 
     $(".dismiss-upgrade-nag").on("click", (e: JQuery.ClickEvent) => {
