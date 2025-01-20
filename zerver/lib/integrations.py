@@ -401,9 +401,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         "github",
         ["version-control"],
         display_name="GitHub",
-        logo="images/integrations/logos/github.svg",
-        function="zerver.webhooks.github.view.api_github_webhook",
-        stream_name="github",
         config_options=[
             WebhookConfigOption(
                 name="branches",
