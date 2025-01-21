@@ -1222,7 +1222,6 @@ remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [install-advanced]: setup-advanced.md
 [remote-wsl]: https://code.visualstudio.com/docs/remote/wsl-tutorial
-[remote-ssh]: https://code.visualstudio.com/docs/remote/ssh-tutorial
 [rtd-git-guide]: ../git/index.md
 [rtd-testing]: ../testing/testing.md
 [rtd-using-dev-env]: using.md
