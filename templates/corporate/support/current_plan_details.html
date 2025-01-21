@@ -20,7 +20,7 @@
     {% if plan_data.current_plan.discount %}
         <b>Discount</b>: {{ plan_data.current_plan.discount }}%<br />
     {% endif %}
-    {% if plan_data.is_legacy_plan %}
+    {% if plan_data.is_complimentary_access_plan %}
         <b>End date</b>: {{ plan_data.current_plan.end_date.strftime('%d %B %Y') }}<br />
     {% else %}
         <b>Licenses</b>: {{ plan_data.licenses_used }}/{{ plan_data.licenses }} ({% if plan_data.current_plan.automanage_licenses %}Automatic{% else %}Manual{% endif %})<br />
