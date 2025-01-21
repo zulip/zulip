@@ -3,15 +3,12 @@ import Handlebars from "handlebars";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert_wrapper.hbs";
-
 import * as banners from "./banners.ts";
 import type {AlertBanner} from "./banners.ts";
 import * as channel from "./channel.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
 import * as feedback_widget from "./feedback_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
-import * as keydown_util from "./keydown_util.ts";
 import type {LocalStorage} from "./localstorage.ts";
 import {localstorage} from "./localstorage.ts";
 import {page_params} from "./page_params.ts";
@@ -509,20 +506,6 @@ export function initialize(): void {
 
     $("#navbar_alerts_wrapper").on(
         "click",
-        ".alert .close, .alert .exit",
-        function (this: HTMLElement, e) {
-            e.stopPropagation();
-            const $process = $(this).closest("[data-process]");
-            $(this).closest(".alert").hide();
-            if ($process.attr("data-process") !== "profile-missing-required-fields") {
-                maybe_show_empty_required_profile_fields_alert();
-            }
-            $(window).trigger("resize");
-        },
-    );
-
-    $("#navbar_alerts_wrapper").on(
-        "click",
         ".accept-update-time-zone",
         function (this: HTMLElement) {
             void channel.patch({
@@ -593,27 +576,4 @@ export function initialize(): void {
             });
         },
     );
-
-    // Treat Enter with links in the navbar alerts UI focused like a click.,
-    $("#navbar_alerts_wrapper").on("keyup", ".alert-link[role=button]", function (e) {
-        e.stopPropagation();
-        if (keydown_util.is_enter_event(e)) {
-            $(this).trigger("click");
-        }
-    });
-}
-
-export function open(args: {
-    data_process: string;
-    rendered_alert_content_html: string;
-    custom_class?: string | undefined;
-}): void {
-    const rendered_alert_wrapper_html = render_navbar_alert_wrapper(args);
-
-    // Note: We only support one alert being rendered at a time; as a
-    // result, we just replace the alert area in the DOM with the
-    // indicated alert. We do this to avoid bad UX, as it'd look weird
-    // to have more than one alert visible at a time.
-    $("#navbar_alerts_wrapper").html(rendered_alert_wrapper_html);
-    $(window).trigger("resize");
 }
