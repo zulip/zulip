@@ -83,7 +83,7 @@ class PlanData:
     licenses: int | None = None
     licenses_used: int | None = None
     next_billing_cycle_start: datetime | None = None
-    is_legacy_plan: bool = False
+    is_complimentary_access_plan: bool = False
     has_fixed_price: bool = False
     is_current_plan_billable: bool = False
     stripe_customer_url: str | None = None
@@ -316,9 +316,13 @@ def get_plan_data_for_support_view(
                 plan_data.current_plan, timezone_now()
             )
 
-        plan_data.is_legacy_plan = (
-            plan_data.current_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
-        )
+        if isinstance(billing_session, RealmBillingSession):
+            # TODO implement a complimentary access plan/tier for Zulip Cloud.
+            plan_data.is_complimentary_access_plan = False
+        else:
+            plan_data.is_complimentary_access_plan = (
+                plan_data.current_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
+            )
         plan_data.has_fixed_price = plan_data.current_plan.fixed_price is not None
         plan_data.is_current_plan_billable = billing_session.check_plan_tier_is_billable(
             plan_tier=plan_data.current_plan.tier
