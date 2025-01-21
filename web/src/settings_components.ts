@@ -1834,3 +1834,42 @@ export function get_group_assigned_stream_permissions(group: UserGroup): {
 
     return group_assigned_stream_permissions;
 }
+
+export function get_group_assigned_user_group_permissions(group: UserGroup): {
+    group_id: number;
+    group_name: string;
+    assigned_permissions: AssignedGroupPermission[];
+    id_prefix: string;
+}[] {
+    const groups = user_groups.get_realm_user_groups();
+    const group_assigned_user_group_permissions = [];
+    for (const user_group of groups) {
+        const can_edit_settings = settings_data.can_manage_user_group(user_group.id);
+        const assigned_permission_objects = [];
+        for (const setting_name of settings_config.group_permission_settings) {
+            const setting_value =
+                user_group[user_groups.user_group_schema.keyof().parse(setting_name)];
+            const assigned_permission_object =
+                group_permission_settings.get_assigned_permission_object(
+                    group_setting_value_schema.parse(setting_value),
+                    setting_name,
+                    group.id,
+                    can_edit_settings,
+                );
+            if (assigned_permission_object !== undefined) {
+                assigned_permission_objects.push(assigned_permission_object);
+            }
+        }
+
+        if (assigned_permission_objects.length > 0) {
+            group_assigned_user_group_permissions.push({
+                group_id: user_group.id,
+                group_name: user_groups.get_display_group_name(user_group.name),
+                id_prefix: "id_group_permission_" + user_group.id.toString() + "_",
+                assigned_permissions: assigned_permission_objects,
+            });
+        }
+    }
+
+    return group_assigned_user_group_permissions;
+}

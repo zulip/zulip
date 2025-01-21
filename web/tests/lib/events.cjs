@@ -885,6 +885,7 @@ exports.fixtures = {
         data: {
             name: "Frontend",
             description: "All Frontend people",
+            can_manage_group: 2,
         },
     },
 

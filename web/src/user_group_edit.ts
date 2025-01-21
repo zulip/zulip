@@ -604,6 +604,28 @@ function populate_data_for_removing_stream_permissions(
     return data;
 }
 
+function populate_data_for_removing_user_group_permissions(
+    $subsection: JQuery,
+    group: UserGroup,
+    user_group: UserGroup,
+): Record<string, string> {
+    const changed_setting_elems = settings_components
+        .get_subsection_property_elements($subsection)
+        .filter((elem) => !$(elem).prop("checked"));
+    const changed_setting_names = changed_setting_elems.map((elem) => $(elem).attr("name")!);
+
+    const data: Record<string, string> = {};
+    for (const setting_name of changed_setting_names) {
+        const current_value = user_group[user_groups.user_group_schema.keyof().parse(setting_name)];
+        data[setting_name] = get_request_data_for_removing_group_permission(
+            group_setting_value_schema.parse(current_value),
+            group.id,
+        );
+    }
+
+    return data;
+}
+
 export function update_setting_in_group_permissions_panel(
     $setting_elem: JQuery,
     new_value: GroupSettingValue,
@@ -637,6 +659,8 @@ export function show_settings_for(group: UserGroup): void {
         settings_components.get_group_assigned_realm_permissions(group);
     const group_assigned_stream_permissions =
         settings_components.get_group_assigned_stream_permissions(group);
+    const group_assigned_user_group_permissions =
+        settings_components.get_group_assigned_user_group_permissions(group);
 
     const html = render_user_group_settings({
         group,
@@ -657,9 +681,11 @@ export function show_settings_for(group: UserGroup): void {
         group_setting_labels: settings_config.group_setting_labels,
         group_assigned_realm_permissions,
         group_assigned_stream_permissions,
+        group_assigned_user_group_permissions,
         group_has_no_permissions:
             group_assigned_realm_permissions.length === 0 &&
-            group_assigned_stream_permissions.length === 0,
+            group_assigned_stream_permissions.length === 0 &&
+            group_assigned_user_group_permissions.length === 0,
     });
 
     scroll_util.get_content_element($("#user_group_settings")).html(html);
@@ -736,6 +762,28 @@ export function show_settings_for(group: UserGroup): void {
                     sub,
                 );
                 const url = "/json/streams/" + stream_id;
+                settings_org.save_organization_settings(data, $save_button, url);
+            },
+        );
+
+    $edit_container
+        .find(".user-group-permissions")
+        .on(
+            "click",
+            ".subsection-header .subsection-changes-save button",
+            function (this: HTMLElement, e: JQuery.ClickEvent) {
+                e.preventDefault();
+                e.stopPropagation();
+                const $save_button = $(this);
+                const $subsection_elem = $save_button.closest(".settings-subsection-parent");
+                const group_id = Number.parseInt($subsection_elem.attr("data-group-id")!, 10);
+                const user_group = user_groups.get_user_group_from_id(group_id);
+                const data = populate_data_for_removing_user_group_permissions(
+                    $subsection_elem,
+                    group,
+                    user_group,
+                );
+                const url = "/json/user_groups/" + group_id;
                 settings_org.save_organization_settings(data, $save_button, url);
             },
         );
@@ -1029,6 +1077,16 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
             sync_group_permission_setting("can_remove_members_group", group);
             update_group_management_ui();
         }
+    }
+
+    const changed_group_settings = group_permission_settings
+        .get_group_permission_settings()
+        .filter((setting_name) => event.data[setting_name] !== undefined);
+    for (const setting_name of changed_group_settings) {
+        const $elem = $(
+            `#id_group_permission_${CSS.escape(group.id.toString())}_${CSS.escape(setting_name)}`,
+        );
+        update_setting_in_group_permissions_panel($elem, group[setting_name]);
     }
 }
 
