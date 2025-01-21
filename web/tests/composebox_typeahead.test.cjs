@@ -875,6 +875,21 @@ test("content_typeahead_selected", ({override}) => {
     expected_value = "Hello #**Sweden>testing** ";
     assert.equal(actual_value, expected_value);
 
+    // shortcut syntax for topic_list
+    compose_state.set_stream_id(sweden_stream.stream_id);
+    query = "Hello #>";
+    ct.get_or_set_token_for_testing("");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "testing",
+            type: "topic_list",
+        },
+        query,
+        input_element,
+    );
+    expected_value = "Hello #**Sweden>testing** ";
+    assert.equal(actual_value, expected_value);
+
     // syntax
     ct.get_or_set_completing_for_tests("syntax");
 

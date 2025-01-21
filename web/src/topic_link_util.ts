@@ -10,12 +10,6 @@ export function will_produce_broken_stream_topic_link(word: string): boolean {
     return invalid_stream_topic_regex.test(word);
 }
 
-function get_stream_name_from_topic_link_syntax(syntax: string): string {
-    const start = syntax.indexOf("#**");
-    const end = syntax.lastIndexOf(">");
-    return syntax.slice(start + 3, end);
-}
-
 export function escape_invalid_stream_topic_characters(text: string): string {
     switch (text) {
         case "`":
@@ -60,11 +54,7 @@ export function get_fallback_markdown_link(
     return `[#${escape(stream_name)}](${internal_url.by_stream_url(stream_id, () => stream_name)})`;
 }
 
-export function get_stream_topic_link_syntax(
-    typed_syntax_text: string,
-    topic_name: string,
-): string {
-    const stream_name = get_stream_name_from_topic_link_syntax(typed_syntax_text);
+export function get_stream_topic_link_syntax(stream_name: string, topic_name: string): string {
     // If the topic name is such that it will generate an invalid #**stream>topic** syntax,
     // we revert to generating the normal markdown syntax for a link.
     if (
