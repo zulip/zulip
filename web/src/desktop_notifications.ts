@@ -105,8 +105,11 @@ export function granted_desktop_notifications_permission(): boolean {
     return NotificationAPI?.permission === "granted";
 }
 
-export function request_desktop_notifications_permission(): void {
+export async function request_desktop_notifications_permission(): Promise<NotificationPermission> {
     if (NotificationAPI) {
-        void NotificationAPI.requestPermission();
+        return await NotificationAPI.requestPermission();
     }
+    // Act like notifications are blocked if they do not have access to
+    // the notification API.
+    return "denied";
 }

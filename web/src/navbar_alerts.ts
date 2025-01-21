@@ -254,10 +254,15 @@ export function initialize(): void {
     $("#navbar_alerts_wrapper").on(
         "click",
         ".request-desktop-notifications",
-        function (this: HTMLElement) {
-            const $banner = $(this).closest(".banner");
-            banners.close($banner);
-            desktop_notifications.request_desktop_notifications_permission();
+        function (this: HTMLElement): void {
+            void (async () => {
+                const $banner = $(this).closest(".banner");
+                const permission =
+                    await desktop_notifications.request_desktop_notifications_permission();
+                if (permission === "granted" || permission === "denied") {
+                    banners.close($banner);
+                }
+            })();
         },
     );
 
