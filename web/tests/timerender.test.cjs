@@ -655,6 +655,10 @@ run_test("should_display_profile_incomplete_alert", () => {
 });
 
 run_test("canonicalize_time_zones", () => {
+    // We expect Montreal to convert to Toronto, but WARNING this might
+    // not work on all browsers.
+    assert.equal(timerender.browser_canonicalize_timezone("America/Montreal"), "America/Toronto");
+
     assert.equal(
         timerender.browser_canonicalize_timezone("Asia/Calcutta"),
         timerender.browser_canonicalize_timezone("Asia/Kolkata"),
