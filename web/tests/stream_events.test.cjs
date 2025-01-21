@@ -39,6 +39,8 @@ mock_esm("../src/settings_notifications", {
 mock_esm("../src/overlays", {
     streams_open: () => true,
 });
+
+const user_group_edit = mock_esm("../src/user_group_edit");
 const user_profile = mock_esm("../src/user_profile");
 
 const {Filter} = zrequire("../src/filter");
@@ -77,6 +79,8 @@ const dev_help = {
     stream_id: 2,
     is_muted: true,
     invite_only: false,
+    can_administer_channel_group: 1,
+    can_remove_subscribers_group: 1,
 };
 
 const frontend = {
@@ -86,6 +90,8 @@ const frontend = {
     stream_id: 101,
     is_muted: true,
     invite_only: false,
+    can_administer_channel_group: 1,
+    can_remove_subscribers_group: 1,
 };
 
 function narrow_to_frontend() {
@@ -112,6 +118,7 @@ test("update_property", ({override}) => {
         "server_supported_permission_settings",
         example_settings.server_supported_permission_settings,
     );
+    override(user_group_edit, "update_setting_in_group_permissions_panel", noop);
     const sub = {...frontend};
     stream_data.add_sub(sub);
 

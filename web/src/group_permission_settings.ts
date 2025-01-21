@@ -59,6 +59,12 @@ export const realm_group_setting_name_schema = z.enum([
 ]);
 export type RealmGroupSettingName = z.infer<typeof realm_group_setting_name_schema>;
 
+export type StreamGroupSettingName =
+    | "can_add_subscribers_group"
+    | "can_administer_channel_group"
+    | "can_remove_subscribers_group"
+    | "can_send_message_group";
+
 export function get_realm_user_groups_for_setting(
     setting_name: string,
     setting_type: "realm" | "stream" | "group",
@@ -126,14 +132,14 @@ export function get_realm_user_groups_for_dropdown_list_widget(
 }
 
 export type AssignedGroupPermission = {
-    setting_name: RealmGroupSettingName;
+    setting_name: RealmGroupSettingName | StreamGroupSettingName;
     can_edit: boolean;
     tooltip_message?: string;
 };
 
 export function get_assigned_permission_object(
     setting_value: GroupSettingValue,
-    setting_name: RealmGroupSettingName,
+    setting_name: RealmGroupSettingName | StreamGroupSettingName,
     group_id: number,
     can_edit_settings: boolean,
 ): AssignedGroupPermission | undefined {

@@ -1,7 +1,7 @@
 import Handlebars from "handlebars/runtime.js";
 
 import {page_params} from "./base_page_params.ts";
-import type {RealmGroupSettingName} from "./group_permission_settings.ts";
+import type {RealmGroupSettingName, StreamGroupSettingName} from "./group_permission_settings.ts";
 import {$t, $t_html} from "./i18n.ts";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults.ts";
 import {realm} from "./state_data.ts";
@@ -750,6 +750,15 @@ export const realm_group_permission_settings: {
         subsection_heading: $t({defaultMessage: "Other permissions"}),
         settings: ["can_add_custom_emoji_group"],
     },
+];
+
+// Order of settings is important, as this list is used to
+// render assigned permissions in permissions panel.
+export const stream_group_permission_settings: StreamGroupSettingName[] = [
+    "can_send_message_group",
+    "can_administer_channel_group",
+    "can_add_subscribers_group",
+    "can_remove_subscribers_group",
 ];
 
 // NOTIFICATIONS

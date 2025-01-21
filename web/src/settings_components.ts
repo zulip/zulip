@@ -1798,3 +1798,39 @@ export function get_group_assigned_realm_permissions(group: UserGroup): {
     }
     return group_assigned_realm_permissions;
 }
+
+export function get_group_assigned_stream_permissions(group: UserGroup): {
+    stream: StreamSubscription;
+    assigned_permissions: AssignedGroupPermission[];
+    id_prefix: string;
+}[] {
+    const subs = stream_data.get_unsorted_subs();
+    const group_assigned_stream_permissions = [];
+    for (const sub of subs) {
+        const assigned_permission_objects = [];
+        const can_edit_settings = stream_data.can_change_permissions(sub);
+        for (const setting_name of settings_config.stream_group_permission_settings) {
+            const setting_value = sub[stream_subscription_schema.keyof().parse(setting_name)];
+            const assigned_permission_object =
+                group_permission_settings.get_assigned_permission_object(
+                    group_setting_value_schema.parse(setting_value),
+                    setting_name,
+                    group.id,
+                    can_edit_settings,
+                );
+            if (assigned_permission_object !== undefined) {
+                assigned_permission_objects.push(assigned_permission_object);
+            }
+        }
+
+        if (assigned_permission_objects.length > 0) {
+            group_assigned_stream_permissions.push({
+                stream: sub,
+                assigned_permissions: assigned_permission_objects,
+                id_prefix: "id_group_permission_" + sub.stream_id.toString() + "_",
+            });
+        }
+    }
+
+    return group_assigned_stream_permissions;
+}

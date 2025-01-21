@@ -37,6 +37,7 @@ import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import {group_setting_value_schema} from "./types.ts";
 import * as unread_ui from "./unread_ui.ts";
+import * as user_group_edit from "./user_group_edit.ts";
 import * as user_profile from "./user_profile.ts";
 
 // In theory, this function should apply the account-level defaults,
@@ -101,6 +102,13 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         stream_settings_ui.update_stream_permission_group_setting(
             stream_permission_group_settings_schema.parse(property),
             sub,
+            group_setting_value_schema.parse(value),
+        );
+        const $elem = $(
+            `#id_group_permission_${CSS.escape(sub.stream_id.toString())}_${CSS.escape(property)}`,
+        );
+        user_group_edit.update_setting_in_group_permissions_panel(
+            $elem,
             group_setting_value_schema.parse(value),
         );
         return;
