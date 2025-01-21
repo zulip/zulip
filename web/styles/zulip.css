@@ -286,56 +286,6 @@ p.n-margin {
     box-shadow: inset 0 -1px 0 var(--color-navbar-bottom-border);
 }
 
-#navbar_alerts_wrapper {
-    font-size: 1rem;
-    position: relative;
-
-    .alert {
-        /* Since alerts are only rendered into the DOM when they are first
-           displayed, display: block is the right default for this setting. */
-        display: block;
-        margin: 0;
-        padding-top: 12px;
-        padding-bottom: 12px;
-
-        border: none;
-        border-radius: 0;
-
-        text-align: center;
-        text-shadow: none;
-        color: hsl(0deg 0% 100%);
-
-        &.alert-info {
-            background-color: hsl(170deg 46% 54%);
-
-            &.red {
-                background-color: hsl(0deg 46% 54%);
-            }
-        }
-
-        .close {
-            line-height: 24px;
-            position: absolute;
-            right: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .alert-link {
-            color: hsl(169deg 100% 88%);
-            font-weight: 600;
-        }
-
-        &.red .alert-link {
-            color: hsl(0deg 100% 88%);
-        }
-
-        .buttons .alert-link {
-            margin: 0 5px;
-        }
-    }
-}
-
 .app {
     min-width: 100%;
     min-height: 100%;
