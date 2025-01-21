@@ -515,6 +515,22 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         function="zerver.webhooks.ifttt.view.api_iftt_app_webhook",
         display_name="IFTTT",
     ),
+    WebhookIntegration(
+        "jira",
+        ["project-management"],
+        config_options=[
+            WebhookConfigOption(
+                name="jira_api_token",
+                description="Your Jira API token",
+                validator=check_string,
+            ),
+            WebhookConfigOption(
+                name="email",
+                description="Your Jira email",
+                validator=check_string,
+            ),
+        ],
+    ),
     WebhookIntegration("insping", ["monitoring"]),
     WebhookIntegration("intercom", ["customer-support"]),
     # Avoid collision with jira-plugin's doc "jira/doc.md".

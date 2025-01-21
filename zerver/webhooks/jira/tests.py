@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from urllib.parse import quote, unquote
 
 from zerver.lib.test_classes import WebhookTestCase
@@ -62,6 +62,22 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
                 result = self.client_post(url, payload, content_type="application/json")
             self.assertFalse(m.called)
             self.assert_json_success(result)
+
+    def test_replace_account_ids_with_usernames(self) -> None:
+        url = self.build_webhook_url(email="harshmeena@mail.com", jira_api_token="BATTATA-VADA")
+        payload = self.get_body("comment_created_with_account_mention")
+
+        # Create a mock response object
+        mock_response = MagicMock()
+        mock_response.json.return_value = {"displayName": "Harsh Meena"}
+        mock_response.status_code = 200
+
+        with patch("requests.get", return_value=mock_response) as mock_get:
+            result = self.client_post(url, payload, content_type="application/json")
+
+            mock_get.assert_called_once()
+
+        self.assert_json_success(result)
 
     def test_created_with_channel_with_spaces_escaped(self) -> None:
         self.CHANNEL_NAME = quote("jira alerts")
@@ -149,6 +165,18 @@ Adding a comment. Oh, what a comment it is!
 """.strip()
         self.check_webhook("commented_v1", expected_topic_name, expected_message)
         self.check_webhook("commented_v2", expected_topic_name, expected_message)
+
+    def test_commented_with_account_mention(self) -> None:
+        expected_topic_name = "CPG-12: Test for zulip."
+        expected_message = """
+Harsh Meena commented on [CPG-12: Test for zulip.](https://harshmeena.atlassian.net/browse/CPG-12)
+``` quote
+This should work ~ **unknown Jira user (6420c1740152...)**
+```
+""".strip()
+        self.check_webhook(
+            "comment_created_with_account_mention", expected_topic_name, expected_message
+        )
 
     def test_commented_with_two_full_links(self) -> None:
         expected_topic_name = "BUG-15: New bug with hook"
