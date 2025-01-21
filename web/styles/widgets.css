@@ -105,8 +105,9 @@
 
 .todo-widget,
 .poll-widget {
-    & h4 {
-        font-size: 18px;
+    .poll-question-header,
+    .todo-task-list-title-header {
+        font-size: 1.1em;
         font-weight: 600;
     }
 
