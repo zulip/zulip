@@ -127,9 +127,11 @@ export function set_up_handlers_for_add_button_state(
 export function create({
     $pill_container,
     get_potential_subscribers,
+    get_user_groups,
 }: {
     $pill_container: JQuery;
     get_potential_subscribers: () => User[];
+    get_user_groups: () => UserGroup[];
 }): CombinedPillContainer {
     const pill_widget = input_pill.create<CombinedPill>({
         $container: $pill_container,
@@ -144,7 +146,12 @@ export function create({
         return user_pill.filter_taken_users(potential_subscribers, pill_widget);
     }
 
-    set_up_pill_typeahead({pill_widget, $pill_container, get_users});
+    function get_groups(): UserGroup[] {
+        const groups = get_user_groups();
+        return user_group_pill.filter_taken_groups(groups, pill_widget);
+    }
+
+    set_up_pill_typeahead({pill_widget, $pill_container, get_users, get_user_groups: get_groups});
 
     set_up_handlers_for_add_button_state(pill_widget, $pill_container);
 
@@ -154,11 +161,13 @@ export function create({
 export function create_without_add_button({
     $pill_container,
     get_potential_subscribers,
+    get_user_groups,
     onPillCreateAction,
     onPillRemoveAction,
 }: {
     $pill_container: JQuery;
     get_potential_subscribers: () => User[];
+    get_user_groups: () => UserGroup[];
     onPillCreateAction: (pill_user_ids: number[]) => void;
     onPillRemoveAction: (pill_user_ids: number[]) => void;
 }): CombinedPillContainer {
@@ -175,6 +184,11 @@ export function create_without_add_button({
         return user_pill.filter_taken_users(potential_subscribers, pill_widget);
     }
 
+    function get_groups(): UserGroup[] {
+        const user_groups = get_user_groups();
+        return user_group_pill.filter_taken_groups(user_groups, pill_widget);
+    }
+
     pill_widget.onPillCreate(() => {
         onPillCreateAction(get_pill_user_ids(pill_widget));
     });
@@ -182,7 +196,7 @@ export function create_without_add_button({
         onPillRemoveAction(get_pill_user_ids(pill_widget));
     });
 
-    set_up_pill_typeahead({pill_widget, $pill_container, get_users});
+    set_up_pill_typeahead({pill_widget, $pill_container, get_users, get_user_groups: get_groups});
 
     return pill_widget;
 }
