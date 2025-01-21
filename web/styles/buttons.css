@@ -35,15 +35,16 @@
         clip-path: inset(1px round 4px);
     }
 
-    &:focus-visible {
-        outline-offset: 2px;
-        outline-width: 1px;
-        clip-path: inset(-3px);
-    }
-
     &:focus {
         /* Override common button outline style set in zulip.css and dark_theme.css */
         outline: none;
+    }
+
+    &:focus-visible {
+        /* Override common button outline style set in zulip.css and dark_theme.css */
+        outline: 1px solid var(--color-outline-focus) !important;
+        outline-offset: 2px;
+        clip-path: inset(-3px);
     }
 }
 
@@ -388,11 +389,6 @@
     transition: none 0.05s ease-in;
     transition-property: background-color, clip-path;
 
-    &:focus {
-        /* Override common button outline style set in zulip.css and dark_theme.css */
-        outline: none;
-    }
-
     &:hover {
         transition: none 0.1s ease-out;
         transition-property: background-color, clip-path;
@@ -402,9 +398,15 @@
         clip-path: inset(1px round 4px);
     }
 
+    &:focus {
+        /* Override common button outline style set in zulip.css and dark_theme.css */
+        outline: none;
+    }
+
     &:focus-visible {
+        /* Override common button outline style set in zulip.css and dark_theme.css */
+        outline: 1px solid var(--color-outline-focus) !important;
         outline-offset: 2px;
-        outline-width: 1px;
         clip-path: inset(-3px);
     }
 }
