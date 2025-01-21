@@ -422,7 +422,7 @@
 .message_controls {
     display: flex;
     align-items: baseline;
-    font-size: 16px;
+
     /* This is a bit tricky; we need to reserve space for the message
        controls even when the message isn't hovered, so that hover
        doesn't disturb the layout.  Usually that would be just
