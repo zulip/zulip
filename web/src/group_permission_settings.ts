@@ -132,14 +132,14 @@ export function get_realm_user_groups_for_dropdown_list_widget(
 }
 
 export type AssignedGroupPermission = {
-    setting_name: RealmGroupSettingName | StreamGroupSettingName;
+    setting_name: RealmGroupSettingName | StreamGroupSettingName | GroupSettingName;
     can_edit: boolean;
     tooltip_message?: string;
 };
 
 export function get_assigned_permission_object(
     setting_value: GroupSettingValue,
-    setting_name: RealmGroupSettingName | StreamGroupSettingName,
+    setting_name: RealmGroupSettingName | StreamGroupSettingName | GroupSettingName,
     group_id: number,
     can_edit_settings: boolean,
 ): AssignedGroupPermission | undefined {

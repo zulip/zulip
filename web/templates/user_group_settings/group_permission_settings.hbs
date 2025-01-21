@@ -51,4 +51,30 @@
             </div>
         {{/each}}
     </div>
+
+    <div class="user-group-permissions {{#unless group_assigned_user_group_permissions.length}}hide{{/unless}}">
+        <h3>{{t "User group permissions"}}</h3>
+
+        {{#each group_assigned_user_group_permissions}}
+            <div class="settings-subsection-parent {{#unless assigned_permissions.length}}hide{{/unless}}" data-group-id="{{group_id}}">
+                <div class="subsection-header">
+                    <h3>{{group_name}}</h3>
+                    {{> ../settings/settings_save_discard_widget show_only_indicator=false }}
+                </div>
+
+                <div class="subsection-settings">
+                    {{#each assigned_permissions}}
+                        {{> ../settings/settings_checkbox
+                          setting_name=setting_name
+                          prefix=../id_prefix
+                          is_checked=true
+                          label=(lookup ../../group_setting_labels.group setting_name)
+                          is_disabled=(not can_edit)
+                          tooltip_message=tooltip_message
+                          }}
+                    {{/each}}
+                </div>
+            </div>
+        {{/each}}
+    </div>
 </div>
