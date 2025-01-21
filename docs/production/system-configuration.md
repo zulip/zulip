@@ -97,6 +97,8 @@ If set to true, [configures Zulip to allow HTTP access][using-http];
 use if Zulip is deployed behind a reverse proxy that is handling
 SSL/TLS termination.
 
+[using-http]: reverse-proxies.md#configuring-zulip-to-allow-http
+
 #### `nginx_listen_port`
 
 Set to the port number if you [prefer to listen on a port other than
@@ -259,6 +261,8 @@ would be taken on all non-replicated hosts and [all warm standby
 replicas](postgresql.md#postgresql-warm-standby). This is generally only set if you have
 multiple warm standby replicas, in order to avoid taking multiple backups, one
 per replica.
+
+[wal-g]: export-and-import.md#database-only-backup-tools
 
 #### `backups_disk_concurrency`
 
