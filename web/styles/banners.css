@@ -37,6 +37,10 @@
     grid-area: banner-close-button;
     padding: 0.6875em;
     margin-left: 5px;
+
+    &:focus-visible {
+        outline-offset: -2px;
+    }
 }
 
 .navbar-alert-banner {
