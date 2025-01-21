@@ -269,14 +269,14 @@ class MentionData:
 
     def init_user_group_data(self, realm_id: int, content: str) -> None:
         self.user_group_name_info: dict[str, NamedUserGroup] = {}
-        self.user_group_members: dict[int, list[int]] = {}
+        self.user_group_members: dict[int, set[int]] = {}
         user_group_names = possible_user_group_mentions(content)
         if user_group_names:
             for group in NamedUserGroup.objects.filter(
                 realm_id=realm_id, name__in=user_group_names
             ):
                 self.user_group_name_info[group.name.lower()] = group
-                self.user_group_members[group.id] = list(
+                self.user_group_members[group.id] = set(
                     get_recursive_group_members(group).values_list("id", flat=True)
                 )
 
@@ -301,8 +301,8 @@ class MentionData:
     def get_user_group(self, name: str) -> NamedUserGroup | None:
         return self.user_group_name_info.get(name.lower(), None)
 
-    def get_group_members(self, user_group_id: int) -> list[int]:
-        return self.user_group_members.get(user_group_id, [])
+    def get_group_members(self, user_group_id: int) -> set[int]:
+        return self.user_group_members.get(user_group_id, set())
 
     def get_stream_name_map(self, stream_names: set[str]) -> dict[str, int]:
         return self.mention_backend.get_stream_name_map(stream_names)
