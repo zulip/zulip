@@ -1785,35 +1785,6 @@ li.topic-list-item {
         grid-area: filter-box;
         padding-right: var(--line-height-sidebar-row-prominent);
     }
-
-    &.hide_unread_counts {
-        .unread_count,
-        .unread_count.hide,
-        .masked_unread_count {
-            display: none;
-        }
-
-        /* When an empty unread count is hidden,
-           hide the masked unread count, too. */
-        .unread_count.hide + .masked_unread_count {
-            display: none;
-        }
-
-        .masked_unread_count {
-            display: flex;
-        }
-
-        &:hover {
-            .unread_count {
-                display: block;
-            }
-
-            .hide,
-            .masked_unread_count {
-                display: none;
-            }
-        }
-    }
 }
 
 .stream_search_section,
