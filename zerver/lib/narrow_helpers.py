@@ -28,13 +28,14 @@ from django.conf import settings
 @dataclass
 class NarrowTerm:
     operator: str
-    operand: str
+    operand: str | int | list[int]
     negated: bool
 
 
 @dataclass
 class NeverNegatedNarrowTerm(NarrowTerm):
     negated: bool = field(default=False, init=False)
+    operand: str
 
 
 def narrow_dataclasses_from_tuples(
