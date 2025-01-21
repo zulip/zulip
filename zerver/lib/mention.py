@@ -276,9 +276,9 @@ class MentionData:
                 realm_id=realm_id, name__in=user_group_names
             ):
                 self.user_group_name_info[group.name.lower()] = group
-                self.user_group_members[group.id] = [
-                    m.id for m in get_recursive_group_members(group)
-                ]
+                self.user_group_members[group.id] = list(
+                    get_recursive_group_members(group).values_list("id", flat=True)
+                )
 
     def get_user_by_name(self, name: str) -> FullNameInfo | None:
         # warning: get_user_by_name is not dependable if two
