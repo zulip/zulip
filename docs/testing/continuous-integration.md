@@ -82,6 +82,8 @@ the job. Once GitHub Actions fetches the image from Docker Hub, it will spin
 up a docker container. See [images](#images) section to know more about
 the images we use in GitHub Actions for testing.
 
+[docker-hub]: https://hub.docker.com/r/zulip/ci
+
 After booting the container from the configured image, GitHub Actions will
 create the directory mentioned in `working_directory` and all the
 steps will be run from here.
