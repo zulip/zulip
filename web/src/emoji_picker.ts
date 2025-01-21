@@ -15,6 +15,7 @@ import * as compose_ui from "./compose_ui.ts";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as emoji from "./emoji.ts";
 import type {EmojiDict} from "./emoji.ts";
+import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as message_store from "./message_store.ts";
 import {page_params} from "./page_params.ts";
@@ -27,7 +28,6 @@ import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_status_ui from "./user_status_ui.ts";
 import * as util from "./util.ts";
-import { $t } from "./i18n.ts";
 
 // The functionalities for reacting to a message with an emoji
 // and composing a message with an emoji share a single widget,
@@ -57,24 +57,21 @@ let section_head_offsets: {
 let edit_message_id: number | null = null;
 let current_message_id: number | null = null;
 
-
-const TRANSLATED_EMOJI_CATEGORIES:Record<string, string> = {
-    Popular: $t({ id: "Popular", defaultMessage: "Popular" }),
+const TRANSLATED_EMOJI_CATEGORIES: Record<string, string> = {
+    Popular: $t({defaultMessage: "Popular"}),
     "Smileys & Emotion": $t({
-        id: "Smileys & Emotion",
         defaultMessage: "Smileys & Emotion",
     }),
-    "People & Body": $t({id: "People & Body", defaultMessage:"People & Body"}),
-    "Animals & Nature": $t({id: "Animals & Nature", defaultMessage:"Animals & Nature"}),
-    "Food & Drink": $t({id: "Food & Drink", defaultMessage:"Food & Drink"}),
-    Activities: $t({id: "Activities", defaultMessage:"Activities"}),
-    "Travel & Places": $t({id: "Travel & Places", defaultMessage:"Travel & Places"}),
-    Objects: $t({id: "Objects", defaultMessage:"Objects"}),
-    Symbols: $t({id: "Symbols", defaultMessage:"Symbols"}),
-    Flags: $t({id: "Flags", defaultMessage:"Flags"}),
-    Custom: $t({id: "Custom", defaultMessage:"Custom"}),
-}
-
+    "People & Body": $t({defaultMessage: "People & Body"}),
+    "Animals & Nature": $t({defaultMessage: "Animals & Nature"}),
+    "Food & Drink": $t({defaultMessage: "Food & Drink"}),
+    Activities: $t({defaultMessage: "Activities"}),
+    "Travel & Places": $t({defaultMessage: "Travel & Places"}),
+    Objects: $t({defaultMessage: "Objects"}),
+    Symbols: $t({defaultMessage: "Symbols"}),
+    Flags: $t({defaultMessage: "Flags"}),
+    Custom: $t({defaultMessage: "Custom"}),
+};
 
 const EMOJI_CATEGORIES = [
     {name: "Popular", icon: "fa-star-o"},

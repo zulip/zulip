@@ -35,7 +35,7 @@ run_test("initialize", () => {
                 assert.equal(this_emoji.is_realm_emoji, val);
             }
         }
-        if (ele.name === "Custom") {
+        if (ele.name === "translated: Custom") {
             check_emojis(true);
         } else {
             check_emojis(false);

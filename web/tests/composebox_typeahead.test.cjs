@@ -1780,11 +1780,11 @@ test("begins_typeahead", ({override, override_rewire}) => {
         ]),
     );
     assert_typeahead_equals("hi emoji :ta", emoji_objects(["tada", "stadium"]));
-    assert_typeahead_equals("hi emoji :da", emoji_objects(["panda_face", "tada"]));
+    assert_typeahead_equals("hi emoji :da", emoji_objects(["tada", "panda_face"]));
     // We store the emoji panda_face with underscore, but that's not part of the emoji's name
     assert_typeahead_equals("hi emoji :da_", emoji_objects([]));
     assert_typeahead_equals("hi emoji :da ", emoji_objects([]));
-    assert_typeahead_equals("hi emoji\n:da", emoji_objects(["panda_face", "tada"]));
+    assert_typeahead_equals("hi emoji\n:da", emoji_objects(["tada", "panda_face"]));
     assert_typeahead_equals("hi emoji\n :ra", []);
     assert_typeahead_equals(":+", []);
     assert_typeahead_equals(":la", []);
@@ -2130,6 +2130,13 @@ test("typeahead_results", ({override}) => {
         assert.deepEqual(returned, expected);
     }
     assert_emoji_matches("da", [
+        {
+            emoji_name: "tada",
+            emoji_code: "1f389",
+            reaction_type: "unicode_emoji",
+            is_realm_emoji: false,
+            type: "emoji",
+        },
         {
             emoji_name: "panda_face",
             emoji_code: "1f43c",
