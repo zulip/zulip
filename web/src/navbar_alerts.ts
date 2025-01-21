@@ -4,7 +4,6 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert_wrapper.hbs";
-import render_time_zone_update_offer_content from "../templates/navbar_alerts/time_zone_update_offer.hbs";
 
 import * as banners from "./banners.ts";
 import type {AlertBanner} from "./banners.ts";
@@ -369,6 +368,37 @@ const demo_organization_deadline_banner = (): AlertBanner => {
     };
 };
 
+const time_zone_update_offer_banner = (): AlertBanner => {
+    const browser_time_zone = timerender.browser_time_zone();
+    return {
+        process: "time_zone_update_offer",
+        intent: "info",
+        label: $t(
+            {
+                defaultMessage:
+                    "Your computer's time zone differs from your Zulip profile. Update your time zone to {browser_time_zone}?",
+            },
+            {
+                browser_time_zone,
+            },
+        ),
+        buttons: [
+            {
+                type: "quiet",
+                label: $t({defaultMessage: "Yes, please!"}),
+                custom_classes: "accept-update-time-zone",
+            },
+            {
+                type: "borderless",
+                label: $t({defaultMessage: "No, don't ask again."}),
+                custom_classes: "decline-time-zone-update",
+            },
+        ],
+        close_button: true,
+        custom_classes: "navbar-alert-banner",
+    };
+};
+
 export function initialize(): void {
     const ls = localstorage();
     const browser_time_zone = timerender.browser_time_zone();
@@ -377,12 +407,7 @@ export function initialize(): void {
     } else if (page_params.insecure_desktop_app) {
         banners.open(INSECURE_DESKTOP_APP_BANNER, $("#navbar_alerts_wrapper"));
     } else if (should_offer_to_update_timezone()) {
-        open({
-            data_process: "time_zone_update_offer",
-            rendered_alert_content_html: render_time_zone_update_offer_content({
-                browser_time_zone,
-            }),
-        });
+        banners.open(time_zone_update_offer_banner(), $("#navbar_alerts_wrapper"));
     } else if (realm.server_needs_upgrade) {
         if (should_show_server_upgrade_banner(ls)) {
             banners.open(SERVER_NEEDS_UPGRADE_BANNER, $("#navbar_alerts_wrapper"));
@@ -496,73 +521,78 @@ export function initialize(): void {
         },
     );
 
-    $(".time-zone-update").on("click", function (e) {
-        e.preventDefault();
-        void channel.patch({
-            url: "/json/settings",
-            data: {timezone: browser_time_zone},
-            success: () => {
-                $(this).closest(".alert").hide();
-                $(window).trigger("resize");
-                feedback_widget.show({
-                    title_text: $t({defaultMessage: "Time zone updated"}),
-                    populate($container) {
-                        $container.text(
-                            $t(
-                                {
-                                    defaultMessage: "Your time zone was updated to {time_zone}.",
-                                },
-                                {time_zone: browser_time_zone},
-                            ),
-                        );
-                    },
-                });
-            },
-            error() {
-                feedback_widget.show({
-                    title_text: $t({defaultMessage: "Could not update time zone"}),
-                    populate($container) {
-                        $container.text(
-                            $t({defaultMessage: "Unexpected error updating the timezone."}),
-                        );
-                    },
-                });
-            },
-        });
-    });
+    $("#navbar_alerts_wrapper").on(
+        "click",
+        ".accept-update-time-zone",
+        function (this: HTMLElement) {
+            void channel.patch({
+                url: "/json/settings",
+                data: {timezone: browser_time_zone},
+                success: () => {
+                    banners.close($(this));
+                    feedback_widget.show({
+                        title_text: $t({defaultMessage: "Time zone updated"}),
+                        populate($container) {
+                            $container.text(
+                                $t(
+                                    {
+                                        defaultMessage:
+                                            "Your time zone was updated to {time_zone}.",
+                                    },
+                                    {time_zone: browser_time_zone},
+                                ),
+                            );
+                        },
+                    });
+                },
+                error() {
+                    feedback_widget.show({
+                        title_text: $t({defaultMessage: "Could not update time zone"}),
+                        populate($container) {
+                            $container.text(
+                                $t({defaultMessage: "Unexpected error updating the timezone."}),
+                            );
+                        },
+                    });
+                },
+            });
+        },
+    );
 
-    $(".time-zone-auto-detect-off").on("click", function (e) {
-        e.preventDefault();
-        void channel.patch({
-            url: "/json/settings",
-            data: {web_suggest_update_timezone: false},
-            success: () => {
-                $(this).closest(".alert").hide();
-                $(window).trigger("resize");
-                feedback_widget.show({
-                    title_text: $t({defaultMessage: "Setting updated"}),
-                    populate($container) {
-                        $container.text(
-                            $t({
-                                defaultMessage:
-                                    "You will no longer be prompted to update your time zone.",
-                            }),
-                        );
-                    },
-                });
-            },
-            error() {
-                feedback_widget.show({
-                    title_text: $t({defaultMessage: "Unable to update setting"}),
-                    populate($container) {
-                        $container.text(
-                            $t({defaultMessage: "There was an error updating the setting."}),
-                        );
-                    },
-                });
-            },
-        });
-    });
+    $("#navbar_alerts_wrapper").on(
+        "click",
+        ".decline-time-zone-update",
+        function (this: HTMLElement) {
+            void channel.patch({
+                url: "/json/settings",
+                data: {web_suggest_update_timezone: false},
+                success: () => {
+                    banners.close($(this));
+                    feedback_widget.show({
+                        title_text: $t({defaultMessage: "Setting updated"}),
+                        populate($container) {
+                            $container.text(
+                                $t({
+                                    defaultMessage:
+                                        "You will no longer be prompted to update your time zone.",
+                                }),
+                            );
+                        },
+                    });
+                },
+                error() {
+                    feedback_widget.show({
+                        title_text: $t({defaultMessage: "Unable to update setting"}),
+                        populate($container) {
+                            $container.text(
+                                $t({defaultMessage: "There was an error updating the setting."}),
+                            );
+                        },
+                    });
+                },
+            });
+        },
+    );
 
     // Treat Enter with links in the navbar alerts UI focused like a click.,
     $("#navbar_alerts_wrapper").on("keyup", ".alert-link[role=button]", function (e) {
