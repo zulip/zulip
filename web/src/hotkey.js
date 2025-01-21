@@ -75,7 +75,9 @@ function do_narrow_action(action) {
 }
 
 // For message actions and user profile menu.
-const menu_dropdown_hotkeys = new Set([
+const menu_dropdown_hotkeys = new Set(["down_arrow", "up_arrow", "vim_up", "vim_down", "enter"]);
+
+const color_picker_hotkeys = new Set([
     "down_arrow",
     "up_arrow",
     "left_arrow",
@@ -418,11 +420,6 @@ function handle_popover_events(event_name) {
 
     if (popover_menus.is_stream_actions_popover_displayed()) {
         stream_popover.stream_sidebar_menu_handle_keyboard(event_name);
-        return true;
-    }
-
-    if (popover_menus.is_color_picker_popover_displayed()) {
-        color_picker_popover.handle_keyboard(event_name);
         return true;
     }
 
@@ -848,11 +845,20 @@ export function process_hotkey(e, hotkey) {
         }
     }
 
+    // We don't treat the color picker like our menu popovers, since it
+    // supports sideways navigation (left and right arrow).
+    if (color_picker_hotkeys.has(event_name) && popover_menus.is_color_picker_popover_displayed()) {
+        color_picker_popover.handle_keyboard(event_name);
+        return true;
+    }
+
+    // Handle our normal popovers that are basically vertical lists of menu items.
     if (menu_dropdown_hotkeys.has(event_name) && handle_popover_events(event_name)) {
         return true;
     }
 
-    // Handle hotkeys for active popovers here which can handle keys other than `menu_dropdown_hotkeys`.
+    // Handle the left arrow and right arrow keys to make it easy to
+    // get into fancy sideways navigation on the navbar (top right corner).
     if (
         (navbar_menus.is_navbar_menus_displayed() || navbar_menus.any_focused()) &&
         navbar_menus.handle_keyboard_events(event_name)
