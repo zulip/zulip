@@ -3,7 +3,6 @@ import Handlebars from "handlebars";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_empty_required_profile_fields from "../templates/navbar_alerts/empty_required_profile_fields.hbs";
 import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert_wrapper.hbs";
 import render_profile_incomplete_alert_content from "../templates/navbar_alerts/profile_incomplete.hbs";
 import render_server_needs_upgrade_alert_content from "../templates/navbar_alerts/server_needs_upgrade.hbs";
@@ -91,26 +90,18 @@ export function should_show_server_upgrade_notification(ls: LocalStorage): boole
     return Date.now() > upgrade_nag_dismissal_duration;
 }
 
-export function maybe_show_empty_required_profile_fields_alert(): void {
-    const $navbar_alert = $("#navbar_alerts_wrapper").children(".alert").first();
+export function maybe_toggle_empty_required_profile_fields_banner(): void {
+    const $banner = $("#navbar_alerts_wrapper").find(".banner");
     const empty_required_profile_fields_exist = realm.custom_profile_fields
         .map((f) => ({
             ...f,
             value: people.my_custom_profile_data(f.id)?.value,
         }))
         .find((f) => f.required && !f.value);
-    if (!empty_required_profile_fields_exist) {
-        if ($navbar_alert.attr("data-process") === "profile-missing-required") {
-            $navbar_alert.hide();
-        }
-        return;
-    }
-
-    if (!$navbar_alert?.length || $navbar_alert.is(":hidden")) {
-        open({
-            data_process: "profile-missing-required",
-            rendered_alert_content_html: render_empty_required_profile_fields(),
-        });
+    if (empty_required_profile_fields_exist) {
+        banners.open(PROFILE_MISSING_REQUIRED_FIELDS_BANNER, $("#navbar_alerts_wrapper"));
+    } else if ($banner && $banner.attr("data-process") === "profile-missing-required-fields") {
+        banners.close($banner);
     }
 }
 
@@ -234,6 +225,21 @@ const INSECURE_DESKTOP_APP_BANNER: AlertBanner = {
     custom_classes: "navbar-alert-banner",
 };
 
+const PROFILE_MISSING_REQUIRED_FIELDS_BANNER: AlertBanner = {
+    process: "profile-missing-required-fields",
+    intent: "warning",
+    label: $t({defaultMessage: "Your profile is missing required fields."}),
+    buttons: [
+        {
+            type: "quiet",
+            label: $t({defaultMessage: "Edit your profile"}),
+            custom_classes: "edit-profile-required-fields",
+        },
+    ],
+    close_button: true,
+    custom_classes: "navbar-alert-banner",
+};
+
 const bankruptcy_banner = (): AlertBanner => {
     const old_unreads_missing = unread.old_unreads_missing;
     const unread_msgs_count = unread.get_unread_message_count();
@@ -342,7 +348,7 @@ export function initialize(): void {
             rendered_alert_content_html: render_profile_incomplete_alert_content(),
         });
     } else {
-        maybe_show_empty_required_profile_fields_alert();
+        maybe_toggle_empty_required_profile_fields_banner();
     }
 
     // Configure click handlers.
@@ -397,6 +403,10 @@ export function initialize(): void {
         window.open("https://zulip.com/download", "_blank", "noopener,noreferrer");
     });
 
+    $("#navbar_alerts_wrapper").on("click", ".edit-profile-required-fields", () => {
+        window.location.hash = "#settings/profile";
+    });
+
     $(".dismiss-upgrade-nag").on("click", (e: JQuery.ClickEvent) => {
         e.preventDefault();
         e.stopPropagation();
@@ -410,7 +420,7 @@ export function initialize(): void {
             e.stopPropagation();
             const $process = $(this).closest("[data-process]");
             $(this).closest(".alert").hide();
-            if ($process.attr("data-process") !== "profile-missing-required") {
+            if ($process.attr("data-process") !== "profile-missing-required-fields") {
                 maybe_show_empty_required_profile_fields_alert();
             }
             $(window).trigger("resize");

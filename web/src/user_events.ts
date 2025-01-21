@@ -170,7 +170,7 @@ export const update_person = function update(person: UserUpdate): void {
         people.set_custom_profile_field_data(person.user_id, person.custom_profile_field);
         user_profile.update_user_custom_profile_fields(person_obj);
         if (person.user_id === people.my_current_user_id()) {
-            navbar_alerts.maybe_show_empty_required_profile_fields_alert();
+            navbar_alerts.maybe_toggle_empty_required_profile_fields_banner();
 
             const field_id = person.custom_profile_field.id;
             const field_value = people.get_custom_profile_data(person.user_id, field_id)?.value;

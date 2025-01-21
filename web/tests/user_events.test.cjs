@@ -91,7 +91,7 @@ run_test("updates", ({override}) => {
     };
     people.add_active_user(isaac);
 
-    override(navbar_alerts, "maybe_show_empty_required_profile_fields_alert", noop);
+    override(navbar_alerts, "maybe_toggle_empty_required_profile_fields_banner", noop);
     user_events.update_person({
         user_id: isaac.user_id,
         role: settings_config.user_role_values.guest.code,

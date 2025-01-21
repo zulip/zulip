@@ -330,7 +330,7 @@ run_test("custom profile fields", ({override}) => {
     const event = event_fixtures.custom_profile_fields;
     override(settings_profile_fields, "populate_profile_fields", noop);
     override(settings_account, "add_custom_profile_fields_to_settings", noop);
-    override(navbar_alerts, "maybe_show_empty_required_profile_fields_alert", noop);
+    override(navbar_alerts, "maybe_toggle_empty_required_profile_fields_banner", noop);
     dispatch(event);
     assert_same(realm.custom_profile_fields, event.fields);
 });
