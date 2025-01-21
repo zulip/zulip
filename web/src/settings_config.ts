@@ -1,7 +1,11 @@
 import Handlebars from "handlebars/runtime.js";
 
 import {page_params} from "./base_page_params.ts";
-import type {RealmGroupSettingName, StreamGroupSettingName} from "./group_permission_settings.ts";
+import type {
+    GroupSettingName,
+    RealmGroupSettingName,
+    StreamGroupSettingName,
+} from "./group_permission_settings.ts";
 import {$t, $t_html} from "./i18n.ts";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults.ts";
 import {realm} from "./state_data.ts";
@@ -759,6 +763,17 @@ export const stream_group_permission_settings: StreamGroupSettingName[] = [
     "can_administer_channel_group",
     "can_add_subscribers_group",
     "can_remove_subscribers_group",
+];
+
+// Order of settings is important, as this list is used to
+// render assigned permissions in permissions panel.
+export const group_permission_settings: GroupSettingName[] = [
+    "can_manage_group",
+    "can_mention_group",
+    "can_add_members_group",
+    "can_remove_members_group",
+    "can_join_group",
+    "can_leave_group",
 ];
 
 // NOTIFICATIONS
