@@ -37,6 +37,8 @@ import * as settings_org from "./settings_org.ts";
 import {current_user, realm, realm_schema} from "./state_data.ts";
 import type {GroupSettingValue} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import {anonymous_group_schema, group_setting_value_schema} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
@@ -580,6 +582,28 @@ function populate_data_for_removing_realm_permissions(
     return data;
 }
 
+function populate_data_for_removing_stream_permissions(
+    $subsection: JQuery,
+    group: UserGroup,
+    sub: StreamSubscription,
+): Record<string, string> {
+    const changed_setting_elems = settings_components
+        .get_subsection_property_elements($subsection)
+        .filter((elem) => !$(elem).prop("checked"));
+    const changed_setting_names = changed_setting_elems.map((elem) => $(elem).attr("name")!);
+
+    const data: Record<string, string> = {};
+    for (const setting_name of changed_setting_names) {
+        const current_value = sub[sub_store.stream_subscription_schema.keyof().parse(setting_name)];
+        data[setting_name] = get_request_data_for_removing_group_permission(
+            group_setting_value_schema.parse(current_value),
+            group.id,
+        );
+    }
+
+    return data;
+}
+
 export function update_setting_in_group_permissions_panel(
     $setting_elem: JQuery,
     new_value: GroupSettingValue,
@@ -611,6 +635,8 @@ export function update_setting_in_group_permissions_panel(
 export function show_settings_for(group: UserGroup): void {
     const group_assigned_realm_permissions =
         settings_components.get_group_assigned_realm_permissions(group);
+    const group_assigned_stream_permissions =
+        settings_components.get_group_assigned_stream_permissions(group);
 
     const html = render_user_group_settings({
         group,
@@ -630,7 +656,10 @@ export function show_settings_for(group: UserGroup): void {
         ...get_membership_status_context(group),
         group_setting_labels: settings_config.group_setting_labels,
         group_assigned_realm_permissions,
-        group_has_no_permissions: group_assigned_realm_permissions.length === 0,
+        group_assigned_stream_permissions,
+        group_has_no_permissions:
+            group_assigned_realm_permissions.length === 0 &&
+            group_assigned_stream_permissions.length === 0,
     });
 
     scroll_util.get_content_element($("#user_group_settings")).html(html);
@@ -686,6 +715,28 @@ export function show_settings_for(group: UserGroup): void {
                 const $subsection_elem = $save_button.closest(".settings-subsection-parent");
                 const data = populate_data_for_removing_realm_permissions($subsection_elem, group);
                 settings_org.save_organization_settings(data, $save_button, "/json/realm");
+            },
+        );
+
+    $edit_container
+        .find(".channel-group-permissions")
+        .on(
+            "click",
+            ".subsection-header .subsection-changes-save button",
+            function (this: HTMLElement, e: JQuery.ClickEvent) {
+                e.preventDefault();
+                e.stopPropagation();
+                const $save_button = $(this);
+                const $subsection_elem = $save_button.closest(".settings-subsection-parent");
+                const stream_id = Number.parseInt($subsection_elem.attr("data-stream-id")!, 10);
+                const sub = sub_store.get(stream_id)!;
+                const data = populate_data_for_removing_stream_permissions(
+                    $subsection_elem,
+                    group,
+                    sub,
+                );
+                const url = "/json/streams/" + stream_id;
+                settings_org.save_organization_settings(data, $save_button, url);
             },
         );
 }
