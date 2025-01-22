@@ -3424,10 +3424,10 @@ class NormalActionsTest(BaseAction):
         self.user_profile = self.example_user("iago")
 
         self.subscribe(iago, stream.name)
-        self.assertCountEqual(self.users_subscribed_to_stream(stream.name, realm), [iago])
+        self.assertEqual(self.users_subscribed_to_stream(stream.name, realm), {iago})
 
         self.unsubscribe(iago, stream.name)
-        self.assertCountEqual(self.users_subscribed_to_stream(stream.name, realm), [])
+        self.assertEqual(self.users_subscribed_to_stream(stream.name, realm), set())
 
         with self.verify_action(num_events=1, archived_channels=True) as events:
             do_deactivate_stream(stream, acting_user=iago)
@@ -3441,9 +3441,7 @@ class NormalActionsTest(BaseAction):
         self.user_profile = self.example_user("polonius")
 
         stream = get_stream("test_stream1", realm)
-        self.assertCountEqual(
-            self.users_subscribed_to_stream(stream.name, realm), [hamlet, polonius]
-        )
+        self.assertEqual(self.users_subscribed_to_stream(stream.name, realm), {hamlet, polonius})
 
         with self.verify_action(num_events=2, archived_channels=True) as events:
             do_deactivate_stream(stream, acting_user=None)
@@ -3455,8 +3453,8 @@ class NormalActionsTest(BaseAction):
         shiva = self.example_user("shiva")
         iago = self.example_user("iago")
         self.subscribe(shiva, stream.name)
-        self.assertCountEqual(
-            self.users_subscribed_to_stream(stream.name, realm), [iago, polonius, shiva]
+        self.assertEqual(
+            self.users_subscribed_to_stream(stream.name, realm), {iago, polonius, shiva}
         )
 
         with self.verify_action(num_events=2, archived_channels=True) as events:

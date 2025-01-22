@@ -261,12 +261,10 @@ class TestStreamHelpers(ZulipTestCase):
         stream_name = "Some new stream"
         self.subscribe(cordelia, stream_name)
 
-        self.assertEqual(set(self.users_subscribed_to_stream(stream_name, realm)), {cordelia})
+        self.assertEqual(self.users_subscribed_to_stream(stream_name, realm), {cordelia})
 
         self.subscribe(othello, stream_name)
-        self.assertEqual(
-            set(self.users_subscribed_to_stream(stream_name, realm)), {cordelia, othello}
-        )
+        self.assertEqual(self.users_subscribed_to_stream(stream_name, realm), {cordelia, othello})
 
     def test_private_stream(self) -> None:
         # When we test stream permissions, it's very common to use at least
@@ -282,7 +280,7 @@ class TestStreamHelpers(ZulipTestCase):
         stream = self.make_stream(stream_name=stream_name, invite_only=True)
         self.subscribe(cordelia, stream_name)
 
-        self.assertEqual(set(self.users_subscribed_to_stream(stream_name, realm)), {cordelia})
+        self.assertEqual(self.users_subscribed_to_stream(stream_name, realm), {cordelia})
 
         stream = get_stream(stream_name, realm)
         self.assertEqual(stream.name, stream_name)

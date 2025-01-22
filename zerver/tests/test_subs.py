@@ -6398,10 +6398,10 @@ class GetSubscribersTest(ZulipTestCase):
         """
         self.assertIn("subscribers", result)
         self.assertIsInstance(result["subscribers"], list)
-        true_subscribers = [
+        true_subscribers = {
             user_profile.id for user_profile in self.users_subscribed_to_stream(stream_name, realm)
-        ]
-        self.assertEqual(sorted(result["subscribers"]), sorted(true_subscribers))
+        }
+        self.assertEqual(set(result["subscribers"]), true_subscribers)
 
     def make_subscriber_request(
         self, stream_id: int, user: UserProfile | None = None

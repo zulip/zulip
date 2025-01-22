@@ -1380,12 +1380,11 @@ class StreamMessagesTest(ZulipTestCase):
         Check that messages sent to a stream reach all subscribers to that stream.
         """
         realm = get_realm("zulip")
-        subscribers = self.users_subscribed_to_stream(stream_name, realm)
 
         # Outgoing webhook bots don't store UserMessage rows; they will be processed later.
         subscribers = [
             subscriber
-            for subscriber in subscribers
+            for subscriber in self.users_subscribed_to_stream(stream_name, realm)
             if subscriber.bot_type != UserProfile.OUTGOING_WEBHOOK_BOT
         ]
 
