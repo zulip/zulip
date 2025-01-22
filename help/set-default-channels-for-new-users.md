@@ -2,19 +2,28 @@
 
 {!admin-only.md!}
 
-When new users join a Zulip organization, they are subscribed to a default
-set of channels. Organization administrators can add or remove channels from
-that default set.
+You can configure a default set of channels that users will be subscribed to
+when they join your organization. Default channels must be [public or
+web-public](/help/channel-permissions).
 
-## Add a new default channel
+When you [send an email
+invitation](/help/invite-new-users#send-email-invitations) or [create a reusable
+invitation link](/help/invite-new-users#create-a-reusable-invitation-link), you
+can customize which channels the invited users are subscribed to. Note that
+subscribing new users to a channel generally requires having
+[permissions](/help/channel-permissions) to do so, but anyone with
+[permissions](/help/restrict-account-creation#change-who-can-send-invitations)
+to invite new users can subscribe them to any combination of default channels.
+
+## Add a default channel
 
 {start_tabs}
 
 {settings_tab|default-channels-list}
 
-2. Under **Add new default channel**, enter the name of a channel.
+1. Click **Add channel**.
 
-3. Click **Add channel**.
+1. Select one or more channels, and click **Add**.
 
 {end_tabs}
 
@@ -24,17 +33,9 @@ that default set.
 
 {settings_tab|default-channels-list}
 
-2. Find the channel you would like to remove, and click **Remove from default**.
+1. Find the channel you would like to remove, and click **Remove from default**.
 
 {end_tabs}
-
-!!! tip ""
-
-    A user with permission to invite other users will be able to subscribe those
-    users to these default channel at the time of invitation irrespective of
-    whether they have individual permission to subscribe other users to that channel.
-    This will only apply at the time of invitation and not once the invited user has
-    become a member.
 
 ## Related articles
 
