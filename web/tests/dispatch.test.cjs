@@ -315,10 +315,12 @@ run_test("user groups", ({override}) => {
         dispatch(event);
         assert.equal(user_group_settings_ui_stub.num_calls, 1);
 
-        const args = user_group_settings_ui_stub.get_args("event");
+        const args = user_group_settings_ui_stub.get_args("event", "group");
         assert_same(args.event, event);
 
         const group = user_groups.get_user_group_from_id(event.group_id);
+        assert_same(args.group, group);
+
         assert_same(group.name, event.data.name);
         assert_same(group.description, event.data.description);
     }

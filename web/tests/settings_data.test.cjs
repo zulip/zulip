@@ -354,7 +354,8 @@ run_test("can_manage_user_group", ({override}) => {
             can_manage_group: members.id,
         },
     };
-    user_groups.update(event);
+    const students_group = user_groups.get_user_group_from_id(students.id);
+    user_groups.update(event, students_group);
     assert.ok(settings_data.can_manage_user_group(students.id));
 
     override(current_user, "user_id", 3);
@@ -383,8 +384,9 @@ function test_user_group_permission_setting(override, setting_name, permission_f
         group_id: students.id,
         data: {},
     };
+    const students_group = user_groups.get_user_group_from_id(students.id);
     event.data[setting_name] = moderators.id;
-    user_groups.update(event);
+    user_groups.update(event, students_group);
     assert.ok(permission_func(students.id));
 
     override(current_user, "user_id", 1);
@@ -398,7 +400,7 @@ function test_user_group_permission_setting(override, setting_name, permission_f
         direct_members: [5],
         direct_subgroups: [admins.id],
     };
-    user_groups.update(event);
+    user_groups.update(event, students_group);
     assert.ok(permission_func(students.id));
 
     override(current_user, "user_id", 2);
@@ -435,7 +437,8 @@ run_test("can_join_user_group", ({override}) => {
             },
         },
     };
-    user_groups.update(event);
+    const students_group = user_groups.get_user_group_from_id(students.id);
+    user_groups.update(event, students_group);
 
     override(current_user, "user_id", 2);
     assert.ok(!settings_data.can_join_user_group(students.id));
@@ -468,7 +471,8 @@ run_test("can_leave_user_group", ({override}) => {
             },
         },
     };
-    user_groups.update(event);
+    const students_group = user_groups.get_user_group_from_id(students.id);
+    user_groups.update(event, students_group);
 
     override(current_user, "user_id", 2);
     assert.ok(!settings_data.can_leave_user_group(students.id));
