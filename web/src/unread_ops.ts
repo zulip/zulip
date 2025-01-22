@@ -1,7 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_confirm_mark_all_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.hbs";
 
@@ -62,13 +62,13 @@ export function confirm_mark_all_as_read(): void {
     });
 }
 
-const update_flags_for_narrow_response_schema = z.object({
-    processed_count: z.number(),
-    updated_count: z.number(),
-    first_processed_id: z.number().nullable(),
-    last_processed_id: z.number().nullable(),
-    found_oldest: z.boolean(),
-    found_newest: z.boolean(),
+const update_flags_for_narrow_response_schema = v.object({
+    processed_count: v.number(),
+    updated_count: v.number(),
+    first_processed_id: v.nullable(v.number()),
+    last_processed_id: v.nullable(v.number()),
+    found_oldest: v.boolean(),
+    found_newest: v.boolean(),
 });
 
 function bulk_update_read_flags_for_narrow(
@@ -116,7 +116,7 @@ function bulk_update_read_flags_for_narrow(
         url: "/json/messages/flags/narrow",
         data: request,
         success(raw_data) {
-            const data = update_flags_for_narrow_response_schema.parse(raw_data);
+            const data = v.parse(update_flags_for_narrow_response_schema, raw_data);
             messages_read_till_now += data.updated_count;
 
             if (!data.found_newest) {
@@ -207,12 +207,13 @@ function bulk_update_read_flags_for_narrow(
             if (xhr.readyState === 0) {
                 // client cancelled the request
             } else if (
-                (parsed = z
-                    .object({code: z.literal("RATE_LIMIT_HIT"), ["retry-after"]: z.number()})
-                    .safeParse(xhr.responseJSON)).success
+                (parsed = v.safeParse(
+                    v.object({code: v.literal("RATE_LIMIT_HIT"), ["retry-after"]: v.number()}),
+                    xhr.responseJSON,
+                )).success
             ) {
                 // If we hit the rate limit, just continue without showing any error.
-                const milliseconds_to_wait = 1000 * parsed.data["retry-after"];
+                const milliseconds_to_wait = 1000 * parsed.output["retry-after"];
                 setTimeout(() => {
                     bulk_update_read_flags_for_narrow(
                         narrow,
@@ -304,7 +305,7 @@ function do_mark_unread_by_narrow(
         url: "/json/messages/flags/narrow",
         data: opts,
         success(raw_data) {
-            const data = update_flags_for_narrow_response_schema.parse(raw_data);
+            const data = v.parse(update_flags_for_narrow_response_schema, raw_data);
             messages_marked_unread_till_now += data.updated_count;
             if (!data.found_newest) {
                 assert(data.last_processed_id !== null);
@@ -401,12 +402,13 @@ function handle_mark_unread_from_here_error(
     if (xhr.readyState === 0) {
         // client cancelled the request
     } else if (
-        (parsed = z
-            .object({code: z.literal("RATE_LIMIT_HIT"), ["retry-after"]: z.number()})
-            .safeParse(xhr.responseJSON)).success
+        (parsed = v.safeParse(
+            v.object({code: v.literal("RATE_LIMIT_HIT"), ["retry-after"]: v.number()}),
+            xhr.responseJSON,
+        )).success
     ) {
         // If we hit the rate limit, just continue without showing any error.
-        const milliseconds_to_wait = 1000 * parsed.data["retry-after"];
+        const milliseconds_to_wait = 1000 * parsed.output["retry-after"];
         setTimeout(retry, milliseconds_to_wait);
     } else {
         // TODO: Ideally, this case would communicate the

@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_widgets_todo_widget from "../templates/widgets/todo_widget.hbs";
 import render_widgets_todo_widget_tasks from "../templates/widgets/todo_widget_tasks.hbs";
@@ -16,33 +16,33 @@ import type {Event} from "./poll_widget.ts";
 // to a todo list. We arbitrarily pick this value.
 const MAX_IDX = 1000;
 
-export const todo_widget_extra_data_schema = z
-    .object({
-        task_list_title: z.string().optional(),
-        tasks: z.array(z.object({task: z.string(), desc: z.string()})).optional(),
-    })
-    .nullable();
-
-const todo_widget_inbound_data = z.intersection(
-    z.object({
-        type: z.enum(["new_task", "new_task_list_title", "strike"]),
+export const todo_widget_extra_data_schema = v.nullable(
+    v.object({
+        task_list_title: v.optional(v.string()),
+        tasks: v.optional(v.array(v.object({task: v.string(), desc: v.string()}))),
     }),
-    z.record(z.string(), z.unknown()),
 );
+
+const todo_widget_inbound_data = v.intersect([
+    v.object({
+        type: v.picklist(["new_task", "new_task_list_title", "strike"]),
+    }),
+    v.record(v.string(), v.unknown()),
+]);
 
 // TODO: This schema is being used to parse two completely
 // different types of things (inbound and outbound data),
 // which should be refactored so that the code here is
 // clearer and less confusing.
-const new_task_inbound_data_schema = z.object({
-    type: z.literal("new_task").optional(),
-    key: z.number().int().nonnegative().max(MAX_IDX),
-    task: z.string(),
-    desc: z.string(),
-    completed: z.boolean(),
+const new_task_inbound_data_schema = v.object({
+    type: v.optional(v.literal("new_task")),
+    key: v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(MAX_IDX)),
+    task: v.string(),
+    desc: v.string(),
+    completed: v.boolean(),
 });
 
-type NewTaskOutboundData = z.output<typeof new_task_inbound_data_schema>;
+type NewTaskOutboundData = v.InferOutput<typeof new_task_inbound_data_schema>;
 
 type NewTaskTitleOutboundData = {
     type: "new_task_list_title";
@@ -97,20 +97,20 @@ export class TaskData {
 
             inbound: (sender_id: number, raw_data: unknown): void => {
                 // Only the message author can edit questions.
-                const new_task_title_inbound_data = z.object({
-                    type: z.literal("new_task_list_title"),
-                    title: z.string(),
+                const new_task_title_inbound_data = v.object({
+                    type: v.literal("new_task_list_title"),
+                    title: v.string(),
                 });
-                const parsed = new_task_title_inbound_data.safeParse(raw_data);
+                const parsed = v.safeParse(new_task_title_inbound_data, raw_data);
 
                 if (!parsed.success) {
                     this.report_error_function(
                         "todo widget: bad type for inbound task list title",
-                        {error: parsed.error},
+                        {issues: parsed.issues},
                     );
                     return;
                 }
-                const data = parsed.data;
+                const data = parsed.output;
                 if (sender_id !== this.message_sender_id) {
                     this.report_error_function(
                         `user ${sender_id} is not allowed to edit the task list title`,
@@ -143,15 +143,15 @@ export class TaskData {
                 // All readers may add tasks. For legacy reasons, the
                 // inbound idx is called key in the event.
 
-                const parsed = new_task_inbound_data_schema.safeParse(raw_data);
+                const parsed = v.safeParse(new_task_inbound_data_schema, raw_data);
                 if (!parsed.success) {
                     blueslip.warn("todo widget: bad type for inbound task data", {
-                        error: parsed.error,
+                        issues: parsed.issues,
                     });
                     return;
                 }
 
-                const data = parsed.data;
+                const data = parsed.output;
                 const idx = data.key;
                 const task = data.task;
                 const desc = data.desc;
@@ -189,19 +189,19 @@ export class TaskData {
             },
 
             inbound: (_sender_id: number, raw_data: unknown): void => {
-                const task_strike_inbound_data_schema = z.object({
-                    type: z.literal("strike"),
-                    key: z.string(),
+                const task_strike_inbound_data_schema = v.object({
+                    type: v.literal("strike"),
+                    key: v.string(),
                 });
-                const parsed = task_strike_inbound_data_schema.safeParse(raw_data);
+                const parsed = v.safeParse(task_strike_inbound_data_schema, raw_data);
                 if (!parsed.success) {
                     blueslip.warn("todo widget: bad type for inbound strike key", {
-                        error: parsed.error,
+                        issues: parsed.issues,
                     });
                     return;
                 }
                 // All message readers may strike/unstrike todo tasks.
-                const data = parsed.data;
+                const data = parsed.output;
                 const key = data.key;
                 const item = this.task_map.get(key);
 
@@ -297,15 +297,15 @@ export class TaskData {
     }
 
     handle_event(sender_id: number, raw_data: unknown): void {
-        const parsed = todo_widget_inbound_data.safeParse(raw_data);
+        const parsed = v.safeParse(todo_widget_inbound_data, raw_data);
         if (!parsed.success) {
             return;
         }
 
-        const {data} = parsed;
-        const type = data.type;
+        const {output} = parsed;
+        const type = output.type;
         if (this.handle[type]) {
-            this.handle[type].inbound(sender_id, data);
+            this.handle[type].inbound(sender_id, output);
         } else {
             blueslip.warn(`todo widget: unknown inbound type: ${type}`);
         }
@@ -323,15 +323,15 @@ export function activate({
     extra_data: unknown;
     message: Message;
 }): (events: Event[]) => void {
-    const parse_result = todo_widget_extra_data_schema.safeParse(extra_data);
+    const parse_result = v.safeParse(todo_widget_extra_data_schema, extra_data);
     if (!parse_result.success) {
-        blueslip.warn("invalid todo extra data", {issues: parse_result.error.issues});
+        blueslip.warn("invalid todo extra data", {issues: parse_result.issues});
         return () => {
             /* we send a dummy function when extra data is invalid */
         };
     }
-    const {data} = parse_result;
-    const {task_list_title = "", tasks = []} = data ?? {};
+    const {output} = parse_result;
+    const {task_list_title = "", tasks = []} = output ?? {};
     const is_my_task_list = people.is_my_user_id(message.sender_id);
     const task_data = new TaskData({
         message_sender_id: message.sender_id,

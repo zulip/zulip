@@ -167,7 +167,7 @@ run_test("defensive checks", () => {
                 // no status code or reaction type.
             }),
         {
-            name: "ZodError",
+            name: "ValiError",
         },
     );
 

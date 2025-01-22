@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as typeahead from "../shared/src/typeahead.ts";
 import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
@@ -1782,7 +1782,7 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
     return false;
 }
 
-const filter_schema = z.array(z.string()).default([]);
+const filter_schema = v.optional(v.array(v.string()), []);
 
 function load_filters(): void {
     // load filters from local storage.
@@ -1790,9 +1790,9 @@ function load_filters(): void {
         // A user may have a stored filter and can log out
         // to see web public view. This ensures no filters are
         // selected for spectators.
-        const recent_topics = filter_schema.parse(ls.get(ls_key));
+        const recent_topics = v.parse(filter_schema, ls.get(ls_key));
         filters = new Set(recent_topics);
-        const filter_data = filter_schema.parse(ls.get(ls_dropdown_key));
+        const filter_data = v.parse(filter_schema, ls.get(ls_dropdown_key));
         dropdown_filters = new Set(filter_data);
     }
     // Verify that the dropdown_filters are valid.

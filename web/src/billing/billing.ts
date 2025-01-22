@@ -1,11 +1,11 @@
 import $ from "jquery";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as portico_modals from "../portico/portico_modals.ts";
 
 import * as helpers from "./helpers.ts";
 
-const billing_frequency_schema = z.enum(["Monthly", "Annual"]);
+const billing_frequency_schema = v.picklist(["Monthly", "Annual"]);
 const billing_base_url = $("#billing-page").attr("data-billing-base-url")!;
 
 // Matches the CustomerPlan model in the backend.
@@ -90,7 +90,7 @@ export function initialize(): void {
             [],
             "POST",
             (response) => {
-                const response_data = helpers.stripe_session_url_schema.parse(response);
+                const response_data = v.parse(helpers.stripe_session_url_schema, response);
                 window.location.replace(response_data.stripe_session_url);
             },
             () => {
@@ -403,7 +403,7 @@ export function initialize(): void {
         const free_trial = $wrapper.attr("data-free-trial") === "true";
         const downgrade_at_end_of_cycle = $wrapper.attr("data-downgrade-eoc") === "true";
         const current_billing_frequency = $wrapper.attr("data-current-billing-frequency");
-        const billing_frequency_selected = billing_frequency_schema.parse(this.value);
+        const billing_frequency_selected = v.parse(billing_frequency_schema, this.value);
 
         if (
             (switch_to_annual_eoc && billing_frequency_selected === "Monthly") ||
@@ -456,9 +456,9 @@ export function initialize(): void {
                 );
             },
             error(xhr) {
-                const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+                const parsed = v.safeParse(v.object({msg: v.string()}), xhr.responseJSON);
                 if (parsed.success) {
-                    $("#org-billing-frequency-change-error").text(parsed.data.msg);
+                    $("#org-billing-frequency-change-error").text(parsed.output.msg);
                 }
             },
         });

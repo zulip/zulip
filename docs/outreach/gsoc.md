@@ -123,8 +123,8 @@ Django, TypeScript/JavaScript, and CSS.
   on this project. Multiple students are possible; 175 or 350 hours;
   difficult. **Skills required**: TypeScript and refactoring
   expertise; we're specifically interested in students who are a type
-  theory nerd and are invested in writing types precisely (Often using
-  [Zod](https://zod.dev/) to parse and verify data received from the
+  theory nerd and are invested in writing types precisely (often using
+  [Valibot](https://valibot.dev/) to parse and verify data received from the
   server) and checking their work carefully.
 
   Experts: Zixuan James Li, Evy Kassirer, Anders Kaseorg

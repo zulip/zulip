@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import {the} from "../util.ts";
 
@@ -81,13 +81,13 @@ function create_ajax_request(): void {
         },
         error(xhr) {
             hide_submit_loading_indicator();
-            const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+            const parsed = v.safeParse(v.object({msg: v.string()}), xhr.responseJSON);
             if (parsed.success) {
-                if (parsed.data.msg === "Enter a valid URL.") {
-                    $("#sponsorship-org-website-error").text(parsed.data.msg);
+                if (parsed.output.msg === "Enter a valid URL.") {
+                    $("#sponsorship-org-website-error").text(parsed.output.msg);
                     return;
                 }
-                $("#sponsorship-error").show().text(parsed.data.msg);
+                $("#sponsorship-error").show().text(parsed.output.msg);
             }
         },
     });

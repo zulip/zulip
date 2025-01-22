@@ -3,7 +3,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
@@ -592,7 +592,7 @@ export function initialize(): void {
         const $elem = $(this);
         const user_ids_string = $elem.attr("data-user-ids-string")!;
         // This converts from 'true' in the DOM to true.
-        const is_group = z.boolean().parse(JSON.parse($elem.attr("data-is-group")!));
+        const is_group = v.parse(v.boolean(), JSON.parse($elem.attr("data-is-group")!));
 
         const title_data = buddy_data.get_title_data(user_ids_string, is_group);
 

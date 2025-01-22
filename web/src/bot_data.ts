@@ -1,15 +1,15 @@
-import type {z} from "zod";
+import * as v from "valibot";
 
 import type {services_schema} from "./bot_types.ts";
 import {server_add_bot_schema, server_update_bot_schema} from "./bot_types.ts";
 import * as people from "./people.ts";
 import type {StateData} from "./state_data.ts";
 
-export type ServerUpdateBotData = z.infer<typeof server_update_bot_schema>;
-export type ServerAddBotData = z.infer<typeof server_add_bot_schema>;
+export type ServerUpdateBotData = v.InferOutput<typeof server_update_bot_schema>;
+export type ServerAddBotData = v.InferOutput<typeof server_add_bot_schema>;
 export type Bot = Omit<ServerAddBotData, "services">;
 
-export type Services = z.infer<typeof services_schema>;
+export type Services = v.InferOutput<typeof services_schema>;
 
 const bots = new Map<number, Bot>();
 const services = new Map<number, Services>();
@@ -21,7 +21,7 @@ export function all_user_ids(): number[] {
 export function add(bot_data: ServerAddBotData): void {
     // TODO/typescript: Move validation to the caller when
     // server_events_dispatch.js is converted to TypeScript.
-    const {services: bot_services, ...clean_bot} = server_add_bot_schema.parse(bot_data);
+    const {services: bot_services, ...clean_bot} = v.parse(server_add_bot_schema, bot_data);
     bots.set(clean_bot.user_id, clean_bot);
 
     services.set(clean_bot.user_id, bot_services);
@@ -36,8 +36,10 @@ export function update(bot_id: number, bot_update: ServerUpdateBotData): void {
     const bot = bots.get(bot_id)!;
     // TODO/typescript: Move validation to the caller when
     // server_events_dispatch.js is converted to TypeScript.
-    const {services: services_update, ...bot_update_rest} =
-        server_update_bot_schema.parse(bot_update);
+    const {services: services_update, ...bot_update_rest} = v.parse(
+        server_update_bot_schema,
+        bot_update,
+    );
 
     Object.assign(bot, bot_update_rest);
 

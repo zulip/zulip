@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
@@ -10,57 +10,58 @@ import {todo_widget_extra_data_schema} from "./todo_widget.ts";
 import type {TodoWidgetOutboundData} from "./todo_widget.ts";
 import * as widgetize from "./widgetize.ts";
 
-export type Submessage = z.infer<typeof message_store.submessage_schema>;
+export type Submessage = v.InferOutput<typeof message_store.submessage_schema>;
 
-export const zform_widget_extra_data_schema = z
-    .object({
-        choices: z.array(
-            z.object({
-                type: z.string(),
-                long_name: z.string(),
-                reply: z.string(),
-                short_name: z.string(),
+export const zform_widget_extra_data_schema = v.nullable(
+    v.object({
+        choices: v.array(
+            v.object({
+                type: v.string(),
+                long_name: v.string(),
+                reply: v.string(),
+                short_name: v.string(),
             }),
         ),
-        heading: z.string(),
-        type: z.literal("choices"),
-    })
-    .nullable();
+        heading: v.string(),
+        type: v.literal("choices"),
+    }),
+);
 
-const poll_widget_extra_data_schema = z
-    .object({
-        question: z.string().optional(),
-        options: z.array(z.string()).optional(),
-    })
-    .nullable();
+const poll_widget_extra_data_schema = v.nullable(
+    v.object({
+        question: v.optional(v.string()),
+        options: v.optional(v.array(v.string())),
+    }),
+);
 
-const widget_data_event_schema = z.object({
-    sender_id: z.number(),
-    data: z.discriminatedUnion("widget_type", [
-        z.object({widget_type: z.literal("poll"), extra_data: poll_widget_extra_data_schema}),
-        z.object({widget_type: z.literal("zform"), extra_data: zform_widget_extra_data_schema}),
-        z.object({
-            widget_type: z.literal("todo"),
+const widget_data_event_schema = v.object({
+    sender_id: v.number(),
+    data: v.variant("widget_type", [
+        v.object({widget_type: v.literal("poll"), extra_data: poll_widget_extra_data_schema}),
+        v.object({widget_type: v.literal("zform"), extra_data: zform_widget_extra_data_schema}),
+        v.object({
+            widget_type: v.literal("todo"),
             extra_data: todo_widget_extra_data_schema,
         }),
     ]),
 });
 
-const inbound_data_event_schema = z.object({
-    sender_id: z.number(),
-    data: z.intersection(
-        z.object({
-            type: z.string(),
+const inbound_data_event_schema = v.object({
+    sender_id: v.number(),
+    data: v.intersect([
+        v.object({
+            type: v.string(),
         }),
-        z.record(z.string(), z.unknown()),
-    ),
+        v.record(v.string(), v.unknown()),
+    ]),
 });
 
-const submessages_event_schema = z
-    .tuple([widget_data_event_schema])
-    .rest(inbound_data_event_schema);
+const submessages_event_schema = v.tupleWithRest(
+    [widget_data_event_schema],
+    inbound_data_event_schema,
+);
 
-type SubmessageEvents = z.infer<typeof submessages_event_schema>;
+type SubmessageEvents = v.InferOutput<typeof submessages_event_schema>;
 
 export function get_message_events(message: Message): SubmessageEvents | undefined {
     if (message.locally_echoed) {
@@ -81,7 +82,7 @@ export function get_message_events(message: Message): SubmessageEvents | undefin
         sender_id: obj.sender_id,
         data: JSON.parse(obj.content),
     }));
-    const clean_events = submessages_event_schema.parse(events);
+    const clean_events = v.parse(submessages_event_schema, events);
     return clean_events;
 }
 

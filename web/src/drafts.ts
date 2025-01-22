@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_confirm_delete_all_drafts from "../templates/confirm_dialog/confirm_delete_all_drafts.hbs";
 
@@ -36,60 +36,60 @@ function getTimestamp(): number {
 
 const CURRENT_DRAFT_VERSION = 1;
 
-const draft_schema = z.intersection(
-    z.object({
-        content: z.string(),
-        updatedAt: z.number(),
-        is_sending_saving: z.boolean().default(false),
+const draft_schema = v.intersect([
+    v.object({
+        content: v.string(),
+        updatedAt: v.number(),
+        is_sending_saving: v.optional(v.boolean(), false),
         // `drafts_version` is 0 for drafts that aren't auto-restored
         // and 1 for drafts created since that change, to avoid a flood
         // of old drafts showing up when this feature was introduced.
-        drafts_version: z.number().default(0),
+        drafts_version: v.optional(v.number(), 0),
     }),
-    z.discriminatedUnion("type", [
-        z.object({
-            type: z.literal("stream"),
-            topic: z.string(),
-            stream_id: z.number().optional(),
+    v.variant("type", [
+        v.object({
+            type: v.literal("stream"),
+            topic: v.string(),
+            stream_id: v.optional(v.number()),
         }),
-        z.object({
-            type: z.literal("private"),
-            reply_to: z.string(),
-            private_message_recipient: z.string(),
+        v.object({
+            type: v.literal("private"),
+            reply_to: v.string(),
+            private_message_recipient: v.string(),
         }),
     ]),
-);
+]);
 
-export type LocalStorageDraft = z.infer<typeof draft_schema>;
+export type LocalStorageDraft = v.InferOutput<typeof draft_schema>;
 
 // The id is added to the draft in format_drafts in drafts_overlay_ui.
 // We should probably just include it in the draft object itself always?
 type LocalStorageDraftWithId = LocalStorageDraft & {id: string};
 
-const possibly_buggy_draft_schema = z.intersection(
-    z.object({
-        content: z.string(),
-        updatedAt: z.number(),
-        is_sending_saving: z.boolean().default(false),
-        drafts_version: z.number().default(0),
+const possibly_buggy_draft_schema = v.intersect([
+    v.object({
+        content: v.string(),
+        updatedAt: v.number(),
+        is_sending_saving: v.optional(v.boolean(), false),
+        drafts_version: v.optional(v.number(), 0),
     }),
-    z.discriminatedUnion("type", [
-        z.object({
-            type: z.literal("stream"),
-            topic: z.string().optional(),
-            stream_id: z.number().optional(),
-            stream: z.string().optional(),
+    v.variant("type", [
+        v.object({
+            type: v.literal("stream"),
+            topic: v.optional(v.string()),
+            stream_id: v.optional(v.number()),
+            stream: v.optional(v.string()),
         }),
-        z.object({
-            type: z.literal("private"),
-            reply_to: z.string(),
-            private_message_recipient: z.string(),
+        v.object({
+            type: v.literal("private"),
+            reply_to: v.string(),
+            private_message_recipient: v.string(),
         }),
     ]),
-);
+]);
 
-const drafts_schema = z.record(z.string(), draft_schema);
-const possibly_buggy_drafts_schema = z.record(z.string(), possibly_buggy_draft_schema);
+const drafts_schema = v.record(v.string(), draft_schema);
+const possibly_buggy_drafts_schema = v.record(v.string(), possibly_buggy_draft_schema);
 
 export const draft_model = (function () {
     // the key that the drafts are stored under.
@@ -108,12 +108,12 @@ export const draft_model = (function () {
             drafts = ls.get(KEY);
         }
 
-        return drafts_schema.parse(drafts);
+        return v.parse(drafts_schema, drafts);
     }
 
     function fix_buggy_drafts(): void {
         const drafts = ls.get(KEY);
-        const parsed_drafts = possibly_buggy_drafts_schema.parse(drafts);
+        const parsed_drafts = v.parse(possibly_buggy_drafts_schema, drafts);
         const valid_drafts: Record<string, LocalStorageDraft> = {};
         for (const [draft_id, draft] of Object.entries(parsed_drafts)) {
             if (draft.type !== "stream") {

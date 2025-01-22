@@ -2,7 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
@@ -680,7 +680,7 @@ export function start($row: JQuery, edit_box_open_callback?: () => void): void {
         url: "/json/messages/" + message.id,
         data: {allow_empty_topic_name: true},
         success(data) {
-            const {raw_content} = z.object({raw_content: z.string()}).parse(data);
+            const {raw_content} = v.parse(v.object({raw_content: v.string()}), data);
             if (message_lists.current === msg_list) {
                 message.raw_content = raw_content;
                 start_edit_with_content($row, message.raw_content, edit_box_open_callback);
@@ -872,14 +872,14 @@ function do_toggle_resolve_topic(
             }
 
             if (xhr.responseJSON) {
-                const {code} = z.object({code: z.string()}).parse(xhr.responseJSON);
+                const {code} = v.parse(v.object({code: v.string()}), xhr.responseJSON);
                 if (code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
                     handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved);
                     return;
                 }
 
                 if (report_errors_in_global_banner) {
-                    const {msg} = z.object({msg: z.string()}).parse(xhr.responseJSON);
+                    const {msg} = v.parse(v.object({msg: v.string()}), xhr.responseJSON);
                     ui_report.generic_embed_error(msg, 3500);
                 }
             }
@@ -1035,11 +1035,12 @@ export function do_save_inline_topic_edit($row: JQuery, message: Message, new_to
             if (xhr.responseJSON === undefined) {
                 return;
             }
-            const {code} = z.object({code: z.string()}).parse(xhr.responseJSON);
+            const {code} = v.parse(v.object({code: v.string()}), xhr.responseJSON);
             if (code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
-                const {first_message_id_allowed_to_move} = z
-                    .object({first_message_id_allowed_to_move: z.number()})
-                    .parse(xhr.responseJSON);
+                const {first_message_id_allowed_to_move} = v.parse(
+                    v.object({first_message_id_allowed_to_move: v.number()}),
+                    xhr.responseJSON,
+                );
                 const send_notification_to_old_thread = false;
                 const send_notification_to_new_thread = false;
                 // We are not changing stream in this UI.
@@ -1191,7 +1192,7 @@ export function save_message_row_edit($row: JQuery): void {
             // create a fresh Save button, without the spinner
             // class attached.
 
-            const {detached_uploads} = detached_uploads_api_response_schema.parse(res);
+            const {detached_uploads} = v.parse(detached_uploads_api_response_schema, res);
             if (detached_uploads.length > 0) {
                 attachments_ui.suggest_delete_detached_attachments(detached_uploads);
             }
@@ -1232,7 +1233,7 @@ export function save_message_row_edit($row: JQuery): void {
                     );
 
                     if (xhr.responseJSON !== undefined) {
-                        const {code} = z.object({code: z.string()}).parse(xhr.responseJSON);
+                        const {code} = v.parse(v.object({code: v.string()}), xhr.responseJSON);
                         if (code === "TOPIC_WILDCARD_MENTION_NOT_ALLOWED") {
                             const new_row_html = render_wildcard_mention_not_allowed_error({
                                 banner_type: compose_banner.ERROR,
@@ -1393,7 +1394,7 @@ export function delete_topic(stream_id: number, topic_name: string, failures = 0
             topic_name,
         },
         success(data) {
-            const {complete} = z.object({complete: z.boolean()}).parse(data);
+            const {complete} = v.parse(v.object({complete: v.boolean()}), data);
             if (!complete) {
                 if (failures >= 9) {
                     // Don't keep retrying indefinitely to avoid DoSing the server.
@@ -1430,12 +1431,13 @@ function handle_message_move_failure_due_to_time_limit(
     handle_confirm: (e: JQuery.ClickEvent) => void,
     on_hide_callback?: () => void,
 ): void {
-    const {total_messages_allowed_to_move, total_messages_in_topic} = z
-        .object({
-            total_messages_allowed_to_move: z.number(),
-            total_messages_in_topic: z.number(),
-        })
-        .parse(xhr.responseJSON);
+    const {total_messages_allowed_to_move, total_messages_in_topic} = v.parse(
+        v.object({
+            total_messages_allowed_to_move: v.number(),
+            total_messages_in_topic: v.number(),
+        }),
+        xhr.responseJSON,
+    );
     const messages_allowed_to_move_text = $t(
         {
             defaultMessage:
@@ -1538,11 +1540,12 @@ export function move_topic_containing_message_to_stream(
         error(xhr): void {
             reset_modal_ui();
             if (xhr.responseJSON !== undefined) {
-                const {code} = z.object({code: z.string()}).parse(xhr.responseJSON);
+                const {code} = v.parse(v.object({code: v.string()}), xhr.responseJSON);
                 if (code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
-                    const {first_message_id_allowed_to_move} = z
-                        .object({first_message_id_allowed_to_move: z.number()})
-                        .parse(xhr.responseJSON);
+                    const {first_message_id_allowed_to_move} = v.parse(
+                        v.object({first_message_id_allowed_to_move: v.number()}),
+                        xhr.responseJSON,
+                    );
                     function handle_confirm(): void {
                         move_topic_containing_message_to_stream(
                             first_message_id_allowed_to_move,
@@ -1601,9 +1604,10 @@ export function with_first_message_id(
         url: "/json/messages",
         data,
         success(data) {
-            const {messages} = z
-                .object({messages: z.array(z.object({id: z.number()}))})
-                .parse(data);
+            const {messages} = v.parse(
+                v.object({messages: v.array(v.object({id: v.number()}))}),
+                data,
+            );
             const message_id = messages[0]?.id;
             success_cb(message_id);
         },
@@ -1637,9 +1641,10 @@ export function is_message_oldest_or_newest(
         url: "/json/messages",
         data,
         success(data) {
-            const {messages} = z
-                .object({messages: z.array(z.object({id: z.number()}))})
-                .parse(data);
+            const {messages} = v.parse(
+                v.object({messages: v.array(v.object({id: v.number()}))}),
+                data,
+            );
             let is_oldest = true;
             let is_newest = true;
             for (const message of messages) {

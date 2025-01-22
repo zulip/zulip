@@ -1,7 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as blueslip from "../blueslip.ts";
 import * as common from "../common.ts";
@@ -103,7 +103,7 @@ function update_categories(): void {
     adjust_font_sizing();
 }
 
-const categories_schema = z.array(z.string());
+const categories_schema = v.array(v.string());
 
 const update_integrations = _.debounce(() => {
     const max_scrollY = window.scrollY;
@@ -122,7 +122,8 @@ const update_integrations = _.debounce(() => {
 
         if (!$integration.hasClass("integration-create-your-own")) {
             const display_name = INTEGRATIONS.get($integration.attr("data-name")!) ?? "";
-            const integration_categories = categories_schema.parse(
+            const integration_categories = v.parse(
+                categories_schema,
                 JSON.parse($integration.attr("data-categories")!),
             );
             const display =
@@ -150,7 +151,8 @@ function hide_catalog_show_integration(): void {
     ).clone(false);
     $lozenge_icon.removeClass("legacy");
 
-    const categories = categories_schema.parse(
+    const categories = v.parse(
+        categories_schema,
         JSON.parse($(`.integration-${CSS.escape(state.integration)}`).attr("data-categories")!),
     );
 

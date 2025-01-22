@@ -1,5 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import * as v from "valibot";
 
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_first_stream_created_modal from "../templates/stream_settings/first_stream_created_modal.hbs";
@@ -99,9 +100,9 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
 
     if (Object.keys(realm.server_supported_permission_settings.stream).includes(property)) {
         stream_settings_ui.update_stream_permission_group_setting(
-            stream_permission_group_settings_schema.parse(property),
+            v.parse(stream_permission_group_settings_schema, property),
             sub,
-            group_setting_value_schema.parse(value),
+            v.parse(group_setting_value_schema, value),
         );
         return;
     }

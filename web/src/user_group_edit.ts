@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_confirm_delete_user from "../templates/confirm_dialog/confirm_delete_user.hbs";
 import render_confirm_join_group_direct_member from "../templates/confirm_dialog/confirm_join_group_direct_member.hbs";
@@ -1267,20 +1267,21 @@ export function initialize(): void {
                 },
                 error(xhr) {
                     dialog_widget.hide_dialog_spinner();
-                    const parsed = z
-                        .object({
-                            code: z.string(),
-                            msg: z.string(),
-                            objections: z.array(z.record(z.string(), z.unknown())),
-                            result: z.string(),
-                        })
-                        .safeParse(xhr.responseJSON);
-                    if (parsed.success && parsed.data.code === "CANNOT_DEACTIVATE_GROUP_IN_USE") {
+                    const parsed = v.safeParse(
+                        v.object({
+                            code: v.string(),
+                            msg: v.string(),
+                            objections: v.array(v.record(v.string(), v.unknown())),
+                            result: v.string(),
+                        }),
+                        xhr.responseJSON,
+                    );
+                    if (parsed.success && parsed.output.code === "CANNOT_DEACTIVATE_GROUP_IN_USE") {
                         $("#deactivation-confirm-modal .dialog_submit_button").prop(
                             "disabled",
                             true,
                         );
-                        const objections = parsed.data.objections;
+                        const objections = parsed.output.objections;
                         const template_args = parse_args_for_deactivation_banner(objections);
                         const rendered_error_banner =
                             render_cannot_deactivate_group_banner(template_args);

@@ -1,11 +1,11 @@
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as people from "./people.ts";
 import type {StateData, presence_schema} from "./state_data.ts";
 import {realm} from "./state_data.ts";
 import {user_settings} from "./user_settings.ts";
 
-export type RawPresence = z.infer<typeof presence_schema> & {
+export type RawPresence = v.InferOutput<typeof presence_schema> & {
     server_timestamp: number;
 };
 
@@ -14,15 +14,15 @@ export type PresenceStatus = {
     last_active?: number | undefined;
 };
 
-export const presence_info_from_event_schema = z.object({
-    website: z.object({
-        client: z.literal("website"),
-        status: z.enum(["idle", "active"]),
-        timestamp: z.number(),
-        pushable: z.boolean(),
+export const presence_info_from_event_schema = v.object({
+    website: v.object({
+        client: v.literal("website"),
+        status: v.picklist(["idle", "active"]),
+        timestamp: v.number(),
+        pushable: v.boolean(),
     }),
 });
-export type PresenceInfoFromEvent = z.output<typeof presence_info_from_event_schema>;
+export type PresenceInfoFromEvent = v.InferOutput<typeof presence_info_from_event_schema>;
 
 // This module just manages data.  See activity.js for
 // the UI of our buddy list.
@@ -187,7 +187,7 @@ export function update_info_from_event(
 }
 
 export function set_info(
-    presences: Record<number, z.infer<typeof presence_schema>>,
+    presences: Record<number, v.InferOutput<typeof presence_schema>>,
     server_timestamp: number,
     last_update_id = -1,
 ): void {

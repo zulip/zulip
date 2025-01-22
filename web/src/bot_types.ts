@@ -1,43 +1,45 @@
-import {z} from "zod";
+import * as v from "valibot";
 
-const basic_bot_schema = z.object({
-    api_key: z.string(),
-    avatar_url: z.string(),
-    bot_type: z.number(),
-    default_all_public_streams: z.boolean(),
-    default_events_register_stream: z.string().nullable(),
-    default_sending_stream: z.string().nullable(),
-    email: z.string(),
-    full_name: z.string(),
-    is_active: z.boolean(),
-    owner_id: z.number().nullable(),
-    user_id: z.number(),
+const basic_bot_schema = v.object({
+    api_key: v.string(),
+    avatar_url: v.string(),
+    bot_type: v.number(),
+    default_all_public_streams: v.boolean(),
+    default_events_register_stream: v.nullable(v.string()),
+    default_sending_stream: v.nullable(v.string()),
+    email: v.string(),
+    full_name: v.string(),
+    is_active: v.boolean(),
+    owner_id: v.nullable(v.number()),
+    user_id: v.number(),
 });
 
-const outgoing_service_schema = z.object({
-    base_url: z.string(),
-    interface: z.number(),
-    token: z.string(),
+const outgoing_service_schema = v.object({
+    base_url: v.string(),
+    interface: v.number(),
+    token: v.string(),
 });
 
-const embedded_service_schema = z.object({
-    config_data: z.record(z.string()),
-    service_name: z.string(),
+const embedded_service_schema = v.object({
+    config_data: v.record(v.string(), v.string()),
+    service_name: v.string(),
 });
 
-export const services_schema = z.union([
-    z.array(outgoing_service_schema),
-    z.array(embedded_service_schema),
+export const services_schema = v.union([
+    v.array(outgoing_service_schema),
+    v.array(embedded_service_schema),
 ]);
 
-export const server_update_bot_schema = basic_bot_schema.partial().extend({
-    user_id: z.number(),
-    services: services_schema.optional(),
+export const server_update_bot_schema = v.object({
+    ...v.partial(basic_bot_schema).entries,
+    user_id: v.number(),
+    services: v.optional(services_schema),
 });
 
-export const server_add_bot_schema = basic_bot_schema.extend({
-    bot_type: z.number(),
-    email: z.string(),
-    is_active: z.boolean(),
+export const server_add_bot_schema = v.object({
+    ...basic_bot_schema.entries,
+    bot_type: v.number(),
+    email: v.string(),
+    is_active: v.boolean(),
     services: services_schema,
 });

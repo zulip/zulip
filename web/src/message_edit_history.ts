@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_message_edit_history from "../templates/message_edit_history.hbs";
 import render_message_history_overlay from "../templates/message_history_overlay.hbs";
@@ -41,20 +41,20 @@ type EditHistoryEntry = {
     new_stream: string | undefined;
 };
 
-const server_message_history_schema = z.object({
-    message_history: z.array(
-        z.object({
-            content: z.string(),
-            rendered_content: z.string(),
-            timestamp: z.number(),
-            topic: z.string(),
-            user_id: z.number().or(z.null()),
-            prev_topic: z.string().optional(),
-            stream: z.number().optional(),
-            prev_stream: z.number().optional(),
-            prev_content: z.string().optional(),
-            prev_rendered_content: z.string().optional(),
-            content_html_diff: z.string().optional(),
+const server_message_history_schema = v.object({
+    message_history: v.array(
+        v.object({
+            content: v.string(),
+            rendered_content: v.string(),
+            timestamp: v.number(),
+            topic: v.string(),
+            user_id: v.nullable(v.number()),
+            prev_topic: v.optional(v.string()),
+            stream: v.optional(v.number()),
+            prev_stream: v.optional(v.number()),
+            prev_content: v.optional(v.string()),
+            prev_rendered_content: v.optional(v.string()),
+            content_html_diff: v.optional(v.string()),
         }),
     ),
 });
@@ -119,7 +119,7 @@ export function fetch_and_render_message_history(message: Message): void {
             allow_empty_topic_name: true,
         },
         success(raw_data) {
-            const data = server_message_history_schema.parse(raw_data);
+            const data = v.parse(server_message_history_schema, raw_data);
 
             const content_edit_history: EditHistoryEntry[] = [];
             let prev_stream_item: EditHistoryEntry | null = null;

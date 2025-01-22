@@ -1,6 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
+import * as v from "valibot";
 
 import generated_emoji_codes from "../../static/generated/emoji/emoji_codes.json";
 import * as fenced_code from "../shared/src/fenced_code.ts";
@@ -418,7 +419,7 @@ export function initialize_everything(state_data) {
         load comes from `state_data`.
 
         The version of `state_data` that we've been passed has already been
-        split using Zod `.transform` invocations into a number of parts; see
+        split using `v.transform` invocations into a number of parts; see
         `state_data_schema` in `state_data.ts`. Below we pass each part to the
         initialization function for the corresponding module.
     */
@@ -706,7 +707,7 @@ $(() => {
             url: "/json/register",
             data,
             success(response_data) {
-                const state_data = state_data_schema.parse(response_data);
+                const state_data = v.parse(state_data_schema, response_data);
                 initialize_everything(state_data);
             },
             error() {

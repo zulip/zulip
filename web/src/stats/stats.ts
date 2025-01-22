@@ -4,7 +4,7 @@ import PlotlyBar from "plotly.js/lib/bar";
 import Plotly from "plotly.js/lib/core";
 import PlotlyPie from "plotly.js/lib/pie";
 import * as tippy from "tippy.js";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as blueslip from "../blueslip.ts";
 import {$t, $t_html} from "../i18n.ts";
@@ -51,60 +51,64 @@ type DataByTime<T> = {
     week: T;
 };
 
-// Define zod schemas for plotly
-const datum_schema: z.ZodType<Plotly.Datum> = z.any();
+// Define Valibot schemas for plotly
+const datum_schema: v.GenericSchema<Plotly.Datum> = v.any();
 
 // Define a schema factory function for the utility generic type
-function instantiate_type_DataByEveryoneUser<T extends z.ZodTypeAny>(
-    schema: T,
-): z.ZodObject<{everyone: T; user: T}> {
-    return z.object({
+function instantiate_type_DataByEveryoneUser<
+    T extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>,
+>(schema: T): v.ObjectSchema<{everyone: T; user: T}, undefined> {
+    return v.object({
         everyone: schema,
         user: schema,
     });
 }
 
-// Define zod schemas for incoming data from the server
-const common_data_schema = z.object({
-    end_times: z.array(z.number()),
+// Define Valibot schemas for incoming data from the server
+const common_data_schema = v.object({
+    end_times: v.array(v.number()),
 });
 
-const active_user_data = z.object({
-    _1day: z.array(datum_schema),
-    _15day: z.array(datum_schema),
-    all_time: z.array(datum_schema),
+const active_user_data = v.object({
+    _1day: v.array(datum_schema),
+    _15day: v.array(datum_schema),
+    all_time: v.array(datum_schema),
 });
 
-const read_data_schema = instantiate_type_DataByEveryoneUser(
-    z.object({read: z.array(z.number())}),
-).extend({...common_data_schema.shape});
-
-const sent_data_schema = instantiate_type_DataByEveryoneUser(
-    z.object({
-        human: z.array(z.number()),
-        bot: z.array(z.number()),
-    }),
-).extend({...common_data_schema.shape});
-
-const ordered_sent_data_schema = instantiate_type_DataByEveryoneUser(
-    z.record(z.array(z.number())),
-).extend({
-    ...common_data_schema.shape,
-    display_order: z.array(z.string()),
+const read_data_schema = v.object({
+    ...instantiate_type_DataByEveryoneUser(v.object({read: v.array(v.number())})).entries,
+    ...common_data_schema.entries,
 });
 
-const user_count_data_schema = z
-    .object({everyone: active_user_data})
-    .extend({...common_data_schema.shape});
+const sent_data_schema = v.object({
+    ...instantiate_type_DataByEveryoneUser(
+        v.object({
+            human: v.array(v.number()),
+            bot: v.array(v.number()),
+        }),
+    ).entries,
+    ...common_data_schema.entries,
+});
+
+const ordered_sent_data_schema = v.object({
+    ...instantiate_type_DataByEveryoneUser(v.record(v.string(), v.array(v.number()))).entries,
+    ...common_data_schema.entries,
+    display_order: v.array(v.string()),
+});
+
+const user_count_data_schema = v.object({
+    everyone: active_user_data,
+    ...common_data_schema.entries,
+});
 
 // Inferred types used in nested functions
-type SentData = z.infer<typeof sent_data_schema>;
-type OrderedSentData = z.infer<typeof ordered_sent_data_schema>;
-type ReadData = z.infer<typeof read_data_schema>;
+type SentData = v.InferOutput<typeof sent_data_schema>;
+type OrderedSentData = v.InferOutput<typeof ordered_sent_data_schema>;
+type ReadData = v.InferOutput<typeof read_data_schema>;
 
-// Define misc zod schemas
-const time_button_schema = z.enum(["cumulative", "year", "month", "week"]);
-const user_button_schema = z.enum(["everyone", "user"]);
+// Define misc Valibot schemas
+const time_button_schema = v.picklist(["cumulative", "year", "month", "week"]);
+const user_button_schema = v.picklist(["everyone", "user"]);
 
 const font_14pt = {
     family: "Open Sans, sans-serif",
@@ -120,20 +124,20 @@ const font_12pt = {
 
 let last_full_update = Number.POSITIVE_INFINITY;
 
-function handle_parse_server_stats_result<_, T>(
-    result: z.SafeParseReturnType<_, T>,
-): T | undefined {
+function handle_parse_server_stats_result<
+    T extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>,
+>(result: v.SafeParseResult<T>): v.InferOutput<T> | undefined {
     if (!result.success) {
         blueslip.warn(
             "Server stats data cannot be parsed as expected.\n" +
                 "Check if the schema is up-to-date or the data satisfies the schema definition.",
             {
-                issues: result.error.issues,
+                issues: result.issues,
             },
         );
         return undefined;
     }
-    return result.data;
+    return result.output;
 }
 
 // Copied from attachments_ui.js
@@ -332,7 +336,7 @@ function set_guest_users_statistic(guest_users: number | null): void {
 // PLOTLY CHARTS
 function populate_messages_sent_over_time(raw_data: unknown): void {
     // Content rendered by this method is titled as "Messages sent over time" on the webpage
-    const result = sent_data_schema.safeParse(raw_data);
+    const result = v.safeParse(sent_data_schema, raw_data);
     const data = handle_parse_server_stats_result(result);
     if (data === undefined) {
         return;
@@ -698,7 +702,7 @@ function compute_summary_chart_data(
 
 function populate_messages_sent_by_client(raw_data: unknown): void {
     // Content rendered by this method is titled as "Messages sent by client" on the webpage
-    const result = ordered_sent_data_schema.safeParse(raw_data);
+    const result = v.safeParse(ordered_sent_data_schema, raw_data);
     const data = handle_parse_server_stats_result(result);
     if (data === undefined) {
         return;
@@ -847,12 +851,12 @@ function populate_messages_sent_by_client(raw_data: unknown): void {
     $("#pie_messages_sent_by_client button").on("click", function () {
         if ($(this).attr("data-user")) {
             set_user_button($(this));
-            user_button = user_button_schema.parse($(this).attr("data-user"));
+            user_button = v.parse(user_button_schema, $(this).attr("data-user"));
             // Now `user_button` will be of type "everyone" | "user"
         }
         if ($(this).attr("data-time")) {
             set_time_button($(this));
-            time_button = time_button_schema.parse($(this).attr("data-time"));
+            time_button = v.parse(time_button_schema, $(this).attr("data-time"));
             // Now `time_button` will be of type "cumulative" | "year" | "month" | "week"
         }
         draw_plot();
@@ -861,7 +865,7 @@ function populate_messages_sent_by_client(raw_data: unknown): void {
 
 function populate_messages_sent_by_message_type(raw_data: unknown): void {
     // Content rendered by this method is titled as "Messages sent by recipient type" on the webpage
-    const result = ordered_sent_data_schema.safeParse(raw_data);
+    const result = v.safeParse(ordered_sent_data_schema, raw_data);
     const data = handle_parse_server_stats_result(result);
     if (data === undefined) {
         return;
@@ -983,12 +987,12 @@ function populate_messages_sent_by_message_type(raw_data: unknown): void {
     $("#pie_messages_sent_by_type button").on("click", function () {
         if ($(this).attr("data-user")) {
             set_user_button($(this));
-            user_button = user_button_schema.parse($(this).attr("data-user"));
+            user_button = v.parse(user_button_schema, $(this).attr("data-user"));
             // Now `user_button` will be of type "everyone" | "user"
         }
         if ($(this).attr("data-time")) {
             set_time_button($(this));
-            time_button = time_button_schema.parse($(this).attr("data-time"));
+            time_button = v.parse(time_button_schema, $(this).attr("data-time"));
             // Now `time_button` will be of type "cumulative" | "year" | "month" | "week"
         }
         draw_plot();
@@ -997,7 +1001,7 @@ function populate_messages_sent_by_message_type(raw_data: unknown): void {
 
 function populate_number_of_users(raw_data: unknown): void {
     // Content rendered by this method is titled as "Active users" on the webpage
-    const result = user_count_data_schema.safeParse(raw_data);
+    const result = v.safeParse(user_count_data_schema, raw_data);
     const data = handle_parse_server_stats_result(result);
     if (data === undefined) {
         return;
@@ -1106,7 +1110,7 @@ function populate_number_of_users(raw_data: unknown): void {
 
 function populate_messages_read_over_time(raw_data: unknown): void {
     // Content rendered by this method is titled as "Messages read over time" on the webpage
-    const result = read_data_schema.safeParse(raw_data);
+    const result = v.safeParse(read_data_schema, raw_data);
     const data = handle_parse_server_stats_result(result);
     if (data === undefined) {
         return;
@@ -1389,13 +1393,13 @@ function get_chart_data(
         data,
         success(data) {
             callback(data);
-            const {end_times} = z.object({end_times: z.array(z.number())}).parse(data);
+            const {end_times} = v.parse(v.object({end_times: v.array(v.number())}), data);
             update_last_full_update(end_times);
         },
         error(xhr) {
-            const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+            const parsed = v.safeParse(v.object({msg: v.string()}), xhr.responseJSON);
             if (parsed.success) {
-                $("#id_stats_errors").show().text(parsed.data.msg);
+                $("#id_stats_errors").show().text(parsed.output.msg);
             }
         },
     });

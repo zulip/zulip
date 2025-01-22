@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import SimpleBar from "simplebar";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_read_receipts from "../templates/read_receipts.hbs";
 import render_read_receipts_modal from "../templates/read_receipts_modal.hbs";
@@ -16,8 +16,8 @@ import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
 
 const read_receipts_polling_interval_ms = 60 * 1000;
-const read_receipts_api_response_schema = z.object({
-    user_ids: z.array(z.number()),
+const read_receipts_api_response_schema = v.object({
+    user_ids: v.array(v.number()),
 });
 
 let interval_id: number | null = null;
@@ -53,7 +53,7 @@ export function fetch_read_receipts(message_id: number): void {
 
             has_initial_data = true;
             $("#read_receipts_modal .read_receipts_error").removeClass("show");
-            const data = read_receipts_api_response_schema.parse(raw_data);
+            const data = v.parse(read_receipts_api_response_schema, raw_data);
             const users = data.user_ids.map((id) => people.get_user_by_id_assert_valid(id));
             users.sort(people.compare_by_name);
 

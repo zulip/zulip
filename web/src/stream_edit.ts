@@ -1,7 +1,7 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
@@ -49,7 +49,7 @@ import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 type StreamSetting = {
-    name: z.output<typeof settings_labels_schema>;
+    name: v.InferOutput<typeof settings_labels_schema>;
     label: string;
     disabled_realm_setting: boolean;
     is_disabled: boolean;
@@ -57,15 +57,15 @@ type StreamSetting = {
     is_checked: boolean;
 };
 
-const settings_labels_schema = stream_properties_schema.omit({color: true}).keyof();
+const settings_labels_schema = v.keyof(v.omit(stream_properties_schema, ["color"]));
 
-const realm_labels_schema = z.enum([
+const realm_labels_schema = v.picklist([
     "push_notifications",
     "enable_online_push_notifications",
     "message_content_in_email_notifications",
 ]);
 
-const notification_labels_schema = stream_specific_notification_settings_schema.keyof();
+const notification_labels_schema = v.keyof(stream_specific_notification_settings_schema);
 
 export function setup_subscriptions_tab_hash(tab_key_value: string): void {
     if ($("#subscription_overlay .right").hasClass("show")) {
@@ -179,7 +179,8 @@ function show_subscription_settings(sub: SettingsSubscription): void {
 
 function is_notification_setting(setting_label: string): boolean {
     return (
-        notification_labels_schema.safeParse(setting_label).success || setting_label === "is_muted"
+        v.safeParse(notification_labels_schema, setting_label).success ||
+        setting_label === "is_muted"
     );
 }
 
@@ -189,11 +190,11 @@ export function stream_settings(sub: StreamSubscription): StreamSetting[] {
         settings_config.all_notifications(user_settings).disabled_notification_settings;
 
     return settings_labels.map(([setting, label]) => {
-        const parsed_realm_setting = realm_labels_schema.safeParse(setting);
+        const parsed_realm_setting = v.safeParse(realm_labels_schema, setting);
         const realm_setting = parsed_realm_setting.success
-            ? check_realm_setting[parsed_realm_setting.data]
+            ? check_realm_setting[parsed_realm_setting.output]
             : false;
-        const notification_setting = notification_labels_schema.safeParse(setting);
+        const notification_setting = v.safeParse(notification_labels_schema, setting);
 
         let is_checked;
         if (notification_setting.success) {
@@ -202,7 +203,7 @@ export function stream_settings(sub: StreamSubscription): StreamSetting[] {
             // with a value of `null`, which inherit the user's global
             // notification settings for streams.
             is_checked =
-                stream_data.receives_notifications(sub.stream_id, notification_setting.data) &&
+                stream_data.receives_notifications(sub.stream_id, notification_setting.output) &&
                 !realm_setting;
         } else {
             is_checked = Boolean(sub[setting]) && !realm_setting;
@@ -222,7 +223,7 @@ function setup_group_setting_widgets(sub: StreamSubscription): void {
     for (const setting_name of Object.keys(realm.server_supported_permission_settings.stream)) {
         settings_components.create_stream_group_setting_widget({
             $pill_container: $("#id_" + setting_name),
-            setting_name: stream_permission_group_settings_schema.parse(setting_name),
+            setting_name: v.parse(stream_permission_group_settings_schema, setting_name),
             sub,
         });
     }
@@ -311,7 +312,7 @@ function stream_notification_reset(elem: HTMLElement): void {
     )) {
         data.push({
             stream_id: sub.stream_id,
-            property: settings_labels_schema.parse(per_stream_setting_name),
+            property: v.parse(settings_labels_schema, per_stream_setting_name),
             value: user_settings[global_setting_name],
         });
     }
@@ -325,12 +326,12 @@ function stream_notification_reset(elem: HTMLElement): void {
 function stream_setting_changed(elem: HTMLInputElement): void {
     const sub = get_sub_for_target(elem);
     const $status_element = $(elem).closest(".subsection-parent").find(".alert-notification");
-    const setting = settings_labels_schema.parse(elem.name);
-    const notification_setting = notification_labels_schema.safeParse(setting);
+    const setting = v.parse(settings_labels_schema, elem.name);
+    const notification_setting = v.safeParse(notification_labels_schema, setting);
     if (notification_setting.success && sub[setting] === null) {
         sub[setting] =
             user_settings[
-                settings_config.generalize_stream_notification_setting[notification_setting.data]
+                settings_config.generalize_stream_notification_setting[notification_setting.output]
             ];
     }
     stream_settings_api.set_stream_property(
@@ -557,7 +558,7 @@ export function initialize(): void {
             channel.get({
                 url: "/json/streams/" + stream_id + "/email_address",
                 success(data) {
-                    const address = z.object({email: z.string()}).parse(data).email;
+                    const address = v.parse(v.object({email: v.string()}), data).email;
                     show_stream_email_address_modal(address);
                 },
                 error(xhr) {

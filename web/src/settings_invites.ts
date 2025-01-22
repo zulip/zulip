@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_settings_resend_invite_modal from "../templates/confirm_dialog/confirm_resend_invite.hbs";
 import render_settings_revoke_invite_modal from "../templates/confirm_dialog/confirm_revoke_invite.hbs";
@@ -20,27 +20,27 @@ import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
 
-export const invite_schema = z.intersection(
-    z.object({
-        invited_by_user_id: z.number(),
-        invited: z.number(),
-        expiry_date: z.number().nullable(),
-        id: z.number(),
-        invited_as: z.number(),
+export const invite_schema = v.intersect([
+    v.object({
+        invited_by_user_id: v.number(),
+        invited: v.number(),
+        expiry_date: v.nullable(v.number()),
+        id: v.number(),
+        invited_as: v.number(),
     }),
-    z.discriminatedUnion("is_multiuse", [
-        z.object({
-            is_multiuse: z.literal(false),
-            email: z.string(),
-            notify_referrer_on_join: z.boolean(),
+    v.variant("is_multiuse", [
+        v.object({
+            is_multiuse: v.literal(false),
+            email: v.string(),
+            notify_referrer_on_join: v.boolean(),
         }),
-        z.object({
-            is_multiuse: z.literal(true),
-            link_url: z.string(),
+        v.object({
+            is_multiuse: v.literal(true),
+            link_url: v.string(),
         }),
     ]),
-);
-type Invite = z.output<typeof invite_schema> & {
+]);
+type Invite = v.InferOutput<typeof invite_schema> & {
     invited_as_text?: string | undefined;
     invited_absolute_time?: string;
     expiry_date_absolute_time?: string;
@@ -242,7 +242,7 @@ export function set_up(initialize_event_handlers = true): void {
         url: "/json/invites",
         timeout: 10 * 1000,
         success(raw_data) {
-            const data = z.object({invites: z.array(invite_schema)}).parse(raw_data);
+            const data = v.parse(v.object({invites: v.array(invite_schema)}), raw_data);
             on_load_success(data, initialize_event_handlers);
         },
         error: failed_listing_invites,

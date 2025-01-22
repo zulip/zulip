@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/browser";
-import {z} from "zod";
+import * as v from "valibot";
 
 type UserInfo = {
     id?: string;
@@ -7,14 +7,14 @@ type UserInfo = {
     role?: string;
 };
 
-const sentry_params_schema = z.object({
-    dsn: z.string(),
-    environment: z.string(),
-    realm_key: z.string(),
-    sample_rate: z.number(),
-    server_version: z.string(),
-    trace_rate: z.number(),
-    user: z.object({id: z.number(), role: z.string()}).optional(),
+const sentry_params_schema = v.object({
+    dsn: v.string(),
+    environment: v.string(),
+    realm_key: v.string(),
+    sample_rate: v.number(),
+    server_version: v.string(),
+    trace_rate: v.number(),
+    user: v.optional(v.object({id: v.number(), role: v.string()})),
 });
 
 const sentry_params_json =
@@ -22,7 +22,7 @@ const sentry_params_json =
 const sentry_params =
     sentry_params_json === undefined
         ? undefined
-        : sentry_params_schema.parse(JSON.parse(sentry_params_json));
+        : v.parse(sentry_params_schema, JSON.parse(sentry_params_json));
 
 export function normalize_path(path: string, is_portico = false): string {
     if (path === undefined) {

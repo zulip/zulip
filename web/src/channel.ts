@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/browser";
 import $ from "jquery";
 import _ from "lodash";
-import {z} from "zod";
+import * as v from "valibot";
 
 import {page_params} from "./base_page_params.ts";
 import * as blueslip from "./blueslip.ts";
@@ -139,7 +139,7 @@ function call_in_span(
                     args,
                 });
             } else if (
-                z.object({code: z.literal("CSRF_FAILED")}).safeParse(xhr.responseJSON).success &&
+                v.safeParse(v.object({code: v.literal("CSRF_FAILED")}), xhr.responseJSON).success &&
                 reload_state.csrf_failed_handler !== undefined
             ) {
                 reload_state.csrf_failed_handler();
@@ -215,11 +215,11 @@ export function xhr_error_message(message: string, xhr: JQuery.jqXHR<unknown>): 
     if (
         xhr.status >= 400 &&
         xhr.status < 500 &&
-        (parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON)).success
+        (parsed = v.safeParse(v.object({msg: v.string()}), xhr.responseJSON)).success
     ) {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
-        const server_response_html = _.escape(parsed.data.msg);
+        const server_response_html = _.escape(parsed.output.msg);
         if (message) {
             message += ": " + server_response_html;
         } else {

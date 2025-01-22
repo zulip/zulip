@@ -1,5 +1,5 @@
 import $ from "jquery";
-import type {z} from "zod";
+import * as v from "valibot";
 
 import render_confirm_delete_attachment from "../templates/confirm_dialog/confirm_delete_attachment.hbs";
 import render_confirm_delete_detached_attachments_modal from "../templates/confirm_dialog/confirm_delete_detached_attachments.hbs";
@@ -17,7 +17,7 @@ import {realm} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 
-type ServerAttachment = z.infer<typeof attachment_api_response_schema>["attachments"][number];
+type ServerAttachment = v.InferOutput<typeof attachment_api_response_schema>["attachments"][number];
 
 type Attachment = ServerAttachment & {
     create_time_str: string;
@@ -37,7 +37,7 @@ type AttachmentEvent =
       };
 
 let attachments: Attachment[];
-let upload_space_used: z.infer<typeof attachment_api_response_schema>["upload_space_used"];
+let upload_space_used: v.InferOutput<typeof attachment_api_response_schema>["upload_space_used"];
 
 export function bytes_to_size(bytes: number, kb_with_1024_bytes = false): string {
     const kb_size = kb_with_1024_bytes ? 1024 : 1000;
@@ -201,7 +201,7 @@ export function set_up_attachments(): void {
     void channel.get({
         url: "/json/attachments",
         success(raw_data) {
-            const data = attachment_api_response_schema.parse(raw_data);
+            const data = v.parse(attachment_api_response_schema, raw_data);
             loading.destroy_indicator($("#attachments_loading_indicator"));
             attachments = data.attachments.map((attachment) => format_attachment_data(attachment));
             upload_space_used = data.upload_space_used;

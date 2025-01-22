@@ -2,7 +2,7 @@ import ClipboardJS from "clipboard";
 import {add} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import copy_invite_link from "../templates/copy_invite_link.hbs";
 import render_guest_visible_users_message from "../templates/guest_visible_users_message.hbs";
@@ -175,17 +175,18 @@ function submit_invitation_form(): void {
             }
         },
         error(xhr) {
-            const parsed = z
-                .object({
-                    result: z.literal("error"),
-                    code: z.literal("INVITATION_FAILED"),
-                    msg: z.string(),
-                    errors: z.array(z.tuple([z.string(), z.string(), z.boolean()])),
-                    sent_invitations: z.boolean(),
-                    license_limit_reached: z.boolean(),
-                    daily_limit_reached: z.boolean(),
-                })
-                .safeParse(xhr.responseJSON);
+            const parsed = v.safeParse(
+                v.object({
+                    result: v.literal("error"),
+                    code: v.literal("INVITATION_FAILED"),
+                    msg: v.string(),
+                    errors: v.array(v.tuple([v.string(), v.string(), v.boolean()])),
+                    sent_invitations: v.boolean(),
+                    license_limit_reached: v.boolean(),
+                    daily_limit_reached: v.boolean(),
+                }),
+                xhr.responseJSON,
+            );
             if (!parsed.success) {
                 // There was a fatal error, no partial processing occurred.
                 ui_report.error("", xhr, $invite_status);
@@ -194,7 +195,7 @@ function submit_invitation_form(): void {
                 const invitee_emails_errored = [];
                 const error_list = [];
                 let is_invitee_deactivated = false;
-                for (const [email, error_message, deactivated] of parsed.data.errors) {
+                for (const [email, error_message, deactivated] of parsed.output.errors) {
                     error_list.push(`${email}: ${error_message}`);
                     if (deactivated) {
                         is_invitee_deactivated = true;
@@ -203,17 +204,17 @@ function submit_invitation_form(): void {
                 }
 
                 const error_response = render_invitation_failed_error({
-                    error_message: parsed.data.msg,
+                    error_message: parsed.output.msg,
                     error_list,
                     is_admin: current_user.is_admin,
                     is_invitee_deactivated,
-                    license_limit_reached: parsed.data.license_limit_reached,
+                    license_limit_reached: parsed.output.license_limit_reached,
                     has_billing_access: current_user.is_owner || current_user.is_billing_admin,
-                    daily_limit_reached: parsed.data.daily_limit_reached,
+                    daily_limit_reached: parsed.output.daily_limit_reached,
                 });
                 ui_report.message(error_response, $invite_status, "alert-error");
 
-                if (parsed.data.sent_invitations) {
+                if (parsed.output.sent_invitations) {
                     for (const email of invitee_emails_errored) {
                         pills.appendValue(email);
                     }

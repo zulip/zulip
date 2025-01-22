@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as channel from "../channel.ts";
 import * as util from "../util.ts";
@@ -10,15 +10,15 @@ import * as util from "../util.ts";
 // Data segment: We lazy load the requested fixtures from the backend
 // as and when required and then cache them here.
 
-const fixture_schema = z.record(
-    z.string(),
-    z.object({
-        body: z.unknown(),
-        headers: z.record(z.string()),
+const fixture_schema = v.record(
+    v.string(),
+    v.object({
+        body: v.unknown(),
+        headers: v.record(v.string(), v.string()),
     }),
 );
 
-type Fixtures = z.infer<typeof fixture_schema>;
+type Fixtures = v.InferOutput<typeof fixture_schema>;
 
 type HTMLSelectOneElement = HTMLSelectElement & {type: "select-one"};
 
@@ -35,19 +35,19 @@ type ClearHandlers = {
     results: () => void;
 };
 
-const integrations_api_response_schema = z.object({
-    msg: z.string(),
-    responses: z.array(
-        z.object({
-            status_code: z.number(),
-            message: z.string(),
-            fixture_name: z.optional(z.string()),
+const integrations_api_response_schema = v.object({
+    msg: v.string(),
+    responses: v.array(
+        v.object({
+            status_code: v.number(),
+            message: v.string(),
+            fixture_name: v.optional(v.string()),
         }),
     ),
-    result: z.string(),
+    result: v.string(),
 });
 
-type ServerResponse = z.infer<typeof integrations_api_response_schema>;
+type ServerResponse = v.InferOutput<typeof integrations_api_response_schema>;
 
 const loaded_fixtures = new Map<string, Fixtures>();
 const url_base = "/api/v1/external/";
@@ -239,10 +239,10 @@ function update_url(): void {
 
 // API callers: These methods handle communicating with the Python backend API.
 function handle_unsuccessful_response(response: JQuery.jqXHR): void {
-    const parsed = z.object({msg: z.string()}).safeParse(response.responseJSON);
-    if (parsed.data) {
+    const parsed = v.safeParse(v.object({msg: v.string()}), response.responseJSON);
+    if (parsed.success) {
         const status_code = response.status;
-        set_results_notice(`Result: (${status_code}) ${parsed.data.msg}`, "warning");
+        set_results_notice(`Result: (${status_code}) ${parsed.output.msg}`, "warning");
     } else {
         // If the response is not a JSON response, then it is probably
         // Django returning an HTML response containing a stack trace
@@ -278,13 +278,14 @@ function get_fixtures(integration_name: string): void {
     void channel.get({
         url: "/devtools/integrations/" + integration_name + "/fixtures",
         success(raw_response) {
-            const response = z
-                .object({
-                    result: z.string(),
-                    msg: z.string(),
+            const response = v.parse(
+                v.object({
+                    result: v.string(),
+                    msg: v.string(),
                     fixtures: fixture_schema,
-                })
-                .parse(raw_response);
+                }),
+                raw_response,
+            );
 
             loaded_fixtures.set(integration_name, response.fixtures);
             load_fixture_options(integration_name);
@@ -341,7 +342,7 @@ function send_webhook_fixture_message(): void {
             // then we should change the success message up a bit to
             // let the user easily know that this fixture body was
             // also sent successfully.
-            const response = integrations_api_response_schema.parse(raw_response);
+            const response = v.parse(integrations_api_response_schema, raw_response);
             set_results(response);
             if ($("#results_notice").text() === "Success!") {
                 set_results_notice("Success!!!", "success");
@@ -373,7 +374,7 @@ function send_all_fixture_messages(): void {
             xhr.setRequestHeader("X-CSRFToken", csrftoken);
         },
         success(raw_response) {
-            const response = integrations_api_response_schema.parse(raw_response);
+            const response = v.parse(integrations_api_response_schema, raw_response);
             set_results(response);
         },
         error: handle_unsuccessful_response,

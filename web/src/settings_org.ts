@@ -1,7 +1,7 @@
 import {add} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_settings_deactivate_realm_modal from "../templates/confirm_dialog/confirm_deactivate_realm.hbs";
 import render_settings_admin_auth_methods_list from "../templates/settings/admin_auth_methods_list.hbs";
@@ -184,7 +184,7 @@ export function get_org_type_dropdown_options(): DefinedOrgTypeValues | AllOrgTy
     return settings_config.all_org_type_values;
 }
 
-const simple_dropdown_properties = simple_dropdown_realm_settings_schema.keyof().options;
+const simple_dropdown_properties = v.keyof(simple_dropdown_realm_settings_schema).options;
 
 function set_realm_waiting_period_setting(): void {
     const setting_value = realm.realm_waiting_period_threshold;
@@ -455,11 +455,12 @@ export function populate_auth_methods(auth_method_to_bool_map: Record<string, bo
 }
 
 function update_dependent_subsettings(property_name: string): void {
-    const parsed_property_name = simple_dropdown_realm_settings_schema
-        .keyof()
-        .safeParse(property_name);
+    const parsed_property_name = v.safeParse(
+        v.keyof(simple_dropdown_realm_settings_schema),
+        property_name,
+    );
     if (parsed_property_name.success) {
-        settings_components.set_property_dropdown_value(parsed_property_name.data);
+        settings_components.set_property_dropdown_value(parsed_property_name.output);
         return;
     }
 
@@ -497,7 +498,7 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
     const $elem = $(elem);
     const property_name = settings_components.extract_property_name($elem);
     const property_value = settings_components.get_realm_settings_property_value(
-        realm_setting_property_schema.parse(property_name),
+        v.parse(realm_setting_property_schema, property_name),
     );
 
     switch (property_name) {
@@ -536,7 +537,7 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
             assert(pill_widget !== null);
             settings_components.set_group_setting_widget_value(
                 pill_widget,
-                group_setting_value_schema.parse(property_value),
+                v.parse(group_setting_value_schema, property_value),
             );
             break;
         }
@@ -584,9 +585,10 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
             break;
         default:
             if (property_value !== undefined) {
-                const validated_property_value = z
-                    .union([z.string(), z.number(), z.boolean()])
-                    .parse(property_value);
+                const validated_property_value = v.parse(
+                    v.union([v.string(), v.number(), v.boolean()]),
+                    property_value,
+                );
                 settings_components.set_input_element_value($elem, validated_property_value);
             } else {
                 blueslip.error("Element refers to unknown property", {property_name});
@@ -602,7 +604,7 @@ export function discard_stream_property_element_changes(
     const $elem = $(elem);
     const property_name = settings_components.extract_property_name($elem);
     const property_value = settings_components.get_stream_settings_property_value(
-        stream_settings_property_schema.parse(property_name),
+        v.parse(stream_settings_property_schema, property_name),
         sub,
     );
 
@@ -611,7 +613,7 @@ export function discard_stream_property_element_changes(
         assert(pill_widget !== null);
         settings_components.set_group_setting_widget_value(
             pill_widget,
-            group_setting_value_schema.parse(property_value),
+            v.parse(group_setting_value_schema, property_value),
         );
         update_dependent_subsettings(property_name);
         return;
@@ -636,9 +638,10 @@ export function discard_stream_property_element_changes(
             break;
         default:
             if (property_value !== undefined) {
-                const validated_property_value = z
-                    .union([z.string(), z.number(), z.boolean()])
-                    .parse(property_value);
+                const validated_property_value = v.parse(
+                    v.union([v.string(), v.number(), v.boolean()]),
+                    property_value,
+                );
                 settings_components.set_input_element_value($elem, validated_property_value);
             } else {
                 blueslip.error("Element refers to unknown property", {property_name});
@@ -650,7 +653,7 @@ export function discard_stream_property_element_changes(
 export function discard_group_property_element_changes($elem: JQuery, group: UserGroup): void {
     const property_name = settings_components.extract_property_name($elem);
     const property_value = settings_components.get_group_property_value(
-        user_groups.user_group_schema.keyof().parse(property_name),
+        v.parse(v.keyof(user_groups.user_group_schema), property_name),
         group,
     );
 
@@ -660,7 +663,7 @@ export function discard_group_property_element_changes($elem: JQuery, group: Use
         assert(pill_widget !== null);
         settings_components.set_group_setting_widget_value(
             pill_widget,
-            group_setting_value_schema.parse(property_value),
+            v.parse(group_setting_value_schema, property_value),
         );
     } else {
         blueslip.error("Element refers to unknown property", {property_name});
@@ -670,7 +673,8 @@ export function discard_group_property_element_changes($elem: JQuery, group: Use
 
 export function discard_realm_default_property_element_changes(elem: HTMLElement): void {
     const $elem = $(elem);
-    const property_name = realm_user_settings_default_properties_schema.parse(
+    const property_name = v.parse(
+        realm_user_settings_default_properties_schema,
         settings_components.extract_property_name($elem, true),
     );
     const property_value =
@@ -704,9 +708,10 @@ export function discard_realm_default_property_element_changes(elem: HTMLElement
             break;
         default:
             if (property_value !== undefined) {
-                const validated_property_value = z
-                    .union([z.string(), z.number(), z.boolean()])
-                    .parse(property_value);
+                const validated_property_value = v.parse(
+                    v.union([v.string(), v.number(), v.boolean()]),
+                    property_value,
+                );
                 settings_components.set_input_element_value($elem, validated_property_value);
             } else {
                 blueslip.error("Element refers to unknown property", {property_name});
@@ -1062,7 +1067,7 @@ function set_up_dropdown_widget(
                 $save_discard_widget_container,
             );
         },
-        default_id: z.union([z.string(), z.number()]).parse(realm[setting_name]),
+        default_id: v.parse(v.union([v.string(), v.number()]), realm[setting_name]),
         unique_id_type,
         ...(text_if_current_value_not_in_options && {text_if_current_value_not_in_options}),
         on_mount_callback(dropdown) {
@@ -1091,7 +1096,7 @@ export function set_up_dropdown_widget_for_realm_group_settings(): void {
         const get_setting_options = (): UserGroupForDropdownListWidget[] =>
             user_groups.get_realm_user_groups_for_dropdown_list_widget(setting_name, "realm");
         set_up_dropdown_widget(
-            realm_schema.keyof().parse("realm_" + setting_name),
+            v.parse(v.keyof(realm_schema), "realm_" + setting_name),
             get_setting_options,
             "group",
         );
@@ -1273,7 +1278,7 @@ export let initialize_group_setting_widgets = (): void => {
             pill_update_callback?: () => void;
         } = {
             $pill_container: $(`#id_realm_${CSS.escape(setting_name)}`),
-            setting_name: realm_group_setting_name_schema.parse(setting_name),
+            setting_name: v.parse(realm_group_setting_name_schema, setting_name),
         };
         if (setting_name === "direct_message_permission_group") {
             opts.pill_update_callback = check_disable_direct_message_initiator_group_widget;

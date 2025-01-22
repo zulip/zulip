@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
@@ -29,14 +29,14 @@ import * as subscriber_api from "./subscriber_api.ts";
 import type {CombinedPillContainer} from "./typeahead_helper.ts";
 import * as user_sort from "./user_sort.ts";
 
-const remove_user_id_api_response_schema = z.object({
-    removed: z.array(z.string()),
-    not_removed: z.array(z.string()),
+const remove_user_id_api_response_schema = v.object({
+    removed: v.array(v.string()),
+    not_removed: v.array(v.string()),
 });
 
-const add_user_ids_api_response_schema = z.object({
-    subscribed: z.record(z.string(), z.array(z.string())),
-    already_subscribed: z.record(z.string(), z.array(z.string())),
+const add_user_ids_api_response_schema = v.object({
+    subscribed: v.record(v.string(), v.array(v.string())),
+    already_subscribed: v.record(v.string(), v.array(v.string())),
 });
 
 export let pill_widget: CombinedPillContainer;
@@ -225,7 +225,7 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
     const user_ids = [...user_id_set];
 
     function invite_success(raw_data: unknown): void {
-        const data = add_user_ids_api_response_schema.parse(raw_data);
+        const data = v.parse(add_user_ids_api_response_schema, raw_data);
         pill_widget.clear();
         const subscribed_users = Object.keys(data.subscribed).map((user_id) =>
             people.get_by_user_id(Number(user_id)),
@@ -246,16 +246,17 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
     function invite_failure(xhr: JQuery.jqXHR): void {
         let message = "Failed to subscribe user!";
 
-        const parsed = z
-            .object({
-                result: z.literal("error"),
-                msg: z.string(),
-                code: z.string(),
-            })
-            .safeParse(xhr.responseJSON);
+        const parsed = v.safeParse(
+            v.object({
+                result: v.literal("error"),
+                msg: v.string(),
+                code: v.string(),
+            }),
+            xhr.responseJSON,
+        );
 
         if (parsed.success) {
-            message = parsed.data.msg;
+            message = parsed.output.msg;
         }
         show_stream_subscription_request_result({
             message,
@@ -282,7 +283,7 @@ function remove_subscriber({
     }
 
     function removal_success(raw_data: unknown): void {
-        const data = remove_user_id_api_response_schema.parse(raw_data);
+        const data = v.parse(remove_user_id_api_response_schema, raw_data);
         let message;
 
         if (stream_id !== current_stream_id) {

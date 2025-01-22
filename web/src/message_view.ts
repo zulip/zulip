@@ -2,7 +2,7 @@ import * as Sentry from "@sentry/browser";
 import {SPAN_STATUS_OK} from "@sentry/core";
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as activity_ui from "./activity_ui.ts";
 import {all_messages_data} from "./all_messages_data.ts";
@@ -67,7 +67,7 @@ import * as util from "./util.ts";
 
 const LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000;
 
-const fetch_message_response_schema = z.object({
+const fetch_message_response_schema = v.object({
     message: raw_message_schema,
 });
 
@@ -557,7 +557,7 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                     url: `/json/messages/${id_info.target_id}`,
                     data: {allow_empty_topic_name: true},
                     success(raw_data) {
-                        const data = fetch_message_response_schema.parse(raw_data);
+                        const data = v.parse(fetch_message_response_schema, raw_data);
                         // After the message is fetched, we make the
                         // message locally available and then call
                         // message_view.show recursively, setting a flag to

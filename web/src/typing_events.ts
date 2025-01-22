@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_typing_notifications from "../templates/typing_notifications.hbs";
 
@@ -24,33 +24,32 @@ const MAX_USERS_TO_DISPLAY_NAME = 3;
 // Note!: There are also timing constants in typing_status.ts
 // that make typing indicators work.
 
-export const typing_user_schema = z.object({
-    email: z.string(),
-    user_id: z.number(),
+export const typing_user_schema = v.object({
+    email: v.string(),
+    user_id: v.number(),
 });
 
-export const typing_event_schema = z
-    .object({
-        id: z.number(),
-        op: z.enum(["start", "stop"]),
-        type: z.literal("typing"),
-    })
-    .and(
-        z.discriminatedUnion("message_type", [
-            z.object({
-                message_type: z.literal("stream"),
-                sender: typing_user_schema,
-                stream_id: z.number(),
-                topic: z.string(),
-            }),
-            z.object({
-                message_type: z.literal("direct"),
-                recipients: z.array(typing_user_schema),
-                sender: typing_user_schema,
-            }),
-        ]),
-    );
-type TypingEvent = z.output<typeof typing_event_schema>;
+export const typing_event_schema = v.intersect([
+    v.object({
+        id: v.number(),
+        op: v.picklist(["start", "stop"]),
+        type: v.literal("typing"),
+    }),
+    v.variant("message_type", [
+        v.object({
+            message_type: v.literal("stream"),
+            sender: typing_user_schema,
+            stream_id: v.number(),
+            topic: v.string(),
+        }),
+        v.object({
+            message_type: v.literal("direct"),
+            recipients: v.array(typing_user_schema),
+            sender: typing_user_schema,
+        }),
+    ]),
+]);
+type TypingEvent = v.InferOutput<typeof typing_event_schema>;
 
 function get_users_typing_for_narrow(): number[] {
     if (narrow_state.narrowed_by_topic_reply()) {

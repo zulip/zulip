@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as v from "valibot";
 
 import emoji_codes from "../../static/generated/emoji/emoji_codes.json";
 import * as typeahead from "../shared/src/typeahead.ts";
@@ -141,7 +141,7 @@ export function rebuild_catalog(): void {
     );
 
     for (const [category, raw_codepoints] of Object.entries(emoji_codes.emoji_catalog)) {
-        const codepoints = z.array(z.string()).parse(raw_codepoints);
+        const codepoints = v.parse(v.array(v.string()), raw_codepoints);
         const emojis = [];
         for (const codepoint of codepoints) {
             const name = emoji.get_emoji_name(codepoint);

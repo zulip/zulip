@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
@@ -110,26 +110,26 @@ export function get_realm_time_limits_in_minutes(property: MessageTimeLimitSetti
 }
 
 type RealmSetting = typeof realm;
-export const realm_setting_property_schema = z.union([
-    realm_schema.keyof(),
-    z.literal("realm_org_join_restrictions"),
+export const realm_setting_property_schema = v.union([
+    v.keyof(realm_schema),
+    v.literal("realm_org_join_restrictions"),
 ]);
-type RealmSettingProperty = z.infer<typeof realm_setting_property_schema>;
+type RealmSettingProperty = v.InferOutput<typeof realm_setting_property_schema>;
 
 type RealmUserSettingDefaultType = typeof realm_user_settings_defaults;
-export const realm_user_settings_default_properties_schema = z.union([
-    realm_default_settings_schema.keyof(),
-    z.literal("email_notification_batching_period_edit_minutes"),
+export const realm_user_settings_default_properties_schema = v.union([
+    v.keyof(realm_default_settings_schema),
+    v.literal("email_notification_batching_period_edit_minutes"),
 ]);
-type RealmUserSettingDefaultProperties = z.infer<
+type RealmUserSettingDefaultProperties = v.InferOutput<
     typeof realm_user_settings_default_properties_schema
 >;
 
-export const stream_settings_property_schema = z.union([
-    stream_subscription_schema.keyof(),
-    z.enum(["stream_privacy", "is_default_stream"]),
+export const stream_settings_property_schema = v.union([
+    v.keyof(stream_subscription_schema),
+    v.picklist(["stream_privacy", "is_default_stream"]),
 ]);
-type StreamSettingProperty = z.infer<typeof stream_settings_property_schema>;
+type StreamSettingProperty = v.InferOutput<typeof stream_settings_property_schema>;
 
 type valueof<T> = T[keyof T];
 
@@ -241,11 +241,13 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
     return [...$subsection.find(".prop-element")];
 }
 
-export const simple_dropdown_realm_settings_schema = realm_schema.pick({
-    realm_wildcard_mention_policy: true,
-    realm_org_type: true,
-});
-export type SimpleDropdownRealmSettings = z.infer<typeof simple_dropdown_realm_settings_schema>;
+export const simple_dropdown_realm_settings_schema = v.pick(realm_schema, [
+    "realm_wildcard_mention_policy",
+    "realm_org_type",
+]);
+export type SimpleDropdownRealmSettings = v.InferOutput<
+    typeof simple_dropdown_realm_settings_schema
+>;
 
 export function set_property_dropdown_value(
     property_name: keyof SimpleDropdownRealmSettings,
@@ -381,8 +383,11 @@ function get_message_retention_setting_value(
     return util.check_time_input(custom_input_val);
 }
 
-export const select_field_data_schema = z.record(z.object({text: z.string(), order: z.string()}));
-export type SelectFieldData = z.output<typeof select_field_data_schema>;
+export const select_field_data_schema = v.record(
+    v.string(),
+    v.object({text: v.string(), order: v.string()}),
+);
+export type SelectFieldData = v.InferOutput<typeof select_field_data_schema>;
 
 function read_select_field_data_from_form(
     $profile_field_form: JQuery,
@@ -394,7 +399,7 @@ function read_select_field_data_from_form(
     const old_option_value_map = new Map<string, string>();
     if (old_field_data !== undefined) {
         for (const [value, choice] of Object.entries(
-            select_field_data_schema.parse(old_field_data),
+            v.parse(select_field_data_schema, old_field_data),
         )) {
             assert(typeof choice !== "string");
             old_option_value_map.set(choice.text, value);
@@ -421,12 +426,12 @@ function read_select_field_data_from_form(
     return field_data;
 }
 
-export const external_account_field_schema = z.object({
-    subtype: z.string(),
-    url_pattern: z.optional(z.string()),
+export const external_account_field_schema = v.object({
+    subtype: v.string(),
+    url_pattern: v.optional(v.string()),
 });
 
-export type ExternalAccountFieldData = z.output<typeof external_account_field_schema>;
+export type ExternalAccountFieldData = v.InferOutput<typeof external_account_field_schema>;
 
 function read_external_account_field_data($profile_field_form: JQuery): ExternalAccountFieldData {
     const field_data: ExternalAccountFieldData = {
@@ -1105,9 +1110,9 @@ export function populate_data_for_stream_settings_request(
                     continue;
                 }
 
-                if (stream_permission_group_settings_schema.safeParse(property_name).success) {
+                if (v.safeParse(stream_permission_group_settings_schema, property_name).success) {
                     const old_value = get_stream_settings_property_value(
-                        stream_settings_property_schema.parse(property_name),
+                        v.parse(stream_settings_property_schema, property_name),
                         sub,
                     );
                     data[property_name] = JSON.stringify({
@@ -1386,7 +1391,7 @@ function should_disable_save_button_for_group_settings(settings: string[]): bool
                 setting_name_without_prefix,
                 "realm",
             );
-        } else if (stream_permission_group_settings_schema.safeParse(setting_name).success) {
+        } else if (v.safeParse(stream_permission_group_settings_schema, setting_name).success) {
             group_setting_config = group_permission_settings.get_group_permission_setting_config(
                 setting_name,
                 "stream",
@@ -1621,7 +1626,7 @@ export function create_group_setting_widget({
     return pill_widget;
 }
 
-export const realm_group_setting_name_schema = z.enum([
+export const realm_group_setting_name_schema = v.picklist([
     "can_add_custom_emoji_group",
     "can_add_subscribers_group",
     "can_create_groups",
@@ -1637,7 +1642,7 @@ export const realm_group_setting_name_schema = z.enum([
     "direct_message_initiator_group",
     "direct_message_permission_group",
 ]);
-export type RealmGroupSettingName = z.infer<typeof realm_group_setting_name_schema>;
+export type RealmGroupSettingName = v.InferOutput<typeof realm_group_setting_name_schema>;
 
 export function create_realm_group_setting_widget({
     $pill_container,
@@ -1662,8 +1667,9 @@ export function create_realm_group_setting_widget({
 
     set_group_setting_widget_value(
         pill_widget,
-        group_setting_value_schema.parse(
-            realm[realm_schema.keyof().parse("realm_" + setting_name)],
+        v.parse(
+            group_setting_value_schema,
+            realm[v.parse(v.keyof(realm_schema), "realm_" + setting_name)],
         ),
     );
 

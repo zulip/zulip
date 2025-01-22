@@ -1,5 +1,5 @@
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 export type PollDataConfig = {
     message_sender_id: number;
@@ -49,21 +49,21 @@ export type PollHandle = {
     };
 };
 
-const inbound_option_schema = z.object({
-    idx: z.number(),
-    option: z.string(),
-    type: z.literal("new_option"),
+const inbound_option_schema = v.object({
+    idx: v.number(),
+    option: v.string(),
+    type: v.literal("new_option"),
 });
 
-const inbound_question_schema = z.object({
-    question: z.string(),
-    type: z.literal("question"),
+const inbound_question_schema = v.object({
+    question: v.string(),
+    type: v.literal("question"),
 });
 
-const inbound_vote_schema = z.object({
-    key: z.string(),
-    type: z.literal("vote"),
-    vote: z.number(),
+const inbound_vote_schema = v.object({
+    key: v.string(),
+    type: v.literal("vote"),
+    vote: v.number(),
 });
 
 // Any single user should send add a finite number of options
@@ -123,7 +123,7 @@ export class PollData {
                 },
 
                 inbound: (sender_id, data) => {
-                    const safe_data = inbound_option_schema.parse(data);
+                    const safe_data = v.parse(inbound_option_schema, data);
 
                     // All message readers may add a new option to the poll.
                     const idx = safe_data.idx;
@@ -171,7 +171,7 @@ export class PollData {
                 },
 
                 inbound: (sender_id, data) => {
-                    const safe_data = inbound_question_schema.parse(data);
+                    const safe_data = v.parse(inbound_question_schema, data);
 
                     // Only the message author can edit questions.
                     if (sender_id !== this.message_sender_id) {
@@ -205,7 +205,7 @@ export class PollData {
                 },
 
                 inbound: (sender_id, data) => {
-                    const safe_data = inbound_vote_schema.parse(data);
+                    const safe_data = v.parse(inbound_vote_schema, data);
 
                     // All message readers may vote on poll options.
                     const key = safe_data.key;
