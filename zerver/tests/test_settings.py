@@ -496,6 +496,14 @@ class ChangeSettingsTest(ZulipTestCase):
                 getattr(hamlet, invalid_value["setting_name"]), invalid_value["value"]
             )
 
+    def test_change_timezone_montreal(self) -> None:
+        self.login("hamlet")
+        data = {"timezone": "America/Montreal"}
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_success(result)
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.timezone, "America/Toronto")
+
     def do_change_emojiset(self, emojiset: str) -> "TestHttpResponse":
         self.login("hamlet")
         data = {"emojiset": emojiset}
