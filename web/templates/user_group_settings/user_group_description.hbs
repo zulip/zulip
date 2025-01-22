@@ -1,0 +1,9 @@
+{{#if rendered_description}}
+<span class="user-group-description rendered_markdown">
+    {{rendered_markdown rendered_description}}
+</span>
+{{else}}
+<span class="user-group-description no-description">
+    {{t "This group does not yet have a description." }}
+</span>
+{{/if}}

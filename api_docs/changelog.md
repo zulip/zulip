@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 341**
+
+* [`GET /events`](/api/get-events), [`GET /user_groups`](/api/get-user-groups):
+  Added `rendered_description` to user group objects.
+
 **Feature level 340**
 
 [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): All

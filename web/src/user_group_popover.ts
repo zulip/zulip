@@ -100,7 +100,7 @@ export function toggle_user_group_info_popover(
                 );
                 const args = {
                     group_name: user_groups.get_display_group_name(group.name),
-                    group_description: group.description,
+                    rendered_description: group.rendered_description,
                     members: sort_group_members(fetch_group_members([...group.members])),
                     subgroups,
                     group_edit_url: hash_util.group_edit_url(group, "general"),
