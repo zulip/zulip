@@ -1511,8 +1511,10 @@ Output:
 
         return "".join(sorted(f"        * {stream['name']}\n" for stream in subscribed_streams))
 
-    def check_user_subscribed_only_to_streams(self, user_name: str, streams: list[Stream]) -> None:
-        streams = sorted(streams, key=lambda x: x.name)
+    def check_user_subscribed_only_to_streams(
+        self, user_name: str, stream_set: set[Stream]
+    ) -> None:
+        streams = sorted(stream_set, key=lambda x: x.name)
         subscribed_streams = gather_subscriptions(self.nonreg_user(user_name))[0]
 
         self.assert_length(subscribed_streams, len(streams))

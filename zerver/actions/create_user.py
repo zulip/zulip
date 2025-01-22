@@ -152,7 +152,7 @@ def set_up_streams_and_groups_for_new_human_user(
         # in StreamSetupTest tests that check query counts.
         if prereg_user is None or prereg_user.include_realm_default_subscriptions:
             default_streams = get_slim_realm_default_streams(realm.id)
-            streams = list(set(streams) | set(default_streams))
+            streams = list(set(streams) | default_streams)
 
         for default_stream_group in default_stream_groups:
             default_stream_group_streams = default_stream_group.streams.all()
