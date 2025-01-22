@@ -958,7 +958,7 @@ class InviteUserTest(InviteUserBase):
         self.login("hamlet")
 
         stream_names = ["Rome", "Scotland", "Venice"]
-        streams = [get_stream(stream_name, realm) for stream_name in stream_names]
+        streams = {get_stream(stream_name, realm) for stream_name in stream_names}
         self.assert_json_success(self.invite(invitee, stream_names))
         self.assertTrue(find_key_by_email(invitee))
         self.submit_reg_form_for_user(invitee, "password")
@@ -974,14 +974,13 @@ class InviteUserTest(InviteUserBase):
         self.submit_reg_form_for_user(invitee, "password")
         # If no streams are provided, user is not subscribed to default
         # streams as well if include_realm_default_subscriptions is False.
-        self.check_user_subscribed_only_to_streams("bob", [])
+        self.check_user_subscribed_only_to_streams("bob", set())
 
         verona = get_stream("Verona", realm)
         sandbox = get_stream("sandbox", realm)
         zulip = get_stream("Zulip", realm)
         default_streams = get_slim_realm_default_streams(realm.id)
-        self.assert_length(default_streams, 3)
-        self.assertCountEqual(default_streams, [verona, sandbox, zulip])
+        self.assertEqual(default_streams, {verona, sandbox, zulip})
 
         # Check that user is subscribed to the streams that were set as default
         # at the time of account creation and not at the time of inviting them.
@@ -993,10 +992,10 @@ class InviteUserTest(InviteUserBase):
         do_add_default_stream(denmark)
         do_remove_default_stream(verona)
         self.submit_reg_form_for_user(invitee, "password")
-        self.check_user_subscribed_only_to_streams("test", [denmark, sandbox, zulip])
+        self.check_user_subscribed_only_to_streams("test", {denmark, sandbox, zulip})
 
         default_streams = get_slim_realm_default_streams(realm.id)
-        self.assertCountEqual(default_streams, [denmark, sandbox, zulip])
+        self.assertEqual(default_streams, {denmark, sandbox, zulip})
         invitee = self.nonreg_email("test1")
         self.assert_json_success(
             self.invite(invitee, [verona.name], include_realm_default_subscriptions=True)
@@ -1005,7 +1004,7 @@ class InviteUserTest(InviteUserBase):
         # Check that the user is subscribed to both default streams and stream
         # passed in streams list.
         self.submit_reg_form_for_user(invitee, "password")
-        self.check_user_subscribed_only_to_streams("test1", [denmark, sandbox, verona, zulip])
+        self.check_user_subscribed_only_to_streams("test1", {denmark, sandbox, verona, zulip})
 
     def test_successful_invite_users_with_specified_user_groups(self) -> None:
         invitee = self.nonreg_email("bob")
@@ -1681,7 +1680,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         default_streams = get_slim_realm_default_streams(realm.id)
         self.assert_length(default_streams, 3)
 
-        self.check_user_subscribed_only_to_streams("newguy", [])
+        self.check_user_subscribed_only_to_streams("newguy", set())
         mail.outbox.pop()
 
         self.login("iago")
@@ -2840,13 +2839,13 @@ class MultiuseInviteTest(ZulipTestCase):
         streams = [get_stream(stream_name, self.realm) for stream_name in stream_names]
         invite_link = self.generate_multiuse_invite_link(streams=streams)
         self.check_user_able_to_register(email1, invite_link)
-        self.check_user_subscribed_only_to_streams(name1, streams)
+        self.check_user_subscribed_only_to_streams(name1, set(streams))
 
         stream_names = ["Rome", "Verona"]
         streams = [get_stream(stream_name, self.realm) for stream_name in stream_names]
         invite_link = self.generate_multiuse_invite_link(streams=streams)
         self.check_user_able_to_register(email2, invite_link)
-        self.check_user_subscribed_only_to_streams(name2, streams)
+        self.check_user_subscribed_only_to_streams(name2, set(streams))
 
         streams = []
         invite_link = self.generate_multiuse_invite_link(
@@ -2862,7 +2861,7 @@ class MultiuseInviteTest(ZulipTestCase):
             streams=streams, include_realm_default_subscriptions=False
         )
         self.check_user_able_to_register(email4, invite_link)
-        self.check_user_subscribed_only_to_streams(name4, [])
+        self.check_user_subscribed_only_to_streams(name4, set())
 
         default_streams = get_slim_realm_default_streams(self.realm.id)
         self.assert_length(default_streams, 3)
@@ -2873,7 +2872,8 @@ class MultiuseInviteTest(ZulipTestCase):
         self.check_user_able_to_register(email5, invite_link)
         rome = get_stream("Rome", self.realm)
         self.check_user_subscribed_only_to_streams(
-            name5, [rome, default_streams[0], default_streams[1], default_streams[2]]
+            name5,
+            {rome} | default_streams,
         )
 
     def test_multiuse_link_with_specified_user_groups(self) -> None:
@@ -2950,7 +2950,7 @@ class MultiuseInviteTest(ZulipTestCase):
         )
         invite_link = self.assert_json_success(result)["invite_link"]
         self.check_user_able_to_register(self.nonreg_email("test"), invite_link)
-        self.check_user_subscribed_only_to_streams("test", streams)
+        self.check_user_subscribed_only_to_streams("test", set(streams))
 
         self.login("iago")
         stream_ids = []
@@ -2958,7 +2958,7 @@ class MultiuseInviteTest(ZulipTestCase):
         verona = get_stream("Verona", self.realm)
         sandbox = get_stream("sandbox", self.realm)
         zulip = get_stream("Zulip", self.realm)
-        self.assertCountEqual(default_streams, [verona, sandbox, zulip])
+        self.assertEqual(default_streams, {verona, sandbox, zulip})
 
         # Check that user is subscribed to the streams that were set as default
         # at the time of account creation and not at the time of inviting them.
@@ -2976,7 +2976,7 @@ class MultiuseInviteTest(ZulipTestCase):
         do_add_default_stream(denmark)
         do_remove_default_stream(verona)
         self.check_user_able_to_register(self.nonreg_email("test1"), invite_link)
-        self.check_user_subscribed_only_to_streams("test1", [denmark, sandbox, zulip])
+        self.check_user_subscribed_only_to_streams("test1", {denmark, sandbox, zulip})
 
         stream_ids = [verona.id]
         self.login("iago")
@@ -2991,8 +2991,8 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = self.assert_json_success(result)["invite_link"]
         self.check_user_able_to_register(self.nonreg_email("newguy"), invite_link)
         default_streams = get_slim_realm_default_streams(self.realm.id)
-        self.assertCountEqual(default_streams, [denmark, sandbox, zulip])
-        self.check_user_subscribed_only_to_streams("newguy", [denmark, sandbox, verona, zulip])
+        self.assertEqual(default_streams, {denmark, sandbox, zulip})
+        self.check_user_subscribed_only_to_streams("newguy", {denmark, sandbox, verona, zulip})
 
         self.login("iago")
         stream_ids = []
@@ -3008,7 +3008,7 @@ class MultiuseInviteTest(ZulipTestCase):
         self.check_user_able_to_register(self.nonreg_email("alice"), invite_link)
         # User is not subscribed to default streams as well.
         self.assert_length(get_slim_realm_default_streams(self.realm.id), 3)
-        self.check_user_subscribed_only_to_streams("alice", [])
+        self.check_user_subscribed_only_to_streams("alice", set())
 
     def test_create_multiuse_link_with_specified_user_groups_api_call(self) -> None:
         iago = self.example_user("iago")
