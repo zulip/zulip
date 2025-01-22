@@ -654,6 +654,40 @@ run_test("should_display_profile_incomplete_alert", () => {
     assert.equal(timerender.should_display_profile_incomplete_alert(realm_date_created_secs), true);
 });
 
+run_test("are_timezones_on_same_clock_now", () => {
+    assert.ok(
+        timerender.are_timezones_on_same_clock_now("America/Los_Angeles", "America/Los_Angeles"),
+    );
+    assert.ok(timerender.are_timezones_on_same_clock_now("America/New_York", "America/New_York"));
+
+    // Montreal and Toronto are equivalent year-round.
+    assert.ok(timerender.are_timezones_on_same_clock_now("America/Montreal", "America/Toronto"));
+
+    assert.ok(
+        !timerender.are_timezones_on_same_clock_now("Invalid/Timezone", "America/Los_Angeles"),
+    );
+    assert.ok(
+        !timerender.are_timezones_on_same_clock_now("America/New_York", "America/Los_Angeles"),
+    );
+});
+
+run_test("are_timezones_on_same_clock_now (Phoenix)", () => {
+    /*
+        If you live in Phoenix and make the short flight to Los Angeles during
+        Daylight Savings time, you don't need to reset your watch.
+
+        Likewise, during the winter, if you go to Denver, you don't need to
+        reset your watch.
+
+        We err on the side of not nagging Phoenix folks to change their
+        "Zulip clock" for these short trips.
+    */
+    assert.ok(
+        timerender.are_timezones_on_same_clock_now("America/Phoenix", "America/Los_Angeles") ||
+            timerender.are_timezones_on_same_clock_now("America/Phoenix", "America/Denver"),
+    );
+});
+
 run_test("is_browser_timezone_same_as", () => {
     assert.equal(timerender.is_browser_timezone_same_as(timerender.browser_time_zone()), true);
 
@@ -661,19 +695,13 @@ run_test("is_browser_timezone_same_as", () => {
     assert.equal(timerender.is_browser_timezone_same_as("Invalid/Timezone"), false);
 });
 
-run_test("test time zone math", () => {
-    // This test doesn't seem to test any Zulip code, but it seems
-    // useful to keep around anyway, since the offset logic
-    // here is useful to understand.
-
+run_test("time zone helpers", () => {
     function get_time_in_timezone(date, timezone) {
-        return Date.parse(date.toLocaleString("en-US", {timeZone: timezone}));
+        return timerender.get_time_in_timezone(date, timezone);
     }
 
     function get_offset_difference_at_date(tz1, tz2, reference_date) {
-        const date1 = get_time_in_timezone(reference_date, tz1);
-        const date2 = get_time_in_timezone(reference_date, tz2);
-        return date1 - date2;
+        return timerender.get_offset_difference_at_date(tz1, tz2, reference_date);
     }
 
     // The current time in America/Phoenix does equal the current time
