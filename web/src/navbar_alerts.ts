@@ -352,9 +352,9 @@ const demo_organization_deadline_banner = (): AlertBanner => {
                 },
                 {
                     "z-demo-link": (content_html) =>
-                        `<a class="banner__link" href="https://zulip.com/help/demo-organizations" target="_blank" rel="noopener noreferrer">${content_html.join("")}</a>`,
+                        `<a class="banner-link" href="https://zulip.com/help/demo-organizations" target="_blank" rel="noopener noreferrer">${content_html.join("")}</a>`,
                     "z-convert-link": (content_html) =>
-                        `<a class="banner__link" href="https://zulip.com/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization" target="_blank" rel="noopener noreferrer">${content_html.join("")}</a>`,
+                        `<a class="banner-link" href="https://zulip.com/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization" target="_blank" rel="noopener noreferrer">${content_html.join("")}</a>`,
                     days_remaining,
                 },
             ),

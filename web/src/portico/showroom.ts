@@ -108,9 +108,9 @@ const alert_banners: Record<string, AlertBanner> = {
                 },
                 {
                     demo_link: (content_html) =>
-                        `<a class="banner__link" href="https://zulip.com/help/demo-organizations" target="_blank" rel="noopener noreferrer">${content_html.join("")}</a>`,
+                        `<a class="banner-link" href="https://zulip.com/help/demo-organizations" target="_blank" rel="noopener noreferrer">${content_html.join("")}</a>`,
                     convert_link: (content_html) =>
-                        `<a class="banner__link" href="https://zulip.com/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization" target="_blank" rel="noopener noreferrer">${content_html.join("")}</a>`,
+                        `<a class="banner-link" href="https://zulip.com/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization" target="_blank" rel="noopener noreferrer">${content_html.join("")}</a>`,
                 },
             ),
         ),
@@ -129,7 +129,7 @@ const alert_banners: Record<string, AlertBanner> = {
                 },
                 {
                     "z-link": (content_html) =>
-                        `<a class="banner__link" href="https://zulip.com/help/desktop-notifications#desktop-notifications" target="_blank" rel="noopener noreferrer">${content_html.join("")}</a>`,
+                        `<a class="banner-link" href="https://zulip.com/help/desktop-notifications#desktop-notifications" target="_blank" rel="noopener noreferrer">${content_html.join("")}</a>`,
                 },
             ),
         ),
