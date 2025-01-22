@@ -10212,6 +10212,22 @@ paths:
         user subscribed.
       parameters:
         - $ref: "#/components/parameters/ChannelIdInPath"
+        - name: allow_empty_topic_name
+          in: query
+          description: |
+            Whether the client supports processing the empty string as
+            a topic name in the returned data.
+
+            If `false`, the value of `realm_empty_topic_display_name`
+            found in the [`POST /register`](/api/register-queue) response is
+            returned replacing the empty string as the topic name.
+
+            **Changes**: New in Zulip 10.0 (feature level 334). Previously,
+            the empty string was not a valid topic.
+          schema:
+            type: boolean
+            default: false
+          example: true
       responses:
         "200":
           description: Success.

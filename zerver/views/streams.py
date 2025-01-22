@@ -924,6 +924,7 @@ def get_topics_backend(
     maybe_user_profile: UserProfile | AnonymousUser,
     *,
     stream_id: PathOnly[NonNegativeInt],
+    allow_empty_topic_name: Json[bool] = False,
 ) -> HttpResponse:
     if not maybe_user_profile.is_authenticated:
         is_web_public_query = True
@@ -938,7 +939,9 @@ def get_topics_backend(
         realm = get_valid_realm_from_request(request)
         stream = access_web_public_stream(stream_id, realm)
         result = get_topic_history_for_public_stream(
-            realm_id=realm.id, recipient_id=assert_is_not_none(stream.recipient_id)
+            realm_id=realm.id,
+            recipient_id=assert_is_not_none(stream.recipient_id),
+            allow_empty_topic_name=allow_empty_topic_name,
         )
 
     else:
@@ -951,6 +954,7 @@ def get_topics_backend(
             user_profile=user_profile,
             recipient_id=stream.recipient_id,
             public_history=stream.is_history_public_to_subscribers(),
+            allow_empty_topic_name=allow_empty_topic_name,
         )
 
     return json_success(request, data=dict(topics=result))
