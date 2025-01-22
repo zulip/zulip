@@ -9,9 +9,9 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_edit import (
+    build_message_edit_request,
     check_update_message,
     do_update_message,
-    get_message_edit_request_object,
     maybe_send_resolve_topic_notifications,
 )
 from zerver.actions.reactions import do_add_reaction
@@ -142,7 +142,7 @@ class MessageMoveTopicTest(ZulipTestCase):
             topic_name: str,
             users_to_be_notified: list[dict[str, Any]],
         ) -> None:
-            message_edit_request = get_message_edit_request_object(
+            message_edit_request = build_message_edit_request(
                 message=message,
                 user_profile=user_profile,
                 propagate_mode="change_later",
@@ -1749,7 +1749,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         assert stream.recipient_id is not None
         changed_messages = messages_for_topic(stream.realm_id, stream.recipient_id, original_topic)
         resolve_topic = RESOLVED_TOPIC_PREFIX + original_topic
-        message_edit_request = get_message_edit_request_object(
+        message_edit_request = build_message_edit_request(
             message=message,
             user_profile=admin_user,
             propagate_mode="change_all",
