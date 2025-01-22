@@ -52,9 +52,9 @@ from zerver.actions.invites import (
 )
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_edit import (
+    build_message_edit_request,
     do_update_embedded_data,
     do_update_message,
-    get_message_edit_request_object,
 )
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
@@ -606,7 +606,7 @@ class NormalActionsTest(BaseAction):
             message_sender=self.example_user("cordelia"),
         )
 
-        message_edit_request = get_message_edit_request_object(
+        message_edit_request = build_message_edit_request(
             message=pm,
             user_profile=self.user_profile,
             propagate_mode="change_one",
@@ -915,7 +915,7 @@ class NormalActionsTest(BaseAction):
             message_sender=iago,
         )
 
-        message_edit_request = get_message_edit_request_object(
+        message_edit_request = build_message_edit_request(
             message=message,
             user_profile=self.user_profile,
             propagate_mode="change_one",
@@ -948,7 +948,7 @@ class NormalActionsTest(BaseAction):
         topic_name = "new_topic"
         propagate_mode = "change_all"
 
-        message_edit_request = get_message_edit_request_object(
+        message_edit_request = build_message_edit_request(
             message=message,
             user_profile=self.user_profile,
             propagate_mode=propagate_mode,
@@ -1003,7 +1003,7 @@ class NormalActionsTest(BaseAction):
         propagate_mode = "change_all"
         prior_mention_user_ids = set()
 
-        message_edit_request = get_message_edit_request_object(
+        message_edit_request = build_message_edit_request(
             message=message,
             user_profile=self.user_profile,
             propagate_mode=propagate_mode,
@@ -1047,7 +1047,7 @@ class NormalActionsTest(BaseAction):
         propagate_mode = "change_all"
         prior_mention_user_ids = set()
 
-        message_edit_request = get_message_edit_request_object(
+        message_edit_request = build_message_edit_request(
             message=message,
             user_profile=self.user_profile,
             propagate_mode="change_one",
