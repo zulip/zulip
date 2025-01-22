@@ -570,3 +570,14 @@
         }
     }
 }
+
+.action-button-old-size {
+    padding: 7px 14px;
+    min-width: 130px;
+    font-weight: 400;
+    line-height: normal;
+    text-align: center;
+}
+.org-preview-button {
+    margin-bottom: 20px; 
+}
