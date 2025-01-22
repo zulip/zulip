@@ -4,7 +4,6 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert_wrapper.hbs";
-import render_server_needs_upgrade_alert_content from "../templates/navbar_alerts/server_needs_upgrade.hbs";
 import render_time_zone_update_offer_content from "../templates/navbar_alerts/time_zone_update_offer.hbs";
 
 import * as banners from "./banners.ts";
@@ -71,7 +70,7 @@ export function should_show_bankruptcy_banner(): boolean {
     return false;
 }
 
-export function should_show_server_upgrade_notification(ls: LocalStorage): boolean {
+export function should_show_server_upgrade_banner(ls: LocalStorage): boolean {
     // We do not show the server upgrade nag for a week after the user
     // clicked "dismiss".
     if (!localstorage.supported() || ls.get("lastUpgradeNagDismissalTime") === undefined) {
@@ -104,8 +103,7 @@ export function maybe_toggle_empty_required_profile_fields_banner(): void {
     }
 }
 
-export function dismiss_upgrade_nag(ls: LocalStorage): void {
-    $(".alert[data-process='server-needs-upgrade'").hide();
+export function set_last_upgrade_nag_dismissal_time(ls: LocalStorage): void {
     if (localstorage.supported()) {
         ls.set("lastUpgradeNagDismissalTime", Date.now());
     }
@@ -277,6 +275,28 @@ const ORGANIZATION_PROFILE_INCOMPLETE_BANNER: AlertBanner = {
     custom_classes: "navbar-alert-banner",
 };
 
+const SERVER_NEEDS_UPGRADE_BANNER: AlertBanner = {
+    process: "server-needs-upgrade",
+    intent: "danger",
+    label: $t({
+        defaultMessage: "This Zulip server is running an old version and should be upgraded.",
+    }),
+    buttons: [
+        {
+            type: "quiet",
+            label: $t({defaultMessage: "Learn more"}),
+            custom_classes: "server-upgrade-learn-more",
+        },
+        {
+            type: "borderless",
+            label: $t({defaultMessage: "Dismiss for a week"}),
+            custom_classes: "server-upgrade-nag-dismiss",
+        },
+    ],
+    close_button: true,
+    custom_classes: "navbar-alert-banner",
+};
+
 const bankruptcy_banner = (): AlertBanner => {
     const old_unreads_missing = unread.old_unreads_missing;
     const unread_msgs_count = unread.get_unread_message_count();
@@ -364,12 +384,8 @@ export function initialize(): void {
             }),
         });
     } else if (realm.server_needs_upgrade) {
-        if (should_show_server_upgrade_notification(ls)) {
-            open({
-                data_process: "server-needs-upgrade",
-                custom_class: "red",
-                rendered_alert_content_html: render_server_needs_upgrade_alert_content(),
-            });
+        if (should_show_server_upgrade_banner(ls)) {
+            banners.open(SERVER_NEEDS_UPGRADE_BANNER, $("#navbar_alerts_wrapper"));
         }
     } else if (page_params.warn_no_email === true && current_user.is_admin) {
         // if email has not been set up and the user is the admin,
@@ -447,6 +463,24 @@ export function initialize(): void {
     $("#navbar_alerts_wrapper").on("click", ".edit-organization-profile", () => {
         window.location.hash = "#organization/organization-profile";
     });
+
+    $("#navbar_alerts_wrapper").on("click", ".server-upgrade-learn-more", () => {
+        window.open(
+            "https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html#upgrade-nag",
+            "_blank",
+            "noopener,noreferrer",
+        );
+    });
+
+    $("#navbar_alerts_wrapper").on(
+        "click",
+        ".server-upgrade-nag-dismiss",
+        function (this: HTMLElement) {
+            const $banner = $(this).closest(".banner");
+            banners.close($banner);
+            set_last_upgrade_nag_dismissal_time(ls);
+        },
+    );
 
     $("#navbar_alerts_wrapper").on(
         "click",

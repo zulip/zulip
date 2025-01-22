@@ -134,20 +134,23 @@ test("is_organization_profile_incomplete", ({override}) => {
     assert.equal(navbar_alerts.is_organization_profile_incomplete(), false);
 });
 
-test("server_upgrade_alert hide_duration_expired", ({override}) => {
+test("should_show_server_upgrade_banner", ({override}) => {
     const ls = localstorage();
-    const start_time = 1620327447050; // Thursday 06/5/2021 07:02:27 AM (UTC+0)
 
-    override(Date, "now", () => start_time);
-    assert.equal(ls.get("lastUpgradeNagDismissalTime"), undefined);
-    assert.equal(navbar_alerts.should_show_server_upgrade_notification(ls), true);
-    navbar_alerts.dismiss_upgrade_nag(ls);
-    assert.equal(navbar_alerts.should_show_server_upgrade_notification(ls), false);
+    // Set the initial date, which will be set as the last upgrade nag dismissal time.
+    const start_time = new Date("2024-01-01T10:00:00.000Z"); // Wednesday 1/1/2024 10:00:00 AM (UTC+0)
+    override(Date, "now", () => start_time.getTime());
+    ls.set("lastUpgradeNagDismissalTime", undefined);
+    assert.equal(navbar_alerts.should_show_server_upgrade_banner(ls), true);
+    navbar_alerts.set_last_upgrade_nag_dismissal_time(ls);
 
-    override(Date, "now", () => addDays(start_time, 8).getTime()); // Friday 14/5/2021 07:02:27 AM (UTC+0)
-    assert.equal(navbar_alerts.should_show_server_upgrade_notification(ls), true);
-    navbar_alerts.dismiss_upgrade_nag(ls);
-    assert.equal(navbar_alerts.should_show_server_upgrade_notification(ls), false);
+    // Set the date to <= 7 days from the last upgrade nag dismissal time.
+    override(Date, "now", () => addDays(start_time, 7).getTime()); // Wednesday 1/8/2024 10:00:00 AM (UTC+0)
+    assert.equal(navbar_alerts.should_show_server_upgrade_banner(ls), false);
+
+    // Set the date to > 7 days from the last upgrade nag dismissal time.
+    override(Date, "now", () => addDays(start_time, 8).getTime()); // Thursday 1/9/2024 10:00:00 AM (UTC+0)
+    assert.equal(navbar_alerts.should_show_server_upgrade_banner(ls), true);
 });
 
 test("get_demo_organization_deadline_days_remaining", ({override}) => {
