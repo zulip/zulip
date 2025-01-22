@@ -892,6 +892,21 @@
     --color-text-settings-field-hint: hsl(0deg 0% 57%);
     --color-text-clear-search-button: hsl(0deg 0% 80%);
     --color-text-clear-search-button-hover: hsl(0deg 0% 0%);
+
+    /* Link colors */
+    --color-text-link: hsl(210deg 94% 42%);
+    --color-text-link-decoration: color-mix(
+        in oklch,
+        hsl(210deg 94% 42%) 20%,
+        transparent
+    );
+    --color-text-link-hover: hsl(212deg 100% 50%);
+    --color-text-link-decoration-hover: color-mix(
+        in oklch,
+        hsl(212deg 100% 50%) 70%,
+        transparent
+    );
+    --color-text-link-active: hsl(212deg 100% 30%);
     /* These colors are from Bootstrap. */
     --color-text-generic-link: #08c;
     --color-text-generic-link-interactive: #005580;
@@ -1884,6 +1899,21 @@
     --color-text-settings-field-hint: hsl(0deg 0% 52%);
     --color-text-clear-search-button: hsl(236deg 33% 80%);
     --color-text-clear-search-button-hover: hsl(0deg 0% 100%);
+
+    /* Link colors */
+    --color-text-link: hsl(200deg 100% 50%);
+    --color-text-link-decoration: color-mix(
+        in oklch,
+        hsl(200deg 100% 50%) 20%,
+        transparent
+    );
+    --color-text-link-hover: hsl(200deg 100% 60%);
+    --color-text-link-decoration-hover: color-mix(
+        in oklch,
+        hsl(200deg 100% 60%) 70%,
+        transparent
+    );
+    --color-text-link-active: hsl(200deg 100% 50%);
     --color-text-generic-link: #08c;
     --color-text-generic-link-interactive: hsl(200deg 79% 66%);
 
