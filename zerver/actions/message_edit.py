@@ -1243,7 +1243,7 @@ def check_time_limit_for_change_all_propagate_mode(
     )
 
 
-def get_message_edit_request_object(
+def build_message_edit_request(
     *,
     message: Message,
     user_profile: UserProfile,
@@ -1360,7 +1360,7 @@ def check_update_message(
 
     validate_message_edit_payload(message, stream_id, topic_name, propagate_mode, content)
 
-    message_edit_request = get_message_edit_request_object(
+    message_edit_request = build_message_edit_request(
         message=message,
         user_profile=user_profile,
         propagate_mode=propagate_mode,
