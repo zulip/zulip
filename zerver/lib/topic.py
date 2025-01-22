@@ -201,7 +201,10 @@ def update_messages_for_topic_edit(
     return messages, propagate
 
 
-def generate_topic_history_from_db_rows(rows: list[tuple[str, int]]) -> list[dict[str, Any]]:
+def generate_topic_history_from_db_rows(
+    rows: list[tuple[str, int]],
+    allow_empty_topic_name: bool,
+) -> list[dict[str, Any]]:
     canonical_topic_names: dict[str, tuple[int, str]] = {}
 
     # Sort rows by max_message_id so that if a topic
@@ -215,13 +218,19 @@ def generate_topic_history_from_db_rows(rows: list[tuple[str, int]]) -> list[dic
 
     history = []
     for max_message_id, topic_name in canonical_topic_names.values():
+        if topic_name == "" and not allow_empty_topic_name:
+            topic_name = Message.EMPTY_TOPIC_FALLBACK_NAME
         history.append(
             dict(name=topic_name, max_id=max_message_id),
         )
     return sorted(history, key=lambda x: -x["max_id"])
 
 
-def get_topic_history_for_public_stream(realm_id: int, recipient_id: int) -> list[dict[str, Any]]:
+def get_topic_history_for_public_stream(
+    realm_id: int,
+    recipient_id: int,
+    allow_empty_topic_name: bool,
+) -> list[dict[str, Any]]:
     cursor = connection.cursor()
     # Uses index: zerver_message_realm_recipient_subject
     # Note that this is *case-sensitive*, so that we can display the
@@ -244,14 +253,21 @@ def get_topic_history_for_public_stream(realm_id: int, recipient_id: int) -> lis
     rows = cursor.fetchall()
     cursor.close()
 
-    return generate_topic_history_from_db_rows(rows)
+    return generate_topic_history_from_db_rows(rows, allow_empty_topic_name)
 
 
 def get_topic_history_for_stream(
-    user_profile: UserProfile, recipient_id: int, public_history: bool
+    user_profile: UserProfile,
+    recipient_id: int,
+    public_history: bool,
+    allow_empty_topic_name: bool,
 ) -> list[dict[str, Any]]:
     if public_history:
-        return get_topic_history_for_public_stream(user_profile.realm_id, recipient_id)
+        return get_topic_history_for_public_stream(
+            user_profile.realm_id,
+            recipient_id,
+            allow_empty_topic_name,
+        )
 
     cursor = connection.cursor()
     # Uses index: zerver_message_realm_recipient_subject
@@ -279,7 +295,7 @@ def get_topic_history_for_stream(
     rows = cursor.fetchall()
     cursor.close()
 
-    return generate_topic_history_from_db_rows(rows)
+    return generate_topic_history_from_db_rows(rows, allow_empty_topic_name)
 
 
 def get_topic_resolution_and_bare_name(stored_name: str) -> tuple[bool, str]:
