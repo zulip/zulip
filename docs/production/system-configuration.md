@@ -370,6 +370,16 @@ Comma-separated list of IP addresses or netmasks of external load balancers
 whose `X-Forwarded-For` and `X-Forwarded-Proto` should be respected. These can
 be individual IP addresses, or CIDR IP address ranges.
 
+#### `rejects_http_requests`
+
+Set to a true value if incoming requests from load loadbalancer's IP addresses
+which do not contain an `X-Forwarded-Proto` should be assumed to have come into
+them over HTTPS. This setting _is a security vulnerability_ unless the load
+balancer unilaterally rejects unencrypted HTTP connections, or responds to them
+with 301 status codes. Note that Zulip's HSTS headers are not sufficient
+protection here, since API clients do not respect them; the load balancer _must
+not_ send any requests to Zulip which came in unencrypted.
+
 ### `[http_proxy]`
 
 #### `host`

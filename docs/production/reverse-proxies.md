@@ -244,6 +244,11 @@ things you need to be careful about when configuring it:
    connection mechanism from your proxy to Zulip. Note that the proxies _must_
    set the header, overriding any existing values, not add a new header.
 
+   If your proxy _cannot_ set the `X-Forwarded-Proto` header, you can opt to do
+   all HTTP-to-HTTPS redirection at the load-balancer level, and set
+   [`loadbalancer.rejects_http_requests` in `zulip.conf`][no-proto-header]; but
+   note the important security caveats for that in its documentation.
+
 1. Configure your proxy to pass along the `Host:` header as was sent
    from the client, not the internal hostname as seen by the proxy.
    If this is not possible, you can set `USE_X_FORWARDED_HOST = True`
@@ -272,4 +277,5 @@ things you need to be careful about when configuring it:
    with multiple IPs for your Zulip machine; sometimes this happens with
    IPv6 configuration).
 
+[no-proto-header]: system-configuration.md#rejects_http_requests
 [nginx-proxy-longpolling-config]: https://github.com/zulip/zulip/blob/main/puppet/zulip/files/nginx/zulip-include-common/proxy_longpolling
