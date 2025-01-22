@@ -806,6 +806,13 @@ export function process_hotkey(e, hotkey) {
         return false;
     }
 
+    // We don't treat the color picker like our menu popovers, since it
+    // supports sideways navigation (left and right arrow).
+    if (color_picker_hotkeys.has(event_name) && popover_menus.is_color_picker_popover_displayed()) {
+        color_picker_popover.handle_keyboard(event_name);
+        return true;
+    }
+
     if ((event_name === "up_arrow" || event_name === "down_arrow") && overlays.streams_open()) {
         return stream_settings_ui.switch_rows(event_name);
     }
@@ -843,13 +850,6 @@ export function process_hotkey(e, hotkey) {
             }
             return true;
         }
-    }
-
-    // We don't treat the color picker like our menu popovers, since it
-    // supports sideways navigation (left and right arrow).
-    if (color_picker_hotkeys.has(event_name) && popover_menus.is_color_picker_popover_displayed()) {
-        color_picker_popover.handle_keyboard(event_name);
-        return true;
     }
 
     // Handle our normal popovers that are basically vertical lists of menu items.
