@@ -113,7 +113,8 @@ run_test("user_groups", () => {
             name: "new admins",
         },
     };
-    user_groups.update(update_name_event);
+    const admins_group = user_groups.get_user_group_from_id(admins.id);
+    user_groups.update(update_name_event, admins_group);
     assert.equal(user_groups.get_user_group_from_id(admins.id).name, "new admins");
 
     const update_des_event = {
@@ -122,7 +123,7 @@ run_test("user_groups", () => {
             description: "administer",
         },
     };
-    user_groups.update(update_des_event);
+    user_groups.update(update_des_event, admins_group);
     assert.equal(user_groups.get_user_group_from_id(admins.id).description, "administer");
 
     assert.throws(() => user_groups.get_user_group_from_id(all.id), {
@@ -199,7 +200,7 @@ run_test("user_groups", () => {
             deactivated: true,
         },
     };
-    user_groups.update(update_deactivated_event);
+    user_groups.update(update_deactivated_event, admins_group);
     assert.ok(user_groups.get_user_group_from_id(admins.id).deactivated);
 
     user_groups.init();
