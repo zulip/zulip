@@ -565,7 +565,7 @@ class TestCreateStreams(ZulipTestCase):
         stream, created = create_stream_if_needed(
             realm, "new stream with acting user", acting_user=user
         )
-        self.assertCountEqual(stream.can_administer_channel_group.direct_members.all(), [user])
+        self.assertEqual(set(stream.can_administer_channel_group.direct_members.all()), {user})
 
     def do_test_permission_setting_on_stream_creation(self, setting_name: str) -> None:
         user = self.example_user("hamlet")
@@ -2663,11 +2663,11 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         stream = get_stream("stream_name1", realm)
-        self.assertCountEqual(
-            list(stream.can_send_message_group.direct_subgroups.all()),
-            [moderators_group, owners_group],
+        self.assertEqual(
+            set(stream.can_send_message_group.direct_subgroups.all()),
+            {moderators_group, owners_group},
         )
-        self.assertCountEqual(list(stream.can_send_message_group.direct_members.all()), [hamlet])
+        self.assertEqual(set(stream.can_send_message_group.direct_members.all()), {hamlet})
 
         messages = get_topic_messages(desdemona, stream, "channel events")
         expected_notification = (
@@ -2694,10 +2694,10 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         stream = get_stream("stream_name1", realm)
-        self.assertCountEqual(
-            list(stream.can_send_message_group.direct_subgroups.all()), [hamletcharacters_group]
+        self.assertEqual(
+            set(stream.can_send_message_group.direct_subgroups.all()), {hamletcharacters_group}
         )
-        self.assertCountEqual(list(stream.can_send_message_group.direct_members.all()), [desdemona])
+        self.assertEqual(set(stream.can_send_message_group.direct_members.all()), {desdemona})
 
         messages = get_topic_messages(desdemona, stream, "channel events")
         expected_notification = (
