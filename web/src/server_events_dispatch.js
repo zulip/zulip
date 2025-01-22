@@ -387,7 +387,7 @@ export function dispatch_normal_event(event) {
             if (current_user.is_admin) {
                 // Update the UI notice about the user's profile being
                 // incomplete, as we might have filled in the missing field(s).
-                navbar_alerts.show_profile_incomplete(navbar_alerts.check_profile_incomplete());
+                navbar_alerts.toggle_organization_profile_incomplete_banner();
             }
             break;
         }

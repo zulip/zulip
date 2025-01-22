@@ -640,20 +640,6 @@ run_test("set_full_datetime", ({override}) => {
     assert.equal(time_str, expected);
 });
 
-run_test("should_display_profile_incomplete_alert", () => {
-    // Organization created < 15 days ago
-    let realm_date_created_secs = Date.now() / 1000;
-    assert.equal(
-        timerender.should_display_profile_incomplete_alert(realm_date_created_secs),
-        false,
-    );
-
-    // Organization created > 15 days ago
-    realm_date_created_secs -= 16 * 86400;
-
-    assert.equal(timerender.should_display_profile_incomplete_alert(realm_date_created_secs), true);
-});
-
 run_test("are_timezones_on_same_clock_now", () => {
     assert.ok(
         timerender.are_timezones_on_same_clock_now("America/Los_Angeles", "America/Los_Angeles"),
