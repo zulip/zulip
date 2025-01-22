@@ -296,7 +296,7 @@ class MarkdownMiscTest(ZulipTestCase):
         content = "@*hamletcharacters*"
         group = NamedUserGroup.objects.get(realm=realm, name="hamletcharacters")
         mention_data = MentionData(mention_backend, content, message_sender=None)
-        self.assertCountEqual(mention_data.get_group_members(group.id), {hamlet.id, cordelia.id})
+        self.assertEqual(mention_data.get_group_members(group.id), {hamlet.id, cordelia.id})
 
         change_user_is_active(cordelia, False)
         mention_data = MentionData(mention_backend, content, message_sender=None)
