@@ -671,7 +671,12 @@ export class Typeahead<ItemType extends string | object> {
     maybeStopAdvance(e: JQuery.KeyPressEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent): void {
         if (
             (this.stopAdvance || (e.key !== "Tab" && e.key !== "Enter")) &&
-            !this.advanceKeys.includes(e.key)
+            !this.advanceKeys.includes(e.key) &&
+            !(
+                the(this.input_element.$element).id === "private_message_recipient" &&
+                e.shiftKey &&
+                e.key === "Tab"
+            )
         ) {
             e.stopPropagation();
         }

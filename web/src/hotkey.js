@@ -14,6 +14,7 @@ import * as compose_reply from "./compose_reply.ts";
 import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
 import * as compose_state from "./compose_state.ts";
 import * as compose_textarea from "./compose_textarea.ts";
+import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as condense from "./condense.ts";
 import * as deprecated_feature_notice from "./deprecated_feature_notice.ts";
 import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
@@ -774,6 +775,17 @@ export function process_shift_tab_key() {
 
     if ($("input#stream_message_recipient_topic").is(":focus")) {
         compose_recipient.toggle_compose_recipient_dropdown();
+        return true;
+    }
+
+    if ($("#private_message_recipient").is(":focus")) {
+        const $container = $("#private_message_recipient").parent();
+        composebox_typeahead.private_message_typeahead.hide();
+        if ($container.find(".pill").length === 0) {
+            $("#compose_select_recipient_widget_wrapper").trigger("focus");
+        } else {
+            $container.find(".pill").last().trigger("focus");
+        }
         return true;
     }
 
