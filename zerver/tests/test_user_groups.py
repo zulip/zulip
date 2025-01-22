@@ -192,16 +192,16 @@ class UserGroupTestCase(ZulipTestCase):
 
         assert isinstance(user_groups[10]["can_manage_group"], AnonymousSettingGroupDict)
         self.assertEqual(user_groups[10]["can_manage_group"].direct_members, [othello.id])
-        self.assertCountEqual(
-            user_groups[10]["can_manage_group"].direct_subgroups,
-            [admins_system_group.id, hamletcharacters_group.id],
+        self.assertEqual(
+            set(user_groups[10]["can_manage_group"].direct_subgroups),
+            {admins_system_group.id, hamletcharacters_group.id},
         )
 
         assert isinstance(user_groups[10]["can_mention_group"], AnonymousSettingGroupDict)
         self.assertEqual(user_groups[10]["can_mention_group"].direct_members, [othello.id])
-        self.assertCountEqual(
-            user_groups[10]["can_mention_group"].direct_subgroups,
-            [admins_system_group.id, hamletcharacters_group.id],
+        self.assertEqual(
+            set(user_groups[10]["can_mention_group"].direct_subgroups),
+            {admins_system_group.id, hamletcharacters_group.id},
         )
         self.assertFalse(user_groups[0]["deactivated"])
 
@@ -216,8 +216,9 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[10]["id"], new_user_group.id)
         self.assertEqual(user_groups[10]["name"], "newgroup2")
         self.assertFalse(user_groups[10]["deactivated"])
-        self.assertCountEqual(
-            user_groups[10]["direct_subgroup_ids"], [another_new_group.id, owners_system_group.id]
+        self.assertEqual(
+            set(user_groups[10]["direct_subgroup_ids"]),
+            {another_new_group.id, owners_system_group.id},
         )
         self.assertEqual(user_groups[11]["id"], another_new_group.id)
         self.assertEqual(user_groups[11]["name"], "newgroup3")
@@ -228,8 +229,9 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[10]["id"], new_user_group.id)
         self.assertEqual(user_groups[10]["name"], "newgroup2")
         self.assertFalse(user_groups[10]["deactivated"])
-        self.assertCountEqual(
-            user_groups[10]["direct_subgroup_ids"], [another_new_group.id, owners_system_group.id]
+        self.assertEqual(
+            set(user_groups[10]["direct_subgroup_ids"]),
+            {another_new_group.id, owners_system_group.id},
         )
 
     def test_get_direct_user_groups(self) -> None:
@@ -260,34 +262,32 @@ class UserGroupTestCase(ZulipTestCase):
         everyone_group = check_add_user_group(realm, "Everyone", [shiva], acting_user=shiva)
         GroupGroupMembership.objects.create(supergroup=everyone_group, subgroup=staff_group)
 
-        self.assertCountEqual(
-            list(get_recursive_subgroups(leadership_group)), [leadership_group.usergroup_ptr]
+        self.assertEqual(
+            set(get_recursive_subgroups(leadership_group)), {leadership_group.usergroup_ptr}
         )
-        self.assertCountEqual(
-            list(get_recursive_subgroups(staff_group)),
-            [leadership_group.usergroup_ptr, staff_group.usergroup_ptr],
+        self.assertEqual(
+            set(get_recursive_subgroups(staff_group)),
+            {leadership_group.usergroup_ptr, staff_group.usergroup_ptr},
         )
-        self.assertCountEqual(
-            list(get_recursive_subgroups(everyone_group)),
-            [
+        self.assertEqual(
+            set(get_recursive_subgroups(everyone_group)),
+            {
                 leadership_group.usergroup_ptr,
                 staff_group.usergroup_ptr,
                 everyone_group.usergroup_ptr,
-            ],
+            },
         )
 
-        self.assertCountEqual(list(get_recursive_strict_subgroups(leadership_group)), [])
-        self.assertCountEqual(list(get_recursive_strict_subgroups(staff_group)), [leadership_group])
-        self.assertCountEqual(
-            list(get_recursive_strict_subgroups(everyone_group)),
-            [leadership_group, staff_group],
+        self.assertEqual(set(get_recursive_strict_subgroups(leadership_group)), set())
+        self.assertEqual(set(get_recursive_strict_subgroups(staff_group)), {leadership_group})
+        self.assertEqual(
+            set(get_recursive_strict_subgroups(everyone_group)),
+            {leadership_group, staff_group},
         )
 
-        self.assertCountEqual(list(get_recursive_group_members(leadership_group)), [desdemona])
-        self.assertCountEqual(list(get_recursive_group_members(staff_group)), [desdemona, iago])
-        self.assertCountEqual(
-            list(get_recursive_group_members(everyone_group)), [desdemona, iago, shiva]
-        )
+        self.assertEqual(set(get_recursive_group_members(leadership_group)), {desdemona})
+        self.assertEqual(set(get_recursive_group_members(staff_group)), {desdemona, iago})
+        self.assertEqual(set(get_recursive_group_members(everyone_group)), {desdemona, iago, shiva})
 
         self.assertIn(leadership_group.usergroup_ptr, get_recursive_membership_groups(desdemona))
         self.assertIn(staff_group.usergroup_ptr, get_recursive_membership_groups(desdemona))
@@ -299,8 +299,8 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertIn(everyone_group.usergroup_ptr, get_recursive_membership_groups(shiva))
 
         do_deactivate_user(iago, acting_user=None)
-        self.assertCountEqual(list(get_recursive_group_members(staff_group)), [desdemona])
-        self.assertCountEqual(list(get_recursive_group_members(everyone_group)), [desdemona, shiva])
+        self.assertEqual(set(get_recursive_group_members(staff_group)), {desdemona})
+        self.assertEqual(set(get_recursive_group_members(everyone_group)), {desdemona, shiva})
 
     def test_subgroups_of_role_based_system_groups(self) -> None:
         realm = get_realm("zulip")
@@ -328,40 +328,40 @@ class UserGroupTestCase(ZulipTestCase):
             is_system_group=True,
         )
 
-        self.assertCountEqual(list(get_recursive_strict_subgroups(owners_group)), [])
-        self.assertCountEqual(list(get_recursive_strict_subgroups(admins_group)), [owners_group])
-        self.assertCountEqual(
-            list(get_recursive_strict_subgroups(moderators_group)),
-            [owners_group, admins_group],
+        self.assertEqual(set(get_recursive_strict_subgroups(owners_group)), set())
+        self.assertEqual(set(get_recursive_strict_subgroups(admins_group)), {owners_group})
+        self.assertEqual(
+            set(get_recursive_strict_subgroups(moderators_group)),
+            {owners_group, admins_group},
         )
-        self.assertCountEqual(
-            list(get_recursive_strict_subgroups(full_members_group)),
-            [owners_group, admins_group, moderators_group],
+        self.assertEqual(
+            set(get_recursive_strict_subgroups(full_members_group)),
+            {owners_group, admins_group, moderators_group},
         )
-        self.assertCountEqual(
-            list(get_recursive_strict_subgroups(members_group)),
-            [owners_group, admins_group, moderators_group, full_members_group],
+        self.assertEqual(
+            set(get_recursive_strict_subgroups(members_group)),
+            {owners_group, admins_group, moderators_group, full_members_group},
         )
-        self.assertCountEqual(
-            list(get_recursive_strict_subgroups(everyone_group)),
-            [
+        self.assertEqual(
+            set(get_recursive_strict_subgroups(everyone_group)),
+            {
                 owners_group,
                 admins_group,
                 moderators_group,
                 full_members_group,
                 members_group,
-            ],
+            },
         )
-        self.assertCountEqual(
-            list(get_recursive_strict_subgroups(everyone_on_internet_group)),
-            [
+        self.assertEqual(
+            set(get_recursive_strict_subgroups(everyone_on_internet_group)),
+            {
                 owners_group,
                 admins_group,
                 moderators_group,
                 full_members_group,
                 members_group,
                 everyone_group,
-            ],
+            },
         )
 
     def test_is_user_in_group(self) -> None:
@@ -467,7 +467,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             name="role:everyone", realm=hamlet.realm, is_system_group=True
         )
         support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
-        self.assertCountEqual(support_group.can_manage_group.direct_members.all(), [hamlet])
+        self.assertEqual(set(support_group.can_manage_group.direct_members.all()), {hamlet})
         self.assertEqual(support_group.can_mention_group, everyone_system_group.usergroup_ptr)
 
         # Test invalid member error
@@ -646,13 +646,13 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
         backend_group = NamedUserGroup.objects.get(name="backend", realm=hamlet.realm)
-        self.assertCountEqual(
-            list(getattr(backend_group, setting_name).direct_members.all()),
-            [othello],
+        self.assertEqual(
+            set(getattr(backend_group, setting_name).direct_members.all()),
+            {othello},
         )
-        self.assertCountEqual(
-            list(getattr(backend_group, setting_name).direct_subgroups.all()),
-            [leadership_group, moderators_group],
+        self.assertEqual(
+            set(getattr(backend_group, setting_name).direct_subgroups.all()),
+            {leadership_group, moderators_group},
         )
 
         params = {
@@ -924,13 +924,13 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_success(result)
         support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
-        self.assertCountEqual(
-            list(getattr(support_group, setting_name).direct_members.all()),
-            [othello],
+        self.assertEqual(
+            set(getattr(support_group, setting_name).direct_members.all()),
+            {othello},
         )
-        self.assertCountEqual(
-            list(getattr(support_group, setting_name).direct_subgroups.all()),
-            [marketing_group, moderators_group],
+        self.assertEqual(
+            set(getattr(support_group, setting_name).direct_subgroups.all()),
+            {marketing_group, moderators_group},
         )
 
         prospero = self.example_user("prospero")
@@ -949,13 +949,13 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         # Test that the existing UserGroup object is updated.
         self.assertEqual(getattr(support_group, setting_name).id, previous_setting_id)
-        self.assertCountEqual(
-            list(getattr(support_group, setting_name).direct_members.all()),
-            [othello, prospero],
+        self.assertEqual(
+            set(getattr(support_group, setting_name).direct_members.all()),
+            {othello, prospero},
         )
-        self.assertCountEqual(
-            list(getattr(support_group, setting_name).direct_subgroups.all()),
-            [marketing_group, moderators_group],
+        self.assertEqual(
+            set(getattr(support_group, setting_name).direct_subgroups.all()),
+            {marketing_group, moderators_group},
         )
 
         params[setting_name] = orjson.dumps({"new": marketing_group.id}).decode()
@@ -1131,13 +1131,13 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_success(result)
         support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
-        self.assertCountEqual(
-            list(support_group.can_mention_group.direct_members.all()),
-            [othello],
+        self.assertEqual(
+            set(support_group.can_mention_group.direct_members.all()),
+            {othello},
         )
-        self.assertCountEqual(
-            list(support_group.can_mention_group.direct_subgroups.all()),
-            [moderators_group],
+        self.assertEqual(
+            set(support_group.can_mention_group.direct_subgroups.all()),
+            {moderators_group},
         )
 
         params = {
@@ -1184,13 +1184,13 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_success(result)
-        self.assertCountEqual(
-            list(support_group.can_mention_group.direct_members.all()),
-            [hamlet],
+        self.assertEqual(
+            set(support_group.can_mention_group.direct_members.all()),
+            {hamlet},
         )
-        self.assertCountEqual(
-            list(support_group.can_mention_group.direct_subgroups.all()),
-            [marketing_group],
+        self.assertEqual(
+            set(support_group.can_mention_group.direct_subgroups.all()),
+            {marketing_group},
         )
 
         # Test error cases for completeness.
@@ -3292,39 +3292,39 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result_dict = orjson.loads(
             self.client_get(f"/json/user_groups/{moderators_group.id}/members").content
         )
-        self.assertCountEqual(result_dict["members"], [desdemona.id, iago.id, shiva.id])
+        self.assertEqual(set(result_dict["members"]), {desdemona.id, iago.id, shiva.id})
 
         params = {"direct_member_only": orjson.dumps(True).decode()}
         result_dict = orjson.loads(
             self.client_get(f"/json/user_groups/{moderators_group.id}/members", info=params).content
         )
-        self.assertCountEqual(result_dict["members"], [shiva.id])
+        self.assertEqual(set(result_dict["members"]), {shiva.id})
 
         # User not part of a group can also get its members.
         self.login("hamlet")
         result_dict = orjson.loads(
             self.client_get(f"/json/user_groups/{moderators_group.id}/members").content
         )
-        self.assertCountEqual(result_dict["members"], [desdemona.id, iago.id, shiva.id])
+        self.assertEqual(set(result_dict["members"]), {desdemona.id, iago.id, shiva.id})
 
         params = {"direct_member_only": orjson.dumps(True).decode()}
         result_dict = orjson.loads(
             self.client_get(f"/json/user_groups/{moderators_group.id}/members", info=params).content
         )
-        self.assertCountEqual(result_dict["members"], [shiva.id])
+        self.assertEqual(set(result_dict["members"]), {shiva.id})
 
         # Check deactivated users are not returned in members list.
         do_deactivate_user(shiva, acting_user=None)
         result_dict = orjson.loads(
             self.client_get(f"/json/user_groups/{moderators_group.id}/members", info=params).content
         )
-        self.assertCountEqual(result_dict["members"], [])
+        self.assertEqual(set(result_dict["members"]), set())
 
         params = {"direct_member_only": orjson.dumps(False).decode()}
         result_dict = orjson.loads(
             self.client_get(f"/json/user_groups/{moderators_group.id}/members", info=params).content
         )
-        self.assertCountEqual(result_dict["members"], [desdemona.id, iago.id])
+        self.assertEqual(set(result_dict["members"]), {desdemona.id, iago.id})
 
     def test_get_subgroups_of_user_group(self) -> None:
         realm = get_realm("zulip")
@@ -3362,7 +3362,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 f"/json/user_groups/{moderators_group.id}/subgroups", info=params
             ).content
         )
-        self.assertCountEqual(result_dict["subgroups"], [admins_group.id])
+        self.assertEqual(set(result_dict["subgroups"]), {admins_group.id})
 
         # User not part of a group can also get its subgroups.
         self.login("hamlet")
@@ -3377,7 +3377,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 f"/json/user_groups/{moderators_group.id}/subgroups", info=params
             ).content
         )
-        self.assertCountEqual(result_dict["subgroups"], [admins_group.id])
+        self.assertEqual(set(result_dict["subgroups"]), {admins_group.id})
 
     def test_add_subgroup_from_wrong_realm(self) -> None:
         iago = self.example_user("iago")
