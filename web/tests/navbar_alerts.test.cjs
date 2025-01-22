@@ -11,7 +11,6 @@ const {page_params} = require("./lib/zpage_params.cjs");
 const desktop_notifications = mock_esm("../src/desktop_notifications");
 const unread = mock_esm("../src/unread");
 const util = mock_esm("../src/util");
-const timerender = mock_esm("../src/timerender");
 
 const {localstorage} = zrequire("localstorage");
 const navbar_alerts = zrequire("navbar_alerts");
@@ -93,24 +92,46 @@ test("should_show_bankruptcy_banner", ({override}) => {
     assert.equal(navbar_alerts.should_show_bankruptcy_banner(), false);
 });
 
-test("profile_incomplete_alert", ({override}) => {
-    // Don't test time related conditions
-    override(timerender, "should_display_profile_incomplete_alert", () => true);
-
-    // Show alert.
+test("should_show_organization_profile_incomplete_banner", ({override}) => {
+    // Show organization profile incomplete banner when following conditions are suitable:
+    // - The user is an admin.
+    // - The organization is created >= 15 days ago.
     override(current_user, "is_admin", true);
-    override(realm, "realm_description", "Organization imported from Slack!");
-    assert.equal(navbar_alerts.check_profile_incomplete(), true);
+    const start_time = new Date("2024-01-01T10:00:00.000Z"); // Wednesday 1/1/2024 10:00:00 AM (UTC+0)
+    override(realm, "realm_date_created", start_time.getTime() / 1000);
+    override(Date, "now", () => addDays(start_time, 15).getTime());
+    assert.equal(
+        navbar_alerts.should_show_organization_profile_incomplete_banner(realm.realm_date_created),
+        true,
+    );
 
-    // Avoid showing if the user is not admin.
+    // Don't show banner if user is not an admin.
     override(current_user, "is_admin", false);
-    assert.equal(navbar_alerts.check_profile_incomplete(), false);
-
-    // Avoid showing if the realm description is already updated.
+    assert.equal(
+        navbar_alerts.should_show_organization_profile_incomplete_banner(realm.realm_date_created),
+        false,
+    );
     override(current_user, "is_admin", true);
-    assert.equal(navbar_alerts.check_profile_incomplete(), true);
+
+    // Don't show banner if organization is created < 15 days ago.
+    override(Date, "now", () => addDays(start_time, 14).getTime());
+    assert.equal(
+        navbar_alerts.should_show_organization_profile_incomplete_banner(realm.realm_date_created),
+        false,
+    );
+});
+
+test("is_organization_profile_incomplete", ({override}) => {
+    // The organization profile is incomplete when the realm description is
+    // empty or not updated after importing the organization from other product.
+    override(realm, "realm_description", "Organization imported from Slack!");
+    assert.equal(navbar_alerts.is_organization_profile_incomplete(), true);
+    override(realm, "realm_description", "");
+    assert.equal(navbar_alerts.is_organization_profile_incomplete(), true);
+
+    // The organization profile is complete if the realm description is updated.
     override(realm, "realm_description", "Organization description already set!");
-    assert.equal(navbar_alerts.check_profile_incomplete(), false);
+    assert.equal(navbar_alerts.is_organization_profile_incomplete(), false);
 });
 
 test("server_upgrade_alert hide_duration_expired", ({override}) => {

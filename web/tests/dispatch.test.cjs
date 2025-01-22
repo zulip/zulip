@@ -487,8 +487,7 @@ run_test("realm settings", ({override}) => {
     override(sidebar_ui, "update_invite_user_option", noop);
     override(gear_menu, "rerender", noop);
     override(narrow_title, "redraw_title", noop);
-    override(navbar_alerts, "check_profile_incomplete", noop);
-    override(navbar_alerts, "show_profile_incomplete", noop);
+    override(navbar_alerts, "toggle_organization_profile_incomplete_banner", noop);
     override(compose_banner, "clear_errors", noop);
 
     function test_electron_dispatch(event, fake_send_event) {

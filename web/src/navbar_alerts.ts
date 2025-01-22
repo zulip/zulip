@@ -4,7 +4,6 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert_wrapper.hbs";
-import render_profile_incomplete_alert_content from "../templates/navbar_alerts/profile_incomplete.hbs";
 import render_server_needs_upgrade_alert_content from "../templates/navbar_alerts/server_needs_upgrade.hbs";
 import render_time_zone_update_offer_content from "../templates/navbar_alerts/time_zone_update_offer.hbs";
 
@@ -20,8 +19,8 @@ import {localstorage} from "./localstorage.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import {current_user, realm} from "./state_data.ts";
+import * as time_zone_util from "./time_zone_util.ts";
 import * as timerender from "./timerender.ts";
-import {should_display_profile_incomplete_alert} from "./timerender.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
@@ -112,14 +111,26 @@ export function dismiss_upgrade_nag(ls: LocalStorage): void {
     }
 }
 
-export function check_profile_incomplete(): boolean {
+export function should_show_organization_profile_incomplete_banner(timestamp: number): boolean {
     if (!current_user.is_admin) {
         return false;
     }
-    if (!should_display_profile_incomplete_alert(realm.realm_date_created)) {
-        return false;
-    }
 
+    const today = new Date(Date.now());
+    const time = new Date(timestamp * 1000);
+    const days_old = time_zone_util.difference_in_calendar_days(
+        today,
+        time,
+        timerender.display_time_zone,
+    );
+
+    if (days_old >= 15) {
+        return true;
+    }
+    return false;
+}
+
+export function is_organization_profile_incomplete(): boolean {
     // Eventually, we might also check realm.realm_icon_source,
     // but it feels too aggressive to ask users to do change that
     // since their organization might not have a logo yet.
@@ -132,14 +143,20 @@ export function check_profile_incomplete(): boolean {
     return false;
 }
 
-export function show_profile_incomplete(is_profile_incomplete: boolean): void {
-    if (is_profile_incomplete) {
+export function toggle_organization_profile_incomplete_banner(): void {
+    const $banner = $("#navbar_alerts_wrapper").find(".banner");
+    if ($banner && $banner.attr("data-process") === "organization-profile-incomplete") {
+        banners.close($banner);
+        return;
+    }
+    if (
+        is_organization_profile_incomplete() &&
+        should_show_organization_profile_incomplete_banner(realm.realm_date_created)
+    ) {
         // Note that this will be a noop unless we'd already displayed
         // the notice in this session.  This seems OK, given that
         // this is meant to be a one-time task for administrators.
-        $("[data-process='profile-incomplete']").show();
-    } else {
-        $("[data-process='profile-incomplete']").hide();
+        banners.open(ORGANIZATION_PROFILE_INCOMPLETE_BANNER, $("#navbar_alerts_wrapper"));
     }
 }
 
@@ -234,6 +251,26 @@ const PROFILE_MISSING_REQUIRED_FIELDS_BANNER: AlertBanner = {
             type: "quiet",
             label: $t({defaultMessage: "Edit your profile"}),
             custom_classes: "edit-profile-required-fields",
+        },
+    ],
+    close_button: true,
+    custom_classes: "navbar-alert-banner",
+};
+
+const ORGANIZATION_PROFILE_INCOMPLETE_BANNER: AlertBanner = {
+    process: "organization-profile-incomplete",
+    intent: "info",
+    label: $t({
+        defaultMessage:
+            "Complete your organization profile, which is displayed on your organization's registration and login pages.",
+    }),
+    buttons: [
+        {
+            type: "quiet",
+            label: $t({
+                defaultMessage: "Edit profile",
+            }),
+            custom_classes: "edit-organization-profile",
         },
     ],
     close_button: true,
@@ -342,11 +379,11 @@ export function initialize(): void {
         banners.open(DESKTOP_NOTIFICATIONS_BANNER, $("#navbar_alerts_wrapper"));
     } else if (should_show_bankruptcy_banner()) {
         banners.open(bankruptcy_banner(), $("#navbar_alerts_wrapper"));
-    } else if (check_profile_incomplete()) {
-        open({
-            data_process: "profile-incomplete",
-            rendered_alert_content_html: render_profile_incomplete_alert_content(),
-        });
+    } else if (
+        is_organization_profile_incomplete() &&
+        should_show_organization_profile_incomplete_banner(realm.realm_date_created)
+    ) {
+        banners.open(ORGANIZATION_PROFILE_INCOMPLETE_BANNER, $("#navbar_alerts_wrapper"));
     } else {
         maybe_toggle_empty_required_profile_fields_banner();
     }
@@ -407,10 +444,8 @@ export function initialize(): void {
         window.location.hash = "#settings/profile";
     });
 
-    $(".dismiss-upgrade-nag").on("click", (e: JQuery.ClickEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        dismiss_upgrade_nag(ls);
+    $("#navbar_alerts_wrapper").on("click", ".edit-organization-profile", () => {
+        window.location.hash = "#organization/organization-profile";
     });
 
     $("#navbar_alerts_wrapper").on(
