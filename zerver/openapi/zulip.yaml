@@ -20297,6 +20297,8 @@ paths:
                         The set of users who have permission to unsubscribe others from this
                         channel expressed as an [update to a group-setting value][update-group-setting].
 
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+
                         Administrators can always unsubscribe others from a channel.
 
                         Note that a user who is a member of the specified user group must
@@ -20322,6 +20324,8 @@ paths:
                     - description: |
                         The set of users who have permission to administer this channel
                         expressed as an [update to a group-setting value][update-group-setting].
+
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
 
                         Note that a user who is a member of the specified user group must
                         also [have access](/help/channel-permissions) to the channel in
@@ -20349,6 +20353,8 @@ paths:
                     - description: |
                         The set of users who have permission to post in this channel
                         expressed as an [update to a group-setting value][update-group-setting].
+
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
 
                         Note that a user who is a member of the specified user group must
                         also [have access](/help/channel-permissions) to the channel in
