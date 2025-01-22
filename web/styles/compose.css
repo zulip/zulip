@@ -1185,10 +1185,14 @@ textarea.new_message_textarea {
     color: var(--color-text-popover-menu);
 
     .enter_sends_choice {
-        display: flex;
-        gap: 8px;
         padding: 4px 10px;
-        align-items: flex-start;
+        gap: 0 8px;
+        display: grid;
+        /* 1em and 1.5em were chosen from playing around with different values
+           and picking some that looked reasonable. */
+        grid-template:
+            "radio-button instructions" 1.5em
+            ".            instructions" auto / 1em auto;
 
         &:hover {
             background: var(--color-background-hover-popover-menu);
@@ -1209,8 +1213,12 @@ textarea.new_message_textarea {
         & .enter_sends_choice_radio {
             width: auto;
             cursor: pointer;
-            margin: 4px 0 0;
+            /* Radio buttons scale with height, and here we're just
+               matching that to the active font-size. */
+            height: 1em;
             accent-color: hsl(217deg 100% 60%);
+            grid-area: radio-button;
+            align-self: center;
 
             &:focus {
                 outline: 1px dotted hsl(0deg 0% 20%);
@@ -1233,6 +1241,7 @@ textarea.new_message_textarea {
         flex-shrink: 0;
         gap: 3px;
         white-space: nowrap;
+        grid-area: instructions;
     }
 
     .enter_sends_choice_text {
