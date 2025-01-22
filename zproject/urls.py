@@ -58,7 +58,6 @@ from zerver.views.custom_profile_fields import (
 from zerver.views.digest import digest_page
 from zerver.views.documentation import IntegrationView, MarkdownDirectoryView, integration_doc
 from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_drafts
-from zerver.views.email_mirror import email_mirror_message
 from zerver.views.events_register import events_register_backend
 from zerver.views.health import health
 from zerver.views.home import accounts_accept_terms, desktop_home, doc_permalinks_view, home
@@ -808,7 +807,6 @@ for app_name in settings.EXTRA_INSTALLED_APPS:
 # Used internally for communication between command-line, tusd, Django,
 # and Tornado processes
 urls += [
-    path("api/internal/email_mirror_message", email_mirror_message),
     path("api/internal/notify_tornado", notify),
     path("api/internal/tusd", handle_tusd_hook),
     path("api/internal/web_reload_clients", web_reload_clients),
