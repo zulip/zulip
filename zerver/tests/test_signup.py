@@ -2686,19 +2686,19 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
 
-        default_streams = []
+        default_streams = set()
 
         existing_default_streams = DefaultStream.objects.filter(realm=realm)
         self.assert_length(existing_default_streams, 3)
         expected_default_streams = ["Zulip", "sandbox", "Verona"]
         for i, expected_default_stream in enumerate(expected_default_streams):
             self.assertEqual(existing_default_streams[i].stream.name, expected_default_stream)
-            default_streams.append(existing_default_streams[i].stream)
+            default_streams.add(existing_default_streams[i].stream)
 
         for stream_name in ["venice", "rome"]:
             stream = get_stream(stream_name, realm)
             do_add_default_stream(stream)
-            default_streams.append(stream)
+            default_streams.add(stream)
 
         group1_streams = []
         for stream_name in ["scotland", "denmark"]:
@@ -2707,7 +2707,7 @@ class UserSignUpTest(ZulipTestCase):
         do_create_default_stream_group(realm, "group 1", "group 1 description", group1_streams)
 
         result = self.submit_reg_form_for_user(email, password, default_stream_groups=["group 1"])
-        self.check_user_subscribed_only_to_streams("newguy", default_streams + group1_streams)
+        self.check_user_subscribed_only_to_streams("newguy", default_streams | set(group1_streams))
 
     def test_signup_two_confirmation_links(self) -> None:
         email = self.nonreg_email("newguy")
@@ -2795,7 +2795,7 @@ class UserSignUpTest(ZulipTestCase):
             email, password, default_stream_groups=["group 1", "group 2"]
         )
         self.check_user_subscribed_only_to_streams(
-            "newguy", list(set(default_streams + group1_streams + group2_streams))
+            "newguy", set(default_streams + group1_streams + group2_streams)
         )
 
     def test_signup_without_user_settings_from_another_realm(self) -> None:
