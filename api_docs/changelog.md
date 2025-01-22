@@ -124,6 +124,10 @@ deactivated groups.
   Added `allow_empty_topic_name` boolean parameter to decide whether the
   topic names in the fetched message history objects can be empty strings.
 
+* [`GET /users/me/{stream_id}/topics`](/api/get-stream-topics):
+  Added `allow_empty_topic_name` boolean parameter to decide whether the
+  topic names in the fetched `topics` array can be empty strings.
+
 * [`POST /register`](/api/register-queue): For clients that don't support
   the `empty_topic_name` [client capability](/api/register-queue#parameter-client_capabilities),
   the `topic` field in the `unread_msgs` object and `topic_name` field

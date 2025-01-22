@@ -843,3 +843,28 @@ class EmptyTopicNameTest(ZulipTestCase):
         self.assertEqual(
             state_data["user_topics"][1]["topic_name"], Message.EMPTY_TOPIC_FALLBACK_NAME
         )
+
+    def test_get_channel_topics(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        channel_one = self.make_stream("channel_one")
+        channel_two = self.make_stream("channel_two")
+        self.subscribe(hamlet, channel_one.name)
+        self.subscribe(hamlet, channel_two.name)
+
+        self.send_stream_message(hamlet, channel_one.name, topic_name="")
+        self.send_stream_message(
+            hamlet, channel_two.name, topic_name=Message.EMPTY_TOPIC_FALLBACK_NAME
+        )
+
+        params = {"allow_empty_topic_name": "false"}
+        for channel_id in [channel_one.id, channel_two.id]:
+            result = self.client_get(f"/json/users/me/{channel_id}/topics", params)
+            data = self.assert_json_success(result)
+            self.assertEqual(data["topics"][0]["name"], Message.EMPTY_TOPIC_FALLBACK_NAME)
+
+        params = {"allow_empty_topic_name": "true"}
+        for channel_id in [channel_one.id, channel_two.id]:
+            result = self.client_get(f"/json/users/me/{channel_id}/topics", params)
+            data = self.assert_json_success(result)
+            self.assertEqual(data["topics"][0]["name"], "")
