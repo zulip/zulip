@@ -323,6 +323,7 @@
     --right-sidebar-heading-left-spacing: 5px;
     --right-sidebar-avatar-width: 2em;
     --right-sidebar-avatar-height: var(--right-sidebar-avatar-width);
+    --right-sidebar-avatar-right-margin: 11px;
 
     /* Tippy popover related values */
     --navbar-popover-menu-min-width: 230px;

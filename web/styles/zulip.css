@@ -1001,7 +1001,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
 .user_sidebar_entry.with_avatar .user-profile-picture {
     width: var(--right-sidebar-avatar-width);
     height: var(--right-sidebar-avatar-height);
-    margin-right: 11px;
+    margin-right: var(--right-sidebar-avatar-right-margin);
 }
 
 .home-error-bar {
