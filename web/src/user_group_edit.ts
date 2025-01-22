@@ -780,16 +780,13 @@ export function sync_group_permission_setting(property: string, group: UserGroup
     }
 }
 
-export function update_group(event: UserGroupUpdateEvent): void {
+export function update_group(event: UserGroupUpdateEvent, group: UserGroup): void {
     if (!overlays.groups_open()) {
         return;
     }
 
-    const group_id = event.group_id;
-    const group = user_groups.get_user_group_from_id(group_id);
-
     // update left side pane
-    const $group_row = row_for_group_id(group_id);
+    const $group_row = row_for_group_id(group.id);
     if (event.data.name !== undefined) {
         $group_row.find(".group-name").text(user_groups.get_display_group_name(group.name));
         user_group_create.maybe_update_error_message();

@@ -992,10 +992,13 @@ export function dispatch_normal_event(event) {
                         event.direct_subgroup_ids,
                     );
                     break;
-                case "update":
-                    user_groups.update(event);
-                    user_group_edit.update_group(event);
+                case "update": {
+                    const group_id = event.group_id;
+                    const group = user_groups.get_user_group_from_id(group_id);
+                    user_groups.update(event, group);
+                    user_group_edit.update_group(event, group);
                     break;
+                }
                 default:
                     blueslip.error("Unexpected event type user_group/" + event.op);
                     break;
