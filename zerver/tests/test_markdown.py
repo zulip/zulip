@@ -302,6 +302,24 @@ class MarkdownMiscTest(ZulipTestCase):
         mention_data = MentionData(mention_backend, content, message_sender=None)
         self.assertEqual(mention_data.get_group_members(group.id), {hamlet.id})
 
+    def test_bulk_user_group_mentions(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        mention_backend = MentionBackend(realm.id)
+
+        content = ""
+        for i in range(40):
+            group_name = f"group{i}"
+            check_add_user_group(realm, group_name, [hamlet, cordelia], acting_user=othello)
+            content += f" @*{group_name}*"
+
+        # We should be able to do O(1) queries here.
+        UNFORTUNATE_QUERY_COUNT = 41
+        with self.assert_database_query_count(UNFORTUNATE_QUERY_COUNT):
+            MentionData(mention_backend, content, message_sender=None)
+
     def test_invalid_katex_path(self) -> None:
         with self.settings(DEPLOY_ROOT="/nonexistent"):
             with self.assertLogs(level="ERROR") as m:
