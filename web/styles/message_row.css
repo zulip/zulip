@@ -257,10 +257,16 @@
 
         &.is-me-message {
             grid-template-areas:
+                ".      .         .        . .   "
                 "avatar sender    controls . time"
                 "avatar sender    .        . .   "
                 ".      more      .        . .   "
                 ".      reactions .        . .   ";
+            grid-template-rows:
+                var(--message-box-vertical-margin) var(
+                    --message-box-avatar-height
+                )
+                minmax(0, auto) repeat(3, auto);
 
             .message-avatar {
                 /* Set the line-height to match the height of the avatar image
@@ -271,6 +277,19 @@
                    single-line me message, this margin preserves the
                    overall height of the message box. */
                 margin-bottom: var(--message-box-vertical-margin);
+
+                .inline_profile_picture {
+                    /* We adjust the vertical space in me messages via
+                       the grid definition above. */
+                    margin-top: 0;
+                }
+            }
+
+            .message_controls {
+                /* Because the controls height is smaller than the
+                   available grid row height on me-messages, we
+                   align to center here. */
+                align-self: center;
             }
 
             .message_sender {
