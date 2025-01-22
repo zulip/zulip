@@ -221,14 +221,6 @@ the message to fail to send.
 
 Set to the port number for the KaTeX server; defaults to port 9700.
 
-### `[postfix]`
-
-#### `mailname`
-
-The hostname that [Postfix should be configured to receive mail
-at](email-gateway.md#local-delivery-setup), as well as identify itself as for
-outgoing email.
-
 ### `[postgresql]`
 
 #### `effective_io_concurrency`
