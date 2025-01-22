@@ -1508,5 +1508,5 @@ export function build_page(): void {
         realm_logo.build_realm_logo_widget(upload_realm_logo_or_icon, true);
     }
 
-    $("#organization-profile .deactivate_realm_button").on("click", deactivate_organization);
+    $("#deactivate_realm_button").on("click", deactivate_organization);
 }

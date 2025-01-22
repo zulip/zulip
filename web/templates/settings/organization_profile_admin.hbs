@@ -89,11 +89,16 @@
         <div class="deactivate-realm-section">
             <div class="input-group">
                 <div id="deactivate_realm_button_container" class="inline-block {{#unless is_owner}}disabled_setting_tooltip{{/unless}}">
-                    <button class="button rounded button-danger deactivate_realm_button">
-                        {{t 'Deactivate organization' }}
-                    </button>
+                    {{> ../components/action-button
+                      label=(t 'Deactivate organization')
+                      custom_classes="rounded deactivate-realm-button action-button-old-size "
+                      type="quiet"
+                      intent="danger"
+                      id="deactivate_realm_button"
+                      }}
                 </div>
             </div>
         </div>
+
     </form>
 </div>
