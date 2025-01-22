@@ -2148,7 +2148,8 @@ export class MessageListView {
             );
             const message_rows = elements_below_sticky_header
                 .filter((element) => element instanceof HTMLElement)
-                .filter((element) => element.classList.contains("message_row"));
+                .filter((element) => element.classList.contains("message_row"))
+                .filter((element) => !rows.is_overlay_row($(element)));
             if (message_rows.length === 0) {
                 /* If there is no message row under the header, it means it is not sticky yet,
                    so we just get the message next to the header. */
