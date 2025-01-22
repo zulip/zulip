@@ -654,26 +654,17 @@ run_test("should_display_profile_incomplete_alert", () => {
     assert.equal(timerender.should_display_profile_incomplete_alert(realm_date_created_secs), true);
 });
 
-run_test("canonicalize_time_zones", () => {
-    // We expect Montreal to convert to Toronto, but WARNING this might
-    // not work on all browsers.
-    assert.equal(timerender.browser_canonicalize_timezone("America/Montreal"), "America/Toronto");
-
-    assert.equal(
-        timerender.browser_canonicalize_timezone("Asia/Calcutta"),
-        timerender.browser_canonicalize_timezone("Asia/Kolkata"),
-    );
-    assert.equal(
-        timerender.browser_canonicalize_timezone("Europe/Kiev"),
-        timerender.browser_canonicalize_timezone("Europe/Kyiv"),
-    );
-
-    assert.equal(timerender.browser_canonicalize_timezone("Invalid/Timezone"), "");
-
+run_test("is_browser_timezone_same_as", () => {
     assert.equal(timerender.is_browser_timezone_same_as(timerender.browser_time_zone()), true);
 
     // This just ensures that the function doesn't always return true
     assert.equal(timerender.is_browser_timezone_same_as("Invalid/Timezone"), false);
+});
+
+run_test("test time zone math", () => {
+    // This test doesn't seem to test any Zulip code, but it seems
+    // useful to keep around anyway, since the offset logic
+    // here is useful to understand.
 
     function get_time_in_timezone(date, timezone) {
         return Date.parse(date.toLocaleString("en-US", {timeZone: timezone}));
@@ -684,17 +675,6 @@ run_test("canonicalize_time_zones", () => {
         const date2 = get_time_in_timezone(reference_date, tz2);
         return date1 - date2;
     }
-
-    // We should be able to tell timezones apart, even if they have the same offset.
-    // One of the two pairs below will have the same offset at any given time.
-    assert.notEqual(
-        timerender.browser_canonicalize_timezone("America/Phoenix"),
-        timerender.browser_canonicalize_timezone("America/Denver"),
-    );
-    assert.notEqual(
-        timerender.browser_canonicalize_timezone("America/Phoenix"),
-        timerender.browser_canonicalize_timezone("America/Los_Angeles"),
-    );
 
     // The current time in America/Phoenix does equal the current time
     // in one of the two other time zones
