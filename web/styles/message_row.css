@@ -316,7 +316,14 @@
             grid-area: avatar;
             /* The picture should not participate in the baseline group. */
             align-self: start;
-            margin-top: var(--message-box-vertical-margin);
+
+            .inline_profile_picture {
+                /* Setting the margin inside this element prevents
+                   unwanted shifts in the placement of especially
+                   sender-line elements on the .messagebox-content
+                   grid. */
+                margin-top: var(--message-box-vertical-margin);
+            }
         }
 
         .status-message {
