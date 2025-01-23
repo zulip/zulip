@@ -1068,6 +1068,7 @@ export function content_typeahead_selected(
     item: TypeaheadSuggestion,
     query: string,
     input_element: TypeaheadInputElement,
+    event?: JQuery.ClickEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent,
 ): string {
     const pieces = split_at_cursor(query, input_element.$element);
     let beginning = pieces[0];
@@ -1093,6 +1094,22 @@ export function content_typeahead_selected(
             message: "",
         };
     }
+
+    // We only want to consider escape key for the stream+topic typeahead completion case.
+    if (event?.key === "Escape" && item.type !== "topic_list") {
+        setTimeout(() => {
+            // Select any placeholder text configured to be highlighted.
+            if (highlight.start && highlight.end) {
+                $textbox.range(highlight.start, highlight.end);
+            } else {
+                $textbox.caret(beginning.length);
+            }
+            // Also, trigger autosize to check if compose box needs to be resized.
+            compose_ui.autosize_textarea($textbox);
+        }, 0);
+        return beginning + rest;
+    }
+
     switch (item.type) {
         case "emoji":
             // leading and trailing spaces are required for emoji,
@@ -1205,6 +1222,15 @@ export function content_typeahead_selected(
             break;
         }
         case "topic_list": {
+            // If we use "Escape" we would want `#**design>this is a design topic` to be
+            // resolved to `#**design** this is a design topic`
+            if (event?.key === "Escape") {
+                const topic_start_index = beginning.lastIndexOf(">");
+                const topic = beginning.slice(topic_start_index + 1);
+                beginning = beginning.slice(0, topic_start_index) + "** " + topic;
+                break;
+            }
+
             // Stream + topic mention typeahead; close the stream+topic mention syntax with
             // the topic and the final ** or replace it with markdown link syntax if topic name
             // will cause encoding issues.
@@ -1253,7 +1279,6 @@ export function content_typeahead_selected(
             return beginning + rest;
         }
     }
-
     // Keep the cursor after the newly inserted text / selecting the
     // placeholder text, as Bootstrap will call $textbox.change() to
     // overwrite the text in the textbox.
@@ -1361,6 +1386,7 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
             },
             updater: content_typeahead_selected,
             stopAdvance: true, // Do not advance to the next field on a Tab or Enter
+            escape_topic_completion: true,
             automated: compose_automated_selection,
             option_label(_matching_items, item): string | false {
                 if (item.type === "topic_list" && item.is_channel_link) {
