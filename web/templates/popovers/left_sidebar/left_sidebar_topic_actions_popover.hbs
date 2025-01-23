@@ -38,6 +38,14 @@
         {{else}}
             {{!-- Group 2 --}}
             <li role="separator" class="popover-menu-separator"></li>
+            {{#if (and is_development_environment (or is_moderator is_realm_admin))}}
+            <li role="none" class="link-item popover-menu-list-item">
+                <a role="menuitem" class="sidebar-popover-summarize-topic popover-menu-link" tabindex="0">
+                    <i class="popover-menu-icon fa fa-magic" aria-hidden="true"></i>
+                    <span class="popover-menu-label">{{t "Summarize recent messages"}}</span>
+                </a>
+            </li>
+            {{/if}}
             {{#if has_starred_messages}}
             <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
                 <a role="menuitem" class="sidebar-popover-unstar-all-in-topic popover-menu-link" tabindex="0">
