@@ -252,6 +252,7 @@ export function build_page(): void {
             settings_users.deactivated_user_list_dropdown_widget_name,
         giphy_help_link,
         ...get_realm_level_notification_settings(),
+        group_setting_labels: settings_config.group_setting_labels.realm,
     };
 
     const rendered_admin_tab = render_admin_tab(options);

@@ -728,6 +728,7 @@ function setup_page(callback: () => void): void {
                 realm.realm_org_type === settings_config.all_org_type_values.business.code,
             disable_message_retention_setting:
                 !realm.zulip_plan_is_not_limited || !current_user.is_owner,
+            group_setting_labels: settings_config.group_setting_labels.stream,
         };
 
         const rendered = render_stream_settings_overlay(template_data);
