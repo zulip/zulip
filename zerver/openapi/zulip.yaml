@@ -1386,39 +1386,39 @@ paths:
                                     - delete
                                 streams:
                                   type: array
+                                  deprecated: true
                                   description: |
-                                    Array of objects, each containing
-                                    details about a channel that was deleted.
+                                    Array of objects, each containing ID of the channel that was deleted.
+
+                                    **Changes**: **Deprecated** in Zulip 10.0 (feature level 343)
+                                    and will be removed in a future release. Previously, these
+                                    objects additionally contained all the standard fields for a
+                                    channel object.
                                   items:
-                                    $ref: "#/components/schemas/BasicChannel"
+                                    type: object
+                                    properties:
+                                      stream_id:
+                                        type: integer
+                                        description: |
+                                          ID of the deleted channel.
+                                    additionalProperties: false
+                                stream_ids:
+                                  type: array
+                                  description: |
+                                    Array containing the IDs of the channels that were deleted.
+
+                                    **Changes**: New in Zulip 10.0 (feature level 343). Previously,
+                                    these IDs were available only via the legacy `streams` array.
+                                  items:
+                                    type: integer
                               additionalProperties: false
                               example:
                                 {
                                   "type": "stream",
                                   "op": "delete",
                                   "streams":
-                                    [
-                                      {
-                                        "name": "private",
-                                        "stream_id": 12,
-                                        "is_archived": true,
-                                        "description": "",
-                                        "rendered_description": "",
-                                        "date_created": 1691057093,
-                                        "creator_id": 11,
-                                        "invite_only": true,
-                                        "is_web_public": false,
-                                        "stream_post_policy": 1,
-                                        "history_public_to_subscribers": false,
-                                        "first_message_id": null,
-                                        "is_recently_active": true,
-                                        "message_retention_days": null,
-                                        "is_announcement_only": false,
-                                        "can_add_subscribers_group": 2,
-                                        "can_remove_subscribers_group": 2,
-                                        "stream_weekly_traffic": null,
-                                      },
-                                    ],
+                                    [{"stream_id": 1}, {"stream_id": 2}],
+                                  "stream_ids": [1, 2],
                                   "id": 0,
                                 }
                             - type: object

@@ -3054,7 +3054,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21,
+            query_count=15,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3071,7 +3071,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21,
+            query_count=15,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -5643,7 +5643,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Sends 3 peer-remove events, 2 unsubscribe events
         # and 2 stream delete events for private streams.
         with (
-            self.assert_database_query_count(19),
+            self.assert_database_query_count(16),
             self.assert_memcached_count(3),
             self.capture_send_event_calls(expected_num_events=7) as events,
         ):
@@ -5695,9 +5695,14 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(stream_delete_events[0]["users"], [user1.id])
         self.assertEqual(stream_delete_events[1]["users"], [user2.id])
         for event in stream_delete_events:
-            event_streams = event["event"]["streams"]
-            self.assert_length(event_streams, 1)
-            self.assertEqual(event_streams[0]["name"], "private_stream")
+            event_stream_ids = event["event"]["stream_ids"]
+            event_stream_objects = event["event"]["streams"]
+
+            self.assert_length(event_stream_ids, 1)
+            self.assertEqual(event_stream_ids[0], private.id)
+
+            self.assert_length(event_stream_objects, 1)
+            self.assertEqual(event_stream_objects[0]["stream_id"], private.id)
 
     def test_bulk_subscribe_MIT(self) -> None:
         mit_user = self.mit_user("starnine")

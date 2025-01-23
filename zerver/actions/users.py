@@ -31,6 +31,7 @@ from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     get_group_setting_value_dict_for_streams,
     get_streams_for_user,
+    send_stream_deletion_event,
     stream_to_dict,
 )
 from zerver.lib.types import AnonymousSettingGroupDict
@@ -589,12 +590,7 @@ def send_stream_events_for_role_update(
         now_inaccessible_streams = [
             stream for stream in old_accessible_streams if stream.id in now_inaccessible_stream_ids
         ]
-        event = dict(
-            type="stream",
-            op="delete",
-            streams=[stream_to_dict(stream) for stream in now_inaccessible_streams],
-        )
-        send_event_on_commit(user_profile.realm, event, [user_profile.id])
+        send_stream_deletion_event(user_profile.realm, [user_profile.id], now_inaccessible_streams)
 
 
 @transaction.atomic(savepoint=False)

@@ -770,7 +770,10 @@ class EventStreamCreate(BaseEvent):
 class EventStreamDelete(BaseEvent):
     type: Literal["stream"]
     op: Literal["delete"]
-    streams: list[BasicStreamFields]
+    # Streams is a legacy field for backwards-compatibility, and will
+    # be removed in the future.
+    streams: list[dict[Literal["stream_id"], int]]
+    stream_ids: list[int]
 
 
 class EventStreamUpdateCore(BaseEvent):
