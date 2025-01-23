@@ -55,6 +55,8 @@ type TopicPopoverContext = {
     is_empty_string_topic: boolean;
     topic_unmuted: boolean;
     is_spectator: boolean;
+    is_moderator: boolean;
+    is_development_environment: boolean;
     is_topic_empty: boolean;
     can_move_topic: boolean;
     can_rename_topic: boolean;
@@ -264,6 +266,9 @@ export function get_topic_popover_content_context({
         is_topic_empty,
         can_move_topic,
         can_rename_topic,
+        is_moderator: current_user.is_moderator,
+        // Temporary, as we're using this to control whether we show the summarize popover.
+        is_development_environment: page_params.development_environment,
         is_realm_admin: current_user.is_admin,
         topic_is_resolved: resolved_topic.is_resolved(topic_name),
         has_starred_messages,

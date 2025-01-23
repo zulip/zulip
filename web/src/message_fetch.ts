@@ -317,7 +317,7 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
     return JSON.stringify(narrow_terms);
 }
 
-function get_narrow_for_message_fetch(filter: Filter): string {
+export function get_narrow_for_message_fetch(filter: Filter): string {
     let narrow_data = filter.public_terms();
     if (page_params.narrow !== undefined) {
         narrow_data = [...narrow_data, ...page_params.narrow];
