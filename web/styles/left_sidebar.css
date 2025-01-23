@@ -396,7 +396,8 @@
     }
 }
 
-#subscribe-to-more-streams {
+#subscribe-to-more-streams,
+#login-to-more-streams {
     /* --left-sidebar-bottom-scrolling-buffer is to prevent the row from
        being cut off, and --sidebar-bottom-spacing is extra padding. */
     margin: 5px var(--left-sidebar-right-margin)
@@ -417,13 +418,16 @@
     .subscribe-more-link {
         display: grid;
         grid-template:
-            "plus-icon . row-text" var(--line-height-sidebar-row-prominent)
+            "plus-icon . row-text" minmax(
+                var(--line-height-sidebar-row-prominent),
+                auto
+            )
             / var(--left-sidebar-icon-column-width) var(
                 --left-sidebar-icon-content-gap
             )
             minmax(0, 1fr);
         align-items: center;
-        line-height: var(--line-height-sidebar-row-prominent);
+        line-height: 1;
         color: var(--color-text-sidebar-action-heading);
         text-decoration: none;
     }
@@ -442,6 +446,7 @@
            because mathematical centering and the perception of center don't
            always match. */
         margin-top: -0.12em;
+        padding: 3px 0;
         font-size: var(--font-size-sidebar-action-heading);
         font-weight: var(--font-weight-sidebar-action-heading);
         font-variant: var(--font-variant-sidebar-action-heading);
@@ -458,27 +463,9 @@
     }
 }
 
-#login-link-container,
-#subscribe-to-more-streams {
+#subscribe-to-more-streams,
+#login-to-mmore-streams {
     text-decoration: none;
-}
-
-#login-link-container {
-    color: var(--color-text-url);
-    display: flex;
-    align-items: center;
-    margin: 5px auto var(--left-sidebar-bottom-scrolling-buffer)
-        var(--left-sidebar-toggle-width-offset);
-
-    &:hover {
-        cursor: pointer;
-        color: var(--color-text-url-hover);
-
-        &.login_button .login-text {
-            color: var(--color-text-url-hover);
-            text-decoration: underline;
-        }
-    }
 }
 
 ul.filters {
@@ -1831,6 +1818,7 @@ li.topic-list-item {
 
     #streams_header,
     #subscribe-to-more-streams,
+    #login-to-more-streams,
     .show-more-topics {
         display: none;
     }
