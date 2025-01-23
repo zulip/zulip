@@ -12,6 +12,8 @@ import * as channel from "./channel.ts";
 import {csrf_token} from "./csrf.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
+import * as group_permission_settings from "./group_permission_settings.ts";
+import type {UserGroupForDropdownListWidget} from "./group_permission_settings.ts";
 import {$t, $t_html, get_language_name} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
@@ -45,7 +47,7 @@ import {group_setting_value_schema} from "./types.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
 import * as user_groups from "./user_groups.ts";
-import type {UserGroup, UserGroupForDropdownListWidget} from "./user_groups.ts";
+import type {UserGroup} from "./user_groups.ts";
 import * as util from "./util.ts";
 
 const meta = {
@@ -1089,7 +1091,10 @@ export function set_up_dropdown_widget_for_realm_group_settings(): void {
             continue;
         }
         const get_setting_options = (): UserGroupForDropdownListWidget[] =>
-            user_groups.get_realm_user_groups_for_dropdown_list_widget(setting_name, "realm");
+            group_permission_settings.get_realm_user_groups_for_dropdown_list_widget(
+                setting_name,
+                "realm",
+            );
         set_up_dropdown_widget(
             realm_schema.keyof().parse("realm_" + setting_name),
             get_setting_options,

@@ -1,5 +1,6 @@
 import assert from "minimalistic-assert";
 
+import * as group_permission_settings from "./group_permission_settings.ts";
 import {$t_html} from "./i18n.ts";
 import type {InputPillContainer} from "./input_pill.ts";
 import * as people from "./people.ts";
@@ -117,7 +118,11 @@ export function typeahead_source(
     let groups;
     if (setting_name !== undefined) {
         assert(setting_type !== undefined);
-        groups = user_groups.get_realm_user_groups_for_setting(setting_name, setting_type, true);
+        groups = group_permission_settings.get_realm_user_groups_for_setting(
+            setting_name,
+            setting_type,
+            true,
+        );
     } else {
         groups = user_groups.get_realm_user_groups();
     }
