@@ -371,29 +371,27 @@ class TestQueryCounts(ZulipTestCase):
 
 
 class TestDevelopmentEmailsLog(ZulipTestCase):
-    # We have development specific utilities that automate common tasks
-    # to improve developer productivity.
-    #
-    # Ones such is /emails/generate/ endpoint that can be used to generate
-    # all sorts of emails zulip sends. Those can be accessed at /emails/
+    # The /emails/generate/ endpoint can be used to generate
+    # all sorts of emails. Those can be accessed at /emails/
     # in development server. Let's test that here.
     def test_generate_emails(self) -> None:
         # It is a common case where some functions that we test rely
         # on a certain setting's value. You can test those under the
         # context of a desired setting value as done below.
+        #
         # The endpoint we're testing here rely on these settings:
         #   * EMAIL_BACKEND: The backend class used to send emails.
         #   * DEVELOPMENT_LOG_EMAILS: Whether to log emails sent.
-        # so, we set those to required values.
         #
-        # If the code you're testing creates logs, it is best to capture them
-        # and verify the log messages. That can be achieved with assertLogs()
+        # We use our assertLogs() helper to catch log entries,
         # as you'll see below. Read more about assertLogs() at:
         # https://docs.python.org/3/library/unittest.html#unittest.TestCase.assertLogs
+        #
+        # We use mock.patch to simulate _do_send_messages.
         with (
             self.settings(EMAIL_BACKEND="zproject.email_backends.EmailLogBackEnd"),
             self.settings(DEVELOPMENT_LOG_EMAILS=True),
-            self.assertLogs(level="INFO") as logger,
+            self.assertLogs(level="INFO") as info_log,
             mock.patch(
                 "zproject.email_backends.EmailLogBackEnd._do_send_messages", lambda *args: 1
             ),
@@ -408,21 +406,24 @@ class TestDevelopmentEmailsLog(ZulipTestCase):
                 result = self.client_get(
                     "/emails/generate/"
                 )  # Generates emails and redirects to /emails/
-            self.assertEqual("/emails/", result["Location"])  # Make sure redirect URL is correct.
+
+            # Verify redirect
+            self.assertEqual(result["Location"], "/emails/")
 
             # The above call to /emails/generate/ creates the emails and
             # logs the below line for every email.
-            output_log = (
+            expected_log_line = (
                 "INFO:root:Emails sent in development are available at http://testserver/emails"
             )
-            # logger.output is a list of all the log messages captured. Verify it is as expected.
-            self.assertEqual(logger.output, [output_log] * 18)
+
+            # info_log.output is a list of all the log messages captured.
+            self.assertEqual(info_log.output, [expected_log_line] * 18)
 
             # Now, lets actually go the URL the above call redirects to, i.e., /emails/
             result = self.client_get(result["Location"])
 
-            # assert_in_success_response() is another helper that is commonly used to ensure
-            # we are on the right page by verifying a string exists in the page's content.
+            # assert_in_success_response() verifies that the content
+            # we received from client_get includes the strings we expect
             self.assert_in_success_response(["All emails sent in the Zulip"], result)
 
 
