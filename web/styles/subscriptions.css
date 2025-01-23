@@ -386,7 +386,7 @@ h4.user_group_setting_subsection_title {
         display: inline-block;
         vertical-align: top;
         width: 50%;
-        height: calc(100% - 45px);
+        height: calc(100% - var(--settings-overlay-header-height));
         margin: 0 -2px;
     }
 
@@ -801,13 +801,13 @@ h4.user_group_setting_subsection_title {
         .user-group-creation-simplebar-container {
             height: calc(
                 var(--overlay-container-height) -
-                    var(--subscriptions-overlay-header-height) -
+                    var(--settings-overlay-header-height) -
                     var(--subscriptions-overlay-display-type-height) -
                     var(--subscriptions-overlay-sticky-footer-height)
             );
             max-height: calc(
                 var(--overlay-container-max-height) -
-                    var(--subscriptions-overlay-header-height) -
+                    var(--settings-overlay-header-height) -
                     var(--subscriptions-overlay-display-type-height) -
                     var(--subscriptions-overlay-sticky-footer-height)
             );
@@ -1034,7 +1034,7 @@ h4.user_group_setting_subsection_title {
 
     .settings {
         position: relative;
-        height: calc(100% - 45px);
+        height: calc(100% - var(--settings-overlay-header-height));
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
 
@@ -1308,7 +1308,7 @@ div.settings-radio-input-parent {
         display: block;
         margin: 0;
         width: 100%;
-        height: calc(100% - 45px);
+        height: calc(100% - var(--settings-overlay-header-height));
 
         border: none;
     }
@@ -1319,7 +1319,7 @@ div.settings-radio-input-parent {
         position: absolute;
         left: 101%;
 
-        top: 45px;
+        top: var(--settings-overlay-header-height);
         background-color: var(--color-background-modal);
         border-top: none;
 

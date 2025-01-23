@@ -1,6 +1,4 @@
 :root {
-    /* The height of the settings header (including tab switcher). */
-    --settings-header-height: 45px;
     /* The width of the settings sidebar. */
     --settings-sidebar-width: 255px;
 }
@@ -1321,7 +1319,7 @@ label.preferences-radio-choice-label {
 
         .tab-container {
             box-sizing: border-box;
-            height: var(--settings-header-height);
+            height: var(--settings-overlay-header-height);
             padding: 6px;
             background-color: var(--color-background-modal-bar);
             border-bottom: 1px solid var(--color-border-modal-bar);
@@ -1354,7 +1352,7 @@ label.preferences-radio-choice-label {
     }
 
     .sidebar {
-        height: calc(100% - var(--settings-header-height));
+        height: calc(100% - var(--settings-overlay-header-height));
         overflow-y: auto;
         border-right: 1px solid var(--color-border-modal);
 
@@ -1495,7 +1493,7 @@ label.preferences-radio-choice-label {
 
         .settings-header {
             width: 100%;
-            height: var(--settings-header-height);
+            height: var(--settings-overlay-header-height);
             box-sizing: border-box;
             border-bottom: 1px solid var(--color-border-modal-bar);
             background-color: var(--color-background-modal-bar);
@@ -1510,7 +1508,7 @@ label.preferences-radio-choice-label {
         #settings_content {
             position: relative;
             width: 100%;
-            height: calc(100% - var(--settings-header-height));
+            height: calc(100% - var(--settings-overlay-header-height));
 
             float: left;
             overflow: auto;
