@@ -487,6 +487,12 @@ input[type="checkbox"] {
             font-size: 20px;
         }
     }
+
+    .advanced-configurations-collapase-view {
+        .admin-permissions-tip {
+            margin-bottom: 1em;
+        }
+    }
 }
 
 .organization-settings-parent {
