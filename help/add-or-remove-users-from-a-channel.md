@@ -1,17 +1,14 @@
 # Add or remove users from a channel
 
-By default, anyone (other than guests) subscribed to a channel can add
-users to that channel. Additionally, anyone (other than guests) can add
-users to a public channel, whether or not they are subscribed to the
-channel. Anyone can always [unsubscribe themselves from a channel][unsubscribe].
+Organization [administrators](/help/user-roles) can
+[configure](/help/configure-who-can-invite-to-channels#configure-who-can-subscribe-other-users-to-any-channel)
+who can subscribe other users to any channel. Channel administrators can
+configure who can
+[subscribe](/help/configure-who-can-invite-to-channels#configure-who-can-subscribe-other-users-to-a-specific-channel)
+and [unsubscribe](/help/configure-who-can-unsubscribe-others) other users for a
+particular channel.
 
-Organization administrators can also unsubscribe *other* users from any channel,
-including channels the admin is not subscribed to. They can also configure which
-[roles](/help/user-roles) have access to [add other users to a
-channel][add-users] or [remove other users from a channel][remove-users].
-
-[add-users]: /help/configure-who-can-invite-to-channels
-[remove-users]: /help/configure-who-can-unsubscribe-others
+You will only see the options below if you have the required permissions.
 
 ## Add users to a channel
 
