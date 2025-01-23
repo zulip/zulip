@@ -975,6 +975,14 @@ input.settings_text_input {
     margin-top: -0.2188em !important;
 }
 
+.modal__title {
+    /* The lock icon width is slightly less as required
+       for the modal title, so we adjust the width here. */
+    .stream-privacy-type-icon {
+        width: 20px !important;
+    }
+}
+
 .dropdown-list-container
     .dropdown-list
     .dropdown-list-item-common-styles
