@@ -59,6 +59,15 @@
     overflow: hidden;
     word-wrap: break-word;
 
+    .stream-privacy-type-icon {
+        /* This pushes back on suspect styles
+           in app_components.css. A fuller fix
+           will require tracking down other
+           instances of this class. */
+        width: auto;
+        padding-right: 0;
+    }
+
     /* help_link_widget margin for the fa-circle-o. */
     .help_link_widget {
         margin-left: 5px;
