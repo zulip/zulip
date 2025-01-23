@@ -56,7 +56,6 @@
         font-size: 2rem;
         line-height: 1.8rem;
 
-        transform: scaleY(0.75);
         font-weight: 300;
 
         opacity: 0;
@@ -186,7 +185,6 @@
             line-height: 1.6rem;
             font-weight: 200;
 
-            transform: scaleY(2);
             cursor: pointer;
 
             opacity: 0.5;
