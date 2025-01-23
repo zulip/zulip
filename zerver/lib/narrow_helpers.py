@@ -21,6 +21,7 @@ from users:
 import os
 from collections.abc import Collection, Sequence
 from dataclasses import dataclass, field
+from typing import Any
 
 from django.conf import settings
 
@@ -28,7 +29,7 @@ from django.conf import settings
 @dataclass
 class NarrowTerm:
     operator: str
-    operand: str
+    operand: Any
     negated: bool
 
 
