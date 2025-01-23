@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 343**
+
+* [`GET /events`](/api/get-events): Added a new field `stream_ids` to replace
+  `streams` in stream delete event and label `streams` as deprecated.
+
 **Feature level 342**
 
 * [`GET /users/me/subscriptions`](/api/get-subscriptions),

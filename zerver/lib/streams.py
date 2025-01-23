@@ -1,4 +1,4 @@
-from collections.abc import Collection
+from collections.abc import Collection, Iterable
 from datetime import datetime, timedelta
 from typing import TypedDict
 
@@ -24,7 +24,6 @@ from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import AnonymousSettingGroupDict, APIStreamDict
 from zerver.lib.user_groups import (
-    get_group_setting_value_for_api,
     get_recursive_membership_groups,
     get_role_based_system_groups_dict,
     user_has_permission_for_group_setting,
@@ -1094,22 +1093,11 @@ def stream_to_dict(
         # passing stream data to spectators.
         stream_weekly_traffic = None
 
-    if setting_groups_dict is not None:
-        can_add_subscribers_group = setting_groups_dict[stream.can_add_subscribers_group_id]
-        can_administer_channel_group = setting_groups_dict[stream.can_administer_channel_group_id]
-        can_send_message_group = setting_groups_dict[stream.can_send_message_group_id]
-        can_remove_subscribers_group = setting_groups_dict[stream.can_remove_subscribers_group_id]
-    else:
-        can_add_subscribers_group = get_group_setting_value_for_api(
-            stream.can_add_subscribers_group
-        )
-        can_administer_channel_group = get_group_setting_value_for_api(
-            stream.can_administer_channel_group
-        )
-        can_send_message_group = get_group_setting_value_for_api(stream.can_send_message_group)
-        can_remove_subscribers_group = get_group_setting_value_for_api(
-            stream.can_remove_subscribers_group
-        )
+    assert setting_groups_dict is not None
+    can_add_subscribers_group = setting_groups_dict[stream.can_add_subscribers_group_id]
+    can_administer_channel_group = setting_groups_dict[stream.can_administer_channel_group_id]
+    can_send_message_group = setting_groups_dict[stream.can_send_message_group_id]
+    can_remove_subscribers_group = setting_groups_dict[stream.can_remove_subscribers_group_id]
 
     stream_post_policy = get_stream_post_policy_value_based_on_group_setting(
         stream.can_send_message_group
@@ -1372,3 +1360,16 @@ def check_update_all_streams_active_status(
     for realm in Realm.objects.filter(deactivated=False):
         count += update_stream_active_status_for_realm(realm, date_days_ago)
     return count
+
+
+def send_stream_deletion_event(
+    realm: Realm, user_ids: Iterable[int], streams: list[Stream]
+) -> None:
+    stream_deletion_event = dict(
+        type="stream",
+        op="delete",
+        # "streams" is deprecated, kept only for compatibility.
+        streams=[dict(stream_id=stream.id) for stream in streams],
+        stream_ids=[stream.id for stream in streams],
+    )
+    send_event_on_commit(realm, stream_deletion_event, user_ids)
