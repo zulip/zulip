@@ -163,9 +163,22 @@ export function get_realm_user_groups(include_deactivated = false): UserGroup[] 
     });
 }
 
-export function get_all_realm_user_groups(include_deactivated = false): UserGroup[] {
+export function get_all_realm_user_groups(
+    include_deactivated = false,
+    include_internet_group = false,
+): UserGroup[] {
     const user_groups = [...user_group_by_id_dict.values()].sort((a, b) => a.id - b.id);
-    return user_groups.filter((group) => include_deactivated || !group.deactivated);
+    return user_groups.filter((group) => {
+        if (!include_deactivated && group.deactivated) {
+            return false;
+        }
+
+        if (!include_internet_group && group.name === "role:internet") {
+            return false;
+        }
+
+        return true;
+    });
 }
 
 export function get_user_groups_allowed_to_mention(): UserGroup[] {
