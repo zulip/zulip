@@ -942,7 +942,7 @@ class RealmTest(ZulipTestCase):
 
     def test_invalid_integer_attribute_values(self) -> None:
         integer_values = [
-            key for key, value in Realm.property_types.items() if value in (int, (int, type(None)))
+            key for key, value in Realm.property_types.items() if value in (int, int | None)
         ]
 
         invalid_values = dict(

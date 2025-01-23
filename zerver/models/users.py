@@ -361,7 +361,7 @@ class UserBaseSettings(models.Model):
         web_suggest_update_timezone=bool,
     )
 
-    modern_notification_settings: dict[str, Any] = dict(
+    modern_notification_settings = dict(
         # Add new notification settings here.
         enable_followed_topic_desktop_notifications=bool,
         enable_followed_topic_email_notifications=bool,

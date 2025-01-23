@@ -1,5 +1,6 @@
 from email.headerregistry import Address
 from enum import IntEnum
+from types import UnionType
 from typing import TYPE_CHECKING, Optional, TypedDict
 from uuid import uuid4
 
@@ -627,7 +628,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     enable_guest_user_indicator = models.BooleanField(default=True)
 
     # Define the types of the various automatically managed properties
-    property_types: dict[str, type | tuple[type, ...]] = dict(
+    property_types: dict[str, type | UnionType] = dict(
         allow_edit_history=bool,
         allow_message_editing=bool,
         avatar_changes_disabled=bool,
@@ -647,13 +648,13 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         inline_image_preview=bool,
         inline_url_embed_preview=bool,
         invite_required=bool,
-        jitsi_server_url=(str, type(None)),
+        jitsi_server_url=str | None,
         mandatory_topics=bool,
         message_content_allowed_in_email_notifications=bool,
-        message_content_edit_limit_seconds=(int, type(None)),
-        message_content_delete_limit_seconds=(int, type(None)),
-        move_messages_between_streams_limit_seconds=(int, type(None)),
-        move_messages_within_stream_limit_seconds=(int, type(None)),
+        message_content_edit_limit_seconds=int | None,
+        message_content_delete_limit_seconds=int | None,
+        move_messages_between_streams_limit_seconds=int | None,
+        move_messages_within_stream_limit_seconds=int | None,
         message_retention_days=int,
         name=str,
         name_changes_disabled=bool,
