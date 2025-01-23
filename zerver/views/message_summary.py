@@ -61,6 +61,8 @@ def make_message(content: str, role: str = "user") -> dict[str, str]:
 
 
 def get_max_summary_length(conversation_length: int) -> int:
+    # Longer summaries work better for longer conversation.
+    # TODO: Test more with message content length.
     return min(6, 4 + int((conversation_length - 10) / 10))
 
 
