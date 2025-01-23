@@ -45,6 +45,7 @@ from zerver.lib.streams import (
     get_stream_post_policy_value_based_on_group_setting,
     render_stream_description,
     send_stream_creation_event,
+    send_stream_deletion_event,
     stream_to_dict,
 )
 from zerver.lib.subscription_info import get_subscribers_query
@@ -123,9 +124,7 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
     for group in default_stream_groups_for_stream:
         do_remove_streams_from_default_stream_group(stream.realm, group, [stream])
 
-    stream_dict = stream_to_dict(stream)
-    event = dict(type="stream", op="delete", streams=[stream_dict])
-    send_event_on_commit(stream.realm, event, affected_user_ids)
+    send_stream_deletion_event(stream.realm, affected_user_ids, [stream])
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -884,9 +883,7 @@ def send_subscription_remove_events(
             ]
 
             if inaccessible_streams:
-                payload = [stream_to_dict(stream) for stream in inaccessible_streams]
-                event = dict(type="stream", op="delete", streams=payload)
-                send_event_on_commit(realm, event, [user_profile.id])
+                send_stream_deletion_event(realm, [user_profile.id], inaccessible_streams)
 
     send_peer_remove_events(
         realm=realm,

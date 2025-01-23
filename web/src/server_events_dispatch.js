@@ -598,32 +598,30 @@ export function dispatch_normal_event(event) {
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
                 case "delete":
-                    for (const stream of event.streams) {
-                        const was_subscribed = sub_store.get(stream.stream_id).subscribed;
-                        const is_narrowed_to_stream = narrow_state.is_for_stream_id(
-                            stream.stream_id,
-                        );
-                        stream_data.delete_sub(stream.stream_id);
-                        stream_settings_ui.remove_stream(stream.stream_id);
-                        message_view_header.maybe_rerender_title_area_for_stream(stream.stream_id);
+                    for (const stream_id of event.stream_ids) {
+                        const was_subscribed = sub_store.get(stream_id).subscribed;
+                        const is_narrowed_to_stream = narrow_state.is_for_stream_id(stream_id);
+                        stream_data.delete_sub(stream_id);
+                        stream_settings_ui.remove_stream(stream_id);
+                        message_view_header.maybe_rerender_title_area_for_stream(stream_id);
                         if (was_subscribed) {
-                            stream_list.remove_sidebar_row(stream.stream_id);
-                            if (stream.stream_id === compose_state.selected_recipient_id) {
+                            stream_list.remove_sidebar_row(stream_id);
+                            if (stream_id === compose_state.selected_recipient_id) {
                                 compose_state.set_selected_recipient_id("");
                                 compose_recipient.on_compose_select_recipient_update();
                             }
                         }
                         settings_streams.update_default_streams_table();
-                        stream_data.remove_default_stream(stream.stream_id);
-                        if (realm.realm_new_stream_announcements_stream_id === stream.stream_id) {
+                        stream_data.remove_default_stream(stream_id);
+                        if (realm.realm_new_stream_announcements_stream_id === stream_id) {
                             realm.realm_new_stream_announcements_stream_id = -1;
                             settings_org.sync_realm_settings("new_stream_announcements_stream_id");
                         }
-                        if (realm.realm_signup_announcements_stream_id === stream.stream_id) {
+                        if (realm.realm_signup_announcements_stream_id === stream_id) {
                             realm.realm_signup_announcements_stream_id = -1;
                             settings_org.sync_realm_settings("signup_announcements_stream_id");
                         }
-                        if (realm.realm_zulip_update_announcements_stream_id === stream.stream_id) {
+                        if (realm.realm_zulip_update_announcements_stream_id === stream_id) {
                             realm.realm_zulip_update_announcements_stream_id = -1;
                             settings_org.sync_realm_settings(
                                 "zulip_update_announcements_stream_id",

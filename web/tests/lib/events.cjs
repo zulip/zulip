@@ -676,14 +676,13 @@ exports.fixtures = {
         op: "delete",
         streams: [
             {
-                ...streams.devel,
-                stream_weekly_traffic: null,
+                stream_id: streams.devel.stream_id,
             },
             {
-                ...streams.test,
-                stream_weekly_traffic: null,
+                stream_id: streams.test.stream_id,
             },
         ],
+        stream_ids: [streams.devel.stream_id, streams.test.stream_id],
     },
 
     stream__update: {
