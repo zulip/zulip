@@ -622,7 +622,10 @@ function get_special_filter_suggestions(
     return filtered_suggestions;
 }
 
-function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+function get_public_channels_filter_suggestions(
+    last: NarrowTerm,
+    terms: NarrowTerm[],
+): Suggestion[] {
     let search_string = "channels:public";
     // show "channels:public" option for users who
     // have "streams" in their muscle memory
@@ -652,6 +655,30 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
     ];
     return get_special_filter_suggestions(last, terms, suggestions);
 }
+
+function get_archived_channels_filter_suggestions(
+    last: NarrowTerm,
+    terms: NarrowTerm[],
+): Suggestion[] {
+    const archived_description_html = "Archived channels";
+    const suggestions: SuggestionAndIncompatiblePatterns[] = [
+        {
+            search_string: "channels:archived",
+            description_html: archived_description_html,
+            is_people: false,
+            incompatible_patterns: [
+                {operator: "is", operand: "dm"},
+                {operator: "channel"},
+                {operator: "dm-including"},
+                {operator: "dm"},
+                {operator: "in"},
+                {operator: "channels"},
+            ],
+        },
+    ];
+    return get_special_filter_suggestions(last, terms, suggestions);
+}
+
 function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
     const suggestions: SuggestionAndIncompatiblePatterns[] = [
         {
@@ -1061,9 +1088,10 @@ export function get_search_result(
         // name, and if there's already has a DM pill then the
         // searching user probably is looking to make a group DM.
         get_group_suggestions,
-        get_channels_filter_suggestions,
+        get_public_channels_filter_suggestions,
         get_is_filter_suggestions,
         get_sent_by_me_suggestions,
+        get_archived_channels_filter_suggestions,
         get_channel_suggestions,
         get_people("dm"),
         get_people("sender"),

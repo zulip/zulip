@@ -582,6 +582,12 @@ def get_public_streams_queryset(realm: Realm) -> QuerySet[Stream]:
     return Stream.objects.filter(realm=realm, invite_only=False, history_public_to_subscribers=True)
 
 
+def get_archived_streams_queryset(realm: Realm) -> QuerySet[Stream]:
+    return Stream.objects.filter(
+        deactivated=True,
+    )
+
+
 def get_web_public_streams_queryset(realm: Realm) -> QuerySet[Stream]:
     # This should match the include_web_public code path in do_get_streams.
     return Stream.objects.filter(

@@ -378,6 +378,7 @@ test("empty_query_suggestions", () => {
         "is:unread",
         "is:resolved",
         "sender:myself@zulip.com",
+        "channels:archived",
         `channel:${devel_id}`,
         `channel:${office_id}`,
         "has:link",
@@ -999,7 +1000,7 @@ test("operator_suggestions", ({override, mock_template}) => {
 
     query = "ch";
     suggestions = get_suggestions(query);
-    expected = ["ch", "channels:public", "channel:"];
+    expected = ["ch", "channels:public", "channels:archived", "channel:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-s";
