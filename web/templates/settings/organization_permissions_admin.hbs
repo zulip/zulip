@@ -60,7 +60,9 @@
 
         <div id="org-stream-permissions" class="settings-subsection-parent">
             <div class="subsection-header">
-                <h3>{{t "Channel permissions" }}</h3>
+                <h3>{{t "Channel permissions" }}
+                    {{> ../help_link_widget link="/help/channel-permissions" }}
+                </h3>
                 {{> settings_save_discard_widget section_name="stream-permissions" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
@@ -89,7 +91,7 @@
 
                 {{> group_setting_value_pill_input
                   setting_name="realm_can_add_subscribers_group"
-                  label=(t 'Who can subscribe users to channels')}}
+                  label=(t 'Who can subscribe users to any channel')}}
 
                 <div class="input-group">
                     <label for="id_realm_wildcard_mention_policy" class="settings-field-label">{{t "Who can notify a large number of users with a wildcard mention" }}
