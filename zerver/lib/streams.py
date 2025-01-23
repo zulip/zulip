@@ -789,7 +789,7 @@ def get_streams_to_which_user_cannot_add_subscribers(
     # does not waste database queries re-checking that.
     result: list[Stream] = []
 
-    if user_profile.can_subscribe_others_to_all_streams():
+    if user_profile.can_subscribe_others_to_all_accessible_streams():
         return []
 
     # Optimization for the organization administrator code path. We

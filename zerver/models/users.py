@@ -844,7 +844,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def can_manage_default_streams(self) -> bool:
         return self.is_realm_admin
 
-    def can_subscribe_others_to_all_streams(self) -> bool:
+    def can_subscribe_others_to_all_accessible_streams(self) -> bool:
         return self.has_permission("can_add_subscribers_group")
 
     def can_invite_users_by_email(self, realm: Optional["Realm"] = None) -> bool:

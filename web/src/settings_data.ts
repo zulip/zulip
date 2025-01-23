@@ -90,7 +90,7 @@ export function user_can_create_multiuse_invite(): boolean {
     );
 }
 
-export function can_subscribe_others_to_all_streams(): boolean {
+export function can_subscribe_others_to_all_accessible_streams(): boolean {
     return user_has_permission_for_group_setting(
         realm.realm_can_add_subscribers_group,
         "can_add_subscribers_group",
