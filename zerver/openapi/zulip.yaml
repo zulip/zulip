@@ -20370,9 +20370,8 @@ paths:
 
                         Administrators can always unsubscribe others from a channel.
 
-                        Note that a user who is a member of the specified user group must
-                        also [have access](/help/channel-permissions) to the channel in
-                        order to unsubscribe others.
+                        Note that a user must also [have access](/help/channel-permissions) to a
+                        channel in order to modify it.
 
                         **Changes**: Prior to Zulip 10.0 (feature level 320), this value was
                         always the integer ID of a system group.
@@ -20396,16 +20395,12 @@ paths:
 
                         [update-group-setting]: /api/group-setting-values#updating-group-setting-values
 
-                        Note that a user who is a member of the specified user group must
-                        also [have access](/help/channel-permissions) to the channel in
-                        order to administer the channel.
+                        Administrators can always administer a channel.
 
-                        Realm admins are allowed to administer a channel they have access to
-                        regardless of whether they are present in this group.
-
-                        Users in this group can edit channel name and description without
-                        subscribing to the channel, but they need to be subscribed to edit
-                        channel permissions and add users.
+                        Note that a user must also [have access](/help/channel-permissions) to a
+                        channel in order to modify it. The exception to this rule is that
+                        organization administrators can edit channel names and descriptions
+                        without having full access to the channel.
 
                         **Changes**: New in Zulip 10.0 (feature level 325). Prior to this
                         change, the permission to administer channels was limited to realm
@@ -20425,9 +20420,8 @@ paths:
 
                         [update-group-setting]: /api/group-setting-values#updating-group-setting-values
 
-                        Note that a user who is a member of the specified user group must
-                        also [have access](/help/channel-permissions) to the channel in
-                        order to post in the channel.
+                        Note that a user must also [have access](/help/channel-permissions) to a
+                        channel in order to post in the channel.
 
                         **Changes**: New in Zulip 10.0 (feature level 333). Previously
                         `stream_post_policy` field used to control the permission to
@@ -25084,9 +25078,8 @@ components:
 
             Administrators can always unsubscribe others from a channel.
 
-            Note that a user who is a member of the specified user group must
-            also [have access](/help/channel-permissions) to the channel in
-            order to unsubscribe others.
+            Note that a user must also [have access](/help/channel-permissions) to a
+            channel in order to modify it.
 
             **Changes**: Prior to Zulip 10.0 (feature level 320), this value was
             always the integer ID of a system group.
@@ -25104,16 +25097,16 @@ components:
             A [group-setting value][setting-values] defining the set of users
             who have permission to administer this channel.
 
-            Note that a user who is a member of the specified user group must
-            also [have access](/help/channel-permissions) to the channel in
-            order to administer the channel.
+            Administrators can always administer a channel.
 
-            Realm admins are allowed to administer a channel they have access to
-            regardless of whether they are present in this group.
+            Note that a user must also [have access](/help/channel-permissions) to a
+            channel in order to modify it.
 
-            Users in this group can edit channel name and description without
-            subscribing to the channel, but they need to be subscribed to edit
-            channel permissions and add users.
+            Users can edit channel name and description without subscribing to the
+            channel, but they need to be subscribed to edit channel permissions and
+            add users. The exception to this rule is that organization administrators
+            can edit channel names and descriptions without having full access to
+            the channel.
 
             **Changes**: New in Zulip 10.0 (feature level 325). Prior to this
             change, the permission to administer channels was limited to realm
@@ -25127,9 +25120,8 @@ components:
             A [group-setting value][setting-values] defining the set of users
             who have permission to post in this channel.
 
-            Note that a user who is a member of the specified user group must
-            also [have access](/help/channel-permissions) to the channel in
-            order to post in the channel.
+            Note that a user must also [have access](/help/channel-permissions) to a
+            channel in order to post in the channel.
 
             **Changes**: New in Zulip 10.0 (feature level 333). Previously
             `stream_post_policy` field used to control the permission to
