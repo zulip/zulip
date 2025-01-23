@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from zerver.lib.event_types import (
     AllowMessageEditingData,
     AuthenticationData,
+    BaseEvent,
     BotServicesEmbedded,
     BotServicesOutgoing,
     EventAlertWords,
@@ -110,21 +111,19 @@ from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
 from zerver.lib.types import AnonymousSettingGroupDict
 from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
 
-EventModel = type[BaseModel]
 
-
-def validate_event_with_model_type(event: dict[str, object], model: EventModel) -> None:
+def validate_with_model(data: dict[str, object], model: type[BaseModel]) -> None:
     allowed_fields = set(model.model_fields.keys())
-    if not set(event.keys()).issubset(allowed_fields):  # nocoverage
-        raise ValueError(f"Extra fields not allowed: {set(event.keys()) - allowed_fields}")
+    if not set(data.keys()).issubset(allowed_fields):  # nocoverage
+        raise ValueError(f"Extra fields not allowed: {set(data.keys()) - allowed_fields}")
 
-    model.model_validate(event, strict=True)
+    model.model_validate(data, strict=True)
 
 
-def make_checker(base_model: EventModel) -> Callable[[str, dict[str, object]], None]:
+def make_checker(base_model: type[BaseEvent]) -> Callable[[str, dict[str, object]], None]:
     def f(label: str, event: dict[str, object]) -> None:
         try:
-            validate_event_with_model_type(event, base_model)
+            validate_with_model(event, base_model)
         except Exception as e:  # nocoverage
             print(f"""
 FAILURE:
@@ -240,7 +239,7 @@ _check_user_settings_update = make_checker(EventUserSettingsUpdate)
 _check_user_status = make_checker(EventUserStatus)
 
 
-PERSON_TYPES: dict[str, EventModel] = dict(
+PERSON_TYPES: dict[str, type[BaseModel]] = dict(
     avatar_fields=PersonAvatarFields,
     bot_owner_id=PersonBotOwnerId,
     custom_profile_field=PersonCustomProfileField,
@@ -328,10 +327,10 @@ def check_realm_bot_add(
         assert services == []
     elif bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
         assert len(services) == 1
-        validate_event_with_model_type(services[0], BotServicesOutgoing)
+        validate_with_model(services[0], BotServicesOutgoing)
     elif bot_type == UserProfile.EMBEDDED_BOT:
         assert len(services) == 1
-        validate_event_with_model_type(services[0], BotServicesEmbedded)
+        validate_with_model(services[0], BotServicesEmbedded)
     else:
         raise AssertionError(f"Unknown bot_type: {bot_type}")
 
@@ -456,7 +455,7 @@ def check_realm_update_dict(
         assert isinstance(event["data"], dict)
 
         if "allow_message_editing" in event["data"]:
-            sub_type: EventModel = AllowMessageEditingData
+            sub_type: type[BaseModel] = AllowMessageEditingData
         elif "message_content_edit_limit_seconds" in event["data"]:
             sub_type = MessageContentEditLimitSecondsData
         elif "authentication_methods" in event["data"]:
@@ -479,7 +478,7 @@ def check_realm_update_dict(
     else:
         raise AssertionError("unhandled property: {event['property']}")
 
-    validate_event_with_model_type(cast(dict[str, object], event["data"]), sub_type)
+    validate_with_model(cast(dict[str, object], event["data"]), sub_type)
 
 
 def check_realm_user_update(
@@ -491,7 +490,7 @@ def check_realm_user_update(
     _check_realm_user_update(var_name, event)
 
     sub_type = PERSON_TYPES[person_flavor]
-    validate_event_with_model_type(cast(dict[str, object], event["person"]), sub_type)
+    validate_with_model(cast(dict[str, object], event["person"]), sub_type)
 
 
 def check_stream_update(
