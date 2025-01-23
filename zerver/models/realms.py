@@ -654,7 +654,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         message_content_delete_limit_seconds=(int, type(None)),
         move_messages_between_streams_limit_seconds=(int, type(None)),
         move_messages_within_stream_limit_seconds=(int, type(None)),
-        message_retention_days=(int, type(None)),
+        message_retention_days=int,
         name=str,
         name_changes_disabled=bool,
         push_notifications_enabled=bool,
