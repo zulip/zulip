@@ -451,10 +451,12 @@ class CustomerPlan(AbstractCustomerPlan):
             CustomerPlan.TIER_CLOUD_STANDARD: "Zulip Cloud Standard",
             CustomerPlan.TIER_CLOUD_PLUS: "Zulip Cloud Plus",
             CustomerPlan.TIER_CLOUD_ENTERPRISE: "Zulip Enterprise",
-            CustomerPlan.TIER_SELF_HOSTED_LEGACY: "Free (legacy plan)",
             CustomerPlan.TIER_SELF_HOSTED_BASIC: "Zulip Basic",
             CustomerPlan.TIER_SELF_HOSTED_BUSINESS: "Zulip Business",
             CustomerPlan.TIER_SELF_HOSTED_COMMUNITY: "Community",
+            # Complimentary access plans should never be billed through Stripe,
+            # so the tier name can exceed the 22 character limit noted above.
+            CustomerPlan.TIER_SELF_HOSTED_LEGACY: "Zulip Basic (complimentary)",
         }[tier]
 
     @property
@@ -574,6 +576,7 @@ class ZulipSponsorshipRequest(models.Model):
 
     org_description = models.TextField(default="")
     expected_total_users = models.TextField(default="")
+    plan_to_use_zulip = models.TextField(default="")
     paid_users_count = models.TextField(default="")
     paid_users_description = models.TextField(default="")
 

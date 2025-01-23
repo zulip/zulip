@@ -329,9 +329,9 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
-    # Who in the organization is allowed to invite other users to streams.
-    invite_to_stream_policy = models.PositiveSmallIntegerField(
-        default=CommonPolicyEnum.MEMBERS_ONLY
+    # UserGroup which is allowed to add subscribers to channels.
+    can_add_subscribers_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
     # UserGroup which is allowed to move messages between streams.
@@ -647,7 +647,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         inline_image_preview=bool,
         inline_url_embed_preview=bool,
         invite_required=bool,
-        invite_to_stream_policy=int,
         jitsi_server_url=(str, type(None)),
         mandatory_topics=bool,
         message_content_allowed_in_email_notifications=bool,
@@ -682,6 +681,13 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
             allowed_system_groups=[SystemGroups.EVERYONE, SystemGroups.MEMBERS],
+        ),
+        can_add_subscribers_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.MEMBERS,
         ),
         can_add_custom_emoji_group=GroupPermissionSetting(
             require_system_group=False,
@@ -1171,6 +1177,8 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "can_access_all_users_group__named_user_group",
         "can_add_custom_emoji_group",
         "can_add_custom_emoji_group__named_user_group",
+        "can_add_subscribers_group",
+        "can_add_subscribers_group__named_user_group",
         "can_create_groups",
         "can_create_groups__named_user_group",
         "can_create_public_channel_group",

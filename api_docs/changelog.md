@@ -20,6 +20,36 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 342**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added
+  `can_add_subscribers_group` field to Stream and Subscription
+  objects.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `can_add_subscribers_group` parameter to support setting and
+  changing the user group whose members can add other subscribers
+  to the specified stream.
+* [`POST /invites`](/api/send-invites), [`POST
+  /invites/multiuse`](/api/create-invite-link): Users can now always
+  include default channels in an invite's initial subscriptions.
+
+**Feature level 341**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_add_subscribers_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to add subscribers to channels in the organization.
+* [`POST /register`](/api/register-queue): Removed
+  `can_subscribe_other_users` boolean field from the response.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `invite_to_stream_policy` property, as the permission to subscribe
+  other users to channels in the organization is now controlled by the
+  `can_add_subscribers_group` setting.
+
 **Feature level 340**
 
 [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): All
@@ -93,6 +123,10 @@ deactivated groups.
 * [`GET /messages/{message_id}/history`](/api/get-message-history):
   Added `allow_empty_topic_name` boolean parameter to decide whether the
   topic names in the fetched message history objects can be empty strings.
+
+* [`GET /users/me/{stream_id}/topics`](/api/get-stream-topics):
+  Added `allow_empty_topic_name` boolean parameter to decide whether the
+  topic names in the fetched `topics` array can be empty strings.
 
 * [`POST /register`](/api/register-queue): For clients that don't support
   the `empty_topic_name` [client capability](/api/register-queue#parameter-client_capabilities),

@@ -104,7 +104,6 @@ import * as scroll_util from "./scroll_util.ts";
 import * as search from "./search.ts";
 import * as server_events from "./server_events.js";
 import * as settings from "./settings.ts";
-import * as settings_data from "./settings_data.ts";
 import * as settings_notifications from "./settings_notifications.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_preferences from "./settings_preferences.ts";
@@ -456,18 +455,6 @@ export function initialize_everything(state_data) {
     realm_user_settings_defaults.initialize(state_data.realm_settings_defaults);
     people.initialize(current_user.user_id, state_data.people);
     starred_messages.initialize(state_data.starred_messages);
-
-    let date_joined;
-    if (!page_params.is_spectator) {
-        const user = people.get_by_user_id(current_user.user_id);
-        date_joined = user.date_joined;
-    } else {
-        // Spectators don't have an account, so we just prevent their
-        // date_joined is now.
-        date_joined = new Date();
-    }
-
-    settings_data.initialize(date_joined);
 
     // The emoji module must be initialized before the right sidebar
     // module, so that we can display custom emoji in statuses.

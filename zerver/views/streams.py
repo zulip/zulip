@@ -261,6 +261,7 @@ def update_stream_backend(
     is_web_public: Json[bool] | None = None,
     new_name: str | None = None,
     message_retention_days: Json[str] | Json[int] | None = None,
+    can_add_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_administer_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
@@ -577,6 +578,7 @@ def add_subscriptions_backend(
     is_default_stream: Json[bool] = False,
     history_public_to_subscribers: Json[bool] | None = None,
     message_retention_days: Json[str] | Json[int] = RETENTION_DEFAULT,
+    can_add_subscribers_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_administer_channel_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_send_message_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_remove_subscribers_group: Json[int | AnonymousSettingGroupDict] | None = None,
@@ -638,6 +640,9 @@ def add_subscriptions_backend(
         stream_dict_copy["message_retention_days"] = parse_message_retention_days(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
+        stream_dict_copy["can_add_subscribers_group"] = group_settings_map[
+            "can_add_subscribers_group"
+        ]
         stream_dict_copy["can_administer_channel_group"] = group_settings_map[
             "can_administer_channel_group"
         ]
@@ -652,16 +657,6 @@ def add_subscriptions_backend(
     if len(principals) > 0 and not all(user_id == user_profile.id for user_id in principals):
         is_subscribing_other_users = True
 
-    if is_subscribing_other_users:
-        if not user_profile.can_subscribe_other_users():
-            # Guest users case will not be handled here as it will
-            # be handled by the decorator above.
-            raise JsonableError(_("Insufficient permission"))
-        subscribers = bulk_principals_to_user_profiles(principals, user_profile)
-
-    else:
-        subscribers = {user_profile}
-
     # Validation of the streams arguments, including enforcement of
     # can_create_streams policy and check_stream_name policy is inside
     # list_to_streams.
@@ -672,15 +667,20 @@ def add_subscriptions_backend(
         is_default_stream=is_default_stream,
         setting_groups_dict=setting_groups_dict,
     )
-    authorized_streams, unauthorized_streams = filter_stream_authorization(
-        user_profile, existing_streams
-    )
+    (
+        authorized_streams,
+        unauthorized_streams,
+        streams_to_which_user_cannot_add_subscribers,
+    ) = filter_stream_authorization(user_profile, existing_streams, is_subscribing_other_users)
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
         raise JsonableError(
             _("Unable to access channel ({channel_name}).").format(
                 channel_name=unauthorized_streams[0].name,
             )
         )
+    if len(streams_to_which_user_cannot_add_subscribers) > 0:
+        raise JsonableError(_("Insufficient permission"))
+
     # Newly created streams are also authorized for the creator
     streams = authorized_streams + created_streams
 
@@ -692,6 +692,11 @@ def add_subscriptions_backend(
         raise JsonableError(
             _("You can only invite other Zephyr mirroring users to private channels.")
         )
+
+    if is_subscribing_other_users:
+        subscribers = bulk_principals_to_user_profiles(principals, user_profile)
+    else:
+        subscribers = {user_profile}
 
     if is_default_stream:
         for stream in created_streams:
@@ -924,6 +929,7 @@ def get_topics_backend(
     maybe_user_profile: UserProfile | AnonymousUser,
     *,
     stream_id: PathOnly[NonNegativeInt],
+    allow_empty_topic_name: Json[bool] = False,
 ) -> HttpResponse:
     if not maybe_user_profile.is_authenticated:
         is_web_public_query = True
@@ -938,7 +944,9 @@ def get_topics_backend(
         realm = get_valid_realm_from_request(request)
         stream = access_web_public_stream(stream_id, realm)
         result = get_topic_history_for_public_stream(
-            realm_id=realm.id, recipient_id=assert_is_not_none(stream.recipient_id)
+            realm_id=realm.id,
+            recipient_id=assert_is_not_none(stream.recipient_id),
+            allow_empty_topic_name=allow_empty_topic_name,
         )
 
     else:
@@ -951,6 +959,7 @@ def get_topics_backend(
             user_profile=user_profile,
             recipient_id=stream.recipient_id,
             public_history=stream.is_history_public_to_subscribers(),
+            allow_empty_topic_name=allow_empty_topic_name,
         )
 
     return json_success(request, data=dict(topics=result))

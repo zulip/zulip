@@ -542,12 +542,21 @@ export function can_view_subscribers(sub: StreamSubscription): boolean {
 }
 
 export function can_subscribe_others(sub: StreamSubscription): boolean {
-    // User can add other users to stream if stream is public or user is subscribed to stream
-    // and realm level setting allows user to add subscribers.
-    return (
-        !current_user.is_guest &&
-        (!sub.invite_only || sub.subscribed) &&
-        settings_data.user_can_subscribe_other_users()
+    if (sub.invite_only && !sub.subscribed) {
+        return false;
+    }
+
+    if (settings_data.can_subscribe_others_to_all_streams()) {
+        return true;
+    }
+
+    if (can_change_permissions(sub)) {
+        return true;
+    }
+
+    return user_groups.is_user_in_setting_group(
+        sub.can_add_subscribers_group,
+        people.my_current_user_id(),
     );
 }
 

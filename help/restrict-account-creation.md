@@ -16,8 +16,10 @@ account and how users access their accounts:
   to sign up (default), or you can [allow anyone to
   join](#set-whether-invitations-are-required-to-join) without an invitation.
 
-* You can [restrict the ability to invite new users](#change-who-can-send-invitations) to
- join your Zulip organization to specific [roles](/help/user-roles).
+* You can [restrict the ability to invite new
+  users](#change-who-can-send-invitations) to any combination of
+  [roles](/help/user-roles), [groups](/help/user-groups), and individual
+  [users](/help/manage-a-user).
 
 Regardless of whether invitations are required, you can:
 

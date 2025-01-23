@@ -92,7 +92,7 @@
         }
 
         #inbox-search:placeholder-shown + #inbox-clear-search {
-            display: none;
+            visibility: hidden;
         }
 
         #inbox-search {
@@ -528,7 +528,7 @@
 
 .inbox-container #inbox-pane .inbox-empty-action-link {
     text-decoration: underline;
-    color: hsl(200deg 100% 40%);
+    color: var(--color-text-url);
 }
 
 #inbox-filter_widget {

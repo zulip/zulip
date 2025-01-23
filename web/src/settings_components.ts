@@ -242,7 +242,6 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
 }
 
 export const simple_dropdown_realm_settings_schema = realm_schema.pick({
-    realm_invite_to_stream_policy: true,
     realm_wildcard_mention_policy: true,
     realm_org_type: true,
 });
@@ -803,6 +802,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
         case "realm_can_add_custom_emoji_group":
+        case "realm_can_add_subscribers_group":
         case "realm_can_create_groups":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
@@ -963,6 +963,7 @@ export function check_realm_default_settings_property_changed(elem: HTMLElement)
     const current_val = get_realm_default_setting_property_value(property_name);
     let proposed_val;
     switch (property_name) {
+        case "color_scheme":
         case "emojiset":
         case "user_list_style":
             proposed_val = get_input_element_value(elem, "radio-group");
@@ -1048,6 +1049,7 @@ export function populate_data_for_realm_settings_request(
                 const realm_group_settings = new Set([
                     "can_access_all_users_group",
                     "can_add_custom_emoji_group",
+                    "can_add_subscribers_group",
                     "can_create_groups",
                     "can_create_private_channel_group",
                     "can_create_public_channel_group",
@@ -1500,6 +1502,7 @@ export function disable_group_permission_setting($container: JQuery): void {
 
 export const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
     ["can_add_members_group", null],
+    ["can_add_subscribers_group", null],
     ["can_administer_channel_group", null],
     ["can_join_group", null],
     ["can_leave_group", null],
@@ -1509,6 +1512,7 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["can_remove_subscribers_group", null],
     ["can_send_message_group", null],
     ["realm_can_add_custom_emoji_group", null],
+    ["realm_can_add_subscribers_group", null],
     ["realm_can_create_groups", null],
     ["realm_can_create_public_channel_group", null],
     ["realm_can_create_private_channel_group", null],
@@ -1619,6 +1623,7 @@ export function create_group_setting_widget({
 
 export const realm_group_setting_name_schema = z.enum([
     "can_add_custom_emoji_group",
+    "can_add_subscribers_group",
     "can_create_groups",
     "can_create_public_channel_group",
     "can_create_private_channel_group",

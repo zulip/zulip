@@ -399,9 +399,12 @@
     --message-box-markdown-aligned-vertical-space: var(
         --markdown-interelement-space-px
     );
-    /* 22px matches to the width of the padded icon. */
-    --message-box-icon-width: 22px;
-    --message-box-icon-height: 25px;
+    /* 22px matches to the width of the padded icon.
+       22px at 16px/1em
+    */
+    --message-box-icon-width: 1.375em;
+    /* 25px at 16px/1em */
+    --message-box-icon-height: 1.6667em;
     --message-box-height-senderless-single-line-message: calc(
         var(--base-line-height-unitless) * var(--base-font-size-px) +
             calc(var(--markdown-interelement-space-px) * 2)

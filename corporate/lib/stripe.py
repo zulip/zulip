@@ -578,7 +578,7 @@ class SupportType(Enum):
     update_required_plan_tier = 8
     configure_fixed_price_plan = 9
     delete_fixed_price_next_plan = 10
-    configure_temporary_courtesy_plan = 11
+    configure_complimentary_access_plan = 11
 
 
 class SupportViewRequest(TypedDict, total=False):
@@ -696,6 +696,7 @@ class SponsorshipRequestForm(forms.Form):
     organization_type = forms.IntegerField()
     description = forms.CharField(widget=forms.Textarea)
     expected_total_users = forms.CharField(widget=forms.Textarea)
+    plan_to_use_zulip = forms.CharField(widget=forms.Textarea)
     paid_users_count = forms.CharField(widget=forms.Textarea)
     paid_users_description = forms.CharField(widget=forms.Textarea, required=False)
     requested_plan = forms.ChoiceField(
@@ -1419,27 +1420,28 @@ class BillingSession(ABC):
             plan_tier_name = CustomerPlan.name_from_tier(new_plan_tier)
         return f"Required plan tier for {self.billing_entity_display_name} set to {plan_tier_name}."
 
-    def configure_temporary_courtesy_plan(self, end_date_string: str) -> str:
+    def configure_complimentary_access_plan(self, end_date_string: str) -> str:
         plan_end_date = datetime.strptime(end_date_string, "%Y-%m-%d").replace(tzinfo=timezone.utc)
         if plan_end_date.date() <= timezone_now().date():
             raise SupportRequestError(
-                f"Cannot configure a courtesy plan for {self.billing_entity_display_name} to end on {end_date_string}."
+                f"Cannot configure a complimentary access plan for {self.billing_entity_display_name} to end on {end_date_string}."
             )
         customer = self.get_customer()
         if customer is not None:
             plan = get_current_plan_by_customer(customer)
             if plan is not None:
                 raise SupportRequestError(
-                    f"Cannot configure a courtesy plan for {self.billing_entity_display_name} because of current plan."
+                    f"Cannot configure a complimentary access plan for {self.billing_entity_display_name} because of current plan."
                 )
         plan_anchor_date = timezone_now()
         if isinstance(self, RealmBillingSession):
+            # TODO implement a complimentary access plan/tier for Zulip Cloud.
             raise SupportRequestError(
-                f"Cannot currently configure a courtesy plan for {self.billing_entity_display_name}."
+                f"Cannot currently configure a complimentary access plan for {self.billing_entity_display_name}."
             )  # nocoverage
 
-        self.migrate_customer_to_legacy_plan(plan_anchor_date, plan_end_date)
-        return f"Temporary courtesy plan for {self.billing_entity_display_name} configured to end on {end_date_string}."
+        self.create_complimentary_access_plan(plan_anchor_date, plan_end_date)
+        return f"Complimentary access plan for {self.billing_entity_display_name} configured to end on {end_date_string}."
 
     def configure_fixed_price_plan(self, fixed_price: int, sent_invoice_id: str | None) -> str:
         customer = self.get_customer()
@@ -1786,7 +1788,7 @@ class BillingSession(ABC):
             if next_plan is not None:  # nocoverage
                 return f"Customer scheduled for upgrade to {next_plan.name}. Please cancel upgrade before approving sponsorship!"
 
-            # It is fine to end legacy plan not scheduled for an upgrade.
+            # It is fine to end a complimentary access plan not scheduled for an upgrade.
             if current_plan.tier != CustomerPlan.TIER_SELF_HOSTED_LEGACY:
                 return f"Customer on plan {current_plan.name}. Please end current plan before approving sponsorship!"
 
@@ -2790,7 +2792,7 @@ class BillingSession(ABC):
 
         free_trial_days = None
         free_trial_end_date = None
-        # Don't show free trial for remote servers on legacy plan.
+        # Don't show free trial for customers on a complimentary access plan.
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
         if fixed_price is None and complimentary_access_plan_end_date is None:
             free_trial_days = get_free_trial_days(is_self_hosted_billing, tier)
@@ -3163,7 +3165,17 @@ class BillingSession(ABC):
             LicenseLedger.objects.filter(plan=current_plan).order_by("id").last()
         )
         assert current_plan_last_ledger is not None
-        licenses_for_new_plan = current_plan_last_ledger.licenses_at_next_renewal
+
+        old_plan_licenses_at_next_renewal = current_plan_last_ledger.licenses_at_next_renewal
+        assert old_plan_licenses_at_next_renewal is not None
+        licenses_for_new_plan = self.get_billable_licenses_for_customer(
+            current_plan.customer,
+            new_plan_tier,
+            old_plan_licenses_at_next_renewal,
+        )
+        if not new_plan.automanage_licenses:  # nocoverage
+            licenses_for_new_plan = max(old_plan_licenses_at_next_renewal, licenses_for_new_plan)
+
         assert licenses_for_new_plan is not None
         LicenseLedger.objects.create(
             plan=new_plan,
@@ -3487,6 +3499,7 @@ class BillingSession(ABC):
                 org_description=form.cleaned_data["description"],
                 org_type=form.cleaned_data["organization_type"],
                 expected_total_users=form.cleaned_data["expected_total_users"],
+                plan_to_use_zulip=form.cleaned_data["plan_to_use_zulip"],
                 paid_users_count=form.cleaned_data["paid_users_count"],
                 paid_users_description=form.cleaned_data["paid_users_description"],
                 requested_plan=form.cleaned_data["requested_plan"],
@@ -3515,6 +3528,7 @@ class BillingSession(ABC):
             "website": sponsorship_request.org_website,
             "description": sponsorship_request.org_description,
             "expected_total_users": sponsorship_request.expected_total_users,
+            "plan_to_use_zulip": sponsorship_request.plan_to_use_zulip,
             "paid_users_count": sponsorship_request.paid_users_count,
             "paid_users_description": sponsorship_request.paid_users_description,
             "requested_plan": sponsorship_request.requested_plan,
@@ -3561,10 +3575,10 @@ class BillingSession(ABC):
             new_fixed_price = support_request["fixed_price"]
             sent_invoice_id = support_request["sent_invoice_id"]
             success_message = self.configure_fixed_price_plan(new_fixed_price, sent_invoice_id)
-        elif support_type == SupportType.configure_temporary_courtesy_plan:
+        elif support_type == SupportType.configure_complimentary_access_plan:
             assert support_request["plan_end_date"] is not None
             temporary_plan_end_date = support_request["plan_end_date"]
-            success_message = self.configure_temporary_courtesy_plan(temporary_plan_end_date)
+            success_message = self.configure_complimentary_access_plan(temporary_plan_end_date)
         elif support_type == SupportType.update_billing_modality:
             assert support_request["billing_modality"] is not None
             charge_automatically = support_request["billing_modality"] == "charge_automatically"
@@ -3775,23 +3789,22 @@ class BillingSession(ABC):
         # needs the updated plan for a correct LicenseLedger update.
         return plan
 
-    def migrate_customer_to_legacy_plan(
+    def create_complimentary_access_plan(
         self,
         renewal_date: datetime,
         end_date: datetime,
     ) -> None:
-        assert not isinstance(self, RealmBillingSession)
+        plan_tier = CustomerPlan.TIER_SELF_HOSTED_LEGACY
+        if isinstance(self, RealmBillingSession):  # nocoverage
+            # TODO implement a complimentary access plan/tier for Zulip Cloud.
+            return None
         customer = self.update_or_create_customer()
 
-        # Customers on a legacy plan that is scheduled to be upgraded have 2 plans.
-        # This plan is used to track the current status of SWITCH_PLAN_TIER_AT_PLAN_END
-        # and will not charge the customer. The other plan is used to track the new plan
-        # the customer will move to the end of this plan.
-        legacy_plan_anchor = renewal_date
-        legacy_plan_params = {
-            "billing_cycle_anchor": legacy_plan_anchor,
+        complimentary_access_plan_anchor = renewal_date
+        complimentary_access_plan_params = {
+            "billing_cycle_anchor": complimentary_access_plan_anchor,
             "status": CustomerPlan.ACTIVE,
-            "tier": CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+            "tier": plan_tier,
             # end_date and next_invoice_date should always be the same for these plans.
             "end_date": end_date,
             "next_invoice_date": end_date,
@@ -3802,30 +3815,32 @@ class BillingSession(ABC):
             "billing_schedule": CustomerPlan.BILLING_SCHEDULE_ANNUAL,
             "automanage_licenses": True,
         }
-        legacy_plan = CustomerPlan.objects.create(
+        complimentary_access_plan = CustomerPlan.objects.create(
             customer=customer,
-            **legacy_plan_params,
+            **complimentary_access_plan_params,
         )
 
         try:
-            billed_licenses = self.get_billable_licenses_for_customer(customer, legacy_plan.tier)
+            billed_licenses = self.get_billable_licenses_for_customer(
+                customer, complimentary_access_plan.tier
+            )
         except MissingDataError:
             billed_licenses = 0
 
-        # Create a ledger entry for the legacy plan for tracking purposes.
+        # Create a ledger entry for the complimentary access plan for tracking purposes.
         ledger_entry = LicenseLedger.objects.create(
-            plan=legacy_plan,
+            plan=complimentary_access_plan,
             is_renewal=True,
-            event_time=legacy_plan_anchor,
+            event_time=complimentary_access_plan_anchor,
             licenses=billed_licenses,
             licenses_at_next_renewal=billed_licenses,
         )
-        legacy_plan.invoiced_through = ledger_entry
-        legacy_plan.save(update_fields=["invoiced_through"])
+        complimentary_access_plan.invoiced_through = ledger_entry
+        complimentary_access_plan.save(update_fields=["invoiced_through"])
         self.write_to_audit_log(
             event_type=BillingSessionEventType.CUSTOMER_PLAN_CREATED,
-            event_time=legacy_plan_anchor,
-            extra_data=legacy_plan_params,
+            event_time=complimentary_access_plan_anchor,
+            extra_data=complimentary_access_plan_params,
         )
 
         self.do_change_plan_type(tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY, is_sponsored=False)
@@ -3840,8 +3855,8 @@ class BillingSession(ABC):
 
         customer = self.update_or_create_customer()
         plan = get_current_plan_by_customer(customer)
-        # Only plan that can be active is legacy plan. Which is already
-        # ended by the support path from which is this function is called.
+        # The only plan that could be active is a complimentary access plan, which
+        # was already ended by the support path from which is this function is called.
         assert plan is None
         now = timezone_now()
         community_plan_params = {
@@ -5409,8 +5424,9 @@ def get_plan_renewal_or_end_date(plan: CustomerPlan, event_time: datetime) -> da
 def invoice_plans_as_needed(event_time: datetime | None = None) -> None:
     if event_time is None:
         event_time = timezone_now()
-    # For self hosted legacy plan with status SWITCH_PLAN_TIER_AT_PLAN_END, we need
-    # to invoice legacy plan followed by new plan on the same day, hence ordered by ID.
+    # For complimentary access plans with status SWITCH_PLAN_TIER_AT_PLAN_END, we need
+    # to invoice the complimentary access plan followed by the new plan on the same day,
+    # hence ordering by ID.
     for plan in CustomerPlan.objects.filter(next_invoice_date__lte=event_time).order_by("id"):
         remote_server: RemoteZulipServer | None = None
         if plan.customer.realm is not None:

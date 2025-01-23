@@ -6,6 +6,7 @@ import type {AjaxRequestHandler} from "./channel.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as ui_report from "./ui_report.ts";
+import * as util from "./util.ts";
 
 export type RequestOpts = {
     success_msg_html?: string | undefined;
@@ -50,15 +51,17 @@ export function do_settings_change(
     loading.make_indicator($spinner, {text: strings.saving});
     const remove_after = sticky ? undefined : 1000;
     const appear_after = 500;
+    const request_start_time = Date.now();
 
     void request_method({
         url,
         data,
         success(response_data) {
+            const remaining_delay = util.get_remaining_time(request_start_time, appear_after);
             setTimeout(() => {
                 ui_report.success(success_msg_html, $spinner, remove_after);
                 display_checkmark($spinner);
-            }, appear_after);
+            }, remaining_delay);
             if (success_continuation !== undefined) {
                 success_continuation(response_data);
             }

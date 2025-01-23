@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const example_settings = require("./lib/example_settings.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -10,10 +11,12 @@ const people = zrequire("people");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const stream_pill = zrequire("stream_pill");
+const user_groups = zrequire("user_groups");
 
 const current_user = {};
+const realm = {};
 set_current_user(current_user);
-set_realm({});
+set_realm(realm);
 
 const denmark = {
     stream_id: 101,
@@ -60,9 +63,24 @@ const me = {
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
+const me_group = {
+    name: "me_group",
+    id: 1,
+    members: new Set([me.user_id]),
+    is_system_group: false,
+    direct_subgroup_ids: new Set([]),
+};
+user_groups.initialize({realm_user_groups: [me_group]});
+
 run_test("create_item", ({override}) => {
     override(current_user, "user_id", me.user_id);
     override(current_user, "is_admin", true);
+    override(
+        realm,
+        "server_supported_permission_settings",
+        example_settings.server_supported_permission_settings,
+    );
+    override(realm, "realm_can_add_subscribers_group", me_group.id);
     function test_create_item(
         stream_name,
         current_items,

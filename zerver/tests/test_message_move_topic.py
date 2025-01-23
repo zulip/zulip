@@ -9,6 +9,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_edit import (
+    build_message_edit_request,
     check_update_message,
     do_update_message,
     maybe_send_resolve_topic_notifications,
@@ -19,6 +20,7 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.message import truncate_topic
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, messages_for_topic
+from zerver.lib.types import StreamMessageEditRequest
 from zerver.lib.user_topics import (
     get_users_with_user_topic_visibility_policy,
     set_topic_visibility_policy,
@@ -140,15 +142,20 @@ class MessageMoveTopicTest(ZulipTestCase):
             topic_name: str,
             users_to_be_notified: list[dict[str, Any]],
         ) -> None:
+            message_edit_request = build_message_edit_request(
+                message=message,
+                user_profile=user_profile,
+                propagate_mode="change_later",
+                stream_id=None,
+                topic_name=topic_name,
+                content=None,
+            )
             do_update_message(
                 user_profile=user_profile,
                 target_message=message,
-                new_stream=None,
-                topic_name=topic_name,
-                propagate_mode="change_later",
+                message_edit_request=message_edit_request,
                 send_notification_to_old_thread=False,
                 send_notification_to_new_thread=False,
-                content=None,
                 rendering_result=None,
                 prior_mention_user_ids=set(),
                 mention_data=None,
@@ -1742,13 +1749,19 @@ class MessageMoveTopicTest(ZulipTestCase):
         assert stream.recipient_id is not None
         changed_messages = messages_for_topic(stream.realm_id, stream.recipient_id, original_topic)
         resolve_topic = RESOLVED_TOPIC_PREFIX + original_topic
+        message_edit_request = build_message_edit_request(
+            message=message,
+            user_profile=admin_user,
+            propagate_mode="change_all",
+            stream_id=None,
+            topic_name=resolve_topic,
+            content=None,
+        )
+        assert isinstance(message_edit_request, StreamMessageEditRequest)
         maybe_send_resolve_topic_notifications(
             user_profile=admin_user,
-            stream=stream,
-            old_topic_name=original_topic,
-            new_topic_name=resolve_topic,
+            message_edit_request=message_edit_request,
             changed_messages=changed_messages,
-            pre_truncation_new_topic_name=resolve_topic,
         )
 
         topic_messages = get_topic_messages(admin_user, stream, resolve_topic)

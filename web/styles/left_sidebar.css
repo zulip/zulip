@@ -82,7 +82,7 @@
     font-weight: normal;
 
     .topic_search_section {
-        margin: 3px 0;
+        margin: 3px 0 3px var(--left-sidebar-toggle-width-offset);
     }
 
     & li {
@@ -962,7 +962,7 @@ li.top_left_scheduled_messages {
        definitions have the final say about dimensions and placement. */
     grid-template-areas:
         "starting-offset starting-anchor-element icon-content-gap row-content controls   markers-and-unreads ending-anchor-element ending-offset"
-        ".               .                       filter-box       filter-box  filter-box filter-box          filter-box            .            ";
+        ".               filter-box              filter-box       filter-box  filter-box filter-box          filter-box            .            ";
 }
 
 #views-label-container {
@@ -1113,6 +1113,20 @@ li.top_left_scheduled_messages {
     }
 }
 
+.left-sidebar-filter-row {
+    display: grid;
+    grid-template-columns:
+        [filter-box-start] minmax(0, 1fr)
+        [clear-button-start] var(--line-height-sidebar-row-prominent)
+        [clear-button-end filter-box-end];
+    grid-template-rows: [filter-box-start clear-button-start] auto [clear-button-end filter-box-end];
+    align-content: center;
+
+    .clear_search_button {
+        grid-area: clear-button;
+    }
+}
+
 .topic-box,
 .searching-for-more-topics {
     display: grid;
@@ -1131,12 +1145,6 @@ li.top_left_scheduled_messages {
 .searching-for-more-topics {
     margin-left: var(--left-sidebar-toggle-width-offset);
     height: var(--line-height-sidebar-row-prominent);
-}
-
-.topic_search_section {
-    padding: 8px 10px;
-    display: grid;
-    grid-template: "search-input clear-search" auto / minmax(0, 1fr) 30px;
 }
 
 .topic-box .zero_count {
@@ -1206,18 +1214,22 @@ li.top_left_scheduled_messages {
     }
 }
 
+.direct-messages-list-filter {
+    grid-area: filter-box;
+    padding-right: var(--line-height-sidebar-row-prominent);
+}
+
 .topic-list-filter {
+    grid-area: filter-box;
+    padding-right: var(--line-height-sidebar-row-prominent);
     box-shadow: none;
-    padding-right: 28px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    grid-column: search-input-start / clear-search-end;
-    grid-row: search-input;
 }
 
 #filter-topic-input:placeholder-shown + #clear_search_topic_button {
-    display: none;
+    visibility: hidden;
 }
 
 .searching-for-more-topics img {
@@ -1601,16 +1613,19 @@ li.topic-list-item {
     margin: var(--left-sidebar-sections-vertical-gutter)
         var(--left-sidebar-right-margin) 3px 0;
     position: sticky;
-    /* Keep sticky within SimpleBar context. */
-    top: 0;
+    /* Keep sticky within SimpleBar context. The -0.25px
+    offset ensures that no gap is present between the
+    direct-messages-section-header and the streams-header */
+    top: -0.25px;
     z-index: 2;
     background-color: var(--color-background);
 
     &.showing-stream-search-section {
-        /* Open up the stream-search rows. The 10px
+        /* Open up the stream-search rows. The 3px gap + 7px
            row maintains space with the streams list
            below. */
-        grid-template-rows: var(--line-height-sidebar-row-prominent) 28px 10px;
+        grid-template-rows: var(--line-height-sidebar-row-prominent) auto 7px;
+        row-gap: 3px;
 
         /* When the search section is showing, switch
            off the hover effects on the row. */
@@ -1690,12 +1705,12 @@ li.topic-list-item {
 
     .stream_search_section {
         grid-area: filter-box;
-        display: flex;
-        justify-content: stretch;
-        /* Set an even line-height for better
-           vertical centering. */
-        line-height: 20px;
         white-space: nowrap;
+    }
+
+    .stream-list-filter {
+        grid-area: filter-box;
+        padding-right: var(--line-height-sidebar-row-prominent);
     }
 
     &.hide_unread_counts {
@@ -1730,36 +1745,13 @@ li.topic-list-item {
 
 .stream_search_section,
 .direct-messages-search-section {
-    .stream-list-filter,
-    .direct-messages-list-filter {
-        box-sizing: border-box;
-        width: 100%;
-        /* Match the input height exactly
-           with the row height for a perfect
-           fit and better vertical alignment. */
-        height: 28px;
-        /* Pad the entire clear-button area,
-           so that input text does not bleed
-           into there. */
-        padding-right: 30px;
-    }
-
-    .clear_search_button {
-        box-sizing: border-box;
-        position: static;
-        display: grid;
-        place-items: center;
-        width: 30px;
-        margin-left: -30px;
-    }
-
     .direct-messages-list-filter:placeholder-shown
         + #clear-direct-messages-search-button {
-        display: none;
+        visibility: hidden;
     }
 
     .stream-list-filter:placeholder-shown + #clear_search_stream_button {
-        display: none;
+        visibility: hidden;
     }
 }
 
@@ -1826,6 +1818,7 @@ li.topic-list-item {
     }
 }
 
+.direct-messages-list-filter,
 .stream-list-filter {
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -1894,10 +1887,8 @@ li.topic-list-item {
     }
 
     .direct-messages-search-section {
-        display: flex;
-        grid-column: row-content / markers-and-unreads;
-        margin-top: 5px;
-        margin-bottom: 5px;
+        grid-column: filter-box;
+        margin: 5px 0 5px var(--left-sidebar-toggle-width-offset);
     }
 
     .zoom-in-hide {

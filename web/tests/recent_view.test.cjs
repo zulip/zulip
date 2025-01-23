@@ -1166,5 +1166,6 @@ test("test_search", () => {
     assert.equal(rt.topic_in_search_results("\\", "general", "\\"), true);
     assert.equal(rt.topic_in_search_results("\\", "general", "\\\\"), true);
 
-    // TODO: Add a test for empty topic name after CZO discussion.
+    // Test for empty string topic name.
+    assert.equal(rt.topic_in_search_results("general chat", "Scotland", ""), true);
 });

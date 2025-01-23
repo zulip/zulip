@@ -681,7 +681,7 @@ class StripeTestCase(ZulipTestCase):
             not existing_customer
         ):
             # Upgrade already happened for free trial, invoice realms or schedule
-            # upgrade for legacy remote servers.
+            # upgrade for customers on complimentary access plan.
             return upgrade_json_response
 
         last_sent_invoice = Invoice.objects.last()
@@ -2456,6 +2456,7 @@ class StripeTest(StripeTestCase):
             "website": "invalid-url",
             "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
             "expected_total_users": "10 users",
+            "plan_to_use_zulip": "For communication on moon.",
             "paid_users_count": "1 user",
             "paid_users_description": "We have 1 paid user.",
         }
@@ -2472,6 +2473,7 @@ class StripeTest(StripeTestCase):
             "website": "",
             "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
             "expected_total_users": "10 users",
+            "plan_to_use_zulip": "For communication on moon.",
             "paid_users_count": "1 user",
             "paid_users_description": "We have 1 paid user.",
         }
@@ -2570,6 +2572,7 @@ class StripeTest(StripeTestCase):
             "website": "https://infinispan.org/",
             "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
             "expected_total_users": "10 users",
+            "plan_to_use_zulip": "For communication on moon.",
             "paid_users_count": "1 user",
             "paid_users_description": "We have 1 paid user.",
         }
@@ -4912,10 +4915,11 @@ class StripeTest(StripeTestCase):
 
         # There are 9 licenses and the realm is on the Standard monthly plan.
         # Therefore, the customer has already paid 800 * 9 = 7200 = $72 for
-        # the month. Once they upgrade to Plus, the new price for their 9
-        # licenses will be 1200 * 9 = 10800 = $108. Since the customer has
-        # already paid $72 for a month, -7200 = -$72 will be credited to the
-        # customer's balance.
+        # the month. Once they upgrade to Plus, they will have to pay for 10
+        # licenses as that is the minimum licenses for that plan.
+        # The new price for their 10 licenses will be 1200 * 10 = 12000 = $120.
+        # Since the customer has already paid $72 for a month, -7200 = -$72 will
+        # be credited to the customer's balance.
         stripe_customer_id = customer.stripe_customer_id
         assert stripe_customer_id is not None
         _, cb_txn = iter(stripe.Customer.list_balance_transactions(stripe_customer_id))
@@ -4926,10 +4930,10 @@ class StripeTest(StripeTestCase):
         )
         self.assertEqual(cb_txn.type, "adjustment")
 
-        # The customer now only pays the difference 10800 - 7200 = 3600 = $36,
+        # The customer now only pays the difference 12000 - 7200 = 4800 = $48,
         # since the unused proration is for the whole month.
         (invoice,) = iter(stripe.Invoice.list(customer=stripe_customer_id))
-        self.assertEqual(invoice.amount_due, 3600)
+        self.assertEqual(invoice.amount_due, 4800)
 
     @mock_stripe()
     def test_customer_has_credit_card_as_default_payment_method(self, *mocks: Mock) -> None:
@@ -7170,9 +7174,10 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
     @responses.activate
     @mock_stripe()
     def test_upgrade_user_to_basic_plan_free_trial_fails_special_case(self, *mocks: Mock) -> None:
-        # Here we test if server had a legacy plan but never it ended before we could ever migrate
-        # it to remote realm resulting in the upgrade for remote realm creating a new customer which
-        # doesn't have any legacy plan associated with it. In this case, free trail should not be offered.
+        # Here we test if server had a complimentary access plan that ended before we could migrate
+        # it to a remote realm resulting in the upgrade for remote realm creating a new customer which
+        # doesn't have any complimentary access plan associated with it. In this case, a free trial
+        # should not be offered.
         with self.settings(SELF_HOSTING_FREE_TRIAL_DAYS=30):
             self.login("hamlet")
             hamlet = self.example_user("hamlet")
@@ -7201,7 +7206,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
                 result,
             )
 
-            # Add ended legacy plan for remote realm server.
+            # Add ended complimentary access plan for remote realm server.
             new_server_customer = Customer.objects.create(remote_server=self.remote_realm.server)
             CustomerPlan.objects.create(
                 customer=new_server_customer,
@@ -8042,27 +8047,29 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
 
     @responses.activate
     @mock_stripe()
-    def test_schedule_legacy_plan_upgrade_to_fixed_price_plan(self, *mocks: Mock) -> None:
+    def test_schedule_complimentary_access_plan_upgrade_to_fixed_price_plan(
+        self, *mocks: Mock
+    ) -> None:
         hamlet = self.example_user("hamlet")
 
         remote_realm = RemoteRealm.objects.get(uuid=hamlet.realm.uuid)
         remote_realm_billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
 
-        # Migrate realm to legacy plan.
+        # Create complimentary access plan for realm.
         with time_machine.travel(self.now, tick=False):
             start_date = timezone_now()
             end_date = add_months(start_date, months=3)
-            remote_realm_billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+            remote_realm_billing_session.create_complimentary_access_plan(start_date, end_date)
 
         self.add_mock_response()
         with time_machine.travel(self.now, tick=False):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
         customer = Customer.objects.get(remote_realm=self.remote_realm)
-        legacy_plan = get_current_plan_by_customer(customer)
-        assert legacy_plan is not None
-        self.assertEqual(legacy_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
-        self.assertEqual(legacy_plan.next_invoice_date, end_date)
+        complimentary_access_plan = get_current_plan_by_customer(customer)
+        assert complimentary_access_plan is not None
+        self.assertEqual(complimentary_access_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+        self.assertEqual(complimentary_access_plan.next_invoice_date, end_date)
 
         self.login("iago")
 
@@ -8106,8 +8113,10 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
                 remote_server_plan_start_date="billing_cycle_end_date", talk_to_stripe=False
             )
 
-        legacy_plan.refresh_from_db()
-        self.assertEqual(legacy_plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END)
+        complimentary_access_plan.refresh_from_db()
+        self.assertEqual(
+            complimentary_access_plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+        )
         fixed_price_plan_offer.refresh_from_db()
         self.assertEqual(fixed_price_plan_offer.status, CustomerPlanOffer.PROCESSED)
 
@@ -8116,15 +8125,15 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
             invoice_plans_as_needed()
 
-        legacy_plan.refresh_from_db()
+        complimentary_access_plan.refresh_from_db()
         current_plan = get_current_plan_by_customer(customer)
         assert current_plan is not None
         self.assertEqual(current_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
         self.assertIsNotNone(current_plan.fixed_price)
         self.assertIsNone(current_plan.price_per_license)
         self.assertEqual(current_plan.next_invoice_date, add_months(end_date, 1))
-        self.assertEqual(legacy_plan.status, CustomerPlan.ENDED)
-        self.assertEqual(legacy_plan.next_invoice_date, None)
+        self.assertEqual(complimentary_access_plan.status, CustomerPlan.ENDED)
+        self.assertEqual(complimentary_access_plan.next_invoice_date, None)
 
     @responses.activate
     @mock_stripe()
@@ -8293,6 +8302,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             "website": "https://infinispan.org/",
             "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
             "expected_total_users": "10 users",
+            "plan_to_use_zulip": "For communication on moon.",
             "paid_users_count": "1 user",
             "paid_users_description": "We have 1 paid user.",
             "requested_plan": "Community",
@@ -8382,11 +8392,11 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         remote_server = RemoteZulipServer.objects.get(hostname="demo.example.com")
         server_billing_session = RemoteServerBillingSession(remote_server=remote_server)
 
-        # Migrate server to legacy plan.
+        # Create complimentary access plan for server.
         with time_machine.travel(self.now, tick=False):
             start_date = timezone_now()
             end_date = add_months(start_date, months=3)
-            server_billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+            server_billing_session.create_complimentary_access_plan(start_date, end_date)
 
         server_customer = server_billing_session.get_customer()
         assert server_customer is not None
@@ -8653,17 +8663,17 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
 
     @responses.activate
     @mock_stripe()
-    def test_invoice_scheduled_upgrade_realm_legacy_plan(self, *mocks: Mock) -> None:
+    def test_invoice_scheduled_upgrade_realm_complimentary_access_plan(self, *mocks: Mock) -> None:
         hamlet = self.example_user("hamlet")
 
         remote_realm = RemoteRealm.objects.get(uuid=hamlet.realm.uuid)
         remote_realm_billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
 
-        # Migrate realm to legacy plan.
+        # Create complimentary access plan for realm.
         with time_machine.travel(self.now, tick=False):
             start_date = timezone_now()
             end_date = add_months(start_date, months=3)
-            remote_realm_billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+            remote_realm_billing_session.create_complimentary_access_plan(start_date, end_date)
 
         # Upload data.
         self.add_mock_response()
@@ -8683,13 +8693,15 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
 
         zulip_realm_customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
         assert zulip_realm_customer is not None
-        realm_legacy_plan = get_current_plan_by_customer(zulip_realm_customer)
-        assert realm_legacy_plan is not None
-        self.assertEqual(realm_legacy_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
-        self.assertEqual(realm_legacy_plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END)
-        self.assertEqual(realm_legacy_plan.next_invoice_date, end_date)
+        realm_complimentary_access_plan = get_current_plan_by_customer(zulip_realm_customer)
+        assert realm_complimentary_access_plan is not None
+        self.assertEqual(realm_complimentary_access_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+        self.assertEqual(
+            realm_complimentary_access_plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+        )
+        self.assertEqual(realm_complimentary_access_plan.next_invoice_date, end_date)
 
-        new_plan = self.billing_session.get_next_plan(realm_legacy_plan)
+        new_plan = self.billing_session.get_next_plan(realm_complimentary_access_plan)
         assert new_plan is not None
         self.assertEqual(new_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
         self.assertEqual(new_plan.status, CustomerPlan.NEVER_STARTED)
@@ -8710,14 +8722,14 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         with time_machine.travel(end_date, tick=False):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
             invoice_plans_as_needed()
-            # 'invoice_plan()' is called with both legacy & new plan, but
-            # invoice is created only for new plan. The legacy plan only goes
+            # 'invoice_plan()' is called with both complimentary access & new plan, but
+            # invoice is created only for new plan. The complimentary access plan only goes
             # through the end of cycle updates.
 
-        realm_legacy_plan.refresh_from_db()
+        realm_complimentary_access_plan.refresh_from_db()
         new_plan.refresh_from_db()
-        self.assertEqual(realm_legacy_plan.status, CustomerPlan.ENDED)
-        self.assertEqual(realm_legacy_plan.next_invoice_date, None)
+        self.assertEqual(realm_complimentary_access_plan.status, CustomerPlan.ENDED)
+        self.assertEqual(realm_complimentary_access_plan.next_invoice_date, None)
         self.assertEqual(new_plan.status, CustomerPlan.ACTIVE)
         self.assertEqual(new_plan.invoicing_status, CustomerPlan.INVOICING_STATUS_DONE)
         self.assertEqual(new_plan.next_invoice_date, add_months(end_date, 1))
@@ -8918,6 +8930,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             "website": "https://infinispan.org/",
             "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
             "expected_total_users": "10 users",
+            "plan_to_use_zulip": "For communication on moon.",
             "paid_users_count": "1 user",
             "paid_users_description": "We have 1 paid user.",
             "requested_plan": "Community",
@@ -9005,17 +9018,17 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
 
     @responses.activate
     @mock_stripe()
-    def test_upgrade_legacy_plan(self, *mocks: Mock) -> None:
+    def test_upgrade_complimentary_access_plan(self, *mocks: Mock) -> None:
         # Upload data
         with time_machine.travel(self.now, tick=False):
             self.add_mock_response()
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
-        # Migrate server to legacy plan.
+        # Create complimentary access plan for server.
         with time_machine.travel(self.now, tick=False):
             start_date = timezone_now()
             end_date = add_months(start_date, months=3)
-            self.billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+            self.billing_session.create_complimentary_access_plan(start_date, end_date)
 
         customer = self.billing_session.get_customer()
         assert customer is not None
@@ -9098,7 +9111,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
 
     @responses.activate
     @mock_stripe()
-    def test_free_trial_not_available_for_active_legacy_customer(self, *mocks: Mock) -> None:
+    def test_free_trial_not_available_for_complimentary_access_customer(self, *mocks: Mock) -> None:
         with self.settings(SELF_HOSTING_FREE_TRIAL_DAYS=30):
             self.login("hamlet")
             hamlet = self.example_user("hamlet")
@@ -9107,9 +9120,9 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
 
             with time_machine.travel(self.now, tick=False):
                 send_server_data_to_push_bouncer(consider_usage_statistics=False)
-                # Test that free trial is not available for customers with active legacy plan.
+                # Free trial is not available for customers with active complimentary access plan.
                 end_date = add_months(self.now, months=3)
-                self.billing_session.migrate_customer_to_legacy_plan(self.now, end_date)
+                self.billing_session.create_complimentary_access_plan(self.now, end_date)
 
             result = self.execute_remote_billing_authentication_flow(
                 hamlet.delivery_email, hamlet.full_name
@@ -9142,7 +9155,9 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
 
     @responses.activate
     @mock_stripe()
-    def test_free_trial_not_available_for_ended_legacy_customer(self, *mocks: Mock) -> None:
+    def test_free_trial_not_available_for_previous_complimentary_access_customer(
+        self, *mocks: Mock
+    ) -> None:
         with self.settings(SELF_HOSTING_FREE_TRIAL_DAYS=30):
             self.login("hamlet")
             hamlet = self.example_user("hamlet")
@@ -9151,9 +9166,9 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
 
             with time_machine.travel(self.now, tick=False):
                 send_server_data_to_push_bouncer(consider_usage_statistics=False)
-                # Test that free trial is not available for customers with active legacy plan.
+                # Free trial is not available for customers with active complimentary access plan.
                 end_date = add_months(self.now, months=3)
-                self.billing_session.migrate_customer_to_legacy_plan(self.now, end_date)
+                self.billing_session.create_complimentary_access_plan(self.now, end_date)
                 CustomerPlan.objects.filter(customer__remote_server=self.remote_server).update(
                     status=CustomerPlan.ENDED
                 )
@@ -9900,13 +9915,15 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
 
     @responses.activate
     @mock_stripe()
-    def test_schedule_server_legacy_plan_upgrade_to_fixed_price_plan(self, *mocks: Mock) -> None:
+    def test_schedule_server_complimentary_access_plan_upgrade_to_fixed_price_plan(
+        self, *mocks: Mock
+    ) -> None:
         self.login("hamlet")
         hamlet = self.example_user("hamlet")
 
-        # Migrate server to legacy plan.
+        # Create complimentary access plan for server.
         end_date = add_months(self.now, months=3)
-        self.billing_session.migrate_customer_to_legacy_plan(self.now, end_date)
+        self.billing_session.create_complimentary_access_plan(self.now, end_date)
 
         self.add_mock_response()
         with time_machine.travel(self.now, tick=False):
@@ -9914,10 +9931,10 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
 
         customer = self.billing_session.get_customer()
         assert customer is not None
-        legacy_plan = get_current_plan_by_customer(customer)
-        assert legacy_plan is not None
-        self.assertEqual(legacy_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
-        self.assertEqual(legacy_plan.next_invoice_date, end_date)
+        complimentary_access_plan = get_current_plan_by_customer(customer)
+        assert complimentary_access_plan is not None
+        self.assertEqual(complimentary_access_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+        self.assertEqual(complimentary_access_plan.next_invoice_date, end_date)
 
         self.logout()
         self.login("iago")
@@ -9960,8 +9977,10 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
                 remote_server_plan_start_date="billing_cycle_end_date", talk_to_stripe=False
             )
 
-        legacy_plan.refresh_from_db()
-        self.assertEqual(legacy_plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END)
+        complimentary_access_plan.refresh_from_db()
+        self.assertEqual(
+            complimentary_access_plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+        )
         fixed_price_plan_offer.refresh_from_db()
         self.assertEqual(fixed_price_plan_offer.status, CustomerPlanOffer.PROCESSED)
 
@@ -9970,15 +9989,15 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
             invoice_plans_as_needed()
 
-        legacy_plan.refresh_from_db()
+        complimentary_access_plan.refresh_from_db()
         current_plan = get_current_plan_by_customer(customer)
         assert current_plan is not None
         self.assertEqual(current_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
         self.assertIsNotNone(current_plan.fixed_price)
         self.assertIsNone(current_plan.price_per_license)
         self.assertEqual(current_plan.next_invoice_date, add_months(end_date, 1))
-        self.assertEqual(legacy_plan.status, CustomerPlan.ENDED)
-        self.assertEqual(legacy_plan.next_invoice_date, None)
+        self.assertEqual(complimentary_access_plan.status, CustomerPlan.ENDED)
+        self.assertEqual(complimentary_access_plan.next_invoice_date, None)
 
     def test_deactivate_registration_with_push_notification_service(self) -> None:
         self.login("hamlet")
@@ -10181,8 +10200,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         self.assert_length(outbox, messages_count + 1)
 
     @responses.activate
-    @mock_stripe()
-    def test_legacy_plan_ends_on_plan_end_date(self, *mocks: Mock) -> None:
+    def test_complimentary_access_plan_ends_on_plan_end_date(self, *mocks: Mock) -> None:
         self.login("hamlet")
 
         self.add_mock_response()
@@ -10190,9 +10208,9 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
         plan_end_date = add_months(self.now, 3)
-        self.billing_session.migrate_customer_to_legacy_plan(self.now, plan_end_date)
+        self.billing_session.create_complimentary_access_plan(self.now, plan_end_date)
 
-        # Legacy plan ends on plan end date.
+        # Complimentary access plan ends on plan end date.
         customer = self.billing_session.get_customer()
         assert customer is not None
         plan = get_current_plan_by_customer(customer)
@@ -10210,11 +10228,11 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             time_machine.travel(plan_end_date, tick=False),
         ):
             invoice_plans_as_needed()
-            # Verify that for legacy plan with no next plan scheduled,
-            # invoice overdue email is not sent even if the last audit log
-            # update was 3 months ago.
+            # Verify that for complimentary access plan with no next plan scheduled,
+            # invoice overdue email is not sent even if the last audit log update was
+            # 3 months ago.
             send_email.assert_not_called()
-            # The legacy plan is downgraded, no invoice created.
+            # The complimentary access plan is downgraded, no invoice created.
             invoice_create.assert_not_called()
 
         plan.refresh_from_db()
@@ -10225,25 +10243,25 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
 
     @responses.activate
     @mock_stripe()
-    def test_invoice_scheduled_upgrade_server_legacy_plan(self, *mocks: Mock) -> None:
+    def test_invoice_scheduled_upgrade_server_complimentary_access_plan(self, *mocks: Mock) -> None:
         # Upload data
         self.add_mock_response()
         with time_machine.travel(self.now, tick=False):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
-        # Migrate server to legacy plan.
+        # Create complimentary access plan for server.
         with time_machine.travel(self.now, tick=False):
             start_date = timezone_now()
             end_date = add_months(start_date, months=3)
-            self.billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+            self.billing_session.create_complimentary_access_plan(start_date, end_date)
 
         customer = self.billing_session.get_customer()
         assert customer is not None
-        legacy_plan = get_current_plan_by_customer(customer)
-        assert legacy_plan is not None
-        self.assertEqual(legacy_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
-        self.assertEqual(legacy_plan.status, CustomerPlan.ACTIVE)
-        self.assertEqual(legacy_plan.next_invoice_date, end_date)
+        complimentary_access_plan = get_current_plan_by_customer(customer)
+        assert complimentary_access_plan is not None
+        self.assertEqual(complimentary_access_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+        self.assertEqual(complimentary_access_plan.status, CustomerPlan.ACTIVE)
+        self.assertEqual(complimentary_access_plan.next_invoice_date, end_date)
 
         self.login("hamlet")
         hamlet = self.example_user("hamlet")
@@ -10254,9 +10272,11 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             stripe_customer = self.add_card_and_upgrade(
                 remote_server_plan_start_date="billing_cycle_end_date", talk_to_stripe=False
             )
-        legacy_plan.refresh_from_db()
-        self.assertEqual(legacy_plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END)
-        new_plan = self.billing_session.get_next_plan(legacy_plan)
+        complimentary_access_plan.refresh_from_db()
+        self.assertEqual(
+            complimentary_access_plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+        )
+        new_plan = self.billing_session.get_next_plan(complimentary_access_plan)
         assert new_plan is not None
         self.assertEqual(new_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
         self.assertEqual(new_plan.status, CustomerPlan.NEVER_STARTED)
@@ -10279,22 +10299,22 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             time_machine.travel(end_date, tick=False),
         ):
             invoice_plans_as_needed()
-            # Verify that for legacy plan with next plan scheduled, invoice
-            # overdue email is sent if the last audit log is stale.
+            # Verify that for complimentary access plan with next plan scheduled,
+            # invoice overdue email is sent if the last audit log is stale.
             send_email.assert_called()
             invoice_create.assert_not_called()
 
         with time_machine.travel(end_date, tick=False):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
             invoice_plans_as_needed()
-            # 'invoice_plan()' is called with both legacy & new plan, but
-            # invoice is created only for new plan. The legacy plan only
+            # 'invoice_plan()' is called with both complimentary access & new plan, but
+            # invoice is created only for new plan. The complimentary access plan only
             # goes through the end of cycle updates.
 
-        legacy_plan.refresh_from_db()
+        complimentary_access_plan.refresh_from_db()
         new_plan.refresh_from_db()
-        self.assertEqual(legacy_plan.status, CustomerPlan.ENDED)
-        self.assertEqual(legacy_plan.next_invoice_date, None)
+        self.assertEqual(complimentary_access_plan.status, CustomerPlan.ENDED)
+        self.assertEqual(complimentary_access_plan.next_invoice_date, None)
         self.assertEqual(new_plan.status, CustomerPlan.ACTIVE)
         self.assertEqual(new_plan.invoicing_status, CustomerPlan.INVOICING_STATUS_DONE)
         self.assertEqual(new_plan.next_invoice_date, add_months(end_date, 1))

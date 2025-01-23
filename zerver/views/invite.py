@@ -20,7 +20,7 @@ from zerver.actions.invites import (
 from zerver.decorator import require_member_or_admin
 from zerver.lib.exceptions import InvitationError, JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.response import json_success
-from zerver.lib.streams import access_stream_by_id
+from zerver.lib.streams import access_stream_by_id, get_streams_to_which_user_cannot_add_subscribers
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_int_in_validator
 from zerver.lib.user_groups import access_user_group_for_update
@@ -79,6 +79,44 @@ def access_multiuse_invite_by_id(user_profile: UserProfile, invite_id: int) -> M
     return invite
 
 
+def access_streams_for_invite(stream_ids: list[int], user_profile: UserProfile) -> list[Stream]:
+    streams: list[Stream] = []
+
+    for stream_id in stream_ids:
+        try:
+            (stream, sub) = access_stream_by_id(user_profile, stream_id)
+        except JsonableError:
+            raise JsonableError(
+                _("Invalid channel ID {channel_id}. No invites were sent.").format(
+                    channel_id=stream_id
+                )
+            )
+        streams.append(stream)
+
+    streams_to_which_user_cannot_add_subscribers = get_streams_to_which_user_cannot_add_subscribers(
+        streams, user_profile, allow_default_streams=True
+    )
+    if len(streams_to_which_user_cannot_add_subscribers) > 0:
+        raise JsonableError(_("You do not have permission to subscribe other users to channels."))
+
+    return streams
+
+
+def access_user_groups_for_invite(
+    group_ids: list[int] | None, user_profile: UserProfile
+) -> list[NamedUserGroup]:
+    user_groups: list[NamedUserGroup] = []
+    if group_ids:
+        with transaction.atomic(durable=True):
+            for group_id in group_ids:
+                user_group = access_user_group_for_update(
+                    group_id, user_profile, permission_setting="can_add_members_group"
+                )
+                user_groups.append(user_group)
+
+    return user_groups
+
+
 @require_member_or_admin
 @typed_endpoint
 def invite_users_backend(
@@ -115,29 +153,8 @@ def invite_users_backend(
 
     invitee_emails = get_invitee_emails_set(invitee_emails_raw)
 
-    streams: list[Stream] = []
-    for stream_id in stream_ids:
-        try:
-            (stream, sub) = access_stream_by_id(user_profile, stream_id)
-        except JsonableError:
-            raise JsonableError(
-                _("Invalid channel ID {channel_id}. No invites were sent.").format(
-                    channel_id=stream_id
-                )
-            )
-        streams.append(stream)
-
-    if len(streams) and not user_profile.can_subscribe_other_users():
-        raise JsonableError(_("You do not have permission to subscribe other users to channels."))
-
-    user_groups: list[NamedUserGroup] = []
-    if group_ids:
-        with transaction.atomic(durable=True):
-            for group_id in group_ids:
-                user_group = access_user_group_for_update(
-                    group_id, user_profile, permission_setting="can_add_members_group"
-                )
-                user_groups.append(user_group)
+    streams = access_streams_for_invite(stream_ids, user_profile)
+    user_groups = access_user_groups_for_invite(group_ids, user_profile)
 
     skipped = do_invite_users(
         user_profile,
@@ -242,29 +259,8 @@ def generate_multiuse_invite_backend(
     ]
     check_role_based_permissions(invite_as, user_profile, require_admin=require_admin)
 
-    streams = []
-    for stream_id in stream_ids:
-        try:
-            (stream, sub) = access_stream_by_id(user_profile, stream_id)
-        except JsonableError:
-            raise JsonableError(
-                _("Invalid channel ID {channel_id}. No invites were sent.").format(
-                    channel_id=stream_id
-                )
-            )
-        streams.append(stream)
-
-    if len(streams) and not user_profile.can_subscribe_other_users():
-        raise JsonableError(_("You do not have permission to subscribe other users to channels."))
-
-    user_groups: list[NamedUserGroup] = []
-    if group_ids:
-        with transaction.atomic(durable=True):
-            for group_id in group_ids:
-                user_group = access_user_group_for_update(
-                    group_id, user_profile, permission_setting="can_add_members_group"
-                )
-                user_groups.append(user_group)
+    streams = access_streams_for_invite(stream_ids, user_profile)
+    user_groups = access_user_groups_for_invite(group_ids, user_profile)
 
     invite_link = do_create_multiuse_invite_link(
         user_profile,

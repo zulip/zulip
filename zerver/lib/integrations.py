@@ -290,7 +290,9 @@ def get_fixture_and_image_paths(
 
 
 class HubotIntegration(Integration):
-    GIT_URL_TEMPLATE = "https://github.com/hubot-scripts/hubot-{}"
+    GIT_URL_TEMPLATE = "https://github.com/hubot-archive/hubot-{}"
+    SECONDARY_LINE_TEXT = "(Hubot script)"
+    DOC_PATH = "zerver/integrations/hubot_common.md"
 
     def __init__(
         self,
@@ -298,14 +300,9 @@ class HubotIntegration(Integration):
         categories: list[str],
         display_name: str | None = None,
         logo: str | None = None,
-        logo_alt: str | None = None,
         git_url: str | None = None,
         legacy: bool = False,
     ) -> None:
-        if logo_alt is None:
-            logo_alt = f"{name.title()} logo"
-        self.logo_alt = logo_alt
-
         if git_url is None:
             git_url = self.GIT_URL_TEMPLATE.format(name)
         self.hubot_docs_url = git_url
@@ -314,8 +311,9 @@ class HubotIntegration(Integration):
             name,
             categories,
             logo=logo,
+            secondary_line_text=self.SECONDARY_LINE_TEXT,
             display_name=display_name,
-            doc="zerver/integrations/hubot_common.md",
+            doc=self.DOC_PATH,
             legacy=legacy,
         )
 
@@ -629,14 +627,10 @@ BOT_INTEGRATIONS: list[BotIntegration] = [
 ]
 
 HUBOT_INTEGRATIONS: list[HubotIntegration] = [
-    HubotIntegration(
-        "assembla",
-        ["version-control", "project-management"],
-        logo_alt="Assembla",
-    ),
+    HubotIntegration("assembla", ["version-control", "project-management"]),
     HubotIntegration("bonusly", ["hr"]),
     HubotIntegration("chartbeat", ["marketing"]),
-    HubotIntegration("darksky", ["misc"], display_name="Dark Sky", logo_alt="Dark Sky logo"),
+    HubotIntegration("darksky", ["misc"], display_name="Dark Sky"),
     HubotIntegration(
         "instagram",
         ["misc"],
@@ -644,12 +638,7 @@ HUBOT_INTEGRATIONS: list[HubotIntegration] = [
         logo="images/integrations/logos/instagra_m.svg",
     ),
     HubotIntegration("mailchimp", ["communication", "marketing"]),
-    HubotIntegration(
-        "google-translate",
-        ["misc"],
-        display_name="Google Translate",
-        logo_alt="Google Translate logo",
-    ),
+    HubotIntegration("google-translate", ["misc"], display_name="Google Translate"),
     HubotIntegration(
         "youtube",
         ["misc"],

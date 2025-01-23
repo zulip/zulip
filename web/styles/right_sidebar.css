@@ -182,7 +182,8 @@ $user_status_emoji_width: 24px;
         font-style: italic;
         color: var(--color-text-empty-list-message);
         /* Overwrite default empty list font size, to look better under the subheaders. */
-        font-size: 14px;
+        /* 14px at 16px/1em */
+        font-size: 0.875em;
         /* Override .empty-list-message !important styling */
         padding: 0 !important;
         margin-left: calc(
@@ -488,7 +489,7 @@ $user_status_emoji_width: 24px;
         }
 
         .user-list-filter:placeholder-shown + #clear_search_people_button {
-            display: none;
+            visibility: hidden;
         }
     }
 

@@ -519,6 +519,7 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
             );
             break;
         case "realm_can_add_custom_emoji_group":
+        case "realm_can_add_subscribers_group":
         case "realm_can_create_groups":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
@@ -685,6 +686,7 @@ export function discard_realm_default_property_element_changes(elem: HTMLElement
             );
             settings_components.set_input_element_value($elem, property_value);
             break;
+        case "color_scheme":
         case "emojiset":
         case "user_list_style":
             // Because this widget has a radio button structure, it

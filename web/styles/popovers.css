@@ -353,15 +353,6 @@ ul.popover-group-menu-member-list {
     line-height: 1;
 }
 
-.bot-owner-name {
-    text-decoration: underline;
-
-    &:hover {
-        cursor: pointer;
-        color: hsl(200deg 100% 40%);
-    }
-}
-
 .popover-avatar {
     height: 240px;
     width: 240px;
@@ -843,7 +834,8 @@ ul.popover-group-menu-member-list {
 
     #move_topic_to_stream_widget_wrapper {
         display: flex;
-        width: 50%;
+        /* 230px at 16px/1em */
+        max-width: 14.375em;
 
         .dropdown-widget-button {
             outline: none;
@@ -894,10 +886,6 @@ ul.popover-group-menu-member-list {
     }
 
     .topic_stream_edit_header {
-        display: flex;
-        flex-flow: column wrap;
-        justify-content: flex-start;
-
         #select_stream_id {
             border-left: 0;
             padding-left: 0;
@@ -910,6 +898,31 @@ ul.popover-group-menu-member-list {
             position: fixed;
             top: 125px;
             left: 40px;
+        }
+    }
+
+    .topic_move_breadcrumb_messages {
+        margin: 0 5px 5px 0;
+        align-self: center;
+        width: 100%;
+
+        & label.checkbox {
+            /* Place the checkboxes on their own lines. */
+            display: block;
+
+            & input {
+                margin: 0;
+                vertical-align: baseline;
+            }
+
+            & + label.checkbox {
+                margin-top: 10px;
+            }
+        }
+
+        & label {
+            display: inline-block;
+            margin-right: 10px;
         }
     }
 }

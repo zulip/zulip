@@ -11,9 +11,9 @@ perspectives, respectfully shared.
 
 Most design discussions take place in the [#design][design channel] channel in the
 development community. Discussions about mobile app design happen in
-[#mobile-design](https://chat.zulip.org/#narrow/channel/530-mobile-design),
+[#mobile-design][mobile-design channel],
 and design of the terminal app is discussed in
-[#zulip-terminal](https://chat.zulip.org/#narrow/channel/206-zulip-terminal).
+[#zulip-terminal][zulip-terminal channel].
 
 ## Guidelines for all participants
 
@@ -67,13 +67,15 @@ discussions:
 
 When you are working on a PR that includes frontend changes, you may find it helpful
 to get interactive feedback on the design. The best way to do so is by posting a
-message in the [#design][design channel] channel in the Zulip development
-community.
+message in the appropriate design channel in the Zulip development
+community: [#design][design channel] for the web/desktop app,
+[#mobile-design][mobile-design channel] for the mobile app, or
+[#zulip-terminal][zulip-terminal channel] for the terminal app.
 
 ### When to post
 
-- The issue or a comment on your PR specifically asks you to get feedback in the
-  [#design][design channel] channel.
+- The issue or a comment on your PR specifically asks you to get feedback in
+  [#design][design channel] or another design channel.
 
 - The issue you’re working on is not specific about some design point, and you
   would like advice.
@@ -168,8 +170,9 @@ Sometimes it helps to move (part of) a thread to a different channel, so that
 it's seen by the appropriate audience.
 
 - We generally aim to discuss raw user feedback on the product’s design in
-  [#feedback](https://chat.zulip.org/#narrow/channel/137-feedback).
-  The [#design][design channel] should be reserved for design aspects that we’re
+  [#feedback](https://chat.zulip.org/#narrow/channel/137-feedback) (when it
+  applies to the web and desktop apps, or to all Zulip clients). The
+  [#design][design channel] should be reserved for design aspects that we’re
   actively (considering) working on. This lets the design team focus on
   discussions that are expected to result in actionable decisions.
 
@@ -178,14 +181,33 @@ it's seen by the appropriate audience.
   follow the conversation.
 
 - Discussion of implementation-related decisions should ideally happen in
-  [#frontend](https://chat.zulip.org/#narrow/channel/6-frontend). The line can
-  sometimes blur (and that’s OK), but we should aim to move (parts of) the
-  thread if there is an extensive conversation that belongs in the other channel.
+  non-design channels:
+  [#frontend](https://chat.zulip.org/#narrow/channel/6-frontend) for the web
+  app, and see our [guide to chat.zulip.org
+  channels](https://zulip.com/development-community/#channels-for-code-contributors)
+  for other Zulip codebases. The line can sometimes blur (and that’s OK), but we
+  should aim to move (parts of) the thread if there is an extensive conversation
+  that belongs in the other channel.
 
-- We use [#mobile-design](https://chat.zulip.org/#narrow/channel/530-mobile-design)
-  for discussions of mobile app design, and
-  [#zulip-terminal](https://chat.zulip.org/#narrow/channel/206-zulip-terminal) for
-  terminal app design.
+- Similarly, for changes to the mobile app:
+
+  - We aim to discuss raw user feedback in
+    [#mobile](https://chat.zulip.org/#narrow/channel/48-mobile).
+    The [#mobile-design][mobile-design channel] channel is reserved for design
+    aspects that we're actively (considering) working on.
+  - A discussion that has shifted into the design phase should be moved to
+    [#mobile-design][mobile-design channel], to help the design team closely
+    follow the discussion that calls for their input.
+  - Discussion of implementation details should move to
+    [#mobile-team](https://chat.zulip.org/#narrow/channel/243-mobile-team) or to
+    [#mobile-dev-help](https://chat.zulip.org/#narrow/channel/516-mobile-dev-help).
+
+- Discussions of the mobile app's design should move to
+  [#mobile-design][mobile-design channel] (instead of #design), which the
+  mobile team follows closely.
+
+  Similarly, discussions of the design of the terminal app should move to
+  [#zulip-terminal][zulip-terminal channel].
 
 ## Guidelines for decision makers
 
@@ -269,3 +291,5 @@ to a decision:
     enough information to go on. (If they don’t, the thread can be bumped.)
 
 [design channel]: https://chat.zulip.org/#narrow/channel/101-design
+[mobile-design channel]: https://chat.zulip.org/#narrow/channel/530-mobile-design
+[zulip-terminal channel]: https://chat.zulip.org/#narrow/channel/206-zulip-terminal
