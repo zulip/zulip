@@ -667,11 +667,16 @@ def add_subscriptions_backend(
         is_default_stream=is_default_stream,
         setting_groups_dict=setting_groups_dict,
     )
-    (
-        authorized_streams,
-        unauthorized_streams,
-        streams_to_which_user_cannot_add_subscribers,
-    ) = filter_stream_authorization(user_profile, existing_streams, is_subscribing_other_users)
+
+    streams_categorized_by_permissions = filter_stream_authorization(
+        user_profile, existing_streams, is_subscribing_other_users
+    )
+    authorized_streams = streams_categorized_by_permissions.authorized_streams
+    unauthorized_streams = streams_categorized_by_permissions.unauthorized_streams
+    streams_to_which_user_cannot_add_subscribers = (
+        streams_categorized_by_permissions.streams_to_which_user_cannot_add_subscribers
+    )
+
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
         raise JsonableError(
             _("Unable to access channel ({channel_name}).").format(

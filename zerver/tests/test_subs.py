@@ -71,6 +71,7 @@ from zerver.lib.stream_traffic import (
 )
 from zerver.lib.streams import (
     StreamDict,
+    StreamsCategorizedByPermissions,
     access_stream_by_id,
     access_stream_by_name,
     can_access_stream_history,
@@ -5516,17 +5517,27 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # Verify the internal checks also block guest users.
         stream = get_stream("Denmark", guest_user.realm)
+        streams_categorized_by_permissions = filter_stream_authorization(guest_user, [stream])
         self.assertEqual(
-            filter_stream_authorization(guest_user, [stream]),
-            ([], [stream], []),
+            streams_categorized_by_permissions,
+            StreamsCategorizedByPermissions(
+                authorized_streams=[],
+                unauthorized_streams=[stream],
+                streams_to_which_user_cannot_add_subscribers=[],
+            ),
         )
 
         stream = self.make_stream("private_stream", invite_only=True)
         result = self.subscribe_via_post(guest_user, ["private_stream"], allow_fail=True)
         self.assert_json_error(result, "Not allowed for guest users")
+        streams_categorized_by_permissions = filter_stream_authorization(guest_user, [stream])
         self.assertEqual(
-            filter_stream_authorization(guest_user, [stream]),
-            ([], [stream], []),
+            streams_categorized_by_permissions,
+            StreamsCategorizedByPermissions(
+                authorized_streams=[],
+                unauthorized_streams=[stream],
+                streams_to_which_user_cannot_add_subscribers=[],
+            ),
         )
 
         web_public_stream = self.make_stream("web_public_stream", is_web_public=True)
@@ -5541,9 +5552,14 @@ class SubscriptionAPITest(ZulipTestCase):
         #                                           is_web_public=True, allow_fail=True)
         # self.assert_json_success(result)
         streams_to_sub = [web_public_stream, public_stream, private_stream]
+        streams_categorized_by_permissions = filter_stream_authorization(guest_user, streams_to_sub)
         self.assertEqual(
-            filter_stream_authorization(guest_user, streams_to_sub),
-            ([web_public_stream], [public_stream, private_stream], []),
+            streams_categorized_by_permissions,
+            StreamsCategorizedByPermissions(
+                authorized_streams=[web_public_stream],
+                unauthorized_streams=[public_stream, private_stream],
+                streams_to_which_user_cannot_add_subscribers=[],
+            ),
         )
 
         # Guest can be subscribed by other users.
