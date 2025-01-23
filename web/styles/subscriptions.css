@@ -343,39 +343,29 @@ h4.user_group_setting_subsection_title {
 
     .user-groups-header,
     .subscriptions-header {
-        padding: 12px;
-        text-align: center;
+        height: var(--settings-overlay-header-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         text-transform: uppercase;
         font-weight: 700;
         background-color: var(--color-background-modal-bar);
         border-bottom: 1px solid var(--color-border-modal-bar);
 
         .fa-chevron-left {
-            display: none;
-        }
-
-        .user-groups-title,
-        .subscriptions-title {
-            display: inline-block;
-            transform: translate(-13px, 0);
+            visibility: hidden;
         }
 
         .exit {
             font-weight: 600;
-            position: absolute;
-            top: 10px;
-            right: 10px;
             color: hsl(0deg 0% 67%);
             cursor: pointer;
         }
     }
 
     .exit-sign {
-        position: relative;
-        top: 1px;
-        margin-left: 3px;
         font-size: 1.5rem;
-        line-height: 1;
+        margin-right: 10px;
         font-weight: 600;
         cursor: pointer;
     }
@@ -1295,7 +1285,7 @@ div.settings-radio-input-parent {
 
         .user-groups-header .fa-chevron-left,
         .subscriptions-header .fa-chevron-left {
-            display: block;
+            visibility: visible;
         }
     }
 
