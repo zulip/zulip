@@ -1,4 +1,5 @@
 from collections.abc import Collection, Iterable
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import TypedDict
 
@@ -837,11 +838,22 @@ def can_administer_channel(channel: Stream, user_profile: UserProfile) -> bool:
     )
 
 
+@dataclass
+class StreamsCategorizedByPermissions:
+    authorized_streams: list[Stream]
+    unauthorized_streams: list[Stream]
+    streams_to_which_user_cannot_add_subscribers: list[Stream]
+
+
 def filter_stream_authorization(
     user_profile: UserProfile, streams: Collection[Stream], is_subscribing_other_users: bool = False
-) -> tuple[list[Stream], list[Stream], list[Stream]]:
+) -> StreamsCategorizedByPermissions:
     if len(streams) == 0:
-        return [], [], []
+        return StreamsCategorizedByPermissions(
+            authorized_streams=[],
+            unauthorized_streams=[],
+            streams_to_which_user_cannot_add_subscribers=[],
+        )
 
     recipient_ids = [stream.recipient_id for stream in streams]
     subscribed_recipient_ids = set(
@@ -883,10 +895,10 @@ def filter_stream_authorization(
         if stream.id not in {stream.id for stream in unauthorized_streams}
         and stream.id not in {stream.id for stream in streams_to_which_user_cannot_add_subscribers}
     ]
-    return (
-        authorized_streams,
-        unauthorized_streams,
-        streams_to_which_user_cannot_add_subscribers,
+    return StreamsCategorizedByPermissions(
+        authorized_streams=authorized_streams,
+        unauthorized_streams=unauthorized_streams,
+        streams_to_which_user_cannot_add_subscribers=streams_to_which_user_cannot_add_subscribers,
     )
 
 
