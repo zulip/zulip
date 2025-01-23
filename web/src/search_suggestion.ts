@@ -704,7 +704,7 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
         },
         {
             search_string: "is:resolved",
-            description_html: "topics marked as resolved",
+            description_html: "resolved topics",
             is_people: false,
             incompatible_patterns: [
                 {operator: "is", operand: "resolved"},
