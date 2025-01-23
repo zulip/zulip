@@ -529,8 +529,9 @@
     --overlay-container-max-height: 1000px;
     /* .subscriptions-header and .settings-header */
     --settings-overlay-header-height: 45px;
-    /* .display-type */
-    --subscriptions-overlay-display-type-height: 44px;
+    /* .display-type and .list-toggler-container
+       in subscriptions and user group settings overlays */
+    --settings-overlay-subheader-height: 44px;
     /* .settings-sticky-footer */
     --subscriptions-overlay-sticky-footer-height: 60px;
     /* Informational overlay */
