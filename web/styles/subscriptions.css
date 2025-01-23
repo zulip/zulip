@@ -433,10 +433,11 @@ h4.user_group_setting_subsection_title {
 
         .list-toggler-container {
             align-items: center;
-            padding: 6px 8px;
+            padding: 0 8px;
             border-bottom: 1px solid var(--color-border-modal-bar);
             display: flex;
             justify-content: space-between;
+            height: var(--settings-overlay-subheader-height);
 
             #add_new_subscription {
                 position: relative;
@@ -456,8 +457,10 @@ h4.user_group_setting_subsection_title {
         }
 
         .display-type {
-            padding: 2px;
-            text-align: center;
+            height: var(--settings-overlay-subheader-height);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             font-weight: 600;
             border-bottom: 1px solid var(--color-border-modal-bar);
 
@@ -483,7 +486,6 @@ h4.user_group_setting_subsection_title {
                 display: none;
                 font-size: 1.5em;
                 line-height: 1;
-                margin: 9px;
                 font-weight: 600;
                 word-break: break-all;
 
@@ -792,13 +794,13 @@ h4.user_group_setting_subsection_title {
             height: calc(
                 var(--overlay-container-height) -
                     var(--settings-overlay-header-height) -
-                    var(--subscriptions-overlay-display-type-height) -
+                    var(--settings-overlay-subheader-height) -
                     var(--subscriptions-overlay-sticky-footer-height)
             );
             max-height: calc(
                 var(--overlay-container-max-height) -
                     var(--settings-overlay-header-height) -
-                    var(--subscriptions-overlay-display-type-height) -
+                    var(--settings-overlay-subheader-height) -
                     var(--subscriptions-overlay-sticky-footer-height)
             );
         }
