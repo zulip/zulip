@@ -1,0 +1,53 @@
+{
+    "id": "uJKvJ0oObKsL3rpojdKJ8",
+    "payload": {
+        "user": {
+            "id": "f0Ls96Zaxrzu6E6A8gBfE8jW"
+        },
+        "team": {
+            "id": "team_IXf0JVlfXDnlJiHaXZM7VIWv"
+        },
+        "deployment": {
+            "id": "dpl_9mgbkQCUoQ36KykmXnkGtwCtAqSV",
+            "meta": {
+                "githubCommitAuthorName": "apoorvapendse",
+                "githubCommitMessage": "Update page.tsx",
+                "githubCommitOrg": "apoorvapendse",
+                "githubCommitRef": "main",
+                "githubCommitRepo": "sample-project",
+                "githubCommitSha": "5af715d255d94d94fafee1d2254315e2b233c21c",
+                "githubDeployment": "1",
+                "githubOrg": "apoorvapendse",
+                "githubRepo": "sample-project",
+                "githubRepoOwnerType": "User",
+                "githubCommitRepoId": "827777144",
+                "githubRepoId": "827777144",
+                "githubRepoVisibility": "private",
+                "githubCommitAuthorLogin": "apoorvapendse",
+                "branchAlias": "sample-project-git-main-apoorvapendses-projects.vercel.app",
+                "action": "redeploy",
+                "originalDeploymentId": "dpl_AAWopLpjRTF2Jp3VSwJH2n2vFVBQ"
+            },
+            "name": "sample-project",
+            "url": "sample-project-cqixn44dp-apoorvapendses-projects.vercel.app",
+            "inspectorUrl": "https://vercel.com/apoorvapendses-projects/sample-project/9mgbkQCUoQ36KykmXnkGtwCtAqSV"
+        },
+        "links": {
+            "deployment": "https://vercel.com/apoorvapendses-projects/sample-project/9mgbkQCUoQ36KykmXnkGtwCtAqSV",
+            "project": "https://vercel.com/apoorvapendses-projects/sample-project"
+        },
+        "name": "sample-project",
+        "plan": "hobby",
+        "project": {
+            "id": "prj_uQnRYJu4sqQ5ycL9cGQ94LeJP9JH"
+        },
+        "regions": [
+            "iad1"
+        ],
+        "target": "production",
+        "type": "LAMBDAS",
+        "url": "sample-project-cqixn44dp-apoorvapendses-projects.vercel.app"
+    },
+    "createdAt": 1737554053245,
+    "type": "deployment.succeeded"
+}
