@@ -2164,3 +2164,21 @@ label.preferences-radio-choice-label {
 #data-exports .tab-switcher .ind-tab {
     width: 160px;
 }
+
+.action-button-quiet-brand {
+    color: var(--color-text-brand-quiet-action-button);
+    background-color: var(--color-background-brand-quiet-action-button);
+    box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
+
+    &:hover {
+        background-color: var(
+            --color-background-brand-quiet-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-brand-quiet-action-button-active
+        );
+    }
+}
