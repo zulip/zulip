@@ -282,7 +282,7 @@ export function rebuild($stream_li: JQuery, stream_id: number): void {
     active_widgets.set(stream_id, widget);
 }
 
-function scroll_zoomed_in_topic_into_view(): void {
+export function scroll_zoomed_in_topic_into_view(): void {
     const $selected_topic = $(".topic-list .topic-list-item.active-sub-filter");
     if ($selected_topic.length === 0) {
         // If we don't have a selected topic, scroll to top.
