@@ -17,13 +17,13 @@ including [emoji reactions][emoji-reactions],
 
 {settings_tab|emoji-settings}
 
-1. Under **Add a new emoji**, enter an **emoji name**.
+1. Click **Add a new emoji**.
 
-1. Click **Upload image or GIF** and add a file in the PNG, JPG, or
+1. Click **Upload image or GIF**, and add a file in the PNG, JPG, or
    GIF file format. Zulip will automatically scale the image down to
    25x25 pixels.
 
-1. Click **Add emoji**.
+1. Enter an **Emoji name**, and click **Confirm**.
 
 {end_tabs}
 
