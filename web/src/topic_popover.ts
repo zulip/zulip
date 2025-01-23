@@ -9,6 +9,7 @@ import render_left_sidebar_topic_actions_popover from "../templates/popovers/lef
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
+import * as message_summary from "./message_summary.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
@@ -155,6 +156,12 @@ export function initialize(): void {
                             message_edit.delete_topic(stream_id, topic_name);
                         },
                     });
+
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+
+                $popper.one("click", ".sidebar-popover-summarize-topic", () => {
+                    message_summary.get_narrow_summary(stream_id, topic_name);
 
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
