@@ -383,7 +383,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "principals": '["' + iago.email + '"]',
         }
         with self.capture_send_event_calls(expected_num_events=3) as events:
-            result = self.common_subscribe_to_streams(hamlet, ["Rome"], request_data)
+            result = self.subscribe_via_post(hamlet, ["Rome"], request_data)
             self.assert_json_success(result)
 
         msg_event = [e for e in events if e["event"]["type"] == "message"]
@@ -399,7 +399,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "principals": '["hambot-bot@zulip.testserver"]',
         }
         with self.capture_send_event_calls(expected_num_events=2) as events_bot:
-            result = self.common_subscribe_to_streams(hamlet, ["Rome"], bot_request_data)
+            result = self.subscribe_via_post(hamlet, ["Rome"], bot_request_data)
             self.assert_json_success(result)
 
         # No notification message event or invitation email is sent because of bot.

@@ -1463,7 +1463,7 @@ Output:
         bulk_remove_subscriptions(realm, [user_profile], [stream], acting_user=None)
 
     # Subscribe to a stream by making an API request
-    def common_subscribe_to_streams(
+    def subscribe_via_post(
         self,
         user: UserProfile,
         subscriptions_raw: list[str] | list[dict[str, str]],
