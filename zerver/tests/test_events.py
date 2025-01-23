@@ -3804,15 +3804,15 @@ class RealmPropertyActionTest(BaseAction):
             video_chat_provider=[
                 Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"],
             ],
-            jitsi_server_url=["https://jitsi1.example.com", "https://jitsi2.example.com"],
+            jitsi_server_url=["https://jitsi1.example.com", "https://jitsi2.example.com", None],
             giphy_rating=[
                 Realm.GIPHY_RATING_OPTIONS["disabled"]["id"],
             ],
             default_code_block_language=["python", "javascript"],
-            message_content_delete_limit_seconds=[1000, 1100, 1200],
+            message_content_delete_limit_seconds=[1000, 1100, 1200, None],
             message_content_edit_limit_seconds=[1000, 1100, 1200, None],
-            move_messages_within_stream_limit_seconds=[1000, 1100, 1200],
-            move_messages_between_streams_limit_seconds=[1000, 1100, 1200],
+            move_messages_within_stream_limit_seconds=[1000, 1100, 1200, None],
+            move_messages_between_streams_limit_seconds=[1000, 1100, 1200, None],
         )
 
         vals = test_values.get(name)
