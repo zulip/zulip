@@ -290,7 +290,11 @@ function scroll_zoomed_in_topic_into_view(): void {
         return;
     }
     const $container = $("#left_sidebar_scroll_container");
-    scroll_util.scroll_element_into_container($selected_topic, $container);
+    const stream_header_height =
+        $(".narrow-filter.stream-expanded .bottom_left_row").outerHeight(true) ?? 0;
+    const topic_header_height = $("#topics_header").outerHeight(true) ?? 0;
+    const sticky_header_height = stream_header_height + topic_header_height;
+    scroll_util.scroll_element_into_container($selected_topic, $container, sticky_header_height);
 }
 
 // For zooming, we only do topic-list stuff here...let stream_list
