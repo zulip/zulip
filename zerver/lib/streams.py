@@ -439,7 +439,7 @@ def check_stream_access_for_delete_or_update(
     if sub is None and stream.invite_only:
         raise JsonableError(error)
 
-    if can_administer_channel(stream, user_profile):
+    if can_administer_accessible_channel(stream, user_profile):
         return
 
     raise CannotAdministerChannelError
@@ -828,7 +828,9 @@ def get_streams_to_which_user_cannot_add_subscribers(
     return result
 
 
-def can_administer_channel(channel: Stream, user_profile: UserProfile) -> bool:
+def can_administer_accessible_channel(channel: Stream, user_profile: UserProfile) -> bool:
+    # IMPORTANT: This function expects its callers to have already
+    # checked that the user can access the provided channel.
     group_allowed_to_administer_channel = channel.can_administer_channel_group
     assert group_allowed_to_administer_channel is not None
     return user_has_permission_for_group_setting(
