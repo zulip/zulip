@@ -77,7 +77,14 @@ export function scroll_element_into_container(
     // this will be non-intrusive to users when they already have
     // the element visible.
     $container = get_scroll_element($container);
-    const elem_top = $elem.position().top - sticky_header_height;
+
+    // To correctly compute the offset of the element's scroll
+    // position within our scroll container, we need to substract the
+    // scroll container's own offset within the document.
+    const elem_offset = $elem.offset()?.top ?? 0;
+    const container_offset = $container.offset()?.top ?? 0;
+
+    const elem_top = elem_offset - container_offset - sticky_header_height;
     const elem_bottom = elem_top + ($elem.innerHeight() ?? 0);
     const container_height = ($container.height() ?? 0) - sticky_header_height;
 
