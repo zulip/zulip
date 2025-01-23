@@ -52,6 +52,10 @@
         {{/if}}
     </div>
     <div class="advanced-configurations-collapase-view hide">
+        <div class='tip'>
+            {{t 'Channel administrators can add and remove subscribers.
+              Organization administrators can automatically administer all channels.'}}
+        </div>
 
         {{> ../settings/group_setting_value_pill_input
           setting_name="can_send_message_group"
@@ -62,19 +66,16 @@
         {{> ../settings/group_setting_value_pill_input
           setting_name="can_administer_channel_group"
           label=(t 'Who can administer this channel')
-          label_parens_text=(t 'in addition to organization administrators')
           prefix=prefix }}
 
         {{> ../settings/group_setting_value_pill_input
           setting_name="can_add_subscribers_group"
           label=(t 'Who can subscribe others to this channel')
-          label_parens_text=(t 'in addition to organization administrators')
           prefix=prefix }}
 
         {{> ../settings/group_setting_value_pill_input
           setting_name="can_remove_subscribers_group"
           label=(t 'Who can unsubscribe others from this channel')
-          label_parens_text=(t 'in addition to organization administrators')
           prefix=prefix }}
 
 
