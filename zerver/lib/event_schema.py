@@ -418,15 +418,7 @@ def check_realm_update(
         return
 
     property_type = Realm.property_types[prop]
-
-    if property_type in (bool, int, str):
-        assert isinstance(value, property_type)
-    elif property_type == (int, type(None)):
-        assert isinstance(value, int)
-    elif property_type == (str, type(None)):
-        assert isinstance(value, str)
-    else:
-        raise AssertionError(f"Unexpected property type {property_type}")
+    assert isinstance(value, property_type)
 
 
 def check_realm_default_update(
