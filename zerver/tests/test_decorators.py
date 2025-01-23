@@ -1372,7 +1372,7 @@ class TestRequireDecorators(ZulipTestCase):
     def test_require_non_guest_user_decorator(self) -> None:
         guest_user = self.example_user("polonius")
         self.login_user(guest_user)
-        result = self.common_subscribe_to_streams(guest_user, ["Denmark"], allow_fail=True)
+        result = self.subscribe_via_post(guest_user, ["Denmark"], allow_fail=True)
         self.assert_json_error(result, "Not allowed for guest users")
 
         outgoing_webhook_bot = self.example_user("outgoing_webhook_bot")
