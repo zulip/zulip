@@ -2238,7 +2238,7 @@ test("navbar_helpers", ({override}) => {
             terms: is_resolved,
             is_common_narrow: true,
             icon: "check",
-            title: "translated: Topics marked as resolved",
+            title: "translated: Resolved topics",
             redirect_url_with_search: "/#narrow/topics/is/resolved",
         },
         {
