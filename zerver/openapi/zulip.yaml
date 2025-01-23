@@ -4191,11 +4191,11 @@ paths:
                                 value:
                                   description: |
                                     The new value of the property.
-                                  nullable: true
                                   oneOf:
                                     - type: string
                                     - type: boolean
                                     - type: integer
+                                      nullable: true
                               example:
                                 {
                                   "type": "realm",

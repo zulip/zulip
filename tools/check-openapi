@@ -53,6 +53,20 @@ async function checkFile(file) {
                 console.error("%s:%d:%d: Siblings of $ref have no effect", file, line, col);
                 ok = false;
             }
+
+            const combinator = ["allOf", "anyOf", "oneOf"].find((combinator) =>
+                node.has(combinator),
+            );
+            if (node.has("nullable") && combinator !== undefined) {
+                const {line, col} = lineCounter.linePos(node.range[0]);
+                console.error(
+                    `%s:%d:%d: nullable has no effect as a sibling of ${combinator}`,
+                    file,
+                    line,
+                    col,
+                );
+                ok = false;
+            }
         },
 
         Pair(_key, node) {
