@@ -509,6 +509,19 @@ export function show_new_stream_modal(): void {
         }
     }
 
+    const $add_subscribers_container = $(
+        "#stream_creation_form .subscriber_list_settings",
+    ).expectOne();
+
+    stream_ui_updates.enable_or_disable_add_subscribers_elements(
+        $add_subscribers_container,
+        // User should always be allowed to add subscribers when
+        // creating a new channel regardless of their presence in
+        // realm.can_add_subscribers_group
+        true,
+        true,
+    );
+
     // set default state for "announce stream" and "default stream" option.
     $("#stream_creation_form .default-stream input").prop("checked", false);
     update_announce_stream_state();
