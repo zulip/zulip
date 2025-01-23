@@ -527,8 +527,8 @@
     /* Overlay heights for streams modal */
     --overlay-container-height: 95vh;
     --overlay-container-max-height: 1000px;
-    /* .subscriptions-header */
-    --subscriptions-overlay-header-height: 45px;
+    /* .subscriptions-header and .settings-header */
+    --settings-overlay-header-height: 45px;
     /* .display-type */
     --subscriptions-overlay-display-type-height: 44px;
     /* .settings-sticky-footer */
