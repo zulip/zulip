@@ -651,6 +651,57 @@ export const realm_user_settings_defaults_labels = {
     }),
 };
 
+export const group_setting_labels = {
+    realm: {
+        create_multiuse_invite_group: $t({
+            defaultMessage: "Who can create reusable invitation links",
+        }),
+        can_invite_users_group: $t({defaultMessage: "Who can send email invitations to new users"}),
+        can_create_public_channel_group: $t({defaultMessage: "Who can create public channels"}),
+        can_create_web_public_channel_group: $t({
+            defaultMessage: "Who can create web-public channels",
+        }),
+        can_create_private_channel_group: $t({defaultMessage: "Who can create private channels"}),
+        can_add_subscribers_group: $t({defaultMessage: "Who can subscribe users to any channel"}),
+        direct_message_permission_group: $t({
+            defaultMessage: "Who can authorize a direct message conversation",
+        }),
+        direct_message_initiator_group: $t({
+            defaultMessage: "Who can start a direct message conversation",
+        }),
+        can_manage_all_groups: $t({defaultMessage: "Who can administer all user groups"}),
+        can_create_groups: $t({defaultMessage: "Who can create user groups"}),
+        can_move_messages_between_topics_group: $t({
+            defaultMessage: "Who can move messages to another topic",
+        }),
+        can_move_messages_between_channels_group: $t({
+            defaultMessage: "Who can move messages to another channel",
+        }),
+        can_delete_any_message_group: $t({defaultMessage: "Who can delete any message"}),
+        can_delete_own_message_group: $t({defaultMessage: "Who can delete their own messages"}),
+        can_access_all_users_group: $t({
+            defaultMessage: "Who can view all other users in the organization",
+        }),
+        can_add_custom_emoji_group: $t({defaultMessage: "Who can add custom emoji"}),
+    },
+    stream: {
+        can_add_subscribers_group: $t({defaultMessage: "Who can subscribe others to this channel"}),
+        can_send_message_group: $t({defaultMessage: "Who can post to this channel"}),
+        can_administer_channel_group: $t({defaultMessage: "Who can administer this channel"}),
+        can_remove_subscribers_group: $t({
+            defaultMessage: "Who can unsubscribe others from this channel",
+        }),
+    },
+    group: {
+        can_add_members_group: $t({defaultMessage: "Who can add members to this group"}),
+        can_join_group: $t({defaultMessage: "Who can join this group"}),
+        can_leave_group: $t({defaultMessage: "Who can leave this group"}),
+        can_manage_group: $t({defaultMessage: "Who can administer this group"}),
+        can_mention_group: $t({defaultMessage: "Who can mention this group"}),
+        can_remove_members_group: $t({defaultMessage: "Who can remove members from this group"}),
+    },
+};
+
 // NOTIFICATIONS
 
 export const general_notifications_table_labels = {
