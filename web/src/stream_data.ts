@@ -546,7 +546,7 @@ export function can_subscribe_others(sub: StreamSubscription): boolean {
         return false;
     }
 
-    if (settings_data.can_subscribe_others_to_all_streams()) {
+    if (settings_data.can_subscribe_others_to_all_accessible_streams()) {
         return true;
     }
 

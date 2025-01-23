@@ -434,7 +434,7 @@ export function update_add_subscriptions_elements(sub: SettingsSubscription): vo
 
     if (!allow_user_to_add_subs) {
         let tooltip_message;
-        if (!settings_data.can_subscribe_others_to_all_streams()) {
+        if (!settings_data.can_subscribe_others_to_all_accessible_streams()) {
             tooltip_message = $t({
                 defaultMessage:
                     "You do not have permission to add other users to channels in this organization.",
