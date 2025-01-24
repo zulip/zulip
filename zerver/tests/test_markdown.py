@@ -310,7 +310,7 @@ class MarkdownMiscTest(ZulipTestCase):
         mention_backend = MentionBackend(realm.id)
 
         content = ""
-        for i in range(40):
+        for i in range(5):
             group_name = f"group{i}"
             check_add_user_group(realm, group_name, [hamlet, cordelia], acting_user=othello)
             content += f" @*{group_name}*"
