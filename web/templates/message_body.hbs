@@ -1,7 +1,7 @@
 {{#if include_sender}}
     {{> message_avatar . ~}}
 {{/if}}
-<span class="message_sender">
+<div class="message_sender">
     {{#if include_sender}}
         <span class="sender_info_hover sender_name" role="button" tabindex="0">
             <span class="view_user_card_tooltip sender_name_text" data-is-bot="{{sender_is_bot}}">
@@ -24,7 +24,7 @@
             {{> edited_notice .}}
         {{/if}}
     {{/if}}
-</span>
+</div>
 
 <a {{#unless msg/locally_echoed}}href="{{ msg/url }}"{{/unless}} class="message-time">
     {{#unless include_sender}}
