@@ -112,3 +112,24 @@ and what remains by:
 
 The easier it is to review your work, the more likely you are to receive quick
 feedback.
+
+## Follow-ups
+
+Sometimes reviewers will comment on "follow-ups" to your pull request. A
+follow-up is something that can be done separately from the changes in the
+current pull request, because it's tangential to the current changes, or would
+be the next task to do once the current changes are completed.
+
+You should prioritize completing the current pull request over working on
+follow-ups. However, you are expected to manage follow-ups to your work:
+
+1. If possible, it's best to complete follow-ups as soon as you are done with
+   the current pull request. That way, both you and reviewers have the context
+   for the changes fresh in mind.
+
+1. If you don't expect to have time to complete a follow-up soon (or aren't sure
+   if you will), please file an issue to track it. Include a description of the
+   required changes, and a link to the comment where the follow-up was
+   discussed. You can copy-paste the issue description from the prior
+   discussion, but be sure that what you write makes sense without needing to
+   refer to the original thread.
