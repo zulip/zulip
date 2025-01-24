@@ -452,6 +452,11 @@ export function initialize() {
                 const poll_message_content = poll_modal.frame_poll_message_content();
                 compose_ui.insert_syntax_and_focus(poll_message_content);
             },
+            on_show() {
+                setTimeout(() => {
+                    $("#poll-question-input").trigger("focus");
+                }, 0);
+            },
             validate_input,
             form_id: "add-poll-form",
             id: "add-poll-modal",
