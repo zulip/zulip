@@ -147,6 +147,77 @@ def request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], byt
 
 class SlackImporter(ZulipTestCase):
     @responses.activate
+    def test_get_slack_api_data_with_pagination(self) -> None:
+        token = "xoxb-valid-token"
+        pagination_limit = 40
+
+        api_users_list = [f"user{i}" for i in range(100)]
+        count = 0
+
+        def paginated_request_callback(
+            request: PreparedRequest,
+        ) -> tuple[int, dict[str, str], bytes]:
+            """
+            A callback that in a very simple way simulates Slack's /users.list API
+            with support for Pagination and some rate-limiting behavior.
+            """
+            assert request.url is not None
+            assert request.url.startswith("https://slack.com/api/users.list")
+            # Otherwise mypy complains about PreparedRequest not having params attribute:
+            assert hasattr(request, "params")
+
+            nonlocal count
+            count += 1
+
+            self.assertEqual(request.params["limit"], str(pagination_limit))
+            cursor = int(request.params.get("cursor", 0))
+            next_cursor = cursor + pagination_limit
+
+            if count % 3 == 0:
+                # Simulate a rate limit hit on every third request.
+                return (
+                    429,
+                    {"retry-after": "30"},
+                    orjson.dumps({"ok": False, "error": "rate_limit_hit"}),
+                )
+
+            result_user_data = api_users_list[cursor:next_cursor]
+
+            if next_cursor >= len(api_users_list):
+                # The fetch is completed.
+                response_metadata = {}
+            else:
+                response_metadata = {"next_cursor": str(next_cursor)}
+            return (
+                200,
+                {},
+                orjson.dumps(
+                    {
+                        "ok": True,
+                        "members": result_user_data,
+                        "response_metadata": response_metadata,
+                    }
+                ),
+            )
+
+        responses.add_callback(
+            responses.GET, "https://slack.com/api/users.list", callback=paginated_request_callback
+        )
+        with (
+            mock.patch("zerver.data_import.slack.time.sleep", return_value=None) as mock_sleep,
+            self.assertLogs(level="INFO") as mock_log,
+        ):
+            result = get_slack_api_data(
+                "https://slack.com/api/users.list",
+                "members",
+                token=token,
+                pagination_limit=pagination_limit,
+            )
+        self.assertEqual(result, api_users_list)
+        self.assertEqual(mock_sleep.call_count, 1)
+        self.assertIn("INFO:root:Rate limit exceeded. Retrying in 30 seconds...", mock_log.output)
+
+    @responses.activate
     def test_get_slack_api_data(self) -> None:
         token = "xoxb-valid-token"
 
@@ -209,9 +280,10 @@ class SlackImporter(ZulipTestCase):
         token = "xoxb-status404"
         wrong_url = "https://slack.com/api/wrong"
         responses.add_callback(responses.GET, wrong_url, callback=request_callback)
-        with self.assertRaises(Exception) as invalid:
+        with self.assertRaises(Exception) as invalid, self.assertLogs(level="INFO") as mock_log:
             get_slack_api_data(wrong_url, "members", token=token)
         self.assertEqual(invalid.exception.args, ("HTTP error accessing the Slack API.",))
+        self.assertEqual(mock_log.output, ["INFO:root:HTTP error: 404, Response: "])
 
     def test_build_zerver_realm(self) -> None:
         realm_id = 2
