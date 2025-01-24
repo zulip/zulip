@@ -242,17 +242,18 @@
             }
 
             .user-circle {
+                /* 8.5328px at 16px/1em */
+                font-size: 0.5333em;
                 /* TODO: Refactor inbox rows to use grid, to avoid the
                    min-width here that holds the other rows to similar
                    columns. */
-                min-width: 1em;
-                font-size: 0.5333em;
-                margin-right: 5px;
+                /* 16px at 8.5328px/1em */
+                min-width: 1.8751em;
                 top: 0;
             }
 
             .zulip-icon-bot,
-            .zulip-icon-triple-users {
+            .conversation-partners-icon {
                 opacity: 0.7;
                 margin-right: 5px;
             }
