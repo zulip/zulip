@@ -774,6 +774,30 @@ def get_recursive_subgroups_for_groups(
     return recursive_subgroups
 
 
+def get_root_id_annotated_recursive_subgroups_for_groups(
+    user_group_ids: Iterable[int], realm_id: int
+) -> QuerySet[NamedUserGroup]:
+    # Same as get_recursive_subgroups_for_groups but keeps track of
+    # each group root_id and annotates it with that group.
+
+    cte = With.recursive(
+        lambda cte: NamedUserGroup.objects.filter(id__in=user_group_ids, realm=realm_id)
+        .values(group_id=F("id"), root_id=F("id"))
+        .union(
+            cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(
+                group_id=F("id"), root_id=cte.col.root_id
+            )
+        )
+    )
+    recursive_subgroups = (
+        cte.join(NamedUserGroup, id=cte.col.group_id)
+        .with_cte(cte)
+        .annotate(root_id=cte.col.root_id)
+    )
+
+    return recursive_subgroups
+
+
 def get_role_based_system_groups_dict(realm: Realm) -> dict[str, NamedUserGroup]:
     system_groups = NamedUserGroup.objects.filter(realm=realm, is_system_group=True).select_related(
         "usergroup_ptr"
