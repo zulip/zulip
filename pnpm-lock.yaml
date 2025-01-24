@@ -82,6 +82,9 @@ importers:
       '@zxcvbn-ts/language-en':
         specifier: ^3.0.1
         version: 3.0.2
+      assert-never:
+        specifier: ^1.4.0
+        version: 1.4.0
       autosize:
         specifier: ^5.0.2
         version: 5.0.2
@@ -3131,6 +3134,9 @@ packages:
   arrify@1.0.1:
     resolution: {integrity: sha512-3CYzex9M9FGQjCGMGyi6/31c8GJbgb0qGyrx5HWxPd0aCwh4cB2YjMb2Xf9UuoogrMrlO9cTqnB5rI5GHZTcUA==}
     engines: {node: '>=0.10.0'}
+
+  assert-never@1.4.0:
+    resolution: {integrity: sha512-5oJg84os6NMQNl27T9LnZkvvqzvAnHu03ShCnoj6bsJwS7L8AO4lf+C/XjK/nvzEqQB744moC6V128RucQd1jA==}
 
   ast-types@0.13.4:
     resolution: {integrity: sha512-x1FCFnFifvYDDzTaLII71vG5uvDwgtmDTEVWAxrgeiR8VjMONcCXJx7E+USjDtHlwFmt9MysbqgF9b9Vjr6w+w==}
@@ -12269,6 +12275,8 @@ snapshots:
       is-array-buffer: 3.0.5
 
   arrify@1.0.1: {}
+
+  assert-never@1.4.0: {}
 
   ast-types@0.13.4:
     dependencies:

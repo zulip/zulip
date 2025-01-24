@@ -14,9 +14,9 @@ import {current_user, realm} from "./state_data.ts";
 import type {StreamPermissionGroupSetting} from "./stream_types.ts";
 import * as sub_store from "./sub_store.ts";
 import type {
+    ApiStream,
     ApiStreamSubscription,
     NeverSubscribedStream,
-    Stream,
     StreamSpecificNotificationSettings,
     StreamSubscription,
 } from "./sub_store.ts";
@@ -705,12 +705,11 @@ export function rewire_is_user_subscribed(value: typeof is_user_subscribed): voi
     is_user_subscribed = value;
 }
 
-export function create_streams(streams: Stream[]): void {
+export function create_streams(streams: ApiStream[]): void {
     for (const stream of streams) {
         // We handle subscriber stuff in other events.
 
         const attrs = {
-            stream_weekly_traffic: null,
             subscribers: [],
             ...stream,
         };

@@ -204,7 +204,7 @@ function show_first_stream_created_modal(stream: StreamSubscription): void {
 // but for now we just pass in the subscribers and color (things likely to be different).
 export function mark_subscribed(
     sub: StreamSubscription,
-    subscribers: number[],
+    subscribers: number[] | undefined,
     color: string | undefined,
 ): void {
     if (sub.subscribed) {

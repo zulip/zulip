@@ -1,3 +1,4 @@
+import assertNever from "assert-never";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
@@ -52,6 +53,7 @@ import * as scheduled_messages_feed_ui from "./scheduled_messages_feed_ui.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as scheduled_messages_ui from "./scheduled_messages_ui.ts";
 import * as scroll_bar from "./scroll_bar.ts";
+import type {ServerEvent} from "./server_event_types.ts";
 import * as settings_account from "./settings_account.ts";
 import * as settings_bots from "./settings_bots.ts";
 import * as settings_components from "./settings_components.ts";
@@ -94,8 +96,10 @@ import * as user_status from "./user_status.ts";
 import * as user_topics from "./user_topics.ts";
 import * as user_topics_ui from "./user_topics_ui.ts";
 
-export function dispatch_normal_event(event) {
-    const noop = function () {};
+export function dispatch_normal_event(event: ServerEvent): void {
+    const noop = function (): void {
+        // Do nothing
+    };
     switch (event.type) {
         case "alert_words":
             alert_words.set_words(event.alert_words);
@@ -179,10 +183,8 @@ export function dispatch_normal_event(event) {
             const reload_options = {
                 save_compose: true,
                 message_html: "The application has been updated; reloading!",
+                immediate: event.immediate,
             };
-            if (event.immediate) {
-                reload_options.immediate = true;
-            }
             reload.initiate(reload_options);
             break;
         }
@@ -196,8 +198,7 @@ export function dispatch_normal_event(event) {
                     reactions.remove_reaction(event);
                     break;
                 default:
-                    blueslip.error("Unexpected event type reaction/" + event.op);
-                    break;
+                    assertNever(event, "Unexpected op for reaction event");
             }
             message_events.update_views_filtered_on_message_property(
                 [event.message_id],
@@ -332,7 +333,7 @@ export function dispatch_normal_event(event) {
                                     gear_menu.rerender();
                                 }
                             }
-                            if (event.data.authentication_methods !== undefined) {
+                            if ("authentication_methods" in event.data) {
                                 settings_org.populate_auth_methods(
                                     settings_components.realm_authentication_methods_to_boolean_dict(),
                                 );
@@ -355,10 +356,7 @@ export function dispatch_normal_event(event) {
                             realm_logo.render();
                             break;
                         default:
-                            blueslip.error(
-                                "Unexpected event type realm/update_dict/" + event.property,
-                            );
-                            break;
+                            assertNever(event, "Unexpected property for realm/update_dict event");
                     }
                     break;
                 case "deactivated":
@@ -395,8 +393,7 @@ export function dispatch_normal_event(event) {
                     settings_bots.render_bots();
                     break;
                 default:
-                    blueslip.error("Unexpected event type realm_bot/" + event.op);
-                    break;
+                    assertNever(event, "Unexpected op for realm_bot event");
             }
             break;
 
@@ -434,7 +431,6 @@ export function dispatch_normal_event(event) {
 
         case "realm_domains":
             {
-                let i;
                 switch (event.op) {
                     case "add":
                         realm.realm_domains.push(event.realm_domain);
@@ -442,10 +438,9 @@ export function dispatch_normal_event(event) {
                         settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
                         break;
                     case "change":
-                        for (i = 0; i < realm.realm_domains.length; i += 1) {
-                            if (realm.realm_domains[i].domain === event.realm_domain.domain) {
-                                realm.realm_domains[i].allow_subdomains =
-                                    event.realm_domain.allow_subdomains;
+                        for (const realm_domain of realm.realm_domains) {
+                            if (realm_domain.domain === event.realm_domain.domain) {
+                                realm_domain.allow_subdomains = event.realm_domain.allow_subdomains;
                                 break;
                             }
                         }
@@ -453,8 +448,8 @@ export function dispatch_normal_event(event) {
                         settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
                         break;
                     case "remove":
-                        for (i = 0; i < realm.realm_domains.length; i += 1) {
-                            if (realm.realm_domains[i].domain === event.domain) {
+                        for (const [i, realm_domain] of realm.realm_domains.entries()) {
+                            if (realm_domain.domain === event.domain) {
                                 realm.realm_domains.splice(i, 1);
                                 break;
                             }
@@ -463,8 +458,7 @@ export function dispatch_normal_event(event) {
                         settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
                         break;
                     default:
-                        blueslip.error("Unexpected event type realm_domains/" + event.op);
-                        break;
+                        assertNever(event, "Unexpected op for realm_domains event");
                 }
             }
             break;
@@ -527,8 +521,7 @@ export function dispatch_normal_event(event) {
                     break;
                 }
                 default:
-                    blueslip.error("Unexpected event type realm_user/" + event.op);
-                    break;
+                    assertNever(event, "Unexpected op for realm_user event");
             }
             break;
 
@@ -591,6 +584,7 @@ export function dispatch_normal_event(event) {
 
                     for (const stream of event.streams) {
                         const sub = sub_store.get(stream.stream_id);
+                        assert(sub !== undefined);
                         if (overlays.streams_open()) {
                             stream_settings_ui.add_sub_to_table(sub);
                         }
@@ -599,7 +593,7 @@ export function dispatch_normal_event(event) {
                     break;
                 case "delete":
                     for (const stream of event.streams) {
-                        const was_subscribed = sub_store.get(stream.stream_id).subscribed;
+                        const was_subscribed = sub_store.get(stream.stream_id)!.subscribed;
                         const is_narrowed_to_stream = narrow_state.is_for_stream_id(
                             stream.stream_id,
                         );
@@ -638,8 +632,7 @@ export function dispatch_normal_event(event) {
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
                 default:
-                    blueslip.error("Unexpected event type stream/" + event.op);
-                    break;
+                    assertNever(event, "Unexpected op for stream event");
             }
             break;
 
@@ -698,8 +691,7 @@ export function dispatch_normal_event(event) {
                     stream_events.update_property(event.stream_id, event.property, event.value);
                     break;
                 default:
-                    blueslip.error("Unexpected event type subscription/" + event.op);
-                    break;
+                    assertNever(event, "Unexpected op for subscription event");
             }
             break;
         case "typing":
@@ -716,8 +708,7 @@ export function dispatch_normal_event(event) {
                     typing_events.hide_notification(event);
                     break;
                 default:
-                    blueslip.error("Unexpected event type typing/" + event.op);
-                    break;
+                    assertNever(event, "Unexpected op for typing event");
             }
             break;
 
@@ -742,6 +733,7 @@ export function dispatch_normal_event(event) {
                         user_settings,
                     );
                 }
+                assert(settings_notifications.user_settings_panel !== undefined);
                 settings_notifications.update_page(settings_notifications.user_settings_panel);
                 break;
             }
@@ -897,7 +889,7 @@ export function dispatch_normal_event(event) {
                 // reload.
             }
             if (event.property === "emojiset") {
-                settings_preferences.report_emojiset_change(
+                void settings_preferences.report_emojiset_change(
                     settings_preferences.user_settings_panel,
                 );
                 // Rerender the whole message list UI
@@ -997,8 +989,7 @@ export function dispatch_normal_event(event) {
                     user_group_edit.update_group(event);
                     break;
                 default:
-                    blueslip.error("Unexpected event type user_group/" + event.op);
-                    break;
+                    assertNever(event, "Unexpected op for user_group event");
             }
             break;
 

@@ -33,7 +33,7 @@ import * as util from "./util.ts";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
-type ServerMessage = RawMessage & {local_id?: string};
+export type ServerMessage = RawMessage & {local_id?: string};
 
 const send_message_api_response_schema = z.object({
     id: z.number(),

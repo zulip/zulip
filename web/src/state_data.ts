@@ -7,8 +7,6 @@ import {group_setting_value_schema} from "./types.ts";
 import {user_settings_schema} from "./user_settings.ts";
 import {user_status_schema} from "./user_status_types.ts";
 
-const NOT_TYPED_YET = z.unknown();
-
 const group_permission_setting_schema = z.object({
     require_system_group: z.boolean(),
     allow_internet_group: z.boolean(),
@@ -532,10 +530,10 @@ export const state_data_schema = z
     .and(
         z
             .object({
-                queue_id: NOT_TYPED_YET,
-                server_generation: NOT_TYPED_YET,
-                event_queue_longpoll_timeout_seconds: NOT_TYPED_YET,
-                last_event_id: NOT_TYPED_YET,
+                queue_id: z.nullable(z.string()),
+                server_generation: z.number(),
+                event_queue_longpoll_timeout_seconds: z.number(),
+                last_event_id: z.optional(z.number()),
             })
             .transform((server_events) => ({server_events})),
     )
