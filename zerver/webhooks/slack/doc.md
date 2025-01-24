@@ -21,15 +21,10 @@ See also the [Zulip Slack incoming webhook integration][1].
 1. {!create-an-incoming-webhook.md!}
 
 1. {!generate-webhook-url-basic.md!}
-
-    To map each Slack channel to a Zulip topic, make sure that the
-    **Send all notifications to a single topic** option is disabled
-    when generating the URL. Add `&channels_map_to_topics=1` to the
-    generated URL.
-
-    Otherwise, add `&channels_map_to_topics=0` to the generated URL.
-    Note that any Zulip channel you specified when generating the URL
-    will be ignored in this case.
+   By default, all incoming Slack messages are sent to the specified
+   Zulip channel under the topic **"Message from Slack"**. For options
+   to configure Slack channel mapping, see [configuration options](#
+   configuration-options).
 
 1. Create a new [Slack app][4], and open it. Navigate to the **OAuth
    & Permissions** menu, and scroll down to the **Scopes** section.
@@ -63,6 +58,15 @@ See also the [Zulip Slack incoming webhook integration][1].
 {!congrats.md!}
 
 ![](/static/images/integrations/slack/001.png)
+
+### Configuration Options
+
+- To map each Slack channel to a Zulip topic, add `&channels_map_to
+  _topics=1` to the generated URL.
+
+- To map each Slack channel to a Zulip channel, add `&channels_map_
+  to_topics=0` to the generated URL. Note that any Zulip channel you
+  specified when generating the URL will be ignored in this case.
 
 ### Related documentation
 
