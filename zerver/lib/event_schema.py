@@ -122,6 +122,9 @@ def validate_with_model(data: dict[str, object], model: type[BaseModel]) -> None
 
 def make_checker(base_model: type[BaseEvent]) -> Callable[[str, dict[str, object]], None]:
     def f(label: str, event: dict[str, object]) -> None:
+        assert isinstance(event["id"], int)
+        event = dict(event)
+        del event["id"]
         try:
             validate_with_model(event, base_model)
         except Exception as e:  # nocoverage
