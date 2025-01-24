@@ -42,26 +42,31 @@ class Attachment(BaseModel):
 
 
 class AttachmentAddEvent(BaseEvent):
-    type: Literal["attachment"]
-    op: Literal["add"]
+    type: Literal["attachment"] = "attachment"
+    op: Literal["add"] = "add"
     attachment: Attachment
     upload_space_used: int
 
 
-class AttachmentFieldForAttachmentRemoveEvent(BaseModel):
+class IdHolder(BaseModel):
+    # This is a simple struct-like object with an integer id.
+    # The origin of this is probably that we used to send more
+    # things in this struct, and when we moved to ids, we kept
+    # it a struct for backward compatibility.  We use this as
+    # part of attachment-related events (read down).
     id: int
 
 
 class AttachmentRemoveEvent(BaseEvent):
-    type: Literal["attachment"]
-    op: Literal["remove"]
-    attachment: AttachmentFieldForAttachmentRemoveEvent
+    type: Literal["attachment"] = "attachment"
+    op: Literal["remove"] = "remove"
+    attachment: IdHolder
     upload_space_used: int
 
 
 class AttachmentUpdateEvent(BaseEvent):
-    type: Literal["attachment"]
-    op: Literal["update"]
+    type: Literal["attachment"] = "attachment"
+    op: Literal["update"] = "update"
     attachment: Attachment
     upload_space_used: int
 

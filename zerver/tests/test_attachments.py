@@ -63,6 +63,7 @@ class AttachmentsTests(ZulipTestCase):
         self.assert_json_error(result, "Invalid attachment")
         user_profile_to_remove = self.example_user("cordelia")
         attachments = user_attachments(user_profile_to_remove)
+        self.assertEqual(self.attachment.to_dict()["name"], "test.txt")
         self.assertEqual(attachments, [self.attachment.to_dict()])
 
     def test_list_unauthenticated(self) -> None:

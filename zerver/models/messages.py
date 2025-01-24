@@ -14,6 +14,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext_lazy
 from typing_extensions import override
 
+from zerver.lib import event_types
 from zerver.lib.cache import flush_message, flush_submessage, flush_used_upload_space_cache
 from zerver.models.clients import Client
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
@@ -762,22 +763,25 @@ class Attachment(AbstractAttachment):
         return self.messages.exists() or self.scheduled_messages.exists()
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "id": self.id,
-            "name": self.file_name,
-            "path_id": self.path_id,
-            "size": self.size,
+        return self.to_pydantic().model_dump()
+
+    def to_pydantic(self) -> event_types.Attachment:
+        return event_types.Attachment(
+            id=self.id,
+            name=self.file_name,
+            path_id=self.path_id,
+            size=self.size,
             # convert to JavaScript-style UNIX timestamp so we can take
             # advantage of client time zones.
-            "create_time": int(time.mktime(self.create_time.timetuple()) * 1000),
-            "messages": [
-                {
-                    "id": m.id,
-                    "date_sent": int(time.mktime(m.date_sent.timetuple()) * 1000),
-                }
+            create_time=int(time.mktime(self.create_time.timetuple()) * 1000),
+            messages=[
+                event_types.AttachmentMessage(
+                    id=m.id,
+                    date_sent=int(time.mktime(m.date_sent.timetuple()) * 1000),
+                )
                 for m in self.messages.all()
             ],
-        }
+        )
 
 
 post_save.connect(flush_used_upload_space_cache, sender=Attachment)
