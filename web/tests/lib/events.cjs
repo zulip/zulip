@@ -868,8 +868,8 @@ exports.fixtures = {
     user_group__remove_members: {
         type: "user_group",
         op: "remove_members",
-        group_id: 3,
-        user_ids: [99, 100],
+        group_id: 1,
+        user_ids: [1, 2],
     },
 
     user_group__remove_subgroups: {
@@ -882,7 +882,7 @@ exports.fixtures = {
     user_group__update: {
         type: "user_group",
         op: "update",
-        group_id: 3,
+        group_id: 1,
         data: {
             name: "Frontend",
             description: "All Frontend people",
