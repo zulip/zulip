@@ -20,7 +20,7 @@ Url = Annotated[str, AfterValidator(check_url)]
 
 
 class BaseEvent(BaseModel):
-    id: int
+    pass
 
 
 class EventAlertWords(BaseEvent):
