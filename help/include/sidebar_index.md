@@ -66,6 +66,7 @@
 * [Quote or forward a message](/help/quote-or-forward-a-message)
 * [Emoji and emoticons](/help/emoji-and-emoticons)
 * [Insert a link](/help/insert-a-link)
+* [Saved snippets](/help/saved-snippets)
 * [Share and upload files](/help/share-and-upload-files)
 * [Animated GIFs](/help/animated-gifs-from-giphy)
 * [Text emphasis](/help/text-emphasis)

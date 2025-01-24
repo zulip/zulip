@@ -158,6 +158,9 @@ in the Zulip app to add more to your repertoire as needed.
 * **Insert link**: `[Zulip website](https://zulip.org)` or <kbd>Ctrl</kbd> +
   <kbd>Shift</kbd> + <kbd>L</kbd>
 
+* **Insert or create a [saved snippet](/help/saved-snippets)**:
+  <kbd>Ctrl</kbd> + <kbd>'</kbd>
+
 * **Toggle preview mode**: <kbd>Alt</kbd> + <kbd>P</kbd>
 
 * **Cancel compose and save draft**: <kbd>Esc</kbd> or
