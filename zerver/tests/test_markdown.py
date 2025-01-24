@@ -315,9 +315,8 @@ class MarkdownMiscTest(ZulipTestCase):
             check_add_user_group(realm, group_name, [hamlet, cordelia], acting_user=othello)
             content += f" @*{group_name}*"
 
-        # We should be able to do O(1) queries here.
-        UNFORTUNATE_QUERY_COUNT = 41
-        with self.assert_database_query_count(UNFORTUNATE_QUERY_COUNT):
+        CONSTANT_QUERY_COUNT = 2  # even if it increases in future, make sure it's constant.
+        with self.assert_database_query_count(CONSTANT_QUERY_COUNT):
             MentionData(mention_backend, content, message_sender=None)
 
     def test_invalid_katex_path(self) -> None:

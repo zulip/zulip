@@ -1,5 +1,6 @@
 import functools
 import re
+from collections import defaultdict
 from dataclasses import dataclass
 from re import Match
 
@@ -7,7 +8,7 @@ from django.conf import settings
 from django.db.models import Q
 from django_stubs_ext import StrPromise
 
-from zerver.lib.user_groups import get_recursive_group_members
+from zerver.lib.user_groups import get_root_id_annotated_recursive_subgroups_for_groups
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import NamedUserGroup, UserProfile
 from zerver.models.groups import SystemGroups
@@ -269,16 +270,45 @@ class MentionData:
 
     def init_user_group_data(self, realm_id: int, content: str) -> None:
         self.user_group_name_info: dict[str, NamedUserGroup] = {}
-        self.user_group_members: dict[int, set[int]] = {}
+        self.user_group_members: dict[int, set[int]] = defaultdict(set)
         user_group_names = possible_user_group_mentions(content)
         if user_group_names:
-            for group in NamedUserGroup.objects.filter(
+            named_user_groups = NamedUserGroup.objects.filter(
                 realm_id=realm_id, name__in=user_group_names
-            ):
-                self.user_group_name_info[group.name.lower()] = group
-                self.user_group_members[group.id] = set(
-                    get_recursive_group_members(group).values_list("id", flat=True)
+            )
+            # we need user_group_name_info for both groups, deactivated and non-deactivated.
+            self.user_group_name_info = {group.name.lower(): group for group in named_user_groups}
+
+            non_deactivated_group_ids = [
+                group.id for group in named_user_groups if not group.deactivated
+            ]
+
+            # If there are no matching non_deactivated_group_ids
+            # (e.g non-existent user_group_names or only deactivated-groups were mentioned)
+            # then no need to execute the relatively expensive recursive CTE query
+            # triggered by get_root_id_annotated_recursive_subgroups_for_groups.
+            # Also the base case for the recursive CTE requires non-empty matching rows.
+            if len(non_deactivated_group_ids) == 0:
+                return
+
+            # Here we fetch membership for non-deactivated groups in a
+            # single, efficient bulk query. Deactivated group mentions
+            # are non-operative, so we don't need to waste resources
+            # collecting membership data for them. Further possible
+            # optimizations include, in order of value:
+            #
+            # - Skipping fetching membership data for silent mention syntax.
+            # - Filtering groups the current user doesn't have permission to mention
+            #   from what we fetch membership for. This requires care to avoid race bugs
+            #   if the user's permissions change while the message is being sent.
+            for group_root_id, member_id in (
+                get_root_id_annotated_recursive_subgroups_for_groups(
+                    non_deactivated_group_ids, realm_id
                 )
+                .filter(direct_members__is_active=True)
+                .values_list("root_id", "direct_members")  # type: ignore[misc]  # root_id is an annotated field.
+            ):
+                self.user_group_members[group_root_id].add(member_id)
 
     def get_user_by_name(self, name: str) -> FullNameInfo | None:
         # warning: get_user_by_name is not dependable if two
