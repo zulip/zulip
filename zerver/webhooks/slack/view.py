@@ -48,6 +48,8 @@ def get_slack_channel_name(channel_id: str, token: str) -> str:
     slack_channel_data = get_slack_api_data(
         "https://slack.com/api/conversations.info",
         get_param="channel",
+        # Sleeping is not permitted from webhook code.
+        raise_if_rate_limited=True,
         token=token,
         channel=channel_id,
     )
@@ -56,7 +58,12 @@ def get_slack_channel_name(channel_id: str, token: str) -> str:
 
 def get_slack_sender_name(user_id: str, token: str) -> str:
     slack_user_data = get_slack_api_data(
-        "https://slack.com/api/users.info", get_param="user", token=token, user=user_id
+        "https://slack.com/api/users.info",
+        get_param="user",
+        # Sleeping is not permitted from webhook code.
+        raise_if_rate_limited=True,
+        token=token,
+        user=user_id,
     )
     return slack_user_data["name"]
 
