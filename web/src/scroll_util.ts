@@ -79,7 +79,7 @@ export function scroll_element_into_container(
     $container = get_scroll_element($container);
 
     // To correctly compute the offset of the element's scroll
-    // position within our scroll container, we need to substract the
+    // position within our scroll container, we need to subtract the
     // scroll container's own offset within the document.
     const elem_offset = $elem.offset()?.top ?? 0;
     const container_offset = $container.offset()?.top ?? 0;
