@@ -520,7 +520,7 @@
             width: 14px;
             height: 14px;
 
-            .zulip-icon.zulip-icon-triple-users,
+            .zulip-icon.conversation-partners-icon,
             .zulip-icon.zulip-icon-bot {
                 opacity: 0.6;
             }
