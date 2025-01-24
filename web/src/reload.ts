@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as blueslip from "./blueslip.ts";
 import * as compose_state from "./compose_state.ts";
@@ -17,7 +17,7 @@ import * as util from "./util.ts";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 
-const token_metadata_schema = z.object({url: z.string(), timestamp: z.number()});
+const token_metadata_schema = v.object({url: v.string(), timestamp: v.number()});
 
 const reload_hooks: (() => void)[] = [];
 
@@ -103,7 +103,7 @@ function preserve_state(send_after_reload: boolean, save_compose: boolean): void
     // TODO: Remove the now-unnecessary URL-encoding logic above and
     // just pass the actual data structures through local storage.
     const token = util.random_int(0, 1024 * 1024 * 1024 * 1024);
-    const metadata: z.infer<typeof token_metadata_schema> = {
+    const metadata: v.InferOutput<typeof token_metadata_schema> = {
         url,
         timestamp: Date.now(),
     };
@@ -112,7 +112,7 @@ function preserve_state(send_after_reload: boolean, save_compose: boolean): void
 }
 
 export function is_stale_refresh_token(token_metadata: unknown, now: number): boolean {
-    const parsed = token_metadata_schema.safeParse(token_metadata);
+    const parsed = v.safeParse(token_metadata_schema, token_metadata);
     // TODO/compatibility: the metadata was changed from a string
     // to a map containing the string and a timestamp. For now we'll
     // delete all tokens that only contain the url. Remove this
@@ -121,7 +121,7 @@ export function is_stale_refresh_token(token_metadata: unknown, now: number): bo
     if (!parsed.success) {
         return true;
     }
-    const {timestamp} = parsed.data;
+    const {timestamp} = parsed.output;
 
     // The time between reload token generation and use should usually be
     // fewer than 30 seconds, but we keep tokens around for a week just in case

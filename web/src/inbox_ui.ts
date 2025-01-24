@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_inbox_row from "../templates/inbox_view/inbox_row.hbs";
 import render_inbox_stream_container from "../templates/inbox_view/inbox_stream_container.hbs";
@@ -259,7 +259,7 @@ function get_stream_header_row(stream_id: number): JQuery {
 }
 
 function load_data_from_ls(): void {
-    const saved_filters = new Set(z.array(z.string()).optional().parse(ls.get(ls_filter_key)));
+    const saved_filters = new Set(v.parse(v.optional(v.array(v.string())), ls.get(ls_filter_key)));
     const valid_filters = new Set(Object.values(views_util.FILTERS));
     // If saved filters are not in the list of valid filters, we reset to default.
     const is_subset = [...saved_filters].every((filter) => valid_filters.has(filter));
@@ -269,7 +269,7 @@ function load_data_from_ls(): void {
         filters = saved_filters;
     }
     collapsed_containers = new Set(
-        z.array(z.string()).optional().parse(ls.get(ls_collapsed_containers_key)),
+        v.parse(v.optional(v.array(v.string())), ls.get(ls_collapsed_containers_key)),
     );
 }
 

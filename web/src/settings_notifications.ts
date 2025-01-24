@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_confirm_disable_all_notifications from "../templates/confirm_dialog/confirm_disable_all_notifications.hbs";
 import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.hbs";
@@ -159,7 +159,7 @@ function stream_notification_setting_changed(target: HTMLInputElement): void {
     }
 
     const $status_element = $(target).closest(".subsection-parent").find(".alert-notification");
-    const setting = stream_specific_notification_settings_schema.keyof().parse(target.name);
+    const setting = v.parse(v.keyof(stream_specific_notification_settings_schema), target.name);
     if (sub[setting] === null) {
         sub[setting] =
             user_settings[settings_config.generalize_stream_notification_setting[setting]];
@@ -250,7 +250,7 @@ export function set_up(settings_panel: SettingsPanel): void {
             stream_notification_setting_changed(e.currentTarget);
             return;
         }
-        const setting_name = user_settings_schema.keyof().parse($input_elem.attr("name"));
+        const setting_name = v.parse(v.keyof(user_settings_schema), $input_elem.attr("name"));
 
         if ($input_elem.attr("data-setting-widget-type") === "time-limit") {
             // For time-limit settings we should always pass the select element
@@ -284,12 +284,13 @@ export function set_up(settings_panel: SettingsPanel): void {
         }
 
         // This filters out the GroupSettingValue
-        const setting_value = z
-            .union([z.string(), z.number(), z.boolean()])
-            .parse(settings_components.get_input_element_value(this));
+        const setting_value = v.parse(
+            v.union([v.string(), v.number(), v.boolean()]),
+            settings_components.get_input_element_value(this),
+        );
 
         if (
-            pm_notification_settings_schema.keyof().safeParse(setting_name).success &&
+            v.safeParse(v.keyof(pm_notification_settings_schema), setting_name).success &&
             !setting_value
         ) {
             let enabled_pm_mention_notifications_count = 0;
@@ -349,7 +350,7 @@ export function update_page(settings_panel: SettingsPanel): void {
     const $container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
     for (const untyped_setting of settings_config.all_notification_settings) {
-        const setting = user_settings_schema.keyof().parse(untyped_setting);
+        const setting = v.parse(v.keyof(user_settings_schema), untyped_setting);
         switch (setting) {
             case "enable_offline_push_notifications": {
                 if (!realm.realm_push_notifications_enabled) {

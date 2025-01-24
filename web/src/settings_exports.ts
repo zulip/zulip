@@ -1,6 +1,6 @@
 import $ from "jquery";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_confirm_delete_data_export from "../templates/confirm_dialog/confirm_delete_data_export.hbs";
 import render_allow_private_data_export_banner from "../templates/modal_banner/allow_private_data_export_banner.hbs";
@@ -27,23 +27,23 @@ import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
 import {user_settings} from "./user_settings.ts";
 
-export const export_consent_schema = z.object({
-    user_id: z.number(),
-    consented: z.boolean(),
+export const export_consent_schema = v.object({
+    user_id: v.number(),
+    consented: v.boolean(),
 });
-type ExportConsent = z.output<typeof export_consent_schema>;
+type ExportConsent = v.InferOutput<typeof export_consent_schema>;
 
-export const realm_export_schema = z.object({
-    id: z.number(),
-    export_time: z.number(),
-    acting_user_id: z.number(),
-    export_url: z.string().nullable(),
-    deleted_timestamp: z.number().nullable(),
-    failed_timestamp: z.number().nullable(),
-    pending: z.boolean(),
-    export_type: z.number(),
+export const realm_export_schema = v.object({
+    id: v.number(),
+    export_time: v.number(),
+    acting_user_id: v.number(),
+    export_url: v.nullable(v.string()),
+    deleted_timestamp: v.nullable(v.number()),
+    failed_timestamp: v.nullable(v.number()),
+    pending: v.boolean(),
+    export_type: v.number(),
 });
-type RealmExport = z.output<typeof realm_export_schema>;
+type RealmExport = v.InferOutput<typeof realm_export_schema>;
 
 const meta = {
     loaded: false,
@@ -381,9 +381,10 @@ export function set_up(): void {
     void channel.get({
         url: "/json/export/realm/consents",
         success(raw_data) {
-            const data = z
-                .object({export_consents: z.array(export_consent_schema)})
-                .parse(raw_data);
+            const data = v.parse(
+                v.object({export_consents: v.array(export_consent_schema)}),
+                raw_data,
+            );
 
             for (const export_consent of data.export_consents) {
                 export_consents.set(export_consent.user_id, export_consent.consented);
@@ -417,7 +418,7 @@ export function set_up(): void {
     void channel.get({
         url: "/json/export/realm",
         success(raw_data) {
-            const data = z.object({exports: z.array(realm_export_schema)}).parse(raw_data);
+            const data = v.parse(v.object({exports: v.array(realm_export_schema)}), raw_data);
             populate_exports_table(data.exports);
         },
     });

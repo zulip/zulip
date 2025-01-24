@@ -3,7 +3,7 @@ import {Uppy} from "@uppy/core";
 import Tus, {type TusBody} from "@uppy/tus";
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_upload_banner from "../templates/compose_banner/upload_banner.hbs";
 
@@ -326,9 +326,9 @@ class InMemoryUrlStorage {
     }
 }
 
-const zulip_upload_response_schema = z.object({
-    url: z.string(),
-    filename: z.string(),
+const zulip_upload_response_schema = v.object({
+    url: v.string(),
+    filename: v.string(),
 });
 
 export function setup_upload(config: Config): Uppy<Meta, TusBody> {
@@ -462,7 +462,8 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
         assert(file !== undefined);
         let upload_response;
         try {
-            upload_response = zulip_upload_response_schema.parse(
+            upload_response = v.parse(
+                zulip_upload_response_schema,
                 JSON.parse(response.body!.xhr.responseText),
             );
         } catch {
@@ -533,8 +534,8 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
         let parsed;
         const message =
             response !== undefined &&
-            (parsed = z.object({msg: z.string()}).safeParse(response.body)).success
-                ? parsed.data.msg
+            (parsed = v.safeParse(v.object({msg: v.string()}), response.body)).success
+                ? parsed.output.msg
                 : undefined;
         // Hide the upload status banner on error so only the error banner shows
         hide_upload_banner(uppy, config, file.id);

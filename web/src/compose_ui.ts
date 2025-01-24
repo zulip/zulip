@@ -11,7 +11,7 @@ import {
     setFieldText,
     wrapFieldSelection,
 } from "text-field-edit";
-import {z} from "zod";
+import * as v from "valibot";
 
 import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
@@ -63,10 +63,10 @@ type SelectedLinesSections = {
     after_lines: string;
 };
 
-const message_render_response_schema = z.object({
-    msg: z.string(),
-    result: z.string(),
-    rendered: z.string(),
+const message_render_response_schema = v.object({
+    msg: v.string(),
+    result: v.string(),
+    rendered: v.string(),
 });
 
 export let compose_spinner_visible = false;
@@ -1335,7 +1335,7 @@ export function render_and_show_preview(
             url: "/json/messages/render",
             data: {content},
             success(response_data) {
-                const data = message_render_response_schema.parse(response_data);
+                const data = v.parse(message_render_response_schema, response_data);
                 if (markdown.contains_backend_only_syntax(content)) {
                     loading.destroy_indicator($preview_spinner);
                 }

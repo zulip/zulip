@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import {all_messages_data} from "./all_messages_data.ts";
 import * as blueslip from "./blueslip.ts";
@@ -29,18 +29,18 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as ui_report from "./ui_report.ts";
 
-const response_schema = z.object({
-    anchor: z.number(),
-    found_newest: z.boolean(),
-    found_oldest: z.boolean(),
-    found_anchor: z.boolean(),
-    history_limited: z.boolean(),
-    messages: z.array(raw_message_schema),
-    result: z.string(),
-    msg: z.string(),
+const response_schema = v.object({
+    anchor: v.number(),
+    found_newest: v.boolean(),
+    found_oldest: v.boolean(),
+    found_anchor: v.boolean(),
+    history_limited: v.boolean(),
+    messages: v.array(raw_message_schema),
+    result: v.string(),
+    msg: v.string(),
 });
 
-type MessageFetchResponse = z.infer<typeof response_schema>;
+type MessageFetchResponse = v.InferOutput<typeof response_schema>;
 
 type MessageFetchOptions = {
     anchor: string | number;
@@ -260,7 +260,7 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
     // operators, such as "pm-with" and "stream", are not included here.
     const operators_supporting_ids = new Set(["dm"]);
     const operators_supporting_id = new Set(["id", "channel", "sender", "dm-including"]);
-    const parsed_narrow_data = z.array(narrow_term_schema).parse(JSON.parse(narrow_parameter));
+    const parsed_narrow_data = v.parse(v.array(narrow_term_schema), JSON.parse(narrow_parameter));
 
     const narrow_terms: {
         operator: string;
@@ -394,7 +394,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
             if (!$("#connection-error").hasClass("get-events-error")) {
                 ui_report.hide_error($("#connection-error"));
             }
-            const data = response_schema.parse(raw_data);
+            const data = v.parse(response_schema, raw_data);
             get_messages_success(data, opts);
         },
         error(xhr) {
@@ -454,16 +454,16 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
             const backoff_scale = Math.min(2 ** attempt, 32);
             const backoff_delay_secs = ((1 + Math.random()) / 2) * backoff_scale;
             let rate_limit_delay_secs = 0;
-            const rate_limited_error_schema = z.object({
-                "retry-after": z.number(),
-                code: z.literal("RATE_LIMIT_HIT"),
+            const rate_limited_error_schema = v.object({
+                "retry-after": v.number(),
+                code: v.literal("RATE_LIMIT_HIT"),
             });
-            const parsed = rate_limited_error_schema.safeParse(xhr.responseJSON);
-            if (xhr.status === 429 && parsed?.success && parsed?.data) {
+            const parsed = v.safeParse(rate_limited_error_schema, xhr.responseJSON);
+            if (xhr.status === 429 && parsed?.success && parsed.output) {
                 // Add a bit of jitter to the required delay suggested by the
                 // server, because we may be racing with other copies of the web
                 // app.
-                rate_limit_delay_secs = parsed.data["retry-after"] + Math.random() * 0.5;
+                rate_limit_delay_secs = parsed.output["retry-after"] + Math.random() * 0.5;
             }
             const delay_secs = Math.max(backoff_delay_secs, rate_limit_delay_secs);
             setTimeout(() => {

@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
@@ -416,7 +416,10 @@ function create_stream(): void {
             // The rest of the work is done via the subscribe event we will get
         },
         error(xhr): void {
-            const error_message = z.object({msg: z.string().optional()}).parse(xhr.responseJSON);
+            const error_message = v.parse(
+                v.object({msg: v.optional(v.string())}),
+                xhr.responseJSON,
+            );
             if (error_message?.msg?.includes("access")) {
                 // If we can't access the stream, we can safely
                 // assume it's a duplicate stream that we are not invited to.
@@ -524,7 +527,7 @@ function set_up_group_setting_widgets(): void {
         group_setting_widgets[setting_name] =
             settings_components.create_stream_group_setting_widget({
                 $pill_container: $("#id_new_" + setting_name),
-                setting_name: stream_permission_group_settings_schema.parse(setting_name),
+                setting_name: v.parse(stream_permission_group_settings_schema, setting_name),
             });
         group_setting_widget_map.set(setting_name, group_setting_widgets[setting_name]);
     }

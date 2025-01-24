@@ -1,15 +1,15 @@
 import $ from "jquery";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as loading from "../loading.ts";
 import * as util from "../util.ts";
 
 export type FormDataObject = Record<string, string>;
 
-export const schedule_schema = z.enum(["monthly", "annual"]);
-export type Prices = Record<z.infer<typeof schedule_schema>, number>;
+export const schedule_schema = v.picklist(["monthly", "annual"]);
+export type Prices = Record<v.InferOutput<typeof schedule_schema>, number>;
 
-export const organization_type_schema = z.enum([
+export const organization_type_schema = v.picklist([
     "opensource",
     "research",
     "nonprofit",
@@ -17,10 +17,10 @@ export const organization_type_schema = z.enum([
     "education",
     "education_nonprofit",
 ]);
-export type DiscountDetails = Record<z.infer<typeof organization_type_schema>, string>;
+export type DiscountDetails = Record<v.InferOutput<typeof organization_type_schema>, string>;
 
-export const stripe_session_url_schema = z.object({
-    stripe_session_url: z.string(),
+export const stripe_session_url_schema = v.object({
+    stripe_session_url: v.string(),
 });
 
 const cloud_discount_details: DiscountDetails = {
@@ -102,18 +102,18 @@ export function create_ajax_request(
         },
         error(xhr) {
             $(form_loading).hide();
-            const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+            const parsed = v.safeParse(v.object({msg: v.string()}), xhr.responseJSON);
             if (parsed.success) {
-                $(form_error).show().text(parsed.data.msg);
+                $(form_error).show().text(parsed.output.msg);
             }
             $(form_input_section).show();
             error_callback(xhr);
 
             if (xhr.status === 401) {
                 // User session timed out, we need to login again.
-                const parsed = z.object({login_url: z.string()}).safeParse(xhr.responseJSON);
+                const parsed = v.safeParse(v.object({login_url: v.string()}), xhr.responseJSON);
                 if (parsed.success) {
-                    window.location.href = parsed.data.login_url;
+                    window.location.href = parsed.output.login_url;
                 }
             }
         },
@@ -145,7 +145,7 @@ export function update_discount_details(
         : "Your organization may be eligible for a discount on Zulip Cloud Standard. Organizations whose members are not employees are generally eligible.";
 
     try {
-        const parsed_organization_type = organization_type_schema.parse(organization_type);
+        const parsed_organization_type = v.parse(organization_type_schema, organization_type);
         discount_notice = is_remotely_hosted
             ? remote_discount_details[parsed_organization_type]
             : cloud_discount_details[parsed_organization_type];

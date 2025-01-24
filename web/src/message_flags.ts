@@ -1,6 +1,6 @@
 import type {DebouncedFunc} from "lodash";
 import _ from "lodash";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as channel from "./channel.ts";
 import type {Message} from "./message_store.ts";
@@ -86,12 +86,12 @@ export function unstar_all_messages(): void {
 }
 
 // While we're parsing message objects, our code only looks at the
-// IDs. TODO: Use a shared zod schema for parsing messages if/when
-// message_fetch.ts parses message objects using zod.
-const message_response_schema = z.object({
-    messages: z.array(
-        z.object({
-            id: z.number(),
+// IDs. TODO: Use a shared Valibot schema for parsing messages if/when
+// message_fetch.ts parses message objects using Valibot.
+const message_response_schema = v.object({
+    messages: v.array(
+        v.object({
+            id: v.number(),
         }),
     ),
 });
@@ -117,7 +117,7 @@ export function unstar_all_messages_in_topic(stream_id: number, topic: string): 
         url: "/json/messages",
         data,
         success(raw_data) {
-            const data = message_response_schema.parse(raw_data);
+            const data = v.parse(message_response_schema, raw_data);
             const messages = data.messages;
             const starred_message_ids = messages.map((message) => message.id);
             send_flag_update_for_messages(starred_message_ids, "starred", "remove");

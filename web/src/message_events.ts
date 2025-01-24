@@ -1,7 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as activity from "./activity.ts";
 import * as alert_words from "./alert_words.ts";
@@ -197,9 +197,10 @@ export let update_views_filtered_on_message_property = (
                 success(data) {
                     const messages_to_add: Message[] = [];
                     const messages_to_remove = new Set(message_ids);
-                    for (const raw_message of z
-                        .object({messages: z.array(raw_message_schema)})
-                        .parse(data).messages) {
+                    for (const raw_message of v.parse(
+                        v.object({messages: v.array(raw_message_schema)}),
+                        data,
+                    ).messages) {
                         messages_to_remove.delete(raw_message.id);
                         const message = message_store.get(raw_message.id);
                         messages_to_add.push(
@@ -225,11 +226,12 @@ export let update_views_filtered_on_message_property = (
                 },
                 // eslint-disable-next-line no-loop-func
                 success(data) {
-                    const parsed_data = z
-                        .object({
-                            messages: z.array(raw_message_schema),
-                        })
-                        .parse(data);
+                    const parsed_data = v.parse(
+                        v.object({
+                            messages: v.array(raw_message_schema),
+                        }),
+                        data,
+                    );
                     // `messages_to_fetch` might already be cached locally when
                     // we reach here but `message_helper.process_new_message`
                     // already handles that case.

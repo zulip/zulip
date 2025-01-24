@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_message_reaction from "../templates/message_reaction.hbs";
 import render_message_reactions from "../templates/message_reactions.hbs";
@@ -110,11 +110,11 @@ function update_ui_and_send_reaction_ajax(
         error(xhr: JQuery.jqXHR) {
             waiting_for_server_request_ids.delete(reaction_request_id);
             if (xhr.readyState !== 0) {
-                const parsed = z.object({code: z.string()}).safeParse(xhr.responseJSON);
+                const parsed = v.safeParse(v.object({code: v.string()}), xhr.responseJSON);
                 if (
                     parsed.success &&
-                    (parsed.data.code === "REACTION_ALREADY_EXISTS" ||
-                        parsed.data.code === "REACTION_DOES_NOT_EXIST")
+                    (parsed.output.code === "REACTION_ALREADY_EXISTS" ||
+                        parsed.output.code === "REACTION_DOES_NOT_EXIST")
                 ) {
                     // Don't send error report for simple precondition failures caused by race
                     // conditions; the user already got what they wanted

@@ -4,7 +4,7 @@
 // (We should do bot updates here too.)
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as activity_ui from "./activity_ui.ts";
 import * as blueslip from "./blueslip.ts";
@@ -30,33 +30,34 @@ import * as stream_events from "./stream_events.ts";
 import * as user_group_edit from "./user_group_edit.ts";
 import * as user_profile from "./user_profile.ts";
 
-export const user_update_schema = z.object({user_id: z.number()}).and(
-    z.union([
-        z.object({
-            avatar_source: z.string(),
-            avatar_url: z.nullable(z.string()),
-            avatar_url_medium: z.nullable(z.string()),
-            avatar_version: z.number(),
+export const user_update_schema = v.intersect([
+    v.object({user_id: v.number()}),
+    v.union([
+        v.object({
+            avatar_source: v.string(),
+            avatar_url: v.nullable(v.string()),
+            avatar_url_medium: v.nullable(v.string()),
+            avatar_version: v.number(),
         }),
-        z.object({bot_owner_id: z.number()}),
-        z.object({
-            custom_profile_field: z.object({
-                id: z.number(),
-                value: z.nullable(z.string()),
-                rendered_value: z.optional(z.string()),
+        v.object({bot_owner_id: v.number()}),
+        v.object({
+            custom_profile_field: v.object({
+                id: v.number(),
+                value: v.nullable(v.string()),
+                rendered_value: v.optional(v.string()),
             }),
         }),
-        z.object({delivery_email: z.nullable(z.string())}),
-        z.object({new_email: z.string()}),
-        z.object({full_name: z.string()}),
-        z.object({is_billing_admin: z.boolean()}),
-        z.object({role: z.number()}),
-        z.object({email: z.string(), timezone: z.string()}),
-        z.object({is_active: z.boolean()}),
+        v.object({delivery_email: v.nullable(v.string())}),
+        v.object({new_email: v.string()}),
+        v.object({full_name: v.string()}),
+        v.object({is_billing_admin: v.boolean()}),
+        v.object({role: v.number()}),
+        v.object({email: v.string(), timezone: v.string()}),
+        v.object({is_active: v.boolean()}),
     ]),
-);
+]);
 
-type UserUpdate = z.output<typeof user_update_schema>;
+type UserUpdate = v.InferOutput<typeof user_update_schema>;
 
 export const update_person = function update(person: UserUpdate): void {
     const person_obj = people.maybe_get_user_by_id(person.user_id);

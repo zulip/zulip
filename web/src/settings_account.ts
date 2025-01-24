@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_change_email_modal from "../templates/change_email_modal.hbs";
 import render_demo_organization_add_email_modal from "../templates/demo_organization_add_email_modal.hbs";
@@ -135,10 +135,10 @@ function upload_avatar($file_input: JQuery<HTMLInputElement>): void {
             if (current_user.avatar_source === "G") {
                 $("#user-avatar-source").show();
             }
-            const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+            const parsed = v.safeParse(v.object({msg: v.string()}), xhr.responseJSON);
             if (parsed.success) {
                 const $error = $("#user-avatar-upload-widget .image_file_input_error");
-                $error.text(parsed.data.msg);
+                $error.text(parsed.output.msg);
                 $error.show();
             }
         },
@@ -273,7 +273,7 @@ export function hide_confirm_email_banner(): void {
 }
 
 // TODO/typescript: Move these to server_events_dispatch when it's converted to typescript.
-export const privacy_setting_name_schema = z.enum([
+export const privacy_setting_name_schema = v.picklist([
     "send_stream_typing_notifications",
     "send_private_typing_notifications",
     "send_read_receipts",
@@ -281,7 +281,7 @@ export const privacy_setting_name_schema = z.enum([
     "email_address_visibility",
     "allow_private_data_export",
 ]);
-export type PrivacySettingName = z.infer<typeof privacy_setting_name_schema>;
+export type PrivacySettingName = v.InferOutput<typeof privacy_setting_name_schema>;
 
 export function update_privacy_settings_box(property: PrivacySettingName): void {
     if (!overlays.settings_open()) {
@@ -305,7 +305,7 @@ export function set_up(): void {
                 data,
                 success(data) {
                     $("#get_api_key_password").val("");
-                    const api_key = z.object({api_key: z.string()}).parse(data).api_key;
+                    const api_key = v.parse(v.object({api_key: v.string()}), data).api_key;
                     $("#api_key_value").text(api_key);
                     // The display property on the error bar is set to important
                     // so instead of making display: none !important we just
@@ -373,13 +373,13 @@ export function set_up(): void {
                 url: "/api/v1/users/me/api_key/regenerate",
                 headers: {Authorization: authorization_header},
                 success(data) {
-                    const api_key = z.object({api_key: z.string()}).parse(data).api_key;
+                    const api_key = v.parse(v.object({api_key: v.string()}), data).api_key;
                     $("#api_key_value").text(api_key);
                 },
                 error(xhr) {
-                    const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+                    const parsed = v.safeParse(v.object({msg: v.string()}), xhr.responseJSON);
                     if (parsed.success) {
-                        $("#user_api_key_error").text(parsed.data.msg).show();
+                        $("#user_api_key_error").text(parsed.output.msg).show();
                     }
                 },
             });
@@ -805,14 +805,15 @@ export function set_up(): void {
                         },
                     );
                     let rendered_error_msg = "";
-                    const parsed = z
-                        .object({
-                            code: z.literal("CANNOT_DEACTIVATE_LAST_USER"),
-                            is_last_owner: z.boolean(),
-                        })
-                        .safeParse(xhr.responseJSON);
+                    const parsed = v.safeParse(
+                        v.object({
+                            code: v.literal("CANNOT_DEACTIVATE_LAST_USER"),
+                            is_last_owner: v.boolean(),
+                        }),
+                        xhr.responseJSON,
+                    );
                     if (parsed.success) {
-                        if (parsed.data.is_last_owner) {
+                        if (parsed.output.is_last_owner) {
                             rendered_error_msg = error_last_owner;
                         } else {
                             rendered_error_msg = error_last_user;

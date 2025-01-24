@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_settings_deactivation_bot_modal from "../templates/confirm_dialog/confirm_deactivate_bot.hbs";
 import render_confirm_deactivate_own_user from "../templates/confirm_dialog/confirm_deactivate_own_user.hbs";
@@ -40,7 +40,7 @@ export function confirm_deactivation(
         url: "/json/invites",
         timeout: 10 * 1000,
         success(raw_data) {
-            const data = z.object({invites: z.array(invite_schema)}).parse(raw_data);
+            const data = v.parse(v.object({invites: v.array(invite_schema)}), raw_data);
 
             let number_of_invites_by_user = 0;
             for (const invite of data.invites) {

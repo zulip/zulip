@@ -1,14 +1,14 @@
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as channel from "./channel.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 
-const stream_topic_history_response_schema = z.object({
-    topics: z.array(
-        z.object({
-            name: z.string(),
-            max_id: z.number(),
+const stream_topic_history_response_schema = v.object({
+    topics: v.array(
+        v.object({
+            name: v.string(),
+            max_id: v.number(),
         }),
     ),
 });
@@ -29,7 +29,7 @@ export function get_server_history(stream_id: number, on_success: () => void): v
         url,
         data: {allow_empty_topic_name: true},
         success(raw_data) {
-            const data = stream_topic_history_response_schema.parse(raw_data);
+            const data = v.parse(stream_topic_history_response_schema, raw_data);
             const server_history = data.topics;
             stream_topic_history.add_history(stream_id, server_history);
             stream_topic_history.remove_request_pending_for(stream_id);
@@ -59,15 +59,16 @@ export function update_topic_last_message_id(
             allow_empty_topic_name: true,
         },
         success(data) {
-            const {messages} = z
-                .object({
-                    messages: z.array(
-                        z.object({
-                            id: z.number(),
+            const {messages} = v.parse(
+                v.object({
+                    messages: v.array(
+                        v.object({
+                            id: v.number(),
                         }),
                     ),
-                })
-                .parse(data);
+                }),
+                data,
+            );
             if (messages.length !== 1) {
                 return;
             }

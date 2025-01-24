@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_message_controls from "../templates/message_controls.hbs";
 import render_message_controls_failed_msg from "../templates/message_controls_failed_msg.hbs";
@@ -35,9 +35,9 @@ import * as util from "./util.ts";
 
 type ServerMessage = RawMessage & {local_id?: string};
 
-const send_message_api_response_schema = z.object({
-    id: z.number(),
-    automatic_new_visibility_policy: z.number().optional(),
+const send_message_api_response_schema = v.object({
+    id: v.number(),
+    automatic_new_visibility_policy: v.optional(v.number()),
 });
 
 type MessageRequestObject = {
@@ -97,7 +97,7 @@ type LocalMessage = MessageRequestObject & {
         | (PrivateMessageObject & {display_recipient?: DisplayRecipientUser[]})
     );
 
-type PostMessageAPIData = z.output<typeof send_message_api_response_schema>;
+type PostMessageAPIData = v.InferOutput<typeof send_message_api_response_schema>;
 
 // These retry spinner functions return true if and only if the
 // spinner already is in the requested state, which can be used to
@@ -170,7 +170,7 @@ function resend_message(
     message.resend = true;
 
     function on_success(raw_data: unknown): void {
-        const data = send_message_api_response_schema.parse(raw_data);
+        const data = v.parse(send_message_api_response_schema, raw_data);
         const message_id = data.id;
 
         hide_retry_spinner($row);

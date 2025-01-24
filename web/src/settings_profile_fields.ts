@@ -1,6 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import SortableJS from "sortablejs";
+import * as v from "valibot";
 
 import render_confirm_delete_profile_field from "../templates/confirm_dialog/confirm_delete_profile_field.hbs";
 import render_confirm_delete_profile_field_option from "../templates/confirm_dialog/confirm_delete_profile_field_option.hbs";
@@ -412,7 +413,7 @@ function set_up_select_field_edit_form(
     $choice_list.off();
     $choice_list.empty();
     const choices_data = parse_field_choices_from_field_data(
-        settings_components.select_field_data_schema.parse(JSON.parse(field.field_data)),
+        v.parse(settings_components.select_field_data_schema, JSON.parse(field.field_data)),
     );
 
     for (const choice of choices_data) {
@@ -452,7 +453,7 @@ function open_edit_form_modal(this: HTMLElement): void {
     }
     let choices: FieldChoice[] = [];
     if (field.type === field_types.SELECT.id) {
-        const select_field_data = settings_components.select_field_data_schema.parse(field_data);
+        const select_field_data = v.parse(settings_components.select_field_data_schema, field_data);
         choices = parse_field_choices_from_field_data(select_field_data);
     }
 
@@ -491,8 +492,10 @@ function open_edit_form_modal(this: HTMLElement): void {
         }
 
         if (field.type === field_types.EXTERNAL_ACCOUNT.id) {
-            const external_account_data =
-                settings_components.external_account_field_schema.parse(field_data);
+            const external_account_data = v.parse(
+                settings_components.external_account_field_schema,
+                field_data,
+            );
             $profile_field_form
                 .find("select[name=external_acc_field_type]")
                 .val(external_account_data.subtype);
@@ -546,14 +549,17 @@ function open_edit_form_modal(this: HTMLElement): void {
         if (field.type === field_types.SELECT.id && data.field_data !== undefined) {
             const new_values = new Set(
                 Object.keys(
-                    settings_components.select_field_data_schema.parse(
+                    v.parse(
+                        settings_components.select_field_data_schema,
                         JSON.parse(data.field_data.toString()),
                     ),
                 ),
             );
             const deleted_values: Record<string, string> = {};
-            const select_field_data =
-                settings_components.select_field_data_schema.parse(field_data);
+            const select_field_data = v.parse(
+                settings_components.select_field_data_schema,
+                field_data,
+            );
             for (const [value, option] of Object.entries(select_field_data)) {
                 if (!new_values.has(value)) {
                     deleted_values[value] = option.text;
@@ -689,7 +695,8 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
         modifier_html(profile_field) {
             let choices: FieldChoice[] = [];
             if (profile_field.field_data && profile_field.type === field_types.SELECT.id) {
-                const field_data = settings_components.select_field_data_schema.parse(
+                const field_data = v.parse(
+                    settings_components.select_field_data_schema,
                     JSON.parse(profile_field.field_data),
                 );
                 choices = parse_field_choices_from_field_data(field_data);

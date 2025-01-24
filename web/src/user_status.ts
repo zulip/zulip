@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as channel from "./channel.ts";
 import * as emoji from "./emoji.ts";
@@ -7,21 +7,21 @@ import type {StateData} from "./state_data.ts";
 import {user_settings} from "./user_settings.ts";
 import {user_status_schema} from "./user_status_types.ts";
 
-export type UserStatus = z.infer<typeof user_status_schema>;
+export type UserStatus = v.InferOutput<typeof user_status_schema>;
 export type UserStatusEmojiInfo = EmojiRenderingDetails & {
     emoji_alt_code?: boolean;
 };
 
-const user_status_event_schema = z.intersection(
-    z.object({
-        id: z.number(),
-        type: z.literal("user_status"),
-        user_id: z.number(),
+const user_status_event_schema = v.intersect([
+    v.object({
+        id: v.number(),
+        type: v.literal("user_status"),
+        user_id: v.number(),
     }),
     user_status_schema,
-);
+]);
 
-export type UserStatusEvent = z.infer<typeof user_status_event_schema>;
+export type UserStatusEvent = v.InferOutput<typeof user_status_event_schema>;
 
 const user_info = new Map<number, string>();
 const user_status_emoji_info = new Map<number, UserStatusEmojiInfo>();
@@ -87,7 +87,7 @@ export function get_status_emoji(user_id: number): UserStatusEmojiInfo | undefin
 export function set_status_emoji(event: UserStatusEvent): void {
     // TODO/typescript: Move validation to the caller when
     // server_events_dispatch.js is converted to TypeScript.
-    const opts = user_status_event_schema.parse(event);
+    const opts = v.parse(user_status_event_schema, event);
 
     if (!opts.emoji_name) {
         user_status_emoji_info.delete(opts.user_id);

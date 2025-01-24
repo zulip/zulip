@@ -4,7 +4,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_profile_access_error_model from "../templates/profile_access_error_modal.hbs";
 import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
@@ -434,7 +434,8 @@ export function get_custom_profile_field_data(
             profile_field.value = field_value.value;
             break;
         case field_types.SELECT.id: {
-            const field_choice_dict = settings_components.select_field_data_schema.parse(
+            const field_choice_dict = v.parse(
+                settings_components.select_field_data_schema,
                 JSON.parse(field.field_data),
             );
             profile_field.value = field_choice_dict[field_value.value]!.text;
@@ -446,7 +447,8 @@ export function get_custom_profile_field_data(
             profile_field.rendered_value = field_value.rendered_value;
             break;
         case field_types.EXTERNAL_ACCOUNT.id: {
-            const field_data = settings_components.external_account_field_schema.parse(
+            const field_data = v.parse(
+                settings_components.external_account_field_schema,
                 JSON.parse(field.field_data),
             );
             profile_field.value = field_value.value;
@@ -999,13 +1001,13 @@ function get_current_values(
     const raw_current_values = dialog_widget.get_current_values(
         $edit_form.find("input, select, textarea, button, .pill-container"),
     );
-    const schema = z.intersection(
-        z.object({
-            user_id: z.optional(z.string()),
+    const schema = v.intersect([
+        v.object({
+            user_id: v.optional(v.string()),
         }),
-        z.record(z.string(), z.unknown()),
-    );
-    const current_values = schema.parse(raw_current_values);
+        v.record(v.string(), v.unknown()),
+    ]);
+    const current_values = v.parse(schema, raw_current_values);
     return current_values;
 }
 
@@ -1168,14 +1170,15 @@ export function initialize(): void {
         const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);
         const $alert_box = $("#user-profile-streams-tab .stream_list_info");
         function addition_success(raw_data: unknown): void {
-            const data = z
-                .object({
-                    already_subscribed: z.record(z.string(), z.array(z.string())),
-                    subscribed: z.record(z.string(), z.array(z.string())),
-                    msg: z.string(),
-                    result: z.string(),
-                })
-                .parse(raw_data);
+            const data = v.parse(
+                v.object({
+                    already_subscribed: v.record(v.string(), v.array(v.string())),
+                    subscribed: v.record(v.string(), v.array(v.string())),
+                    msg: v.string(),
+                    result: v.string(),
+                }),
+                raw_data,
+            );
             if (Object.keys(data.subscribed).length > 0) {
                 reset_subscribe_widget();
                 ui_report.success(
@@ -1211,14 +1214,15 @@ export function initialize(): void {
         const $alert_box = $("#user-profile-streams-tab .stream_list_info");
 
         function removal_success(raw_data: unknown): void {
-            const data = z
-                .object({
-                    removed: z.array(z.string()),
-                    msg: z.string(),
-                    result: z.string(),
-                    not_removed: z.array(z.string()),
-                })
-                .parse(raw_data);
+            const data = v.parse(
+                v.object({
+                    removed: v.array(v.string()),
+                    msg: v.string(),
+                    result: v.string(),
+                    not_removed: v.array(v.string()),
+                }),
+                raw_data,
+            );
             if (data.removed.length > 0) {
                 ui_report.success(
                     $t_html({defaultMessage: "Unsubscribed successfully!"}),

@@ -1,7 +1,7 @@
 import $ from "jquery";
 import Cookies from "js-cookie";
 import assert from "minimalistic-assert";
-import type {z} from "zod";
+import * as v from "valibot";
 
 import render_dialog_default_language from "../templates/default_language_modal.hbs";
 
@@ -42,10 +42,10 @@ export type SettingsPanel = {
       }
 );
 
-export const user_settings_property_schema = user_settings_schema
-    .omit({available_notification_sounds: true, emojiset_choices: true})
-    .keyof();
-type UserSettingsProperty = z.output<typeof user_settings_property_schema>;
+export const user_settings_property_schema = v.keyof(
+    v.omit(user_settings_schema, ["available_notification_sounds", "emojiset_choices"]),
+);
+type UserSettingsProperty = v.InferOutput<typeof user_settings_property_schema>;
 
 const meta = {
     loaded: false,

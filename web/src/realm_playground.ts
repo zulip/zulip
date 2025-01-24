@@ -1,5 +1,5 @@
 import assert from "minimalistic-assert";
-import type {z} from "zod";
+import type * as v from "valibot";
 
 import * as typeahead from "../shared/src/typeahead.ts";
 
@@ -7,7 +7,7 @@ import {$t} from "./i18n.ts";
 import * as pygments_data from "./pygments_data.ts";
 import type {realm_playground_schema} from "./state_data.ts";
 
-export type RealmPlayground = z.output<typeof realm_playground_schema>;
+export type RealmPlayground = v.InferOutput<typeof realm_playground_schema>;
 
 const map_language_to_playground_info = new Map<string, RealmPlayground[]>();
 const map_pygments_pretty_name_to_aliases = new Map<string, string[]>();

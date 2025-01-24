@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import * as v from "valibot";
 
 import render_convert_demo_organization_form from "../templates/settings/convert_demo_organization_form.hbs";
 import render_demo_organization_warning from "../templates/settings/demo_organization_warning.hbs";
@@ -79,7 +79,7 @@ export function handle_demo_organization_conversion(): void {
             };
             const opts: RequestOpts = {
                 success_continuation(raw_data) {
-                    const data = z.object({realm_url: z.string()}).parse(raw_data);
+                    const data = v.parse(v.object({realm_url: v.string()}), raw_data);
                     window.location.href = data.realm_url;
                 },
             };

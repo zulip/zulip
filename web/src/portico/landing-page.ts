@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import {page_params} from "../base_page_params.ts";
 import * as util from "../util.ts";
@@ -270,9 +270,10 @@ $(document).on("click", ".comparison-tab", function (this: HTMLElement, _event: 
         "tab-all": 7,
     };
 
-    const tab_label = z
-        .enum(["tab-cloud", "tab-hosted", "tab-all"])
-        .parse(util.the($(this)).dataset.label);
+    const tab_label = v.parse(
+        v.picklist(["tab-cloud", "tab-hosted", "tab-all"]),
+        util.the($(this)).dataset.label,
+    );
     const plans_columns_count = plans_columns_counts[tab_label];
     const visible_plans_id = `showing-${tab_label}`;
 

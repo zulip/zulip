@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
@@ -84,19 +84,21 @@ export function initialize(): void {
         channel.get({
             url,
             success(raw_data) {
-                const data = z
-                    .object({result: z.literal("success"), billing_access_url: z.string()})
-                    .parse(raw_data);
+                const data = v.parse(
+                    v.object({result: v.literal("success"), billing_access_url: v.string()}),
+                    raw_data,
+                );
                 window.open(data.billing_access_url, "_blank", "noopener,noreferrer");
             },
             error(xhr) {
-                const parsed = z
-                    .object({result: z.literal("error"), msg: z.string()})
-                    .safeParse(xhr.responseJSON);
+                const parsed = v.safeParse(
+                    v.object({result: v.literal("error"), msg: v.string()}),
+                    xhr.responseJSON,
+                );
                 if (parsed.success) {
                     feedback_widget.show({
                         populate($container) {
-                            $container.text(parsed.data.msg);
+                            $container.text(parsed.output.msg);
                         },
                         title_text: $t({defaultMessage: "Error"}),
                     });

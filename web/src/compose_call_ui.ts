@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as channel from "./channel.ts";
 import * as compose_call from "./compose_call.ts";
@@ -11,10 +11,10 @@ import {current_user, realm} from "./state_data.ts";
 import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
 
-const call_response_schema = z.object({
-    msg: z.string(),
-    result: z.string(),
-    url: z.string(),
+const call_response_schema = v.object({
+    msg: v.string(),
+    result: v.string(),
+    url: v.string(),
 });
 
 export function update_audio_and_video_chat_button_display(): void {
@@ -75,7 +75,7 @@ export function generate_and_insert_audio_or_video_call_link(
                 url: "/json/calls/zoom/create",
                 data: request,
                 success(res) {
-                    const data = call_response_schema.parse(res);
+                    const data = v.parse(call_response_schema, res);
                     compose_call.video_call_xhrs.delete(key);
                     if (is_audio_call) {
                         insert_audio_call_url(data.url, $target_textarea);
@@ -88,9 +88,9 @@ export function generate_and_insert_audio_or_video_call_link(
                     let parsed;
                     if (
                         status === "error" &&
-                        (parsed = z.object({code: z.string()}).safeParse(xhr.responseJSON))
+                        (parsed = v.safeParse(v.object({code: v.string()}), xhr.responseJSON))
                             .success &&
-                        parsed.data.code === "INVALID_ZOOM_TOKEN"
+                        parsed.output.code === "INVALID_ZOOM_TOKEN"
                     ) {
                         current_user.has_zoom_token = false;
                     }
@@ -129,7 +129,7 @@ export function generate_and_insert_audio_or_video_call_link(
             url: "/json/calls/bigbluebutton/create",
             data: request,
             success(response) {
-                const data = call_response_schema.parse(response);
+                const data = v.parse(call_response_schema, response);
                 if (is_audio_call) {
                     insert_audio_call_url(data.url, $target_textarea);
                 } else {

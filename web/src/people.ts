@@ -1,6 +1,6 @@
 import md5 from "blueimp-md5";
 import assert from "minimalistic-assert";
-import type {z} from "zod";
+import type * as v from "valibot";
 
 import * as typeahead from "../shared/src/typeahead.ts";
 
@@ -21,8 +21,8 @@ import {is_user_in_setting_group} from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
-export type ProfileDatum = z.infer<typeof profile_datum_schema>;
-export type User = z.infer<typeof user_schema>;
+export type ProfileDatum = v.InferOutput<typeof profile_datum_schema>;
+export type User = v.InferOutput<typeof user_schema>;
 
 export type SenderInfo = User & {
     avatar_url_small: string;

@@ -1,17 +1,13 @@
-import {z} from "zod";
+import * as v from "valibot";
 
 import * as blueslip from "./blueslip.ts";
 
-const formDataSchema = z
-    .object({
-        data: z.unknown(),
-        __valid: z.literal(true),
-    })
-    // z.unknown by default marks the field as optional.
-    // Use zod transform to make optional data field non-optional.
-    .transform((o) => ({data: o.data, ...o}));
+const formDataSchema = v.object({
+    data: v.unknown(),
+    __valid: v.literal(true),
+});
 
-type FormData = z.infer<typeof formDataSchema>;
+type FormData = v.InferOutput<typeof formDataSchema>;
 
 export type LocalStorage = {
     get: (name: string) => unknown;
@@ -51,7 +47,7 @@ const ls = {
             if (raw_data === null) {
                 return undefined;
             }
-            return formDataSchema.parse(JSON.parse(raw_data));
+            return v.parse(formDataSchema, JSON.parse(raw_data));
         } catch {
             return undefined;
         }
@@ -100,7 +96,7 @@ const ls = {
             if (raw_data === null) {
                 continue;
             }
-            const data = formDataSchema.parse(JSON.parse(raw_data));
+            const data = v.parse(formDataSchema, JSON.parse(raw_data));
             if (condition_checker(data.data)) {
                 try {
                     localStorage.removeItem(key);
