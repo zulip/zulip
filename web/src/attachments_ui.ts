@@ -13,7 +13,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as scroll_util from "./scroll_util.ts";
-import {realm} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 
@@ -66,6 +66,9 @@ export function percentage_used_space(uploads_size: number): string | null {
 
 function set_upload_space_stats(): void {
     if (realm.realm_upload_quota_mib === null) {
+        return;
+    }
+    if (current_user.is_guest) {
         return;
     }
     const args = {
