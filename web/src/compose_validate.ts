@@ -40,7 +40,15 @@ export const NO_PRIVATE_RECIPIENT_ERROR_MESSAGE = $t({
     defaultMessage: "Please add a valid recipient.",
 });
 export const NO_CHANNEL_SELECTED_ERROR_MESSAGE = $t({defaultMessage: "Please select a channel."});
-
+export const TOPICS_REQUIRED_ERROR_MESSAGE = $t({
+    defaultMessage: "Topics are required in this organization.",
+});
+export const get_message_too_long_for_compose_error = (): string =>
+    $t(
+        {defaultMessage: `Message length shouldn't be greater than {max_length} characters.`},
+        {max_length: realm.max_message_length},
+    );
+export const NO_MESSAGE_CONTENT_ERROR_MESSAGE = $t({defaultMessage: "Compose a message."});
 type StreamWildcardOptions = {
     stream_id: number;
     $banner_container: JQuery;
@@ -85,10 +93,7 @@ function update_send_button_status(): void {
 
 export function get_disabled_send_tooltip(): string {
     if (message_too_long) {
-        return $t(
-            {defaultMessage: `Message length shouldn't be greater than {max_length} characters.`},
-            {max_length: realm.max_message_length},
-        );
+        return get_message_too_long_for_compose_error();
     } else if (upload_in_progress) {
         return $t({defaultMessage: "Cannot send message while files are being uploaded."});
     }
@@ -103,14 +108,7 @@ export function get_disabled_save_tooltip($container: JQuery): string {
         });
     }
     if (message_too_long) {
-        return $t(
-            {
-                defaultMessage: `Message length shouldn't be greater than {max_length} characters.`,
-            },
-            {
-                max_length: realm.max_message_length,
-            },
-        );
+        return get_message_too_long_for_compose_error();
     }
     return "";
 }
@@ -667,9 +665,10 @@ function validate_stream_message(scheduling_message: boolean): boolean {
 
     if (realm.realm_mandatory_topics) {
         const topic = compose_state.topic();
-        if (topic === "") {
+        const missing_topic = topic === "";
+        if (missing_topic) {
             compose_banner.show_error_message(
-                $t({defaultMessage: "Topics are required in this organization."}),
+                TOPICS_REQUIRED_ERROR_MESSAGE,
                 compose_banner.CLASSNAMES.topic_missing,
                 $banner_container,
                 $("input#stream_message_recipient_topic"),
@@ -720,8 +719,9 @@ function validate_private_message(): boolean {
     const user_ids = compose_pm_pill.get_user_ids();
     const user_ids_string = util.sorted_ids(user_ids).join(",");
     const $banner_container = $("#compose_banners");
+    const missing_direct_message_recipient = compose_state.private_message_recipient().length === 0;
 
-    if (compose_state.private_message_recipient().length === 0) {
+    if (missing_direct_message_recipient) {
         compose_banner.show_error_message(
             NO_PRIVATE_RECIPIENT_ERROR_MESSAGE,
             compose_banner.CLASSNAMES.missing_private_message_recipient,
@@ -841,7 +841,8 @@ export function validate_message_length($container: JQuery): boolean {
     const $textarea = $container.find<HTMLTextAreaElement>(".message-textarea");
     // Match the behavior of compose_state.message_content of trimming trailing whitespace
     const text = $textarea.val()!.trimEnd();
-    if (text.length > realm.max_message_length) {
+    const message_too_long_for_compose = text.length > realm.max_message_length;
+    if (message_too_long_for_compose) {
         $textarea.addClass("flash");
         setTimeout(() => $textarea.removeClass("flash"), 1500);
         return false;
@@ -851,7 +852,8 @@ export function validate_message_length($container: JQuery): boolean {
 
 export function validate(scheduling_message: boolean): boolean {
     const message_content = compose_state.message_content();
-    if (/^\s*$/.test(message_content)) {
+    const no_message_content = /^\s*$/.test(message_content);
+    if (no_message_content) {
         $("textarea#compose-textarea").toggleClass("invalid", true);
         return false;
     }
