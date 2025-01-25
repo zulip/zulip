@@ -55,6 +55,7 @@ from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError, ma
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload import ensure_avatar_image, sanitize_name, upload_backend, upload_emoji_image
 from zerver.lib.upload.s3 import get_bucket
+from zerver.lib.url_decoding import NearLinkHandler
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import create_system_user_groups_for_realm
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
@@ -442,6 +443,11 @@ def fix_message_rendered_content(
                     if old_user_group_id in user_group_id_map:
                         mention["data-user-group-id"] = str(user_group_id_map[old_user_group_id])
                 message[rendered_content_key] = str(soup)
+
+            message[rendered_content_key] = fix_near_links_in_messages(
+                message[rendered_content_key]
+            )
+
             continue
 
         try:
@@ -464,6 +470,9 @@ def fix_message_rendered_content(
                 sent_by_bot=sent_by_bot,
                 translate_emoticons=translate_emoticons,
             ).rendered_content
+            # Near-links fix has to be done here for third-party platforms
+            # import because those doesn't have any rendered content yet.
+            rendered_content = fix_near_links_in_messages(rendered_content)
 
             message[rendered_content_key] = rendered_content
             if "scheduled_timestamp" not in message:
@@ -479,6 +488,66 @@ def fix_message_rendered_content(
             logging.warning(
                 "Error in Markdown rendering for message ID %s; continuing", message["id"]
             )
+
+
+def remap_near_link_recipient_encoding(fragments: list[str]) -> None:
+    section, recipient_encoding = fragments[1], fragments[2]
+    old_recipient_id, recipient_name = recipient_encoding.split("-", maxsplit=1)
+
+    id_map = {"channel": ID_MAP["stream"], "dm": ID_MAP["user_profile"]}.get(section)
+    if id_map is None:
+        return
+    old_id_list = map(int, old_recipient_id.split(","))
+    new_id_list = [str(id_map.get(old_id, old_id)) for old_id in old_id_list]
+
+    new_recipient_id = ",".join(new_id_list)
+    fragments[2] = f"{new_recipient_id}-{recipient_name}"
+
+
+def remap_near_link_message_id(fragments: list[str]) -> None:
+    message_id_map = ID_MAP["message"]
+    old_id = fragments[-1]
+    new_id = message_id_map.get(int(old_id), old_id)
+    fragments[-1] = str(new_id)
+
+
+def fix_near_links_in_messages(rendered_content: str) -> str:
+    soup = BeautifulSoup(rendered_content, "html.parser")
+    near_link_prefixes = ["/#narrow/channel", "/#narrow/stream", "/#narrow/dm"]
+
+    # Include legacy links without the leading "/", which were
+    # used in older versions.
+    near_link_prefixes += [prefix.removeprefix("/") for prefix in near_link_prefixes]
+
+    near_links = soup.find_all(
+        lambda tag: tag.name == "a"
+        and tag.has_attr("href")
+        and (tag.get("href").startswith(tuple(near_link_prefixes)))
+    )
+
+    if near_links == []:
+        return rendered_content
+
+    for link in near_links:
+        url = link["href"]
+        try:
+            near_link_instance = NearLinkHandler(url)
+        except AssertionError:
+            # NearLinkHandler does additional checks to make sure
+            # the URL is a near link. In this case it's probably
+            # not a near link (or a faulty one).
+            continue
+
+        fragments = near_link_instance.get_near_link_fragment_parts()
+        remap_near_link_recipient_encoding(fragments)
+
+        if fragments[-2] == "near" and len(fragments) >= 5:
+            remap_near_link_message_id(fragments)
+
+        near_link_instance.patch_near_link_fragment_parts(fragments)
+        link["href"] = near_link_instance.get_url()
+
+    return str(soup)
 
 
 def fix_message_edit_history(

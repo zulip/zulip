@@ -489,7 +489,7 @@
     {
       "name": "fragment_link",
       "input": "[foo](http://zulip.testserver/#narrow/channel/1-Denmark)",
-      "expected_output": "<p><a href=\"#narrow/channel/1-Denmark\">foo</a></p>",
+      "expected_output": "<p><a href=\"/#narrow/channel/1-Denmark\">foo</a></p>",
       "marked_expected_output": "<p><a href=\"http://zulip.testserver/#narrow/channel/1-Denmark\">foo</a></p>"
     },
     {
@@ -1058,14 +1058,14 @@
     {
       "name": "normal_quote_message",
       "input": "@_**Zoe|7** [said](http://zulip.testserver/#narrow/channel/13-social/topic/party/near/103):\n```quote\nHow are you?\n```\n\nGreat",
-      "expected_output": "<p><span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> <a href=\"#narrow/channel/13-social/topic/party/near/103\">said</a>:</p>\n<blockquote>\n<p>How are you?</p>\n</blockquote>\n<p>Great</p>",
+      "expected_output": "<p><span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> <a href=\"/#narrow/channel/13-social/topic/party/near/103\">said</a>:</p>\n<blockquote>\n<p>How are you?</p>\n</blockquote>\n<p>Great</p>",
       "marked_expected_output": "<p><span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> <a href=\"http://zulip.testserver/#narrow/channel/13-social/topic/party/near/103\">said</a>:</p>\n<blockquote>\n<p>How are you?</p>\n</blockquote>\n<p>Great</p>",
       "text_content": "[…]\nGreat"
     },
     {
       "name": "user_mention_with_no_message_link",
       "input": "Hello @_**Zoe|7** see [this](http://zulip.testserver/#narrow/search/database).",
-      "expected_output": "<p>Hello <span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> see <a href=\"#narrow/search/database\">this</a>.</p>",
+      "expected_output": "<p>Hello <span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> see <a href=\"/#narrow/search/database\">this</a>.</p>",
       "marked_expected_output": "<p>Hello <span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> see <a href=\"http://zulip.testserver/#narrow/search/database\">this</a>.</p>",
       "text_content": "Hello Zoe see this."
     },
@@ -1324,7 +1324,7 @@
     ],
     [
       "http://zulip.testserver/#narrow/channel/1-Denmark",
-      "<p><a href=\"#narrow/channel/1-Denmark\">http://zulip.testserver/#narrow/channel/1-Denmark</a></p>",
+      "<p><a href=\"/#narrow/channel/1-Denmark\">http://zulip.testserver/#narrow/channel/1-Denmark</a></p>",
       ""
     ],
     [
