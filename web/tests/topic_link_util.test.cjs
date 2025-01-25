@@ -83,7 +83,10 @@ run_test("stream_topic_link_syntax_test", () => {
         topic_link_util.get_stream_topic_link_syntax("Sweden", "&ab"),
         "[#Sweden > &amp;ab](#narrow/channel/1-Sweden/topic/.26ab)",
     );
-
+    assert.equal(
+        topic_link_util.unescape_invalid_stream_topic_characters("&#36;&#36;MONEY&#36;&#36;"),
+        "$$MONEY$$",
+    );
     // Only for full coverage of the module.
     assert.equal(topic_link_util.escape_invalid_stream_topic_characters("Sweden"), "Sweden");
 });

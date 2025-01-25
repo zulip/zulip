@@ -82,6 +82,9 @@ export type LanguageSuggestion = {
 type TopicSuggestion = {
     topic: string;
     type: "topic_list";
+    // If true, markdown format will be used to create link which is
+    // required to link stream or topic with characters like `>*&$$
+    to_markdown_link: boolean;
 };
 
 type TimeJumpSuggestion = {
@@ -940,10 +943,18 @@ export function get_candidates(
 
         // Matches '#**stream name>some text' at the end of a split.
         const stream_topic_regex = /#\*\*([^*>]+)>([^*\n]*)$/;
-        const should_begin_typeahead = stream_topic_regex.test(split[0]);
+        // Matches '[#stream name](#stream path)>some text' at the end of a split.
+        const markdown_link_regex = /\[#([^>\]]+)]\(#[^)]*\)>([^\n]*)$/;
+
+        const matches_stream_topic_format = stream_topic_regex.test(split[0]);
+        const matches_markdown_link_format = markdown_link_regex.test(split[0]);
+
+        const should_begin_typeahead = matches_stream_topic_format || matches_markdown_link_format;
         if (should_begin_typeahead) {
             completing = "topic_list";
-            const tokens = stream_topic_regex.exec(split[0]);
+            const tokens = matches_stream_topic_format
+                ? stream_topic_regex.exec(split[0])
+                : markdown_link_regex.exec(split[0]);
             assert(tokens !== null);
             if (tokens[1]) {
                 const stream_name = tokens[1];
@@ -954,7 +965,10 @@ export function get_candidates(
                     return [];
                 }
 
-                const stream_id = stream_data.get_stream_id(stream_name);
+                const unescaped_stream_name =
+                    topic_link_util.unescape_invalid_stream_topic_characters(stream_name);
+
+                const stream_id = stream_data.get_stream_id(unescaped_stream_name);
                 const topic_list = topics_seen_for(stream_id);
                 if (should_show_custom_query(token, topic_list)) {
                     topic_list.push(token);
@@ -964,6 +978,7 @@ export function get_candidates(
                 const matches_list: TopicSuggestion[] = matches.map((topic) => ({
                     topic,
                     type: "topic_list",
+                    to_markdown_link: matches_markdown_link_format,
                 }));
                 return typeahead_helper.sorter(token, matches_list, (x) => x.topic);
             }
@@ -1200,11 +1215,12 @@ export function content_typeahead_selected(
             // will cause encoding issues.
             // "beginning" contains all the text before the cursor, so we use lastIndexOf to
             // avoid any other stream+topic mentions in the message.
-            const syntax = "#**";
-            const syntax_start_index = beginning.lastIndexOf(syntax);
+            const syntax_start = item.to_markdown_link ? "[#" : "#**";
+            const syntax_end = item.to_markdown_link ? "](#narrow/channel/" : ">";
+            const syntax_start_index = beginning.lastIndexOf(syntax_start);
             const stream_name = beginning.slice(
-                syntax_start_index + syntax.length,
-                beginning.lastIndexOf(">"),
+                syntax_start_index + syntax_start.length,
+                beginning.lastIndexOf(syntax_end),
             );
             beginning =
                 beginning.slice(0, syntax_start_index) +
