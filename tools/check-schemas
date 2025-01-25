@@ -68,8 +68,8 @@ def get_event_checker(event: dict[str, Any]) -> Callable[[str, dict[str, Any]], 
     # Change to CamelCase
     name = name.replace("_", " ").title().replace(" ", "")
 
-    # And add the prefix.
-    name = "Event" + name
+    # And add the suffix.
+    name = name + "Event"
 
     if not hasattr(event_schema, name):
         raise ValueError(f"We could not find {name} in event_schemas.py")
