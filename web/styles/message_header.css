@@ -16,7 +16,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        height: 2em; /* 28px at 14px em */
+        height: 1.8666em; /* 28px at 15px em */
         border: 1px solid var(--color-message-header-contents-border);
         border-bottom-color: var(--color-message-header-contents-border-bottom);
         border-radius: 7px 7px 0 0;
