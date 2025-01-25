@@ -39,6 +39,7 @@ let recipient_disallowed = false;
 export const NO_PRIVATE_RECIPIENT_ERROR_MESSAGE = $t({
     defaultMessage: "Please add a valid recipient.",
 });
+export const NO_CHANNEL_SELECTED_ERROR_MESSAGE = $t({defaultMessage: "Please select a channel."});
 
 type StreamWildcardOptions = {
     stream_id: number;
@@ -653,9 +654,10 @@ export function validate_stream_message_address_info(sub: StreamSubscription): b
 function validate_stream_message(scheduling_message: boolean): boolean {
     const stream_id = compose_state.stream_id();
     const $banner_container = $("#compose_banners");
-    if (stream_id === undefined) {
+    const no_channel_selected = stream_id === undefined;
+    if (no_channel_selected) {
         compose_banner.show_error_message(
-            $t({defaultMessage: "Please specify a channel."}),
+            NO_CHANNEL_SELECTED_ERROR_MESSAGE,
             compose_banner.CLASSNAMES.missing_stream,
             $banner_container,
             $("#compose_select_recipient_widget_wrapper"),
