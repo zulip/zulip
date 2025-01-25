@@ -1,0 +1,43 @@
+{
+  "model": "bedrock/meta.llama3-8b-instruct-v1:0",
+  "messages": [
+    {
+      "content": "The following is a chat conversation in the Zulip team chat app. channel: Zulip features, topic: New feature launch",
+      "role": "system"
+    },
+    {
+      "content": "[{\"sender\": \"Iago\", \"content\": \"Zulip just launched a feature to generate summary of messages.\"}, {\"sender\": \"Iago\", \"content\": \"Sounds awesome! This will greatly help me when catching up.\"}]",
+      "role": "user"
+    },
+    {
+      "content": "Succinctly summarize this conversation based only on the information provided, in up to 4 sentences, for someone who is familiar with the context. Mention key conclusions and actions, if any. Refer to specific people as appropriate. Don't use an intro phrase.",
+      "role": "user"
+    }
+  ],
+  "response": {
+    "id": "chatcmpl-a86e270f-a634-40f3-92f4-da786ccb263b",
+    "created": 1737832810,
+    "model": "meta.llama3-8b-instruct-v1:0",
+    "object": "chat.completion",
+    "system_fingerprint": null,
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "\n\nIago announced the launch of a new feature in Zulip, which generates summaries of messages. He expressed enthusiasm for the feature, stating it will greatly help him when catching up.",
+          "role": "assistant",
+          "tool_calls": null,
+          "function_call": null
+        }
+      }
+    ],
+    "usage": {
+      "completion_tokens": 39,
+      "prompt_tokens": 144,
+      "total_tokens": 183,
+      "completion_tokens_details": null,
+      "prompt_tokens_details": null
+    }
+  }
+}
