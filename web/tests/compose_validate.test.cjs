@@ -322,7 +322,7 @@ test_ui("validate", ({mock_template, override}) => {
     let empty_stream_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.missing_stream);
-        assert.equal(data.banner_text, $t({defaultMessage: "Please specify a channel."}));
+        assert.equal(data.banner_text, compose_validate.NO_CHANNEL_SELECTED_ERROR_MESSAGE);
         empty_stream_error_rendered = true;
         return "<banner-stub>";
     });
