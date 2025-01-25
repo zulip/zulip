@@ -56,6 +56,7 @@ export const CLASSNAMES = {
     cannot_send_direct_message: "cannot_send_direct_message",
     missing_private_message_recipient: "missing_private_message_recipient",
     exceeded_message_length_limit: "exceeded_message_length_limit",
+    no_message_content: "no_message_content",
     invalid_recipient: "invalid_recipient",
     invalid_recipients: "invalid_recipients",
     deactivated_user: "deactivated_user",

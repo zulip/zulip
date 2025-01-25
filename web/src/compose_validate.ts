@@ -48,6 +48,7 @@ export const get_message_too_long_for_compose_error = (): string =>
         {defaultMessage: `Message length shouldn't be greater than {max_length} characters.`},
         {max_length: realm.max_message_length},
     );
+export const NO_MESSAGE_CONTENT_ERROR_MESSAGE = $t({defaultMessage: "Compose a message."});
 type StreamWildcardOptions = {
     stream_id: number;
     $banner_container: JQuery;
@@ -859,8 +860,17 @@ export function validate_message_length($container: JQuery): boolean {
 
 export function validate(scheduling_message: boolean): boolean {
     const message_content = compose_state.message_content();
-    if (/^\s*$/.test(message_content)) {
+    const no_message_content = /^\s*$/.test(message_content);
+    if (no_message_content) {
         $("textarea#compose-textarea").toggleClass("invalid", true);
+        $("textarea#compose-textarea").trigger("focus");
+        const $banner_container = $("#compose_banners");
+        compose_banner.show_error_message(
+            NO_MESSAGE_CONTENT_ERROR_MESSAGE,
+            compose_banner.CLASSNAMES.no_message_content,
+            $banner_container,
+            $("#message-content-container"),
+        );
         return false;
     }
 

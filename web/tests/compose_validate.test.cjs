@@ -222,6 +222,9 @@ test_ui("validate", ({mock_template, override}) => {
             $textarea.val($textarea.val() + "hello ");
         }
     }
+    function set_compose_box_as_empty() {
+        $("textarea#compose-textarea").val("");
+    }
 
     // test validating direct messages
     compose_state.set_message_type("private");
@@ -322,6 +325,30 @@ test_ui("validate", ({mock_template, override}) => {
 
     initialize_pm_pill(mock_template);
     add_content_to_compose_box();
+    // test no message content
+    const india = {
+        stream_id: 100,
+        name: "India",
+        subscribed: true,
+        can_send_message_group: everyone.id,
+    };
+    stream_data.add_sub(india);
+    compose_state.set_stream_id(india.stream_id);
+    compose_state.set_message_type("stream");
+    compose_state.topic("Random topic for india");
+
+    set_compose_box_as_empty();
+    $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
+
+    let render_no_message_content = false;
+    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+        assert.equal(data.classname, compose_banner.CLASSNAMES.no_message_content);
+        assert.equal(data.banner_text, compose_validate.NO_MESSAGE_CONTENT_ERROR_MESSAGE);
+        render_no_message_content = true;
+        return "<banner-stub>";
+    });
+    assert.ok(!compose_validate.validate());
+    assert.ok(render_no_message_content);
 
     // test exceeded message length limit
     add_content_that_exceeds_message_length();
