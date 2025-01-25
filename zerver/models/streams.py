@@ -10,6 +10,7 @@ from django.utils.translation import gettext_lazy
 from typing_extensions import override
 
 from zerver.lib.cache import flush_stream
+from zerver.lib.event_types import StreamGroup
 from zerver.lib.types import GroupPermissionSetting
 from zerver.models.groups import SystemGroups, UserGroup
 from zerver.models.realms import Realm
@@ -413,7 +414,10 @@ class DefaultStreamGroup(models.Model):
         unique_together = ("realm", "name")
 
     def to_dict(self) -> dict[str, Any]:
-        return dict(
+        return self.to_pydantic().model_dump()
+
+    def to_pydantic(self) -> StreamGroup:
+        return StreamGroup(
             name=self.name,
             id=self.id,
             description=self.description,
