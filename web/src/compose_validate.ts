@@ -860,6 +860,20 @@ export function validate_message_length($container: JQuery): boolean {
 
 export function validate(scheduling_message: boolean): boolean {
     const message_content = compose_state.message_content();
+    // The validation checks in this function are in a specific priority order. Don't
+    // change their order unless you want to change which priority they're shown in.
+
+    if (
+        compose_state.get_message_type() !== "private" &&
+        !validate_stream_message(scheduling_message)
+    ) {
+        return false;
+    }
+
+    if (compose_state.get_message_type() === "private" && !validate_private_message()) {
+        return false;
+    }
+
     const no_message_content = /^\s*$/.test(message_content);
     if (no_message_content) {
         $("textarea#compose-textarea").toggleClass("invalid", true);
@@ -889,10 +903,7 @@ export function validate(scheduling_message: boolean): boolean {
         return false;
     }
 
-    if (compose_state.get_message_type() === "private") {
-        return validate_private_message();
-    }
-    return validate_stream_message(scheduling_message);
+    return true;
 }
 
 export function convert_mentions_to_silent_in_direct_messages(

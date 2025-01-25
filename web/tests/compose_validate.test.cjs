@@ -211,7 +211,31 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
     assert.ok(user_not_subscribed_rendered);
 });
 
-test_ui("validate", ({mock_template, override}) => {
+test_ui("validate", ({mock_template, override, override_rewire}) => {
+    function initialize_pm_pill() {
+        $.clear_all_elements();
+
+        $("#compose-send-button").prop("disabled", false);
+        $("#compose-send-button").trigger("focus");
+        $("#compose-send-button .loader").hide();
+
+        const $pm_pill_container = $.create("fake-pm-pill-container");
+        $("#private_message_recipient")[0] = {};
+        $("#private_message_recipient").set_parent($pm_pill_container);
+        $pm_pill_container.set_find_results(".input", $("#private_message_recipient"));
+        $("#private_message_recipient").before = noop;
+
+        compose_pm_pill.initialize({
+            on_pill_create_or_remove: compose_recipient.update_placeholder_text,
+        });
+
+        $("#zephyr-mirror-error").is = noop;
+
+        mock_template("input_pill.hbs", false, () => "<div>pill-html</div>");
+
+        mock_banners();
+    }
+
     function add_content_to_compose_box() {
         $("textarea#compose-textarea").val("foobarfoobar");
     }
@@ -332,6 +356,7 @@ test_ui("validate", ({mock_template, override}) => {
         subscribed: true,
         can_send_message_group: everyone.id,
     };
+    override_rewire(stream_data, "can_post_messages_in_stream", () => true);
     stream_data.add_sub(india);
     compose_state.set_stream_id(india.stream_id);
     compose_state.set_message_type("stream");
