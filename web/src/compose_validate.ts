@@ -41,7 +41,9 @@ export const NO_PRIVATE_RECIPIENT_ERROR_MESSAGE = $t({
     defaultMessage: "Please add a valid recipient.",
 });
 export const NO_CHANNEL_SELECTED_ERROR_MESSAGE = $t({defaultMessage: "Please select a channel."});
-
+export const TOPICS_REQUIRED_ERROR_MESSAGE = $t({
+    defaultMessage: "Topics are required in this organization.",
+});
 type StreamWildcardOptions = {
     stream_id: number;
     $banner_container: JQuery;
@@ -711,9 +713,10 @@ function validate_stream_message(scheduling_message: boolean): boolean {
 
     if (realm.realm_mandatory_topics) {
         const topic = compose_state.topic();
-        if (topic === "") {
+        const missing_topic = topic === "";
+        if (missing_topic) {
             compose_banner.show_error_message(
-                $t({defaultMessage: "Topics are required in this organization."}),
+                TOPICS_REQUIRED_ERROR_MESSAGE,
                 compose_banner.CLASSNAMES.topic_missing,
                 $banner_container,
                 $("input#stream_message_recipient_topic"),
@@ -764,8 +767,9 @@ function validate_private_message(): boolean {
     const user_ids = compose_pm_pill.get_user_ids();
     const user_ids_string = util.sorted_ids(user_ids).join(",");
     const $banner_container = $("#compose_banners");
+    const missing_direct_message_recipient = compose_state.private_message_recipient().length === 0;
 
-    if (compose_state.private_message_recipient().length === 0) {
+    if (missing_direct_message_recipient) {
         compose_banner.show_error_message(
             NO_PRIVATE_RECIPIENT_ERROR_MESSAGE,
             compose_banner.CLASSNAMES.missing_private_message_recipient,
