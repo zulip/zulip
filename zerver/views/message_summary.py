@@ -1,3 +1,6 @@
+import warnings
+
+warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 import json
 from typing import Any
 
@@ -73,10 +76,10 @@ def get_messages_summary(
     *,
     narrow: Json[list[NarrowParameter] | None] = None,
 ) -> HttpResponse:
-    if settings.TOPIC_SUMMARIZATION_MODEL is None:
+    if settings.TOPIC_SUMMARIZATION_MODEL is None:  # nocoverage
         raise JsonableError(_("AI features are not enabled on this server."))
 
-    if not (user_profile.is_moderator or user_profile.is_realm_admin):
+    if not (user_profile.is_moderator or user_profile.is_realm_admin):  # nocoverage
         return json_success(request, {"summary": "Feature limited to moderators for now."})
 
     # TODO: This implementation does not attempt to make use of
@@ -95,7 +98,7 @@ def get_messages_summary(
         num_after=0,
     )
 
-    if len(query_info.rows) == 0:
+    if len(query_info.rows) == 0:  # nocoverage
         return json_success(request, {"summary": "No messages in conversation to summarize"})
 
     result_message_ids: list[int] = []
@@ -126,7 +129,7 @@ def get_messages_summary(
     # is primarily trained on English.
     model = settings.TOPIC_SUMMARIZATION_MODEL
     litellm_params: dict[str, Any] = {}
-    if model.startswith("huggingface"):
+    if model.startswith("huggingface"):  # nocoverage
         assert settings.HUGGINGFACE_API_KEY is not None
         litellm_params["api_key"] = settings.HUGGINGFACE_API_KEY
     else:
@@ -194,6 +197,7 @@ def get_messages_summary(
         messages=messages,
         **litellm_params,
     )
+    input_tokens = response["usage"]["prompt_tokens"]
     output_tokens = response["usage"]["completion_tokens"]
 
     credits_used = (output_tokens * OUTPUT_COST_PER_GIGATOKEN) + (

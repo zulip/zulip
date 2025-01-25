@@ -130,8 +130,6 @@ not_yet_fully_covered = [
     "zerver/webhooks/zapier/view.py",
     # This is hard to get test coverage for, and low value to do so
     "zerver/views/sentry.py",
-    # TODO: Add tests when the details are finalized.
-    "zerver/views/message_summary.py",
     # Cannot have coverage, as tests run in a transaction
     "zerver/lib/safe_session_cached_db.py",
     "zerver/lib/singleton_bmemcached.py",
@@ -282,6 +280,11 @@ def main() -> None:
         action="store_true",
         help="Generate Stripe test fixtures by making requests to Stripe test network",
     )
+    parser.add_argument(
+        "--generate-litellm-fixtures",
+        action="store_true",
+        help="Generate litellm test fixtures using credentials in zproject/dev-secrets.conf",
+    )
     parser.add_argument("args", nargs="*")
     parser.add_argument(
         "--ban-console-output",
@@ -389,6 +392,16 @@ def main() -> None:
         print("-- Forcing serial mode for generating stripe fixtures.", flush=True)
         default_parallel = 1
         os.environ["GENERATE_STRIPE_FIXTURES"] = "1"
+
+    if options.generate_litellm_fixtures:
+        if full_suite:
+            suites = [
+                "zerver.tests.test_message_summary",
+            ]
+            full_suite = False
+        print("-- Forcing serial mode for generating litellm fixtures.", flush=True)
+        default_parallel = 1
+        os.environ["GENERATE_LITELLM_FIXTURES"] = "1"
 
     assert_provisioning_status_ok(options.skip_provision_check)
 
