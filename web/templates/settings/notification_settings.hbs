@@ -49,6 +49,21 @@
             {{#unless for_realm_settings}}
             <tbody id="stream-specific-notify-table">
             </tbody>
+            <tbody id="customizable_stream_notifications_table">
+                <tr>
+                    <td>
+                        {{> ../dropdown_widget widget_name="customize_stream_notifications"}}
+                    </td>
+                    {{#each customize_stream_notifications_options}}
+                        {{> notification_settings_checkboxes
+                          setting_name=this
+                          is_checked=false
+                          is_disabled=true
+                          is_mobile_checkbox=false
+                          prefix="customize_stream_" }}
+                    {{/each}}
+                </tr>
+            </tbody>
             {{/unless}}
         </table>
     </div>
