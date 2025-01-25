@@ -486,6 +486,14 @@ test_ui("finish", ({override, override_rewire}) => {
     });
 
     (function test_when_compose_validation_fails() {
+        // To trigger the empty banner error instead of other errors
+        // set as per the priority.
+        override(current_user, "user_id", new_user.user_id);
+        compose_state.set_stream_id(social.stream_id);
+        fake_compose_box.set_topic_val("lunch");
+        fake_compose_box.set_textarea_val("burrito");
+        compose_state.set_message_type("stream");
+
         fake_compose_box.set_textarea_toggle_class_function((classname, value) => {
             assert.equal(classname, "invalid");
             assert.equal(value, true);
