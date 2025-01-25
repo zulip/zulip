@@ -3420,7 +3420,7 @@ class MultiuseInviteTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         realm = get_realm("zulip")
-        self.assertCountEqual(realm.create_multiuse_invite_group.direct_members.all(), [iago])
+        self.assertEqual(set(realm.create_multiuse_invite_group.direct_members.all()), {iago})
 
     def test_multiuse_link_for_inviting_as_owner(self) -> None:
         self.login("iago")

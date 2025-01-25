@@ -1196,12 +1196,12 @@ Output:
         data = self.get_messages_response(anchor, num_before, num_after, use_first_unread_anchor)
         return data["messages"]
 
-    def users_subscribed_to_stream(self, stream_name: str, realm: Realm) -> list[UserProfile]:
+    def users_subscribed_to_stream(self, stream_name: str, realm: Realm) -> set[UserProfile]:
         stream = Stream.objects.get(name=stream_name, realm=realm)
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         subscriptions = Subscription.objects.filter(recipient=recipient, active=True)
 
-        return [subscription.user_profile for subscription in subscriptions]
+        return {subscription.user_profile for subscription in subscriptions}
 
     def not_long_term_idle_subscriber_ids(self, stream_name: str, realm: Realm) -> set[int]:
         stream = Stream.objects.get(name=stream_name, realm=realm)

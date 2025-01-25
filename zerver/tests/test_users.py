@@ -2939,19 +2939,18 @@ class GetProfileTest(ZulipTestCase):
         # 4. Shiva - Because Shiva sent a DM to Polonius.
         # 5. Polonius - A user can obviously access themselves.
         self.assert_length(accessible_human_users, 7)
-        accessible_user_ids = [user["user_id"] for user in accessible_human_users]
-        self.assertCountEqual(
+        accessible_user_ids = {user["user_id"] for user in accessible_human_users}
+        self.assertEqual(
             accessible_user_ids,
-            [polonius.id, hamlet.id, iago.id, prospero.id, aaron.id, zoe.id, shiva.id],
+            {polonius.id, hamlet.id, iago.id, prospero.id, aaron.id, zoe.id, shiva.id},
         )
 
-        inaccessible_users = [
-            user
+        inaccessible_user_ids = {
+            user["user_id"]
             for user in result["members"]
             if user["full_name"] == UserProfile.INACCESSIBLE_USER_NAME
-        ]
-        inaccessible_user_ids = [user["user_id"] for user in inaccessible_users]
-        self.assertCountEqual(inaccessible_user_ids, [cordelia.id, desdemona.id, othello.id])
+        }
+        self.assertEqual(inaccessible_user_ids, {cordelia.id, desdemona.id, othello.id})
 
         do_deactivate_user(hamlet, acting_user=None)
         do_deactivate_user(aaron, acting_user=None)
@@ -2967,20 +2966,17 @@ class GetProfileTest(ZulipTestCase):
         # DMs and not those who were subscribed to some common streams.
         accessible_human_users = [user for user in accessible_users if not user["is_bot"]]
         self.assert_length(accessible_human_users, 6)
-        accessible_user_ids = [user["user_id"] for user in accessible_human_users]
-        self.assertCountEqual(
-            accessible_user_ids, [polonius.id, iago.id, prospero.id, aaron.id, zoe.id, shiva.id]
+        accessible_user_ids = {user["user_id"] for user in accessible_human_users}
+        self.assertEqual(
+            accessible_user_ids, {polonius.id, iago.id, prospero.id, aaron.id, zoe.id, shiva.id}
         )
 
-        inaccessible_users = [
-            user
+        inaccessible_user_ids = {
+            user["user_id"]
             for user in result["members"]
             if user["full_name"] == UserProfile.INACCESSIBLE_USER_NAME
-        ]
-        inaccessible_user_ids = [user["user_id"] for user in inaccessible_users]
-        self.assertCountEqual(
-            inaccessible_user_ids, [cordelia.id, desdemona.id, othello.id, hamlet.id]
-        )
+        }
+        self.assertEqual(inaccessible_user_ids, {cordelia.id, desdemona.id, othello.id, hamlet.id})
 
     def test_get_user_with_restricted_access(self) -> None:
         polonius = self.example_user("polonius")

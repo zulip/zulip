@@ -42,8 +42,7 @@ logger_string = "zulip.soft_deactivation"
 
 
 class HomeTest(ZulipTestCase):
-    # Keep this list sorted!!!
-    expected_page_params_keys = [
+    expected_page_params_keys = {
         "apps_page_url",
         "bot_types",
         "corporate_enabled",
@@ -71,8 +70,8 @@ class HomeTest(ZulipTestCase):
         "two_fa_enabled",
         "two_fa_enabled_user",
         "warn_no_email",
-    ]
-    expected_state_data_keys = [
+    }
+    expected_state_data_keys = {
         "alert_words",
         "avatar_source",
         "avatar_url",
@@ -252,7 +251,7 @@ class HomeTest(ZulipTestCase):
         "zulip_merge_base",
         "zulip_plan_is_not_limited",
         "zulip_version",
-    ]
+    }
 
     def test_home(self) -> None:
         # Keep this list sorted!!!
@@ -294,12 +293,12 @@ class HomeTest(ZulipTestCase):
 
         page_params = self._get_page_params(result)
 
-        self.assertCountEqual(page_params, self.expected_page_params_keys)
-        self.assertCountEqual(page_params["state_data"], self.expected_state_data_keys)
+        self.assertEqual(page_params.keys(), self.expected_page_params_keys)
+        self.assertEqual(page_params["state_data"].keys(), self.expected_state_data_keys)
 
         # TODO: Inspect the page_params data further.
         # print(orjson.dumps(page_params, option=orjson.OPT_INDENT_2).decode())
-        realm_bots_expected_keys = [
+        realm_bots_expected_keys = {
             "api_key",
             "avatar_url",
             "bot_type",
@@ -312,9 +311,11 @@ class HomeTest(ZulipTestCase):
             "owner_id",
             "services",
             "user_id",
-        ]
+        }
 
-        self.assertCountEqual(page_params["state_data"]["realm_bots"][0], realm_bots_expected_keys)
+        self.assertEqual(
+            page_params["state_data"]["realm_bots"][0].keys(), realm_bots_expected_keys
+        )
 
     def test_home_demo_organization(self) -> None:
         realm = get_realm("zulip")
@@ -332,12 +333,11 @@ class HomeTest(ZulipTestCase):
             self.check_rendered_logged_in_app(result)
 
         page_params = self._get_page_params(result)
-        self.assertCountEqual(page_params, self.expected_page_params_keys)
-        expected_state_data_keys = [
-            *self.expected_state_data_keys,
-            "demo_organization_scheduled_deletion_date",
-        ]
-        self.assertCountEqual(page_params["state_data"], expected_state_data_keys)
+        self.assertEqual(page_params.keys(), self.expected_page_params_keys)
+        expected_state_data_keys = self.expected_state_data_keys | {
+            "demo_organization_scheduled_deletion_date"
+        }
+        self.assertEqual(page_params["state_data"].keys(), expected_state_data_keys)
 
     def test_logged_out_home(self) -> None:
         realm = get_realm("zulip")
@@ -356,7 +356,7 @@ class HomeTest(ZulipTestCase):
         # Check no unnecessary params are passed to spectators.
         page_params = self._get_page_params(result)
         self.assertEqual(page_params["is_spectator"], True)
-        expected_keys = [
+        expected_keys = {
             "apps_page_url",
             "bot_types",
             "corporate_enabled",
@@ -384,8 +384,8 @@ class HomeTest(ZulipTestCase):
             "two_fa_enabled",
             "two_fa_enabled_user",
             "warn_no_email",
-        ]
-        self.assertCountEqual(page_params, expected_keys)
+        }
+        self.assertEqual(page_params.keys(), expected_keys)
         self.assertIsNone(page_params["state_data"])
 
     def test_realm_authentication_methods(self) -> None:

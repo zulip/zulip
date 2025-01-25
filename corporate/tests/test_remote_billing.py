@@ -814,9 +814,9 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         self.server.refresh_from_db()
         self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)
         # Check if zephyr and lear were deactivated
-        self.assertCountEqual(
-            RemoteRealm.objects.filter(realm_deactivated=True).values_list("host", flat=True),
-            ["zephyr.testserver", "lear.testserver"],
+        self.assertEqual(
+            set(RemoteRealm.objects.filter(realm_deactivated=True).values_list("host", flat=True)),
+            {"zephyr.testserver", "lear.testserver"},
         )
 
         # Check complimentary access CustomerPlan exists for the one non-deactivated

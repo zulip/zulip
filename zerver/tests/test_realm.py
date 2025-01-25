@@ -2100,9 +2100,9 @@ class RealmAPITest(ZulipTestCase):
         )
         self.assert_json_success(result)
         realm = get_realm("zulip")
-        self.assertCountEqual(list(getattr(realm, setting_name).direct_members.all()), [othello])
-        self.assertCountEqual(
-            list(getattr(realm, setting_name).direct_subgroups.all()), [leadership_group]
+        self.assertEqual(set(getattr(realm, setting_name).direct_members.all()), {othello})
+        self.assertEqual(
+            set(getattr(realm, setting_name).direct_subgroups.all()), {leadership_group}
         )
 
         result = self.client_patch(
@@ -2159,9 +2159,9 @@ class RealmAPITest(ZulipTestCase):
         )
         self.assert_json_success(result)
         realm = get_realm("zulip")
-        self.assertCountEqual(list(getattr(realm, setting_name).direct_members.all()), [hamlet])
-        self.assertCountEqual(
-            list(getattr(realm, setting_name).direct_subgroups.all()), [moderators_group]
+        self.assertEqual(set(getattr(realm, setting_name).direct_members.all()), {hamlet})
+        self.assertEqual(
+            set(getattr(realm, setting_name).direct_subgroups.all()), {moderators_group}
         )
 
         result = self.client_patch(
