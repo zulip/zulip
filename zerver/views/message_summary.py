@@ -173,7 +173,7 @@ def get_messages_summary(
 
     # Token counter is recommended by LiteLLM but mypy says it's not explicitly exported.
     # https://docs.litellm.ai/docs/completion/token_usage#3-token_counter
-    input_tokens = litellm.token_counter(model=model, messages=messages)  # type: ignore[attr-defined] # Explained above
+    # estimated_input_tokens = litellm.token_counter(model=model, messages=messages)  # type: ignore[attr-defined] # Explained above
 
     # TODO when implementing user plans:
     # - Before querying the model, check whether we've enough tokens left using
