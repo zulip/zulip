@@ -526,9 +526,6 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
         untested_patterns = {p.replace("\\", "") for p in pattern_cnt if pattern_cnt[p] == 0}
 
         exempt_patterns = {
-            # TODO: Add tests when we are sure about what needs to be
-            # served to the user as summary.
-            "api/v1/messages/summary",
             # We exempt some patterns that are called via Tornado.
             "api/v1/events",
             "api/v1/events/internal",

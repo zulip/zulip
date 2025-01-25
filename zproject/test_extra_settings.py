@@ -55,6 +55,9 @@ if "RUNNING_OPENAPI_CURL_TEST" in os.environ:
 if "GENERATE_STRIPE_FIXTURES" in os.environ:
     GENERATE_STRIPE_FIXTURES = True
 
+if "GENERATE_LITELLM_FIXTURES" in os.environ:
+    GENERATE_LITELLM_FIXTURES = True
+
 if "BAN_CONSOLE_OUTPUT" in os.environ:
     BAN_CONSOLE_OUTPUT = True
 
