@@ -114,7 +114,7 @@ def handle_checkout_session_completed_event(
         session.customer, stripe_session.metadata.get("user_id")
     )
     payment_method = stripe_setup_intent.payment_method
-    assert isinstance(payment_method, (str, type(None)))  # noqa: UP038  # https://github.com/python/mypy/issues/17413
+    assert isinstance(payment_method, str | None)
 
     if session.type in [
         Session.CARD_UPDATE_FROM_BILLING_PAGE,
