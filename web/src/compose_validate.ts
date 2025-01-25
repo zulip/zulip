@@ -43,6 +43,11 @@ export const NO_STREAM_MENTIONED_ERROR_MESSAGE = $t({defaultMessage: "Please sel
 export const NO_TOPIC_MENTIONED_ERROR_MESSAGE = $t({
     defaultMessage: "Topics are required in this organization.",
 });
+export const get_message_too_long_for_compose_error = (): string =>
+    $t(
+        {defaultMessage: `Message length shouldn't be greater than {max_length} characters.`},
+        {max_length: realm.max_message_length},
+    );
 type StreamWildcardOptions = {
     stream_id: number;
     $banner_container: JQuery;
@@ -87,10 +92,7 @@ function update_send_button_status(): void {
 
 export function get_disabled_send_tooltip(): string {
     if (message_too_long) {
-        return $t(
-            {defaultMessage: `Message length shouldn't be greater than {max_length} characters.`},
-            {max_length: realm.max_message_length},
-        );
+        return get_message_too_long_for_compose_error();
     } else if (upload_in_progress) {
         return $t({defaultMessage: "Cannot send message while files are being uploaded."});
     }
@@ -105,14 +107,7 @@ export function get_disabled_save_tooltip($container: JQuery): string {
         });
     }
     if (message_too_long) {
-        return $t(
-            {
-                defaultMessage: `Message length shouldn't be greater than {max_length} characters.`,
-            },
-            {
-                max_length: realm.max_message_length,
-            },
-        );
+        return get_message_too_long_for_compose_error();
     }
     return "";
 }
@@ -845,9 +840,18 @@ export function validate_message_length($container: JQuery): boolean {
     const $textarea = $container.find<HTMLTextAreaElement>(".message-textarea");
     // Match the behavior of compose_state.message_content of trimming trailing whitespace
     const text = $textarea.val()!.trimEnd();
-    if (text.length > realm.max_message_length) {
+    const message_too_long_for_compose = text.length > realm.max_message_length;
+    set_message_too_long_for_compose(message_too_long_for_compose);
+    if (message_too_long_for_compose) {
         $textarea.addClass("flash");
         setTimeout(() => $textarea.removeClass("flash"), 1500);
+        const $banner_container = $("#compose_banners");
+        compose_banner.show_error_message(
+            get_message_too_long_for_compose_error(),
+            compose_banner.CLASSNAMES.exceeded_message_length_limit,
+            $banner_container,
+            $("#message-content-container"),
+        );
         return false;
     }
     return true;

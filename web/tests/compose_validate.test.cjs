@@ -216,6 +216,13 @@ test_ui("validate", ({mock_template, override}) => {
         $("textarea#compose-textarea").val("foobarfoobar");
     }
 
+    function add_content_that_exceeds_message_length() {
+        const $textarea = $("textarea#compose-textarea");
+        for (let i = 0; i < 10000; i = i + 1) {
+            $textarea.val($textarea.val() + "hello ");
+        }
+    }
+
     // test validating direct messages
     compose_state.set_message_type("private");
 
@@ -315,6 +322,22 @@ test_ui("validate", ({mock_template, override}) => {
 
     initialize_pm_pill(mock_template);
     add_content_to_compose_box();
+
+    // test exceeded message length limit
+    add_content_that_exceeds_message_length();
+    override(realm, "max_message_length", 10000);
+    $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
+
+    let render_exceeded_message_length_limit_error = false;
+    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+        assert.equal(data.classname, compose_banner.CLASSNAMES.exceeded_message_length_limit);
+        assert.equal(data.banner_text, compose_validate.get_message_too_long_for_compose_error());
+        render_exceeded_message_length_limit_error = true;
+        return "<banner-stub>";
+    });
+    assert.ok(!compose_validate.validate());
+    assert.ok(render_exceeded_message_length_limit_error);
+    $("textarea#compose-textarea").val("hello world");
 
     // test validating stream messages
     compose_state.set_message_type("stream");

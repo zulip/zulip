@@ -476,6 +476,10 @@ test_ui("finish", ({override, override_rewire}) => {
     disable_document_triggers(override);
 
     const fake_compose_box = new FakeComposeBox();
+    compose_state.set_stream_id(social.stream_id);
+    fake_compose_box.set_topic_val("lunch");
+    override_rewire(stream_data, "can_post_messages_in_stream", () => true);
+    compose_state.set_message_type("stream");
 
     override_rewire(compose_banner, "clear_message_sent_banners", noop);
 
@@ -490,9 +494,7 @@ test_ui("finish", ({override, override_rewire}) => {
             assert.equal(classname, "invalid");
             assert.equal(value, true);
         });
-
         fake_compose_box.set_textarea_val("");
-
         override_rewire(compose_ui, "compose_spinner_visible", false);
         const res = compose.finish();
         assert.equal(res, false);

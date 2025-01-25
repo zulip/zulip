@@ -38,4 +38,5 @@ exports.mock_banners = () => {
     $cb.set_find_results(".missing_private_message_recipient", $stub);
     $cb.set_find_results(".subscription_error", $stub);
     $cb.set_find_results(".generic_compose_error", $stub);
+    $cb.set_find_results(".exceeded_message_length_limit", $stub);
 };
