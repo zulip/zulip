@@ -3,6 +3,8 @@ import Handlebars from "handlebars";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import render_navbar_banners_testing_popover from "../templates/popovers/navbar_banners_testing_popover.hbs";
+
 import * as banners from "./banners.ts";
 import type {AlertBanner} from "./banners.ts";
 import * as channel from "./channel.ts";
@@ -13,9 +15,11 @@ import type {LocalStorage} from "./localstorage.ts";
 import {localstorage} from "./localstorage.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import * as popover_menus from "./popover_menus.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as time_zone_util from "./time_zone_util.ts";
 import * as timerender from "./timerender.ts";
+import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
@@ -576,4 +580,74 @@ export function initialize(): void {
             });
         },
     );
+
+    $("body").on("click", ".top_left_change_navbar_banners", function (this: HTMLElement) {
+        popover_menus.toggle_popover_menu(this, {
+            theme: "popover-menu",
+            placement: "right",
+            popperOptions: {
+                modifiers: [
+                    {
+                        name: "flip",
+                        options: {
+                            fallbackPlacements: ["bottom", "left"],
+                        },
+                    },
+                ],
+            },
+            onShow(instance) {
+                instance.setContent(ui_util.parse_html(render_navbar_banners_testing_popover()));
+            },
+            onMount(instance) {
+                const $popper = $(instance.popper);
+                $popper.on("click", ".desktop-notifications", () => {
+                    banners.open(DESKTOP_NOTIFICATIONS_BANNER, $("#navbar_alerts_wrapper"));
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+                $popper.on("click", ".configure-outgoing-mail", () => {
+                    banners.open(CONFIGURE_OUTGOING_MAIL_BANNER, $("#navbar_alerts_wrapper"));
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+                $popper.on("click", ".insecure-desktop-app", () => {
+                    banners.open(INSECURE_DESKTOP_APP_BANNER, $("#navbar_alerts_wrapper"));
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+                $popper.on("click", ".profile-missing-required-fields", () => {
+                    banners.open(
+                        PROFILE_MISSING_REQUIRED_FIELDS_BANNER,
+                        $("#navbar_alerts_wrapper"),
+                    );
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+                $popper.on("click", ".organization-profile-incomplete", () => {
+                    banners.open(
+                        ORGANIZATION_PROFILE_INCOMPLETE_BANNER,
+                        $("#navbar_alerts_wrapper"),
+                    );
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+                $popper.on("click", ".server-needs-upgrade", () => {
+                    banners.open(SERVER_NEEDS_UPGRADE_BANNER, $("#navbar_alerts_wrapper"));
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+                $popper.on("click", ".bankruptcy", () => {
+                    banners.open(bankruptcy_banner(), $("#navbar_alerts_wrapper"));
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+                $popper.on("click", ".demo-organization-deadline", () => {
+                    realm.demo_organization_scheduled_deletion_date =
+                        new Date("2025-01-30T10:00:00.000Z").getTime() / 1000;
+                    banners.open(demo_organization_deadline_banner(), $("#navbar_alerts_wrapper"));
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+                $popper.on("click", ".time_zone_update_offer", () => {
+                    banners.open(time_zone_update_offer_banner(), $("#navbar_alerts_wrapper"));
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+            },
+            onHidden(instance) {
+                instance.destroy();
+            },
+        });
+    });
 }
