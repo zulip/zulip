@@ -3,7 +3,7 @@ import {LazySet} from "./lazy_set.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as sub_store from "./sub_store.ts";
-
+import type {UserProfile} from "./types/user.ts";
 // This maps a stream_id to a LazySet of user_ids who are subscribed.
 const stream_subscribers = new Map<number, LazySet>();
 
@@ -123,21 +123,51 @@ export function remove_subscriber(stream_id: number, user_id: number): boolean {
     return true;
 }
 
+const ROLE_REALM_OWNER = 100;
+const ROLE_REALM_ADMINISTRATOR = 200;
+const ROLE_MODERATOR = 300;
+const ROLE_MEMBER = 400;
+const ROLE_GUEST = 600;
+
+function is_role_based_system_group(group_id: number): boolean {
+const roleBasedSystemGroupIds = [
+ROLE_REALM_OWNER,
+ROLE_REALM_ADMINISTRATOR,
+ROLE_MODERATOR,
+ROLE_MEMBER,
+ROLE_GUEST,
+];
+return roleBasedSystemGroupIds.includes(group_id);
+}
+
 export function bulk_add_subscribers({
-    stream_ids,
-    user_ids,
+stream_ids,
+user_ids,
+acting_user,
 }: {
-    stream_ids: number[];
-    user_ids: number[];
+stream_ids: number[];
+user_ids: number[];
+acting_user: UserProfile;
 }): void {
-    // We rely on our callers to validate stream_ids and user_ids.
-    for (const stream_id of stream_ids) {
-        const subscribers = get_user_set(stream_id);
-        for (const user_id of user_ids) {
-            subscribers.add(user_id);
-        }
+for (const stream_id of stream_ids) {
+          const subscribers = get_user_set(stream_id);
+
+if (is_role_based_system_group(stream_id)) {
+          if (acting_user.role === ROLE_REALM_ADMINISTRATOR || acting_user.role === ROLE_REALM_OWNER) {
+               for (const user_id of user_ids) {
+                    subscribers.add(user_id);
+                                     }
+}            else {
+               blueslip.warn(`User ${acting_user.id} does not have the relevant role`);
+                 }
+}              else {
+              for (const user_id of user_ids) {
+                    subscribers.add(user_id);
+          }
+       }
     }
 }
+
 
 export function bulk_remove_subscribers({
     stream_ids,
