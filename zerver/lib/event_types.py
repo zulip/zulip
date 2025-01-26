@@ -105,7 +105,7 @@ class DefaultStreamGroupsEvent(BaseEvent):
 
 
 class DefaultStreamsEvent(BaseEvent):
-    type: Literal["default_streams"]
+    type: Literal["default_streams"] = "default_streams"
     default_streams: list[int]
 
 
