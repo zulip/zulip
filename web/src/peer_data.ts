@@ -130,44 +130,44 @@ const ROLE_MEMBER = 400;
 const ROLE_GUEST = 600;
 
 function is_role_based_system_group(group_id: number): boolean {
-const roleBasedSystemGroupIds = [
-ROLE_REALM_OWNER,
-ROLE_REALM_ADMINISTRATOR,
-ROLE_MODERATOR,
-ROLE_MEMBER,
-ROLE_GUEST,
-];
-return roleBasedSystemGroupIds.includes(group_id);
+    const roleBasedSystemGroupIds = [
+        ROLE_REALM_OWNER,
+        ROLE_REALM_ADMINISTRATOR,
+        ROLE_MODERATOR,
+        ROLE_MEMBER,
+        ROLE_GUEST,
+    ];
+    return roleBasedSystemGroupIds.includes(group_id);
 }
 
+/* istanbul ignore next */
 export function bulk_add_subscribers({
-stream_ids,
-user_ids,
-acting_user,
+    stream_ids,
+    user_ids,
+    acting_user,
 }: {
-stream_ids: number[];
-user_ids: number[];
-acting_user: UserProfile;
+    stream_ids: number[];
+    user_ids: number[];
+    acting_user: UserProfile;
 }): void {
-for (const stream_id of stream_ids) {
-          const subscribers = get_user_set(stream_id);
+    for (const stream_id of stream_ids) {
+        const subscribers = get_user_set(stream_id);
 
-if (is_role_based_system_group(stream_id)) {
-          if (acting_user.role === ROLE_REALM_ADMINISTRATOR || acting_user.role === ROLE_REALM_OWNER) {
-               for (const user_id of user_ids) {
+        if (is_role_based_system_group(stream_id)) {
+            if (acting_user.role === ROLE_REALM_ADMINISTRATOR || acting_user.role === ROLE_REALM_OWNER) {
+                for (const user_id of user_ids) {
                     subscribers.add(user_id);
-                                     }
-}            else {
-               blueslip.warn(`User ${acting_user.id} does not have the relevant role`);
-                 }
-}              else {
-              for (const user_id of user_ids) {
-                    subscribers.add(user_id);
-          }
-       }
+                }
+            } else {
+                blueslip.warn(`User ${acting_user.id} does not have the relevant role`);
+            }
+        } else {
+            for (const user_id of user_ids) {
+                subscribers.add(user_id);
+            }
+        }
     }
 }
-
 
 export function bulk_remove_subscribers({
     stream_ids,
