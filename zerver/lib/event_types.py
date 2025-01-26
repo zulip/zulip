@@ -109,17 +109,32 @@ class DefaultStreamsEvent(BaseEvent):
     default_streams: list[int]
 
 
-class DeleteMessageCoreEvent(BaseEvent):
-    type: Literal["delete_message"]
-    message_type: Literal["private", "stream"]
+class DeletePrivateMessageEvent(BaseEvent):
+    type: Literal["delete_message"] = "delete_message"
+    message_type: Literal["private"] = "private"
+    message_id: int
 
 
-class DeleteMessageEvent(DeleteMessageCoreEvent):
-    # TODO: fix types to avoid optional fields
-    message_id: int | None = None
-    message_ids: list[int] | None = None
-    stream_id: int | None = None
-    topic: str | None = None
+class DeletePrivateMessagesEvent(BaseEvent):
+    type: Literal["delete_message"] = "delete_message"
+    message_type: Literal["private"] = "private"
+    message_ids: list[int]
+
+
+class DeleteStreamMessageEvent(BaseEvent):
+    type: Literal["delete_message"] = "delete_message"
+    message_type: Literal["stream"] = "stream"
+    message_id: int
+    stream_id: int
+    topic: str
+
+
+class DeleteStreamMessagesEvent(BaseEvent):
+    type: Literal["delete_message"] = "delete_message"
+    message_type: Literal["stream"] = "stream"
+    message_ids: list[int]
+    stream_id: int
+    topic: str
 
 
 class TopicLink(BaseModel):

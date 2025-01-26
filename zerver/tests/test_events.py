@@ -145,7 +145,10 @@ from zerver.lib.event_schema import (
     check_custom_profile_fields,
     check_default_stream_groups,
     check_default_streams,
-    check_delete_message,
+    check_delete_private_message,
+    check_delete_private_messages,
+    check_delete_stream_message,
+    check_delete_stream_messages,
     check_direct_message,
     check_draft_add,
     check_draft_remove,
@@ -3485,12 +3488,9 @@ class NormalActionsTest(BaseAction):
         messages = [Message.objects.get(id=msg_id), Message.objects.get(id=msg_id_2)]
         with self.verify_action(state_change_expected=True) as events:
             do_delete_messages(self.user_profile.realm, messages, acting_user=None)
-        check_delete_message(
+        check_delete_stream_messages(
             "events[0]",
             events[0],
-            message_type="stream",
-            num_message_ids=2,
-            is_legacy=False,
         )
 
     def test_do_delete_message_stream_legacy(self) -> None:
@@ -3506,12 +3506,9 @@ class NormalActionsTest(BaseAction):
             state_change_expected=True, bulk_message_deletion=False, num_events=2
         ) as events:
             do_delete_messages(self.user_profile.realm, messages, acting_user=None)
-        check_delete_message(
+        check_delete_stream_message(
             "events[0]",
             events[0],
-            message_type="stream",
-            num_message_ids=1,
-            is_legacy=True,
         )
 
     def test_do_delete_first_message_in_stream(self) -> None:
@@ -3527,12 +3524,9 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[0]["property"], "first_message_id")
         self.assertEqual(events[0]["value"], msg_id_2)
 
-        check_delete_message(
+        check_delete_stream_messages(
             "events[1]",
             events[1],
-            message_type="stream",
-            num_message_ids=1,
-            is_legacy=False,
         )
 
     def test_check_update_all_streams_active_status(self) -> None:
@@ -3557,12 +3551,9 @@ class NormalActionsTest(BaseAction):
         message = Message.objects.get(id=msg_id)
         with self.verify_action(state_change_expected=True) as events:
             do_delete_messages(self.user_profile.realm, [message], acting_user=None)
-        check_delete_message(
+        check_delete_private_messages(
             "events[0]",
             events[0],
-            message_type="private",
-            num_message_ids=1,
-            is_legacy=False,
         )
 
     def test_do_delete_message_personal_legacy(self) -> None:
@@ -3574,12 +3565,9 @@ class NormalActionsTest(BaseAction):
         message = Message.objects.get(id=msg_id)
         with self.verify_action(state_change_expected=True, bulk_message_deletion=False) as events:
             do_delete_messages(self.user_profile.realm, [message], acting_user=None)
-        check_delete_message(
+        check_delete_private_message(
             "events[0]",
             events[0],
-            message_type="private",
-            num_message_ids=1,
-            is_legacy=True,
         )
 
     def test_do_delete_message_no_max_id(self) -> None:

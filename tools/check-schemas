@@ -71,6 +71,16 @@ def get_event_checker(event: dict[str, Any]) -> Callable[[str, dict[str, Any]], 
     # And add the suffix.
     name = name + "Event"
 
+    # We can generally infer event names from just the type
+    # field and the op field, but certain things, like message
+    # events, are a bit more complicated. In this case we just
+    # do a two-line hack to reflect that our JS fixture for
+    # deleting messages is of the stream flavor. We eventually
+    # want to clean this up in some other way, but we haven't
+    # decided the best approach yet.
+    if name == "DeleteMessageEvent":
+        name = "DeleteStreamMessagesEvent"
+
     if not hasattr(event_schema, name):
         raise ValueError(f"We could not find {name} in event_schemas.py")
 

@@ -24,7 +24,10 @@ from zerver.lib.event_types import (
     CustomProfileFieldsEvent,
     DefaultStreamGroupsEvent,
     DefaultStreamsEvent,
-    DeleteMessageEvent,
+    DeletePrivateMessageEvent,
+    DeletePrivateMessagesEvent,
+    DeleteStreamMessageEvent,
+    DeleteStreamMessagesEvent,
     DirectMessageEvent,
     DraftsAddEvent,
     DraftsRemoveEvent,
@@ -160,6 +163,10 @@ check_attachment_update = make_checker(AttachmentUpdateEvent)
 check_custom_profile_fields = make_checker(CustomProfileFieldsEvent)
 check_default_stream_groups = make_checker(DefaultStreamGroupsEvent)
 check_default_streams = make_checker(DefaultStreamsEvent)
+check_delete_private_message = make_checker(DeletePrivateMessageEvent)
+check_delete_private_messages = make_checker(DeletePrivateMessagesEvent)
+check_delete_stream_message = make_checker(DeleteStreamMessageEvent)
+check_delete_stream_messages = make_checker(DeleteStreamMessagesEvent)
 check_direct_message = make_checker(DirectMessageEvent)
 check_draft_add = make_checker(DraftsAddEvent)
 check_draft_remove = make_checker(DraftsRemoveEvent)
@@ -221,7 +228,6 @@ check_web_reload_client_event = make_checker(WebReloadClientEvent)
 # TODO: work through the bottom of this file to try to find ways to
 #       simplify our types or make them more robust
 
-_check_delete_message = make_checker(DeleteMessageEvent)
 _check_has_zoom_token = make_checker(HasZoomTokenEvent)
 _check_presence = make_checker(PresenceEvent)
 _check_realm_bot_add = make_checker(RealmBotAddEvent)
@@ -254,37 +260,6 @@ PERSON_TYPES: dict[str, type[BaseModel]] = dict(
     timezone=PersonTimezone,
     is_active=PersonIsActive,
 )
-
-
-def check_delete_message(
-    var_name: str,
-    event: dict[str, object],
-    message_type: str,
-    num_message_ids: int,
-    is_legacy: bool,
-) -> None:
-    _check_delete_message(var_name, event)
-
-    keys = {"id", "type", "message_type"}
-
-    assert event["message_type"] == message_type
-
-    if message_type == "stream":
-        keys |= {"stream_id", "topic"}
-    elif message_type == "private":
-        pass
-    else:
-        raise AssertionError("unexpected message_type")
-
-    if is_legacy:
-        assert num_message_ids == 1
-        keys.add("message_id")
-    else:
-        assert isinstance(event["message_ids"], list)
-        assert num_message_ids == len(event["message_ids"])
-        keys.add("message_ids")
-
-    assert set(event.keys()) == keys
 
 
 def check_has_zoom_token(

@@ -15,7 +15,7 @@ from django.utils.translation import gettext_lazy
 from django.utils.translation import override as override_language
 from django_stubs_ext import StrPromise
 
-from zerver.actions.message_delete import DeleteMessagesEvent, do_delete_messages
+from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_flags import do_update_mobile_push_notification
 from zerver.actions.message_send import (
     filter_presence_idle_user_ids,
@@ -25,6 +25,7 @@ from zerver.actions.message_send import (
 )
 from zerver.actions.uploads import AttachmentChangeResult, check_attachment_reference_change
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
+from zerver.lib.event_types import DeleteStreamMessagesEvent
 from zerver.lib.exceptions import (
     JsonableError,
     MessageMoveError,
@@ -785,13 +786,11 @@ def do_update_message(
             message__in=changed_messages,
         ).delete()
 
-        delete_event: DeleteMessagesEvent = {
-            "type": "delete_message",
-            "message_ids": changed_message_ids,
-            "message_type": "stream",
-            "stream_id": stream_being_edited.id,
-            "topic": orig_topic_name,
-        }
+        delete_event = DeleteStreamMessagesEvent(
+            message_ids=changed_message_ids,
+            stream_id=stream_being_edited.id,
+            topic=orig_topic_name,
+        )
         send_event_on_commit(
             user_profile.realm, delete_event, [user.id for user in users_losing_access]
         )
