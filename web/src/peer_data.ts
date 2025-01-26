@@ -154,7 +154,10 @@ export function bulk_add_subscribers({
         const subscribers = get_user_set(stream_id);
 
         if (is_role_based_system_group(stream_id)) {
-            if (acting_user.role === ROLE_REALM_ADMINISTRATOR || acting_user.role === ROLE_REALM_OWNER) {
+            if (
+                acting_user.role === ROLE_REALM_ADMINISTRATOR ||
+                acting_user.role === ROLE_REALM_OWNER
+            ) {
                 for (const user_id of user_ids) {
                     subscribers.add(user_id);
                 }
