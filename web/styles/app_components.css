@@ -816,6 +816,10 @@ input.settings_text_input {
     .actions {
         width: 1%;
         white-space: nowrap;
+
+        .invite-sent {
+            pointer-events: none;
+        }
     }
 
     th.actions {
