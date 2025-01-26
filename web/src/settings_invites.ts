@@ -218,6 +218,7 @@ function do_revoke_invite({
 function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}): void {
     const modal_invite_id = $(".dialog_submit_button").attr("data-invite-id");
     const $resend_button = $row.find("button.resend-invite");
+    const $icon = $resend_button.find("i");
 
     if (modal_invite_id !== invite_id) {
         blueslip.error("Invite resending canceled due to non-matching fields.");
@@ -246,9 +247,10 @@ function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}):
         success() {
             dialog_widget.hide_dialog_spinner();
             dialog_widget.close();
-            $resend_button.prop("disabled", true);
-            $resend_button.text($t({defaultMessage: "Sent!"}));
-            $resend_button.removeClass("resend button-warning").addClass("sea-green");
+            $resend_button
+                .removeClass("resend-invite button-warning")
+                .addClass("invite-sent sea-green");
+            $icon.removeClass("fa-paper-plane").addClass("fa-check");
         },
     });
 }
