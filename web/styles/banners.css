@@ -29,7 +29,7 @@
     grid-area: banner-action-buttons;
     display: flex;
     gap: 8px;
-    margin-left: 6px;
+    margin-left: 10px;
 }
 
 .banner-close-button {
