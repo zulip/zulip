@@ -108,4 +108,8 @@ run_test("stream_topic_link_syntax_test", () => {
 
     // Only for full coverage of the module.
     assert.equal(topic_link_util.escape_invalid_stream_topic_characters("Sweden"), "Sweden");
+    assert.equal(
+        topic_link_util.as_html_link_syntax_unsafe("test", "example.com"),
+        '<a href="example.com">test</a>',
+    );
 });
