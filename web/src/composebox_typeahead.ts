@@ -10,6 +10,7 @@ import {MAX_ITEMS, Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
+import {update_compose_for_message_type, update_placeholder_text} from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -21,8 +22,8 @@ import * as keydown_util from "./keydown_util.ts";
 import * as message_store from "./message_store.ts";
 import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
-import * as people from "./people.ts";
 import type {PseudoMentionUser, User} from "./people.ts";
+import * as people from "./people.ts";
 import * as realm_playground from "./realm_playground.ts";
 import * as rows from "./rows.ts";
 import * as settings_data from "./settings_data.ts";
@@ -1376,10 +1377,62 @@ export function initialize({
     };
     new Typeahead(stream_message_typeahead_input, {
         source(): string[] {
+            const query = stream_message_typeahead_input.$element.val()?.toString() ?? "";
+            if (query && query.length > 3) {
+                const matched_users: User[] = people
+                    .get_realm_users()
+                    .filter(people.build_person_matcher(query));
+
+                const exact_matches = matched_users.filter(
+                    (user) => user?.full_name.toLowerCase() === query.toLowerCase(),
+                );
+                if (exact_matches.length === 1) {
+                    return [
+                        exact_matches[0]?.full_name ?? "",
+                        ...topics_seen_for(compose_state.stream_id()),
+                    ];
+                }
+            }
             return topics_seen_for(compose_state.stream_id());
         },
-        items: max_num_items,
+
+        updater(item: string): string | undefined {
+            const user = people
+                .get_realm_users()
+                .filter(people.build_person_matcher(item))
+                .find((user) => user?.full_name === item);
+            if (user) {
+                compose_state.set_message_type("private");
+                update_compose_for_message_type({
+                    message_type: "private",
+                    trigger: "typeahead",
+                    private_message_recipient: user.email,
+                });
+                $("#compose_recipient_box").hide();
+                $("#compose-direct-recipient").show();
+                $("#stream_toggle").removeClass("active");
+                $("#private_message_toggle").addClass("active");
+                $("#compose-recipient").addClass("compose-recipient-direct-selected");
+
+                compose_pm_pill.clear();
+                compose_pm_pill.set_from_typeahead(user);
+                update_placeholder_text();
+
+                return undefined;
+            }
+            return item;
+        },
         highlighter_html(item: string): string {
+            const user = people
+                .get_realm_users()
+                .filter(people.build_person_matcher(item))
+                .find((user) => user?.full_name === item);
+            if (user) {
+                return typeahead_helper.render_person({
+                    type: "user",
+                    user,
+                });
+            }
             return typeahead_helper.render_typeahead_item({primary: item});
         },
         sorter(items: string[], query: string): string[] {
@@ -1396,6 +1449,7 @@ export function initialize({
             return false;
         },
         header_html: render_topic_typeahead_hint,
+        dropup: true,
     });
 
     const private_message_typeahead_input: TypeaheadInputElement = {

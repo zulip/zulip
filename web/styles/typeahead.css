@@ -183,3 +183,7 @@
         align-self: center;
     }
 }
+
+.pronouns {
+    color: hsl(0deg 0% 100%);
+}
