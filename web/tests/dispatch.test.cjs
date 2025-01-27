@@ -524,6 +524,9 @@ run_test("realm settings", ({override}) => {
     });
     assert_same(realm.realm_name, "new_realm_name");
 
+    event = event_fixtures.realm__update__mandatory_topics;
+    test_realm_boolean(event, "realm_mandatory_topics");
+
     event = event_fixtures.realm__update__org_type;
     dispatch(event);
     assert_same(realm.realm_org_type, 50);
