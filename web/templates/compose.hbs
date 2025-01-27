@@ -49,7 +49,7 @@
             <form id="send_message_form" action="/json/messages" method="post">
                 <div class="compose_table">
                     <div id="compose_top">
-                        <div id="compose-recipient">
+                        <div id="compose-recipient" {{#unless realm_mandatory_topics}}class="permit-empty-topic"{{/unless}}>
                             {{> dropdown_widget_wrapper
                               widget_name="compose_select_recipient"}}
                             <div class="topic-marker-container">
