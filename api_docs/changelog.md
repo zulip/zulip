@@ -25,6 +25,10 @@ format used by the Zulip server that they are interacting with.
 * [`POST /users/me/subscriptions`](/api/subscribe): Users belonging to
   `can_add_subscribers_group` should be able to add subscribers to a
   private channel without being subscribed to it.
+* [`DELETE /users/me/subscriptions`](/api/get-subscriptions): Channel
+  administrators can now unsubscribe other users even if they are not
+  an organization administrator or part of
+  `can_remove_subscribers_group`.
 
 **Feature level 348**
 

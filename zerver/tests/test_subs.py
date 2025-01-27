@@ -3078,7 +3078,7 @@ class StreamAdminTest(ZulipTestCase):
         If you're not an admin, you can't remove other people from streams except your own bots.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=8,
+            query_count=7,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=False,
             is_subbed=True,
@@ -3093,7 +3093,7 @@ class StreamAdminTest(ZulipTestCase):
         those you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=15,
+            query_count=14,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3120,7 +3120,7 @@ class StreamAdminTest(ZulipTestCase):
             for name in ["cordelia", "prospero", "iago", "hamlet", "outgoing_webhook_bot"]
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=22,
+            query_count=21,
             cache_count=8,
             target_users=target_users,
             is_realm_admin=True,
@@ -3138,7 +3138,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=15,
+            query_count=14,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3155,7 +3155,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=15,
+            query_count=14,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -3169,7 +3169,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_cant_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=8,
+            query_count=7,
             is_realm_admin=False,
             is_subbed=True,
             invite_only=False,
@@ -3181,7 +3181,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=15,
+            query_count=14,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3195,7 +3195,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=16,
             target_users=[self.example_user("cordelia"), self.example_user("prospero")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3209,7 +3209,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_remove_unsubbed_user_along_with_subbed(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=14,
+            query_count=13,
             target_users=[self.example_user("cordelia"), self.example_user("iago")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3226,7 +3226,7 @@ class StreamAdminTest(ZulipTestCase):
         fails gracefully.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=7,
+            query_count=6,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -3256,7 +3256,7 @@ class StreamAdminTest(ZulipTestCase):
         webhook_bot = self.example_user("webhook_bot")
         do_change_bot_owner(webhook_bot, bot_owner=other_user, acting_user=other_user)
         result = self.attempt_unsubscribe_of_principal(
-            query_count=8,
+            query_count=7,
             target_users=[webhook_bot],
             is_realm_admin=False,
             is_subbed=True,
@@ -3278,24 +3278,35 @@ class StreamAdminTest(ZulipTestCase):
         managers_group = check_add_user_group(realm, "managers", [hamlet], acting_user=hamlet)
         add_subgroups_to_user_group(managers_group, [leadership_group], acting_user=None)
         cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        shiva = self.example_user("shiva")
 
-        stream = self.make_stream("public_stream")
+        public_stream = self.make_stream("public_stream")
 
         def check_unsubscribing_user(
-            user: UserProfile, can_remove_subscribers_group: UserGroup, expect_fail: bool = False
+            user: UserProfile,
+            can_remove_subscribers_group: UserGroup,
+            expect_fail: bool = False,
+            stream_list: list[Stream] | None = None,
+            skip_changing_group_setting: bool = False,
         ) -> None:
             self.login_user(user)
-            self.subscribe(cordelia, stream.name)
-            do_change_stream_group_based_setting(
-                stream,
-                "can_remove_subscribers_group",
-                can_remove_subscribers_group,
-                acting_user=None,
-            )
+            if stream_list is None:
+                stream_list = [public_stream]
+            for stream in stream_list:
+                self.subscribe(cordelia, stream.name)
+                if not skip_changing_group_setting:
+                    do_change_stream_group_based_setting(
+                        stream,
+                        "can_remove_subscribers_group",
+                        can_remove_subscribers_group,
+                        acting_user=None,
+                    )
+            stream_name_list = [stream.name for stream in stream_list]
             result = self.client_delete(
                 "/json/users/me/subscriptions",
                 {
-                    "subscriptions": orjson.dumps([stream.name]).decode(),
+                    "subscriptions": orjson.dumps(stream_name_list).decode(),
                     "principals": orjson.dumps([cordelia.id]).decode(),
                 },
             )
@@ -3304,49 +3315,152 @@ class StreamAdminTest(ZulipTestCase):
                 return
 
             json = self.assert_json_success(result)
-            self.assert_length(json["removed"], 1)
+            self.assert_length(json["removed"], len(stream_name_list))
             self.assert_length(json["not_removed"], 0)
 
-        check_unsubscribing_user(self.example_user("hamlet"), leadership_group, expect_fail=True)
-        check_unsubscribing_user(self.example_user("iago"), leadership_group)
-        # Owners can always unsubscribe others even when they are not a member
-        # allowed group.
-        check_unsubscribing_user(self.example_user("desdemona"), leadership_group)
+        check_unsubscribing_user(
+            self.example_user("hamlet"),
+            leadership_group,
+            expect_fail=True,
+            stream_list=[public_stream],
+        )
+        check_unsubscribing_user(iago, leadership_group, stream_list=[public_stream])
+        # Owners can unsubscribe others when they are not a member of
+        # the allowed group since owners have the permission to
+        # administer all channels.
+        check_unsubscribing_user(
+            self.example_user("desdemona"), leadership_group, stream_list=[public_stream]
+        )
 
-        check_unsubscribing_user(self.example_user("othello"), managers_group, expect_fail=True)
-        check_unsubscribing_user(self.example_user("shiva"), managers_group)
-        check_unsubscribing_user(self.example_user("hamlet"), managers_group)
+        check_unsubscribing_user(
+            othello,
+            managers_group,
+            expect_fail=True,
+            stream_list=[public_stream],
+        )
+        check_unsubscribing_user(shiva, managers_group, stream_list=[public_stream])
+        check_unsubscribing_user(hamlet, managers_group, stream_list=[public_stream])
 
-        stream = self.make_stream("private_stream", invite_only=True)
-        self.subscribe(self.example_user("hamlet"), stream.name)
-        # Non-admins are not allowed to unsubscribe others from private streams that they
-        # are not subscribed to even if they are member of the allowed group.
-        check_unsubscribing_user(self.example_user("shiva"), leadership_group, expect_fail=True)
-        check_unsubscribing_user(self.example_user("iago"), leadership_group)
-        # Owners can always unsubscribe others even when they are not a member
-        # allowed group.
-        check_unsubscribing_user(self.example_user("desdemona"), leadership_group)
-        self.subscribe(self.example_user("shiva"), stream.name)
-        check_unsubscribing_user(self.example_user("shiva"), leadership_group)
+        private_stream = self.make_stream("private_stream", invite_only=True)
+        self.subscribe(self.example_user("hamlet"), private_stream.name)
+        # Users are not allowed to unsubscribe others from streams they
+        # don't have metadata access to even if they are a member of the
+        # allowed group. In this case, a non-admin who is not subscribed
+        # to the channel does not have metadata access to the channel.
+        check_unsubscribing_user(
+            shiva,
+            leadership_group,
+            expect_fail=True,
+            stream_list=[private_stream],
+        )
+        check_unsubscribing_user(iago, leadership_group, stream_list=[private_stream])
+        # Users are allowed to unsubscribe others from private streams
+        # they have access to if they are a member of the allowed
+        # group. In this case, a user with the role `owner` is
+        # subscribed to the relevant channel.
+        check_unsubscribing_user(
+            self.example_user("desdemona"), leadership_group, stream_list=[private_stream]
+        )
+        self.subscribe(shiva, private_stream.name)
+        check_unsubscribing_user(shiva, leadership_group, stream_list=[private_stream])
 
         # Test changing setting to anonymous group.
         setting_group = self.create_or_update_anonymous_group_for_setting(
             [hamlet],
             [leadership_group],
         )
-        check_unsubscribing_user(self.example_user("othello"), setting_group, expect_fail=True)
-        check_unsubscribing_user(self.example_user("hamlet"), setting_group)
-        check_unsubscribing_user(self.example_user("iago"), setting_group)
-        check_unsubscribing_user(self.example_user("shiva"), setting_group)
+        check_unsubscribing_user(
+            othello,
+            setting_group,
+            expect_fail=True,
+            stream_list=[private_stream],
+        )
+        check_unsubscribing_user(hamlet, setting_group, stream_list=[private_stream])
+        check_unsubscribing_user(iago, setting_group, stream_list=[private_stream])
+        check_unsubscribing_user(shiva, setting_group, stream_list=[private_stream])
 
-        # Admins can unsubscribe others even when they are not a member of the
-        # allowed group.
+        # Owners can unsubscribe others when they are not a member of
+        # the allowed group since admins have the permission to
+        # administer all channels.
         setting_group = self.create_or_update_anonymous_group_for_setting(
             [hamlet],
             [],
         )
-        check_unsubscribing_user(self.example_user("desdemona"), setting_group)
-        check_unsubscribing_user(self.example_user("iago"), setting_group)
+        check_unsubscribing_user(
+            self.example_user("desdemona"), setting_group, stream_list=[private_stream]
+        )
+        check_unsubscribing_user(iago, setting_group, stream_list=[private_stream])
+
+        # A user who is part of can_administer_channel_group should be
+        # able to unsubscribe other users even if that user is not part
+        # of can_remove_subscribers_group. And even if that user is not
+        # subscribed to the channel in question.
+        with self.assertRaises(Subscription.DoesNotExist):
+            get_subscription(private_stream.name, othello)
+        check_unsubscribing_user(othello, setting_group, expect_fail=True)
+        othello_group = self.create_or_update_anonymous_group_for_setting(
+            [othello],
+            [],
+        )
+        private_stream_2 = self.make_stream("private_stream_2")
+        do_change_stream_group_based_setting(
+            private_stream,
+            "can_administer_channel_group",
+            othello_group,
+            acting_user=None,
+        )
+        # If the user can only administer one of the channels, the test
+        # should fail.
+        check_unsubscribing_user(
+            othello,
+            setting_group,
+            expect_fail=True,
+            stream_list=[private_stream, private_stream_2],
+        )
+        # User can administer both channels now.
+        do_change_stream_group_based_setting(
+            private_stream_2,
+            "can_administer_channel_group",
+            othello_group,
+            acting_user=None,
+        )
+        check_unsubscribing_user(
+            othello, setting_group, stream_list=[private_stream, private_stream_2]
+        )
+
+        shiva_group = self.create_or_update_anonymous_group_for_setting(
+            [shiva],
+            [],
+        )
+        do_change_stream_group_based_setting(
+            private_stream,
+            "can_remove_subscribers_group",
+            shiva_group,
+            acting_user=None,
+        )
+        self.subscribe(shiva, private_stream.name)
+        self.subscribe(shiva, private_stream_2.name)
+        # If the user can is present in the remove subscribers group of
+        # only one of the channels, the test should fail.
+        check_unsubscribing_user(
+            shiva,
+            setting_group,
+            expect_fail=True,
+            stream_list=[private_stream, private_stream_2],
+            skip_changing_group_setting=True,
+        )
+        do_change_stream_group_based_setting(
+            private_stream_2,
+            "can_remove_subscribers_group",
+            shiva_group,
+            acting_user=None,
+        )
+        check_unsubscribing_user(
+            shiva,
+            setting_group,
+            stream_list=[private_stream, private_stream_2],
+            skip_changing_group_setting=True,
+        )
 
     def test_remove_invalid_user(self) -> None:
         """
