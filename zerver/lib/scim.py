@@ -35,6 +35,7 @@ from zerver.lib.user_groups import (
     get_user_group_by_id_in_realm,
     get_user_group_direct_member_ids,
 )
+from zerver.lib.users import check_group_permission_updates_for_deactivating_user
 from zerver.models import Realm, UserProfile
 from zerver.models.custom_profile_fields import (
     CustomProfileFieldValue,
@@ -417,7 +418,18 @@ class ZulipSCIMUser(SCIMUser):
         if is_active_new_value is not None and is_active_new_value:
             do_reactivate_user(self.obj, acting_user=None)
         elif is_active_new_value is not None and not is_active_new_value:
-            do_deactivate_user(self.obj, acting_user=None)
+            # Deactivation driven by SCIM sync always succeeds; any
+            # permission setting left with no one is reset to its
+            # replacement group rather than blocking the sync.
+            group_setting_updates = check_group_permission_updates_for_deactivating_user(
+                self.obj, ignore_objections=True
+            )
+            do_deactivate_user(
+                self.obj,
+                group_setting_updates=group_setting_updates,
+                acting_user=None,
+                ignore_objections=True,
+            )
 
         if custom_profile_data:
             do_update_user_custom_profile_data_if_changed(
