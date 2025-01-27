@@ -76,6 +76,7 @@ from zerver.lib.users import (
     check_can_access_user,
     check_can_create_bot,
     check_full_name,
+    check_group_permission_updates_for_deactivating_user,
     check_short_name,
     check_valid_bot_config,
     check_valid_bot_type,
@@ -143,7 +144,11 @@ def deactivate_user_own_backend(request: HttpRequest, user_profile: UserProfile)
     if user_profile.is_realm_owner and check_last_owner(user_profile):
         raise CannotDeactivateLastUserError(is_last_owner=True)
 
-    do_deactivate_user(user_profile, acting_user=user_profile)
+    group_setting_updates = check_group_permission_updates_for_deactivating_user(user_profile)
+
+    do_deactivate_user(
+        user_profile, group_setting_updates=group_setting_updates, acting_user=user_profile
+    )
     return json_success(request)
 
 
@@ -163,7 +168,11 @@ def _deactivate_user_profile_backend(
     *,
     deactivation_notification_comment: str | None,
 ) -> HttpResponse:
-    do_deactivate_user(target, acting_user=user_profile)
+    group_setting_updates = check_group_permission_updates_for_deactivating_user(target)
+
+    do_deactivate_user(
+        target, group_setting_updates=group_setting_updates, acting_user=user_profile
+    )
 
     # It's important that we check for None explicitly here, since ""
     # encodes sending an email without a custom administrator comment.

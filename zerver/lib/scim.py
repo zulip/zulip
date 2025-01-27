@@ -14,8 +14,10 @@ from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.user_settings import check_change_full_name, do_change_user_delivery_email
 from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import RequestNotes
 from zerver.lib.subdomains import get_subdomain
+from zerver.lib.users import check_group_permission_updates_for_deactivating_user
 from zerver.models import UserProfile
 from zerver.models.realms import (
     DisposableEmailError,
@@ -326,7 +328,16 @@ class ZulipSCIMUser(SCIMUser):
         if is_active_new_value is not None and is_active_new_value:
             do_reactivate_user(self.obj, acting_user=None)
         elif is_active_new_value is not None and not is_active_new_value:
-            do_deactivate_user(self.obj, acting_user=None)
+            try:
+                group_setting_updates = check_group_permission_updates_for_deactivating_user(
+                    self.obj
+                )
+            except JsonableError as e:
+                raise scim_exceptions.BadRequestError(e.msg)
+
+            do_deactivate_user(
+                self.obj, group_setting_updates=group_setting_updates, acting_user=None
+            )
 
     def delete(self) -> None:
         """
