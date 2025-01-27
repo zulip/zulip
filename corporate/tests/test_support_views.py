@@ -31,6 +31,7 @@ from zerver.actions.realm_settings import do_change_realm_org_type, do_send_real
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
+from zerver.lib.users import GroupPermissionUpdates
 from zerver.models import MultiuseInvite, PreregistrationUser, Realm, UserMessage, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import OrgTypeEnum, get_org_type_display_name, get_realm
@@ -2030,10 +2031,13 @@ class TestSupportEndpoint(ZulipTestCase):
 
         self.login("iago")
 
+        group_setting_updates = GroupPermissionUpdates(
+            realm_settings_to_update=[], stream_settings_to_update=[], group_settings_to_update=[]
+        )
         with mock.patch("corporate.views.support.do_delete_user_preserving_messages") as m:
             result = self.client_post(
                 "/activity/support",
                 {"realm_id": f"{realm.id}", "delete_user_by_id": hamlet.id},
             )
-            m.assert_called_once_with(hamlet)
+            m.assert_called_once_with(hamlet, group_setting_updates)
             self.assert_in_success_response([f"{hamlet_email} in zulip deleted"], result)

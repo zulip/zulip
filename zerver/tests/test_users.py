@@ -18,7 +18,12 @@ from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_users
 from zerver.actions.message_send import RecipientInfoResult, get_recipient_info
 from zerver.actions.muted_users import do_mute_user
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_set_realm_property,
+)
+from zerver.actions.streams import do_change_stream_group_based_setting
+from zerver.actions.user_groups import do_change_user_group_permission_setting
 from zerver.actions.user_settings import bulk_regenerate_api_keys, do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
@@ -45,6 +50,7 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
     simulated_empty_cache,
 )
+from zerver.lib.types import UserGroupMembersData
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import (
@@ -60,6 +66,7 @@ from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     CustomProfileField,
     Message,
+    NamedUserGroup,
     OnboardingStep,
     PreregistrationUser,
     RealmAuditLog,
@@ -2182,6 +2189,112 @@ class ActivateTest(ZulipTestCase):
                 "{'template_prefix': 'zerver/emails/onboarding_zulip_topics', 'from_name': None, "
                 "'from_address': None, 'language': None, 'context': {}}"
             ],
+        )
+
+    def test_updating_group_permissions_when_deactivating(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        realm = hamlet.realm
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [hamlet, othello], [moderators_group]
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "create_multiuse_invite_group",
+            setting_group,
+            acting_user=iago,
+        )
+
+        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet], [])
+        do_change_realm_permission_group_setting(
+            realm, "can_create_public_channel_group", setting_group, acting_user=iago
+        )
+
+        self.subscribe(hamlet, "test_stream")
+        stream = self.subscribe(iago, "test_stream")
+
+        setting_group_member_dict = UserGroupMembersData(
+            direct_members=[hamlet.id, othello.id], direct_subgroups=[]
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_remove_subscribers_group", setting_group_member_dict, acting_user=iago
+        )
+
+        setting_group_member_dict = UserGroupMembersData(
+            direct_members=[hamlet.id], direct_subgroups=[]
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_administer_channel_group", setting_group_member_dict, acting_user=iago
+        )
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [hamlet], [moderators_group]
+        )
+        do_change_user_group_permission_setting(
+            hamletcharacters_group, "can_join_group", setting_group, acting_user=iago
+        )
+
+        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet], [])
+        do_change_user_group_permission_setting(
+            hamletcharacters_group, "can_add_members_group", setting_group, acting_user=iago
+        )
+
+        self.login("iago")
+        result = self.client_delete(f"/json/users/{hamlet.id}")
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.can_create_public_channel_group_id, nobody_group.id)
+
+        self.assertCountEqual(
+            list(realm.create_multiuse_invite_group.direct_members.all()), [othello]
+        )
+        self.assertCountEqual(
+            list(realm.create_multiuse_invite_group.direct_subgroups.all()), [moderators_group]
+        )
+
+        stream = get_stream("test_stream", realm)
+        self.assertEqual(stream.can_administer_channel_group_id, nobody_group.id)
+
+        self.assertCountEqual(
+            list(stream.can_remove_subscribers_group.direct_members.all()), [othello]
+        )
+        self.assertCountEqual(list(stream.can_remove_subscribers_group.direct_subgroups.all()), [])
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        self.assertEqual(hamletcharacters_group.can_add_members_group_id, nobody_group.id)
+        self.assertEqual(hamletcharacters_group.can_join_group_id, moderators_group.id)
+
+        do_reactivate_user(hamlet, acting_user=None)
+
+        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet], [])
+        do_change_realm_permission_group_setting(
+            realm, "can_access_all_users_group", setting_group, acting_user=iago
+        )
+
+        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet], [])
+        do_change_realm_permission_group_setting(
+            realm, "can_manage_all_groups", setting_group, acting_user=iago
+        )
+
+        result = self.client_delete(f"/json/users/{hamlet.id}")
+        self.assert_json_error(result, "Cannot deactivate last user with permission.")
+
+        data = orjson.loads(result.content)
+        self.assert_length(data["objections"], 1)
+        self.assertEqual(data["objections"][0]["type"], "realm")
+        self.assertCountEqual(
+            data["objections"][0]["settings"],
+            ["can_access_all_users_group", "can_manage_all_groups"],
         )
 
 

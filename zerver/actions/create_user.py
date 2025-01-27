@@ -21,11 +21,7 @@ from zerver.actions.user_groups import (
     bulk_add_members_to_user_groups,
     do_send_user_group_members_update_event,
 )
-from zerver.actions.users import (
-    change_user_is_active,
-    get_service_dicts_for_bot,
-    send_update_events_for_anonymous_group_settings,
-)
+from zerver.actions.users import change_user_is_active, get_service_dicts_for_bot
 from zerver.lib.avatar import avatar_url
 from zerver.lib.create_user import create_user
 from zerver.lib.default_streams import get_slim_realm_default_streams
@@ -66,7 +62,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.users import active_user_ids, bot_owner_user_ids, get_system_bot
+from zerver.models.users import bot_owner_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
 MAX_NUM_RECENT_MESSAGES = 1000
@@ -795,24 +791,8 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
         subscriber_peer_info=subscriber_peer_info,
     )
 
-    member_user_groups = user_profile.direct_groups.select_related("named_user_group").order_by(
-        "id"
-    )
-    named_user_groups = []
-    setting_user_groups = []
-    for group in member_user_groups:
-        if hasattr(group, "named_user_group"):
-            named_user_groups.append(group)
-        else:
-            setting_user_groups.append(group)
-
+    named_user_groups = user_profile.direct_groups.exclude(named_user_group=None).order_by("id")
     for user_group in named_user_groups:
         do_send_user_group_members_update_event(
             "add_members", user_group.named_user_group, [user_profile.id]
-        )
-
-    if setting_user_groups:
-        notify_user_ids = active_user_ids(user_profile.realm_id)
-        send_update_events_for_anonymous_group_settings(
-            setting_user_groups, user_profile.realm, list(notify_user_ids)
         )
