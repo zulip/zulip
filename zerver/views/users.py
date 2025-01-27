@@ -86,6 +86,7 @@ from zerver.lib.users import (
     check_can_access_user,
     check_can_create_bot,
     check_full_name,
+    check_group_permission_updates_for_deactivating_user,
     check_valid_bot_config,
     check_valid_bot_type,
     check_valid_interface_type,
@@ -166,7 +167,11 @@ def deactivate_user_own_backend(request: HttpRequest, user_profile: UserProfile)
     if user_profile.is_realm_owner and check_last_owner(user_profile):
         raise CannotDeactivateLastUserError(is_last_owner=True)
 
-    do_deactivate_user(user_profile, acting_user=user_profile)
+    group_setting_updates = check_group_permission_updates_for_deactivating_user(user_profile)
+
+    do_deactivate_user(
+        user_profile, group_setting_updates=group_setting_updates, acting_user=user_profile
+    )
     return json_success(request)
 
 
@@ -187,8 +192,11 @@ def _deactivate_user_profile_backend(
     deactivate_user_actions: Json[DeactivateUserActions] | None = None,
     deactivation_notification_comment: str | None,
 ) -> HttpResponse:
+    group_setting_updates = check_group_permission_updates_for_deactivating_user(target)
+
     do_deactivate_user(
         target,
+        group_setting_updates=group_setting_updates,
         acting_user=user_profile,
         deactivate_user_actions=deactivate_user_actions,
     )
