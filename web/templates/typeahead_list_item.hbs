@@ -22,7 +22,7 @@
         {{~#if stream~}}
             {{~> inline_decorated_stream_name stream=stream ~}}
             {{~else~}}
-            {{~ primary ~}}
+            <span class="stream-name">{{~ primary ~}}</span>
         {{~/if~}}
     </strong>
     {{~#if is_bot}}

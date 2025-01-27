@@ -991,7 +991,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 actual_value = options.highlighter_html("kronor");
                 expected_value =
                     '<div class="typeahead-text-container">\n' +
-                    '    <strong class="typeahead-strong-section">kronor</strong></div>\n';
+                    '    <strong class="typeahead-strong-section"><span class="stream-name">kronor</span></strong></div>\n';
                 assert.equal(actual_value, expected_value);
 
                 // Highlighted content should be escaped.
@@ -999,14 +999,14 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 actual_value = options.highlighter_html("<&>");
                 expected_value =
                     '<div class="typeahead-text-container">\n' +
-                    '    <strong class="typeahead-strong-section">&lt;&amp;&gt;</strong></div>\n';
+                    '    <strong class="typeahead-strong-section"><span class="stream-name">&lt;&amp;&gt;</span></strong></div>\n';
                 assert.equal(actual_value, expected_value);
 
                 options.query = "even m";
                 actual_value = options.highlighter_html("even more ice");
                 expected_value =
                     '<div class="typeahead-text-container">\n' +
-                    '    <strong class="typeahead-strong-section">even more ice</strong></div>\n';
+                    '    <strong class="typeahead-strong-section"><span class="stream-name">even more ice</span></strong></div>\n';
                 assert.equal(actual_value, expected_value);
 
                 // options.sorter()
@@ -1233,7 +1233,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                     `    <span class="zulip-icon zulip-icon-user-circle-offline user-circle-offline user-circle"></span>\n` +
                     `    <img class="typeahead-image" src="/avatar/${othello.user_id}" />\n` +
                     '<div class="typeahead-text-container">\n' +
-                    '    <strong class="typeahead-strong-section">Othello, the Moor of Venice</strong>    <span class="autocomplete_secondary">othello@zulip.com</span>' +
+                    '    <strong class="typeahead-strong-section"><span class="stream-name">Othello, the Moor of Venice</span></strong>    <span class="autocomplete_secondary">othello@zulip.com</span>' +
                     "</div>\n";
                 assert.equal(actual_value, expected_value);
                 // Reset the email such that this does not affect further tests.
@@ -1245,7 +1245,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 expected_value =
                     '    <i class="typeahead-image zulip-icon zulip-icon-triple-users no-presence-circle" aria-hidden="true"></i>\n' +
                     '<div class="typeahead-text-container">\n' +
-                    '    <strong class="typeahead-strong-section">hamletcharacters</strong>    <span class="autocomplete_secondary">Characters of Hamlet</span>' +
+                    '    <strong class="typeahead-strong-section"><span class="stream-name">hamletcharacters</span></strong>    <span class="autocomplete_secondary">Characters of Hamlet</span>' +
                     "</div>\n";
                 assert.equal(actual_value, expected_value);
 

@@ -1956,8 +1956,7 @@ body:not(.hide-left-sidebar) {
     gap: 4px;
     font-weight: 400;
     line-height: var(--base-line-height-unitless);
-    white-space: nowrap;
-    overflow: hidden;
+    white-space: normal;
 
     .stream-privacy-type-icon {
         font-size: 0.93em;
@@ -1968,12 +1967,6 @@ body:not(.hide-left-sidebar) {
 
     .zulip-icon {
         margin-top: 2px;
-    }
-
-    .stream-name {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
     .dropdown-list-delete {

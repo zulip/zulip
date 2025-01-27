@@ -136,9 +136,6 @@
         /* Present as flexbox to better control
            icon alignment and spacing, when icons
            are shown. */
-        overflow: hidden;
-        max-width: calc(25ch);
-        text-overflow: ellipsis;
         display: flex;
         align-items: baseline;
         /* Approximate space as preserved in
@@ -146,6 +143,10 @@
            name and its description. */
         gap: 0.25ch;
         font-weight: 500;
+    }
+
+    a strong.typeahead-strong-section .stream-name {
+        max-width: 200px;
     }
 }
 
