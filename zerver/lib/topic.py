@@ -6,6 +6,8 @@ import orjson
 from django.db import connection
 from django.db.models import F, Func, JSONField, Q, QuerySet, Subquery, TextField, Value
 from django.db.models.functions import Cast
+from django.utils.translation import gettext as _
+from django.utils.translation import override as override_language
 
 from zerver.lib.types import EditHistoryEvent, StreamMessageEditRequest
 from zerver.lib.utils import assert_is_not_none
@@ -347,4 +349,11 @@ def maybe_rename_empty_topic_to_general_chat(
 ) -> str:
     if is_channel_message and topic_name == "" and not allow_empty_topic_name:
         return Message.EMPTY_TOPIC_FALLBACK_NAME
+    return topic_name
+
+
+def get_topic_display_name(topic_name: str, language: str) -> str:
+    if topic_name == "":
+        with override_language(language):
+            return _(Message.EMPTY_TOPIC_FALLBACK_NAME)
     return topic_name

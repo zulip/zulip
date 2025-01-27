@@ -31,7 +31,7 @@ from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.tex import change_katex_to_raw_latex
 from zerver.lib.timezone import canonicalize_timezone
-from zerver.lib.topic import get_topic_resolution_and_bare_name
+from zerver.lib.topic import get_topic_display_name, get_topic_resolution_and_bare_name
 from zerver.lib.url_encoding import (
     direct_message_group_narrow_url,
     personal_narrow_url,
@@ -541,10 +541,11 @@ def do_send_missedmessage_events_reply_in_zulip(
             topic_name=message.topic_name(),
         )
         context.update(narrow_url=narrow_url)
-        topic_resolved, topic_name = get_topic_resolution_and_bare_name(message.topic_name())
+        topic_resolved, bare_topic_name = get_topic_resolution_and_bare_name(message.topic_name())
+        display_topic_name = get_topic_display_name(bare_topic_name, user_profile.default_language)
         context.update(
             channel_name=stream.name,
-            topic_name=topic_name,
+            topic_name=display_topic_name,
             topic_resolved=topic_resolved,
         )
     else:
