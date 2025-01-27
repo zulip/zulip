@@ -878,7 +878,7 @@ def send_subscription_remove_events(
                 stream
                 for stream in streams_by_user[user_profile.id]
                 if not check_basic_stream_access(
-                    user_profile, stream, sub=None, allow_realm_admin=True
+                    user_profile, stream, False, allow_realm_admin=True
                 )
             ]
 

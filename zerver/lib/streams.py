@@ -467,7 +467,7 @@ def access_stream_for_delete_or_update(
 def check_basic_stream_access(
     user_profile: UserProfile,
     stream: Stream,
-    sub: Subscription | None,
+    is_subscribed: bool,
     allow_realm_admin: bool = False,
 ) -> bool:
     # Any realm user, even guests, can access web_public streams.
@@ -479,7 +479,7 @@ def check_basic_stream_access(
         return True
 
     # Or if you are subscribed to the stream, you can access it.
-    if sub is not None:
+    if is_subscribed:
         return True
 
     # For some specific callers (e.g. getting list of subscribers,
@@ -521,7 +521,7 @@ def access_stream_common(
         sub = None
 
     if not stream.deactivated and check_basic_stream_access(
-        user_profile, stream, sub, allow_realm_admin=allow_realm_admin
+        user_profile, stream, sub is not None, allow_realm_admin=allow_realm_admin
     ):
         return sub
 
@@ -757,26 +757,56 @@ def can_access_stream_history_by_id(user_profile: UserProfile, stream_id: int) -
     return can_access_stream_history(user_profile, stream)
 
 
-def can_remove_subscribers_from_stream(
-    stream: Stream, user_profile: UserProfile, sub: Subscription | None
+def bulk_can_remove_subscribers_from_streams(
+    streams: list[Stream], user_profile: UserProfile
 ) -> bool:
-    if not check_basic_stream_access(user_profile, stream, sub, allow_realm_admin=True):
-        return False
-
     # Optimization for the organization administrator code path. We
     # don't explicitly grant realm admins this permission, but admins
     # implicitly have the can_administer_channel_group permission for
-    # all accessible channels.
+    # all accessible channels. For channels that the administrator
+    # cannot access, they can do limited administration including
+    # removing subscribers.
     if user_profile.is_realm_admin:
         return True
 
-    group_allowed_to_remove_subscribers = stream.can_remove_subscribers_group
-    assert group_allowed_to_remove_subscribers is not None
-    return user_has_permission_for_group_setting(
-        group_allowed_to_remove_subscribers,
-        user_profile,
-        Stream.stream_permission_group_settings["can_remove_subscribers_group"],
+    user_recursive_group_ids = set(
+        get_recursive_membership_groups(user_profile).values_list("id", flat=True)
     )
+
+    # We check this before basic access since for the channels the user
+    # cannot access, they can unsubscribe other users if they have
+    # permission to administer that channel.
+    permission_failure_streams: set[int] = set()
+    for stream in streams:
+        group_allowed_to_administer_channel_id = stream.can_administer_channel_group_id
+        assert group_allowed_to_administer_channel_id is not None
+        if group_allowed_to_administer_channel_id not in user_recursive_group_ids:
+            permission_failure_streams.add(stream.id)
+
+    if not bool(permission_failure_streams):
+        return True
+
+    existing_recipient_ids = [stream.recipient_id for stream in streams]
+    sub_recipient_ids = Subscription.objects.filter(
+        user_profile=user_profile, recipient_id__in=existing_recipient_ids, active=True
+    ).values_list("recipient_id", flat=True)
+
+    for stream in streams:
+        is_subscribed = False
+        if stream.recipient_id:
+            is_subscribed = stream.recipient_id in sub_recipient_ids
+        if not check_basic_stream_access(
+            user_profile, stream, is_subscribed, allow_realm_admin=True
+        ):
+            return False
+
+    for stream in streams:
+        group_allowed_to_remove_subscribers_id = stream.can_remove_subscribers_group_id
+        assert group_allowed_to_remove_subscribers_id is not None
+        if group_allowed_to_remove_subscribers_id in user_recursive_group_ids:
+            return True
+
+    return False
 
 
 def get_streams_to_which_user_cannot_add_subscribers(
@@ -939,16 +969,10 @@ def list_to_streams(
     missing_stream_dicts: list[StreamDict] = []
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
 
-    if unsubscribing_others:
-        existing_recipient_ids = [stream.recipient_id for stream in existing_stream_map.values()]
-        subs = Subscription.objects.filter(
-            user_profile=user_profile, recipient_id__in=existing_recipient_ids, active=True
-        )
-        sub_map = {sub.recipient_id: sub for sub in subs}
-        for stream in existing_stream_map.values():
-            sub = sub_map.get(stream.recipient_id, None)
-            if not can_remove_subscribers_from_stream(stream, user_profile, sub):
-                raise JsonableError(_("Insufficient permission"))
+    if unsubscribing_others and not bulk_can_remove_subscribers_from_streams(
+        list(existing_stream_map.values()), user_profile
+    ):
+        raise JsonableError(_("Insufficient permission"))
 
     message_retention_days_not_none = False
     web_public_stream_requested = False

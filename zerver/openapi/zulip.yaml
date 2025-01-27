@@ -20371,10 +20371,17 @@ paths:
                         Administrators can always unsubscribe others from a channel.
 
                         Note that a user must also [have access](/help/channel-permissions) to a
-                        channel in order to modify it.
+                        channel in order to modify it. Organization administrators and channel
+                        administrators are an exception to this.
 
-                        **Changes**: Prior to Zulip 10.0 (feature level 320), this value was
-                        always the integer ID of a system group.
+                        **Changes**: Prior to Zulip 10.0 (feature level 344), channel administrators
+                        could not unsubscribe other users if they were not an orgnaziation
+                        administrator or part of `can_remove_subscribers_group`. Realm administrators
+                        were not allowed to unsubscribe other users from a private channel if they
+                        were not subscribed to that channel.
+
+                        Prior to Zulip 10.0 (feature level 320), this value was always the integer
+                        ID of a system group.
 
                         Before Zulip 8.0 (feature level 197), the `can_remove_subscribers_group`
                         setting was named `can_remove_subscribers_group_id`.
@@ -25079,10 +25086,17 @@ components:
             Administrators can always unsubscribe others from a channel.
 
             Note that a user must also [have access](/help/channel-permissions) to a
-            channel in order to modify it.
+            channel in order to modify it. Organization administrators and channel
+            administrators are an exception to this.
 
-            **Changes**: Prior to Zulip 10.0 (feature level 320), this value was
-            always the integer ID of a system group.
+            **Changes**: Prior to Zulip 10.0 (feature level 344), channel administrators
+            could not unsubscribe other users if they were not an orgnaziation
+            administrator or part of `can_remove_subscribers_group`. Realm administrators
+            were not allowed to unsubscribe other users from a private channel if they
+            were not subscribed to that channel.
+
+            Prior to Zulip 10.0 (feature level 320), this value was always the integer
+            ID of a system group.
 
             Before Zulip 8.0 (feature level 197), the `can_remove_subscribers_group`
             setting was named `can_remove_subscribers_group_id`.

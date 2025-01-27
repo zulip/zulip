@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 344**
+
+* [`DELETE /users/me/subscriptions`](/api/get-subscriptions): Channel
+  administrators can now unsubscribe other users even if they are not
+  an organization administrator or part of
+  `can_remove_subscribers_group`. Realm administrators are now
+  allowed to unsubscribe other users from a private channel even if
+  they are not subscribed to that channel.
+
 **Feature level 343**
 
 * [`GET /events`](/api/get-events): Added a new field `stream_ids` to replace
