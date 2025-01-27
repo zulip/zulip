@@ -55,8 +55,7 @@ function choose_topics(
             stream_id,
             topic_name,
         );
-        const [topic_resolved_prefix, topic_display_name] =
-            resolved_topic.display_parts(topic_name);
+        const [topic_resolved_prefix, topic_bare_name] = resolved_topic.display_parts(topic_name);
         // Important: Topics are lower-case in this set.
         const contains_unread_mention = topic_choice_state.topics_with_unread_mentions.has(
             topic_name.toLowerCase(),
@@ -128,8 +127,8 @@ function choose_topics(
             stream_id,
             topic_name,
             topic_resolved_prefix,
-            topic_display_name: util.get_final_topic_display_name(topic_display_name),
-            is_empty_string_topic: topic_display_name === "",
+            topic_display_name: util.get_final_topic_display_name(topic_bare_name),
+            is_empty_string_topic: topic_bare_name === "",
             unread: num_unread,
             is_zero: num_unread === 0,
             is_muted: is_topic_muted,
