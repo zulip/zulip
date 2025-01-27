@@ -1,3 +1,4 @@
+from collections import defaultdict
 from collections.abc import Collection, Iterable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -18,6 +19,7 @@ from zerver.lib.exceptions import (
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     get_subscribed_stream_ids_for_user,
+    get_user_ids_for_streams,
 )
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.string_validation import check_stream_name
@@ -703,6 +705,24 @@ def can_access_stream_user_ids(stream: Stream) -> set[int]:
         return private_stream_user_ids(stream.id) | {
             user.id for user in stream.realm.get_admin_users_and_bots()
         }
+
+
+def can_access_streams_user_ids(streams: list[Stream], realm: Realm) -> dict[int, set[int]]:
+    non_guest_user_ids = set(active_non_guest_user_ids(realm.id))
+    admin_user_ids = {user.id for user in realm.get_admin_users_and_bots()}
+
+    stream_ids = {stream.id for stream in streams}
+
+    subscribers_dict = get_user_ids_for_streams(stream_ids)
+
+    users_with_access_dict = defaultdict(set)
+    for stream in streams:
+        if stream.is_public():
+            users_with_access_dict[stream.id] = non_guest_user_ids | subscribers_dict[stream.id]
+        else:
+            users_with_access_dict[stream.id] = admin_user_ids | subscribers_dict[stream.id]
+
+    return users_with_access_dict
 
 
 def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool:
