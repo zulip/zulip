@@ -28,7 +28,9 @@
             <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
         {{~/if~}}
     </span>
+    {{#unless disabled}}
     <div class="exit">
         <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>
     </div>
+    {{/unless}}
 </div>
