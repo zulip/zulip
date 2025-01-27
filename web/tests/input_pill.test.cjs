@@ -459,6 +459,7 @@ run_test("insert_remove", ({mock_template}) => {
     assert.ok(removed);
     assert.equal(color_removed, "YELLOW");
     assert.ok(prev_pill_focused);
+    color_removed = undefined;
 
     prev_pill_focused = false;
     assert.deepEqual(widget.items(), [items.blue, items.red]);
@@ -472,12 +473,29 @@ run_test("insert_remove", ({mock_template}) => {
 
     $container.set_find_results(".pill:focus", $focus_pill_stub);
 
+    const red_pill = pills.find((pill) => pill.item.color_name === "RED");
+    // Disabled pill should not be removed.
+    red_pill.disabled = true;
+
     key_handler = $container.get_on_handler("keydown", ".pill");
     key_handler({
         key: "Backspace",
         preventDefault: noop,
     });
 
+    assert.equal(color_removed, undefined);
+    assert.ok(prev_pill_focused);
+
+    // We should be able to remove the pill after marking it as not
+    // disabled.
+    red_pill.disabled = false;
+    prev_pill_focused = false;
+    assert.deepEqual(widget.items(), [items.blue, items.red]);
+
+    key_handler({
+        key: "Backspace",
+        preventDefault: noop,
+    });
     assert.equal(color_removed, "RED");
     assert.ok(prev_pill_focused);
 });
