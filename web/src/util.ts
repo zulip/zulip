@@ -536,12 +536,12 @@ export function compare_a_b<T>(a: T, b: T): number {
     return -1;
 }
 
-export function get_final_topic_display_name(topic_display_name: string): string {
-    if (topic_display_name === "") {
+export function get_final_topic_display_name(topic_name: string): string {
+    if (topic_name === "") {
         if (realm.realm_empty_topic_display_name === "general chat") {
             return $t({defaultMessage: "general chat"});
         }
         return realm.realm_empty_topic_display_name;
     }
-    return topic_display_name;
+    return topic_name;
 }
