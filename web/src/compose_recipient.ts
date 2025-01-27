@@ -348,7 +348,7 @@ export function initialize(): void {
     $("#private_message_recipient").on("input", restore_placeholder_in_firefox_for_no_input);
 }
 
-export let update_compose_area_placeholder_text = (): void => {
+export let update_compose_area_placeholder_text = (empty_topic_display = true): void => {
     const $textarea: JQuery<HTMLTextAreaElement> = $("textarea#compose-textarea");
     // Change compose placeholder text only if compose box is open.
     if (!$textarea.is(":visible")) {
@@ -359,10 +359,14 @@ export let update_compose_area_placeholder_text = (): void => {
     let placeholder = compose_ui.DEFAULT_COMPOSE_PLACEHOLDER;
     if (message_type === "stream") {
         const stream_id = compose_state.stream_id();
+        let topic = compose_state.topic();
+        if (empty_topic_display && !realm.realm_mandatory_topics) {
+            topic = util.get_final_topic_display_name(topic);
+        }
         placeholder = compose_ui.compute_placeholder_text({
             message_type,
             stream_id,
-            topic: compose_state.topic(),
+            topic,
         });
     } else if (message_type === "private") {
         placeholder = compose_ui.compute_placeholder_text({
