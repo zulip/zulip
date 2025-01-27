@@ -28,7 +28,7 @@ from zerver.lib.email_notifications import (
 from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import UserMessage, UserProfile, UserTopic
+from zerver.models import Message, UserMessage, UserProfile, UserTopic
 from zerver.models.realm_emoji import get_name_keyed_dict_for_active_realm_emoji
 from zerver.models.realms import get_realm
 from zerver.models.scheduled_jobs import NotificationTriggers
@@ -1794,3 +1794,26 @@ class TestMessageNotificationEmails(ZulipTestCase):
             "You are receiving this because you have email notifications enabled for topics you follow.",
             email_body,
         )
+
+    def test_empty_string_topic_missed_message(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        message_id = self.send_stream_message(
+            othello,
+            "Denmark",
+            content="@**topic**",
+            topic_name="",
+        )
+
+        self.handle_missedmessage_emails(
+            hamlet.id,
+            {
+                message_id: MissedMessageData(trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION),
+            },
+        )
+
+        expected_email_subject = f"#Denmark > {Message.EMPTY_TOPIC_FALLBACK_NAME}"
+        expected_email_body_includes = f"You are receiving this because all topic participants were mentioned in #Denmark > {Message.EMPTY_TOPIC_FALLBACK_NAME}."
+        self.assertEqual(mail.outbox[0].subject, expected_email_subject)
+        self.assertIn(expected_email_body_includes, self.normalize_string(mail.outbox[0].body))
