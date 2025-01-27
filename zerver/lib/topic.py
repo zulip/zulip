@@ -156,9 +156,9 @@ def update_messages_for_topic_edit(
         #
         # This equates to:
         #    "edit_history" = (
-        #      (COALESCE("zerver_message"."edit_history", '[]'))::jsonb
-        #      ||
         #      ( '[{ ..json event.. }]' )::jsonb
+        #      ||
+        #      (COALESCE("zerver_message"."edit_history", '[]'))::jsonb
         #     )::text
         "edit_history": Cast(
             Func(
