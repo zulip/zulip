@@ -5,9 +5,13 @@ from django.core.management.base import CommandError
 from typing_extensions import override
 
 from zerver.actions.users import do_deactivate_user
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.sessions import user_sessions
-from zerver.lib.users import get_active_bots_owned_by_user
+from zerver.lib.users import (
+    check_group_permission_updates_for_deactivating_user,
+    get_active_bots_owned_by_user,
+)
 
 
 class Command(ZulipBaseCommand):
@@ -43,5 +47,14 @@ class Command(ZulipBaseCommand):
         if not options["for_real"]:
             raise CommandError("This was a dry run. Pass -f to actually deactivate.")
 
-        do_deactivate_user(user_profile, acting_user=None)
+        try:
+            group_setting_updates = check_group_permission_updates_for_deactivating_user(
+                user_profile
+            )
+        except JsonableError as e:
+            raise CommandError(e.msg)
+
+        do_deactivate_user(
+            user_profile, group_setting_updates=group_setting_updates, acting_user=None
+        )
         print("Sessions deleted, user deactivated.")
