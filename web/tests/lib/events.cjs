@@ -347,6 +347,13 @@ exports.fixtures = {
         value: false,
     },
 
+    realm__update__mandatory_topics: {
+        type: "realm",
+        op: "update",
+        property: "mandatory_topics",
+        value: false,
+    },
+
     realm__update__name: {
         type: "realm",
         op: "update",

@@ -283,6 +283,10 @@ export function dispatch_normal_event(event) {
                                 "can_create_web_public_channel_group",
                             );
                         }
+
+                        if (event.property === "mandatory_topics") {
+                            compose_recipient.update_compose_area_placeholder_text();
+                        }
                     }
                     break;
                 case "update_dict":
