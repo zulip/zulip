@@ -25,7 +25,7 @@ import * as people from "./people.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as rtl from "./rtl.ts";
-import {current_user} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as user_status from "./user_status.ts";
 import * as util from "./util.ts";
@@ -426,10 +426,20 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
             }
         }
 
-        if (stream_name && opts.topic) {
+        let topic_display_name: string | undefined;
+        if (opts.topic !== "") {
+            topic_display_name = opts.topic;
+        } else if (
+            !realm.realm_mandatory_topics &&
+            !$("input#stream_message_recipient_topic").is(":focus")
+        ) {
+            topic_display_name = util.get_final_topic_display_name(opts.topic);
+        }
+
+        if (stream_name && topic_display_name !== undefined) {
             return $t(
                 {defaultMessage: "Message #{channel_name} > {topic_name}"},
-                {channel_name: stream_name, topic_name: opts.topic},
+                {channel_name: stream_name, topic_name: topic_display_name},
             );
         } else if (stream_name) {
             return $t({defaultMessage: "Message #{channel_name}"}, {channel_name: stream_name});
