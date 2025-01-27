@@ -1,4 +1,3 @@
-import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
@@ -12,6 +11,7 @@ import render_left_sidebar_stream_actions_popover from "../templates/popovers/le
 import * as blueslip from "./blueslip.ts";
 import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as browser_history from "./browser_history.ts";
+import * as clipboard_handler from "./clipboard_handler.ts";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
@@ -195,8 +195,9 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
                 e.stopPropagation();
             });
 
-            new ClipboardJS(util.the($popper.find(".copy_stream_link"))).on("success", () => {
-                popover_menus.hide_current_popover_if_visible(instance);
+            $popper.on("click", ".copy_stream_link", (e) => {
+                assert(e.currentTarget instanceof HTMLElement);
+                clipboard_handler.popover_copy_link_to_clipboard(instance, $(e.currentTarget));
             });
         },
         onHidden(instance) {
