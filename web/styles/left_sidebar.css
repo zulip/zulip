@@ -1361,7 +1361,8 @@ li.top_left_scheduled_messages {
     padding-left: 1px;
     /* Set the icon size, which will be inherited
        by .zulip-icon */
-    font-size: 17px;
+    /* 17px at 16px/1em */
+    font-size: 1.0625em;
 
     /*
         If you hover directly over the ellipsis itself,
