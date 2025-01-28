@@ -22,7 +22,7 @@ export function get_group_permission_setting_config(
     return permission_config_dict;
 }
 
-export const group_setting_name_schema = z.enum([
+export const group_group_setting_name_schema = z.enum([
     "can_add_members_group",
     "can_join_group",
     "can_leave_group",
@@ -31,11 +31,11 @@ export const group_setting_name_schema = z.enum([
     "can_remove_members_group",
 ]);
 
-export type GroupSettingName = z.infer<typeof group_setting_name_schema>;
+export type GroupGroupSettingName = z.infer<typeof group_group_setting_name_schema>;
 
-export function get_group_permission_settings(): GroupSettingName[] {
+export function get_group_permission_settings(): GroupGroupSettingName[] {
     return z
-        .array(group_setting_name_schema)
+        .array(group_group_setting_name_schema)
         .parse(Object.keys(realm.server_supported_permission_settings.group));
 }
 
@@ -132,14 +132,14 @@ export function get_realm_user_groups_for_dropdown_list_widget(
 }
 
 export type AssignedGroupPermission = {
-    setting_name: RealmGroupSettingName | StreamGroupSettingName | GroupSettingName;
+    setting_name: RealmGroupSettingName | StreamGroupSettingName | GroupGroupSettingName;
     can_edit: boolean;
     tooltip_message?: string;
 };
 
 export function get_assigned_permission_object(
     setting_value: GroupSettingValue,
-    setting_name: RealmGroupSettingName | StreamGroupSettingName | GroupSettingName,
+    setting_name: RealmGroupSettingName | StreamGroupSettingName | GroupGroupSettingName,
     group_id: number,
     can_edit_settings: boolean,
 ): AssignedGroupPermission | undefined {
