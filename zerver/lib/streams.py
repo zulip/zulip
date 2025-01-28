@@ -447,7 +447,32 @@ def check_for_exactly_one_stream_arg(stream_id: int | None, stream: str | None) 
         raise IncompatibleParametersError(["stream_id", "stream"])
 
 
-def check_stream_access_for_delete_or_update(
+def user_has_content_access(
+    user_profile: UserProfile,
+    stream: Stream,
+    *,
+    is_subscribed: bool,
+) -> bool:
+    if stream.is_web_public:
+        return True
+
+    if is_subscribed:
+        return True
+
+    if not stream.invite_only and not user_profile.is_guest:
+        return True
+
+    user_recursive_group_ids = set(
+        get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+    )
+
+    if is_user_in_can_add_subscribers_group(stream, user_recursive_group_ids):
+        return True
+
+    return False
+
+
+def check_stream_access_for_delete_or_update_requiring_metadata_access(
     user_profile: UserProfile, stream: Stream, sub: Subscription | None = None
 ) -> None:
     error = _("Invalid channel ID")
@@ -461,16 +486,22 @@ def check_stream_access_for_delete_or_update(
     if user_profile.is_realm_admin:
         return
 
-    if sub is None and stream.invite_only:
-        raise JsonableError(error)
-
     if can_administer_accessible_channel(stream, user_profile):
         return
 
-    raise CannotAdministerChannelError
+    # We only want to reveal that user is not an administrator
+    # if the user has access to the channel in the first place.
+    # Ideally, we would be checking if user has metadata access
+    # to the channel for this block, but since we have ruled out
+    # the possibility that the user is a channel admin, checking
+    # for content access will save us valuable DB queries.
+    if user_has_content_access(user_profile, stream, is_subscribed=sub is not None):
+        raise CannotAdministerChannelError
+
+    raise JsonableError(error)
 
 
-def access_stream_for_delete_or_update(
+def access_stream_for_delete_or_update_requiring_metadata_access(
     user_profile: UserProfile, stream_id: int
 ) -> tuple[Stream, Subscription | None]:
     try:
@@ -485,7 +516,7 @@ def access_stream_for_delete_or_update(
     except Subscription.DoesNotExist:
         sub = None
 
-    check_stream_access_for_delete_or_update(user_profile, stream, sub)
+    check_stream_access_for_delete_or_update_requiring_metadata_access(user_profile, stream, sub)
     return (stream, sub)
 
 
