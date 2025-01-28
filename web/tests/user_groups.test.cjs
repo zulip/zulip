@@ -755,3 +755,396 @@ run_test("is_subgroup_of_target_group", () => {
 
     assert.ok(!user_groups.is_subgroup_of_target_group(students.id, all.id));
 });
+
+run_test("group_has_permission", () => {
+    const admins = {
+        name: "Administrators",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([]),
+    };
+    const moderators = {
+        name: "Moderators",
+        id: 2,
+        members: new Set([2]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([1]),
+    };
+    const all = {
+        name: "Everyone",
+        id: 3,
+        members: new Set([3, 4]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([2, 4]),
+    };
+    const students = {
+        name: "Students",
+        id: 4,
+        members: new Set([5]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([]),
+    };
+
+    user_groups.initialize({
+        realm_user_groups: [admins, moderators, all, students],
+    });
+
+    let setting_value = admins.id;
+    let group_id = admins.id;
+    assert.ok(user_groups.group_has_permission(setting_value, group_id));
+
+    group_id = moderators.id;
+    assert.ok(!user_groups.group_has_permission(setting_value, group_id));
+
+    setting_value = all.id;
+    assert.ok(user_groups.group_has_permission(setting_value, group_id));
+
+    group_id = admins.id;
+    assert.ok(user_groups.group_has_permission(setting_value, group_id));
+
+    setting_value = {
+        direct_members: [2],
+        direct_subgroups: [admins.id],
+    };
+    group_id = admins.id;
+    assert.ok(user_groups.group_has_permission(setting_value, group_id));
+
+    group_id = moderators.id;
+    assert.ok(!user_groups.group_has_permission(setting_value, group_id));
+
+    setting_value = {
+        direct_members: [2],
+        direct_subgroups: [moderators.id, students.id],
+    };
+    group_id = admins.id;
+    assert.ok(user_groups.group_has_permission(setting_value, group_id));
+
+    group_id = moderators.id;
+    assert.ok(user_groups.group_has_permission(setting_value, group_id));
+
+    group_id = students.id;
+    assert.ok(user_groups.group_has_permission(setting_value, group_id));
+
+    group_id = all.id;
+    assert.ok(!user_groups.group_has_permission(setting_value, group_id));
+
+    setting_value = {
+        direct_members: [2],
+        direct_subgroups: [moderators.id, all.id],
+    };
+
+    group_id = admins.id;
+    assert.ok(user_groups.group_has_permission(setting_value, group_id));
+
+    group_id = moderators.id;
+    assert.ok(user_groups.group_has_permission(setting_value, group_id));
+
+    group_id = students.id;
+    assert.ok(user_groups.group_has_permission(setting_value, group_id));
+
+    group_id = all.id;
+    assert.ok(user_groups.group_has_permission(setting_value, group_id));
+});
+
+run_test("get_assigned_group_permission_object", () => {
+    const admins = {
+        name: "Administrators",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([]),
+    };
+    const moderators = {
+        name: "Moderators",
+        id: 2,
+        members: new Set([2]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([1]),
+    };
+    const all = {
+        name: "Everyone",
+        id: 3,
+        members: new Set([3, 4]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([2, 4]),
+    };
+    const students = {
+        name: "Students",
+        id: 4,
+        members: new Set([5]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([]),
+    };
+
+    user_groups.initialize({
+        realm_user_groups: [admins, moderators, all, students],
+    });
+
+    const setting_name = "can_manage_group";
+    let setting_value = moderators.id;
+    let group_id = all.id;
+    let can_edit_settings = false;
+    assert.equal(
+        group_permission_settings.get_assigned_permission_object(
+            setting_value,
+            setting_name,
+            group_id,
+            can_edit_settings,
+        ),
+        undefined,
+    );
+
+    group_id = students.id;
+    assert.equal(
+        group_permission_settings.get_assigned_permission_object(
+            setting_value,
+            setting_name,
+            group_id,
+            can_edit_settings,
+        ),
+        undefined,
+    );
+
+    group_id = moderators.id;
+    let permission_obj = group_permission_settings.get_assigned_permission_object(
+        setting_value,
+        setting_name,
+        group_id,
+        can_edit_settings,
+    );
+    assert.deepEqual(permission_obj, {
+        setting_name,
+        can_edit: false,
+        tooltip_message: "translated: You are not allowed to remove this permission.",
+    });
+
+    group_id = admins.id;
+    permission_obj = group_permission_settings.get_assigned_permission_object(
+        setting_value,
+        setting_name,
+        group_id,
+        can_edit_settings,
+    );
+    assert.deepEqual(permission_obj, {
+        setting_name,
+        can_edit: false,
+        tooltip_message: "translated: You are not allowed to remove this permission.",
+    });
+
+    setting_value = {
+        direct_members: [2],
+        direct_subgroups: [moderators.id, students.id],
+    };
+    group_id = all.id;
+    assert.equal(
+        group_permission_settings.get_assigned_permission_object(
+            setting_value,
+            setting_name,
+            group_id,
+            can_edit_settings,
+        ),
+        undefined,
+    );
+
+    group_id = students.id;
+    permission_obj = group_permission_settings.get_assigned_permission_object(
+        setting_value,
+        setting_name,
+        group_id,
+        can_edit_settings,
+    );
+    assert.deepEqual(permission_obj, {
+        setting_name,
+        can_edit: false,
+        tooltip_message: "translated: You are not allowed to remove this permission.",
+    });
+
+    group_id = moderators.id;
+    permission_obj = group_permission_settings.get_assigned_permission_object(
+        setting_value,
+        setting_name,
+        group_id,
+        can_edit_settings,
+    );
+    assert.deepEqual(permission_obj, {
+        setting_name,
+        can_edit: false,
+        tooltip_message: "translated: You are not allowed to remove this permission.",
+    });
+
+    group_id = admins.id;
+    permission_obj = group_permission_settings.get_assigned_permission_object(
+        setting_value,
+        setting_name,
+        group_id,
+        can_edit_settings,
+    );
+    assert.deepEqual(permission_obj, {
+        setting_name,
+        can_edit: false,
+        tooltip_message: "translated: You are not allowed to remove this permission.",
+    });
+
+    can_edit_settings = true;
+
+    setting_value = moderators.id;
+    group_id = all.id;
+    assert.equal(
+        group_permission_settings.get_assigned_permission_object(
+            setting_value,
+            setting_name,
+            group_id,
+            can_edit_settings,
+        ),
+        undefined,
+    );
+
+    group_id = students.id;
+    assert.equal(
+        group_permission_settings.get_assigned_permission_object(
+            setting_value,
+            setting_name,
+            group_id,
+            can_edit_settings,
+        ),
+        undefined,
+    );
+
+    group_id = moderators.id;
+    permission_obj = group_permission_settings.get_assigned_permission_object(
+        setting_value,
+        setting_name,
+        group_id,
+        can_edit_settings,
+    );
+    assert.deepEqual(permission_obj, {
+        setting_name,
+        can_edit: true,
+    });
+
+    group_id = admins.id;
+    permission_obj = group_permission_settings.get_assigned_permission_object(
+        setting_value,
+        setting_name,
+        group_id,
+        can_edit_settings,
+    );
+    assert.deepEqual(permission_obj, {
+        setting_name,
+        can_edit: false,
+        tooltip_message:
+            "translated: This group has this permission because it's a subgroup of Moderators.",
+    });
+
+    setting_value = {
+        direct_members: [2],
+        direct_subgroups: [moderators.id, students.id],
+    };
+    group_id = all.id;
+    assert.equal(
+        group_permission_settings.get_assigned_permission_object(
+            setting_value,
+            setting_name,
+            group_id,
+            can_edit_settings,
+        ),
+        undefined,
+    );
+
+    group_id = students.id;
+    permission_obj = group_permission_settings.get_assigned_permission_object(
+        setting_value,
+        setting_name,
+        group_id,
+        can_edit_settings,
+    );
+    assert.deepEqual(permission_obj, {
+        setting_name,
+        can_edit: true,
+    });
+
+    group_id = moderators.id;
+    permission_obj = group_permission_settings.get_assigned_permission_object(
+        setting_value,
+        setting_name,
+        group_id,
+        can_edit_settings,
+    );
+    assert.deepEqual(permission_obj, {
+        setting_name,
+        can_edit: true,
+    });
+
+    group_id = admins.id;
+    permission_obj = group_permission_settings.get_assigned_permission_object(
+        setting_value,
+        setting_name,
+        group_id,
+        can_edit_settings,
+    );
+    assert.deepEqual(permission_obj, {
+        setting_name,
+        can_edit: false,
+        tooltip_message:
+            "translated: This group has this permission because it's a subgroup of Moderators.",
+    });
+
+    setting_value = {
+        direct_members: [2],
+        direct_subgroups: [all.id],
+    };
+    group_id = admins.id;
+    permission_obj = group_permission_settings.get_assigned_permission_object(
+        setting_value,
+        setting_name,
+        group_id,
+        can_edit_settings,
+    );
+    assert.deepEqual(permission_obj, {
+        setting_name,
+        can_edit: false,
+        tooltip_message:
+            "translated: This group has this permission because it's a subgroup of Everyone.",
+    });
+
+    group_id = moderators.id;
+    permission_obj = group_permission_settings.get_assigned_permission_object(
+        setting_value,
+        setting_name,
+        group_id,
+        can_edit_settings,
+    );
+    assert.deepEqual(permission_obj, {
+        setting_name,
+        can_edit: false,
+        tooltip_message:
+            "translated: This group has this permission because it's a subgroup of Everyone.",
+    });
+
+    group_id = students.id;
+    permission_obj = group_permission_settings.get_assigned_permission_object(
+        setting_value,
+        setting_name,
+        group_id,
+        can_edit_settings,
+    );
+    assert.deepEqual(permission_obj, {
+        setting_name,
+        can_edit: false,
+        tooltip_message:
+            "translated: This group has this permission because it's a subgroup of Everyone.",
+    });
+
+    group_id = all.id;
+    permission_obj = group_permission_settings.get_assigned_permission_object(
+        setting_value,
+        setting_name,
+        group_id,
+        can_edit_settings,
+    );
+    assert.deepEqual(permission_obj, {
+        setting_name,
+        can_edit: true,
+    });
+});
