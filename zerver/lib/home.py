@@ -49,22 +49,6 @@ def get_furthest_read_time(user_profile: UserProfile | None) -> float | None:
     return calendar.timegm(user_activity.last_visit.utctimetuple())
 
 
-def get_bot_types(user_profile: UserProfile | None) -> list[dict[str, object]]:
-    bot_types: list[dict[str, object]] = []
-    if user_profile is None:
-        return bot_types
-
-    for type_id, name in UserProfile.BOT_TYPES.items():
-        bot_types.append(
-            dict(
-                type_id=type_id,
-                name=name,
-                allowed=type_id in user_profile.allowed_bot_types,
-            )
-        )
-    return bot_types
-
-
 def promote_sponsoring_zulip_in_realm(realm: Realm) -> bool:
     if not settings.PROMOTE_SPONSORING_ZULIP:
         return False
@@ -215,7 +199,7 @@ def build_page_params_for_home_page_load(
         ## Misc. extra data.
         language_list=get_language_list(),
         furthest_read_time=furthest_read_time,
-        bot_types=get_bot_types(user_profile),
+        embedded_bots_enabled=settings.EMBEDDED_BOTS_ENABLED,
         two_fa_enabled=two_fa_enabled,
         apps_page_url=get_apps_page_url(),
         show_billing=billing_info.show_billing,

@@ -293,7 +293,9 @@ export function user_email_not_configured(): boolean {
 }
 
 export function bot_type_id_to_string(type_id: number): string | undefined {
-    const bot_type = page_params.bot_types.find((bot_type) => bot_type.type_id === type_id);
+    const bot_type = Object.values(settings_config.bot_type_values).find(
+        (bot_type) => bot_type.type_id === type_id,
+    );
 
     if (bot_type === undefined) {
         return undefined;

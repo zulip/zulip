@@ -45,9 +45,9 @@ class HomeTest(ZulipTestCase):
     # Keep this list sorted!!!
     expected_page_params_keys = [
         "apps_page_url",
-        "bot_types",
         "corporate_enabled",
         "development_environment",
+        "embedded_bots_enabled",
         "furthest_read_time",
         "insecure_desktop_app",
         "is_spectator",
@@ -276,7 +276,7 @@ class HomeTest(ZulipTestCase):
 
         # Verify succeeds once logged-in
         with (
-            self.assert_database_query_count(59),
+            self.assert_database_query_count(54),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page(stream="Denmark")
@@ -359,9 +359,9 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(page_params["is_spectator"], True)
         expected_keys = [
             "apps_page_url",
-            "bot_types",
             "corporate_enabled",
             "development_environment",
+            "embedded_bots_enabled",
             "furthest_read_time",
             "insecure_desktop_app",
             "is_spectator",
@@ -581,7 +581,7 @@ class HomeTest(ZulipTestCase):
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
         with (
-            self.assert_database_query_count(59),
+            self.assert_database_query_count(54),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page()
@@ -613,7 +613,7 @@ class HomeTest(ZulipTestCase):
         self._get_home_page()
 
         # Then for the second page load, measure the number of queries.
-        with self.assert_database_query_count(54):
+        with self.assert_database_query_count(49):
             result = self._get_home_page()
 
         # Do a sanity check that our new streams were in the payload.
