@@ -647,3 +647,31 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         )
         self.assertNotIn("read", bot_user_message.flags_list())
         self.assertEqual(mock_queue_event_on_commit.call_count, 2)
+
+    @responses.activate
+    @for_all_bot_types
+    def test_read_non_event_message_to_service_bots(self) -> None:
+        """
+        Verifies that all messages where service bots are part of the
+        recipient but their functions aren't triggered are marked as read
+        by them.
+        """
+        sender = self.user_profile
+        recipients = [self.user_profile, self.bot_profile, self.second_bot_profile]
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json="",
+        )
+        non_event_messages_fixtures = [
+            "normal message",
+            f">@**{self.bot_profile.full_name}** quote mention",
+            f"@_**{self.bot_profile.full_name}** silent mention",
+        ]
+        for message in non_event_messages_fixtures:
+            message_id = self.send_group_direct_message(sender, recipients, content=message)
+
+            bot_user_message = UserMessage.objects.get(
+                user_profile=self.bot_profile, message=message_id
+            )
+            self.assertIn("read", bot_user_message.flags_list())
