@@ -680,12 +680,20 @@ def clean_archived_data() -> None:
     # Associated archived objects will get deleted through the on_delete=CASCADE property:
     count = 0
     transaction_ids = list(
-        ArchiveTransaction.objects.filter(timestamp__lt=check_date).values_list("id", flat=True)
+        ArchiveTransaction.objects.filter(
+            timestamp__lt=check_date, protect_from_deletion=False
+        ).values_list("id", flat=True)
     )
     while len(transaction_ids) > 0:
         transaction_block = transaction_ids[0:TRANSACTION_DELETION_BATCH_SIZE]
         transaction_ids = transaction_ids[TRANSACTION_DELETION_BATCH_SIZE:]
-        ArchiveTransaction.objects.filter(id__in=transaction_block).delete()
+
+        ArchiveTransaction.objects.filter(
+            # The protect_from_deletion=False condition is redundant at this point, but can act
+            # as an extra safeguard against future bugs.
+            id__in=transaction_block,
+            protect_from_deletion=False,
+        ).delete()
         count += len(transaction_block)
 
     logger.info("Deleted %s old ArchiveTransactions.", count)

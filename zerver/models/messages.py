@@ -112,6 +112,10 @@ class ArchiveTransaction(models.Model):
     restored = models.BooleanField(default=False, db_index=True)
     restored_timestamp = models.DateTimeField(null=True, db_index=True)
 
+    # ArchiveTransaction objects are regularly deleted. This flag allows tagging
+    # an ArchiveTransaction as protected from such automated deletion.
+    protect_from_deletion = models.BooleanField(default=False, db_index=True)
+
     type = models.PositiveSmallIntegerField(db_index=True)
     # Valid types:
     RETENTION_POLICY_BASED = 1  # Archiving was executed due to automated retention policies
