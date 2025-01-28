@@ -125,7 +125,6 @@ class HomeTest(ZulipTestCase):
         "realm_authentication_methods",
         "realm_available_video_chat_providers",
         "realm_avatar_changes_disabled",
-        "realm_bot_creation_policy",
         "realm_bot_domain",
         "realm_bots",
         "realm_can_access_all_users_group",
