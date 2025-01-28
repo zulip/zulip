@@ -658,6 +658,8 @@ def do_activate_mirror_dummy_user(
     parallel code path to do_create_user; e.g. it likely does not
     handle preferences or default streams properly.
     """
+    assert user_profile.is_mirror_dummy
+
     if settings.BILLING_ENABLED:
         from corporate.lib.stripe import RealmBillingSession
 
