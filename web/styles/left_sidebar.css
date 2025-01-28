@@ -460,6 +460,12 @@
         );
         text-transform: var(--text-transform-sidebar-action-heading);
     }
+
+    .subscribe-more-icon {
+        /* Scale the icon with the action-heading font-size
+           for better vertical centering. */
+        font-size: var(--font-size-sidebar-action-heading);
+    }
 }
 
 #login-link-container,
