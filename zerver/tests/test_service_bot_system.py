@@ -675,3 +675,55 @@ class TestServiceBotEventTriggers(ZulipTestCase):
                 user_profile=self.bot_profile, message=message_id
             )
             self.assertIn("read", bot_user_message.flags_list())
+
+    @responses.activate
+    @for_all_bot_types
+    def test_read_private_channel_event_message(self) -> None:
+        """
+        Verifies that service bots will read all event message once
+        they have processed them, regardless of whether they are
+        subscribed to the private channel.
+        """
+        sender = self.user_profile
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json="",
+        )
+        private_channel = "private_channel"
+        self.subscribe(sender, private_channel, invite_only=True)
+        message_id = self.send_stream_message(
+            sender,
+            private_channel,
+            content=f"@**{self.bot_profile.full_name}** private channel mention",
+        )
+
+        bot_user_message = UserMessage.objects.get(
+            user_profile=self.bot_profile, message=message_id
+        )
+        self.assertIn("read", bot_user_message.flags_list())
+
+    def test_read_unsubscribed_channel_event_message(self) -> None:
+        """
+        Verifies that service bots will read all event message once
+        they have processed them, regardless of whether they are
+        subscribed to the public channel.
+        """
+        sender = self.user_profile
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json="",
+        )
+        new_public_channel = "new_public_channel"
+        self.subscribe(sender, new_public_channel)
+        message_id = self.send_stream_message(
+            sender,
+            new_public_channel,
+            content=f"@**{self.bot_profile.full_name}** public channel mention",
+        )
+
+        bot_user_message = UserMessage.objects.get(
+            user_profile=self.bot_profile, message=message_id
+        )
+        self.assertIn("read", bot_user_message.flags_list())

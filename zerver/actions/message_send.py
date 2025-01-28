@@ -813,7 +813,7 @@ def create_user_messages(
     # for details on this system.
     service_bot_ids = dict(service_bot_tuples).keys()
     user_messages = []
-    for user_profile_id in um_eligible_user_ids:
+    for user_profile_id in um_eligible_user_ids | triggered_service_bots:
         flags = base_flags
         if (
             user_profile_id in mark_as_read_user_ids
