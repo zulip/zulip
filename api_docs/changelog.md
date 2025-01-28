@@ -40,6 +40,10 @@ format used by the Zulip server that they are interacting with.
   Previously, non-admin users who were channel admins or users
   belonging to `can_add_subscribers_group` were not notified of events
   for a private channel they were not subscribed to.
+* [`GET /events`](/api/get-events): If a user is a channel
+  administrator for a private channel they are not subscribed to. That
+  channel will now appear either in the `unsubscribed` or
+  `never_subscribed` list in subscription info.
 
 **Feature level 348**
 

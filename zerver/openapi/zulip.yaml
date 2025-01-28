@@ -15123,7 +15123,12 @@ paths:
                           Unlike `never_subscribed`, the user might have messages in their personal
                           message history that were sent to these channels.
 
-                          **Changes**: Removed `email_address` field from the dictionary
+                          **Changes**: Prior to Zulip 10.0 (feature level 349), if a user was
+                          in `can_administer_channel_group` of a channel that they had
+                          unsubscribed from, but not an organization administrator, the channel
+                          in question would not be part of this array.
+
+                          Removed `email_address` field from the dictionary
                           in Zulip 8.0 (feature level 226).
 
                           Removed `role` field from the dictionary
@@ -15188,6 +15193,11 @@ paths:
 
                           Important for clients containing UI where one can browse channels to subscribe
                           to.
+
+                          **Changes**: Prior to Zulip 10.0 (feature level 349), if a user was
+                          in `can_administer_channel_group` of a channel that they never
+                          subscribed to, but not an organization administrator, the channel
+                          in question would not be part of this array.
                       unread_msgs:
                         type: object
                         description: |
