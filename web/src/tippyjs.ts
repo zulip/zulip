@@ -200,7 +200,7 @@ export function initialize(): void {
             switch (sidebar_option) {
                 case user_settings.web_home_view:
                     $container.find(".views-tooltip-home-view-note").removeClass("hide");
-                    display_count = unread.get_unread_message_count();
+                    display_count = unread.get_counts().home_unread_messages;
                     $container.find(".views-message-count").text(
                         $t(
                             {
