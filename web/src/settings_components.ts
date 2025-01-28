@@ -1774,16 +1774,25 @@ export function get_group_assigned_realm_permissions(group: UserGroup): {
     assigned_permissions: AssignedGroupPermission[];
 }[] {
     const group_assigned_realm_permissions = [];
+    const owner_editable_settings = new Set([
+        "can_create_groups",
+        "can_invite_users_group",
+        "can_manage_all_groups",
+        "create_multiuse_invite_group",
+    ]);
     for (const {subsection_heading, settings} of settings_config.realm_group_permission_settings) {
         const assigned_permission_objects = [];
         for (const setting_name of settings) {
             const setting_value = realm[realm_schema.keyof().parse("realm_" + setting_name)];
+            const can_edit = owner_editable_settings.has(setting_name)
+                ? current_user.is_owner
+                : current_user.is_admin;
             const assigned_permission_object =
                 group_permission_settings.get_assigned_permission_object(
                     group_setting_value_schema.parse(setting_value),
                     setting_name,
                     group.id,
-                    current_user.is_admin,
+                    can_edit,
                 );
             if (assigned_permission_object !== undefined) {
                 assigned_permission_objects.push(assigned_permission_object);
