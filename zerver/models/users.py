@@ -792,20 +792,19 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     @property
     def allowed_bot_types(self) -> list[int]:
-        from zerver.models.realms import BotCreationPolicyEnum
-
         allowed_bot_types = []
-        if (
-            self.is_realm_admin
-            or self.realm.bot_creation_policy != BotCreationPolicyEnum.LIMIT_GENERIC_BOTS
-        ):
-            allowed_bot_types.append(UserProfile.DEFAULT_BOT)
-        allowed_bot_types += [
-            UserProfile.INCOMING_WEBHOOK_BOT,
-            UserProfile.OUTGOING_WEBHOOK_BOT,
-        ]
-        if settings.EMBEDDED_BOTS_ENABLED:
-            allowed_bot_types.append(UserProfile.EMBEDDED_BOT)
+        if self.has_permission("can_create_bots_group"):
+            allowed_bot_types.extend(
+                [
+                    UserProfile.DEFAULT_BOT,
+                    UserProfile.INCOMING_WEBHOOK_BOT,
+                    UserProfile.OUTGOING_WEBHOOK_BOT,
+                ]
+            )
+            if settings.EMBEDDED_BOTS_ENABLED:
+                allowed_bot_types.append(UserProfile.EMBEDDED_BOT)
+        elif self.has_permission("can_create_write_only_bots_group"):
+            allowed_bot_types.append(UserProfile.INCOMING_WEBHOOK_BOT)
         return allowed_bot_types
 
     def email_address_is_realm_public(self) -> bool:

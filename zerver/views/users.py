@@ -71,9 +71,9 @@ from zerver.lib.users import (
     access_user_by_email,
     access_user_by_id,
     add_service,
-    check_bot_creation_policy,
     check_bot_name_available,
     check_can_access_user,
+    check_can_create_bot,
     check_full_name,
     check_short_name,
     check_valid_bot_config,
@@ -189,7 +189,7 @@ def reactivate_user_backend(
     )
     if target.is_bot:
         assert target.bot_type is not None
-        check_bot_creation_policy(user_profile, target.bot_type)
+        check_can_create_bot(user_profile, target.bot_type)
         check_bot_name_available(user_profile.realm_id, target.full_name, is_activation=True)
     do_reactivate_user(target, acting_user=user_profile)
     return json_success(request)
@@ -614,7 +614,7 @@ def add_bot_backend(
         is_activation=False,
     )
 
-    check_bot_creation_policy(user_profile, bot_type)
+    check_can_create_bot(user_profile, bot_type)
     check_valid_bot_type(user_profile, bot_type)
     check_valid_interface_type(interface_type)
 

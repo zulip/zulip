@@ -6,13 +6,25 @@ By default, anyone other than guests can [add a bot](/help/add-a-bot-or-integrat
 or integration to the Zulip organization. Organization administrators can
 change who is allowed to add bots.
 
-## Configure who can add bots
+## Configure who can create any type of bot
 
 {start_tabs}
 
 {settings_tab|organization-permissions}
 
-2. Under **Other permissions**, configure **Who can add bots**.
+2. Under **Other permissions**, configure **Who can create any bot**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
+## Configure who can create bots that can only send messages
+
+{start_tabs}
+
+{settings_tab|organization-permissions}
+
+2. Under **Other permissions**, configure **Who can create bots that send messages into Zulip**.
 
 {!save-changes.md!}
 
