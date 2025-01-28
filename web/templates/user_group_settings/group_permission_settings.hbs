@@ -15,7 +15,7 @@
                           setting_name=setting_name
                           prefix="id_group_permission_"
                           is_checked=true
-                          label=(lookup ../../group_setting_labels.realm setting_name)
+                          label=(lookup ../../all_group_setting_labels.realm setting_name)
                           is_disabled=(not can_edit)
                           tooltip_message=tooltip_message}}
                     {{/each}}
@@ -42,7 +42,7 @@
                           setting_name=setting_name
                           prefix=../id_prefix
                           is_checked=true
-                          label=(lookup ../../group_setting_labels.stream setting_name)
+                          label=(lookup ../../all_group_setting_labels.stream setting_name)
                           is_disabled=(not can_edit)
                           tooltip_message=tooltip_message
                           }}
@@ -68,7 +68,7 @@
                           setting_name=setting_name
                           prefix=../id_prefix
                           is_checked=true
-                          label=(lookup ../../group_setting_labels.group setting_name)
+                          label=(lookup ../../all_group_setting_labels.group setting_name)
                           is_disabled=(not can_edit)
                           tooltip_message=tooltip_message
                           }}
