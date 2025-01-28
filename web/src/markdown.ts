@@ -673,13 +673,14 @@ function handleStreamTopicMessage({
     stream_topic_hash: (stream_id: number, topic: string) => string;
 }): string | undefined {
     const stream = get_stream_by_name(stream_name);
-    if (stream === undefined || !topic) {
+    if (stream === undefined) {
         return undefined;
     }
     const href = stream_topic_hash(stream.stream_id, topic) + "/near/" + message_id;
     return render_channel_message_link({
         channel_name: stream.name,
-        topic_display_name: topic,
+        topic_display_name: util.get_final_topic_display_name(topic),
+        is_empty_string_topic: topic === "",
         href,
     });
 }
