@@ -952,24 +952,30 @@ class TestCleaningArchive(ArchiveMessagesTestingBase):
         self._make_expired_zulip_messages(7)
         archive_messages(chunk_size=2)  # Small chunk size to have multiple transactions
 
-        transactions = list(ArchiveTransaction.objects.all())
+        transactions = list(ArchiveTransaction.objects.all().order_by("id"))
         for transaction in transactions[0:-1]:
             transaction.timestamp = timezone_now() - timedelta(
                 days=settings.ARCHIVED_DATA_VACUUMING_DELAY_DAYS + 1
             )
             transaction.save()
 
+        # This transaction would up for deletion, but we enable the flag preventing
+        # it from automatic deletion:
+        transactions[-2].protect_from_deletion = True
+        transactions[-2].save()
+
         message_ids_to_clean = list(
-            ArchivedMessage.objects.filter(archive_transaction__in=transactions[0:-1]).values_list(
+            ArchivedMessage.objects.filter(archive_transaction__in=transactions[0:-2]).values_list(
                 "id", flat=True
             )
         )
 
         clean_archived_data()
-        remaining_transactions = list(ArchiveTransaction.objects.all())
-        self.assert_length(remaining_transactions, 1)
-        # All transactions except the last one were deleted:
+        remaining_transactions = list(ArchiveTransaction.objects.order_by("-id"))
+        self.assert_length(remaining_transactions, 2)
+        # All transactions except the last two were deleted:
         self.assertEqual(remaining_transactions[0].id, transactions[-1].id)
+        self.assertEqual(remaining_transactions[1].id, transactions[-2].id)
         # And corresponding ArchivedMessages should have been deleted:
         self.assertFalse(ArchivedMessage.objects.filter(id__in=message_ids_to_clean).exists())
         self.assertFalse(
@@ -977,7 +983,10 @@ class TestCleaningArchive(ArchiveMessagesTestingBase):
         )
 
         for message in ArchivedMessage.objects.all():
-            self.assertEqual(message.archive_transaction_id, remaining_transactions[0].id)
+            self.assertIn(
+                message.archive_transaction_id,
+                [remaining_transactions[0].id, remaining_transactions[1].id],
+            )
 
 
 class TestGetRealmAndStreamsForArchiving(ZulipTestCase):
