@@ -479,7 +479,11 @@ export function is_user_in_group(
 
 export function group_has_permission(setting_value: GroupSettingValue, group_id: number): boolean {
     if (typeof setting_value === "number") {
-        return setting_value === group_id;
+        if (setting_value === group_id) {
+            return true;
+        }
+
+        return is_subgroup_of_target_group(setting_value, group_id);
     }
 
     const direct_subgroup_ids = setting_value.direct_subgroups;
