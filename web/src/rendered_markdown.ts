@@ -6,9 +6,11 @@ import assert from "minimalistic-assert";
 import code_buttons_container from "../templates/code_buttons_container.hbs";
 import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import render_mention_content_wrapper from "../templates/mention_content_wrapper.hbs";
+import render_topic_link from "../templates/topic_link.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
@@ -234,20 +236,29 @@ export const update_elements = ($content: JQuery): void => {
     });
 
     $content.find("a.stream-topic").each(function (): void {
-        const stream_id_string = $(this).attr("data-stream-id");
-        assert(stream_id_string !== undefined);
-        const stream_id = Number.parseInt(stream_id_string, 10);
-        if (stream_id && $(this).find(".highlight").length === 0) {
-            // Display the current name for stream if it is not
-            // being displayed in search highlight.
-            const stream_name = sub_store.maybe_get_stream_name(stream_id);
-            if (stream_name !== undefined) {
-                // If the stream has been deleted,
-                // sub_store.maybe_get_stream_name might return
-                // undefined.  Otherwise, display the current stream name.
-                const text = $(this).text();
-                $(this).text("#" + stream_name + text.slice(text.indexOf(" > ")));
-            }
+        const narrow_url = $(this).attr("href");
+        assert(narrow_url !== undefined);
+        const channel_topic = hash_util.decode_stream_topic_from_url(
+            window.location.origin + narrow_url,
+        );
+        assert(channel_topic !== null);
+        const channel_name = sub_store.maybe_get_stream_name(channel_topic.stream_id);
+        if (channel_name !== undefined && $(this).find(".highlight").length === 0) {
+            // Display the current channel name if it hasn't been deleted
+            // and not being displayed in search highlight.
+            // TODO: Ideally, we should NOT skip this if only topic is highlighted,
+            // but we are doing so currently.
+            const topic_name = channel_topic.topic_name;
+            assert(topic_name !== undefined);
+            const topic_display_name = util.get_final_topic_display_name(topic_name);
+            const topic_link_html = render_topic_link({
+                channel_id: channel_topic.stream_id,
+                channel_name,
+                topic_display_name,
+                is_empty_string_topic: topic_name === "",
+                href: narrow_url,
+            });
+            $(this).replaceWith($(topic_link_html));
         }
     });
 

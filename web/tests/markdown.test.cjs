@@ -60,7 +60,8 @@ const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
-set_realm({});
+const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
+set_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME});
 const user_settings = {};
 initialize_user_settings({user_settings});
 
@@ -412,13 +413,13 @@ test("marked", ({override}) => {
                 '<p>This is a <a class="stream-topic" data-stream-id="1" href="#narrow/channel/1-Denmark/topic/some.20topic">#Denmark &gt; some topic</a> stream_topic link</p>',
         },
         {
+            input: "This is a #**Denmark>** stream_topic link with empty string topic.",
+            expected: `<p>This is a <a class="stream-topic" data-stream-id="1" href="#narrow/channel/1-Denmark/topic/">#Denmark &gt; <span class="empty-topic-display">translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}</span></a> stream_topic link with empty string topic.</p>`,
+        },
+        {
             input: "This has two links: #**Denmark>some topic** and #**social>other topic**.",
             expected:
                 '<p>This has two links: <a class="stream-topic" data-stream-id="1" href="#narrow/channel/1-Denmark/topic/some.20topic">#Denmark &gt; some topic</a> and <a class="stream-topic" data-stream-id="2" href="#narrow/channel/2-social/topic/other.20topic">#social &gt; other topic</a>.</p>',
-        },
-        {
-            input: "This is not a #**Denmark>** stream_topic link",
-            expected: "<p>This is not a #**Denmark&gt;** stream_topic link</p>",
         },
         {
             input: "Look at #**Denmark>message_link@100**",
