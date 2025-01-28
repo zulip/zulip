@@ -9,6 +9,9 @@ allowed to use `@all` (and, equivalently, `@everyone` and `@channel`) in channel
 with more than 15 subscribers, and `@topic` in topics with more than 15
 participants.
 
+This permission can be granted to any combination of [roles](/help/user-roles),
+[groups](/help/user-groups), and individual [users](/help/manage-a-user).
+
 {start_tabs}
 
 {settings_tab|organization-permissions}
