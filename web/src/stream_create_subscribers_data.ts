@@ -35,11 +35,6 @@ export function get_potential_subscribers(): User[] {
     const potential_subscribers = people.get_realm_users();
     return potential_subscribers.filter((user) => !user_id_set.has(user.user_id));
 }
-
-export function must_be_subscribed(user_id: number): boolean {
-    return !current_user.is_admin && user_id === current_user.user_id;
-}
-
 export function add_user_ids(user_ids: number[]): void {
     for (const user_id of user_ids) {
         if (!user_id_set.has(user_id)) {
@@ -62,12 +57,6 @@ export function remove_user_ids(user_ids: number[]): void {
 }
 
 export function sync_user_ids(user_ids: number[]): void {
-    // Current user does not have their pill in their input
-    // box, so we need to make sure that we don't delete
-    // it unnecessarily while syncing.
-    if (user_id_set.has(current_user.user_id)) {
-        user_ids.push(current_user.user_id);
-    }
     user_id_set = new Set(user_ids);
 }
 
