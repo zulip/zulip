@@ -662,12 +662,14 @@ li.active-sub-filter {
         }
 
         &:not(:hover) .unread_count {
-            top: 2px;
-            right: 2px;
-            width: 6px;
-            height: 6px;
-            font-size: 0;
+            /* .unread_count has its based font-size set to 12px at 14px/em. */
+            /* 2px, 6px at 12px/1em */
+            top: 0.1667em;
+            right: 0.1667em;
+            width: 0.5em;
+            height: 0.5em;
             padding: 0;
+            color: transparent;
             background-color: var(--color-background-unread-counter-dot);
         }
 
@@ -697,11 +699,11 @@ li.active-sub-filter {
         display: flex;
         align-items: center;
         justify-content: center;
-        /* TODO: Set this 24px height value as a variable.
-           Keep filter-icon height the full height of the box. */
-        height: 24px;
         /* Enlarge icons slightly in condensed views. */
-        font-size: 15px;
+        /* 15px at 16px/1em */
+        font-size: 0.9375em;
+        /* 24px at 15px/1em */
+        height: 1.6em;
         color: var(--color-left-sidebar-navigation-icon);
     }
 }
@@ -963,7 +965,8 @@ li.top_left_scheduled_messages {
         0 var(--left-sidebar-header-icon-toggle-width) 0 minmax(0, 0.5fr)
         0 minmax(0, 1fr)
         var(--left-sidebar-vdots-width) 0;
-    grid-template-rows: 28px;
+    /* 28px at 16px/1em */
+    grid-template-rows: 1.75em;
     cursor: pointer;
     border-radius: 4px;
 
@@ -1041,10 +1044,12 @@ li.top_left_scheduled_messages {
         /* Horizontally center vdots. */
         justify-self: stretch;
         /* Properly size vdots. */
-        font-size: 17px;
+        /* 17px at 16px/1em */
+        font-size: 1.0625em;
         /* Occupy same clickable height as
            other condensed-view icons */
-        height: 24px;
+        /* 24px at 17px/1em */
+        height: 1.4118em;
         /* Vertically center dots with
            flexbox. */
         display: flex;
