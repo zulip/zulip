@@ -247,7 +247,8 @@
     --left-sidebar-before-unread-count-padding: 3px;
     /* 15px is the approximate width of a single-digit
        unread marker. */
-    --left-sidebar-single-digit-unread-width: 15px;
+    /* 15px at 16px/1em */
+    --left-sidebar-single-digit-unread-width: 0.9375em;
     --left-sidebar-right-margin: 12px;
     /* 289px at 14px/1em */
     --left-sidebar-max-width: calc(

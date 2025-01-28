@@ -55,7 +55,8 @@
 }
 
 .masked_unread_count {
-    font-size: 8px;
+    /* 8px at 16px/14em */
+    font-size: 0.5em;
     display: none;
     /* Masked unreads display as flex when revealed. */
     align-items: center;
