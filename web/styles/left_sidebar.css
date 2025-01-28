@@ -1409,20 +1409,6 @@ li.top_left_scheduled_messages {
     }
 }
 
-/*
-    For topic ellipsis-v(vertical 3 dots) we use a slightly smaller
-    font to show they're "lower" in the hierarchy,
-    which also affects it positioning.
-*/
-.topic-sidebar-menu-icon {
-    /* 0.9em, but with a pixel value because the
-       ordinary 17px vdots size is not inherited
-       here, so we can't express an em-value
-       directly. Pixels are easier to reason
-       about with icons, anyway. */
-    font-size: 15.3px;
-}
-
 ul.topic-list {
     line-height: var(--line-height-sidebar-row-prominent);
     list-style-type: none;
