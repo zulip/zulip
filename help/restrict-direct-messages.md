@@ -10,9 +10,12 @@ messages](/help/direct-messages):
   or someone else).
 - Who can **start** a direct message conversation.
 
-These settings are designed so that users can always respond to a direct message
-they've received (unless organization permissions change). They also provide a
-lot of flexibility for managing DMs in your organization. For example, you can:
+These permissions can be granted to any combination of
+[roles](/help/user-roles), [groups](/help/user-groups), and individual
+[users](/help/manage-a-user). They are designed so that users can always respond
+to a direct message they've received (unless organization permissions change).
+They also provide a lot of flexibility for managing DMs in your organization.
+For example, you can:
 
 - Prevent 1:1 DMs between [guest users](/help/guest-users).
 - Allow members to respond to DMs from an admin or moderator, but not to start
