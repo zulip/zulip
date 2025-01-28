@@ -1,14 +1,3 @@
-.hashtag {
-    &:empty {
-        &::after {
-            content: "#";
-            line-height: 0;
-            font-size: 18px;
-            font-weight: 700;
-        }
-    }
-}
-
 .left-sidebar-title {
     color: var(--color-text-sidebar-heading);
     opacity: var(--opacity-sidebar-heading);
