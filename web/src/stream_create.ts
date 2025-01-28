@@ -12,7 +12,6 @@ import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
-import * as people from "./people.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -80,16 +79,6 @@ class StreamSubscriptionError {
     report_no_subs_to_stream(): void {
         $("#stream_subscription_error").text(
             $t({defaultMessage: "You cannot create a channel with no subscribers."}),
-        );
-        $("#stream_subscription_error").show();
-    }
-
-    cant_create_stream_without_subscribing(): void {
-        $("#stream_subscription_error").text(
-            $t({
-                defaultMessage:
-                    "You must be an organization administrator to create a channel without subscribing.",
-            }),
         );
         $("#stream_subscription_error").show();
     }
@@ -593,11 +582,6 @@ export function set_up_handlers(): void {
             stream_create_subscribers.pill_widget.appendValue(
                 stream_create_subscribers.pill_widget.getCurrentText()!,
             );
-            return;
-        }
-
-        if (!principals.includes(people.my_current_user_id()) && !current_user.is_admin) {
-            stream_subscription_error.cant_create_stream_without_subscribing();
             return;
         }
 
