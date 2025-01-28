@@ -946,7 +946,6 @@ class RealmTest(ZulipTestCase):
         ]
 
         invalid_values = dict(
-            bot_creation_policy=10,
             message_retention_days=10,
             video_chat_provider=10,
             giphy_rating=10,
@@ -1881,7 +1880,6 @@ class RealmAPITest(ZulipTestCase):
             name=["Zulip", "New Name"],
             waiting_period_threshold=[10, 20],
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
-            bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
             video_chat_provider=[
                 Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"],
                 Realm.VIDEO_CHAT_PROVIDERS["disabled"]["id"],

@@ -117,14 +117,6 @@ class CreateWebPublicStreamPolicyEnum(IntEnum):
     OWNERS_ONLY = 7
 
 
-class BotCreationPolicyEnum(IntEnum):
-    # This value is also being used in web/src/settings_bots.bot_creation_policy_values.
-    # On updating it here, update it there as well.
-    EVERYONE = 1
-    LIMIT_GENERIC_BOTS = 2
-    ADMINS_ONLY = 3
-
-
 class MoveMessagesBetweenStreamsPolicyEnum(IntEnum):
     MEMBERS_ONLY = 1
     ADMINS_ONLY = 2
@@ -559,9 +551,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     }
     plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
 
-    bot_creation_policy = models.PositiveSmallIntegerField(default=BotCreationPolicyEnum.EVERYONE)
-    BOT_CREATION_POLICY_TYPES = [field.value for field in BotCreationPolicyEnum]
-
     UPLOAD_QUOTA_LIMITED = 5
     UPLOAD_QUOTA_STANDARD_FREE = 50
     custom_upload_quota_gb = models.IntegerField(null=True)
@@ -642,7 +631,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         allow_edit_history=bool,
         allow_message_editing=bool,
         avatar_changes_disabled=bool,
-        bot_creation_policy=int,
         default_code_block_language=str,
         default_language=str,
         description=str,

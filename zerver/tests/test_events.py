@@ -3800,7 +3800,6 @@ class RealmPropertyActionTest(BaseAction):
             name=["Zulip", "New Name"],
             waiting_period_threshold=[1000, 2000],
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
-            bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
             video_chat_provider=[
                 Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"],
             ],

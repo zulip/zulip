@@ -4452,11 +4452,6 @@ paths:
                                         **Changes**: In Zulip 9.0 (feature level 243), the values in this
                                         dictionary were changed. Previously, the values were a simple boolean
                                         indicating whether the backend is enabled or not.
-                                    bot_creation_policy:
-                                      type: integer
-                                      description: |
-                                        The [policy](/api/roles-and-permissions#permission-levels)
-                                        for which users can create bot users in this organization.
                                     can_access_all_users_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -16735,13 +16730,6 @@ paths:
                               In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
                               `edit_topic_policy` enum.
                           - $ref: "#/components/schemas/GroupSettingValue"
-                      realm_bot_creation_policy:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          The [policy](/api/roles-and-permissions#permission-levels)
-                          for which users can create bot users in this organization.
                       realm_can_create_groups:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"

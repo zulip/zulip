@@ -31,6 +31,10 @@ format used by the Zulip server that they are interacting with.
   [group-setting value](/api/group-setting-values) describing the set of users
   with permission to create bot users who can only send messages in the organization
   in addition to the users who are in `can_create_bots_group`.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `bot_creation_policy` property, as the permission to create bot users
+  in the organization is now controlled by two new realm settings,
+  `can_create_bots_group` and `can_create_write_only_bots_group`.
 
 **Feature level 343**
 
