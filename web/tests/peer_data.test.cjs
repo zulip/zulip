@@ -17,6 +17,7 @@ const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const {set_current_user} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
+const user_groups = zrequire("user_groups");
 
 set_current_user({});
 
@@ -52,6 +53,14 @@ const bot_botson = {
     role: 300,
 };
 
+const nobody_group = {
+    name: "Nobody",
+    id: 1,
+    members: new Set([]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+
 function contains_sub(subs, sub) {
     return subs.some((s) => s.name === sub.name);
 }
@@ -64,6 +73,10 @@ function test(label, f) {
         people.init();
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
+
+        user_groups.initialize({
+            realm_user_groups: [nobody_group],
+        });
 
         f({override});
     });
@@ -96,7 +109,12 @@ test("unsubscribe", () => {
 });
 
 test("subscribers", () => {
-    const sub = {name: "Rome", subscribed: true, stream_id: 1001};
+    const sub = {
+        name: "Rome",
+        subscribed: true,
+        stream_id: 1001,
+        can_administer_channel_group: nobody_group.id,
+    };
     stream_data.add_sub(sub);
 
     people.add_active_user(fred);

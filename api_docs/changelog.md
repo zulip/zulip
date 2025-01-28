@@ -33,6 +33,10 @@ format used by the Zulip server that they are interacting with.
   organization administrators can modify all the settings of a private
   channel without having access to it. They cannot add subscribers to
   the channel without having access to it.
+* [`GET /events`](/api/get-events): If a user is a channel
+  administrator for a private channel they are not subscribed to. That
+  channel will now appear either in the `unsubscribed` or
+  `never_subscribed` list in subscription info.
 
 **Feature level 343**
 

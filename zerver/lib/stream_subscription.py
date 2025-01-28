@@ -8,6 +8,7 @@ from typing import Any
 
 from django.db.models import Q, QuerySet
 
+from zerver.lib.user_groups import get_user_group_member_ids
 from zerver.models import AlertWord, Realm, Recipient, Stream, Subscription, UserProfile, UserTopic
 
 
@@ -205,20 +206,22 @@ def bulk_get_subscriber_peer_info(
     subscribed_ids = {}
     private_peer_dict = {}
 
-    private_stream_ids = {stream.id for stream in streams if stream.invite_only}
+    private_streams = {stream for stream in streams if stream.invite_only}
+    private_stream_ids = {stream.id for stream in private_streams}
     public_stream_ids = {stream.id for stream in streams if not stream.invite_only}
 
     stream_user_ids = get_user_ids_for_streams(private_stream_ids | public_stream_ids)
 
-    if private_stream_ids:
+    if private_streams:
         realm_admin_ids = {user.id for user in realm.get_admin_users_and_bots()}
 
-        for stream_id in private_stream_ids:
+        for stream in private_streams:
             # Realm admins can see all private stream
             # subscribers.
-            subscribed_user_ids = stream_user_ids.get(stream_id, set())
-            subscribed_ids[stream_id] = subscribed_user_ids
-            private_peer_dict[stream_id] = subscribed_user_ids | realm_admin_ids
+            subscribed_user_ids = stream_user_ids.get(stream.id, set())
+            subscribed_ids[stream.id] = subscribed_user_ids
+            channel_admin_ids = set(get_user_group_member_ids(stream.can_administer_channel_group))
+            private_peer_dict[stream.id] = subscribed_user_ids | realm_admin_ids | channel_admin_ids
 
     for stream_id in public_stream_ids:
         subscribed_user_ids = stream_user_ids.get(stream_id, set())

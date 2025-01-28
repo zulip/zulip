@@ -33,6 +33,7 @@ from zerver.lib.types import (
     SubscriptionInfo,
     SubscriptionStreamDict,
 )
+from zerver.lib.user_groups import get_recursive_membership_groups
 from zerver.models import Realm, Stream, Subscription, UserProfile
 from zerver.models.streams import get_all_streams
 
@@ -336,16 +337,30 @@ def validate_user_access_to_subscribers(user_profile: UserProfile | None, stream
     * The stream is invite only, requesting_user is passed, and that user
       does not subscribe to the stream.
     """
+    user_recursive_group_ids: set[int] = set()
+    # Optimization for the organization administrator code path. We
+    # don't explicitly grant realm admins this permission, but admins
+    # implicitly have the can_administer_channel_group permission for
+    # all channels. user_recursive_group_ids is used to check the
+    # membership of the current user in can_administer_channel_group
+    # which we don't need to calculate in case of a realm admin.
+    if user_profile and not user_profile.is_realm_admin:
+        user_recursive_group_ids = set(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+        )
+
     validate_user_access_to_subscribers_helper(
         user_profile,
         {
             "realm_id": stream.realm_id,
             "is_web_public": stream.is_web_public,
             "invite_only": stream.invite_only,
+            "can_administer_channel_group_id": stream.can_administer_channel_group_id,
         },
         # We use a lambda here so that we only compute whether the
         # user is subscribed if we have to
         lambda user_profile: subscribed_to_stream(user_profile, stream.id),
+        user_recursive_group_ids,
     )
 
 
@@ -353,6 +368,7 @@ def validate_user_access_to_subscribers_helper(
     user_profile: UserProfile | None,
     stream_dict: Mapping[str, Any],
     check_user_subscribed: Callable[[UserProfile], bool],
+    user_recursive_group_ids: set[int],
 ) -> None:
     """Helper for validate_user_access_to_subscribers that doesn't require
     a full stream object.  This function is a bit hard to read,
@@ -398,7 +414,10 @@ def validate_user_access_to_subscribers_helper(
         raise JsonableError(_("Subscriber data is not available for this channel"))
 
     # Organization administrators can view subscribers for all streams.
-    if user_profile.is_realm_admin:
+    if (
+        user_profile.is_realm_admin
+        or stream_dict["can_administer_channel_group_id"] in user_recursive_group_ids
+    ):
         return
 
     if stream_dict["invite_only"] and not check_user_subscribed(user_profile):
@@ -415,6 +434,17 @@ def bulk_get_subscriber_user_ids(
     is_subscribed: bool
     check_user_subscribed = lambda user_profile: is_subscribed
 
+    user_recursive_group_ids = set()
+    # Optimization for the organization administrator code path. We
+    # don't explicitly grant realm admins this permission, but admins
+    # implicitly have the can_administer_channel_group permission for
+    # all channels. user_recursive_group_ids is used to check the
+    # membership of the current user in can_administer_channel_group
+    # which we don't need to calculate in case of a realm admin.
+    if not user_profile.is_realm_admin:
+        user_recursive_group_ids = set(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+        )
     for stream_dict in stream_dicts:
         stream_id = stream_dict["id"]
         is_subscribed = stream_id in subscribed_stream_ids
@@ -424,6 +454,7 @@ def bulk_get_subscriber_user_ids(
                 user_profile,
                 stream_dict,
                 check_user_subscribed,
+                user_recursive_group_ids,
             )
         except JsonableError:
             continue
@@ -493,7 +524,10 @@ def get_subscribers_query(
 
 
 def has_metadata_access_to_previously_subscribed_stream(
-    user_profile: UserProfile, stream_dict: SubscriptionStreamDict
+    user_profile: UserProfile,
+    stream_dict: SubscriptionStreamDict,
+    user_recursive_group_ids: set[int],
+    can_administer_channel_group_id: int,
 ) -> bool:
     if stream_dict["is_web_public"]:
         return True
@@ -502,7 +536,10 @@ def has_metadata_access_to_previously_subscribed_stream(
         return False
 
     if stream_dict["invite_only"]:
-        return user_profile.is_realm_admin
+        return (
+            user_profile.is_realm_admin
+            or can_administer_channel_group_id in user_recursive_group_ids
+        )
 
     return True
 
@@ -576,6 +613,17 @@ def gather_subscriptions_helper(
     unsubscribed: list[SubscriptionStreamDict] = []
     never_subscribed: list[NeverSubscribedStreamDict] = []
 
+    user_recursive_group_ids = set()
+    # Optimization for the organization administrator code path. We
+    # don't explicitly grant realm admins this permission, but admins
+    # implicitly have the can_administer_channel_group permission for
+    # all channels. user_recursive_group_ids is used to check the
+    # membership of the current user in can_administer_channel_group
+    # which we don't need to calculate in case of a realm admin.
+    if not user_profile.is_realm_admin:
+        user_recursive_group_ids = set(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+        )
     sub_unsub_stream_ids = set()
     for sub_dict in sub_dicts:
         stream_id = get_stream_id(sub_dict)
@@ -595,7 +643,10 @@ def gather_subscriptions_helper(
         if is_active:
             subscribed.append(stream_dict)
         else:
-            if has_metadata_access_to_previously_subscribed_stream(user_profile, stream_dict):
+            can_administer_channel_group_id = raw_stream_dict["can_administer_channel_group_id"]
+            if has_metadata_access_to_previously_subscribed_stream(
+                user_profile, stream_dict, user_recursive_group_ids, can_administer_channel_group_id
+            ):
                 """
                 User who are no longer subscribed to a stream that they don't have
                 metadata access to will not receive metadata related to this stream
@@ -621,7 +672,9 @@ def gather_subscriptions_helper(
 
     for raw_stream_dict in never_subscribed_streams:
         is_public = not raw_stream_dict["invite_only"]
-        if is_public or user_profile.is_realm_admin:
+        can_administer_channel_group_id = raw_stream_dict["can_administer_channel_group_id"]
+        is_channel_admin = can_administer_channel_group_id in user_recursive_group_ids
+        if is_public or user_profile.is_realm_admin or is_channel_admin:
             slim_stream_dict = build_stream_dict_for_never_sub(
                 raw_stream_dict=raw_stream_dict,
                 recent_traffic=recent_traffic,

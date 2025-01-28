@@ -535,7 +535,11 @@ export function can_edit_description(sub: StreamSubscription): boolean {
 
 export function can_view_subscribers(sub: StreamSubscription): boolean {
     // Guest users can't access subscribers of any(public or private) non-subscribed streams.
-    return current_user.is_admin || sub.subscribed || (!current_user.is_guest && !sub.invite_only);
+    return (
+        sub.subscribed ||
+        (!current_user.is_guest && !sub.invite_only) ||
+        can_change_permissions(sub)
+    );
 }
 
 export function can_subscribe_others(sub: StreamSubscription): boolean {
