@@ -82,6 +82,7 @@ from zerver.lib.streams import (
     ensure_stream,
     filter_stream_authorization,
     list_to_streams,
+    user_has_content_access,
 )
 from zerver.lib.subscription_info import (
     bulk_get_subscriber_user_ids,
@@ -2125,12 +2126,18 @@ class StreamAdminTest(ZulipTestCase):
     def test_non_admin_cannot_access_unsub_private_stream(self) -> None:
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", is_system_group=True, realm=hamlet.realm
+        )
 
         self.login_user(hamlet)
         result = self.subscribe_via_post(
             hamlet,
             ["private_stream_1"],
-            dict(principals=orjson.dumps([iago.id]).decode()),
+            dict(
+                principals=orjson.dumps([iago.id]).decode(),
+                can_administer_channel_group=nobody_group.id,
+            ),
             invite_only=True,
         )
         self.assert_json_success(result)
@@ -2669,26 +2676,81 @@ class StreamAdminTest(ZulipTestCase):
             f"'{setting_name}' setting cannot be set to 'role:internet' group.",
         )
 
-        # For private streams, even admins must be subscribed to the
-        # stream to change the setting.
+        # For private streams, realm admins need not be subscribed to
+        # the stream to change the setting as they can administer the
+        # channel by default.
         stream = get_stream("stream_name2", realm)
         params[setting_name] = orjson.dumps({"new": moderators_system_group.id}).decode()
         result = self.client_patch(
             f"/json/streams/{stream.id}",
             params,
         )
-        self.assert_json_error(result, "Invalid channel ID")
+        if setting_name in Stream.stream_permission_group_settings_requiring_content_access:
+            self.assert_json_error(result, "Invalid channel ID")
+        else:
+            self.assert_json_success(result)
+            stream = get_stream("stream_name2", realm)
+            self.assertEqual(getattr(stream, setting_name).id, moderators_system_group.id)
 
-        self.subscribe(user_profile, "stream_name2")
+        # For private streams, channel admins need not be subscribed to
+        # the stream to change the setting as they can administer the
+        # channel by default.
+        shiva_group = self.create_or_update_anonymous_group_for_setting([shiva], [])
+        do_change_stream_group_based_setting(
+            stream,
+            "can_administer_channel_group",
+            shiva_group,
+            acting_user=None,
+        )
+        self.assertTrue(is_user_in_group(stream.can_administer_channel_group, shiva))
+        params[setting_name] = orjson.dumps({"new": owners_group.id}).decode()
+        self.login_user(shiva)
         result = self.client_patch(
             f"/json/streams/{stream.id}",
             params,
         )
-        self.assert_json_success(result)
-        stream = get_stream("stream_name2", realm)
-        self.assertEqual(getattr(stream, setting_name).id, moderators_system_group.id)
-        # Unsubscribe user from private stream to test next setting.
-        self.unsubscribe(user_profile, "stream_name2")
+        if setting_name in Stream.stream_permission_group_settings_requiring_content_access:
+            self.assert_json_error(result, "Invalid channel ID")
+            shiva_group = self.create_or_update_anonymous_group_for_setting([shiva], [])
+            do_change_stream_group_based_setting(
+                stream,
+                "can_add_subscribers_group",
+                shiva_group,
+                acting_user=None,
+            )
+            result = self.client_patch(
+                f"/json/streams/{stream.id}",
+                params,
+            )
+            self.assert_json_success(result)
+            stream = get_stream("stream_name2", realm)
+            self.assertEqual(getattr(stream, setting_name).id, owners_group.id)
+        else:
+            self.assert_json_success(result)
+            stream = get_stream("stream_name2", realm)
+            self.assertEqual(getattr(stream, setting_name).id, owners_group.id)
+
+        # Guest user cannot be a channel admin for a public channel.
+        # `user_has_permission_for_group_setting` will not allow a guest
+        # to be a part of `can_administer_channel_group` since that
+        # group has `allow_everyone_group` set to false.
+        stream = get_stream("stream_name1", realm)
+        polonius = self.example_user("polonius")
+        polonius_group = self.create_or_update_anonymous_group_for_setting([polonius], [])
+        do_change_stream_group_based_setting(
+            stream,
+            "can_administer_channel_group",
+            polonius_group,
+            acting_user=None,
+        )
+        subbed_users = self.users_subscribed_to_stream(stream.name, polonius.realm)
+        self.assertNotIn(polonius, subbed_users)
+        self.login_user(polonius)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            params,
+        )
+        self.assert_json_error(result, "Invalid channel ID")
 
     def test_changing_stream_permission_settings(self) -> None:
         self.make_stream("stream_name1")
@@ -7601,6 +7663,72 @@ class AccessStreamTest(ZulipTestCase):
         self.assertTrue(can_access_stream_history(guest_user_profile, stream))
         assert sub_ret is None
         self.assertEqual(stream.id, stream_ret.id)
+
+    def test_has_content_access(self) -> None:
+        guest_user = self.example_user("polonius")
+        aaron = self.example_user("aaron")
+        realm = guest_user.realm
+        web_public_stream = self.make_stream("web_public_stream", realm=realm, is_web_public=True)
+        private_stream = self.make_stream("private_stream", realm=realm, invite_only=True)
+        public_stream = self.make_stream("public_stream", realm=realm, invite_only=False)
+
+        # Even guest user should have access to web public channel.
+        self.assertEqual(
+            user_has_content_access(guest_user, web_public_stream, is_subscribed=False), True
+        )
+
+        # User should have access to private channel if they are
+        # subscribed to it
+        self.assertEqual(user_has_content_access(aaron, private_stream, is_subscribed=True), True)
+        self.assertEqual(user_has_content_access(aaron, private_stream, is_subscribed=False), False)
+
+        # Non guest user should have access to public channel
+        # regardless of their subscription to the channel.
+        self.assertEqual(user_has_content_access(aaron, public_stream, is_subscribed=True), True)
+        self.assertEqual(user_has_content_access(aaron, public_stream, is_subscribed=False), True)
+
+        # Guest user should have access to public channel only if they
+        # are subscribed to it.
+        self.assertEqual(
+            user_has_content_access(guest_user, public_stream, is_subscribed=False), False
+        )
+        self.assertEqual(
+            user_has_content_access(guest_user, public_stream, is_subscribed=True), True
+        )
+
+        # User should be able to access private channel if they are
+        # part of `can_add_subscribers_group` but not subscribed to the
+        # channel.
+        aaron_group = self.create_or_update_anonymous_group_for_setting([aaron], [])
+        do_change_stream_group_based_setting(
+            private_stream,
+            "can_add_subscribers_group",
+            aaron_group,
+            acting_user=None,
+        )
+        self.assertEqual(user_has_content_access(aaron, private_stream, is_subscribed=False), True)
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            private_stream,
+            "can_add_subscribers_group",
+            nobody_group,
+            acting_user=None,
+        )
+
+        # User should not be able to access private channel if they are
+        # part of `can_administer_channel_group` but not subscribed to
+        # the channel.
+        aaron_group = self.create_or_update_anonymous_group_for_setting([aaron], [])
+        do_change_stream_group_based_setting(
+            private_stream,
+            "can_administer_channel_group",
+            aaron_group,
+            acting_user=None,
+        )
+        self.assertEqual(user_has_content_access(aaron, private_stream, is_subscribed=False), False)
+        self.assertEqual(user_has_content_access(aaron, private_stream, is_subscribed=True), True)
 
 
 class StreamTrafficTest(ZulipTestCase):

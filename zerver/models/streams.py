@@ -177,6 +177,13 @@ class Stream(models.Model):
         ),
     }
 
+    stream_permission_group_settings_requiring_content_access = [
+        "can_add_subscribers_group",
+    ]
+    assert set(stream_permission_group_settings_requiring_content_access).issubset(
+        stream_permission_group_settings.keys()
+    )
+
     class Meta:
         indexes = [
             models.Index(Upper("name"), name="upper_stream_name_idx"),

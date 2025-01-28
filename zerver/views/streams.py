@@ -65,7 +65,7 @@ from zerver.lib.streams import (
     access_default_stream_group_by_id,
     access_stream_by_id,
     access_stream_by_name,
-    access_stream_for_delete_or_update,
+    access_stream_for_delete_or_update_requiring_metadata_access,
     access_web_public_stream,
     check_stream_name_available,
     do_get_streams,
@@ -75,6 +75,7 @@ from zerver.lib.streams import (
     get_stream_permission_policy_name,
     list_to_streams,
     stream_to_dict,
+    user_has_content_access,
 )
 from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.topic import (
@@ -142,7 +143,9 @@ def user_directly_controls_user(user_profile: UserProfile, target: UserProfile) 
 def deactivate_stream_backend(
     request: HttpRequest, user_profile: UserProfile, stream_id: int
 ) -> HttpResponse:
-    (stream, sub) = access_stream_for_delete_or_update(user_profile, stream_id)
+    (stream, sub) = access_stream_for_delete_or_update_requiring_metadata_access(
+        user_profile, stream_id
+    )
     do_deactivate_stream(stream, acting_user=user_profile)
     return json_success(request)
 
@@ -266,9 +269,12 @@ def update_stream_backend(
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
 ) -> HttpResponse:
-    # We allow realm administrators to update the stream name and
-    # description even for private streams.
-    (stream, sub) = access_stream_for_delete_or_update(user_profile, stream_id)
+    # Most settings updates only require metadata access, not content
+    # access. We will check for content access further when and where
+    # required.
+    (stream, sub) = access_stream_for_delete_or_update_requiring_metadata_access(
+        user_profile, stream_id
+    )
 
     # Validate that the proposed state for permissions settings is permitted.
     if is_private is not None:
@@ -325,7 +331,7 @@ def update_stream_backend(
         raise JsonableError(_("Moderation request channel must be private."))
 
     if is_private is not None:
-        # We require even realm administrators to be actually
+        # We require even channel administrators to be actually
         # subscribed to make a private stream public, via this
         # stricted access_stream check.
         access_stream_by_id(user_profile, stream_id)
@@ -405,8 +411,10 @@ def update_stream_backend(
         if validate_group_setting_value_change(
             current_setting_api_value, new_setting_value, expected_current_setting_value
         ):
-            if sub is None and stream.invite_only:
-                # Admins cannot change this setting for unsubscribed private streams.
+            if (
+                setting_name in Stream.stream_permission_group_settings_requiring_content_access
+                and not user_has_content_access(user_profile, stream, is_subscribed=sub is not None)
+            ):
                 raise JsonableError(_("Invalid channel ID"))
             with transaction.atomic(durable=True):
                 user_group = access_user_group_for_setting(

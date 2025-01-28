@@ -29,6 +29,12 @@ format used by the Zulip server that they are interacting with.
   administrators can now unsubscribe other users even if they are not
   an organization administrator or part of
   `can_remove_subscribers_group`.
+* [`PATCH /streams/{stream_id}`](/api/update-stream),
+  [`DELETE /streams/{stream_id}`](/api/archive-stream): Channel and
+  organization administrators can modify all the settings requiring
+  only metadata access without having content access to it. They
+  cannot add subscribers to the channel or change it's privacy setting
+  without having content access to it.
 
 **Feature level 348**
 
