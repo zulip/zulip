@@ -171,9 +171,8 @@ below to see if you're missing anything:
 
 Error: {error_message}
 
-Feel free to reach out to the [Zulip development community]
-(https://chat.zulip.org/#narrow/channel/127-integrations) if you need
-further help!
+Feel free to reach out to the [Zulip development community](https://chat.zulip.org/#narrow/channel/127-integrations)
+if you need further help!
 """
 
 
