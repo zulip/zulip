@@ -82,10 +82,8 @@ class MessagesSummaryTestCase(ZulipTestCase):
         # requests occur, which would reflect a problem with how the
         # fixtures were set up.
         with self.settings(
-            TOPIC_SUMMARIZATION_MODEL="bedrock/meta.llama3-8b-instruct-v1:0",
-            AWS_ACCESS_KEY_ID="fakeKeyID",
-            AWS_SECRET_ACCESS_KEY="fakeAccessKey",
-            AWS_REGION_NAME="ap-south-1",
+            TOPIC_SUMMARIZATION_MODEL="groq/llama-3.3-70b-versatile",
+            TOPIC_SUMMARIZATION_API_KEY="test",
         ):
             input_tokens = fixture_data["response"]["usage"]["prompt_tokens"]
             output_tokens = fixture_data["response"]["usage"]["completion_tokens"]
