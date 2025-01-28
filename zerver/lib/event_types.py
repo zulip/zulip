@@ -176,17 +176,13 @@ class DirectMessageEvent(BaseEvent):
     message: MessageFieldForDirectMessageEvent
 
 
-class DraftFieldsCore(BaseModel):
+class DraftFields(BaseModel):
     id: int
     type: Literal["", "private", "stream"]
     to: list[int]
     topic: str
     content: str
-
-
-class DraftFields(DraftFieldsCore):
-    # TODO: fix types to avoid optional fields
-    timestamp: int | None = None
+    timestamp: int
 
 
 class DraftsAddEvent(BaseEvent):
