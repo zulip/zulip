@@ -148,7 +148,7 @@ export function build_page(): void {
         realm_email_changes_disabled: realm.realm_email_changes_disabled,
         realm_avatar_changes_disabled: realm.realm_avatar_changes_disabled,
         can_add_emojis: settings_data.user_can_add_custom_emoji(),
-        can_create_new_bots: settings_bots.can_create_new_bots(),
+        can_create_new_bots: settings_bots.can_create_incoming_webhooks(),
         realm_message_content_edit_limit_minutes:
             settings_components.get_realm_time_limits_in_minutes(
                 "realm_message_content_edit_limit_seconds",
@@ -194,7 +194,6 @@ export function build_page(): void {
         msg_edit_limit_dropdown_values: settings_config.msg_edit_limit_dropdown_values,
         msg_delete_limit_dropdown_values: settings_config.msg_delete_limit_dropdown_values,
         msg_move_limit_dropdown_values: settings_config.msg_move_limit_dropdown_values,
-        bot_creation_policy_values: settings_bots.bot_creation_policy_values,
         email_address_visibility_values: settings_config.email_address_visibility_values,
         waiting_period_threshold_dropdown_values:
             settings_config.waiting_period_threshold_dropdown_values,
@@ -259,7 +258,7 @@ export function build_page(): void {
     $("#settings_content .organization-box").html(rendered_admin_tab);
     $("#settings_content .alert").removeClass("show");
 
-    settings_bots.update_bot_settings_tip($("#admin-bot-settings-tip"), true);
+    settings_bots.update_bot_settings_tip($("#admin-bot-settings-tip"));
     settings_invites.update_invite_user_panel();
     insert_tip_box();
 
@@ -267,8 +266,6 @@ export function build_page(): void {
         demo_organizations_ui.insert_demo_organization_warning();
         demo_organizations_ui.handle_demo_organization_conversion();
     }
-
-    $("#id_realm_bot_creation_policy").val(realm.realm_bot_creation_policy);
 
     $("#id_realm_digest_weekday").val(realm.realm_digest_weekday);
 

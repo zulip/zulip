@@ -340,6 +340,16 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
+    # UserGroup which is allowed to create bots.
+    can_create_bots_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
+    # UserGroup which is allowed to create incoming webhooks.
+    can_create_write_only_bots_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # Global policy for who is allowed to use wildcard mentions in
     # streams with a large number of subscribers.  Anyone can use
     # wildcard mentions in small streams regardless of this setting.
@@ -697,6 +707,13 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
         ),
+        can_create_bots_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.MEMBERS,
+        ),
         can_create_groups=GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
@@ -730,6 +747,13 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
                 SystemGroups.OWNERS,
                 SystemGroups.NOBODY,
             ],
+        ),
+        can_create_write_only_bots_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.MEMBERS,
         ),
         can_delete_any_message_group=GroupPermissionSetting(
             require_system_group=False,
@@ -1180,6 +1204,8 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "can_add_custom_emoji_group__named_user_group",
         "can_add_subscribers_group",
         "can_add_subscribers_group__named_user_group",
+        "can_create_bots_group",
+        "can_create_bots_group__named_user_group",
         "can_create_groups",
         "can_create_groups__named_user_group",
         "can_create_public_channel_group",
@@ -1188,6 +1214,8 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "can_create_private_channel_group__named_user_group",
         "can_create_web_public_channel_group",
         "can_create_web_public_channel_group__named_user_group",
+        "can_create_write_only_bots_group",
+        "can_create_write_only_bots_group__named_user_group",
         "can_delete_any_message_group",
         "can_delete_any_message_group__named_user_group",
         "can_delete_own_message_group",

@@ -19,7 +19,6 @@ mock_esm("../src/loading", {
 mock_esm("../src/scroll_util", {scroll_element_into_container: noop});
 set_global("document", "document-stub");
 
-const settings_bots = zrequire("settings_bots");
 const settings_account = zrequire("settings_account");
 const settings_components = zrequire("settings_components");
 const settings_org = zrequire("settings_org");
@@ -100,7 +99,6 @@ function createSaveButtons(subsection) {
 
 function test_submit_settings_form(override, submit_form) {
     Object.assign(realm, {
-        realm_bot_creation_policy: settings_bots.bot_creation_policy_values.restricted.code,
         realm_waiting_period_threshold: 1,
         realm_default_language: '"es"',
     });
@@ -129,22 +127,7 @@ function test_submit_settings_form(override, submit_form) {
 
     $("#id_realm_waiting_period_threshold").val(10);
 
-    const $bot_creation_policy_elem = $("#id_realm_bot_creation_policy");
-    $bot_creation_policy_elem.val("1");
-    $bot_creation_policy_elem.attr("id", "id_realm_bot_creation_policy");
-    $bot_creation_policy_elem.data = () => "number";
-
     let $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
-    $subsection_elem.set_find_results(".prop-element", [$bot_creation_policy_elem]);
-
-    patched = false;
-    submit_form.call({to_$: () => $(".save-discard-widget-button.save-button")}, ev);
-    assert.ok(patched);
-
-    let expected_value = {
-        bot_creation_policy: 1,
-    };
-    assert.deepEqual(data, expected_value);
 
     subsection = "user-defaults";
     stubs = createSaveButtons(subsection);
@@ -155,7 +138,6 @@ function test_submit_settings_form(override, submit_form) {
     const $realm_default_language_elem = $("#id_realm_default_language");
     $realm_default_language_elem.val("en");
     $realm_default_language_elem.attr("id", "id_realm_default_language");
-    $realm_default_language_elem.data = () => "string";
 
     $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
     $subsection_elem.set_find_results(".prop-element", [$realm_default_language_elem]);
@@ -163,7 +145,7 @@ function test_submit_settings_form(override, submit_form) {
     submit_form.call({to_$: () => $(".save-discard-widget-button.save-button")}, ev);
     assert.ok(patched);
 
-    expected_value = {
+    const expected_value = {
         default_language: "en",
     };
     assert.deepEqual(data, expected_value);
@@ -566,12 +548,7 @@ test("set_up", ({override, override_rewire}) => {
     // elements involved in disabling the can_create_groups input.
     override(realm, "zulip_plan_is_not_limited", true);
 
-    override_rewire(settings_components, "get_input_element_value", (elem) => {
-        if ($(elem).data() === "number") {
-            return Number.parseInt($(elem).val(), 10);
-        }
-        return $(elem).val();
-    });
+    override_rewire(settings_components, "get_input_element_value", (elem) => $(elem).val());
 
     // TEST set_up() here, but this mostly just allows us to
     // get access to the click handlers.

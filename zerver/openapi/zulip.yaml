@@ -4480,6 +4480,29 @@ paths:
                                             **Changes**: New in Zulip 10.0 (feature level 299). Previously
                                             `user_group_edit_policy` field used to control the permission
                                             to create user groups.
+                                    can_create_bots_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining
+                                            the set of users who have permission to create all types of bot users
+                                            in the organization. See also `can_create_write_only_bots_group`.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 344). Previously, this
+                                            permission was controlled by the enum `bot_creation_policy`. Values
+                                            were 1=Members, 2=Generic bots limited to administrators, 3=Administrators.
+                                    can_create_write_only_bots_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining
+                                            the set of users who have permission to create bot users that
+                                            can only send messages in the organization, i.e. incoming webhooks,
+                                            in addition to the users who are present in `can_create_bots_group`.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 344). Previously, this
+                                            permission was controlled by the enum `bot_creation_policy`. Values
+                                            were 1=Members, 2=Generic bots limited to administrators, 3=Administrators.
                                     can_create_public_channel_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -16730,6 +16753,29 @@ paths:
                               **Changes**: New in Zulip 10.0 (feature level 299). Previously
                               `realm_user_group_edit_policy` field used to control the
                               permission to create user groups.
+                      realm_can_create_bots_group:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining
+                              the set of users who have permission to create all types of bot users
+                              in the organization. See also `can_create_write_only_bots_group`.
+
+                              **Changes**: New in Zulip 10.0 (feature level 344). Previously, this
+                              permission was controlled by the enum `bot_creation_policy`. Values
+                              were 1=Members, 2=Generic bots limited to administrators, 3=Administrators.
+                      realm_can_create_write_only_bots_group:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining
+                              the set of users who have permission to create bot users that
+                              can only send messages in the organization, i.e. incoming webhooks,
+                              in addition to the users who are present in `can_create_bots_group`.
+
+                              **Changes**: New in Zulip 10.0 (feature level 344). Previously, this
+                              permission was controlled by the enum `bot_creation_policy`. Values
+                              were 1=Members, 2=Generic bots limited to administrators, 3=Administrators.
                       realm_can_manage_all_groups:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"

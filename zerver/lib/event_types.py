@@ -512,10 +512,12 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     can_access_all_users_group: int | AnonymousSettingGroupDict | None = None
     can_add_custom_emoji_group: int | AnonymousSettingGroupDict | None = None
     can_add_subscribers_group: int | AnonymousSettingGroupDict | None = None
+    can_create_bots_group: int | AnonymousSettingGroupDict | None = None
     can_create_groups: int | AnonymousSettingGroupDict | None = None
     can_create_public_channel_group: int | AnonymousSettingGroupDict | None = None
     can_create_private_channel_group: int | AnonymousSettingGroupDict | None = None
     can_create_web_public_channel_group: int | AnonymousSettingGroupDict | None = None
+    can_create_write_only_bots_group: int | AnonymousSettingGroupDict | None = None
     can_delete_any_message_group: int | AnonymousSettingGroupDict | None = None
     can_delete_own_message_group: int | AnonymousSettingGroupDict | None = None
     can_invite_users_group: int | AnonymousSettingGroupDict | None = None

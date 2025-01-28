@@ -266,13 +266,6 @@ exports.fixtures = {
         realm_id: 2,
     },
 
-    realm__update__bot_creation_policy: {
-        type: "realm",
-        op: "update",
-        property: "bot_creation_policy",
-        value: 1,
-    },
-
     realm__update__default_code_block_language: {
         type: "realm",
         op: "update",
@@ -363,6 +356,7 @@ exports.fixtures = {
             },
             can_add_custom_emoji_group: 3,
             can_add_subscribers_group: 3,
+            can_create_bots_group: 3,
             can_create_public_channel_group: 3,
             can_invite_users_group: 3,
             can_move_messages_between_topics_group: 3,

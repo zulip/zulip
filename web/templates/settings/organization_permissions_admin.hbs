@@ -335,12 +335,13 @@
                 {{> settings_save_discard_widget section_name="other-permissions" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
-                <div class="input-group">
-                    <label for="id_realm_bot_creation_policy" class="settings-field-label">{{t "Who can add bots" }}</label>
-                    <select name="realm_bot_creation_policy" class="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_bot_creation_policy" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=bot_creation_policy_values}}
-                    </select>
-                </div>
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_create_write_only_bots_group"
+                  label=(t 'Who can create bots that send messages into Zulip')}}
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_create_bots_group"
+                  label=(t 'Who can create any bot')}}
 
                 {{> group_setting_value_pill_input
                   setting_name="realm_can_add_custom_emoji_group"
