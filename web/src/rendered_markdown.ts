@@ -3,6 +3,7 @@ import {isValid, parseISO} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import render_channel_message_link from "../templates/channel_message_link.hbs";
 import code_buttons_container from "../templates/code_buttons_container.hbs";
 import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import render_mention_content_wrapper from "../templates/mention_content_wrapper.hbs";
@@ -235,7 +236,7 @@ export const update_elements = ($content: JQuery): void => {
         }
     });
 
-    $content.find("a.stream-topic").each(function (): void {
+    $content.find("a.stream-topic, a.message-link").each(function (): void {
         const narrow_url = $(this).attr("href");
         assert(narrow_url !== undefined);
         const channel_topic = hash_util.decode_stream_topic_from_url(
@@ -251,14 +252,22 @@ export const update_elements = ($content: JQuery): void => {
             const topic_name = channel_topic.topic_name;
             assert(topic_name !== undefined);
             const topic_display_name = util.get_final_topic_display_name(topic_name);
-            const topic_link_html = render_topic_link({
-                channel_id: channel_topic.stream_id,
+            const context = {
                 channel_name,
                 topic_display_name,
                 is_empty_string_topic: topic_name === "",
                 href: narrow_url,
-            });
-            $(this).replaceWith($(topic_link_html));
+            };
+            if ($(this).hasClass("stream-topic")) {
+                const topic_link_html = render_topic_link({
+                    channel_id: channel_topic.stream_id,
+                    ...context,
+                });
+                $(this).replaceWith($(topic_link_html));
+            } else {
+                const message_link_html = render_channel_message_link(context);
+                $(this).replaceWith($(message_link_html));
+            }
         }
     });
 

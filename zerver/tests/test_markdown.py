@@ -3171,6 +3171,20 @@ class MarkdownStreamMentionTests(ZulipTestCase):
             ".</p>",
         )
 
+    def test_empty_string_topic_message_link(self) -> None:
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        sender = self.example_user("othello")
+        msg = Message(
+            sender=sender,
+            sending_client=get_client("test"),
+            realm=sender.realm,
+        )
+        content = "#**Denmark>@123**"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            f'<p><a class="message-link" href="/#narrow/channel/{denmark.id}-{denmark.name}/topic//near/123">#{denmark.name} &gt; <em>{Message.EMPTY_TOPIC_FALLBACK_NAME}</em> @ 💬</a></p>',
+        )
+
     def test_possible_stream_names(self) -> None:
         content = """#**test here**
             This mentions #**Denmark** too.

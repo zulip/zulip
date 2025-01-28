@@ -200,7 +200,7 @@ STREAM_TOPIC_MESSAGE_LINK_REGEX = rf"""
                      \#\*\*                          # and after hash sign followed by double asterisks
                          (?P<stream_name>[^\*>]+)    # stream name can contain anything except >
                          >                           # > acts as separator
-                         (?P<topic_name>[^\*]+)      # topic name can contain anything
+                         (?P<topic_name>[^\*]*)      # topic name can be an empty string or contain anything
                          @
                          (?P<message_id>\d+)         # message id
                      \*\*                            # ends by double asterisks
@@ -2097,8 +2097,17 @@ class StreamTopicMessagePattern(StreamTopicMessageProcessor):
         topic_url = hash_util_encode(topic_name)
         link = f"/#narrow/channel/{stream_url}/topic/{topic_url}/near/{message_id}"
         el.set("href", link)
-        text = f"#{stream_name} > {topic_name} @ 💬"
-        el.text = markdown.util.AtomicString(text)
+
+        if topic_name == "":
+            topic_el = Element("em")
+            topic_el.text = Message.EMPTY_TOPIC_FALLBACK_NAME
+            el.text = markdown.util.AtomicString(f"#{stream_name} > ")
+            el.append(topic_el)
+            topic_el.tail = markdown.util.AtomicString(" @ 💬")
+        else:
+            text = f"#{stream_name} > {topic_name} @ 💬"
+            el.text = markdown.util.AtomicString(text)
+
         return el, m.start(), m.end()
 
 

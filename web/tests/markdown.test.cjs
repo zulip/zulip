@@ -427,6 +427,10 @@ test("marked", ({override}) => {
                 '<p>Look at <a class="message-link" href="#narrow/channel/1-Denmark/topic/message_link/near/100">#Denmark &gt; message_link @ 💬</a></p>',
         },
         {
+            input: "Look at #**Denmark>@100**",
+            expected: `<p>Look at <a class="message-link" href="#narrow/channel/1-Denmark/topic//near/100">#Denmark &gt; <span class="empty-topic-display">translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}</span> @ 💬</a></p>`,
+        },
+        {
             input: "Look at #**Unknown>message_link@100**",
             expected: "<p>Look at #**Unknown&gt;message_link@100**</p>",
         },

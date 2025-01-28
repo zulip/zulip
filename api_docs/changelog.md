@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 346**
+
+* [Markdown message formatting](/api/message-formatting#links-to-channels-topics-and-messages):
+  Added support for empty string as a valid topic name in syntaxes
+  for linking to topics and messages.
+
 **Feature level 345**
 
 * `POST /remotes/server/register/transfer`,
