@@ -7,8 +7,8 @@ from django.conf import settings
 from typing_extensions import override
 
 from analytics.models import UserCount
+from zerver.actions.message_summary import INPUT_COST_PER_GIGATOKEN, OUTPUT_COST_PER_GIGATOKEN
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.views.message_summary import INPUT_COST_PER_GIGATOKEN, OUTPUT_COST_PER_GIGATOKEN
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 warnings.filterwarnings("ignore", category=DeprecationWarning, module="pydantic")
