@@ -1194,3 +1194,22 @@ export const export_type_values = {
         default: true,
     },
 };
+
+export const bot_type_values = {
+    default_bot: {
+        type_id: 1,
+        name: $t({defaultMessage: "Generic bot"}),
+    },
+    incoming_webhook_bot: {
+        type_id: 2,
+        name: $t({defaultMessage: "Incoming webhook"}),
+    },
+    outgoing_webhook_bot: {
+        type_id: 3,
+        name: $t({defaultMessage: "Outgoing webhook"}),
+    },
+    embedded_bot: {
+        type_id: 4,
+        name: $t({defaultMessage: "Embedded bot"}),
+    },
+};

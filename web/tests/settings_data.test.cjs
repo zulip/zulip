@@ -501,21 +501,8 @@ run_test("can_remove_members_user_group", ({override}) => {
 });
 
 run_test("type_id_to_string", () => {
-    page_params.bot_types = [
-        {
-            type_id: 1,
-            name: "Generic bot",
-            allowed: true,
-        },
-        {
-            type_id: 2,
-            name: "Incoming webhook",
-            allowed: true,
-        },
-    ];
-
-    assert.equal(settings_data.bot_type_id_to_string(1), "Generic bot");
-    assert.equal(settings_data.bot_type_id_to_string(2), "Incoming webhook");
+    assert.equal(settings_data.bot_type_id_to_string(1), "translated: Generic bot");
+    assert.equal(settings_data.bot_type_id_to_string(2), "translated: Incoming webhook");
     assert.equal(settings_data.bot_type_id_to_string(5), undefined);
 });
 
