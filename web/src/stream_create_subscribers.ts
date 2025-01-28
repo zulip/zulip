@@ -11,6 +11,7 @@ import {current_user} from "./state_data.ts";
 import * as stream_create_subscribers_data from "./stream_create_subscribers_data.ts";
 import type {CombinedPillContainer} from "./typeahead_helper.ts";
 import * as user_groups from "./user_groups.ts";
+import * as user_pill from "./user_pill.ts";
 import * as user_sort from "./user_sort.ts";
 
 export let pill_widget: CombinedPillContainer;
@@ -113,7 +114,6 @@ export function build_widgets(): void {
                 user_id: user.user_id,
                 full_name: user.full_name,
                 is_current_user: user.user_id === current_user_id,
-                disabled: stream_create_subscribers_data.must_be_subscribed(user.user_id),
                 img_src: people.small_avatar_url_for_person(user),
                 soft_removed: stream_create_subscribers_data.user_id_in_soft_remove_list(
                     user.user_id,
@@ -137,6 +137,8 @@ export function build_widgets(): void {
             return $(`#${CSS.escape("user_checkbox_" + user.user_id)}`);
         },
     });
+    const current_person = people.get_by_user_id(current_user.user_id);
+    user_pill.append_user(current_person, pill_widget);
 }
 
 export function add_user_id_to_new_stream(user_id: number): void {
