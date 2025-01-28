@@ -1,6 +1,6 @@
-import json
 from typing import Any
 
+import orjson
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
@@ -47,7 +47,7 @@ def format_zulip_messages_for_model(zulip_messages: list[dict[str, Any]]) -> str
         {"sender": message["sender_full_name"], "content": message["content"]}
         for message in zulip_messages
     ]
-    return json.dumps(zulip_messages_list)
+    return orjson.dumps(zulip_messages_list).decode()
 
 
 def make_message(content: str, role: str = "user") -> dict[str, str]:
