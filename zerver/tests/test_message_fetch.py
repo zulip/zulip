@@ -334,6 +334,18 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
         )
 
+    def test_negated_is_dm_with_dm_operator(self) -> None:
+        expected_error_message = (
+            "Invalid narrow operator: No message can be both a channel message and direct message"
+        )
+        is_term = NarrowParameter(operator="is", operand="dm", negated=True)
+        self._build_query(is_term)
+
+        topic_term = NarrowParameter(operator="dm", operand=self.othello_email)
+        with self.assertRaises(BadNarrowOperatorError) as error:
+            self._build_query(topic_term)
+        self.assertEqual(expected_error_message, str(error.exception))
+
     def test_combined_channel_dm(self) -> None:
         expected_error_message = (
             "Invalid narrow operator: No message can be both a channel message and direct message"
@@ -350,6 +362,20 @@ class NarrowBuilderTest(ZulipTestCase):
         with self.assertRaises(BadNarrowOperatorError) as error:
             self._build_query(channels_term)
         self.assertEqual(expected_error_message, str(error.exception))
+
+    def test_combined_channel_with_negated_is_dm(self) -> None:
+        dm_term = NarrowParameter(operator="is", operand="dm", negated=True)
+        self._build_query(dm_term)
+
+        channel_term = NarrowParameter(operator="channels", operand="public")
+        self._build_query(channel_term)
+
+    def test_combined_negated_channel_with_is_dm(self) -> None:
+        dm_term = NarrowParameter(operator="is", operand="dm")
+        self._build_query(dm_term)
+
+        channel_term = NarrowParameter(operator="channels", operand="public", negated=True)
+        self._build_query(channel_term)
 
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
         self,
