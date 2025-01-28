@@ -262,7 +262,7 @@ export function show_settings_for(node: HTMLElement): void {
         is_admin: current_user.is_admin,
         org_level_message_retention_setting: get_display_text_for_realm_message_retention_setting(),
         can_access_stream_email: stream_data.can_access_stream_email(sub),
-        group_setting_labels: settings_config.group_setting_labels.stream,
+        group_setting_labels: settings_config.all_group_setting_labels.stream,
     });
     scroll_util.get_content_element($("#stream_settings")).html(html);
 
