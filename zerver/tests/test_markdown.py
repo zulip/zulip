@@ -19,7 +19,11 @@ from zerver.actions.alert_words import do_add_alert_words
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.realm_emoji import do_remove_realm_emoji
 from zerver.actions.realm_settings import do_set_realm_property
-from zerver.actions.user_groups import check_add_user_group, do_deactivate_user_group
+from zerver.actions.user_groups import (
+    add_subgroups_to_user_group,
+    check_add_user_group,
+    do_deactivate_user_group,
+)
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import change_user_is_active
 from zerver.lib.alert_words import get_alert_word_automaton
@@ -318,6 +322,37 @@ class MarkdownMiscTest(ZulipTestCase):
         CONSTANT_QUERY_COUNT = 2  # even if it increases in future, make sure it's constant.
         with self.assert_database_query_count(CONSTANT_QUERY_COUNT):
             MentionData(mention_backend, content, message_sender=None)
+
+    def test_mention_user_groups_with_common_subgroup(self) -> None:
+        # Mention multiple groups (class-A and class-B) with a common sub-group (good-students)
+        # and make sure each mentioned group has the expected members
+        # (i.e. direct and via sub-groups) in mention_data.
+
+        realm = get_realm("zulip")
+        aaron = self.example_user("aaron")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
+
+        good_students = check_add_user_group(
+            realm, "good-students", [aaron, hamlet], acting_user=othello
+        )
+        class_A = check_add_user_group(realm, "class-A", [iago], acting_user=othello)
+        class_B = check_add_user_group(realm, "class-B", [cordelia], acting_user=othello)
+
+        add_subgroups_to_user_group(class_A, [good_students], acting_user=othello)
+        add_subgroups_to_user_group(class_B, [good_students], acting_user=othello)
+
+        content = "@*class-A*  @*class-B*"
+        mention_backend = MentionBackend(realm.id)
+        mention_data = MentionData(mention_backend, content, message_sender=None)
+
+        # both groups should have their direct members and the sub-group's members.
+        self.assertEqual(mention_data.get_group_members(class_A.id), {iago.id, aaron.id, hamlet.id})
+        self.assertEqual(
+            mention_data.get_group_members(class_B.id), {cordelia.id, aaron.id, hamlet.id}
+        )
 
     def test_invalid_katex_path(self) -> None:
         with self.settings(DEPLOY_ROOT="/nonexistent"):
