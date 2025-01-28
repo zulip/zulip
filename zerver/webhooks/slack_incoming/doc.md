@@ -1,4 +1,4 @@
-# Zulip Slack incoming webhook integration
+# Zulip's Slack-compatible incoming webhook
 
 Zulip can process incoming webhook messages written to work with Slack's
 [incoming webhook API][1]. This makes it easy to quickly move your
@@ -25,8 +25,11 @@ integrations when migrating your organization from Slack to Zulip.
 
 - [Slack's incoming webhook documentation][1]
 
-- [Zulip Slack integration](/integrations/doc/slack)
+- [Forward Slack messages into Zulip](/integrations/doc/slack)
+
+- [Forward messages Slack <-> Zulip][2] (both directions)
 
 {!webhooks-url-specification.md!}
 
 [1]: https://api.slack.com/messaging/webhooks
+[2]: https://github.com/zulip/python-zulip-api/blob/main/zulip/integrations/bridge_with_slack/README.md
