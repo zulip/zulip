@@ -1028,7 +1028,6 @@ ul.popover-group-menu-member-list {
         line-height: 1.1111em;
         color: var(--color-text-full-name);
         overflow-wrap: anywhere;
-        user-select: text;
 
         .zulip-icon.zulip-icon-bot {
             vertical-align: middle;
