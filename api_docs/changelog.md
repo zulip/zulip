@@ -28,6 +28,11 @@ format used by the Zulip server that they are interacting with.
   `can_remove_subscribers_group`. Realm administrators are now
   allowed to unsubscribe other users from a private channel even if
   they are not subscribed to that channel.
+* [`PATCH /streams/{stream_id}`](/api/update-stream),
+  [`DELETE /streams/{stream_id}`](/api/archive-stream): Channel and
+  organization administrators can modify all the settings of a private
+  channel without having access to it. They cannot add subscribers to
+  the channel without having access to it.
 
 **Feature level 343**
 

@@ -436,9 +436,6 @@ def check_stream_access_for_delete_or_update(
     if user_profile.is_realm_admin:
         return
 
-    if sub is None and stream.invite_only:
-        raise JsonableError(error)
-
     if can_administer_accessible_channel(stream, user_profile):
         return
 

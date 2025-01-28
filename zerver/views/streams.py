@@ -407,9 +407,6 @@ def update_stream_backend(
         if validate_group_setting_value_change(
             current_setting_api_value, new_setting_value, expected_current_setting_value
         ):
-            if sub is None and stream.invite_only:
-                # Admins cannot change this setting for unsubscribed private streams.
-                raise JsonableError(_("Invalid channel ID"))
             with transaction.atomic(durable=True):
                 user_group = access_user_group_for_setting(
                     new_setting_value,

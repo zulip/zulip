@@ -507,13 +507,10 @@ export function can_preview(sub: StreamSubscription): boolean {
 export function can_change_permissions(sub: StreamSubscription): boolean {
     // Whether the current user has permission to administer this stream.
     // Organisation admins have this permission regardless of whether
-    // they are part of can_administer_channel_group. Non-subscribers with
-    // these permission can edit name and description of a private channel
-    // without being subscribed to it.
-
-    if (sub.invite_only && !sub.subscribed) {
-        return false;
-    }
+    // they are part of can_administer_channel_group. Non-subscribers
+    // with these permission can modify the properties of a private
+    // channel without being subscribed to it except adding subscribers
+    // to a private channel they are not subscribed to.
 
     if (current_user.is_admin) {
         return true;

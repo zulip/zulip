@@ -489,17 +489,11 @@ test("admin_options", ({override}) => {
     assert.ok(is_realm_admin(sub));
     assert.ok(can_change_stream_permissions(sub));
 
-    // admins can only make private streams become public
-    // if they are subscribed
+    // admins can make private streams become public
+    // even if they are not subscribed
     sub = make_sub(nobody_group.id);
     sub.invite_only = true;
     sub.subscribed = false;
-    assert.ok(is_realm_admin(sub));
-    assert.ok(!can_change_stream_permissions(sub));
-
-    sub = make_sub(nobody_group.id);
-    sub.invite_only = true;
-    sub.subscribed = true;
     assert.ok(is_realm_admin(sub));
     assert.ok(can_change_stream_permissions(sub));
 
@@ -515,17 +509,11 @@ test("admin_options", ({override}) => {
     assert.ok(!is_realm_admin(sub));
     assert.ok(can_change_stream_permissions(sub));
 
-    // Users in setting group can only make private streams become
-    // public if they are subscribed
+    // Users in setting group can make private streams become
+    // public even if they are not subscribed
     sub = make_sub(moderators_group.id);
     sub.invite_only = true;
     sub.subscribed = false;
-    assert.ok(!is_realm_admin(sub));
-    assert.ok(!can_change_stream_permissions(sub));
-
-    sub = make_sub(moderators_group.id);
-    sub.invite_only = true;
-    sub.subscribed = true;
     assert.ok(!is_realm_admin(sub));
     assert.ok(can_change_stream_permissions(sub));
 });

@@ -20404,12 +20404,15 @@ paths:
 
                         Administrators can always administer a channel.
 
-                        Note that a user must also [have access](/help/channel-permissions) to a
-                        channel in order to modify it. The exception to this rule is that
-                        organization administrators can edit channel names and descriptions
-                        without having full access to the channel.
+                        Note that a user must [have access](/help/channel-permissions) to a
+                        channel in order to add other subscribers to the channel.
 
-                        **Changes**: New in Zulip 10.0 (feature level 325). Prior to this
+                        **Changes**: Prior to Zulip 10.0 (feature level 344) a user needed to
+                        have access to a channel in order to modify it. The exception to this
+                        rule was that organization administrators can edit channel names and
+                        descriptions without having full access to the channel.
+
+                        New in Zulip 10.0 (feature level 325). Prior to this
                         change, the permission to administer channels was limited to realm
                         administrators.
                       example:
@@ -25113,16 +25116,15 @@ components:
 
             Administrators can always administer a channel.
 
-            Note that a user must also [have access](/help/channel-permissions) to a
-            channel in order to modify it.
+            Note that a user must [have access](/help/channel-permissions) to a
+            channel in order to add other subscribers to the channel.
 
-            Users can edit channel name and description without subscribing to the
-            channel, but they need to be subscribed to edit channel permissions and
-            add users. The exception to this rule is that organization administrators
-            can edit channel names and descriptions without having full access to
-            the channel.
+            **Changes**: Prior to Zulip 10.0 (feature level 344) a user needed to
+            have access to a channel in order to modify it. The exception to this
+            rule was that organization administrators can edit channel names and
+            descriptions without having full access to the channel.
 
-            **Changes**: New in Zulip 10.0 (feature level 325). Prior to this
+            New in Zulip 10.0 (feature level 325). Prior to this
             change, the permission to administer channels was limited to realm
             administrators.
 

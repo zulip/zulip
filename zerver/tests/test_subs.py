@@ -2042,12 +2042,18 @@ class StreamAdminTest(ZulipTestCase):
     def test_non_admin_cannot_access_unsub_private_stream(self) -> None:
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", is_system_group=True, realm=hamlet.realm
+        )
 
         self.login_user(hamlet)
         result = self.subscribe_via_post(
             hamlet,
             ["private_stream_1"],
-            dict(principals=orjson.dumps([iago.id]).decode()),
+            dict(
+                principals=orjson.dumps([iago.id]).decode(),
+                can_administer_channel_group=nobody_group.id,
+            ),
             invite_only=True,
         )
         self.assert_json_success(result)
@@ -2055,13 +2061,13 @@ class StreamAdminTest(ZulipTestCase):
         stream_id = get_stream("private_stream_1", hamlet.realm).id
 
         result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "private_stream_2"})
-        self.assert_json_error(result, "Invalid channel ID")
+        self.assert_json_error(result, "You do not have permission to administer this channel.")
 
         result = self.client_patch(
             f"/json/streams/{stream_id}",
             {"description": "new description"},
         )
-        self.assert_json_error(result, "Invalid channel ID")
+        self.assert_json_error(result, "You do not have permission to administer this channel.")
 
         result = self.client_patch(
             f"/json/streams/{stream_id}",
@@ -2069,10 +2075,10 @@ class StreamAdminTest(ZulipTestCase):
                 "is_private": orjson.dumps(True).decode(),
             },
         )
-        self.assert_json_error(result, "Invalid channel ID")
+        self.assert_json_error(result, "You do not have permission to administer this channel.")
 
         result = self.client_delete(f"/json/streams/{stream_id}")
-        self.assert_json_error(result, "Invalid channel ID")
+        self.assert_json_error(result, "You do not have permission to administer this channel.")
 
     def test_change_stream_description(self) -> None:
         user_profile = self.example_user("iago")
@@ -2586,17 +2592,11 @@ class StreamAdminTest(ZulipTestCase):
             f"'{setting_name}' setting cannot be set to 'role:internet' group.",
         )
 
-        # For private streams, even admins must be subscribed to the
-        # stream to change the setting.
+        # For private streams, realm admins need not be subscribed to
+        # the stream to change the setting as they can administer the
+        # channel by default.
         stream = get_stream("stream_name2", realm)
         params[setting_name] = orjson.dumps({"new": moderators_system_group.id}).decode()
-        result = self.client_patch(
-            f"/json/streams/{stream.id}",
-            params,
-        )
-        self.assert_json_error(result, "Invalid channel ID")
-
-        self.subscribe(user_profile, "stream_name2")
         result = self.client_patch(
             f"/json/streams/{stream.id}",
             params,
@@ -2604,8 +2604,28 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_success(result)
         stream = get_stream("stream_name2", realm)
         self.assertEqual(getattr(stream, setting_name).id, moderators_system_group.id)
-        # Unsubscribe user from private stream to test next setting.
-        self.unsubscribe(user_profile, "stream_name2")
+
+        # For private streams, channel admins need not be subscribed to
+        # the stream to change the setting as they can administer the
+        # channel by default.
+        shiva_group = self.create_or_update_anonymous_group_for_setting([shiva], [])
+        do_change_stream_group_based_setting(
+            stream,
+            "can_administer_channel_group",
+            shiva_group,
+            acting_user=None,
+        )
+        self.assertTrue(is_user_in_group(stream.can_administer_channel_group, shiva))
+        stream = get_stream("stream_name2", realm)
+        params[setting_name] = orjson.dumps({"new": owners_group.id}).decode()
+        self.login_user(shiva)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            params,
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name2", realm)
+        self.assertEqual(getattr(stream, setting_name).id, owners_group.id)
 
     def test_changing_stream_permission_settings(self) -> None:
         self.make_stream("stream_name1")
