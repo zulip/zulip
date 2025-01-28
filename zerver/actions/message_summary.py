@@ -64,7 +64,8 @@ def do_summarize_narrow(
     user_profile: UserProfile,
     narrow: list[NarrowParameter] | None,
 ) -> str | None:
-    if settings.TOPIC_SUMMARIZATION_MODEL is None:  # nocoverage
+    model = settings.TOPIC_SUMMARIZATION_MODEL
+    if model is None:  # nocoverage
         return None
 
     # TODO: This implementation does not attempt to make use of
@@ -112,17 +113,6 @@ def do_summarize_narrow(
     # IDEA: We could consider translating input and output text to
     # English to improve results when using a summarization model that
     # is primarily trained on English.
-    model = settings.TOPIC_SUMMARIZATION_MODEL
-    litellm_params: dict[str, Any] = {}
-    if model.startswith("huggingface"):  # nocoverage
-        assert settings.HUGGINGFACE_API_KEY is not None
-        litellm_params["api_key"] = settings.HUGGINGFACE_API_KEY
-    else:
-        assert model.startswith("bedrock")
-        litellm_params["aws_access_key_id"] = settings.AWS_ACCESS_KEY_ID
-        litellm_params["aws_secret_access_key"] = settings.AWS_SECRET_ACCESS_KEY
-        litellm_params["aws_region_name"] = settings.AWS_REGION_NAME
-
     conversation_length = len(message_list)
     max_summary_length = get_max_summary_length(conversation_length)
     intro = "The following is a chat conversation in the Zulip team chat app."
@@ -177,9 +167,12 @@ def do_summarize_narrow(
     # That way, you can't easily get extra tokens by sending
     # 25 requests all at once when you're just below the limit.
 
+    litellm_params: dict[str, object] = settings.TOPIC_SUMMARIZATION_PARAMETERS
+    api_key = settings.TOPIC_SUMMARIZATION_API_KEY
     response = litellm.completion(
         model=model,
         messages=messages,
+        api_key=api_key,
         **litellm_params,
     )
     input_tokens = response["usage"]["prompt_tokens"]

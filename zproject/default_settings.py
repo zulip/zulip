@@ -696,3 +696,10 @@ MAX_WEB_DATA_IMPORT_SIZE_MB = 1024
 # delete an active organization.
 MIN_DEACTIVATED_REALM_DELETION_DAYS: int | None = 14
 MAX_DEACTIVATED_REALM_DELETION_DAYS: int | None = None
+
+
+TOPIC_SUMMARIZATION_MODEL: str | None = None
+if not PRODUCTION:
+    TOPIC_SUMMARIZATION_MODEL = "huggingface/meta-llama/Meta-Llama-3-8B-Instruct"
+
+TOPIC_SUMMARIZATION_PARAMETERS: dict[str, object] = {}
