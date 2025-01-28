@@ -2,7 +2,7 @@ import Handlebars from "handlebars/runtime.js";
 
 import {page_params} from "./base_page_params.ts";
 import type {
-    GroupSettingName,
+    GroupGroupSettingName,
     RealmGroupSettingName,
     StreamGroupSettingName,
 } from "./group_permission_settings.ts";
@@ -767,7 +767,7 @@ export const stream_group_permission_settings: StreamGroupSettingName[] = [
 
 // Order of settings is important, as this list is used to
 // render assigned permissions in permissions panel.
-export const group_permission_settings: GroupSettingName[] = [
+export const group_permission_settings: GroupGroupSettingName[] = [
     "can_manage_group",
     "can_mention_group",
     "can_add_members_group",
