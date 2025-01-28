@@ -55,7 +55,31 @@ the channel had been renamed. That field is **deprecated**, because
 displaying an updated value for the most common forms of this syntax
 requires parsing the URL to get the topic to use anyway.
 
-**Changes**: In Zulip 10.0 (feature level 319), added Markdown syntax
+When a topic is an empty string, it is replaced with
+`realm_empty_topic_display_name` found in the [`POST /register`](/api/register-queue)
+response and wrapped with the `<em>` tag.
+
+Sample HTML formats with `"realm_empty_topic_display_name": "general chat"`
+are as follows:
+```html
+<!-- Syntax: #**announce>** -->
+<a class="stream-topic" data-stream-id="9"
+  href="/#narrow/channel/9-announce/topic/">
+ #announce &gt; <em>general chat</em>
+</a>
+
+<!-- Syntax: #**announce>@214** -->
+<a class="message-link"
+  href="/#narrow/channel/9-announce/topic//near/214">
+ #announce &gt; <em>general chat</em> @ 💬
+</a>
+```
+
+**Changes**: Before Zulip 10.0 (feature level 346), empty string
+was not a valid topic name in syntaxes for linking to topics and
+messages.
+
+In Zulip 10.0 (feature level 319), added Markdown syntax
 for linking to a specific message in a conversation. Declared the
 `data-stream-id` field to be deprecated as detailed above.
 

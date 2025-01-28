@@ -545,7 +545,7 @@ inline.zulip = merge({}, inline.breaks, {
   unicodeemoji: possible_emoji_regex,
   usermention: /^@(_?)(?:\*\*([^\*]+)\*\*)/, // Match potentially multi-word string between @** **
   groupmention: /^@(_?)(?:\*([^\*]+)\*)/, // Match multi-word string between @* *
-  stream_topic_message: /^#\*\*([^\*>]+)>([^\*]+)@(\d+)\*\*/,
+  stream_topic_message: /^#\*\*([^\*>]+)>([^\*]*)@(\d+)\*\*/,
   stream_topic: /^#\*\*([^\*>]+)>([^\*]*)\*\*/,
   stream: /^#\*\*([^\*]+)\*\*/,
   tex: /^(\$\$([^\n_$](\\\$|[^\n$])*)\$\$(?!\$))\B/,
