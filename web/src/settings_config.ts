@@ -656,7 +656,7 @@ export const realm_user_settings_defaults_labels = {
     }),
 };
 
-export const group_setting_labels = {
+export const all_group_setting_labels = {
     realm: {
         create_multiuse_invite_group: $t({
             defaultMessage: "Who can create reusable invitation links",
