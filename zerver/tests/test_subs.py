@@ -106,7 +106,7 @@ from zerver.lib.types import (
     NeverSubscribedStreamDict,
     SubscriptionInfo,
 )
-from zerver.lib.user_groups import is_user_in_group
+from zerver.lib.user_groups import get_recursive_membership_groups, is_user_in_group
 from zerver.models import (
     Attachment,
     DefaultStream,
@@ -311,7 +311,7 @@ class TestCreateStreams(ZulipTestCase):
                 "Private stream",
                 invite_only=True,
                 can_administer_channel_group=aaron_group,
-                can_add_subscribers_group=prospero_group
+                can_add_subscribers_group=prospero_group,
             )
 
         self.assertEqual(events[0]["event"]["type"], "stream")
@@ -3247,7 +3247,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=14,
+            query_count=18,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3264,7 +3264,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=14,
+            query_count=18,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -5956,6 +5956,8 @@ class SubscriptionAPITest(ZulipTestCase):
         user3 = self.example_user("hamlet")
         user4 = self.example_user("iago")
         user5 = self.example_user("AARON")
+        user6 = self.example_user("prospero")
+        user7 = self.example_user("shiva")
         guest = self.example_user("polonius")
 
         realm = user1.realm
@@ -5976,10 +5978,20 @@ class SubscriptionAPITest(ZulipTestCase):
         self.subscribe(user2, "private_stream")
         self.subscribe(user3, "private_stream")
 
+        user6_group = self.create_or_update_anonymous_group_for_setting([user6], [])
+        do_change_stream_group_based_setting(
+            private, "can_administer_channel_group", user6_group, acting_user=user6
+        )
+
+        user7_group = self.create_or_update_anonymous_group_for_setting([user7], [])
+        do_change_stream_group_based_setting(
+            private, "can_add_subscribers_group", user7_group, acting_user=user7
+        )
+
         # Sends 3 peer-remove events, 2 unsubscribe events
         # and 2 stream delete events for private streams.
         with (
-            self.assert_database_query_count(16),
+            self.assert_database_query_count(18),
             self.assert_memcached_count(3),
             self.capture_send_event_calls(expected_num_events=7) as events,
         ):
@@ -6005,6 +6017,8 @@ class SubscriptionAPITest(ZulipTestCase):
             user3.id,
             user4.id,
             user5.id,
+            user6.id,
+            user7.id,
             guest.id,
         }
 
@@ -6021,9 +6035,20 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(
             notifications,
             [
-                ("private_stream", {user1.id, user2.id}, {user3.id, user4.id}),
-                ("stream1", {user1.id, user2.id}, {user3.id, user4.id, user5.id}),
-                ("stream2,stream3", {user2.id}, {user1.id, user3.id, user4.id, user5.id}),
+                # user6 and user7 have metadata access to the channel
+                # via `can_administer_channel_group` and
+                # `can_add_subscribers_group` respectively.
+                ("private_stream", {user1.id, user2.id}, {user3.id, user4.id, user6.id, user7.id}),
+                (
+                    "stream1",
+                    {user1.id, user2.id},
+                    {user3.id, user4.id, user5.id, user6.id, user7.id},
+                ),
+                (
+                    "stream2,stream3",
+                    {user2.id},
+                    {user1.id, user3.id, user4.id, user5.id, user6.id, user7.id},
+                ),
             ],
         )
 
@@ -6468,11 +6493,18 @@ class SubscriptionAPITest(ZulipTestCase):
         user_profile = self.example_user("othello")
         realm_name = "no_othello_allowed"
         realm = do_create_realm(realm_name, "Everyone but Othello is allowed")
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", is_system_group=True, realm=realm
+        )
         stream_dict = {
             "name": "publicstream",
             "description": "Public stream with public history",
             "realm_id": realm.id,
+            "can_administer_channel_group_id": nobody_group.id,
         }
+        user_recursive_group_ids = set(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+        )
 
         # For this test to work, othello can't be in the no_othello_here realm
         self.assertNotEqual(
@@ -6481,12 +6513,17 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # This should result in missing user
         with self.assertRaises(ValidationError):
-            validate_user_access_to_subscribers_helper(None, stream_dict, lambda user_profile: True)
+            validate_user_access_to_subscribers_helper(
+                None, stream_dict, lambda user_profile: True, user_recursive_group_ids
+            )
 
         # This should result in user not in realm
         with self.assertRaises(ValidationError):
             validate_user_access_to_subscribers_helper(
-                user_profile, stream_dict, lambda user_profile: True
+                user_profile,
+                stream_dict,
+                lambda user_profile: True,
+                user_recursive_group_ids,
             )
 
     def test_subscriptions_query_count(self) -> None:
@@ -6510,7 +6547,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(48):
+        with self.assert_database_query_count(50):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[1]],
@@ -7066,7 +7103,7 @@ class GetSubscribersTest(ZulipTestCase):
         for user in [cordelia, othello, polonius]:
             self.assert_user_got_subscription_notification(user, msg)
 
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(9):
             subscribed_streams, _ = gather_subscriptions(
                 self.user_profile, include_subscribers=True
             )
@@ -7101,7 +7138,7 @@ class GetSubscribersTest(ZulipTestCase):
             acting_user=None,
         )
 
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(9):
             subscribed_streams, _ = gather_subscriptions(
                 self.user_profile, include_subscribers=True
             )
@@ -7184,7 +7221,7 @@ class GetSubscribersTest(ZulipTestCase):
             stream, "can_send_message_group", setting_group, acting_user=desdemona
         )
 
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(9):
             subscribed_streams, _ = gather_subscriptions(hamlet, include_subscribers=True)
 
         [stream_1_sub] = [sub for sub in subscribed_streams if sub["name"] == "stream_1"]
@@ -7244,6 +7281,10 @@ class GetSubscribersTest(ZulipTestCase):
             "test_stream_web_public_2",
         ]
 
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", is_system_group=True, realm=realm
+        )
+
         def create_public_streams() -> None:
             for stream_name in public_streams:
                 self.make_stream(stream_name, realm=realm)
@@ -7251,7 +7292,10 @@ class GetSubscribersTest(ZulipTestCase):
             self.subscribe_via_post(
                 self.user_profile,
                 public_streams,
-                dict(principals=orjson.dumps(users_to_subscribe).decode()),
+                dict(
+                    principals=orjson.dumps(users_to_subscribe).decode(),
+                    can_administer_channel_group=nobody_group.id,
+                ),
             )
 
         create_public_streams()
@@ -7263,7 +7307,10 @@ class GetSubscribersTest(ZulipTestCase):
             ret = self.subscribe_via_post(
                 self.user_profile,
                 web_public_streams,
-                dict(principals=orjson.dumps(users_to_subscribe).decode()),
+                dict(
+                    principals=orjson.dumps(users_to_subscribe).decode(),
+                    can_administer_channel_group=nobody_group.id,
+                ),
             )
             self.assert_json_success(ret)
 
@@ -7273,14 +7320,17 @@ class GetSubscribersTest(ZulipTestCase):
             self.subscribe_via_post(
                 self.user_profile,
                 private_streams,
-                dict(principals=orjson.dumps(users_to_subscribe).decode()),
+                dict(
+                    principals=orjson.dumps(users_to_subscribe).decode(),
+                    can_administer_channel_group=nobody_group.id,
+                ),
                 invite_only=True,
             )
 
         create_private_streams()
 
-        def get_never_subscribed() -> list[NeverSubscribedStreamDict]:
-            with self.assert_database_query_count(7):
+        def get_never_subscribed(query_count: int = 9) -> list[NeverSubscribedStreamDict]:
+            with self.assert_database_query_count(query_count):
                 sub_data = gather_subscriptions_helper(self.user_profile)
                 self.verify_sub_fields(sub_data)
             never_subscribed = sub_data.never_subscribed
@@ -7299,10 +7349,10 @@ class GetSubscribersTest(ZulipTestCase):
             self.assert_length(stream_dict["subscribers"], len(users_to_subscribe))
 
         # Send private stream subscribers to all realm admins.
-        def test_admin_case() -> None:
+        def test_realm_admin_case() -> None:
             self.user_profile.role = UserProfile.ROLE_REALM_ADMINISTRATOR
             # Test realm admins can get never subscribed private stream's subscribers.
-            never_subscribed = get_never_subscribed()
+            never_subscribed = get_never_subscribed(7)
 
             self.assertEqual(
                 len(never_subscribed),
@@ -7311,7 +7361,50 @@ class GetSubscribersTest(ZulipTestCase):
             for stream_dict in never_subscribed:
                 self.assert_length(stream_dict["subscribers"], len(users_to_subscribe))
 
-        test_admin_case()
+        test_realm_admin_case()
+
+        # Send private stream subscribers to all realm admins.
+        def test_channel_admin_case() -> None:
+            self.user_profile.role = UserProfile.ROLE_MEMBER
+            user_group = self.create_or_update_anonymous_group_for_setting([self.user_profile], [])
+            do_change_stream_group_based_setting(
+                get_stream("test_stream_invite_only_1", realm),
+                "can_administer_channel_group",
+                user_group,
+                acting_user=self.user_profile,
+            )
+            # Test channel admins can get never subscribed private stream's subscribers.
+            never_subscribed = get_never_subscribed()
+
+            self.assertEqual(
+                len(never_subscribed),
+                len(public_streams) + 1 + len(web_public_streams),
+            )
+            for stream_dict in never_subscribed:
+                self.assert_length(stream_dict["subscribers"], len(users_to_subscribe))
+
+        test_channel_admin_case()
+
+        def test_can_add_subscribers_case() -> None:
+            self.user_profile.role = UserProfile.ROLE_MEMBER
+            user_group = self.create_or_update_anonymous_group_for_setting([self.user_profile], [])
+            do_change_stream_group_based_setting(
+                get_stream("test_stream_invite_only_1", realm),
+                "can_add_subscribers_group",
+                user_group,
+                acting_user=self.user_profile,
+            )
+            # Test channel admins can get never subscribed private stream's subscribers.
+            never_subscribed = get_never_subscribed()
+
+            self.assertEqual(
+                len(never_subscribed),
+                len(public_streams) + 1 + len(web_public_streams),
+            )
+            for stream_dict in never_subscribed:
+                self.assert_length(stream_dict["subscribers"], len(users_to_subscribe))
+
+        test_can_add_subscribers_case()
 
         def test_guest_user_case() -> None:
             self.user_profile.role = UserProfile.ROLE_GUEST
@@ -7394,7 +7487,7 @@ class GetSubscribersTest(ZulipTestCase):
         guest_user = self.example_user("polonius")
         stream_name = "private_stream"
 
-        self.make_stream(stream_name, realm=get_realm("zulip"), invite_only=True)
+        stream = self.make_stream(stream_name, realm=get_realm("zulip"), invite_only=True)
         self.subscribe(admin_user, stream_name)
         self.subscribe(non_admin_user, stream_name)
         self.subscribe(guest_user, stream_name)
@@ -7416,6 +7509,22 @@ class GetSubscribersTest(ZulipTestCase):
         self.verify_sub_fields(sub_data)
         unsubscribed_streams = sub_data.unsubscribed
         self.assert_length(unsubscribed_streams, 0)
+
+        # Test channel admin gets previously subscribed private stream's subscribers.
+        non_admin_user_group = self.create_or_update_anonymous_group_for_setting(
+            [non_admin_user], []
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_administer_channel_group",
+            non_admin_user_group,
+            acting_user=admin_user,
+        )
+        sub_data = gather_subscriptions_helper(non_admin_user)
+        self.verify_sub_fields(sub_data)
+        unsubscribed_streams = sub_data.unsubscribed
+        self.assert_length(unsubscribed_streams, 1)
+        self.assert_length(unsubscribed_streams[0]["subscribers"], 1)
 
         sub_data = gather_subscriptions_helper(guest_user)
         self.verify_sub_fields(sub_data)
@@ -7477,7 +7586,7 @@ class GetSubscribersTest(ZulipTestCase):
             subdomain="zephyr",
         )
 
-        with self.assert_database_query_count(6):
+        with self.assert_database_query_count(8):
             subscribed_streams, _ = gather_subscriptions(mit_user_profile, include_subscribers=True)
 
         self.assertGreaterEqual(len(subscribed_streams), 2)

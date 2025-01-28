@@ -539,6 +539,17 @@ def access_stream_for_delete_or_update_requiring_metadata_access(
     return (stream, sub)
 
 
+def has_metadata_access_to_channel_via_groups(
+    user_recursive_group_ids: set[int],
+    can_administer_channel_group_id: int,
+    can_add_subscribers_group_id: int,
+) -> bool:
+    return (
+        can_administer_channel_group_id in user_recursive_group_ids
+        or can_add_subscribers_group_id in user_recursive_group_ids
+    )
+
+
 def check_basic_stream_access(
     user_profile: UserProfile,
     stream: Stream,
