@@ -338,7 +338,7 @@ body.has-overlay-scrollbar {
 /* This applies to column-left both in navbar and app. */
 .column-right {
     width: var(--right-column-width);
-    max-width: var(--right-column-width);
+    max-width: var(--right-column-max-width);
     position: absolute;
     right: 0;
     top: 0;
