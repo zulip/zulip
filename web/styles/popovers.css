@@ -270,7 +270,7 @@
     /* 20px at 18px/1em */
     line-height: 1.1111em;
     color: var(--color-text-full-name);
-    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .popover-group-menu-description {
@@ -1028,7 +1028,7 @@ ul.popover-group-menu-member-list {
         /* 20px at 18px/1em */
         line-height: 1.1111em;
         color: var(--color-text-full-name);
-        word-break: break-word;
+        overflow-wrap: anywhere;
         user-select: text;
 
         .zulip-icon.zulip-icon-bot {
@@ -1123,7 +1123,7 @@ ul.popover-group-menu-member-list {
         line-height: 1.1111em;
         color: var(--color-text-full-name) !important;
         max-width: 150px;
-        word-break: break-word;
+        overflow-wrap: anywhere;
     }
 
     .user-type {
