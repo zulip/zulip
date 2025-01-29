@@ -961,9 +961,7 @@
     --color-left-sidebar-navigation-icon: hsl(240deg 30% 40%);
     --color-left-sidebar-heads-up-icon: hsl(240deg 30% 40%);
     --color-left-sidebar-heads-up-icon-hover: hsl(240deg 100% 15%);
-    --color-left-sidebar-dm-partners-icon: var(
-        --color-left-sidebar-navigation-icon
-    );
+    --color-left-sidebar-dm-partners-icon: hsl(240deg 30% 60%);
     --background-color-left-sidebar-heads-up-icon-hover: hsl(
         240deg 100% 50% / 7%
     );
@@ -1961,9 +1959,7 @@
     --color-left-sidebar-navigation-icon: hsl(240deg 35% 68%);
     --color-left-sidebar-heads-up-icon: hsl(240deg 35% 68%);
     --color-left-sidebar-heads-up-icon-hover: hsl(240deg 100% 90%);
-    --color-left-sidebar-dm-partners-icon: var(
-        --color-left-sidebar-navigation-icon
-    );
+    --color-left-sidebar-dm-partners-icon: hsl(240deg 35% 58%);
     --background-color-left-sidebar-heads-up-icon-hover: hsl(
         240deg 100% 75% / 20%
     );
