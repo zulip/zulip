@@ -155,20 +155,38 @@ function get_header_for_narrow_drafts(): string {
     return $t({defaultMessage: "Drafts from {recipient}"}, {recipient});
 }
 
-function render_widgets(narrow_drafts: FormattedDraft[], other_drafts: FormattedDraft[]): void {
-    $("#drafts_table").empty();
-
+function get_formatted_drafts_data(): {
+    narrow_drafts: FormattedDraft[];
+    other_drafts: FormattedDraft[];
+    narrow_drafts_header: string;
+} {
+    const all_drafts = drafts.draft_model.get();
+    const narrow_drafts_raw = drafts.filter_drafts_by_compose_box_and_recipient(all_drafts);
+    const other_drafts_raw = _.pick(
+        all_drafts,
+        _.difference(Object.keys(all_drafts), Object.keys(narrow_drafts_raw)),
+    );
+    const narrow_drafts = format_drafts(narrow_drafts_raw);
+    const other_drafts = format_drafts(other_drafts_raw);
     const narrow_drafts_header = get_header_for_narrow_drafts();
 
-    const rendered = render_draft_table_body({
-        context: {
-            narrow_drafts_header,
-            narrow_drafts,
-            other_drafts,
-        },
+    return {narrow_drafts, other_drafts, narrow_drafts_header};
+}
+
+function render_widgets(
+    narrow_drafts: FormattedDraft[],
+    other_drafts: FormattedDraft[],
+    narrow_drafts_header: string,
+): void {
+    const rendered_drafts = render_drafts_list({
+        narrow_drafts_header,
+        narrow_drafts,
+        other_drafts,
     });
+    const $drafts_container = $("#drafts_list_container");
+    $drafts_container.empty().append($(rendered_drafts));
+
     const $drafts_table = $("#drafts_table");
-    $drafts_table.append($(rendered));
     if ($("#drafts_table .overlay-message-row").length > 0) {
         $("#drafts_table .no-drafts").hide();
         // Update possible dynamic elements.
@@ -178,6 +196,9 @@ function render_widgets(narrow_drafts: FormattedDraft[], other_drafts: Formatted
         $rendered_drafts.each(function () {
             rendered_markdown.update_elements($(this));
         });
+
+        $(".select-drafts-button").show();
+        $(".delete-selected-drafts-button").show();
     }
     update_rendered_drafts(narrow_drafts.length > 0, other_drafts.length > 0);
     update_bulk_delete_ui();
@@ -223,7 +244,9 @@ function setup_event_handlers(): void {
         toggle_checkbox_icon_state($(e.target), !is_checked);
         update_bulk_delete_ui();
     });
+}
 
+function setup_select_drafts_handlers(): void {
     $(".select-drafts-button").on("click", (e) => {
         e.preventDefault();
         const $unchecked_checkboxes = $(".draft-selection-checkbox").filter(function () {
@@ -248,25 +271,28 @@ function setup_event_handlers(): void {
 }
 
 export function launch(): void {
-    const all_drafts = drafts.draft_model.get();
-    const narrow_drafts = drafts.filter_drafts_by_compose_box_and_recipient(all_drafts);
-    const other_drafts = _.pick(
-        all_drafts,
-        _.difference(Object.keys(all_drafts), Object.keys(narrow_drafts)),
-    );
-    const formatted_narrow_drafts = format_drafts(narrow_drafts);
-    const formatted_other_drafts = format_drafts(other_drafts);
-
-    render_widgets(formatted_narrow_drafts, formatted_other_drafts);
+    const {narrow_drafts, other_drafts, narrow_drafts_header} = get_formatted_drafts_data();
+    const $drafts_table = $("#drafts_table");
+    $drafts_table.empty();
+    const rendered = render_draft_table_body({
+        context: {
+            narrow_drafts_header,
+            narrow_drafts,
+            other_drafts,
+        },
+    });
+    $drafts_table.append($(rendered));
+    render_widgets(narrow_drafts, other_drafts, narrow_drafts_header);
 
     // We need to force a style calculation on the newly created
     // element in order for the CSS transition to take effect.
     $("#draft_overlay").css("opacity");
 
     open_overlay();
-    const first_element_id = [...formatted_narrow_drafts, ...formatted_other_drafts][0]?.draft_id;
+    const first_element_id = [...narrow_drafts, ...other_drafts][0]?.draft_id;
     messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
     setup_event_handlers();
+    setup_select_drafts_handlers();
 }
 
 export function update_bulk_delete_ui(): void {
