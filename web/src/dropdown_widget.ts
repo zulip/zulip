@@ -37,6 +37,7 @@ export type Option = {
 
 export type DropdownWidgetOptions = {
     widget_name: string;
+    widget_selector?: string;
     // You can bold the selected `option` by setting `option.bold_current_selection` to `true`.
     // Currently, not implemented for stream names.
     get_options: (current_value: string | number | undefined) => Option[];
@@ -103,7 +104,7 @@ export class DropdownWidget {
 
     constructor(options: DropdownWidgetOptions) {
         this.widget_name = options.widget_name;
-        this.widget_selector = `#${CSS.escape(this.widget_name)}_widget`;
+        this.widget_selector = options.widget_selector ?? `#${CSS.escape(this.widget_name)}_widget`;
         // A widget wrapper may not exist based on the UI requirement.
         this.widget_wrapper_id = `${this.widget_selector}_wrapper`;
         this.widget_value_selector = `${this.widget_selector} .dropdown_widget_value`;
