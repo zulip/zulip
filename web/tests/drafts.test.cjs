@@ -596,8 +596,8 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
 
     mock_template("draft_table_body.hbs", false, (data) => {
         // Tests formatting and time-sorting of drafts
-        assert.deepEqual(data.narrow_drafts, []);
-        assert.deepEqual(data.other_drafts, expected);
+        assert.deepEqual(data.context.narrow_drafts, []);
+        assert.deepEqual(data.context.other_drafts, expected);
         return "<draft table stub>";
     });
 
@@ -770,8 +770,8 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
 
     mock_template("draft_table_body.hbs", false, (data) => {
         // Tests splitting up drafts by current narrow.
-        assert.deepEqual(data.narrow_drafts, expected_pm_drafts);
-        assert.deepEqual(data.other_drafts, expected_other_drafts);
+        assert.deepEqual(data.context.narrow_drafts, expected_pm_drafts);
+        assert.deepEqual(data.context.other_drafts, expected_other_drafts);
         return "<draft table stub>";
     });
 

@@ -3,6 +3,7 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import render_draft_table_body from "../templates/draft_table_body.hbs";
+import render_drafts_list from "../templates/drafts_list.hbs";
 
 import * as browser_history from "./browser_history.ts";
 import * as compose_actions from "./compose_actions.ts";
@@ -160,9 +161,11 @@ function render_widgets(narrow_drafts: FormattedDraft[], other_drafts: Formatted
     const narrow_drafts_header = get_header_for_narrow_drafts();
 
     const rendered = render_draft_table_body({
-        narrow_drafts_header,
-        narrow_drafts,
-        other_drafts,
+        context: {
+            narrow_drafts_header,
+            narrow_drafts,
+            other_drafts,
+        },
     });
     const $drafts_table = $("#drafts_table");
     $drafts_table.append($(rendered));
