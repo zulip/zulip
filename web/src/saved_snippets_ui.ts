@@ -6,13 +6,12 @@ import render_add_saved_snippet_modal from "../templates/add_saved_snippet_modal
 import render_confirm_delete_saved_snippet from "../templates/confirm_dialog/confirm_delete_saved_snippet.hbs";
 
 import * as channel from "./channel.ts";
-import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t_html} from "./i18n.ts";
-import * as popover_menus from "./popover_menus.ts";
+import * as rows from "./rows.ts";
 import * as saved_snippets from "./saved_snippets.ts";
 import type {StateData} from "./state_data.ts";
 
@@ -85,30 +84,38 @@ function item_click_callback(
     }
 
     dropdown.hide();
-    // Hide `send_later` popover when a saved snippet is clicked.
-    popover_menus.hide_current_popover_if_visible(popover_menus.popover_instances.send_later);
     const current_value = widget.current_value;
     assert(typeof current_value === "number");
+
+    // Get target textarea where the "Add saved snippet" button is clicked.
+    const $target_element = $(dropdown.reference);
+    let $target_textarea: JQuery<HTMLTextAreaElement>;
+    let edit_message_id: string | undefined;
+    if ($target_element.parents(".message_edit_form").length === 1) {
+        edit_message_id = rows.id($target_element.parents(".message_row")).toString();
+        $target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
+    } else {
+        $target_textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
+    }
     if (current_value === saved_snippets.ADD_SAVED_SNIPPET_OPTION_ID) {
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Add a new saved snippet"}),
             html_body: render_add_saved_snippet_modal({
-                prepopulated_content: compose_state.message_content(),
+                prepopulated_content: $target_textarea.val(),
             }),
             html_submit_button: $t_html({defaultMessage: "Save"}),
             id: "add-new-saved-snippet-modal",
             form_id: "add-new-saved-snippet-form",
             update_submit_disabled_state_on_change: true,
             on_click: submit_create_saved_snippet_form,
-            on_shown: () => $("#add-saved-snippet-title").trigger("focus"),
+            on_shown: () => $("#new-saved-snippet-title").trigger("focus"),
             post_render: saved_snippet_modal_post_render,
         });
     } else {
         const saved_snippet = saved_snippets.get_saved_snippet_by_id(current_value);
         assert(saved_snippet !== undefined);
         const content = saved_snippet.content;
-        const $textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
-        compose_ui.insert_syntax_and_focus(content, $textarea);
+        compose_ui.insert_syntax_and_focus(content, $target_textarea);
     }
 }
 
@@ -117,6 +124,7 @@ export const initialize = (params: StateData["saved_snippets"]): void => {
 
     saved_snippet_dropdown_widget = new dropdown_widget.DropdownWidget({
         widget_name: "saved_snippets",
+        widget_selector: ".saved_snippets_widget",
         get_options: saved_snippets.get_options_for_dropdown_widget,
         item_click_callback,
         $events_container: $("body"),
