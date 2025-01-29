@@ -47,7 +47,12 @@ from zerver.lib.streams import (
     render_stream_description,
     update_stream_active_status_for_realm,
 )
-from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError, maybe_thumbnail
+from zerver.lib.thumbnail import (
+    THUMBNAIL_ACCEPT_IMAGE_TYPES,
+    BadImageError,
+    get_user_upload_previews,
+    maybe_thumbnail,
+)
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload import ensure_avatar_image, sanitize_name, upload_backend, upload_emoji_image
 from zerver.lib.upload.s3 import get_bucket
@@ -438,6 +443,10 @@ def fix_message_rendered_content(
                     if old_user_group_id in user_group_id_map:
                         mention["data-user-group-id"] = str(user_group_id_map[old_user_group_id])
                 message[rendered_content_key] = str(soup)
+
+            # Trigger thumbnailing of all thumbnails in the message
+            get_user_upload_previews(realm.id, message[content_key], lock=True)
+
             continue
 
         try:
@@ -453,6 +462,7 @@ def fix_message_rendered_content(
             # words" type feature, and notifications aren't important anyway.
             realm_alert_words_automaton = None
 
+            # This also enqueues thumbnailing for images that are referenced
             rendered_content = markdown_convert(
                 content=content,
                 realm_alert_words_automaton=realm_alert_words_automaton,
@@ -1677,14 +1687,16 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     #
     # Begin by fixing up the Attachment data.
     fix_attachments_data(attachment_data)
-    # Now we're ready create ImageAttachment rows and enqueue thumbnailing
-    # for the images.
-    # This order ensures that during message import, rendered_content will be generated
-    # correctly with image previews.
-    # The important detail here is that we **only** care about having ImageAttachment
-    # rows ready at the time of message import. Thumbnailing happens in a queue worker
-    # in a different process, and we don't care about when it'll complete.
-    create_image_attachments_and_maybe_enqueue_thumbnailing(realm, attachment_data)
+    # Now we're ready create ImageAttachment rows; thumbnailing is
+    # enqueued when the messages are rendered, to prevent races if the
+    # thumbnailing can run _during_ rendering.  This order ensures
+    # that during message import, rendered_content will be generated
+    # with placeholders for all image previews, which are updated into
+    # their thumbnails as thumbnailing comes along after.  The
+    # important detail here is that **only** ImageAttachment rows (not
+    # Attachment rows) are ready (or needed) at the time of message
+    # import.
+    create_image_attachments(realm, attachment_data)
     map_messages_to_attachments(attachment_data)
 
     # Import zerver_message and zerver_usermessage
@@ -2047,9 +2059,7 @@ def fix_attachments_data(attachment_data: TableData) -> None:
                 attachment["content_type"] = guessed_content_type
 
 
-def create_image_attachments_and_maybe_enqueue_thumbnailing(
-    realm: Realm, attachment_data: TableData
-) -> None:
+def create_image_attachments(realm: Realm, attachment_data: TableData) -> None:
     for attachment in attachment_data["zerver_attachment"]:
         if attachment["content_type"] not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
             continue
@@ -2063,8 +2073,7 @@ def create_image_attachments_and_maybe_enqueue_thumbnailing(
         # image from S3.
         local_filename = path_maps["new_attachment_path_to_local_data_path"][path_id]
         pyvips_source = pyvips.Source.new_from_file(local_filename)
-        maybe_thumbnail(pyvips_source, content_type, path_id, realm.id)
-        continue
+        maybe_thumbnail(pyvips_source, content_type, path_id, realm.id, skip_events=True)
 
 
 def import_analytics_data(realm: Realm, import_dir: Path, crossrealm_user_ids: set[int]) -> None:
