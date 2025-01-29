@@ -247,7 +247,7 @@ class VerificationSecretNotPreparedError(JsonableError):
 
 
 @typed_endpoint_without_parameters
-def self_hosting_registration_takeover_challenge_verify(
+def self_hosting_registration_transfer_challenge_verify(
     request: HttpRequest, access_token: str
 ) -> HttpResponse:
     json_data = redis_client.get(

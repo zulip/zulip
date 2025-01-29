@@ -493,11 +493,11 @@ def maybe_enqueue_audit_log_upload(realm: Realm) -> None:
 
 
 SELF_HOSTING_REGISTRATION_TAKEOVER_CHALLENGE_TOKEN_REDIS_KEY = (
-    "self_hosting_domain_takeover_challenge_verify"
+    "self_hosting_domain_transfer_challenge_verify"
 )
 
 
-def prepare_for_registration_takeover_challenge(verification_secret: str) -> str:
+def prepare_for_registration_transfer_challenge(verification_secret: str) -> str:
     access_token = secrets.token_urlsafe(32)
     data_to_store = {"verification_secret": verification_secret, "access_token": access_token}
     redis_client.set(

@@ -13,10 +13,10 @@ from zilencer.views import (
     remote_server_notify_push,
     remote_server_post_analytics,
     remote_server_send_test_notification,
-    take_over_remote_server_registration,
+    transfer_remote_server_registration,
     unregister_all_remote_push_devices,
     unregister_remote_push_device,
-    verify_registration_takeover_challenge_ack_endpoint,
+    verify_registration_transfer_challenge_ack_endpoint,
 )
 
 i18n_urlpatterns: Any = []
@@ -30,10 +30,10 @@ push_bouncer_patterns = [
     remote_server_path("remotes/push/test_notification", POST=remote_server_send_test_notification),
     # Push signup doesn't use the REST API, since there's no auth.
     path("remotes/server/register", register_remote_server),
-    path("remotes/server/register/takeover", take_over_remote_server_registration),
+    path("remotes/server/register/transfer", transfer_remote_server_registration),
     path(
         "remotes/server/register/verify_challenge",
-        verify_registration_takeover_challenge_ack_endpoint,
+        verify_registration_transfer_challenge_ack_endpoint,
     ),
     remote_server_path("remotes/server/deactivate", POST=deactivate_remote_server),
     # For receiving table data used in analytics and billing
