@@ -138,6 +138,7 @@ const keydown_cmd_or_ctrl_mappings = {
     75: {name: "search_with_k", message_view_only: false}, // 'K'
     83: {name: "star_message", message_view_only: true}, // 'S'
     190: {name: "narrow_to_compose_target", message_view_only: true}, // '.'
+    222: {name: "open_saved_snippet_dropdown", message_view_only: true}, // '''
 };
 
 const keydown_alt_mappings = {
@@ -883,6 +884,13 @@ export function process_hotkey(e, hotkey) {
     if (processing_text()) {
         // Note that there is special handling for Enter/Esc too, but
         // we handle this in other functions.
+
+        if (event_name === "open_saved_snippet_dropdown") {
+            const $messagebox = $(":focus").parents(".messagebox");
+            if ($messagebox.length === 1) {
+                $messagebox.find(".saved_snippets_widget")[0].click();
+            }
+        }
 
         if (event_name === "left_arrow" && compose_state.focus_in_empty_compose()) {
             message_edit.edit_last_sent_message();
