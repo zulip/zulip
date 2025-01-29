@@ -1,6 +1,6 @@
 # Translation guidelines
 
-Zulip's has full support for Unicode (and partial support for RTL
+Zulip has full support for Unicode (and partial support for RTL
 languages), so you can use your preferred language everywhere in
 Zulip.
 
