@@ -48,6 +48,7 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.push_notifications import (
+    HostnameAlreadyInUseBouncerError,
     InvalidRemotePushDeviceTokenError,
     UserPushIdentityCompat,
     send_android_push_notification,
@@ -259,13 +260,7 @@ def register_remote_server(
             raise RemoteServerDeactivatedError
 
     if remote_server is None and RemoteZulipServer.objects.filter(hostname=hostname).exists():
-        raise JsonableError(
-            _(
-                "A server with hostname {hostname} already exists. If you control the hostname "
-                "and want to transfer the registration to this server, you can run manage.py register_server "
-                "with the --registration-transfer flag."
-            ).format(hostname=hostname)
-        )
+        raise HostnameAlreadyInUseBouncerError(hostname)
 
     with transaction.atomic(durable=True):
         if remote_server is None:
