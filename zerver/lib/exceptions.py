@@ -57,6 +57,7 @@ class ErrorCode(Enum):
     CANNOT_DEACTIVATE_GROUP_IN_USE = auto()
     CANNOT_ADMINISTER_CHANNEL = auto()
     REMOTE_SERVER_VERIFICATION_SECRET_NOT_PREPARED = auto()
+    HOSTNAME_ALREADY_IN_USE_BOUNCER_ERROR = auto()
 
 
 class JsonableError(Exception):
