@@ -1,5 +1,7 @@
-$alert-red: hsl(16deg 60% 45%);
-$alert-error-red: hsl(0deg 80% 40%);
+:root {
+    --color-alert-red: hsl(16deg 60% 45%);
+    --color-alert-error-red: hsl(0deg 80% 40%);
+}
 
 .alert-display {
     display: none;
@@ -159,9 +161,9 @@ $alert-error-red: hsl(0deg 80% 40%);
 
         text-shadow: none;
 
-        color: $alert-red;
-        border: 1px solid $alert-red;
-        box-shadow: 0 0 2px $alert-red;
+        color: var(--color-alert-red);
+        border: 1px solid var(--color-alert-red);
+        box-shadow: 0 0 2px var(--color-alert-red);
 
         &::before {
             float: left;
@@ -183,12 +185,12 @@ $alert-error-red: hsl(0deg 80% 40%);
         }
 
         &.alert-error {
-            color: $alert-error-red;
-            border: 1px solid $alert-error-red;
-            box-shadow: 0 0 2px $alert-error-red;
+            color: var(--color-alert-error-red);
+            border: 1px solid var(--color-alert-error-red);
+            box-shadow: 0 0 2px var(--color-alert-error-red);
 
             &::before {
-                color: $alert-error-red;
+                color: var(--color-alert-error-red);
             }
         }
 
