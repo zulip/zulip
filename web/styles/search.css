@@ -378,6 +378,6 @@
 
     /* Break really long words (unlikely to happen). */
     .search_list_item span {
-        word-break: break-word;
+        overflow-wrap: anywhere;
     }
 }

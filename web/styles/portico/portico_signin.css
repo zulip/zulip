@@ -830,7 +830,7 @@ html {
 
 .confirm-email-change-page .white-box {
     max-width: 500px;
-    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .anonymous_access_form {

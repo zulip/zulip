@@ -79,7 +79,7 @@
     }
 
     .white-space-preserve-wrap {
-        word-break: break-word;
+        overflow-wrap: anywhere;
     }
 
     .empty-table-message {
@@ -458,7 +458,7 @@
         }
 
         & a {
-            word-break: break-word;
+            overflow-wrap: anywhere;
             hyphens: auto;
         }
     }
