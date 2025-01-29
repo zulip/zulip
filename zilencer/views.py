@@ -80,8 +80,8 @@ from zerver.models.realms import DisposableEmailError
 from zerver.views.push_notifications import validate_token
 from zilencer.auth import (
     InvalidZulipServerKeyError,
-    generate_registration_takeover_verification_secret,
-    validate_registration_takeover_verification_secret,
+    generate_registration_transfer_verification_secret,
+    validate_registration_transfer_verification_secret,
 )
 from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
@@ -162,13 +162,13 @@ def validate_hostname_or_raise_error(hostname: str) -> None:
 @csrf_exempt
 @require_post
 @typed_endpoint
-def take_over_remote_server_registration(request: HttpRequest, *, hostname: str) -> HttpResponse:
+def transfer_remote_server_registration(request: HttpRequest, *, hostname: str) -> HttpResponse:
     validate_hostname_or_raise_error(hostname)
 
     if not RemoteZulipServer.objects.filter(hostname=hostname).exists():
         raise JsonableError(_("{hostname} not yet registered").format(hostname=hostname))
 
-    verification_secret = generate_registration_takeover_verification_secret(hostname)
+    verification_secret = generate_registration_transfer_verification_secret(hostname)
     return json_success(
         request,
         data={
@@ -263,7 +263,7 @@ def register_remote_server(
             _(
                 "A server with hostname {hostname} already exists. If you control the hostname "
                 "and want to transfer the registration to this server, you can run manage.py register_server "
-                "with the --registration-takeover flag."
+                "with the --registration-transfer flag."
             ).format(hostname=hostname)
         )
 
@@ -295,11 +295,11 @@ def register_remote_server(
     return json_success(request, data={"created": created})
 
 
-class RegistrationTakeOverVerificationSession(OutgoingSession):
+class RegistrationTransferVerificationSession(OutgoingSession):
     def __init__(self) -> None:
         # The generous timeout and retries here are likely to be unnecessary; a functional Zulip server should
         # respond instantly.
-        super().__init__(role="verify_registration_takeover_challenge", timeout=5, max_retries=3)
+        super().__init__(role="verify_registration_transfer_challenge", timeout=5, max_retries=3)
 
 
 class EndpointUsageRateLimitError(JsonableError):
@@ -309,7 +309,7 @@ class EndpointUsageRateLimitError(JsonableError):
 
 @csrf_exempt
 @typed_endpoint
-def verify_registration_takeover_challenge_ack_endpoint(
+def verify_registration_transfer_challenge_ack_endpoint(
     request: HttpRequest,
     *,
     hostname: str,
@@ -334,13 +334,13 @@ def verify_registration_takeover_challenge_ack_endpoint(
         # attacker to fill up the bucket here, and issues can be handled adequately by
         # manual intervention.
         if settings.RATE_LIMITING:
-            rate_limit_endpoint_absolute("verify_registration_takeover_challenge_ack_endpoint")
+            rate_limit_endpoint_absolute("verify_registration_transfer_challenge_ack_endpoint")
     except RateLimitedError:
         # This rate limit being hit means we've either set the limits too low for legitimate use,
         # or the endpoint is being spammed. Ideally, we want this endpoint to always be operational
         # so this deserves logging a warning.
         logger.warning(
-            "Rate limit exceeded for verify_registration_takeover_challenge_ack_endpoint"
+            "Rate limit exceeded for verify_registration_transfer_challenge_ack_endpoint"
         )
         raise EndpointUsageRateLimitError(
             _(
@@ -354,7 +354,7 @@ def verify_registration_takeover_challenge_ack_endpoint(
     except RemoteZulipServer.DoesNotExist:
         raise JsonableError(_("Registration not found for this hostname"))
 
-    session = RegistrationTakeOverVerificationSession()
+    session = RegistrationTransferVerificationSession()
     url = urljoin(f"https://{hostname}", f"/api/v1/zulip-services/verify/{access_token}/")
 
     exception_and_error_message: tuple[Exception, str] | None = None
@@ -362,8 +362,8 @@ def verify_registration_takeover_challenge_ack_endpoint(
         response = session.get(url)
         response.raise_for_status()
     except requests.exceptions.HTTPError as e:
-        if check_takeover_challenge_response_secret_not_prepared(e.response):
-            logger.info("verify_registration_takeover:host:%s|secret_not_prepared", hostname)
+        if check_transfer_challenge_response_secret_not_prepared(e.response):
+            logger.info("verify_registration_transfer:host:%s|secret_not_prepared", hostname)
             raise JsonableError(_("The host reported it has no verification secret."))
 
         error_message = _("Error response received from the host: {status_code}").format(
@@ -385,14 +385,14 @@ def verify_registration_takeover_challenge_ack_endpoint(
 
     if exception_and_error_message is not None:
         exception, error_message = exception_and_error_message
-        logger.info("verify_registration_takeover:host:%s|exception:%s", hostname, exception)
+        logger.info("verify_registration_transfer:host:%s|exception:%s", hostname, exception)
         raise JsonableError(error_message)
 
     data = response.json()
     verification_secret = data["verification_secret"]
-    validate_registration_takeover_verification_secret(verification_secret, hostname)
+    validate_registration_transfer_verification_secret(verification_secret, hostname)
 
-    logger.info("verify_registration_takeover:host:%s|success", hostname)
+    logger.info("verify_registration_transfer:host:%s|success", hostname)
     new_secret_key = get_random_string(RemoteZulipServer.API_KEY_LENGTH)
     with transaction.atomic(durable=True):
         remote_server.api_key = new_secret_key
@@ -410,7 +410,7 @@ def verify_registration_takeover_challenge_ack_endpoint(
     )
 
 
-def check_takeover_challenge_response_secret_not_prepared(response: requests.Response) -> bool:
+def check_transfer_challenge_response_secret_not_prepared(response: requests.Response) -> bool:
     secret_not_prepared = False
     try:
         secret_not_prepared = (

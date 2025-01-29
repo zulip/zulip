@@ -102,7 +102,7 @@ from zerver.views.push_notifications import (
     self_hosting_auth_json_endpoint,
     self_hosting_auth_not_configured,
     self_hosting_auth_redirect_endpoint,
-    self_hosting_registration_takeover_challenge_verify,
+    self_hosting_registration_transfer_challenge_verify,
     send_test_push_notification_api,
 )
 from zerver.views.reactions import add_reaction, remove_reaction
@@ -872,7 +872,7 @@ urls += [
 urls += [
     path(
         "api/v1/zulip-services/verify/<str:access_token>/",
-        self_hosting_registration_takeover_challenge_verify,
+        self_hosting_registration_transfer_challenge_verify,
     ),
 ]
 

@@ -13,7 +13,7 @@ from typing_extensions import override
 from zerver.lib.management import ZulipBaseCommand, check_config
 from zerver.lib.remote_server import (
     PushBouncerSession,
-    prepare_for_registration_takeover_challenge,
+    prepare_for_registration_transfer_challenge,
     send_json_to_push_bouncer,
     send_server_data_to_push_bouncer,
 )
@@ -41,7 +41,7 @@ class Command(ZulipBaseCommand):
             help="Automatically rotate your server's zulip_org_key",
         )
         action.add_argument(
-            "--registration-takeover",
+            "--registration-transfer",
             action="store_true",
             help="Overwrite pre-existing registration for the hostname",
         )
@@ -114,8 +114,8 @@ class Command(ZulipBaseCommand):
                 # enough about what happened.
                 return
 
-        if options["registration_takeover"]:
-            org_id, org_key = self.do_registration_takeover_flow(hostname)
+        if options["registration_transfer"]:
+            org_id, org_key = self.do_registration_transfer_flow(hostname)
             # We still want to proceed with a regular request to the registration endpoint,
             # as it'll update the registration with new information such as the contact email.
             request["zulip_org_id"] = org_id
@@ -154,24 +154,24 @@ class Command(ZulipBaseCommand):
                 )
             print("Mobile Push Notification Service registration successfully updated!")
 
-        if options["registration_takeover"]:
+        if options["registration_transfer"]:
             print()
             print(
                 "Make sure to restart the server next by running /home/zulip/deployments/current/scripts/restart-server "
                 "so that the new credentials are reloaded."
             )
 
-    def do_registration_takeover_flow(self, hostname: str) -> tuple[str, str]:
+    def do_registration_transfer_flow(self, hostname: str) -> tuple[str, str]:
         params = {"hostname": hostname}
         response = self._request_push_notification_bouncer_url(
-            "/api/v1/remotes/server/register/takeover", params
+            "/api/v1/remotes/server/register/transfer", params
         )
         verification_secret = response.json()["verification_secret"]
 
         print(
             "Received a verification secret from the service. Preparing to serve it at the verification URL."
         )
-        token_for_push_bouncer = prepare_for_registration_takeover_challenge(verification_secret)
+        token_for_push_bouncer = prepare_for_registration_transfer_challenge(verification_secret)
 
         print("Sending ACK to the service and awaiting completion of verification...")
         response = self._request_push_notification_bouncer_url(
