@@ -524,7 +524,7 @@
         border: 1px solid hsl(0deg 0% 87%);
         padding: 0.5em 0.75em;
         margin-bottom: 0.25em;
-        word-break: break-word;
+        overflow-wrap: anywhere;
         min-height: 48px;
     }
 

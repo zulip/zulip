@@ -18,7 +18,7 @@
     min-width: max-content;
 
     & > li {
-        word-break: break-word;
+        overflow-wrap: anywhere;
 
         & > a {
             display: flex;
