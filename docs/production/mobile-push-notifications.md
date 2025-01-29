@@ -317,6 +317,70 @@ If you'd like to rotate your server's API key for this service
 generate a new `zulip_org_key` and store that new key in
 `/etc/zulip/zulip-secrets.conf`.
 
+## Moving your registration to a new server
+
+When migrating your Zulip deployment to a new machine, you will likely want to
+retain your original registration and successfully transfer it. This is
+especially important if you have an active plan for the Mobile Push
+Notification Service.
+
+The best way to preserve your registration when moving to a new server is to
+copy over the credentials from the old server. These credentials are stored in
+the `/etc/zulip/zulip-secrets.conf` file, specifically in the `zulip_org_id`
+and `zulip_org_key` fields. After installing Zulip on the new machine, ensure
+that `zulip_org_id` and `zulip_org_key` are set to the same values as on the
+old server.
+
+If you used the [official backup tool](export-and-import.md#backups)
+to restore your Zulip deployment on the new machine, it will have
+automatically transferred all secrets, including the registration
+credentials, correctly.
+
+### Transferring your registration if you lost the original credentials
+
+If you have lost your original credentials, you can still transfer your Zulip
+registration to a new server by following these steps:
+
+1. Ensure Zulip is installed and accessible:
+
+   - Install Zulip on the new machine and ensure it is fully operational.
+   - The server must be accessible on the hostname associated with the original
+     registration, with properly configured SSL certificates.
+   - This process **will not work** if your Zulip server is on a local network
+     or otherwise unreachable from the internet by our Mobile Push Notification
+     Service. If that’s the case, contact
+     [support@zulip.com](mailto:support@zulip.com) for assistance.
+
+1. Run the below command to transfer your registration to the new server. This will
+   execute a verification flow to prove to our Mobile Push Notification Service that
+   you control the hostname and upon success, re-generate the credentials for
+   using the registration and write them to the `/etc/zulip/zulip-secrets.conf` file.
+
+   ```bash
+   /home/zulip/deployments/current/manage.py register_server --registration-transfer
+   ```
+
+   Note that the `zulip_org_key` value changes in the process, and therefore if you
+   still have an old server running using the service, it will lose access upon
+   execution of this command.
+
+1. Apply the changes by restarting the server:
+
+   ```bash
+   /home/zulip/deployments/current/scripts/restart-server
+   ```
+
+   Finally, [verify][verify-push-notifications] that push
+   notifications are working correctly. If you encounter further
+   issues, contact [support@zulip.com](mailto:support@zulip.com).
+
+1. If you store `/etc/zulip/zulip-secrets.conf` secrets externally in
+   an external configuration management tool (Ansible, etc.), or
+   [backups](export-and-import.md#backups), this is a good time to
+   update that configuration.
+
+[verify-push-notifications]: https://zulip.com/help/mobile-notifications#testing-mobile-notifications
+
 ## Deactivating your server's registration
 
 If you are deleting your Zulip server or otherwise no longer want to
