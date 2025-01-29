@@ -343,7 +343,7 @@ RATE_LIMITING_RULES: dict[str, list[tuple[int, int]]] = {}
 # only, so we don't need a nice overriding system for them like we do
 # for RATE_LIMITING_RULES.
 ABSOLUTE_USAGE_LIMITS_BY_ENDPOINT = {
-    "verify_registration_takeover_challenge_ack_endpoint": [
+    "verify_registration_transfer_challenge_ack_endpoint": [
         # 30 requests per day
         (86400, 30),
     ],

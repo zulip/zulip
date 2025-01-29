@@ -40,17 +40,17 @@ logger = logging.getLogger(__name__)
 
 ParamT = ParamSpec("ParamT")
 
-REMOTE_SERVER_TAKEOVER_TOKEN_SALT = "remote_server_takeover"
+REMOTE_SERVER_TAKEOVER_TOKEN_SALT = "remote_server_transfer"
 REMOTE_SERVER_TAKEOVER_TOKEN_VALIDITY_SECONDS = 10
 
 
-def generate_registration_takeover_verification_secret(hostname: str) -> str:
+def generate_registration_transfer_verification_secret(hostname: str) -> str:
     signer = TimestampSigner(salt=REMOTE_SERVER_TAKEOVER_TOKEN_SALT)
     secret = base64.b16encode(signer.sign(hostname).encode()).decode()
     return secret
 
 
-def validate_registration_takeover_verification_secret(secret: str, hostname: str) -> None:
+def validate_registration_transfer_verification_secret(secret: str, hostname: str) -> None:
     signer = TimestampSigner(salt=REMOTE_SERVER_TAKEOVER_TOKEN_SALT)
     try:
         signed_data = base64.b16decode(secret).decode()
