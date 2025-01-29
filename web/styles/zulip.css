@@ -2053,3 +2053,7 @@ body:not(.hide-left-sidebar) {
     font-style: italic;
     margin-right: auto;
 }
+
+#topic-summary-modal {
+    width: 45rem;
+}
