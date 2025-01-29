@@ -43,7 +43,12 @@ class Command(ZulipBaseCommand):
         action.add_argument(
             "--registration-transfer",
             action="store_true",
-            help="Overwrite pre-existing registration for the hostname",
+            help="""\
+If your server uses a publicly verifiable SSL certificate for a
+hostname that is already registered for Zulip services, transfers the
+registration to this server by changing the zulip_org_key secret for
+that registration and saving the updated secret in
+/etc/zulip/zulip-secrets.conf.""",
         )
         action.add_argument(
             "--deactivate",
