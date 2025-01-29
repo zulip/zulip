@@ -217,6 +217,10 @@ export function get_emoji_matcher(query: string): (emoji: EmojiSuggestion) => bo
     };
 }
 
+export function normalize_for_exact_matching(s: string): string {
+    return s.normalize("NFD").replace(unicode_marks, "").toLowerCase();
+}
+
 // space, hyphen, underscore and slash characters are considered word
 // boundaries for now, but we might want to consider the characters
 // from BEFORE_MENTION_ALLOWED_REGEX in zerver/lib/mention.py later.
@@ -249,20 +253,22 @@ export function triage_raw<T>(
     const begins_with_case_insensitive_matches = [];
     const word_boundary_matches = [];
     const no_matches = [];
-    const lower_query = query ? query.toLowerCase() : "";
+    const normalized_query = normalize_for_exact_matching(query);
 
     for (const obj of objs) {
         const item = get_item(obj);
-        const lower_item = item.toLowerCase();
+        const normalized_item = normalize_for_exact_matching(item);
 
-        if (lower_item === lower_query) {
+        if (normalized_item === normalized_query) {
             exact_matches.push(obj);
         } else if (item.startsWith(query)) {
             begins_with_case_sensitive_matches.push(obj);
-        } else if (lower_item.startsWith(lower_query)) {
+        } else if (normalized_item.startsWith(normalized_query)) {
             begins_with_case_insensitive_matches.push(obj);
         } else if (
-            new RegExp(`[${word_boundary_chars}]${_.escapeRegExp(lower_query)}`).test(lower_item)
+            new RegExp(`[${word_boundary_chars}]${_.escapeRegExp(normalized_query)}`).test(
+                normalized_item,
+            )
         ) {
             word_boundary_matches.push(obj);
         } else {
