@@ -339,7 +339,11 @@ def missing_thumbnails(
 
 
 def maybe_thumbnail(
-    content: bytes | pyvips.Source, content_type: str | None, path_id: str, realm_id: int
+    content: bytes | pyvips.Source,
+    content_type: str | None,
+    path_id: str,
+    realm_id: int,
+    skip_events: bool = False,
 ) -> ImageAttachment | None:
     if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
         # If it doesn't self-report as an image file that we might want
@@ -369,7 +373,13 @@ def maybe_thumbnail(
                 thumbnail_metadata=[],
                 content_type=content_type,
             )
-            queue_event_on_commit("thumbnail", {"id": image_row.id})
+            if not skip_events:
+                # The only reason to skip sending thumbnail events is
+                # during import, when the events are separately
+                # enqueued during message rendering; thumbnailing them
+                # before/during message rendering can cause race
+                # conditions.
+                queue_event_on_commit("thumbnail", {"id": image_row.id})
             return image_row
     except BadImageError:
         return None
