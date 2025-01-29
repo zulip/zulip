@@ -1371,3 +1371,24 @@ input.settings_text_input {
 .text-error {
     color: hsl(1.06deg 44.66% 50.39%);
 }
+
+.sticky-bottom-option {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    color: var(--color-dropdown-item);
+    border: none;
+    border-top: 1px solid var(--color-border-zulip-button);
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+
+    &:hover {
+        color: var(--color-dropdown-item);
+        background-color: var(--background-color-active-dropdown-item);
+    }
+
+    &:focus {
+        background-color: var(--background-color-active-dropdown-item);
+        outline: none;
+    }
+}
