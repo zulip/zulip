@@ -233,6 +233,23 @@ that registration and saving the updated secret in
             except Exception:
                 raise e
 
+            if (
+                "code" in content_dict
+                and content_dict["code"] == "HOSTNAME_ALREADY_IN_USE_BOUNCER_ERROR"
+            ):
+                print(
+                    "--------------------------------\n"
+                    "The hostname is already in use by another server. If you control the hostname \n"
+                    "and want to transfer the registration to this server, you can run manage.py register_server \n"
+                    "with the --registration-transfer flag.\n"
+                    "Note that this will invalidate old credentials if another server is still using them.\n"
+                    "\n"
+                    "For more information, see: \n"
+                    "\n"
+                    "https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#moving-your-registration-to-a-new-server"
+                )
+                raise CommandError
+
             error_message = content_dict["msg"]
             raise CommandError(
                 f'Error received from the push notification service: "{error_message}"'
