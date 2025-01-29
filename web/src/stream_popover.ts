@@ -725,8 +725,8 @@ export async function build_move_topic_to_stream_popover(
             item_click_callback: move_topic_on_update,
             $events_container: $("#move_topic_modal"),
             tippy_props: {
-                // Overlap dropdown search input with stream selection button.
-                offset: [0, -30],
+                // Show dropdown search input below stream selection button.
+                offset: [0, 2],
             },
         }).setup();
 
