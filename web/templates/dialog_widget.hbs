@@ -15,6 +15,9 @@
                 {{{ html_body }}}
             </main>
             <footer class="modal__footer">
+                {{#if footer_minor_text }}
+                <div class="dialog-widget-footer-minor-text">{{footer_minor_text}}</div>
+                {{/if}}
                 {{#unless single_footer_button}}
                 <button class="modal__button dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{{ html_exit_button }}}</button>
                 {{/unless}}

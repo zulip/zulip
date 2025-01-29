@@ -79,6 +79,7 @@ export type DialogWidgetConfig = {
     loading_spinner?: boolean;
     update_submit_disabled_state_on_change?: boolean;
     always_visible_scrollbar?: boolean;
+    footer_minor_text?: string;
 };
 
 type RequestOpts = {
@@ -179,6 +180,7 @@ export function launch(conf: DialogWidgetConfig): string {
         id: conf.id,
         single_footer_button: conf.single_footer_button,
         always_visible_scrollbar: conf.always_visible_scrollbar,
+        footer_minor_text: conf.footer_minor_text,
     });
     const $dialog = $(html);
     $("body").append($dialog);
