@@ -693,6 +693,7 @@ export function discard_realm_default_property_element_changes(elem: HTMLElement
         case "user_list_style":
             // Because this widget has a radio button structure, it
             // needs custom reset code.
+            assert(typeof property_value === "number" || typeof property_value === "string");
             $elem
                 .find(`input[value='${CSS.escape(property_value.toString())}']`)
                 .prop("checked", true);

@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 343  # Last bumped for `stream_ids` field in stream deletion
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (310, 0)  # bumped 2024-01-13 to upgrade Python requirements
+PROVISION_VERSION = (311, 0)  # bumped 2024-01-29 to upgrade JavaScript dependencies
