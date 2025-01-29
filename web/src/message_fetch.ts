@@ -28,6 +28,7 @@ import {narrow_term_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as ui_report from "./ui_report.ts";
+import * as util from "./util.ts";
 
 const response_schema = z.object({
     anchor: z.number(),
@@ -444,28 +445,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
 
             ui_report.show_error($("#connection-error"));
 
-            // We need to respect the server's rate-limiting headers, but beyond
-            // that, we also want to avoid contributing to a thundering herd if
-            // the server is giving us 500s/502s.
-            //
-            // So we do the maximum of the retry-after header and an exponential
-            // backoff with ratio 2 and half jitter. Starts at 1-2s and ends at
-            // 16-32s after 5 failures.
-            const backoff_scale = Math.min(2 ** attempt, 32);
-            const backoff_delay_secs = ((1 + Math.random()) / 2) * backoff_scale;
-            let rate_limit_delay_secs = 0;
-            const rate_limited_error_schema = z.object({
-                "retry-after": z.number(),
-                code: z.literal("RATE_LIMIT_HIT"),
-            });
-            const parsed = rate_limited_error_schema.safeParse(xhr.responseJSON);
-            if (xhr.status === 429 && parsed?.success && parsed?.data) {
-                // Add a bit of jitter to the required delay suggested by the
-                // server, because we may be racing with other copies of the web
-                // app.
-                rate_limit_delay_secs = parsed.data["retry-after"] + Math.random() * 0.5;
-            }
-            const delay_secs = Math.max(backoff_delay_secs, rate_limit_delay_secs);
+            const delay_secs = util.get_retry_backoff_seconds(xhr, attempt, true);
             setTimeout(() => {
                 load_messages(opts, attempt + 1);
             }, delay_secs * 1000);
