@@ -130,10 +130,10 @@ const keydown_unshift_mappings = {
 
 const keydown_ctrl_mappings = {
     219: {name: "escape", message_view_only: false}, // '['
-    13: {name: "ctrl_enter", message_view_only: true}, // enter
 };
 
 const keydown_cmd_or_ctrl_mappings = {
+    13: {name: "ctrl_enter", message_view_only: true}, // enter
     67: {name: "copy_with_c", message_view_only: false}, // 'C'
     75: {name: "search_with_k", message_view_only: false}, // 'K'
     83: {name: "star_message", message_view_only: true}, // 'S'
@@ -229,7 +229,15 @@ export function get_keydown_hotkey(e) {
     }
 
     const isCmdOrCtrl = common.has_mac_keyboard() ? e.metaKey : e.ctrlKey;
-    if (isCmdOrCtrl && !e.shiftKey) {
+
+    // On Mac, isCmdOrCtrl is true for Cmd and false for Ctrl. However, the behavior
+    // of Cmd+Enter and Ctrl+Enter is the same on Mac, which is to send the message.
+    // Therefore, if the pressed key is Ctrl+Enter, checking isCmdOrCtrl alone would
+    // have skipped the below if condition for the Ctrl+Enter case. Thus, we should
+    // check for the Ctrl+Enter combination separately, as the ASCII value of Ctrl+Enter
+    // is 13, and we don't want the if block to run for all Ctrl hotkeys. So, we check
+    // for the ASCII 13 key combination only.
+    if ((isCmdOrCtrl && !e.shiftKey) || (e.ctrlKey && e.which === 13)) {
         hotkey = keydown_cmd_or_ctrl_mappings[e.which];
         if (hotkey) {
             return hotkey;
