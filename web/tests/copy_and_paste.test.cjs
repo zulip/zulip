@@ -44,6 +44,7 @@ run_test("try_stream_topic_syntax_text", () => {
             "http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic/old.20FAILED.20EXPORT/near/100",
             "#**Rome>old FAILED EXPORT@100**",
         ],
+        ["http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic//near/100", "#**Rome>@100**"],
         // malformed urls
         ["http://zulip.zulipdev.com/narrow/channel/4-Rome/topic/old.20FAILED.20EXPORT"],
         ["http://zulip.zulipdev.com/#not_narrow/channel/4-Rome/topic/old.20FAILED.20EXPORT"],
