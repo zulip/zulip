@@ -254,9 +254,11 @@ export function compare_by_pms(user_a: User, user_b: User): number {
 
     // We use alpha sort as a tiebreaker, which might be helpful for
     // new users.
-    if (user_a.full_name < user_b.full_name) {
+    const a_name_without_diacritics = typeahead.remove_diacritics(user_a.full_name);
+    const b_name_without_diacritics = typeahead.remove_diacritics(user_b.full_name);
+    if (a_name_without_diacritics < b_name_without_diacritics) {
         return -1;
-    } else if (user_a === user_b) {
+    } else if (a_name_without_diacritics === b_name_without_diacritics) {
         return 0;
     }
     return 1;
