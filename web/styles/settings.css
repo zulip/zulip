@@ -1,7 +1,9 @@
-/* The height of the settings header (including tab switcher). */
-$settings_header_height: 45px;
-/* The width of the settings sidebar. */
-$settings_sidebar_width: 255px;
+:root {
+    /* The height of the settings header (including tab switcher). */
+    --settings-header-height: 45px;
+    /* The width of the settings sidebar. */
+    --settings-sidebar-width: 255px;
+}
 
 label {
     margin: 0;
@@ -1314,12 +1316,12 @@ label.preferences-radio-choice-label {
     .sidebar-wrapper {
         float: left;
         position: relative;
-        width: $settings_sidebar_width;
+        width: var(--settings-sidebar-width);
         height: 100%;
 
         .tab-container {
             box-sizing: border-box;
-            height: $settings_header_height;
+            height: var(--settings-header-height);
             padding: 6px;
             background-color: var(--color-background-modal-bar);
             border-bottom: 1px solid var(--color-border-modal-bar);
@@ -1352,7 +1354,7 @@ label.preferences-radio-choice-label {
     }
 
     .sidebar {
-        height: calc(100% - $settings_header_height);
+        height: calc(100% - var(--settings-header-height));
         overflow-y: auto;
         border-right: 1px solid var(--color-border-modal);
 
@@ -1486,14 +1488,14 @@ label.preferences-radio-choice-label {
 
     .content-wrapper {
         position: absolute;
-        left: $settings_sidebar_width;
-        width: calc(100% - $settings_sidebar_width);
+        left: var(--settings-sidebar-width);
+        width: calc(100% - var(--settings-sidebar-width));
         height: 100%;
         overflow: hidden;
 
         .settings-header {
             width: 100%;
-            height: $settings_header_height;
+            height: var(--settings-header-height);
             box-sizing: border-box;
             border-bottom: 1px solid var(--color-border-modal-bar);
             background-color: var(--color-background-modal-bar);
@@ -1508,7 +1510,7 @@ label.preferences-radio-choice-label {
         #settings_content {
             position: relative;
             width: 100%;
-            height: calc(100% - $settings_header_height);
+            height: calc(100% - var(--settings-header-height));
 
             float: left;
             overflow: auto;

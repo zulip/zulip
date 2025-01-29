@@ -1,5 +1,7 @@
-/* Width of emoji used by user to display status. */
-$user_status_emoji_width: 24px;
+:root {
+    /* Width of emoji used by user to display status. */
+    --user-status-emoji-width: 24px;
+}
 
 .right-sidebar {
     & a:hover {
@@ -362,7 +364,7 @@ $user_status_emoji_width: 24px;
 
         .user-name {
             display: inline-block;
-            max-width: calc(100% - $user_status_emoji_width);
+            max-width: calc(100% - var(--user-status-emoji-width));
             overflow-x: hidden;
             text-overflow: ellipsis;
         }
