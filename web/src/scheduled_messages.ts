@@ -23,6 +23,11 @@ export const scheduled_messages_data = new Map<number, ScheduledMessage>();
 
 let selected_send_later_timestamp: number | undefined;
 
+// show_minimum_scheduled_message_delay_minutes_note is a flag to show the user a note in the
+// confirmation banner if the message is scheduled for the minimal 5 minutes ahead time,
+// regardless of whether the user tried to schedule it for sooner or not.
+export let show_minimum_scheduled_message_delay_minutes_note = false;
+
 function compute_send_times(now = new Date()): Record<TimeKey, number> {
     const send_times: Record<string, number> = {};
 
@@ -214,4 +219,8 @@ export function reset_selected_schedule_timestamp(): void {
 
 export function initialize(scheduled_messages_params: StateData["scheduled_messages"]): void {
     add_scheduled_messages(scheduled_messages_params.scheduled_messages);
+}
+
+export function set_minimum_scheduled_message_delay_minutes_note(flag: boolean): void {
+    show_minimum_scheduled_message_delay_minutes_note = flag;
 }
