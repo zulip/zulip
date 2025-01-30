@@ -2,7 +2,6 @@
 
 const assert = require("node:assert/strict");
 
-const {$t} = require("./lib/i18n.cjs");
 const {set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -58,13 +57,6 @@ run_test("options for dropdown widget", () => {
     saved_snippets.add_saved_snippet(saved_snippet);
 
     assert.deepEqual(saved_snippets.get_options_for_dropdown_widget(), [
-        {
-            unique_id: -1,
-            name: $t({defaultMessage: "Add a new saved snippet"}),
-            description: "",
-            bold_current_selection: true,
-            has_delete_icon: false,
-        },
         {
             unique_id: 3,
             name: "Another saved snippet",
