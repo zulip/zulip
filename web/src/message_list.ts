@@ -538,7 +538,7 @@ export class MessageList {
     }
 
     show_edit_topic_on_recipient_row($recipient_row: JQuery, $form: JQuery): void {
-        $recipient_row.find(".topic_edit_form").append($form);
+        $recipient_row.find(".topic_edit").append($form);
         $recipient_row.find(".stream_topic").hide();
         $recipient_row.find(".topic_edit").show();
         $recipient_row.find(".recipient-bar-control").hide();
@@ -546,7 +546,7 @@ export class MessageList {
 
     hide_edit_topic_on_recipient_row($recipient_row: JQuery): void {
         $recipient_row.find(".stream_topic").show();
-        $recipient_row.find(".topic_edit_form").empty();
+        $recipient_row.find(".topic_edit").empty();
         $recipient_row.find(".topic_edit").hide();
         $recipient_row.find(".recipient-bar-control").show();
     }
