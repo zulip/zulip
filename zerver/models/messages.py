@@ -667,6 +667,7 @@ class ArchivedUserMessage(AbstractUserMessage):
 class ImageAttachment(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     path_id = models.TextField(db_index=True, unique=True)
+    content_type = models.TextField(null=True)
 
     original_width_px = models.IntegerField()
     original_height_px = models.IntegerField()

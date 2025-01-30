@@ -6,7 +6,6 @@ from typing import Any
 
 import pyvips
 from django.db import transaction
-from django.db.models import OuterRef, Subquery
 from typing_extensions import override
 
 from zerver.actions.message_edit import do_update_embedded_data
@@ -22,7 +21,7 @@ from zerver.lib.thumbnail import (
     rewrite_thumbnailed_images,
 )
 from zerver.lib.upload import save_attachment_contents, upload_backend
-from zerver.models import ArchivedMessage, Attachment, ImageAttachment, Message
+from zerver.models import ArchivedMessage, ImageAttachment, Message
 from zerver.worker.base import QueueProcessingWorker, assign_queue
 
 logger = logging.getLogger(__name__)
@@ -40,21 +39,11 @@ class ThumbnailWorker(QueueProcessingWorker):
                 # directly to a thumbnail URL we have not made yet.
                 # This may mean that we may generate 0 thumbnail
                 # images once we get the lock.
-                row = (
-                    ImageAttachment.objects.select_for_update(of=("self",))
-                    .annotate(
-                        original_content_type=Subquery(
-                            Attachment.objects.filter(path_id=OuterRef("path_id")).values(
-                                "content_type"
-                            )
-                        )
-                    )
-                    .get(id=event["id"])
-                )
+                row = ImageAttachment.objects.select_for_update(of=("self",)).get(id=event["id"])
             except ImageAttachment.DoesNotExist:  # nocoverage
                 logger.info("ImageAttachment row %d missing", event["id"])
                 return
-            uploaded_thumbnails = ensure_thumbnails(row, row.original_content_type)
+            uploaded_thumbnails = ensure_thumbnails(row)
         end = time.time()
         logger.info(
             "Processed %d thumbnails (%dms)",
@@ -63,10 +52,8 @@ class ThumbnailWorker(QueueProcessingWorker):
         )
 
 
-def ensure_thumbnails(
-    image_attachment: ImageAttachment, original_content_type: str | None = None
-) -> int:
-    needed_thumbnails = missing_thumbnails(image_attachment, original_content_type)
+def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
+    needed_thumbnails = missing_thumbnails(image_attachment)
 
     if not needed_thumbnails:
         return 0
@@ -174,8 +161,8 @@ def ensure_thumbnails(
             is_animated=is_animated,
             original_width_px=image_attachment.original_width_px,
             original_height_px=image_attachment.original_height_px,
-            original_content_type=original_content_type,
-            transcoded_image=get_transcoded_format(image_attachment, original_content_type),
+            original_content_type=image_attachment.content_type,
+            transcoded_image=get_transcoded_format(image_attachment),
         ),
     )
     return written_images
