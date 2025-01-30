@@ -24,7 +24,7 @@
     background-color: var(--color-background-modal);
     max-width: calc(100% - 32px);
     max-height: 96%;
-    width: 32.5rem;
+    width: 37.1428em; /* 520px at 14px em */
     border-radius: 4px;
     box-sizing: border-box;
 }
