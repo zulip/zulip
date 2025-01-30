@@ -102,12 +102,14 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
     const show_go_to_channel_feed =
         user_settings.web_channel_default_view !==
         web_channel_default_view_values.channel_feed.code;
+    const stream_not_archived = !sub_store.get(stream_id)?.is_archived;
     const content = render_left_sidebar_stream_actions_popover({
         stream: {
             ...sub_store.get(stream_id),
             url: browser_history.get_full_url(stream_hash),
         },
         show_go_to_channel_feed,
+        stream_not_archived,
     });
 
     popover_menus.toggle_popover_menu(elt, {
