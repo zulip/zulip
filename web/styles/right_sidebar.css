@@ -467,11 +467,12 @@
     grid-template-rows: var(--line-height-sidebar-row-prominent);
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    margin-bottom: 10px;
-    margin-left: var(--right-sidebar-heading-left-spacing);
+    padding-bottom: 10px;
+    padding-left: var(--right-sidebar-heading-left-spacing);
     /* The scrollbar doesn't extend this high, but we want the three-dot
        menus to line up. */
-    margin-right: var(--width-simplebar-scroll-hover);
+    padding-right: var(--width-simplebar-scroll-hover);
+    background-color: var(--color-background);
 
     #userlist-header-search {
         display: grid;
