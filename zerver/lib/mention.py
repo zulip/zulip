@@ -3,6 +3,7 @@ import re
 from collections import defaultdict
 from dataclasses import dataclass
 from re import Match
+from typing import Literal
 
 from django.conf import settings
 from django.db.models import Q
@@ -304,8 +305,22 @@ def possible_mentions(content: str) -> PossibleMentions:
     )
 
 
-def possible_user_group_mentions(content: str) -> set[str]:
-    return {m.group("match") for m in USER_GROUP_MENTIONS_RE.finditer(content)}
+def possible_user_group_mentions(content: str) -> dict[str, Literal["silent", "non-silent"]]:
+    # maps each group name to its mention type, silent or non-silent.
+    mentions: dict[str, Literal["silent", "non-silent"]] = {}
+
+    for mention in USER_GROUP_MENTIONS_RE.finditer(content):
+        group_mention = mention.group("match")
+
+        # non-silent mention can override silent.
+        if not mention.group("silent"):
+            mentions[group_mention] = "non-silent"
+
+        # silent mention should NOT override non-silent.
+        if mention.group("silent") and group_mention not in mentions:
+            mentions[group_mention] = "silent"
+
+    return mentions
 
 
 def get_possible_mentions_info(
@@ -362,40 +377,41 @@ class MentionData:
     def init_user_group_data(self, realm_id: int, content: str) -> None:
         self.user_group_name_info: dict[str, NamedUserGroup] = {}
         self.user_group_members: dict[int, set[int]] = defaultdict(set)
-        user_group_names = possible_user_group_mentions(content)
-        if user_group_names:
+        user_group_names_mentions = possible_user_group_mentions(content)
+        if user_group_names_mentions:
             named_user_groups = NamedUserGroup.objects.filter(
-                realm_id=realm_id, name__in=user_group_names
+                realm_id=realm_id, name__in=user_group_names_mentions
             )
-            # we need user_group_name_info for both groups, deactivated and non-deactivated.
+
+            # No filter here as we need user_group_name_info for all groups mentions.
             self.user_group_name_info = {group.name.lower(): group for group in named_user_groups}
 
-            non_deactivated_group_ids = [
-                group.id for group in named_user_groups if not group.deactivated
+            # We are interested only in fetching group membersship for
+            # non-deactivated groups and non-silent mentioned groups.
+            filtered_group_ids = [
+                group.id
+                for group in named_user_groups
+                if not group.deactivated
+                and user_group_names_mentions.get(group.name) == "non-silent"
             ]
 
-            # If there are no matching non_deactivated_group_ids
-            # (e.g non-existent user_group_names or only deactivated-groups were mentioned)
+            # If no filtered_group_ids exist,
             # then no need to execute the relatively expensive recursive CTE query
             # triggered by get_root_id_annotated_recursive_subgroups_for_groups.
             # Also the base case for the recursive CTE requires non-empty matching rows.
-            if len(non_deactivated_group_ids) == 0:
+            if len(filtered_group_ids) == 0:
                 return
 
             # Here we fetch membership for non-deactivated groups in a
             # single, efficient bulk query. Deactivated group mentions
             # are non-operative, so we don't need to waste resources
-            # collecting membership data for them. Further possible
-            # optimizations include, in order of value:
+            # collecting membership data for them. Further possible optimization:
             #
-            # - Skipping fetching membership data for silent mention syntax.
             # - Filtering groups the current user doesn't have permission to mention
             #   from what we fetch membership for. This requires care to avoid race bugs
             #   if the user's permissions change while the message is being sent.
             for group_root_id, member_id in (
-                get_root_id_annotated_recursive_subgroups_for_groups(
-                    non_deactivated_group_ids, realm_id
-                )
+                get_root_id_annotated_recursive_subgroups_for_groups(filtered_group_ids, realm_id)
                 .filter(direct_members__is_active=True)
                 .values_list("root_id", "direct_members")  # type: ignore[misc]  # root_id is an annotated field.
             ):

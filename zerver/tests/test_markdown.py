@@ -359,6 +359,43 @@ class MarkdownMiscTest(ZulipTestCase):
             mention_data.get_group_members(class_B.id), {cordelia.id, aaron.id, hamlet.id}
         )
 
+    def test_silent_mention_user_groups(self) -> None:
+        # silent VS non-silent group mentions, in regard to fetching group membership.
+
+        realm = get_realm("zulip")
+        aaron = self.example_user("aaron")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
+
+        hamlet_group = NamedUserGroup.objects.get(realm=realm, name="hamletcharacters")
+        zulip_group = check_add_user_group(realm, "zulip_group", [iago, aaron], acting_user=othello)
+        mention_backend = MentionBackend(realm.id)
+
+        # mention zulip_group, but silent mention hamlet_group.
+        content = "@*zulip_group*, @_*hamletcharacters*"
+        mention_data = MentionData(mention_backend, content, message_sender=None)
+
+        # non-silent mention should fetch group membership.
+        self.assertEqual(mention_data.get_group_members(zulip_group.id), {iago.id, aaron.id})
+
+        # silent mention should NOT fetch group membership.
+        self.assertEqual(mention_data.get_group_members(hamlet_group.id), set())
+
+        # We should make sure non-silent mention always results in fetching group membership,
+        # whether it precedes or follows a silent mention for the SAME group.
+
+        # non-silent before silent.
+        content = "@*hamletcharacters*, @_*hamletcharacters*"
+        mention_data = MentionData(mention_backend, content, message_sender=None)
+        self.assertEqual(mention_data.get_group_members(hamlet_group.id), {hamlet.id, cordelia.id})
+
+        # non-silent after silent.
+        content = "@_*hamletcharacters*, @*hamletcharacters*"
+        mention_data = MentionData(mention_backend, content, message_sender=None)
+        self.assertEqual(mention_data.get_group_members(hamlet_group.id), {hamlet.id, cordelia.id})
+
     def test_invalid_katex_path(self) -> None:
         with self.settings(DEPLOY_ROOT="/nonexistent"):
             with self.assertLogs(level="ERROR") as m:
@@ -2840,23 +2877,49 @@ class MarkdownMentionTest(ZulipTestCase):
         self.assertEqual(rendering_result.mentions_user_group_ids, {user_group.id})
 
     def test_possible_user_group_mentions(self) -> None:
-        def assert_mentions(content: str, names: set[str]) -> None:
+        def assert_mentions(content: str, names: dict[str, str]) -> None:
             self.assertEqual(possible_user_group_mentions(content), names)
 
-        assert_mentions("", set())
-        assert_mentions("boring", set())
-        assert_mentions("@**all**", set())
-        assert_mentions("smush@*steve*smush", set())
+        assert_mentions("", dict())
+        assert_mentions("boring", dict())
+        assert_mentions("@**all**", dict())
+        assert_mentions("smush@*steve*smush", dict())
 
+        # capture only the group mention among other mentions.
         assert_mentions(
             "@*support* Hello @**King Hamlet** and @**Cordelia, Lear's daughter**\n"
             "@**Foo van Barson** @**all**",
-            {"support"},
+            {"support": "non-silent"},
         )
-
+        # non-silent mentions
         assert_mentions(
             "Attention @*support*, @*frontend* and @*backend*\ngroups.",
-            {"support", "frontend", "backend"},
+            {"support": "non-silent", "frontend": "non-silent", "backend": "non-silent"},
+        )
+        # silent mentions
+        assert_mentions(
+            "I prefer @_*backend* over @_*frontend*,",
+            {"backend": "silent", "frontend": "silent"},
+        )
+        # silent and non-silent
+        assert_mentions(
+            "Attention @*frontend* please refer to @_*support*,",
+            {"frontend": "non-silent", "support": "silent"},
+        )
+
+        # Make sure regular (non-silent) mention always takes precedence,
+        # whether it precedes or follows a silent mention for the SAME group.
+
+        # non-silent before silent.
+        assert_mentions(
+            "@*help* the building is on fire!, folks should refer to @_*help*",
+            {"help": "non-silent"},
+        )
+
+        # non-silent after silent.
+        assert_mentions(
+            "folks should refer to @_*help*, @*help* the building is on fire! ",
+            {"help": "non-silent"},
         )
 
     def test_user_group_mention_multiple(self) -> None:
