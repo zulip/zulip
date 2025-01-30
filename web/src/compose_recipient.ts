@@ -14,6 +14,7 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import type {ComposeTriggeredOptions} from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
+import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as drafts from "./drafts.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {Option} from "./dropdown_widget.ts";
@@ -329,6 +330,19 @@ export function initialize(): void {
         prefer_top_start_placement: true,
         tippy_props: {
             offset: [-10, 5],
+        },
+        on_show_callback(instance) {
+            instance.popper.addEventListener("keydown", (event) => {
+                if (event.key !== "Enter") {
+                    return;
+                }
+                if (
+                    document.activeElement?.id === "private_message_recipient" &&
+                    composebox_typeahead.private_message_typeahead.shown
+                ) {
+                    composebox_typeahead.toggle_ignore_typeahead_keyup(true);
+                }
+            });
         },
     }).setup();
 
