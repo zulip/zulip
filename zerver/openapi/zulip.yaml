@@ -10476,6 +10476,152 @@ paths:
           $ref: "#/components/responses/SimpleSuccess"
 
   /users/{user_id}/status:
+    post:
+      operationId: update-status-for-user
+      summary: Update user status
+      tags: ["users"]
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      description: |
+        Administrator endpoint for changing the [status](/help/status-and-availability) of
+        another user.
+      x-requires-administrator: true
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                status_text:
+                  type: string
+                  description: |
+                    The text content of the status message. Sending the empty string
+                    will clear the user's status.
+
+                    **Note**: The limit on the size of the message is 60 characters.
+                  example: on vacation
+                emoji_name:
+                  type: string
+                  description: |
+                    The name for the emoji to associate with this status.
+
+                    **Changes**: New in Zulip 5.0 (feature level 86).
+                  example: car
+                emoji_code:
+                  type: string
+                  description: |
+                    A unique identifier, defining the specific emoji codepoint requested,
+                    within the namespace of the `reaction_type`.
+
+                    **Changes**: New in Zulip 5.0 (feature level 86).
+                  example: 1f697
+                reaction_type:
+                  type: string
+                  description: |
+                    A string indicating the type of emoji. Each emoji `reaction_type`
+                    has an independent namespace for values of `emoji_code`.
+
+                    Must be one of the following values:
+
+                    - `unicode_emoji` : In this namespace, `emoji_code` will be a
+                      dash-separated hex encoding of the sequence of Unicode codepoints
+                      that define this emoji in the Unicode specification.
+
+                    - `realm_emoji` : In this namespace, `emoji_code` will be the ID of
+                      the uploaded [custom emoji](/help/custom-emoji).
+
+                    - `zulip_extra_emoji` : These are special emoji included with Zulip.
+                      In this namespace, `emoji_code` will be the name of the emoji (e.g.
+                      "zulip").
+
+                    **Changes**: New in Zulip 5.0 (feature level 86).
+                  example: unicode_emoji
+            encoding:
+              away:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Insufficient permission",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response user making request does not have permission to update other user's status.:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Client did not pass any new values.",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when no changes were requested:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "status_text is too long (limit: 60 characters)",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when the
+                          `status_text` message exceeds the limit of
+                          60 characters:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Client must pass emoji_name if they pass either emoji_code or reaction_type.",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when `emoji_name` is not specified
+                          but `emoji_code` or `reaction_type` is specified:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Emoji 'invalid' does not exist",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when the emoji name does not exist:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Invalid emoji name.",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when the emoji name is invalid:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Invalid custom emoji.",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when the custom emoji is invalid:
     get:
       operationId: get-user-status
       summary: Get a user's status
