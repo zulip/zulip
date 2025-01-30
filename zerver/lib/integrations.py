@@ -198,6 +198,7 @@ class PythonAPIIntegration(Integration):
         logo: str | None = None,
         secondary_line_text: str | None = None,
         display_name: str | None = None,
+        directory_name: str | None = None,
         doc: str | None = None,
         stream_name: str | None = None,
         legacy: bool = False,
@@ -213,6 +214,10 @@ class PythonAPIIntegration(Integration):
             stream_name=stream_name,
             legacy=legacy,
         )
+
+        if directory_name is None:
+            directory_name = name
+        self.directory_name = directory_name
 
 
 class WebhookIntegration(Integration):
@@ -552,8 +557,12 @@ INTEGRATIONS: dict[str, Integration] = {
 PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
     PythonAPIIntegration("codebase", ["version-control"]),
     PythonAPIIntegration("git", ["version-control"], stream_name="commits"),
-    PythonAPIIntegration("google-calendar", ["productivity"], display_name="Google Calendar"),
-    PythonAPIIntegration("irc", ["communication"], display_name="IRC"),
+    PythonAPIIntegration(
+        "google-calendar", ["productivity"], display_name="Google Calendar", directory_name="google"
+    ),
+    PythonAPIIntegration(
+        "irc", ["communication"], display_name="IRC", directory_name="bridge_with_irc"
+    ),
     PythonAPIIntegration("jenkins", ["continuous-integration"]),
     PythonAPIIntegration(
         "jira-plugin",
@@ -564,9 +573,13 @@ PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
         stream_name="jira",
         legacy=True,
     ),
-    PythonAPIIntegration("matrix", ["communication"]),
+    PythonAPIIntegration("matrix", ["communication"], directory_name="bridge_with_matrix"),
     PythonAPIIntegration(
-        "mercurial", ["version-control"], display_name="Mercurial (hg)", stream_name="commits"
+        "mercurial",
+        ["version-control"],
+        display_name="Mercurial (hg)",
+        stream_name="commits",
+        directory_name="hg",
     ),
     PythonAPIIntegration("nagios", ["monitoring"]),
     PythonAPIIntegration(
