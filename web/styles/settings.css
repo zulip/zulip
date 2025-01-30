@@ -283,13 +283,20 @@ h3,
 
     .settings_select {
         height: 30px;
-        min-width: 325px;
+        width: var(--modal-input-width);
         max-width: 100%;
     }
 
     .account-settings-heading {
         margin-right: 10px;
     }
+}
+
+/* Make this one less wide because it's indented, so that the right
+   edge lines up with other dropdown menus. Usual 33px plus 23px extra
+   margin. */
+#id_realm_jitsi_server_url {
+    width: calc(var(--modal-input-width) - 33px - 23px);
 }
 
 /* list_select is similar to settings_select, but without the height styling. */
@@ -360,20 +367,19 @@ select.settings_select {
     /* Preserve the effective space allotted
        inside the input group.
 
-       Select element: 325px
+       Select element: --modal-input-width
        Button element: ~29px
-       Right margin:     4px
-       TOTAL           358px */
-    max-width: 358px;
+       Right margin:     4px */
+    max-width: calc(var(--modal-input-width) + 29px + 4px);
 
     .settings_select {
-        /* Hold the settings select to its usual 325px;
+        /* Hold the settings select to its usual value;
            a TODO would be to fix up the min- and max-
            width values on the parent class, as the
            min-width always applies, and max-width: 100%
            has no meaning without an actual width:
            declaration. */
-        max-width: 325px;
+        max-width: var(--modal-input-width);
         /* Disregard the min-width from the main
            .settings_select selector. */
         min-width: 0;
@@ -673,11 +679,13 @@ input[type="checkbox"] {
     }
 
     .person_picker {
-        min-width: 319px;
+        /* Subtract 2 * (2px padding) + 2 * (1px border) */
+        min-width: calc(var(--modal-input-width) - 6px);
     }
 
     & textarea {
-        width: 311px;
+        /* Subtract 6px of padding from side */
+        width: calc(var(--modal-input-width) - 12px);
     }
 }
 
@@ -699,7 +707,7 @@ input[type="checkbox"] {
     grid-template-areas: "datepicker close-button";
     grid-template-columns: minmax(0, 1fr) 1.4285em; /* 20px at 14px em */
     align-items: center;
-    width: 325px;
+    width: var(--modal-input-width);
 }
 
 .control-label-disabled {
@@ -816,8 +824,6 @@ input[type="checkbox"] {
 
 #organization-permissions {
     .dropdown-widget-button {
-        min-width: 325px;
-        width: auto;
         color: hsl(0deg 0% 33%);
     }
 }
@@ -829,9 +835,8 @@ input[type="checkbox"] {
 }
 
 .org-permissions-form .pill-container {
-    /* 319px + 2 * (2px padding) + 2 * (1px border) = 325px, which is the total
-    width of dropdown widget buttons */
-    min-width: 319px;
+    /* Subtract 2 * (2px padding) + 2 * (1px border) */
+    min-width: calc(var(--modal-input-width) - 6px);
     background-color: hsl(0deg 0% 100%);
 
     .input {
@@ -1506,7 +1511,7 @@ label.preferences-radio-choice-label {
     }
 
     .preferences-settings-form select {
-        width: 245px;
+        width: var(--modal-input-width);
     }
 }
 
@@ -1566,8 +1571,9 @@ label.preferences-radio-choice-label {
             cursor: default;
             padding-right: 1.4285em; /* 20px at 14px em */
             /* full input width minus right padding and
-               6px left padding from .settings_text_input */
-            max-width: calc(325px - 1.4285em - 6px);
+               6px left padding from .settings_text_input
+               and 1px border on each side */
+            max-width: calc(var(--modal-input-width) - 1.4285em - 8px);
         }
 
         & input[disabled].datepicker {
@@ -1589,12 +1595,13 @@ label.preferences-radio-choice-label {
 
 #edit-user-form {
     .person_picker {
-        min-width: 206px;
+        /* Subtract (1px border and 2px of padding) on each side */
+        min-width: calc(var(--modal-input-width) - 6px);
     }
 
     & textarea {
-        width: max(206px, 25vw);
-        max-width: 320px;
+        /* Subtract (1px border and 6px padding) on each side */
+        width: calc(var(--modal-input-width) - 14px);
     }
 }
 
@@ -2140,9 +2147,8 @@ label.preferences-radio-choice-label {
         box-shadow linear 0.2s;
     margin-bottom: 10px;
 
-    /* 311px + 2 * 6px (padding) + 2 * 1px (border) = 325px (min width of select
-    elements in settings) */
-    width: 311px;
+    /* Subtract 2 * 6px (padding) + 2 * 1px (border) */
+    width: calc(var(--modal-input-width) - 14px);
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);

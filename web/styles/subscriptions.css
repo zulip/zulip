@@ -1266,7 +1266,7 @@ div.settings-radio-input-parent {
 
     .settings_select {
         /* Match with select elements in settings page */
-        min-width: 325px;
+        min-width: var(--modal-input-width);
         max-width: 100%;
         height: 30px;
     }
@@ -1274,7 +1274,7 @@ div.settings-radio-input-parent {
     .dropdown-widget-button {
         /* Match the margin with other input groups around. */
         margin-bottom: 20px;
-        min-width: 325px;
+        min-width: var(--modal-input-width);
         max-width: 100%;
         width: auto;
         height: 30px;
@@ -1292,9 +1292,8 @@ div.settings-radio-input-parent {
 
 .group-permissions .pill-container,
 .stream-permissions .pill-container {
-    /* 319px + 2 * (2px padding) + 2 * (1px border) = 325px, which is the total
-    width of dropdown widget buttons */
-    min-width: 319px;
+    /* Subtract 2 * (2px padding) + 2 * (1px border) */
+    min-width: calc(var(--modal-input-width) - 6px);
     background-color: hsl(0deg 0% 100%);
 
     .input {

@@ -403,7 +403,7 @@
 
 .modal_select {
     height: 30px;
-    width: 220px;
+    width: var(--modal-input-width);
     padding: 0 25px 0 6px;
     color: hsl(0deg 0% 33%);
     border-radius: 4px;
@@ -429,6 +429,14 @@
     width: fit-content;
 }
 
+.modal__body,
+.overlay-content {
+    .dropdown-widget-button,
+    .dropdown_widget_with_label_wrapper {
+        width: var(--modal-input-width);
+    }
+}
+
 .modal_password_input,
 .modal_url_input,
 .modal_text_input {
@@ -441,7 +449,8 @@
         border-color linear 0.2s,
         box-shadow linear 0.2s;
     margin-bottom: 10px;
-    width: 206px;
+    /* subtract padding (6px each side) and border (1px each side) */
+    width: calc(var(--modal-input-width) - 14px);
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -450,6 +459,12 @@
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
     }
+}
+
+#create_bot_short_name {
+    /* A shorter dropdown width (~200px at 14px em)
+       to ensure the email all fits on one line. */
+    width: 14em;
 }
 
 #add-poll-modal {

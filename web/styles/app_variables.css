@@ -539,6 +539,7 @@
     --subscriptions-overlay-sticky-footer-height: 60px;
     /* Informational overlay */
     --informational-overlay-max-width: 43.75em;
+    --modal-input-width: 23.2142em;
 
     /*
     Maximum height of the compose box when it is not in maximised state. This
