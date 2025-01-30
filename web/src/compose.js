@@ -368,7 +368,11 @@ function schedule_message_to_custom_date() {
         clear_compose_box();
         const new_row_html = render_success_message_scheduled_banner({
             scheduled_message_id: data.scheduled_message_id,
+            minimum_scheduled_message_delay_minutes:
+                scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60,
             deliver_at,
+            minimum_scheduled_message_delay_minutes_note:
+                scheduled_messages.show_minimum_scheduled_message_delay_minutes_note,
         });
         compose_banner.clear_message_sent_banners();
         compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
