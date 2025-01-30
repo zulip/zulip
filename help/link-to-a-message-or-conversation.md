@@ -5,39 +5,56 @@ link from one Zulip [conversation](/help/reading-conversations) to another, or
 share links to Zulip conversations in issue trackers, emails, or other external
 tools.
 
-## Link to a channel or topic within Zulip
+## Link to a channel within Zulip
 
-Zulip automatically creates links to channels and topics in messages you send.
-
-The easiest way to link to a channel or topic is:
+Channel links are automatically formatted as [#channel name]().
 
 {start_tabs}
 
-1. Type `#` followed by the one or more letters of the channel name.
+{!start-composing.md!}
 
-1. Choose the desired channel from the auto-complete menu. The link will be
-   automatically formatted for you.
+1. Type `#` followed by a few letters from the channel name.
 
-1. If linking to a topic, type `>` after selecting a channel as
-   described above, followed by one or more letters of the topic name.
+1. Pick the desired channel from the autocomplete.
 
-1. Choose the desired topic from the auto-complete menu. The link will be
-   automatically formatted for you.
+1. Pick the top option from the autocomplete to link to the channel without
+   selecting a topic.
 
 !!! tip ""
 
-    When you paste a topic or channel link into Zulip, it is automatically
-    formatted for you. You can paste as plain text if you prefer with
-    <kbd data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>.
+    You can create a channel link manually by typing `#**channel name**`.
 
 {end_tabs}
 
-Alternatively, it is possible to manually format channel and topic links:
+When you paste a channel link into Zulip, it's automatically formatted as
+`#**channel name**`. You can paste as plain text if you prefer with <kbd
+data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>.
 
-```
-Channel: #**channel name**
-Topic: #**channel name>topic name**
-```
+## Link to a topic within Zulip
+
+Topic links are automatically formatted as [#channel > topic]().
+
+{start_tabs}
+
+{!start-composing.md!}
+
+1. Type `#` followed by a few letters from the channel name.
+
+1. Pick the desired channel from the autocomplete.
+
+1. Type a few letters from the topic name.
+
+1. Pick the desired topic from the autocomplete.
+
+!!! tip ""
+
+    You can create a topic link manually by typing `#**channel name>topic name**`.
+
+{end_tabs}
+
+When you paste a topic link into Zulip, it's automatically formatted as
+`#**channel name>topic name**`. You can paste as plain text if you prefer with
+<kbd data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>.
 
 ## Link to Zulip from anywhere
 
