@@ -208,6 +208,21 @@ def markdown_convert_wrapper(content: str) -> str:
 
 
 class MarkdownMiscTest(ZulipTestCase):
+    def test_silent_mention(self) -> None:
+        # This test simply illustrates that we include Cordelia
+        # in mention_data.get_user_ids() even if the mention is
+        # silent. This may or may not have downstream implications
+        # in terms of us unnecessarily pushing out events related
+        # to the silent mention.  I don't believe this impacts
+        # the actual user. If we clean this up, this test will
+        # break in a hopefully good way, and we can clean up
+        # the assertion.
+        cordelia = self.example_user("cordelia")
+        mention_backend = MentionBackend(cordelia.realm_id)
+        content = f"@_**{cordelia.full_name}**"
+        mention_data = MentionData(mention_backend, content, message_sender=None)
+        self.assertEqual(mention_data.get_user_ids(), {cordelia.id})
+
     def test_diffs_work_as_expected(self) -> None:
         str1 = "<p>The quick brown fox jumps over the lazy dog.  Animal stories are fun, yeah</p>"
         str2 = "<p>The fast fox jumps over the lazy dogs and cats.  Animal stories are fun</p>"
